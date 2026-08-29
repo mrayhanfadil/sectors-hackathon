@@ -38,7 +38,7 @@ Same logic as the Excel cookbook — every refresh costs credits. A typical watc
 2. `Extensions` → `API Connector` → `Open`. A sidebar opens on the right.
 3. Click **Create request**:
    - **Method**: `GET`
-   - **Request URL**: `https://api.sectors.app/v2/daily/bbca`
+   - **Request URL**: `https://api.sectors.app/v2/transaction/daily/bbca`
    - **Headers**: add `Authorization` → value = your raw Sectors API key (no `Bearer` prefix for REST).
 4. **Output settings**: pick which sheet/cell to land the data. `Set current` (default) overwrites the active cell. For multi-ticker workflows, pick a separate request per ticker with `Output mode` = `append` and tick **Remove header row**.
 5. Click **Run**.
@@ -54,7 +54,7 @@ For control freaks and people who want to schedule refreshes for free:
 
 ```javascript
 function ImportDailyData(ticker) {
-  const url = `https://api.sectors.app/v2/daily/${ticker}`;
+  const url = `https://api.sectors.app/v2/transaction/daily/${ticker}`;
   const options = {
     headers: { Authorization: PropertiesService.getScriptProperties().getProperty('SECTORS_API_KEY') },
     muteHttpExceptions: true,
