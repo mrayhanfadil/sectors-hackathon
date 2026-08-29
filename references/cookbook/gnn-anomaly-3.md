@@ -8,8 +8,8 @@
 
 Validate the GNN anomaly scores from Part 2 against **two independent market signals**:
 
-1. **Broker flow** — top accumulators/distributors for each stock (`/v2/broker-summary/{symbol}/top/`).
-2. **Foreign flow** — daily net foreign inflow (`/v2/foreign-flow/{symbol}/?start=...&end=...`).
+1. **Broker flow** — top accumulators/distributors for each stock (`/v2/brokers/broker-summary/top/{symbol}/`).
+2. **Foreign flow** — daily net foreign inflow (`/v2/brokers/foreign-flow/{symbol}/?start=...&end=...`).
 
 Combine into a single **adaptive risk score**.
 
@@ -63,7 +63,7 @@ Always run this audit before downstream — a suspended stock that stays in the 
 ```python
 def fetch_broker_summary(symbol, start, end, n_brokers=20):
     """Top accumulators/distributors for one symbol."""
-    url = f"{BASE_URL}/broker-summary/{symbol}/top/"
+    url = f"{BASE_URL}/brokers/broker-summary/top/{symbol}/"
     params = {"start": start, "end": end, "n_brokers": n_brokers}
     resp = requests.get(url, headers=HEADERS, params=params)
     if resp.status_code != 200:
@@ -114,7 +114,7 @@ result_df_clean["broker_score"]     = result_df_clean["ticker"].map(
 ```python
 def fetch_foreign_flow(symbol, start, end):
     """Daily net foreign inflow (IDR) for one symbol."""
-    url = f"{BASE_URL}/foreign-flow/{symbol}/"
+    url = f"{BASE_URL}/brokers/foreign-flow/{symbol}/"
     params = {"start": start, "end": end}
     resp = requests.get(url, headers=HEADERS, params=params)
     if resp.status_code != 200:
@@ -206,10 +206,10 @@ The key insight: **no single signal is sufficient**. A high GNN score with no br
 ## Known pitfalls
 
 - **Empty broker/foreign responses**: stocks listed recently or suspended for part of the window return no data. Filter those out before computing scores.
-- **HTTP 400 on broker endpoint**: `START_DATE`/`END_DATE` should be within the supported range. `/v2/broker-summary/{symbol}/top/` has no documented date cap, but very long periods (>365 days) may fail.
+- **HTTP 400 on broker endpoint**: `START_DATE`/`END_DATE` should be within the supported range. `/v2/brokers/broker-summary/top/{symbol}/` accepts up to ~14 days per call; longer windows need paginated calls.
 - **Identical anomaly scores** = always means zero-feature nodes. Audit before broker/foreign analysis.
 - **`.map()` not `.merge()`** for signal injection: avoids accidental column collisions and is faster.
-- **Foreign flow endpoint**: `/v2/foreign-flow/{symbol}/?start=...&end=...` returns up to 90 days. If you want 180 days, you have to paginate.
+- **Foreign flow endpoint**: `/v2/brokers/foreign-flow/{symbol}/?start=...&end=...` returns up to 90 days. If you want 180 days, you have to paginate.
 - **Date alignment**: Sectors API returns daily timestamps. Make sure your `START_DATE`/`END_DATE` cover the same window as Part 1. A mismatch silently produces misleading scores.
 
 ## Cross-links
