@@ -68,10 +68,10 @@ HEADERS = {"Authorization": API_KEY}
 def get_quarterly(symbol, n=4):
     """
     Fetch the last n quarters of financial data for one IDX bank.
-    Uses /v2/financials/quarterly/{symbol}/?n_quarters={n}.
+    Uses /v2/company/quarterly-financials/{symbol}/?n_quarters={n}.
     Returns a list of quarterly dicts, most recent first.
     """
-    url = f"https://api.sectors.app/v2/financials/quarterly/{symbol}/"
+    url = f"https://api.sectors.app/v2/company/quarterly-financials/{symbol}/"
     r = requests.get(url, headers=HEADERS, params={"n_quarters": n})
     r.raise_for_status()
     return r.json()
@@ -217,7 +217,7 @@ plt.savefig("bank_heatmap.png", dpi=150)
 - **CIR (Cost-to-Income Ratio)**: definition varies. This recipe uses operating expenses / revenue. Some banks use operating expenses / net interest income + non-interest income. Cross-check before publishing.
 - **`total_assets` may be null** for some bank reports. Always wrap in `or 0` or guard with `if total_assets else None`.
 - **Quarterly timing**: banks report at different times. TTM comparisons only make sense if all 7 banks reported within ~2 weeks of each other. If `As of` dates vary wildly, your chart will mislead.
-- **Endpoint changes**: `/v2/financials/quarterly/{symbol}/?n_quarters=4` — confirm against the live docs before shipping. The recipe works as of June 2026.
+- **Endpoint changes**: `/v2/company/quarterly-financials/{symbol}/?n_quarters=4` — confirm against the live docs before shipping. The recipe works as of Aug 2026.
 
 ## Cross-links
 
