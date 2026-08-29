@@ -51,7 +51,7 @@ api_key <- "Your API Key"
 symbols <- c("BBCA", "BREN", "TPIA")
 
 get_daily <- function(symbol) {
-  url      <- paste0("https://api.sectors.app/v2/daily/", symbol, "/?start=2024-04-01&end=2024-05-15")
+  url      <- paste0("https://api.sectors.app/v2/transaction/daily/", symbol, "/?start=2024-04-01&end=2024-05-15")
   response <- GET(url, add_headers(Authorization = api_key))
   data     <- fromJSON(content(response, "text"), flatten = TRUE)
   data$symbol <- symbol
@@ -82,7 +82,7 @@ This is a static line plot, not animated — perfect for a single PNG in a slide
 ```r
 library(tidyverse); library(gganimate); library(httr)
 
-url    <- "https://api.sectors.app/v2/most-traded/?start=2024-01-01&end=2024-03-24&n_stock=10"
+url    <- "https://api.sectors.app/v2/ranking/most-traded/?start=2024-01-01&end=2024-03-24&n_stock=10"
 resp   <- GET(url, add_headers(Authorization = api_key))
 data   <- content(resp, "parsed")
 
@@ -153,7 +153,7 @@ for (i in stocks_list) {
   for (j in 1:(length(date) - 1)) {
     start_date <- format(ifelse(j == 1, date[[j]][1], date[[j]][1] + 1), "%Y-%m-%d")
     end_date   <- format(date[[j + 1]][1], "%Y-%m-%d")
-    url        <- paste0("https://api.sectors.app/v2/daily/", i, "/?start=", start_date, "&end=", end_date)
+    url        <- paste0("https://api.sectors.app/v2/transaction/daily/", i, "/?start=", start_date, "&end=", end_date)
     response   <- GET(url, add_headers(Authorization = api_key))
     if (status_code(response) == 200) {
       chunk <- fromJSON(content(response, "text"), flatten = TRUE)
