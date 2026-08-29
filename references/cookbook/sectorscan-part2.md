@@ -163,7 +163,7 @@ Things to extend for a stronger Track 3 submission:
 
 - Add a **time-series view**: instead of only the latest market cap, fetch 12 quarters and let the user scrub through.
 - Add **screener integration**: let the user type "top 10 banks by ROE" and render an interactive table.
-- Add **broker-summary** tab: top buyers/sellers per stock from `/v2/broker-summary/{symbol}/top/`.
+- Add **broker-summary** tab: top buyers/sellers per stock from `/v2/brokers/broker-summary/top/{symbol}/`.
 - Add **foreign flow** tab: 30-day net foreign inflow for selected stocks.
 - Add **Streamlit auth** (paid plan only) if you want a private portfolio tracker.
 
