@@ -108,15 +108,15 @@ Eight feeds to set up in Sheets via API Connector:
 
 | Feed | URL |
 |------|-----|
-| Historical IDX Market Cap (30 days) | `https://api.sectors.app/v2/idx-total/?start=2026-08-01&end=2026-08-29` |
-| Historical LQ45 daily close | `https://api.sectors.app/v2/index-daily/lq45/?start=2026-08-01&end=2026-08-29` |
-| Historical IDX30 daily close | `https://api.sectors.app/v2/index-daily/idx30/?start=2026-08-01&end=2026-08-29` |
-| Historical JII70 daily close | `https://api.sectors.app/v2/index-daily/jii70/?start=2026-08-01&end=2026-08-29` |
+| Historical IDX Market Cap (30 days) | `https://api.sectors.app/v2/transaction/idx-total/?start=2026-08-01&end=2026-08-29` |
+| Historical LQ45 daily close | `https://api.sectors.app/v2/transaction/index-daily/lq45/?start=2026-08-01&end=2026-08-29` |
+| Historical IDX30 daily close | `https://api.sectors.app/v2/transaction/index-daily/idx30/?start=2026-08-01&end=2026-08-29` |
+| Historical JII70 daily close | `https://api.sectors.app/v2/transaction/index-daily/jii70/?start=2026-08-01&end=2026-08-29` |
 | Top 10 by market cap (current) | `https://api.sectors.app/v2/companies/?order_by=-market_cap&limit=10` |
 | Top 10 by revenue (2024) | `https://api.sectors.app/v2/companies/?order_by=-revenue[2024]&limit=10` |
 | Top 10 by earnings (2024) | `https://api.sectors.app/v2/companies/?order_by=-earnings[2024]&limit=10` |
-| Top 10 30-day gainers | `https://api.sectors.app/v2/companies/top-changes/?classifications=top_gainers&n_stock=10&periods=30d` |
-| Top 10 30-day losers | `https://api.sectors.app/v2/companies/top-changes/?classifications=top_losers&n_stock=10&periods=30d` |
+| Top 10 30-day gainers | `https://api.sectors.app/v2/ranking/top-changes/?classifications=top_gainers&n_stock=10&periods=30d` |
+| Top 10 30-day losers | `https://api.sectors.app/v2/ranking/top-changes/?classifications=top_losers&n_stock=10&periods=30d` |
 
 Each lands in its own sheet tab. Connect each to Looker Studio via Google Sheets connector (same as Recipe 1). Then:
 
