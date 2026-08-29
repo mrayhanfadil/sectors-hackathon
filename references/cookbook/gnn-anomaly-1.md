@@ -109,29 +109,29 @@ print(f"Device: {DEVICE}")
 print(f"Analysis period: {START_DATE} to {END_DATE}")
 ```
 
-The original recipe uses `/v2/companies/top/?classifications=idx30,lq45&n_stock=40` to pick the universe. v2 endpoints we'll use throughout:
+The original recipe uses `/v2/companies/?order_by=-market_cap&limit=40` to pick the universe. v2 endpoints we'll use throughout:
 
 | Purpose | Endpoint |
 |---------|----------|
-| Universe (top N IDX/LQ45 stocks) | `/v2/companies/top/?classifications=idx30,lq45&n_stock=40` |
-| Daily price/volume per ticker | `/v2/daily/{symbol}/?start=YYYY-MM-DD&end=YYYY-MM-DD` |
-| Quarterly financials (Part 3) | `/v2/financials/quarterly/{symbol}/?n_quarters=4` |
+| Universe (top N IDX stocks by market cap) | `/v2/companies/?order_by=-market_cap&limit=40` |
+| Daily price/volume per ticker | `/v2/transaction/daily/{symbol}/?start=YYYY-MM-DD&end=YYYY-MM-DD` |
+| Quarterly financials (Part 3) | `/v2/company/quarterly-financials/{symbol}/?n_quarters=4` |
 
-Note: the original recipe's URLs reference `daily/{ticker}/` and `companies/top/`. Both still exist in v2; check [`../rest/idx-screener.md`](../rest/idx-screener.md) for the full catalog.
+Note: the original recipe's URLs reference `daily/{ticker}/` and `companies/top/`. Both have been renamed in v2 — `daily/` lives under `transaction/daily/`, and `companies/top/` is now a filter on `/v2/companies/?order_by=-market_cap`. Check [`../rest/idx-screener.md`](../rest/idx-screener.md) for the full catalog.
 
 ## Cell 2 — Fetch data
 
 ```python
 def fetch_top_companies(n=50):
-    url    = f"{BASE_URL}/companies/top/"
-    params = {"classifications": "idx30,lq45", "n_stock": n}
+    url    = f"{BASE_URL}/companies/"
+    params = {"order_by": "-market_cap", "limit": n}
     resp   = requests.get(url, headers=HEADERS, params=params)
     if resp.status_code != 200:
         raise ValueError(f"API error {resp.status_code}: {resp.text}")
     return resp.json()
 
 def fetch_daily_data(ticker, start, end):
-    url    = f"{BASE_URL}/daily/{ticker}/"
+    url    = f"{BASE_URL}/transaction/daily/{ticker}/"
     params = {"start": start, "end": end}
     resp   = requests.get(url, headers=HEADERS, params=params)
     if resp.status_code != 200:
@@ -280,7 +280,7 @@ Continue to [`gnn-anomaly-2.md`](gnn-anomaly-2.md) to train the model.
 
 ## Known pitfalls
 
-- **Empty DataFrames** for suspended stocks: when `/v2/daily/{ticker}/` returns nothing (stock suspended, no data in window), the per-ticker DataFrame is empty. The correlation matrix will be all-NaN for that ticker. Drop NaN rows before computing correlation.
+- **Empty DataFrames** for suspended stocks: when `/v2/transaction/daily/{ticker}/` returns nothing (stock suspended, no data in window), the per-ticker DataFrame is empty. The correlation matrix will be all-NaN for that ticker. Drop NaN rows before computing correlation.
 - **Sparse 180-day window for new listings**: a stock listed 30 days ago has only 30 returns — not enough for stable kurtosis. Either extend the window to 252 days or filter by listing date.
 - **Index heterogeneity**: LQ45 constituents change quarterly. The 40-stock universe you fetch today may not match what you'd have fetched 3 months ago. Pin a snapshot date for reproducibility.
 - **Edge direction**: PyG `edge_index` is shape `[2, num_edges]`. The original recipe uses an undirected graph — you must add edges in both directions (or use `T.ToUndirected()`). Otherwise message passing only flows one way.
