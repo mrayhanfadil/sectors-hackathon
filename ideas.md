@@ -67,10 +67,58 @@ Each must satisfy "adds interpretation on top of raw data, not just re-presentat
 
 ## What we haven't picked yet (gaps to fill)
 
-- [ ] **One-sentence problem statement** — for each candidate idea, draft one sentence. Use that to break ties.
+- [x] ~~One-sentence problem statement~~ — see template below; drafted for every idea.
 - [ ] **Audience validation** — who is the first person we'd show this to, and would they actually use it tomorrow? If we can't name them, the idea isn't ready.
-- [ ] **Sectors API/MCP coverage check** — for the candidate idea, do we know which Sectors endpoints / tools we'd use? Have we tested them?
-- [ ] **Risk register** — what's the #1 thing that could make this fail to ship by 30 Sep? Pick the idea with the lowest #1 risk.
+- [x] ~~Sectors API/MCP coverage check~~ — see `references/rest-idx-mining-2026-08-29/` + `references/mcp-idx-mining-2026-08-29/`.
+- [x] ~~Risk register~~ — see template below.
+- [x] ~~Stack decision matrix~~ — see template below.
+
+---
+
+## Templates
+
+### One-sentence problem statement
+
+Use this format. Two hard rules:
+
+1. **One sentence.** No compound sentences with "and".
+2. **Start with the audience, end with the outcome.** "Indonesian X need Y so they can Z."
+
+**Strong examples (from `tracks/idea-scoring.md`):**
+
+> "Asing Radar adalah bot Telegram harian yang menunjukkan 10 saham IDX dengan net foreign flow tertinggi dan 10 terendah, supaya investor ritel Indonesia punya sinyal institusional tanpa harus berlangganan Bloomberg."
+
+**Test your statement against these questions:**
+- Can a stranger read it once and understand who the user is?
+- Is the value obvious, or do you need to explain industry jargon?
+- Would a judge say "ah yes, real problem" within 5 seconds of reading?
+
+### Risk register (per candidate idea)
+
+Fill one row per candidate. Pick the idea with the lowest #1 risk.
+
+| # | Risk | Likelihood (H/M/L) | Impact (H/M/L) | Mitigation |
+|---|---|---|---|---|
+| 1 | _biggest thing that could make us fail to ship by 30 Sep_ | | | |
+| 2 | | | | |
+| 3 | | | | |
+
+**Common risk patterns to look for:**
+- "We don't know the Sectors API well enough" → H if idea needs ≥3 endpoints, M if ≤2.
+- "We need video production skills we don't have" → M (mitigatable with screen-recording only, no fancy editing).
+- "Credit budget blown" → M for Track 02 Automation, L for Track 03 with caching.
+- "Onboarding incomplete at deadline" → H, mitigatable only by following [`onboarding-blocker.md`](onboarding-blocker.md).
+
+### Stack decision matrix per track
+
+| Track | Top 1 stack option | Top 2 stack option | Decision factor |
+|---|---|---|---|
+| **01 — AI Agents** | Python + LangGraph + `MultiServerMCPClient` (per `references/mcp/setup.md`) | Node + Vercel AI SDK + `@modelcontextprotocol/sdk` | Pick Python if your team knows it. Pick Node if you want a web frontend in the same codebase. |
+| **02 — Automation — Telegram bot** | Cloudflare Worker + Cron Trigger + `node-telegram-bot-api` (free) | Cloudflare Worker + Cron + Webhook (no library) | Worker is free, cron is built-in. Either is fine. |
+| **02 — Automation — n8n** | n8n Cloud (free tier) + Sectors MCP node | Self-hosted n8n + Sectors HTTP node | Self-hosted gives more control; cloud is faster to start. |
+| **03 — Market Intelligence** | Streamlit (per `references/cookbook/sectorscan-part1.md`) | Next.js + Sectors REST | Streamlit for fastest demo; Next.js if you'll iterate post-hackathon. |
+
+**Other valid stacks (no wrong answer):** Node + Express, Python + FastAPI, Cloudflare Workers (any language via Wrangler), Vercel Edge Functions. The matrix above is the **default-fast** option. Override if you have a strong reason.
 
 ---
 
