@@ -15,6 +15,9 @@
 | An R analytics / content workflow                    | REST + `httr`     | `references/cookbook/r-animations.md` (this lane)   |
 | A notebook that scores stocks by peer behaviour     | REST + PyTorch Geometric | `references/cookbook/gnn-anomaly-1.md` (this lane) |
 | A portfolio optimizer / benchmarker                  | REST + SciPy / pandas | `references/cookbook/portfolio-optimization.md` |
+| Indonesian mining commodity / site / license data    | REST              | `references/rest/mining.md` (Lane 1, when merged) — FYI tag below |
+
+> **FYI — SGX / KLSE coverage:** the Sectors API covers Singapore (SGX, e.g. `D05`) and Malaysia (KLSE, e.g. `1155`) too, but the **hackathon rules §06 restrict submissions to Indonesian data only**. Treat SGX/KLSE endpoints as out-of-scope; everything in this cookbook assumes IDX tickers (`BBCA`, `BMRI`, ...) and Indonesian mining (commodities, sites, license auctions). If you want SGX/KLSE recipes, see the upstream docs at <https://docs.sectors.app/recipes/> — don't lift them into a submission.
 
 All paths are **relative to this `references/` folder**. Cookbooks live one level deeper in `cookbook/`.
 
@@ -105,7 +108,7 @@ These trip every new Sectors builder at least once. Save yourself the credits:
 3. **Tickers: drop the `.JK` suffix.**
    - IDX REST tolerates both `BBCA` and `BBCA.JK` (case-insensitive).
    - IDX MCP **requires bare** `BBCA`, `TLKM`, `BMRI`. Passing `BBCA.JK` to `fetch-company-report` returns nothing.
-   - SGX: 3-char code (`D05`, `U11`, `Z74`). KLSE: 4-digit numeric (`1155`, `4197`).
+   - **FYI only — SGX / KLSE are out of scope for this hackathon.** SGX uses 3-char codes (`D05`, `U11`, `Z74`); KLSE uses 4-digit numeric (`1155`, `4197`). Don't use these in submissions.
 4. **Subsectors are kebab-case slugs**, not CamelCase. Use `/v2/subsectors/` (REST) or `get-subsectors` (MCP) to get the exact list. Common hits: `banks`, `software-it-services`, `consumer-non-cyclicals`, `energy`, `basic-materials`, `mining`.
 5. **`sections=` saves credits.** `/v2/company/report/{symbol}/` accepts a comma-separated subset of `overview,valuation,future,peers,financials,dividend,management,ownership`. Default returns everything — choose only what you use.
 6. **Universe feeds beat per-symbol loops.** `GET /v2/transaction/close/{date}/` returns every IDX ticker on one date in a paginated feed. `GET /v2/companies/quarterly-financial-dates/` gives you latest-report-dates across the universe. Cheaper than looping N tickers.
