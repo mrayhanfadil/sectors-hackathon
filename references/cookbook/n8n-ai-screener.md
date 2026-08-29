@@ -131,10 +131,10 @@ The URL expression strips the `.JK` suffix because the Sectors API REST tolerate
 | Field | Value |
 |-------|-------|
 | Method | `GET` |
-| URL | `https://api.sectors.app/v2/company/get-segments/{{ $json.symbol.replace('.JK', '').replace('.jk', '') }}/` |
+| URL | `https://api.sectors.app/v2/company/segments/{{ $json.symbol.replace('.JK', '').replace('.jk', '') }}/2024/` |
 | Authentication | Header Auth → Sectors credential |
 
-No query parameters.
+No query parameters. Note: the segments endpoint requires `financial_year` in the URL — pick the latest reported fiscal year (use `/v2/company/quarterly-financial-dates/{symbol}/` first if unsure).
 
 ### 6. Merge Company Data (`Merge` node)
 
