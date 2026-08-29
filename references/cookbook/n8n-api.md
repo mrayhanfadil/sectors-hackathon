@@ -78,7 +78,7 @@ Change the URL to any endpoint. Common shapes:
 
 ```text
 # Daily price/volume for one ticker (90 days max)
-https://api.sectors.app/v2/daily/{symbol}/?start=2026-08-01&end=2026-08-29
+https://api.sectors.app/v2/transaction/daily/{symbol}/?start=2026-08-01&end=2026-08-29
 
 # Company report with specific sections only (saves credits)
 https://api.sectors.app/v2/company/report/{symbol}/?sections=overview,valuation,dividend
@@ -87,7 +87,7 @@ https://api.sectors.app/v2/company/report/{symbol}/?sections=overview,valuation,
 https://api.sectors.app/v2/companies/?q=top+5+banks+by+market+cap&limit=5
 
 # Top movers today
-https://api.sectors.app/v2/companies/top-changes/?classifications=top_gainers,top_losers&periods=1d
+https://api.sectors.app/v2/ranking/top-changes/?classifications=top_gainers,top_losers&periods=1d
 
 # Subsector list (kebab-case slugs)
 https://api.sectors.app/v2/subsectors/
@@ -102,7 +102,7 @@ https://api.sectors.app/v2/subsectors/
 | # | Node | Type | Purpose |
 |---|------|------|---------|
 | 1 | Schedule Trigger | `schedule trigger` | Fires daily at 07:00 |
-| 2 | HTTP Request | `http request` | Calls `/v2/companies/top-changes/` |
+| 2 | HTTP Request | `http request` | Calls `/v2/ranking/top-changes/` |
 | 3 | Code | `code` | Transforms JSON to Discord message string |
 | 4 | HTTP Request | `http request` | POSTs to Discord webhook |
 
@@ -115,7 +115,7 @@ https://api.sectors.app/v2/subsectors/
 | Field | Value |
 |-------|-------|
 | Method | `GET` |
-| URL | `https://api.sectors.app/v2/companies/top-changes/` |
+| URL | `https://api.sectors.app/v2/ranking/top-changes/` |
 | Authentication | Header Auth → your Sectors credential |
 | Query Parameters | `classifications` = `top_gainers,top_losers`, `periods` = `1d`, `n_stock` = `10` |
 
