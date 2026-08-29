@@ -38,7 +38,7 @@ Fill in:
 
 | Field | Value |
 |-------|-------|
-| URL parts | `https://api.sectors.app/v2/daily/bbca` (start with this; we'll switch endpoints later) |
+| URL parts | `https://api.sectors.app/v2/transaction/daily/bbca` (start with this; we'll switch endpoints later) |
 | HTTP request header parameter (left) | `Authorization` |
 | HTTP request header parameter (right) | `<your raw Sectors API key>` (no `Bearer` prefix for REST) |
 
@@ -46,7 +46,7 @@ If Power Query throws a credentials error on the first try, this is a known Powe
 
 1. Click **Back**.
 2. Change the URL to `https://api.sectors.app/health/` and click **OK** (this works because the `/health/` endpoint doesn't care about your key shape).
-3. Open **View → Advanced Editor** and replace the URL in the `Web.Contents(...)` call with the real one (`/v2/daily/bbca`).
+3. Open **View → Advanced Editor** and replace the URL in the `Web.Contents(...)` call with the real one (`/v2/transaction/daily/bbca`).
 4. Click **Done**.
 
 The Power Query Editor will then open with the JSON response.
@@ -66,12 +66,12 @@ Repeat the dance for each endpoint you want:
 
 | Use case | URL |
 |---------|-----|
-| Daily transaction for one symbol | `https://api.sectors.app/v2/daily/bbca` |
+| Daily transaction for one symbol | `https://api.sectors.app/v2/transaction/daily/bbca` |
 | Company report (full) | `https://api.sectors.app/v2/company/report/bbca` |
 | Company report (sections only — saves credits) | `https://api.sectors.app/v2/company/report/bbca/?sections=overview,valuation,dividend` |
-| Top movers (gainers + losers) | `https://api.sectors.app/v2/companies/top-changes/?classifications=top_gainers,top_losers&periods=1d,7d` |
+| Top movers (gainers + losers) | `https://api.sectors.app/v2/ranking/top-changes/?classifications=top_gainers,top_losers&periods=1d,7d` |
 | Subsector list (kebab-case slugs) | `https://api.sectors.app/v2/subsectors/` |
-| Most-traded stocks | `https://api.sectors.app/v2/most-traded/?start=2026-08-01&end=2026-08-29&n_stock=20` |
+| Most-traded stocks | `https://api.sectors.app/v2/ranking/most-traded/?start=2026-08-01&end=2026-08-29&n_stock=20` |
 
 Use **different sheet destinations per query** — one sheet per endpoint is the canonical layout.
 
@@ -83,7 +83,7 @@ Use **different sheet destinations per query** — one sheet per endpoint is the
 ## Known pitfalls
 
 - **Header typo**: the `Authorization` header name is case-insensitive but the value must be the **raw key**, not `Bearer ...`. If you prefix it with `Bearer` you'll get HTTP 401 and the query will return a JSON error object instead of data — the Power Query editor will silently show the wrong-type column.
-- **`/v1/*` URLs**: if a tutorial online shows `/v1/daily/bbca`, replace it with `/v2/daily/bbca`. v1 is dead.
+- **`/v1/*` URLs**: if a tutorial online shows `/v1/transaction/daily/bbca`, replace it with `/v2/transaction/daily/bbca`. v1 is dead.
 - **Array expansion**: a common mistake is to expand the outer Record first. For daily data, the API returns an **array of records**, so you need two clicks: first **Expand to New Rows** (this unrolls the array into multiple rows), then **Expand the new columns** (this pulls out `date`, `close`, etc.).
 - **Date types**: dates come as ISO strings. In Power Query, click the column header → `Transform` → `Data Type` → `Date`. Same for numerics (`Int64` for prices, `Decimal` for market caps).
 - **`.JK` suffix**: you can pass either `bbca` or `bbca.jk`. Both work in REST. Power Query won't care.
