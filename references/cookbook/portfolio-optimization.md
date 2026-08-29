@@ -130,7 +130,7 @@ tickers = df["symbol"].head(10).tolist()  # top 10 by score
 prices  = pd.DataFrame()
 
 for t in tickers:
-    data = fetch(f"https://api.sectors.app/v2/daily/{t}/?start=2025-08-01&end=2026-08-29")
+    data = fetch(f"https://api.sectors.app/v2/transaction/daily/{t}/?start=2025-08-01&end=2026-08-29")
     prices[t] = pd.DataFrame(data).set_index("date")["close"]
 
 returns = prices.pct_change().dropna()
