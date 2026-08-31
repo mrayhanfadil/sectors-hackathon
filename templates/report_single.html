@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+{# TEMPLATE: single — RATU archetype (pure-play, 9 sections).
+   Data contract: templates/DATA_CONTRACT.md #}
+{% import "macros.html" as m %}
+{% set ns = namespace(ex=0) %}
+{% set palette = {"brand": "#1d4ed8", "brand_dark": "#152c6e", "accent": "#eef2ff"} %}
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>{{ meta.ticker }} — {{ meta.report_type }} (single)</title>
+{{ m.styles(palette) }}
+</head>
+<body>
+
+{# ================= PAGE 1 — COVER ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
+    <div>
+      <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
+      <h1 style="font-size:26pt; color:var(--brand-dark); line-height:1.1; margin:4pt 0 2pt;">{{ meta.company_name }}</h1>
+      <div style="font-size:13pt; font-weight:700; color:var(--muted);">{{ meta.ticker }} · IDX</div>
+
+      {% if cover.rating_box %}
+      <div class="card-tint" style="margin-top:14pt;">
+        <div class="small muted">Harga: Rp {{ cover.rating_box.price|idr }} · Target Harga: Rp {{ cover.rating_box.tp|idr }} · Upside {{ cover.rating_box.upside_pct|pct if cover.rating_box.upside_pct > 0 else cover.rating_box.upside_pct|pct }}</div>
+      </div>
+      {% endif %}
+
+      {% if cover.shareholders %}
+      <div style="margin-top:16pt;">
+        {{ m.exhibit_auto(ns, "Struktur Pemegang Saham", cover.shareholders_src or "IDX") }}
+        <div class="chart-wrap"><canvas id="cHolders" width="300" height="180"></canvas></div>
+      </div>
+      {% endif %}
+    </div>
+
+    <div>
+      {% if cover.rating_box %}
+      <div class="rating-box">
+        <div class="rating-action">{{ cover.rating_box.action }}</div>
+        <div class="small muted">12 bulan · eks-dividen</div>
+        <div class="tp-big" style="margin-top:6pt;">Rp {{ cover.rating_box.tp|idr }}</div>
+        <div class="small">Harga kini Rp {{ cover.rating_box.price|idr }}</div>
+        <div class="{{ 'pos' if cover.rating_box.upside_pct > 0 else 'neg' }}" style="font-weight:700; margin-top:2pt;">
+          {{ cover.rating_box.upside_pct|pct if cover.rating_box.upside_pct > 0 else cover.rating_box.upside_pct|pct }} upside
+        </div>
+        {% if cover.rating_box.prev_tp %}<div class="small muted">TP sebelumnya: Rp {{ cover.rating_box.prev_tp|idr }}</div>{% endif %}
+      </div>
+      {% endif %}
+      <div class="card" style="margin-top:10pt;">
+        <div class="small muted" style="margin-bottom:2pt;">INFORMASI SAHAM</div>
+        {{ m.kv("Saham beredar", "%.2f %s"|format(cover.shares.outstanding, cover.shares.unit) if cover.shares else "n/a") }}
+        {% if cover.shares and cover.shares.free_float_pct %}{{ m.kv("Free float", "%.1f%%"|format(cover.shares.free_float_pct)) }}{% endif %}
+        {% if cover.esg and cover.esg.found %}
+          {{ m.kv("ESG (E/S/G)", "%.2f / %.2f / %.2f"|format(cover.esg.scores.e, cover.esg.scores.s, cover.esg.scores.g)) }}
+          <div class="src-tag">ESG: {{ cover.esg.source }} ({{ cover.esg.date }})</div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if cover.vs_jci %}
+  <div style="margin-top:14pt;">
+    {{ m.exhibit_auto(ns, "Kinerja Harga vs IHSG (YTD)", cover.vs_jci.source or "IDX, yfinance") }}
+    <div class="chart-wrap"><canvas id="cVsJci" width="680" height="200"></canvas></div>
+  </div>
+  {% endif %}
+  {{ m.pagefoot(1) }}
+</div>
+
+{# ================= PAGE 2 — SUMMARY + THESIS ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(1, "Ringkasan Investasi") }}
+  <p class="muted small">Snapshot {{ meta.company_name }} — seluruh angka hasil engine deterministik, asumsi eksplisit di §4.</p>
+
+  {% if financial_highlights %}
+  {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
+  {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
+  {% endif %}
+
+  {{ m.section(2, "Tesis Investasi") }}
+  {% for t in thesis %}
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>{{ loop.index }}. {{ t.headline }}</b>
+    <p class="small">{{ t.detail }}</p>
+    {% if t.source %}<div class="src-tag">Sumber: {{ t.source }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {{ m.pagefoot(2) }}
+</div>
+
+{# ================= PAGE 3 — VALUATION ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(3, "Valuasi") }}
+  <p class="small muted">Metode kedua dipilih adaptif: infra/dividen → DDM, konglomerasi → SOTP, lainnya → EV/EBITDA (plan §5).</p>
+
+  {% for vm in valuation.methods %}
+  <h3>{{ vm.method }}</h3>
+  {% if vm.assumptions %}
+  <div class="grid-3" style="margin:4pt 0;">
+    {% for k, v in vm.assumptions.items() %}
+    <div class="kv"><span class="kv-l">{{ k|upper }}</span><span class="kv-v">{{ v }}</span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if vm.table %}{{ m.table(vm.table.headers, vm.table.rows, vm.table.footers or []) }}{% endif %}
+  <div class="card-tint" style="margin:6pt 0;">
+    <div class="kv"><span class="kv-l">Fair value ({{ vm.method }})</span>
+      <span class="kv-v">Rp {{ vm.fv|idr }}</span></div>
+    <div class="src-tag">Engine: {{ vm.source }}</div>
+  </div>
+  {% endfor %}
+
+  {% if valuation.blended %}
+  {{ m.exhibit_auto(ns, "Valuasi Blended", valuation.blended.source or "scripts/blended.py") }}
+  {{ m.table(["Metode", "Bobot", "Fair Value (Rp)"],
+     valuation.blended.rows, [["Blended (MoS " ~ valuation.blended.margin_of_safety_pct ~ "%)", "100%", valuation.blended.fv_str]]) }}
+  {% endif %}
+
+  {% if valuation.bands and valuation.bands.pbv_3y %}
+  {{ m.exhibit_auto(ns, "Historical Band P/BV 3Y (STD±2)", valuation.bands.source or "IDX, data diolah") }}
+  {{ m.table(["STD+2", "STD+1", "AVG", "STD-1", "STD-2", "Kini", "Posisi"],
+     [[valuation.bands.pbv_3y["std+2"], valuation.bands.pbv_3y["std+1"], valuation.bands.pbv_3y.avg,
+       valuation.bands.pbv_3y["std-1"], valuation.bands.pbv_3y["std-2"],
+       valuation.bands.pbv_3y.current, valuation.bands.pbv_3y.label]]) }}
+  {% endif %}
+  {{ m.pagefoot(3) }}
+</div>
+
+{# ================= PAGE 4 — FINANCIALS ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(4, "Financials 6Y + Rasio") }}
+  {% if exhibits %}
+    {% for ex in exhibits %}
+    {% if ex.chart %}
+      {{ m.exhibit_auto(ns, ex.title, ex.source) }}
+      <div class="chart-wrap"><canvas id="ex{{ loop.index }}" width="680" height="{{ ex.chart.height or 200 }}"></canvas></div>
+    {% endif %}
+    {% endfor %}
+  {% endif %}
+
+  {% for stmt in financials %}
+  <h3>{{ stmt.title }}</h3>
+  {{ m.table(stmt.headers, stmt.rows) }}
+  <div class="src-tag">Sumber: {{ stmt.source }}</div>
+  {% endfor %}
+  {{ m.pagefoot(4) }}
+</div>
+
+{# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(5, "Perbandingan Peers") }}
+  {% if peers and peers.tables %}
+    {% for pt in peers.tables %}
+    <h3>{{ pt.pillar }}</h3>
+    {{ m.table(pt.headers, pt.rows) }}
+    <div class="src-tag">Sumber: {{ pt.source }}</div>
+    {% endfor %}
+  {% endif %}
+
+  {{ m.section(6, "Faktor Risiko") }}
+  {% for r in risks %}
+  <div class="risk-bucket">
+    <b>{{ r.bucket }}</b>
+    <p class="small">{{ r.detail }}</p>
+    {% if r.source %}<div class="src-tag">Sumber: {{ r.source }}</div>{% endif %}
+  </div>
+  {% endfor %}
+
+  {{ m.section(7, "Disklaimer") }}
+  {{ m.disclaim() }}
+  {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
+  {{ m.pagefoot(5) }}
+</div>
+
+{{ m.chartjs() }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  {% if cover.shareholders %}
+  mkChart("cHolders", { type: "doughnut",
+    data: { labels: {{ cover.shareholders | map(attribute="name") | list | tojson }},
+            datasets: [{ data: {{ cover.shareholders | map(attribute="pct") | list | tojson }} }] },
+    options: { plugins: { legend: { position: "right" } } } });
+  {% endif %}
+  {% if cover.vs_jci %}
+  mkChart("cVsJci", { type: "line",
+    data: { labels: {{ (cover.vs_jci.chart.labels or []) | tojson }},
+            datasets: [
+              { label: "{{ meta.ticker }}", data: {{ (cover.vs_jci.chart.series[0] or []) | tojson }} },
+              { label: "IHSG", data: {{ (cover.vs_jci.chart.series[1] or []) | tojson }} }] } });
+  {% endif %}
+  {% for ex in exhibits if ex.chart %}
+  mkChart("ex{{ loop.index }}", {{ ex.chart | tojson }});
+  {% endfor %}
+});
+</script>
+</body>
+</html>
