@@ -336,7 +336,7 @@
     },
     {
       "bucket": "Regulasi PSC/DMO",
-      "detail": "Perubahan ketentuan dom�estic market obligation.",
+      "detail": "Perubahan ketentuan domestic market obligation.",
       "source": null
     },
     {
@@ -385,7 +385,7 @@
   "catalysts": [],
   "exhibits": [
     {
-      "id": "Exhibit 3",
+      "id": "Exhibit 4",
       "title": "Tren Pendapatan & EBITDA",
       "chart": {
         "type": "bar",
@@ -419,7 +419,7 @@
       "source": "Laporan keuangan IDX"
     },
     {
-      "id": "Exhibit 4",
+      "id": "Exhibit 5",
       "title": "Trajektori Leverage (DER)",
       "chart": {
         "type": "line",
