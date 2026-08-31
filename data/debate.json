@@ -1,0 +1,57 @@
+{
+  "ticker": "ADRO",
+  "as_of": "2026-08-31T03:07:15+00:00",
+  "rounds_count": 2,
+  "final_verdict": "DEFENDED",
+  "passed_audit": true,
+  "summary": "Adversarial Duel DEFENDED: 2 rounds completed. Defended: 2, Conceded: 0, Audit: PASSED.",
+  "rounds": [
+    {
+      "round": 1,
+      "challenger": "Red Team (Mining & Special Situations)",
+      "target_agent": "SOTP Aggregator",
+      "claim": "Spin-off valuation of AADI coal business does not account for post-demerger holding company discount.",
+      "defense_type": "defend",
+      "defense_payload": {
+        "argument": "The SOTP model explicitly applies a 15.0% holding company discount post AADI spin-off. Pre-discount total equity value of US$7.0bn is discounted by 15.0% (US$1.05bn) resulting in post-discount equity value of US$5.95bn, in exact alignment with the BRIDS benchmark methodology.",
+        "calc": {
+          "pre_discount_equity_usd_bn": 7.0,
+          "holdco_discount_pct": 15.0,
+          "post_discount_equity_usd_bn": 5.95
+        },
+        "source": "BRIDS Morning Report 18 Nov 2024 ADRO SOTP; scripts/sotp_engine.py",
+        "exhibit_ref": "Exhibit 5: Post-Spin SOTP Bridge & Holdco Discount Table"
+      },
+      "critic_verdict": "DEFENDED",
+      "critic_status": "PASS",
+      "critic_notes": "Defense substantiated with verified math and source: BRIDS Morning Report 18 Nov 2024 ADRO SOTP; scripts/sotp_engine.py",
+      "timestamp": "2026-08-31T03:07:15+00:00"
+    },
+    {
+      "round": 2,
+      "challenger": "Red Team (ESG & Transition Analyst)",
+      "target_agent": "Thesis Writer",
+      "claim": "Green energy transition timeline for Adaro Minerals and hydro projects is unquantified.",
+      "defense_type": "defend",
+      "defense_payload": {
+        "argument": "Green transformation is explicitly quantified via Mentarang Induk Hydro (1.37 GW) and Kaltara aluminum smelter (500ktpa Phase 1). The demerger segregates thermal coal cash flows to fund US$2.6bn renewable capex without diluting core shareholder dividends.",
+        "calc": {
+          "hydro_mw": 1370,
+          "aluminum_ktpa": 500,
+          "green_capex_usd_bn": 2.6
+        },
+        "source": "Adaro Energy Indonesia Annual Report; BRIDS Research 18 Nov 2024",
+        "exhibit_ref": "Exhibit 2: Renewable Energy Pipeline & Capex Schedule"
+      },
+      "critic_verdict": "DEFENDED",
+      "critic_status": "PASS",
+      "critic_notes": "Defense substantiated with verified math and source: Adaro Energy Indonesia Annual Report; BRIDS Research 18 Nov 2024",
+      "timestamp": "2026-08-31T03:07:15+00:00"
+    }
+  ],
+  "meta": {
+    "engine_version": "t08-writer-visualizer-sotp v1 (31 Aug 2026)",
+    "max_rounds": 2,
+    "anti_sycophancy_enforced": true
+  }
+}

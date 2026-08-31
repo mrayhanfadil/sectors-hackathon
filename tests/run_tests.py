@@ -133,9 +133,43 @@ def test_helpers() -> None:
     check("sotp_exhibit has post-discount equity", "Post-discount equity" in frag3)
 
 
+def test_critic() -> None:
+    print("[critic]")
+    import critic as critic_mod
+    for tk in ("RATU", "CDIA", "MTEL", "BBCA", "ADRO"):
+        res = critic_mod.audit_ticker(tk)
+        check(f"{tk} critic audit passes", res["verdict"] == "PASS", f"Score: {res['score_pct']}%, reasons: {res['reasons']}")
+        check(f"{tk} ready for PDF", res["ready_for_pdf"])
+        check(f"{tk} critic_audit.json written", os.path.exists(os.path.join(REPO_ROOT, "out", tk, "critic_audit.json")))
+
+    # Test anti-sycophancy rejection rule
+    turn = critic_mod.evaluate_debate_turn(
+        round_idx=1, challenger="Red Team", claim="Fake claim",
+        defense_type="concede", evidence="I agree blindly"
+    )
+    check("critic rejects agree-without-evidence", turn["verdict"] == "REJECT_AGREE_WITHOUT_EVIDENCE")
+
+
+def test_adversarial() -> None:
+    print("[adversarial]")
+    import adversarial as adv_mod
+    import asyncio
+    for tk in ("RATU", "CDIA", "MTEL", "BBCA", "ADRO"):
+        duel = adv_mod.run_duel(tk, max_rounds=2)
+        check(f"{tk} 2-round duel passes", duel["passed_audit"] and duel["rounds_count"] == 2)
+        check(f"{tk} duel verdict DEFENDED", duel["final_verdict"] == "DEFENDED")
+        check(f"{tk} debate.json written", os.path.exists(os.path.join(REPO_ROOT, "out", tk, "debate.json")))
+
+    # Test interactive user challenge
+    ch = asyncio.run(adv_mod.challenge("MTEL", "Tenancy ratio 1.57 is wrong"))
+    check("user challenge returns defend", ch["verdict"] == "defend")
+    check("user challenge passes critic audit", ch["critic_verdict"] == "PASS")
+    check("user challenge cites exact KPI", "63,866" in ch["evidence"] and "40,563" in ch["evidence"])
+
+
 def main() -> None:
-    print(f"T08 acceptance tests — repo {REPO_ROOT}\n")
-    for fn in (test_writer, test_sotp, test_visualizer, test_helpers):
+    print(f"T08 + T09 acceptance tests — repo {REPO_ROOT}\n")
+    for fn in (test_writer, test_sotp, test_visualizer, test_helpers, test_critic, test_adversarial):
         try:
             fn()
         except Exception:
@@ -153,3 +187,4 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+

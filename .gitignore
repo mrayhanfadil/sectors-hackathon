@@ -48,15 +48,11 @@ logs/
 # Local notes
 TODO.local.md
 *.local.*
-<<<<<<< HEAD
 
 # Data — synthetic fallback is large and regenerable (seed=42)
 data/sectors.db
 data/sectors.db-journal
-=======
+
+# Worktrees
 .worktrees/
-package.json
-package-lock.json
-node_modules/
->>>>>>> wt/t07-analyst
-.worktrees/
+

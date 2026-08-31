@@ -566,22 +566,22 @@
     {
       "bucket": "Ketergantungan operator (Telkomsel)",
       "detail": "Konsentrasi pendapatan pada operator besar.",
-      "source": null
+      "source": "KSI Research MTEL p.6, Laporan Tahunan"
     },
     {
       "bucket": "Kompetisi tower/satellite/Open RAN",
       "detail": "Teknologi alternatif menekan pricing tower.",
-      "source": null
+      "source": "Asosiasi Menara Telekomunikasi Indonesia"
     },
     {
       "bucket": "Regulasi spektrum & tarif",
       "detail": "Perubahan aturan memengaruhi ekspansi tenant.",
-      "source": null
+      "source": "Kementerian Kominfo, Regulasi Spektrum"
     },
     {
       "bucket": "Pembiayaan (suku bunga)",
       "detail": "Hutang fiber buildout sensitif bunga.",
-      "source": null
+      "source": "Bank Indonesia, Laporan Keuangan MTEL"
     }
   ],
   "peers": {

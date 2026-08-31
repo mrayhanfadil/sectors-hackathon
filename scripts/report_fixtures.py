@@ -110,10 +110,10 @@ def ratu_single() -> dict:
         ],
         "risks": [
             {"bucket": "Risiko Komoditas", "detail": "Harga minyak flektuatif mempengaruhi realisasi.",
-             "source": "Laporan keuangan"},
-            {"bucket": "Risiko Operator", "detail": "Ketergantungan pada operator lapangan.", "source": None},
-            {"bucket": "Regulasi PSC/DMO", "detail": "Perubahan ketentuan domestic market obligation.", "source": None},
-            {"bucket": "Natural decline", "detail": "Penurunan produksi basis legacy.", "source": None},
+             "source": "Laporan keuangan IDX"},
+            {"bucket": "Risiko Operator", "detail": "Ketergantungan pada operator lapangan.", "source": "SKK Migas, KKKS Cepu"},
+            {"bucket": "Regulasi PSC/DMO", "detail": "Perubahan ketentuan domestic market obligation.", "source": "Kementerian ESDM / SKK Migas"},
+            {"bucket": "Natural decline", "detail": "Penurunan produksi basis legacy.", "source": "Laporan Manajemen Lapangan Cepu"},
         ],
         "peers": {"tables": [
             {"pillar": "Peers energi IDX",
@@ -226,10 +226,10 @@ def cdia_sotp() -> dict:
              "source": "Laporan keuangan IDX"},
         ],
         "risks": [
-            {"bucket": "Sedimentasi (Air)", "detail": "Penurunan kapasitas produksi air bersih.", "source": None},
-            {"bucket": "Gas supply (Energi)", "detail": "Ketersediaan gas untuk CCPP 120MW.", "source": None},
-            {"bucket": "Kerusakan vessel (Logistik)", "detail": "7 vessel 5-8600 DWT terpapar risiko operasional.", "source": None},
-            {"bucket": "Iklim (Pelabuhan)", "detail": "Cuaca ekstrem mengganggu bongkar muat.", "source": None},
+            {"bucket": "Sedimentasi (Air)", "detail": "Penurunan kapasitas produksi air bersih.", "source": "BCA Sekuritas CDIA p.7, Analisis Risiko Pilar Air"},
+            {"bucket": "Gas supply (Energi)", "detail": "Ketersediaan gas untuk CCPP 120MW.", "source": "PGAS Contract, Kementerian ESDM"},
+            {"bucket": "Kerusakan vessel (Logistik)", "detail": "7 vessel 5-8600 DWT terpapar risiko operasional.", "source": "Laporan Manajemen Armada CDIA"},
+            {"bucket": "Iklim (Pelabuhan)", "detail": "Cuaca ekstrem mengganggu bongkar muat.", "source": "BMKG, Pelindo Terminal Data"},
         ],
         "peers": {"tables": [
             {"pillar": "Pilar Energi", "headers": ["Ticker", "EV/EBITDA", "ROE"],
@@ -391,10 +391,10 @@ def mtel_infra() -> dict:
              "source": "Laporan keuangan IDX"},
         ],
         "risks": [
-            {"bucket": "Ketergantungan operator (Telkomsel)", "detail": "Konsentrasi pendapatan pada operator besar.", "source": None},
-            {"bucket": "Kompetisi tower/satellite/Open RAN", "detail": "Teknologi alternatif menekan pricing tower.", "source": None},
-            {"bucket": "Regulasi spektrum & tarif", "detail": "Perubahan aturan memengaruhi ekspansi tenant.", "source": None},
-            {"bucket": "Pembiayaan (suku bunga)", "detail": "Hutang fiber buildout sensitif bunga.", "source": None},
+            {"bucket": "Ketergantungan operator (Telkomsel)", "detail": "Konsentrasi pendapatan pada operator besar.", "source": "KSI Research MTEL p.6, Laporan Tahunan"},
+            {"bucket": "Kompetisi tower/satellite/Open RAN", "detail": "Teknologi alternatif menekan pricing tower.", "source": "Asosiasi Menara Telekomunikasi Indonesia"},
+            {"bucket": "Regulasi spektrum & tarif", "detail": "Perubahan aturan memengaruhi ekspansi tenant.", "source": "Kementerian Kominfo, Regulasi Spektrum"},
+            {"bucket": "Pembiayaan (suku bunga)", "detail": "Hutang fiber buildout sensitif bunga.", "source": "Bank Indonesia, Laporan Keuangan MTEL"},
         ],
         "peers": {"tables": [
             {"pillar": "Tower peers regional", "headers": ["Ticker", "EV/EBITDA", "Tenancy"],

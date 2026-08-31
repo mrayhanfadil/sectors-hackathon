@@ -337,22 +337,22 @@
     {
       "bucket": "Sedimentasi (Air)",
       "detail": "Penurunan kapasitas produksi air bersih.",
-      "source": null
+      "source": "BCA Sekuritas CDIA p.7, Analisis Risiko Pilar Air"
     },
     {
       "bucket": "Gas supply (Energi)",
       "detail": "Ketersediaan gas untuk CCPP 120MW.",
-      "source": null
+      "source": "PGAS Contract, Kementerian ESDM"
     },
     {
       "bucket": "Kerusakan vessel (Logistik)",
       "detail": "7 vessel 5-8600 DWT terpapar risiko operasional.",
-      "source": null
+      "source": "Laporan Manajemen Armada CDIA"
     },
     {
       "bucket": "Iklim (Pelabuhan)",
       "detail": "Cuaca ekstrem mengganggu bongkar muat.",
-      "source": null
+      "source": "BMKG, Pelindo Terminal Data"
     }
   ],
   "peers": {
