@@ -1,6 +1,6 @@
 # Plan: Institutional-Grade Equity Report for Retail — Multi-Agent System
 
-> **Branch:** `feat/institutional-report` | **Status:** DRAFT — nunggu ide tambahan Fadiil + temen  
+> **Branch:** `feat/institutional-report` | **Status:** HARDENED — 4 decisions locked 31 Aug 2026, **HOLD** (jangan scaffold/build dulu — nunggu lampu hijau Fadiil)  
 > **Locked idea:** Bikin equity research report kualitas institusi (kayak HP Sekuritas RATU 7 Jan 2026) tapi accessible buat retail investor. Multi-agent, tiap agent punya expertise.  
 > **Benchmark PDFs (3+4 archetypes):** `RATU` (HP 7 Jan 2026, pure Oil) + `CDIA` (BCA 23 Jun 2026, conglomerate SOTP) + `MTEL` (KSI 27 Aug 2026, infra recurring) + `JPM 2026 Outlook` (52p strategy, JCI 9100) + 4 local global-like (Samuel BBCA, Maybank Strategy, BRIDS SOTP+DCF, Samuel Strategy). **Library 15 sources** in `references/source-library.md`.  
 > **Deadline hackathon:** 30 Sep 2026 23:59 WIB — 29 hari lagi.
@@ -248,18 +248,22 @@
 | Adversarial Challenge & Defense | Biar report kredibel — agent harus defend pakai bukti, bukan yes-man; user bisa challenge post-PDF | Tanpa adversarial (agent asal terima) |
 | Social Sentiment (X+Reddit P0, Threads P1, IG/FB skip) | Retail narrative tracker — gimana narasi berkembang di retail, bandingin thesis vs crowd | Tanpa sentiment (cuma news+Sectors) |
 | Pages.dev | Fadiil prefer | workers.dev |
+| Track T03 Market Intelligence | Derived insight (scores/rankings/valuasi/KPI/bands) = inti per rules §06; judges boleh pindah track kalau salah pilih, bukan langsung DQ | T01 wrapper risk, T02 cron-only |
+| Bahasa ID (default) | Retail IDX, rules §08 ID/EN equal | EN default |
+| Prior forecast Initiation only P0 | MVP simple, belum ada histori v1; CDIA revision jadi P2 | Simpan v1 + revision block |
+| ESG try-search-then-skip | Coba web_search ESG rating dulu; kalau tidak ada hide (Sectors tidak ada ESG), anti-fabrication | Hard-include (ngarang) / hard-skip |
 
 ## 11. Open — Ide Tambahan Fadiil + Temen
 
 - [x] **Ide 1 (Fadiil, 31 Aug 2026) — News Harvester Agent (Google Search) — APPROVED, POSSIBLE** → Agent khusus search berita di Google sebagai **narasi + asumsi**. Design: `agents/news_harvester.py` → `search_news(ticker, days=30, max=8)` via `web_search` + `web_extract` → dedup + tier filter (Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel, Tier2: Reuters/Bloomberg/JP, Tier3: blog) → output `news.json` {url, date, title, source, snippet, tier, relevance} → feed ke **Thesis Writer** (catalyst timeline), **Risk Officer** (regulatory/MSCI risk), **Industry/Macro** (themantic), **Modeler** (assumption delta, e.g., Danantara $12bn → flows). Critic wajib cek `url+date` per klaim. Cost: 0 Sectors credit.
 - [x] **Ide 2 (Fadiil, 31 Aug 2026) — Adversarial Challenge & Defense — APPROVED** → Agents **tidak boleh asal terima** critique. Harus **defend pakai bukti** kalau benar, **concede + revise** kalau salah. Design: `agents/adversarial.py` (Red Team) → 2 loops: **(a) Internal duel** pre-PDF: challenge Thesis/Valuation/Risk masing2 1 claim (e.g., 'WACC 8.4% too low vs MTEL 10.1%?'), target agent must `defend(evidence: calc + source)` or `concede(correction)`; Critic arbiter cek evidence vs `assumptions.json/valuation.json/news.json`; max 2 rounds; log `debate.json` {round, challenger, claim, defense, verdict}. **(b) User challenge** post-PDF: UI `/report/[ticker]/challenge` — user ketik kritik, agent yang relevan jawab dengan sitasi (Exhibit + url+date), tidak boleh sycophancy. Anti-pattern: `agree because user said` = REJECT. 
 - [x] **Ide 3 (Fadiil, 31 Aug 2026) — Social Media Sentiment (Retail Narrative Tracker) — APPROVED, PARTIAL** → Feasible **X (P0)** via `web_search site:x.com` + `xurl` skill + **Reddit (P0)** via `web_search site:reddit.com` + `web_extract` + **Stockbit** (IDX-specific, higher signal than IG). **Threads P1** via `threads-meta-api` (needs token, fallback Google index). **IG/FB P2 — SKIP for MVP** (login wall, anti-scrape, ToS risk). Design: `agents/social_sentiment.py` → `search_social(ticker, days=14, max=8)` → queries `"$BBCA"`, `"saham BBCA"`, `"BBCA bullish"` per platform → dedup + relevance → output `sentiment.json` {platform, url, date, text, sentiment: bull/bear/neutral, score 0-100, relevance} + aggregated `gauge 0-100` + `top 3 narratives` + `timeline`. Feeds: Thesis Writer (retail narrative vs thesis), Risk Officer (hype/crowded risk), Adversarial (defense vs crowd). Critic checks `url+date` per claim, REJECT if hallucinated. Cost: 0 Sectors credit. UI: `/report/[ticker]/sentiment` gauge + timeline. Disclaimer: sentiment ≠ advice.
-- [ ] Track lock-in: T03 Market Intel paling pas (RATU/CDIA/MTEL semua research), T01 AI Agents kalau tonjolin multi-agent orchestration — decide?
+- [x] **Track lock-in — T03 Market Intelligence — LOCKED 31 Aug 2026** → Qualifier: signals/scores/rankings/screeners/anomaly/comparative/synthesized research. DCF+blended+GGM+SOTP+KPI+bands+sentiment = derived signal (bukan display mentah). Rules §06: *"If a project does not meet its declared track's requirement, judges may move it to the track that fits rather than disqualify. Track-based disqualification applies only when the project fits no track."* → Multi-agent jadi nilai Technical depth 30%, bukan penentu track.
 - Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (GGM/bank) + ADRO (SOTP spin-off) — **quintet** cover semua engine; JPM JCI 9,100 untuk market overlay
-- Bahasa PDF: ID/EN toggle? —
-- Prior forecast: simpen v1 buat revision demo atau initiation only? —
-- ESG: include box atau skip dulu (P2)? —
+- [x] **Bahasa PDF — ID — LOCKED 31 Aug 2026** → Default ID, toggle EN P2 (kayak disclaimer-template.md).
+- [x] **Prior forecast — Initiation only (P0) — LOCKED 31 Aug 2026** → P0 tidak simpan `assumptions_v1.json` / tidak ada Forecast Revision block. Report selalu initiation (kayak RATU & MTEL). CDIA revision (-37.4% Revenue) jadi P2 dengan versioning `v1→v2` + tabel delta, kalau diaktifkan nanti.
+- [x] **ESG box — Try search dulu, kalau ngga ada skip — LOCKED 31 Aug 2026** → ESG Harvester: `web_search(ticker + 'ESG rating MSCI/Sustainalytics')` → kalau ketemu (MTEL 2.23/3.03/5.08) tampilkan box dengan source+date, kalau tidak ada (Sectors tidak provide ESG) **hide box** dan log `esg: not_found`. Tidak ada fabricasi skor. Cost 0 credit.
 
 ---
 
-**Next step:** 3 ide Fadiil locked (News Harvester + Adversarial + Social Sentiment). Gas scaffold 8 engines (dcf/ddm/sotp/blended/bands/ggm/adversarial/social) + 4 templates + debate + sentiment UI di branch ini. Library 15 sources ready.
+**Next step:** HARDENED — 4 decisions locked (T03/ID/Initiation/ESG-try). 3 ide Fadiil locked. **HOLD scaffold/build — nunggu `gas` dari Fadiil**. Library 15 sources ready.
