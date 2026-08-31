@@ -114,12 +114,13 @@
 | 15 | **Sector OW/N/UW + Top picks + Flows/MSCI + Danantara Value-Up** | **JPM** | **P1 — Baru** |
 | 16 | **GGM fallback `P/BV=(ROE-g)/(CoE-g)` + SOTP holdco discount + spin-off bridge** | **Samuel/BRIDS** | **P1 — Baru** |
 
-## 3. Architecture — 7+1 → 8+1 Agents
+## 3. Architecture — 7+1 → 9+1 Agents (incl. News Harvester)
 
 ```
-[Ticker: RATU single | CDIA SOTP | MTEL infra] 
+[Ticker: RATU single | CDIA SOTP | MTEL infra]  (+ Strategy JCI 9100 overlay) 
         ↓
-  ┌─ Data Collector (parallel, Sectors API v2) ─┐
+  ┌─ Data Collector (parallel, Sectors API v2) ─┐  ┌─ News Harvester (parallel, Google) ─┐
+  │  via web_search + web_extract, 0 credit     │
   │  • overview, financials 5-6Y, prices, segments│
   │  • operational KPIs per subsector (baru)      │
   │  • peers PER PILAR (SOTP) atau universe       │
@@ -161,11 +162,12 @@
 
 ## 4. Data Layer
 
-**Sectors API v2 (hemat):**
+**Sectors API v2 (hemat) + Google News (0 credit):**
 - `overview` (holders CDIA 60%, MTEL TLKM 71.83%), `financials?sections=income,balance,cashflow` 5-6Y, `prices?range=5y` + `segments` kalau ada
 - `peers` — single (RATU 22) atau SOTP 4 pilar (CDIA 4 credit) atau infra comps (MTEL: TBIG, TOWR)
 - `operational_kpis` — tenancy/fiber/tower (MTEL), BOPD (RATU), MW/m³ (CDIA) — kalau API belum ada → synthetic + disclosed proxy
 - `index/JCI/prices` + historical multiples 3Y (untuk bands)
+- **News Harvester:** `web_search(ticker + 'IDX target price' / 'earnings' / 'Danantara catalyst')` → `web_extract(url)` → dedup + tier (T1 IDX/Kontan/Bisnis, T2 Reuters/Bloomberg, T3 blog) → `news.json` (url/date/title/source/tier/snippet/relevance) — max 8, last 30d, cache 1h
 - Cache 4h + synthetic fallback
 
 **Synthetic:** SQLite `data/sectors.db` seed=42, 49 tickers + JCI + segments + KPI synthetic (tenancy ratio, fiber km). `data/peers.json` dual mode single/SOTP/infra. `data/assumptions/{ticker}.json` — WACC, beta, RF, RP, g, payout, prior forecast, blended weights.
@@ -183,7 +185,7 @@
 ## 6. Tech Stack
 
 - Frontend Next.js `/report/[ticker]` + `/outlook` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (4 templates: single/SOTP/infra/strategy) | Deploy Pages.dev
-- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm}.py`, `agents/{collector,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
+- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news}.py`, `agents/{collector,news_harvester,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
 
 ## 7. Phased Build (29 hari ke 30 Sep)
 
@@ -214,6 +216,7 @@
 | KPI tenancy salah hitung | Formula tenant/tower, Critic validate |
 | Bands tanpa 3Y data | Fallback synthetic 3Y + disclosed |
 | Credit habis | Synthetic DB |
+| News stale / hoax | Tier filter + date check + Critic url+date per klaim |
 
 ## 10. Decision Log
 
@@ -228,12 +231,13 @@
 | Key Takeaways + ESG + Holder pie | Cover institutional MTEL | Cover plain |
 | 4 templates (single/SOTP/infra/strategy) | Tiap archetype layout beda (JPM 52p strategy beda) | 1 template |
 | Python deterministic | Semua WACC/beta/ERP/payout eksplisit | LLM math |
+| News Harvester (Google) | Narasi + asumsi butuh freshness — Sectors EOD only, news kasih catalyst timeline | Tanpa news (cuma Sectors) |
 | Pages.dev | Fadiil prefer | workers.dev |
 
-## 11. Open — Nunggu Ide Tambahan Fadiil + Temen
+## 11. Open — Ide Tambahan Fadiil + Temen
 
-- [ ] Ide 1: (Fadiil) — 
-- [ ] Ide 2: (temen) —
+- [x] **Ide 1 (Fadiil, 31 Aug 2026) — News Harvester Agent (Google Search) — APPROVED, POSSIBLE** → Agent khusus search berita di Google sebagai **narasi + asumsi**. Design: `agents/news_harvester.py` → `search_news(ticker, days=30, max=8)` via `web_search` + `web_extract` → dedup + tier filter (Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel, Tier2: Reuters/Bloomberg/JP, Tier3: blog) → output `news.json` {url, date, title, source, snippet, tier, relevance} → feed ke **Thesis Writer** (catalyst timeline), **Risk Officer** (regulatory/MSCI risk), **Industry/Macro** (themantic), **Modeler** (assumption delta, e.g., Danantara $12bn → flows). Critic wajib cek `url+date` per klaim. Cost: 0 Sectors credit.
+- [ ] Ide 2: (temen) — 
 - [ ] Track lock-in: T03 Market Intel paling pas (RATU/CDIA/MTEL semua research), T01 AI Agents kalau tonjolin multi-agent orchestration — decide?
 - Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (GGM/bank) + ADRO (SOTP spin-off) — **quintet** cover semua engine; JPM JCI 9,100 untuk market overlay
 - Bahasa PDF: ID/EN toggle? —
