@@ -155,7 +155,13 @@ async def report_ticker(
         blended_res = None
         fv = None
 
-    last_price = price or assum.get("last_price") or 1000
+    # Prefer assum last_price for known archetype tickers where yfinance thin (RATU/ADRO/CDIA smallcap gap)
+    if t in ("RATU", "CDIA", "ADRO", "MTEL", "BBCA"):
+        last_price = assum.get("last_price") or price or 1000
+        price_source = "assum (IDX+yfinance gap disclosed)"
+    else:
+        last_price = price or assum.get("last_price") or 1000
+        price_source = source
     upside = round((fv - last_price) / last_price * 100, 2) if fv and last_price else None
     rating = _rating_from_upside(upside)
     chosen_template = template or _template_for(t, segments)
