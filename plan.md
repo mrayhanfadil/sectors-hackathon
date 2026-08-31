@@ -191,10 +191,14 @@
 - **Sentiment UI:** `/report/[ticker]/sentiment` — gauge 0-100 (bear-bull) + top 3 retail narratives + timeline (how narrative evolved) + per-platform breakdown (X vs Reddit) + disclaimer `sentiment ≠ advice`.
 - **Wajib charts (7):** Revenue mix, Trend, Margin, Leverage trajectory, ROE/ROA, vs JCI, Peer multiples (+ Bands kalau infra), KPI (tenancy/fiber).
 
-## 6. Tech Stack
+## 6. Tech Stack [LOCKED 31 Aug 2026 — FE React+TanStack, BE solid, Orchestrator ADK]
 
-- Frontend Next.js `/report/[ticker]` + `/outlook` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (4 templates: single/SOTP/infra/strategy) | Deploy Pages.dev
-- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news,adversarial,social}.py`, `agents/{collector,news_harvester,social_sentiment,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp,adversarial}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
+- **Frontend — React + Vite + TypeScript + TanStack Query ( + TanStack Router ) — LOCKED [Fadiil: Next.js overkill]** | `src/fe/` CSR only, no SSR needed (report PDF rendered server-side via Playwright). TanStack Query untuk `report/ticker` + `outlook` + `challenge/sentiment` fetch, cache 4h. Build `vite build` → static `dist/` → **Cloudflare Pages `*.pages.dev`** masih jalan (Pages host static Vite, bukan cuma Next.js). Overkill Next dihindari: no SSR, bundle lebih kecil, dev cepat.
+- **Backend — FastAPI (Python) — SOLID [Fadiil: udah solid]** | Tetap `server/` FastAPI + `stockdata:15437` + yfinance fallback + Sectors P2 gate. Engines deterministic `scripts/{dcf,ddm,sotp,blended,bands,ggm}.py` stay Python.
+- **Orchestrator — Google ADK (Python SDK) + MCP `https://adk.dev/mcp` — LOCKED [Fadiil]** | `pip install google-adk` (Python), resmi. Docs ADK akses langsung via MCP `https://adk.dev/mcp` (streamable HTTP, `mcptoolset.StreamableClientTransport`). Pattern: 11 agents → ADK `LlmAgent` + `SequentialAgent`/`ParallelAgent`/`LoopAgent(max=4)` + sub-agent via `AgentTool`. `GoogleSearch` harus isolasi sub-agent (genai limit: search + function tool tidak bisa 1 agent). Provider: `deepseek/deepseek-v4-flash` via OpenAI-compat adapter (ref: `adk-go-skill/templates/openai_compat.go` preset DeepSeek) atau Gemini `gemini-flash-latest` untuk `GoogleSearch` sub-agent.
+- **PDF** | HTML + Tailwind + Chart.js (4 templates: single/SOTP/infra/strategy) → Playwright `pdf()` — sama, header RESEARCH + footer OJK + source per exhibit.
+- **DB** | `stockdata:15437` (IDX) + SQLite `data/sectors.db` synthetic + KV cache P2.
+- Repo: `data/{idx,peers.json,sectors.db,assumptions/}`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news,adversarial,social}.py`, `agents/adk/` (ADK Python) `+ {collector,news_harvester,social_sentiment,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp,adversarial}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,local-global-like,source-library.md}`, `src/fe/` (React Vite), `server/` (FastAPI), `demos/report/assets/api-data.js`
 
 ## 7. Phased Build (29 hari ke 30 Sep)
 
@@ -204,7 +208,7 @@
 | **P1 — Data** | 2 – 6 Sep | **IDX+yfinance** (data/idx + yfinance .JK, cache 4h) + SQLite (segments+KPI+JCI+3Y+flows synthetic) + 5 tickers E2E (RATU/CDIA/MTEL/BBCA/ADRO) — **0 Sectors credit** + `source-library.md` (15 sources) | Collector |
 | **P2 — Modeler + Sectors Gate** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 reproducible — **GATE:** kalau P1 OK, swap data layer ke Sectors v2 (zelfde engines, source switch) | Modeler |
 | **P3 — Agents** | 11 – 18 Sep | 11 agents + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Adversarial Red Team (2-round duel + user challenge) + Social Sentiment (X+Reddit P0) + Critic arbiter | Multi-agent |
-| **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF (single/SOTP/infra/strategy) + `/report/[ticker]` + `/outlook` + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
+| **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF + **React Vite FE** (`src/fe` TanStack Query + Router, `/report/[ticker]` + `/outlook` + `/challenge` + `/sentiment`) + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
 | **P5 — Polish & Video** | 24 – 29 Sep | 5 tickers showcase (RATU/CDIA/MTEL/BBCA/ADRO) + strategy page, video, audit swarm 3 AGY | All |
 | **Submit** | 30 Sep 23:59 WIB | Commit freeze, public 90 hari | — |
 
@@ -253,6 +257,8 @@
 | Prior forecast Initiation only P0 | MVP simple, belum ada histori v1; CDIA revision jadi P2 | Simpan v1 + revision block |
 | ESG try-search-then-skip | Coba web_search ESG rating dulu; kalau tidak ada hide (Sectors tidak ada ESG), anti-fabrication | Hard-include (ngarang) / hard-skip |
 | Data P0-P1 IDX+yfinance, Sectors P2 | Highlight data tanpa burn credit; gate ke Sectors kalau demo OK (Fadiil decision) | Sectors dari P0 (burn 1,000 langsung) |
+| FE React+Vite+TS+TanStack (bukan Next.js) | Overkill SSR tidak perlu; CSR + Vite static → Pages.dev tetap jalan, bundle kecil | Next.js (SSR overkill) |
+| Orchestrator Google ADK Python + MCP adk.dev/mcp | SDK resmi Python, `LlmAgent` + workflow agents + MCP docs direct; OpenAI-compat adapter untuk DeepSeek | Custom asyncio/LangGraph manual |
 
 ## 11. Open — Ide Tambahan Fadiil + Temen
 
@@ -267,4 +273,4 @@
 
 ---
 
-**Next step:** HARDENED — 4 decisions locked (T03/ID/Initiation/ESG-try). 3 ide Fadiil locked. **HOLD scaffold/build — nunggu `gas` dari Fadiil**. Library 15 sources ready.
+**Next step:** HARDENED — 4 decisions locked (T03/ID/Initiation/ESG-try) + Tech locked (React+TanStack / FastAPI solid / ADK+MCP). 3 ide Fadiil locked. **HOLD scaffold/build — nunggu `gas` dari Fadiil**. Library 15 sources ready.
