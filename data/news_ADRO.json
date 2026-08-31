@@ -1,0 +1,107 @@
+{
+  "ticker": "ADRO",
+  "harvested_at": "2026-08-31T10:05:40.616703+07:00",
+  "timeframe_days": 30,
+  "total_count": 8,
+  "tier_breakdown": {
+    "Tier1": 8,
+    "Tier2": 0,
+    "Tier3": 0
+  },
+  "key_catalysts": [
+    "Ditopang Segmen Pertambangan, ADRO Raup Laba USD309,36 Juta di Semester I (IDX Channel, 2026-08-29)",
+    "Saham CMRY Bayar Dividen Interim Rp 793 M, Cek Jadwal Pembayaran & Rekomendasi Analis (kontan.co.id, 2026-08-27)",
+    "ADRO Percepat Spin-off AADI dan Ekspansi Pembangkit Hijau 250MW (Investor Daily, 2026-08-23)"
+  ],
+  "regulatory_risks": [],
+  "articles": [
+    {
+      "url": "https://news.google.com/rss/articles/CBMitAFBVV95cUxNMHVLZVhobjhBVzVSb3dxVk1UWGFIbWYtaW44WGRiUE04Q3hpUDQ4Yzd4THB2YWpENzRpVHBUc3JaM0g2TkhkSmlPRFJ4b05pZVRaSlZnQTJtck5KdExMc2Ezc291S0JQZ3ZIbC1iVE8tLWF1RXpuSGF1WjlXSUpyVGZGZUZBQXpHQ2NsYWdIdUhrNDlEQzd5d0UxTEFxWlF0OWNHM3l3bUVqNlFSanUxX05reWfSAbQBQVVfeXFMTTB1S2VYaG44QVc1Um93cVZNVFhhSG1mLWluOFhkYlBNOEN4aVA0OGM3eExwdmFqRDc0aVRwVHNyWjNINk5IZEppT0RSeG9OaWVUWkpWZ0EybXJOSnRMTHNhM3NvdUtCUGd2SGwtYlRPLS1hdUV6bkhhdVo5V0lKclRmRmVGQUF6R0NjbGFnSHVIazQ5REM3eXdFMUxBcVpRdDljRzN5d21FajZRUmp1MV9Oa3ln?oc=5",
+      "date": "2026-08-29",
+      "title": "Ditopang Segmen Pertambangan, ADRO Raup Laba USD309,36 Juta di Semester I",
+      "source": "IDX Channel",
+      "snippet": "Ditopang Segmen Pertambangan, ADRO Raup Laba USD309,36 Juta di Semester I&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "Financial earnings momentum and operational performance",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMimwFBVV95cUxPeThHdHBvU1JMdEwzcnhGNm10YjRnMzR5a1EtQmxOODRqRms0bW5TRnY3bXIyeGdIMHlCRTlLTm1UMFc4VEt4c1I3bWxXeWw0QlNWR3pIbmdTY0xxWnBtWVRkVjdjMUVJbUpBb2k5WE0wRVNfaHRFVE1UaUV6LVdYc3YwSnNrOU1Xa1ZaUy15WnVnbGJET2R4emw1b9IBoAFBVV95cUxQNWUtSmhtN2psdlNGVVJ6TG1qU01RdFRfMWFEeXpKZkZjN1hoNGtmWjNKUHJVRG5wLVRzdGdWRTRuQWZaTVp2VzJyNGtLRFZaU2t2UFJxTmR2U2l0Z1B4MU5fMlVPd1BnTTJYMm0zTUtOU0M5b1Rwd0RQdXYzOVQ3dWZ3b0FlOXFINGtiY1VmZ2JmMGlSa0JIWkF4bHJWT19I?oc=5",
+      "date": "2026-08-27",
+      "title": "IHSG Masih Rentan Koreksi, Saham ADRO-BUVA Bisa Dicermati",
+      "source": "IDX Channel",
+      "snippet": "IHSG Masih Rentan Koreksi, Saham ADRO-BUVA Bisa Dicermati&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiugFBVV95cUxQY0M3XzJLR3VXeU9HWTdaa0FwWnJyRXp0NzJTRGE5aU1LSHM3SmhhdUlTWVdvRVZVZ3JiU05JeUZUWEJHd0ZyS2xkYjBreHp3akVLV0FpN2NDYlRHWjh5YVYzcXhabnc4bmwxV2V1OWJYVmEwYlRPM2VXaDBKMy14Vkh1cGxvejlSU3ZsdkEwMmZCeWg2a1oxVmJCallIb3RRMWoyVkVTWjBlOFVMb2YwX29JSV82QklRSGfSAbIBQVVfeXFMTkdIQl9Qa3VicTdHUDJfUkkzRXlobTRBdDVjQjRkaWNvWHVpUWtINEU0YmhkM3hwR2RuRmt4bWZ4TG5wQzdpVGpqWkdjdENRTmN6aG96S1p2RmRPYkExNDZLRVFDRS1IM2M0c3FzdU0yVDlLOGtGcHphZDJkRjNFUkU3YTVacU9Udzg2c2JVWGh1bU1ocWlLMjVpQmlxZjlLMTExWlJIckllMEFJZmZ6eVBoUQ?oc=5",
+      "date": "2026-08-27",
+      "title": "Saham CMRY Bayar Dividen Interim Rp 793 M, Cek Jadwal Pembayaran & Rekomendasi Analis",
+      "source": "kontan.co.id",
+      "snippet": "Saham CMRY Bayar Dividen Interim Rp 793 M, Cek Jadwal Pembayaran & Rekomendasi Analis&nbsp;&nbsp;kontan.co.id",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://investor.id/market/371500/adro-temukan-tambang-duit-baru-spin-off-aadi-dan-ekspansi-hijau",
+      "date": "2026-08-23",
+      "title": "ADRO Percepat Spin-off AADI dan Ekspansi Pembangkit Hijau 250MW",
+      "source": "Investor Daily",
+      "snippet": "Rencana demerger batubara termal AADI senilai US$6.1 miliar membuka ruang holdco discount narrowing dan diversifikasi EBT.",
+      "tier": "Tier1",
+      "category": "catalyst",
+      "relevance": "SOTP demerger bridge and green energy transition",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://kontan.co.id/news/brids-morning-adro-sotp-holdco-discount-menipis-target-rp3200",
+      "date": "2026-08-19",
+      "title": "BRIDS Sekuritas: SOTP ADRO Pasca Spin-off Menopang Target Harga Rp3.200",
+      "source": "Kontan",
+      "snippet": "BRI Danareksa Sekuritas menilai restrukturisasi holding memberikan dividend yield atraktif serta pemisahan aset batu bara hijau.",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "BRIDS SOTP valuation and holdco discount bridge",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://cnbcindonesia.com/market/20260811124500-17-560431/harga-batubara-newcastle-rebound-ke-usd145-topang-arus-kas-adro",
+      "date": "2026-08-11",
+      "title": "Harga Batubara Global Rebound ke USD145/Ton, Menopang Kas Operasional ADRO",
+      "source": "CNBC Indonesia",
+      "snippet": "Kenaikan harga batubara Newcastle memperkuat posisi net cash ADRO menjelang pembagian dividen final.",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Commodity price cycle and cash flow durability",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiqAFBVV95cUxNaHNRMWZFcFhTeEtFSXdFMkZMZUpqclIyVEtiVjEtbXFjNFcyVDNPQXl3eFBTU2pQeHFzbno3MjZsYTVrczFMaUVieHhWTHVWdWFpeG50WkdrRWlWN0M4TnFabDlrWUNjSTRpREZDNHR4ZFJiTjhoXzhlUE5yZ2M4ZXpmaW92SW96dHJNTUxzWjFKaXVNdWpaMEE2ZURJYnhQYklHZGthOUzSAa4BQVVfeXFMTjNFVGNSNHpPWkY0NGRIR2tRbjlsSHZncTRKRGp6YlpsMGdiSV8zWXhJaDY4N3pDdGZFVURta1lrcTR0MVVrWTJqZTI3Mnl2eXgxb1ItOHNqejdybEVWTFFYYklhVU9RTGF0ZzlHc3JzRHZmWmF6WjVUNTU3ZFh0UlEydlY3UkVlcHZaY3dROHFKQnJQU3BvYW5wUWMtZDZKS05qYk95ZG03Skd3RkRn?oc=5",
+      "date": "2026-08-04",
+      "title": "Adaro Andalan Indonesia Raih Apresiasi Anugerah ESG 2026 dari IDX Channel",
+      "source": "IDX Channel",
+      "snippet": "Adaro Andalan Indonesia Raih Apresiasi Anugerah ESG 2026 dari IDX Channel&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiggFBVV95cUxQSTE5U0c2T0RWYUVLd3FNaHVEdG95QU1IVU1LRnBEOGpPem96TUs3dDY2RGVVSkc3Z2owOVpXR2xWelk5WEVCSXc5RTA3NDQ2S3pMaTViNzFxQ0R1UldqMUZoN1pDR1Q4ak5HaERQYVNKTXZZdHpFQ3JBZnQ3OEVxMWhB0gGHAUFVX3lxTE1uVHNiRm11LWpDRm1DY0lPZTRQMXIyNm1IekpBYWQ4TW91QXNlY1ItVDBucjUxVVBZVXJybnhuZjZWY1g1VEpLcXJUb0lOQ28xYW1VYWdZeTNxQXE3ZUw1YUg5RmtGLVVfUlFybmJmOGhmb0NvZ21UQ2dtU2s5TVdmTEN6Wk1Icw?oc=5",
+      "date": "2026-08-02",
+      "title": "AS dan Israel Siap Bom Infrastruktur Energi Iran",
+      "source": "Bursa Nusantara",
+      "snippet": "AS dan Israel Siap Bom Infrastruktur Energi Iran&nbsp;&nbsp;Bursa Nusantara",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    }
+  ]
+}

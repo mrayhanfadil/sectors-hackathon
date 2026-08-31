@@ -1,0 +1,212 @@
+{
+  "ticker": "BBCA",
+  "harvested_at": "2026-08-31T10:05:42.422061+07:00",
+  "timeframe_days": 14,
+  "gauge_score": 58,
+  "sentiment_label": "Bullish",
+  "top_narratives": [
+    "Sentimen pembagian dividen interim Rp3 triliun menarik minat akumulasi retail dan institusi domestik",
+    "Resiliensi kualitas kredit dengan CASA 81,2% menjadi bantalan terkuat menghadapi era suku bunga tinggi",
+    "Sedikit kekhawatiran atas foreign outflow di big banks tapi retail memanfaatkannya untuk buy on weakness"
+  ],
+  "timeline_14d": [
+    {
+      "date": "2026-08-18",
+      "sentiment_score": 74,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-19",
+      "sentiment_score": 43,
+      "sentiment_label": "Moderately Bearish",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-20",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-21",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-22",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-23",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-24",
+      "sentiment_score": 65,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-25",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-26",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-27",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-28",
+      "sentiment_score": 82,
+      "sentiment_label": "Strong Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-29",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-30",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-31",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    }
+  ],
+  "breakdown_by_platform": {
+    "X": {
+      "posts_count": 3,
+      "average_score": 50,
+      "dominant_sentiment": "Neutral / Mixed"
+    },
+    "Reddit": {
+      "posts_count": 3,
+      "average_score": 52,
+      "dominant_sentiment": "Neutral / Mixed"
+    },
+    "Stockbit": {
+      "posts_count": 2,
+      "average_score": 78,
+      "dominant_sentiment": "Strong Bullish"
+    }
+  },
+  "posts": [
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/bbca-dividen-interim-2026",
+      "date": "2026-08-28",
+      "author": "@DividenHunter",
+      "text": "$BBCA dividen interim konsisten tiap Agustus. Kas tebal, NPL 1.8% super aman. Beli dan simpan buat jangka panjang.",
+      "sentiment": "bullish",
+      "score": 82,
+      "relevance": "Interim dividend and fortress balance sheet"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1vQUQ4X1JMT1hYZS1keVdLQW1xVmJOeEJkdlJzTzZ5WndXdWx4dFZIZjYySHpWWjZZMktZR1RyRVZIS013SEh2dmR1UnNLWXVWamNWUFRrakUwUGxqUHVWOA?oc=5",
+      "date": "2026-08-21",
+      "author": "@x_investor",
+      "text": "BBRI Sedot Dana Besar, BBCA Kebagian #saham #infosaham #investasi https://t.co/sHPI0wbWcx&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding BBCA valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPUml5ai1aRDVCZVF2ZmlEZ1FuUnRhRlJueW9RZEd5MnVnOHBnclpLSjBoZkRPTE1jSTNRNFBldVltWFZ5OThubXdoTGNJQ1hFYU1xcW92UHVma1pJVWtleWw5T2M2TUJpM3UyMWZza2xqMllFMV9QT0Y1Z2xFZG90bVpMM0szcDNOb1NPOExCSmdyWWNqNXkxWmY5UVNrc0FObWFF?oc=5",
+      "date": "2026-08-19",
+      "author": "@reddit_investor",
+      "text": "GOTO & CPIN didepak MSCI, tapi BBNI & EXCL malah naik di hari yang sama. Market cap gede ternyata ga jamin apa-apa?&nbsp;&nbsp;Reddit",
+      "sentiment": "neutral",
+      "score": 43,
+      "relevance": "Discussion on Reddit regarding BBCA valuation & momentum"
+    },
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/bbca-analisis-fundamental-q2",
+      "date": "2026-08-18",
+      "author": "@FundamentalAnalyst",
+      "text": "$BBCA laba tumbuh stabil, LAR coverage di atas 200%. Valuasi PBV 3.3x wajar untuk return on equity 20%.",
+      "sentiment": "bullish",
+      "score": 74,
+      "relevance": "Asset quality and ROE compounding"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiWkFVX3lxTE55WFFoOERHOGVvNk1IcEhZbjNxd1hLNU81MGRFZHFOVFV4dXpsSEhFVGdwOF9xZlBGQ3NRYUhlZDVKaTNibGZCc2hzUlhwNXM1cmhVWUhURnJCQQ?oc=5",
+      "date": "2026-08-20",
+      "author": "@x_investor",
+      "text": "Bank swasta terbesar, BCA akan bagikan dividen interim. Ini dividen kedua yang dibagikan sepanjang tahun ini. Nilainya 3,07 triliun rupiah. Adapun nilai per saham dividen interim BBCA tersebut 25 rupiah. Cum dividen di pasar reguler dan negosiasi akan di&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding BBCA valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://news.google.com/rss/articles/CBMijAFBVV95cUxNVFF4R3dQYjVJcnIzbU56OXctNXcxS255V3VzYlpGQXRYZzUwTExoQWEwM2E5TVlaQ05OdmdjQnYzSEdfQWpMWngzUFV4VElKQTJRWklrekt2QTRqMjNrNFpvdkswZ0VSMVNyRldlLXhBdnhmOHpjV3U5eHFINjBZTXY1WktYQUdMM2dhSQ?oc=5",
+      "date": "2026-08-29",
+      "author": "@reddit_investor",
+      "text": "M 22, berencana untuk Coast FIRE&nbsp;&nbsp;Reddit",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on Reddit regarding BBCA valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiakFVX3lxTE5FQWtOc05qUGlkNWxvTkJJNFpZb0M3WXl0RTFid1o1NGNKQXQ3T0hkYTB2Nm10dG1Mc293UGVlMmNEa1I4a2lVU3VjenBrUGdfTC1RdWJUM09qYWU2MU8wNDM5WUd4bmZIeGc?oc=5",
+      "date": "2026-08-27",
+      "author": "@x_investor",
+      "text": "Lima bank swasta terbesar di Indonesia berdasarkan aset, yakni PT Bank Central Asia Tbk. (BBCA), PT Bank CIMB Niaga Tbk. (BNGA), PT Bank OCBC NISP Tbk. (NISP), PT Bank Permata Tbk. (BNLI), dan PT Bank Danamon Indonesia Tbk. (BDMN) telah mer&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding BBCA valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://reddit.com/r/finansial/comments/bbca_foreign_flow_outflow",
+      "date": "2026-08-24",
+      "author": "u/jakarta_trader",
+      "text": "Asing net sell di banking IDX seminggu terakhir, tapi BBCA support di 6.300 kuat banget karena diserap lokal. ROE 19.7% solid.",
+      "sentiment": "bullish",
+      "score": 65,
+      "relevance": "Domestic liquidity support against foreign selling"
+    }
+  ],
+  "disclaimer": "Retail social sentiment is indicative of retail crowd psychology and narrative momentum. It does not constitute official equity research or investment advice."
+}

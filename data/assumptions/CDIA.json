@@ -1,6 +1,6 @@
 {
   "ticker": "CDIA",
-  "generated_at": "2026-08-31T09:22:39.183081+07:00",
+  "generated_at": "2026-08-31T10:03:05.764270+07:00",
   "source": "idx",
   "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
   "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
@@ -16,8 +16,8 @@
     "rows_5y": 272,
     "rows_5d": 1,
     "yfinance_probe": {
-      "rows": 0,
-      "error": "Failed to perform, curl: (7) Failed to connect to fc.yahoo.com:443 after 0 ms: Could not connect to server. See https://curl.se/libcurl/c/libcurl-errors.html first for more details.",
+      "rows": 4,
+      "error": null,
       "cache_hit": false
     },
     "yfinance_gap_note": "yfinance IDX small-cap coverage is thin (financials/balance often empty). Use IDX stock_data as primary; yfinance only as fallback with disclosed source."

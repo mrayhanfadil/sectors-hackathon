@@ -1,0 +1,212 @@
+{
+  "ticker": "ADRO",
+  "harvested_at": "2026-08-31T10:05:42.822169+07:00",
+  "timeframe_days": 14,
+  "gauge_score": 56,
+  "sentiment_label": "Neutral / Mixed",
+  "top_narratives": [
+    "Spin-off batubara termal AADI US$6.1 miliar berpotensi membuka nilai tersembunyi (narrowing holdco discount)",
+    "Transisi ekspansi energi hijau 250MW dan smelter aluminium diapresiasi positif",
+    "Ekspektasi dividen jumbo pasca demerger menjadi daya tarik utama retail"
+  ],
+  "timeline_14d": [
+    {
+      "date": "2026-08-18",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-19",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-20",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-21",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-22",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-23",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-24",
+      "sentiment_score": 62,
+      "sentiment_label": "Bullish",
+      "mentions_count": 2,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-25",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 2,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-26",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-27",
+      "sentiment_score": 80,
+      "sentiment_label": "Strong Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-28",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-29",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-30",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-31",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    }
+  ],
+  "breakdown_by_platform": {
+    "X": {
+      "posts_count": 6,
+      "average_score": 50,
+      "dominant_sentiment": "Neutral / Mixed"
+    },
+    "Reddit": {
+      "posts_count": 1,
+      "average_score": 75,
+      "dominant_sentiment": "Strong Bullish"
+    },
+    "Stockbit": {
+      "posts_count": 1,
+      "average_score": 80,
+      "dominant_sentiment": "Strong Bullish"
+    }
+  },
+  "posts": [
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/adro-spinoff-aadi-dividen",
+      "date": "2026-08-27",
+      "author": "@CoalTitan",
+      "text": "$ADRO spin-off AADI bakal kasih dividen spesial plus pemisahan bisnis hijau. BRIDS target 3200.",
+      "sentiment": "bullish",
+      "score": 80,
+      "relevance": "Spin-off demerger and special dividend"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE9XOU5meEZMc3haY0hQNTU5bFQ5RmcweTJ6T1lncVhIY2tvcEhrX2p1LXRiTXo5MlZtX2VxWUZsM2lHbWxPdy1tX0Q2ZWVHM0NPaXlSTDdHX1Z1aDJrYk85Mw?oc=5",
+      "date": "2026-08-17",
+      "author": "@x_investor",
+      "text": "ADRO Temukan Tambang Duit Baru, Saham Diramal Ngacir 26% #saham #infosaham #investasi https://t.co/U33kJTUpKc&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://reddit.com/r/finansial/comments/adro_spin_off_analysis_2026",
+      "date": "2026-08-24",
+      "author": "u/coal_analyst",
+      "text": "Restrukturisasi ADRO - AADI mirip model internasional. Holding batubara green energy vs thermal cash cow.",
+      "sentiment": "bullish",
+      "score": 75,
+      "relevance": "Corporate restructuring model"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE52UmNzQ2JaV2JsUTRVdGdLbG1QZk5udHRJbzNMaTAyLTloWVJUbmRhc185Ry1OTU02dXFPUGtTa0NGN1N6cEU2M1RfZ3AzMUpvTU85REVUQTlpU2JnUXgyXw?oc=5",
+      "date": "2026-08-24",
+      "author": "@x_investor",
+      "text": "Lompatan Alamtri Resources Indonesia (ADRO) #saham #infosaham #investasi https://t.co/At3n0zsl4R&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBUMkExOEppMnludmluR2psQjFKdEx0YTNDbUV4S0tTRjRvZ2x2Qnk1eUtid0ppaGxlX29WY2ZfYTNrNWtXdGFIUVE5LTNIRlk3NjRyekFwRkVxbm8?oc=5",
+      "date": "2026-08-25",
+      "author": "@x_investor",
+      "text": "Grup Konglo yang saham-saham nya lagi di arah leading Sepertinya grup Adaro masih akan berlanjut minggu ini Masih stabil terutama $AADI dan $ADRO&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMibkFVX3lxTE1VNExGdHdZMXJaUUxHSkZGZVZMbktZRTUtNkxHMzVMRWJfQUt1YURRTnBfaGZlaUdIS2RhUjJWRWhCMzFHc2ZLVDFYUmNRUnVHXzBEa0F4RGY1U0lYVW9sV3lRblRFU0gyMXhTcDFn?oc=5",
+      "date": "2026-08-18",
+      "author": "@x_investor",
+      "text": "ADRO Dekati Resisten. Beli Jika Break https://t.co/Q3rGC6aOfG&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiW0FVX3lxTFBXejQzZENuMTM2T0M1MFJTM0JFOU9WSUNHcnRUQ2pGR0p3M091d3NxSUxPY19fdWUtN0R1Njk2VFlUdXJNT1Y3aUgzcTBiTGpfOVY1ZkpjZU9aU2c?oc=5",
+      "date": "2026-08-25",
+      "author": "@x_investor",
+      "text": "Kalau grup Haji Isam, minggu ini mungkin akan sideways dulu kali ya tapi menarik untuk diperhatikan lagi&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiZ0FVX3lxTE1aazAtekRhRXk2dFA0SzBiOEYtYTNBeFJXdW4yTml1aWUwNHFzZHN4OVpXbVVRdGl4a281eEYycklBTkZnWHlLVDhsRlpGUFU3bDA5ZEtHUnRoR3BCWVBGZXhDcjV4ZTg?oc=5",
+      "date": "2026-08-20",
+      "author": "@x_investor",
+      "text": "🇮🇩 Indonesia Market Summary Today | 20 Agustus, 2026 📷&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding ADRO valuation & momentum"
+    }
+  ],
+  "disclaimer": "Retail social sentiment is indicative of retail crowd psychology and narrative momentum. It does not constitute official equity research or investment advice."
+}

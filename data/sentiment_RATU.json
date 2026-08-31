@@ -1,0 +1,212 @@
+{
+  "ticker": "RATU",
+  "harvested_at": "2026-08-31T10:05:41.278667+07:00",
+  "timeframe_days": 14,
+  "gauge_score": 53,
+  "sentiment_label": "Neutral / Mixed",
+  "top_narratives": [
+    "Optimisme lifting Blok Cepu 169k BOPD dan ekspansi holding migas pasca IPO",
+    "Volatilitas harga minyak mentah Brent dan penyesuaian bobot MSCI membayangi pergerakan harga",
+    "Target harga institusi (HP Sekuritas Rp7.880) menjadi acuan optimisme sebagian investor fundamental"
+  ],
+  "timeline_14d": [
+    {
+      "date": "2026-08-18",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-19",
+      "sentiment_score": 43,
+      "sentiment_label": "Moderately Bearish",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-20",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-21",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-22",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-23",
+      "sentiment_score": 68,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-24",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-25",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-26",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-27",
+      "sentiment_score": 60,
+      "sentiment_label": "Bullish",
+      "mentions_count": 2,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-28",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-29",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-30",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-31",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    }
+  ],
+  "breakdown_by_platform": {
+    "X": {
+      "posts_count": 4,
+      "average_score": 50,
+      "dominant_sentiment": "Neutral / Mixed"
+    },
+    "Reddit": {
+      "posts_count": 3,
+      "average_score": 53,
+      "dominant_sentiment": "Neutral / Mixed"
+    },
+    "Stockbit": {
+      "posts_count": 1,
+      "average_score": 70,
+      "dominant_sentiment": "Bullish"
+    }
+  },
+  "posts": [
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/ratu-cepu-bopd",
+      "date": "2026-08-27",
+      "author": "@OilGasWatcher",
+      "text": "$RATU lifting stabil di Cepu, cash flow solid. Menunggu realisasi proyek hilirisasi dan dividen perdana.",
+      "sentiment": "bullish",
+      "score": 70,
+      "relevance": "Lifting volume and upstream cash flow"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE9sQU16LWpTTjlsQi1pVElxSkREVk1Tcm1WS1B2bjNJbEdNTnRmdk93T25OSHZwc3MxaXhJcXlfRWF0Z1FSSV85YmM5ZlZCRmtpWnZ4Wi1QMXFGbWJzMjNGNlh3?oc=5",
+      "date": "2026-08-30",
+      "author": "@x_investor",
+      "text": "🔥 PARTAI PUNCAK SANG RATU VOLI ASIA! 🔥 🇨🇳 CHINA vs THAILAND 🇹🇭 🗓️ Minggu, 30 Agustus 2026 ⏰ 17.15 WIB 📺 LIVE & Eksklusif hanya di MOJI #AVCWomensContinental #mojisports&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding RATU valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://news.google.com/rss/articles/CBMiowFBVV95cUxPUml5ai1aRDVCZVF2ZmlEZ1FuUnRhRlJueW9RZEd5MnVnOHBnclpLSjBoZkRPTE1jSTNRNFBldVltWFZ5OThubXdoTGNJQ1hFYU1xcW92UHVma1pJVWtleWw5T2M2TUJpM3UyMWZza2xqMllFMV9QT0Y1Z2xFZG90bVpMM0szcDNOb1NPOExCSmdyWWNqNXkxWmY5UVNrc0FObWFF?oc=5",
+      "date": "2026-08-19",
+      "author": "@reddit_investor",
+      "text": "GOTO & CPIN didepak MSCI, tapi BBNI & EXCL malah naik di hari yang sama. Market cap gede ternyata ga jamin apa-apa?&nbsp;&nbsp;Reddit",
+      "sentiment": "neutral",
+      "score": 43,
+      "relevance": "Discussion on Reddit regarding RATU valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE4yRlV5M3ZpbkQ1OVFLbUp1a1F3d0ZXZS1peklJZ0xRZ0NzUksybGJwOEU1d21ya0dVN1FJRzFRdVRBVUN6QmloZF9meUVlOXlKc2pGVVJGTXhhVUZGNV9j?oc=5",
+      "date": "2026-08-22",
+      "author": "@x_investor",
+      "text": "Pecutan emas ratu keirin SUKMA 2026 📱 Strim live di https://t.co/XMTbm9wVSI atau di aplikasi MYTV Mana-Mana, Unifi TV dan Astro GO sekarang! #TVS122 #TVSNews #TVSarawak #SUKMAdiTVS #SUKMA2026 #SUKMASelangor2026&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding RATU valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://news.google.com/rss/articles/CBMioAFBVV95cUxNR2tPeVdyR1hCb1Y5YVQ0aEdnSkRoR0FMMVFYTTVIOGtMbjUwV2lnQ1ZHR1pIZmFHWmszSWNVcW9XN2h1azlnZi1IbGMzQW5OLUo3UEZsZXBDbHRyd2VSbGR0MWpvTTdrRURUX3RKaDNUUDFzSkVxanZ4bXJGenR6SXRRSkVWLTBVcjBka0c2OGFsZENYaWxZQnZ2X3NQM1FQ?oc=5",
+      "date": "2026-08-27",
+      "author": "@reddit_investor",
+      "text": "Kuesioner Skripsi Mengenai Keputusan Investasi&nbsp;&nbsp;Reddit",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on Reddit regarding RATU valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiX0FVX3lxTE41WnVEVUtUcnBqWWtBTmQzbnJHN18wZGZyYUVWNXRVc0V3cXJ5VThKeUNzTWVBWWMxeXhkSm1QdFhuMENCa2pYRkN3MnZMMVZBdU0tSkpYSnVPeDZyRkY0?oc=5",
+      "date": "2026-08-21",
+      "author": "@x_investor",
+      "text": "POV: jalan-jalan weekend ke mall, pulangnya malah punya wishlist baru 👀🏡🚗 Panin Expo Makassar 2026 masih berlangsung di Mal Ratu Indah! Yuk, lihat langsung berbagai pilihan properti, otomotif, dan promo spesialnya. 📍 Mal Ratu Indah Makassar 📅 20–&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding RATU valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://reddit.com/r/finansial/comments/ratu_oil_holding_dcf",
+      "date": "2026-08-23",
+      "author": "u/migas_investor",
+      "text": "Valuasi RATU di HP Sekuritas target Rp7.880 pakai WACC 8.4%. Kuncinya ada di lifting Cepu dan PSC gross split.",
+      "sentiment": "bullish",
+      "score": 68,
+      "relevance": "Valuation DCF targets"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiZkFVX3lxTFBYb0FaZkZwS0k4eGpwM21TaHpvb1BsSmtKcEhadUhwTmR3RXlKQnNSa1ltZGFqbXRDYlpOam10eTJVeGR6cFhmMkRWOEpaRXJrN3A2ZFY1Vjl1VVFJcDdoRDRPVmhLdw?oc=5",
+      "date": "2026-08-26",
+      "author": "@x_investor",
+      "text": "Dolly Parton Sang Ratu Musik Country Meninggal Dunia di Usia 80 Tahun https://t.co/LMJcKAmK7t&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding RATU valuation & momentum"
+    }
+  ],
+  "disclaimer": "Retail social sentiment is indicative of retail crowd psychology and narrative momentum. It does not constitute official equity research or investment advice."
+}

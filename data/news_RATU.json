@@ -1,0 +1,110 @@
+{
+  "ticker": "RATU",
+  "harvested_at": "2026-08-31T10:05:38.950303+07:00",
+  "timeframe_days": 30,
+  "total_count": 8,
+  "tier_breakdown": {
+    "Tier1": 4,
+    "Tier2": 4,
+    "Tier3": 0
+  },
+  "key_catalysts": [
+    "SKK Migas Laporkan Lifting Blok Cepu Stabil di 169.000 BOPD (Kontan, 2026-08-22)",
+    "HP Sekuritas Targetkan Saham RATU Rp7.880 Berbasis DCF WACC 8,4% (Investor Daily, 2026-08-05)"
+  ],
+  "regulatory_risks": [
+    "Evaluasi MSCI Indeks: RATU Hadapi Penyesuaian Bobot Free Float (Bisnis Indonesia, 2026-08-12)",
+    "Saham RATU dan FILM Didepak MSCI, Begini Dampak ke Harga Sahamnya (Ajaib, 2026-08-20)",
+    "Kompas100 Turun 0,6%; BSDE Top Gainer, KIJA dan INET Paling Ramai Ditansaksikan (Indo Premier Sekuritas, 2026-08-20)"
+  ],
+  "articles": [
+    {
+      "url": "https://kontan.co.id/news/saham-ratu-masuk-radar-holding-migas-skk-migas-laporkan-lifting-stabil",
+      "date": "2026-08-22",
+      "title": "SKK Migas Laporkan Lifting Blok Cepu Stabil di 169.000 BOPD",
+      "source": "Kontan",
+      "snippet": "Lifting minyak Blok Cepu yang menjadi aset inti RATU (via RETJ/PJUC) mencapai 169.000 BOPD, menopang bottom line FY26F.",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "Core operational oil production lifting benchmark",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://bisnis.com/market/read/20260812/189/1787654/evaluasi-msci-indeks-ratu-hadapi-rebalancing-agustus",
+      "date": "2026-08-12",
+      "title": "Evaluasi MSCI Indeks: RATU Hadapi Penyesuaian Bobot Free Float",
+      "source": "Bisnis Indonesia",
+      "snippet": "MSCI mengumumkan tinjauan free float untuk sejumlah emiten energi IDX termasuk RATU dengan float publik 31.2%.",
+      "tier": "Tier1",
+      "category": "regulatory",
+      "relevance": "MSCI investability and free-float liquidity risk",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMikwFBVV95cUxOQXhLSlZsb3J4WEVZbm9qVUkyc1NCNFJJd0txRVlnUkt1MF9NTUwxWFR5SHpOR2NOeUJDRDNlNW8tR3lVZzdUdVZDU3gzdWtyYmNvTkNIbnBrUXVBaEoxRUFyQmtoXzAtUlRHMjYydVo2RURHT0pXZEJYMU4xYnBZUTdGaFp6bDlOOTRZVm9QWWhWNU0?oc=5",
+      "date": "2026-08-05",
+      "title": "Harga Minyak Tergelincir, Saham MEDC-ENRG Cs Tertekan",
+      "source": "IDX Channel",
+      "snippet": "Harga Minyak Tergelincir, Saham MEDC-ENRG Cs Tertekan&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://investor.id/market/369812/hp-sekuritas-targetkan-ratu-rp7880-berbasis-dcf-wacc-84",
+      "date": "2026-08-05",
+      "title": "HP Sekuritas Targetkan Saham RATU Rp7.880 Berbasis DCF WACC 8,4%",
+      "source": "Investor Daily",
+      "snippet": "Valuasi DCF RATU menghasilkan fair value Rp7.880 dengan asumsi WACC 8.4%, beta 0.70, dan terminal growth 5%.",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "Institutional DCF target price benchmark",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMinwFBVV95cUxPNmNtdXJacjhUXzJ1LTZlNG16UW5oeUd3MUhYNW1MeHRKaVJkdlhzdWpNMER6QmFpcnZxUGZlVUFiUzZNSFphUS1BZkdlbjgxZmFubEdyN1FRcVNFOGZOM1BCa0ZHYVU5Y09Na2RUcW5kOHBGamtBRV9lTlo2VDNBVnFQbzRFaHpFUFBZQUpuU3JEblA3dmxPbzQyTE9jeFk?oc=5",
+      "date": "2026-08-20",
+      "title": "Saham RATU dan FILM Didepak MSCI, Begini Dampak ke Harga Sahamnya",
+      "source": "Ajaib",
+      "snippet": "Saham RATU dan FILM Didepak MSCI, Begini Dampak ke Harga Sahamnya&nbsp;&nbsp;Ajaib",
+      "tier": "Tier2",
+      "category": "regulatory",
+      "relevance": "Regulatory policy / index investability consideration",
+      "sentiment_impact": "negative"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiywJBVV95cUxPWVJJREI0cTVrOHpnRGI4SFhXT2JjQjd4MGZRVjAzVnY0c2lweF8yZDdSeDlqLWhIOHBnUlpZSjI1UWVtSkEtVUpvYWpDWVlKa19kcklfZlRVZzVpdVdUR1l2VlBDcnVPckJBM0hTN05ZbE95dFlEcnB0YkdXRUMwZ2NsaV9iYjRKYVpKTWNIdk16RUYtZGtGbmpnYVA4WU1mVFI1UWkzTThGQ3cydHQ0VXBGck9wdnNQemIzTTRlVkI4bncxaG5rTmZHRjc5U2VLWl9ENERuWEVZWkVrd1VhLThkS2x1djAyM0lJcm9JVjB2NEdLZXhrdXhFQUtuZVBfeFdmejVvYm51am4ybFRFRjFSdElhMnA5cDNEbjlRY0dRQWtxVDF2Y2k2Uk95ZHJFd3dmNXcxbEs5ai1XdXNRTmNSU2FjdlQwcnVF?oc=5",
+      "date": "2026-08-20",
+      "title": "Kompas100 Turun 0,6%; BSDE Top Gainer, KIJA dan INET Paling Ramai Ditansaksikan",
+      "source": "Indo Premier Sekuritas",
+      "snippet": "Kompas100 Turun 0,6%; BSDE Top Gainer, KIJA dan INET Paling Ramai Ditansaksikan&nbsp;&nbsp;Indo Premier Sekuritas",
+      "tier": "Tier2",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "negative"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMitwJBVV95cUxPeTJQaU00Mi1odTJ4azZKX0pObEhHMWFMT2FJZGpJVTdtWEswWFdYVlhDcW82UFVROEJzeGx0dzdtdGtkZ1BiYkRSeW9ZcjJBYWw5dkNvdEJ3bnY1UHYzM1psVk1iMkVyaERzQ2RwcVBJeGVJX1ZSWGlrcWRWWVZTUElCTE9OV2hBU0NoWmVrQ0l3M2lRRW5QX285a043VWFFOXgtV2xPR2VfVWFIakpNckUycjZDbVFZUVM3dGNXdm9FdklIVXdGMVplMWFKbVpxam10ampWbmFBbUhYSWFWUWVVZzF5UmZVR2wtdmF0cVRQYXVlUEcxMVZKbWVKMTIyX1R6NDBMSnc2MzI1X3lRSlJkVHdjc1M2QVl0MFVBUnFUeG93ZjRNSHNxOEFSSDRteXdvWWhiaw?oc=5",
+      "date": "2026-08-13",
+      "title": "9 Saham Terdepak dari MSCI Small Cap Index, Ada ARTO hingga RATU",
+      "source": "Indo Premier Sekuritas",
+      "snippet": "9 Saham Terdepak dari MSCI Small Cap Index, Ada ARTO hingga RATU&nbsp;&nbsp;Indo Premier Sekuritas",
+      "tier": "Tier2",
+      "category": "regulatory",
+      "relevance": "Regulatory policy / index investability consideration",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMisAFBVV95cUxObTN1ZW9ad243dFBHaTNfc1V6TTRMME9TRS1zRFdrN0llMXQ1bWJCellTcGtGQ3FUZGJYbGRoZ1hHMFBZRGtZUXkzcWVHVjE4QVF0SnNyUUc3T2ZVa0pxc2xSd2JJOFdFR3F3REpnYWxvdWtmaU9pTm5LR241dkh5S0FFRjFPa0l1OUhZR19Oc0NlTU1ET3VQbUw5dEk3VllqT1k2S3AtTUlnZHFiZTZhLQ?oc=5",
+      "date": "2026-08-10",
+      "title": "Jelang Aksi Korporasi BUVA dan RATU, Begini Pola Saham Hapsoro Setiap Right Issue dan Private Placement",
+      "source": "Mikir Duit",
+      "snippet": "Jelang Aksi Korporasi BUVA dan RATU, Begini Pola Saham Hapsoro Setiap Right Issue dan Private Placement&nbsp;&nbsp;Mikir Duit",
+      "tier": "Tier2",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    }
+  ]
+}

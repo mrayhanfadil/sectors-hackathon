@@ -1,0 +1,199 @@
+{
+  "ticker": "MTEL",
+  "company_info": {
+    "kode_saham": "MTEL",
+    "nama_saham": "Dayamitra Telekomunikasi Tbk.",
+    "sector": "Infrastructures",
+    "industry": "Infrastructures"
+  },
+  "sources_used": [
+    "idx_postgres"
+  ],
+  "latest_close_price": 460.0,
+  "foreign_flow_summary": {
+    "latest_foreign_buy": 53677700.0,
+    "latest_foreign_sell": 79357900.0,
+    "latest_net_foreign": -25680200.0,
+    "listed_shares": 83559677444.0,
+    "market_cap": 38437451624240.0
+  },
+  "prices_count": 1138,
+  "prices_sample": [
+    {
+      "time": "2026-08-19T00:00:00",
+      "open": 440.0,
+      "high": 440.0,
+      "low": 434.0,
+      "close": 440.0,
+      "volume": 15460300.0,
+      "nilai": 6765795800.0,
+      "foreign_buy": 1010500.0,
+      "foreign_sell": 6215400.0
+    },
+    {
+      "time": "2026-08-20T00:00:00",
+      "open": 440.0,
+      "high": 440.0,
+      "low": 434.0,
+      "close": 440.0,
+      "volume": 22086600.0,
+      "nilai": 9668405000.0,
+      "foreign_buy": 6896900.0,
+      "foreign_sell": 7712200.0
+    },
+    {
+      "time": "2026-08-21T00:00:00",
+      "open": 440.0,
+      "high": 442.0,
+      "low": 436.0,
+      "close": 440.0,
+      "volume": 14176500.0,
+      "nilai": 6220341400.0,
+      "foreign_buy": 1642500.0,
+      "foreign_sell": 4947100.0
+    },
+    {
+      "time": "2026-08-24T00:00:00",
+      "open": 458.0,
+      "high": 460.0,
+      "low": 444.0,
+      "close": 450.0,
+      "volume": 65464000.0,
+      "nilai": 29675271800.0,
+      "foreign_buy": 9061500.0,
+      "foreign_sell": 18524900.0
+    },
+    {
+      "time": "2026-08-26T00:00:00",
+      "open": 452.0,
+      "high": 476.0,
+      "low": 448.0,
+      "close": 460.0,
+      "volume": 174442800.0,
+      "nilai": 81105739000.0,
+      "foreign_buy": 53677700.0,
+      "foreign_sell": 79357900.0
+    }
+  ],
+  "financials": {},
+  "operational_kpis": {
+    "towers": {
+      "value": 40563,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    },
+    "tenancy_ratio": {
+      "value": 1.57,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    },
+    "fiber_km": {
+      "value": 59239,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    },
+    "colocation": {
+      "value": 23303,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    },
+    "tenants_total": {
+      "value": 63866,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    }
+  },
+  "segment_breakdown": [
+    {
+      "segment": "Tower Leasing",
+      "revenue_share_pct": 81.6,
+      "amount_idr_bn": 3833,
+      "growth_yoy_pct": 1.0
+    },
+    {
+      "segment": "Fiber Infrastructure",
+      "revenue_share_pct": 6.6,
+      "amount_idr_bn": 309,
+      "growth_yoy_pct": 8.0
+    },
+    {
+      "segment": "Tower-Related Services",
+      "revenue_share_pct": 6.4,
+      "amount_idr_bn": 299,
+      "growth_yoy_pct": 15.0
+    },
+    {
+      "segment": "Reseller & Managed Services",
+      "revenue_share_pct": 5.4,
+      "amount_idr_bn": 251,
+      "growth_yoy_pct": 0.0
+    }
+  ],
+  "peers": {
+    "peers": [
+      "TOWR",
+      "TBIG",
+      "ISAT"
+    ],
+    "sector": "Infrastructures",
+    "kpi": [
+      "towers",
+      "tenancy_ratio",
+      "fiber_km"
+    ]
+  },
+  "assumptions": {
+    "ticker": "MTEL",
+    "generated_at": "2026-08-31T10:03:05.764421+07:00",
+    "source": "idx",
+    "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
+    "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
+    "provenance": {
+      "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
+      "latest_time": "2026-08-26 00:00:00",
+      "sector": "Infrastructures",
+      "close": 460.0,
+      "foreign_flow": {
+        "buy": 53677700.0,
+        "sell": 79357900.0
+      },
+      "rows_5y": 1138,
+      "rows_5d": 1,
+      "yfinance_probe": {
+        "rows": 4,
+        "error": null,
+        "cache_hit": false
+      },
+      "yfinance_gap_note": "yfinance IDX small-cap coverage is thin (financials/balance often empty). Use IDX stock_data as primary; yfinance only as fallback with disclosed source."
+    },
+    "cache_ttl_seconds": 14400,
+    "no_sectors_hit": true
+  },
+  "corporate_actions": [
+    {
+      "time": "2022-05-11T09:00:00",
+      "kode_saham": "MTEL",
+      "action_type": "dividend",
+      "value": 11.57
+    },
+    {
+      "time": "2023-05-03T09:00:00",
+      "kode_saham": "MTEL",
+      "action_type": "dividend",
+      "value": 21.3809
+    },
+    {
+      "time": "2024-06-11T09:00:00",
+      "kode_saham": "MTEL",
+      "action_type": "dividend",
+      "value": 18.2746
+    },
+    {
+      "time": "2025-06-12T09:00:00",
+      "kode_saham": "MTEL",
+      "action_type": "dividend",
+      "value": 25.3343
+    }
+  ],
+  "fetched_at": "2026-08-31T10:05:48.930252+07:00"
+}

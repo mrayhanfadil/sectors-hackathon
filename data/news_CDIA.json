@@ -1,0 +1,107 @@
+{
+  "ticker": "CDIA",
+  "harvested_at": "2026-08-31T10:05:39.505035+07:00",
+  "timeframe_days": 30,
+  "total_count": 8,
+  "tier_breakdown": {
+    "Tier1": 5,
+    "Tier2": 3,
+    "Tier3": 0
+  },
+  "key_catalysts": [
+    "BCA Sekuritas Pertahankan Target Saham CDIA Rp815 Berbasis SOTP 4 Pilar (Investor Daily, 2026-08-20)",
+    "CDIA Ekspansi Armada Kapal Logistik & Tangki Penyimpanan 130.000 m³ (Bisnis Indonesia, 2026-08-14)",
+    "CDIA Saham Menguat ke Rp705 (7/8/26), Investor Cermati Ekspansi Chandra Group (Pintu, 2026-08-07)"
+  ],
+  "regulatory_risks": [],
+  "articles": [
+    {
+      "url": "https://investor.id/market/370512/bca-sekuritas-pertahankan-tp-cdia-rp815-berbasis-sotp-dan-dcf",
+      "date": "2026-08-20",
+      "title": "BCA Sekuritas Pertahankan Target Saham CDIA Rp815 Berbasis SOTP 4 Pilar",
+      "source": "Investor Daily",
+      "snippet": "Valuasi SOTP CDIA mencakup 4 pilar utama: Energy (55%), Logistics (34%), Water (7%), dan Port (4%) dengan target Rp815.",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "SOTP conglomerate multi-pillar valuation target",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://bisnis.com/industri/read/20260814/44/1788210/cdia-ekspansi-armada-kapal-logistik-dan-tangki-penyimpanan-130000-m3",
+      "date": "2026-08-14",
+      "title": "CDIA Ekspansi Armada Kapal Logistik & Tangki Penyimpanan 130.000 m³",
+      "source": "Bisnis Indonesia",
+      "snippet": "Pilar logistik mencatatkan pertumbuhan pendapatan tercepat (+44.7% YoY) ditopang utilisasi 7 armada kapal dan 72 tangki.",
+      "tier": "Tier1",
+      "category": "catalyst",
+      "relevance": "Logistics pillar rapid revenue growth and capacity expansion",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMihgFBVV95cUxQekRBeDBnYTRSRG9GUjFvVFE3YVRQYmdsWDJhejNCcF9vczN6R214RHZyYW5KTFMwaEJzbFJzRU5PZ0c1VWV3NkkzV05rbW15OFNaMTFEQmhmc0ZwOTJCemNCUTk3RVpjck13SEU0VHlnWWZfRmsxRGtnTVplVFRoT0NVSnhqZw?oc=5",
+      "date": "2026-08-07",
+      "title": "Saham CDIA Lagi Dilahap, Segini Harga Wajarnya",
+      "source": "investor.id",
+      "snippet": "Saham CDIA Lagi Dilahap, Segini Harga Wajarnya&nbsp;&nbsp;investor.id",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiuAFBVV95cUxOWlZ4dkdsaGJwVHRsT2pZbU5MY1BLRzN2bjlyT25JMDk5NTY0NlY2dE4wd1BMUzNVQ0Z2UG5qQXlZclJYbXBuY3VrWXk0RVU5VUotZXI3YUFGeEpNNVpqRzVPaHlmbTk1VW5oRkdrdHFabTc4Y2x6OW9BcVZwcVhHZmtVcjBzT1cycV9sVDNDVnlfWWg0b1NwNHBkbTlQT3d1M2gxVlRwTTJGN2tlR01xYVA3RnFHN1pK0gGwAUFVX3lxTE0xbjllWXpNTXBuVDEtTFl1eDFQRVk0VGtBanJ6eVZpV3Zld2xMWG93UzlLQ0IyRHZqbVFMZFN1OVJCSlFpMU5lRUU1ZGRjVVV6OFNkaFh6N29XQXlPd056NjBuejhBZnNiX1hHS2hialNHMWJFNXhyOVItSXNvSThCSTh5UEdDczh1RmVwSi1IN01ZMHVGUG9rZVcxSHpGMVFvbl8yaG1yUkpSRzNWa1Jf?oc=5",
+      "date": "2026-08-07",
+      "title": "IHSG Berpeluang Uji Level 6.400, Simak Rekomendasi Saham TPIA, CDIA, DSSA hingga BACH",
+      "source": "kontan.co.id",
+      "snippet": "IHSG Berpeluang Uji Level 6.400, Simak Rekomendasi Saham TPIA, CDIA, DSSA hingga BACH&nbsp;&nbsp;kontan.co.id",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://kontan.co.id/news/normalisasi-one-off-gain-cdia-fokus-pada-recurring-utility-dan-power-120mw",
+      "date": "2026-08-07",
+      "title": "Normalisasi One-Off Gain, CDIA Fokus pada Recurring Utility & Power 120MW",
+      "source": "Kontan",
+      "snippet": "Manajemen melakukan normalisasi keuntungan one-off $15.9 juta dan memproyeksikan arus kas stabil dari pembangkit 120MW.",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "One-off normalization and recurring utility cash flow bridge",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE9yek9VZ3o0dEVHZDdGM1hsMzkxYXE3Q1NIOVdGM0FZbGxsUy1GS1JKMlNkajFTNTAtSnFlRHFrV0x5MTJpUlpsb1M0YkhnaVIzVVZWYTlMTFpMa2I0QnEzVnp5bndRQ08zdDRReDM4d2xXWS1E?oc=5",
+      "date": "2026-08-21",
+      "title": "Rekomendasi Saham Ajaib Sekuritas Hari Ini (BUVA, CDIA, MYOR)",
+      "source": "Ajaib",
+      "snippet": "Rekomendasi Saham Ajaib Sekuritas Hari Ini (BUVA, CDIA, MYOR)&nbsp;&nbsp;Ajaib",
+      "tier": "Tier2",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMidEFVX3lxTE44NVNjdXBzV2NNemNTYWRhMUtrRVh0MC1Qal9BelgwNG9ESHJ2NUpBUFpoOUpJM3MwZzZJc2pRUENVQ1owdHJjczg0LXRaa19VRWpKZXl1NjQtMmQyVDV2SENqdUpvdHUzeFVJTWF4Zm9Kd2FM?oc=5",
+      "date": "2026-08-20",
+      "title": "Rekomendasi Saham Ajaib Sekuritas Hari Ini (MDKA, BRMS, CDIA)",
+      "source": "Ajaib",
+      "snippet": "Rekomendasi Saham Ajaib Sekuritas Hari Ini (MDKA, BRMS, CDIA)&nbsp;&nbsp;Ajaib",
+      "tier": "Tier2",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMifEFVX3lxTE9HekhlU2luNERqdEdDNU1xQWJNWGVQT0dJRjllcXMzMm04NWVrZ1ltYWFiY0MwbXk3WExNY2h5cDhlVjFRejRKMy1SSnQzblFUWkFHV2h5RjFGc2VYWGNJaDZxeUY3STlZN2NpWmV1RWdmbl9UaUhRUGpIWFA?oc=5",
+      "date": "2026-08-07",
+      "title": "CDIA Saham Menguat ke Rp705 (7/8/26), Investor Cermati Ekspansi Chandra Group",
+      "source": "Pintu",
+      "snippet": "CDIA Saham Menguat ke Rp705 (7/8/26), Investor Cermati Ekspansi Chandra Group&nbsp;&nbsp;Pintu",
+      "tier": "Tier2",
+      "category": "catalyst",
+      "relevance": "Strategic corporate action / structural catalyst",
+      "sentiment_impact": "positive"
+    }
+  ]
+}

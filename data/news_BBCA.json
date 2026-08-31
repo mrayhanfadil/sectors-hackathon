@@ -1,0 +1,106 @@
+{
+  "ticker": "BBCA",
+  "harvested_at": "2026-08-31T10:05:40.170817+07:00",
+  "timeframe_days": 30,
+  "total_count": 8,
+  "tier_breakdown": {
+    "Tier1": 8,
+    "Tier2": 0,
+    "Tier3": 0
+  },
+  "key_catalysts": [
+    "IHSG Melemah Tipis, Saham LABA Meroket Pimpin Top Gainer (Bursa Nusantara, 2026-08-29)",
+    "BBRI, BBCA & BMRI Mulai Diborong, Cek Saham Net Buy Terbesar Asing, Jumat (21/8) (kontan.co.id, 2026-08-21)"
+  ],
+  "regulatory_risks": [],
+  "articles": [
+    {
+      "url": "https://news.google.com/rss/articles/CBMikAFBVV95cUxNQmt0dFRkeW9RaXZ0bWVacDdPZ1Q4eEc5djZ4cGQzNDF6NEdRZVZHZlNJVDZfQmZ0ZUxzdU5jcW9JTkt2UzlMLUFQX1hibF8tNmFiTW1wTF9zQ3YzdUtsT2hJM1Y0SmNTUkQ3RllLNTZyd1BVYzl0cXZGVDFObG84a0YxQ1JSSi1KY1ZRdGVYb3PSAZABQVVfeXFMTUJrdHRUZHlvUWl2dG1lWnA3T2dUOHhHOXY2eHBkMzQxejRHUWVWR2ZTSVQ2X0JmdGVMc3VOY3FvSU5LdlM5TC1BUF9YYmxfLTZhYk1tcExfc0N2M3VLbE9oSTNWNEpjU1JEN0ZZSzU2cndQVWM5dHF2RlQxTmxvOGtGMUNSUkotSmNWUXRlWG9z?oc=5",
+      "date": "2026-08-29",
+      "title": "IHSG Melemah Tipis, Saham LABA Meroket Pimpin Top Gainer",
+      "source": "Bursa Nusantara",
+      "snippet": "IHSG Melemah Tipis, Saham LABA Meroket Pimpin Top Gainer&nbsp;&nbsp;Bursa Nusantara",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "Financial earnings momentum and operational performance",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMinAFBVV95cUxNUzVWWEtrelZldUJfTVh5b0dWTGdsbjdjckc1dXhYZ2sySVhvNEd1REJpdDlJUEM4YkVMX1pVQXdyaEZ3dUhBYmxKak9iWlVURUlSN2RlQTNNQXY2akNkS1hpTE5fOGMzNXEtWl9NTzc5UGt1NWFraVdFTkJ4SzRwYmNnTV8xeWhuVEVYNk50VzVqZG1lSTl6d1djdDDSAZQBQVVfeXFMT19VWHQwTGxaTWNFckFUMTJTOHJaNFJEYlBFZWZQeExqbEF2VkJjeWx4bTc3Z3d0ZmJtaEdiX0RhcUpKNWd1cVVSVmpYR0hVb1paMkxKZEQ1aWRMb3JXUTlhSXpFdDE3cDRNMEZfUjZ2LVFwckE2S0d6ZndGM2xXeDZJbDUzVE5XVUZLUURLaU9ibzUwdQ?oc=5",
+      "date": "2026-08-28",
+      "title": "Menilik Prospek dan Rekomendasi Saham Berbasis Hijau dan ESG",
+      "source": "kontan.co.id",
+      "snippet": "Menilik Prospek dan Rekomendasi Saham Berbasis Hijau dan ESG&nbsp;&nbsp;kontan.co.id",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMirgFBVV95cUxNdzE2VGJwNHI1bUwwZW9fbEVLcU16Nm1IRnR2OTRDN2cyUDN4SmZiN0NBU0NhNG55SXFYc3FhUXZwOU90Y1pDYWctNVdoZnZqWVpOQ0tiSEc3WGF3ODhpekt6a3F6QlctSDlwTWp6SmhrNDFQVm9hVzVsaTZJYWhJT213MlpyTlB2bGpkUmlCU0szOWN5dFYydkNjT3RqeUdLeVJkRzcwb2FKcWVleFHSAaYBQVVfeXFMTjZvZnFhbzBYcWY4THl3TlZVSFpHRG54SEREQUNNMU5IS1ZKMzV4MGJBQ01pRUU0dVg5aWRUd1AybXpwNGZrY0szZlZsLU9zSTRHNGZfdXNkWWJzRGdtWWFGUFBoU2dsQ2RnbGNBUHpmSmtNVVE4X3NCNkd6R3VkRmFhMTg3S3BjR1F3Qll0MnM5N1VjeHFoN00tZm9hLXJidWNMYU54UQ?oc=5",
+      "date": "2026-08-28",
+      "title": "IHSG Menguat 0,42% ke 6.548,8 di Sesi Pertama, Top Gainers LQ45: CUAN, BBCA, PTBA",
+      "source": "kontan.co.id",
+      "snippet": "IHSG Menguat 0,42% ke 6.548,8 di Sesi Pertama, Top Gainers LQ45: CUAN, BBCA, PTBA&nbsp;&nbsp;kontan.co.id",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMirwFBVV95cUxQMkVpMHh2N1FqSUxPeGhDY3ppZTFpa1Vfc1hKQUpKU05vNVR5dFF5aG90c1Z6SjdUejl2aWRGNUdpQ3NHZFlRR2ZxYUJRSVgzYzR3Q05ybnVKM2Y0cnV1T0N3RnJDQUhNcElFTzgxR0luRE5adEFpTzVBN1FBb0JsNXF2aGVrSEJNVHR5ZEwwUHhkRU02RjlmRm02ZElJRU12RFZqcVhUaE5aM0Q4bFV3?oc=5",
+      "date": "2026-08-24",
+      "title": "IHSG Melemah 0,69 Persen, BBRI, BBCA hingga BYAN Jadi Pemberat",
+      "source": "Kompas.com",
+      "snippet": "IHSG Melemah 0,69 Persen, BBRI, BBCA hingga BYAN Jadi Pemberat&nbsp;&nbsp;Kompas.com",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMilAFBVV95cUxQY3MyMXJFYUtNZW1rRGdGTFFkX1FiQnBOU1pJM0NOeGRqNTkxVmdTRTMwVlA1SlJ2QW5UQVg1UVZCLXFnUFdxX1BBMjh0SFcyN0NSRjBqV3UySXNkY1NlQ256NW5zU3loTExaS2dXMkk4MEV5T2FuQThWWkxwV0FmcS14MmZOVndnQ0tILUpld04zdnJt?oc=5",
+      "date": "2026-08-23",
+      "title": "Dividen BCA (BBCA) Makin Rutin, Saham Mengarah ke Level Ini",
+      "source": "investor.id",
+      "snippet": "Dividen BCA (BBCA) Makin Rutin, Saham Mengarah ke Level Ini&nbsp;&nbsp;investor.id",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMipAFBVV95cUxQbktzX1YwZExZTXdqLUtwZGdCT1pxOVFrcXQtY1JJZmt0djVkWUF2SmVKXy1Fb3pSRFVDWFdIT25YeHR3UG10OTAyV0Nid2NBc19TeGV3aVVWS2NiU1NIb0V2Z1Q5UFROZXFRQzZZeTcyT1VOTXJGczdka2tncWxfSmZTdHNUOENnd0FyNDlXNndPeF9ENEdEejlRTFZGZEVGTEt2UtIBqgFBVV95cUxPdjZQdXV4QXdndG5BY1RYRGNvSGlZRkR1VlU0dDd2RF9QQ2V2QzFIaFZtVXBSeVI0ckV5dnhSeFp2dnRfbzh0em8tLTM1bU54Z1dGaWN5UlhMbFlLMFJTSWhtazF3eVVZeFp1bUc4QWx6Sjh2NzFZYmM3WjNDOF9KdkhzYzRwOWZfNVBJLWFobGIzM28zbURBWHRxaWNYS1M4aW9GYTlYQnB0QQ?oc=5",
+      "date": "2026-08-22",
+      "title": "Sederet Saham Paling Banyak Diborong Asing Sepekan, BBRI Teratas",
+      "source": "IDX Channel",
+      "snippet": "Sederet Saham Paling Banyak Diborong Asing Sepekan, BBRI Teratas&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMirAFBVV95cUxQdDU2azl6YWhfMFBqNXA3bG9RM0ZRanp4aXBHVjRmRHM1dlR6cGl4N09Ga0JEYUNYNEJKYml0LXA1S01taHlYSUtyeXMzelRqWmY0SnNWNXVOMXIwVTFoeWtRZmh3Uko0MXg1LWwyeGNGcTBubnV3dVZqT2dqVDNuTUVybzQyVEpYOTJncU05Y0lMM3FCZFRnNHN3Y2xobGwwMGZ1WVdTaFFpekhP0gGkAUFVX3lxTE9VVWtBUFFXSXVPdmtaNUhKVkxtdUFjYUpmNV81TG5HTTlpT2k4eGJOWEktbk1ETGtiZXBHNzk2SFJ2aHdlN3NzaWZWVGtscnVobndCMm9lWFN0NGFmYk9vbFY4NEJlTHVPTy1OY21Gbm9CelZFYjhnb0RYdFVJa3R2dkJOY3F0eTJ6REhTWVdpaXZjbGVHTXh6RzYtZzVrVld5azgy?oc=5",
+      "date": "2026-08-21",
+      "title": "BBRI, BBCA & BMRI Mulai Diborong, Cek Saham Net Buy Terbesar Asing, Jumat (21/8)",
+      "source": "kontan.co.id",
+      "snippet": "BBRI, BBCA & BMRI Mulai Diborong, Cek Saham Net Buy Terbesar Asing, Jumat (21/8)&nbsp;&nbsp;kontan.co.id",
+      "tier": "Tier1",
+      "category": "valuation",
+      "relevance": "Broker consensus target price & valuation assumptions",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiqwFBVV95cUxOMkx3R2JJNXY0dmpBUUQ3UDVWNkEtWkNrT19oWnIzdUM3Qk02RGlhYTE0ajh3VkIyTzl1OGR6Ymh1WEpCdzVWVTBxTWZ2VXBYN1ItVkFQV2pJNzQtbk5mbm5ZM3RHbklsemFSMmtUMFE2dklCT0JoM1huTU1jVjVsWE1SLUcwSDJTcjNGdmlhUE0xa1hXQ0N0SnZmY2hOcjJtc1p2c1pYWkt5Z0XSAbABQVVfeXFMT3hXa0VubHJ0bXFocExMZjJTQmZra0hTSWlHZkRqV3drMGdzSTJFWkdQVXFYV2N0bURjNTh0X3hwY2Z6dnd6UVg2X1NYc0lQVnliM2VGYXZKOTByTTVkbnJ0cHZuWGg2R2s5NmdYR3RYQXNfcXExemE2eVFERDlnY1hmTFhYOTdDdHlycGJReWVnUG5EZV9yVGlONmlyejNkcThOQ3lsQTB6OWFaQURwUUo?oc=5",
+      "date": "2026-08-21",
+      "title": "IHSG Tembus ke Atas 6.500, Asing Borong Saham BBRI-BBCA Cs hingga TPIA",
+      "source": "IDX Channel",
+      "snippet": "IHSG Tembus ke Atas 6.500, Asing Borong Saham BBRI-BBCA Cs hingga TPIA&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    }
+  ]
+}

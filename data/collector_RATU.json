@@ -1,0 +1,141 @@
+{
+  "ticker": "RATU",
+  "company_info": {
+    "kode_saham": "RATU",
+    "nama_saham": "Raharja Energi Cepu Tbk.",
+    "sector": "Energy",
+    "industry": "Energy"
+  },
+  "sources_used": [
+    "idx_postgres"
+  ],
+  "latest_close_price": 4200.0,
+  "foreign_flow_summary": {
+    "latest_foreign_buy": 513800.0,
+    "latest_foreign_sell": 2308200.0,
+    "latest_net_foreign": -1794400.0,
+    "listed_shares": 2715053800.0,
+    "market_cap": 11403225960000.0
+  },
+  "prices_count": 383,
+  "prices_sample": [
+    {
+      "time": "2026-08-19T00:00:00",
+      "open": 4420.0,
+      "high": 4420.0,
+      "low": 4110.0,
+      "close": 4150.0,
+      "volume": 13006300.0,
+      "nilai": 54865418000.0,
+      "foreign_buy": 1647900.0,
+      "foreign_sell": 5133800.0
+    },
+    {
+      "time": "2026-08-20T00:00:00",
+      "open": 4170.0,
+      "high": 4350.0,
+      "low": 4170.0,
+      "close": 4260.0,
+      "volume": 6090700.0,
+      "nilai": 26005853000.0,
+      "foreign_buy": 681900.0,
+      "foreign_sell": 763100.0
+    },
+    {
+      "time": "2026-08-21T00:00:00",
+      "open": 4280.0,
+      "high": 4590.0,
+      "low": 4280.0,
+      "close": 4410.0,
+      "volume": 15584400.0,
+      "nilai": 69693987000.0,
+      "foreign_buy": 2248700.0,
+      "foreign_sell": 1984100.0
+    },
+    {
+      "time": "2026-08-24T00:00:00",
+      "open": 4450.0,
+      "high": 4470.0,
+      "low": 4370.0,
+      "close": 4390.0,
+      "volume": 6079100.0,
+      "nilai": 26773429000.0,
+      "foreign_buy": 258000.0,
+      "foreign_sell": 2678900.0
+    },
+    {
+      "time": "2026-08-26T00:00:00",
+      "open": 4400.0,
+      "high": 4410.0,
+      "low": 4200.0,
+      "close": 4200.0,
+      "volume": 6764600.0,
+      "nilai": 29075601000.0,
+      "foreign_buy": 513800.0,
+      "foreign_sell": 2308200.0
+    }
+  ],
+  "financials": {},
+  "operational_kpis": {
+    "bopd": {
+      "value": 169000,
+      "period": "2026H1",
+      "source": "skk_migas_disclosure"
+    },
+    "concession_years": {
+      "value": 20,
+      "period": "2026",
+      "source": "prospectus"
+    },
+    "oil_lifting_share_pct": {
+      "value": 88.0,
+      "period": "2026H1",
+      "source": "idx_disclosure"
+    }
+  },
+  "segment_breakdown": [],
+  "peers": {
+    "peers": [
+      "MEDC",
+      "AKRA",
+      "PGAS"
+    ],
+    "sector": "Energy"
+  },
+  "assumptions": {
+    "ticker": "RATU",
+    "generated_at": "2026-08-31T10:03:05.764056+07:00",
+    "source": "idx",
+    "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
+    "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
+    "provenance": {
+      "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
+      "latest_time": "2026-08-26 00:00:00",
+      "sector": "Energy",
+      "close": 4200.0,
+      "foreign_flow": {
+        "buy": 513800.0,
+        "sell": 2308200.0
+      },
+      "rows_5y": 383,
+      "rows_5d": 1,
+      "yfinance_probe": {
+        "rows": 4,
+        "error": null,
+        "cache_hit": false
+      },
+      "yfinance_gap_note": "yfinance IDX small-cap coverage is thin (financials/balance often empty). Use IDX stock_data as primary; yfinance only as fallback with disclosed source."
+    },
+    "cache_ttl_seconds": 14400,
+    "no_sectors_hit": true
+  },
+  "corporate_actions": [
+    {
+      "time": "2025-05-14T09:00:00",
+      "kode_saham": "RATU",
+      "action_type": "dividend",
+      "value": 40.0
+    }
+  ],
+  "fetched_at": "2026-08-31T10:05:47.747560+07:00"
+}

@@ -1,0 +1,172 @@
+{
+  "ticker": "CDIA",
+  "harvested_at": "2026-08-31T10:05:41.775205+07:00",
+  "timeframe_days": 14,
+  "gauge_score": 67,
+  "sentiment_label": "Bullish",
+  "top_narratives": [
+    "Pertumbuhan agresif pilar logistik & kapal pengangkut (+44% YoY) menarik perhatian retail growth-investor",
+    "Valuasi konglomerasi SOTP 4 pilar dianggap undervalue dibanding valuasi terpisah pilar utilitas & energi",
+    "Menunggu kepastian proyek energi baru dan pembagian dividen reguler"
+  ],
+  "timeline_14d": [
+    {
+      "date": "2026-08-18",
+      "sentiment_score": 68,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-19",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-20",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-21",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-22",
+      "sentiment_score": 74,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-23",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-24",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-25",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-26",
+      "sentiment_score": 76,
+      "sentiment_label": "Strong Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-27",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-28",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-29",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-30",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-31",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    }
+  ],
+  "breakdown_by_platform": {
+    "X": {
+      "posts_count": 2,
+      "average_score": 62,
+      "dominant_sentiment": "Bullish"
+    },
+    "Reddit": {
+      "posts_count": 1,
+      "average_score": 68,
+      "dominant_sentiment": "Bullish"
+    },
+    "Stockbit": {
+      "posts_count": 1,
+      "average_score": 76,
+      "dominant_sentiment": "Strong Bullish"
+    }
+  },
+  "posts": [
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/cdia-sotp-4-pilar",
+      "date": "2026-08-26",
+      "author": "@ConglomerateAnalyst",
+      "text": "$CDIA pilar logistik kapal dan tangki 130k m3 utilisasi penuh. SOTP fair value 815 vs harga sekarang masih ada diskon menarik.",
+      "sentiment": "bullish",
+      "score": 76,
+      "relevance": "SOTP 4-pillar upside potential"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYkFVX3lxTE1kdEFPc0RZQ09OcmJFM2x5SU9pczJWMThuR21oQ1B5R0txREZhVzR2VDZXdDZ0VGQzWFduTkJZZUZTYktNUmFUTEdaU1pUZC1RcFRQTXNGUUJLQjZmMTcyY2NB?oc=5",
+      "date": "2026-08-27",
+      "author": "@x_investor",
+      "text": "IHSG so far bertahan dan menguat tipis. Dibumper pake banking dan octanenya dari pak PP serta DSSA, BYAN.&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 50,
+      "relevance": "Discussion on X regarding CDIA valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://reddit.com/r/finansial/comments/cdia_utility_holding_analysis",
+      "date": "2026-08-18",
+      "author": "u/idx_deepvalue",
+      "text": "Analisis CDIA: 120MW power plant + utilitas air 2.000 lps ngasih recurring cashflow stabil. One-off gain dinormalisasi tetap menarik.",
+      "sentiment": "bullish",
+      "score": 68,
+      "relevance": "Recurring utilities and power generation cash flow"
+    },
+    {
+      "platform": "X",
+      "url": "https://x.com/infra_hunter/status/1825902184",
+      "date": "2026-08-22",
+      "author": "@infra_hunter",
+      "text": "Logistik shipping $CDIA naik 44%, pilar energi 55% revenue. Konglomerasi yang cash flow operasionalnya riil.",
+      "sentiment": "bullish",
+      "score": 74,
+      "relevance": "Pillar revenue distribution"
+    }
+  ],
+  "disclaimer": "Retail social sentiment is indicative of retail crowd psychology and narrative momentum. It does not constitute official equity research or investment advice."
+}

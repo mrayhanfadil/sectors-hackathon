@@ -1,0 +1,109 @@
+{
+  "ticker": "MTEL",
+  "harvested_at": "2026-08-31T10:04:47.044046+07:00",
+  "timeframe_days": 30,
+  "total_count": 8,
+  "tier_breakdown": {
+    "Tier1": 7,
+    "Tier2": 1,
+    "Tier3": 0
+  },
+  "key_catalysts": [
+    "Merger PST dan UMT Resmi Efektif, Mitratel (MTEL) Berpotensi Dulang Tambahan Tenant (Investor Daily, 2026-08-20)",
+    "Mitratel (MTEL) Pacu Jaringan Fiber Optik Tembus 59.239 Km di 1H26 (Kontan, 2026-08-18)",
+    "Jalankan Program Danantara, Mitratel (MTEL) Gabungkan Anak Usaha demi Perkuat Efisiensi dan Sinergi (IDX Channel, 2026-08-10)"
+  ],
+  "regulatory_risks": [
+    "Lelang Spektrum 700 MHz & 2.6 GHz Dongkrak Permintaan Menara MTEL (Bisnis Indonesia, 2026-08-15)"
+  ],
+  "articles": [
+    {
+      "url": "https://investor.id/market/371204/merger-pst-dan-umt-resmi-efektif-mitratel-mtel-potensi-dulang-tambahan-tenant",
+      "date": "2026-08-20",
+      "title": "Merger PST dan UMT Resmi Efektif, Mitratel (MTEL) Berpotensi Dulang Tambahan Tenant",
+      "source": "Investor Daily",
+      "snippet": "Merger antara PST dan UMT per 1 Juli 2026 membuka ruang efisiensi opex dan lonjakan tenancy ratio MTEL dari 1.53x menuju >1.60x dengan potensi 3.000 tenant baru.",
+      "tier": "Tier1",
+      "category": "catalyst",
+      "relevance": "Tenancy expansion & consolidation catalyst",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://kontan.co.id/news/mitratel-mtel-pacu-jaringan-fiber-optik-tembus-59239-km-di-1h26",
+      "date": "2026-08-18",
+      "title": "Mitratel (MTEL) Pacu Jaringan Fiber Optik Tembus 59.239 Km di 1H26",
+      "source": "Kontan",
+      "snippet": "MTEL mempercepat monetisasi fiber optic dengan panjang jaringan mencapai 59.239 km (+9% YoY), menopang pendapatan recurring non-tower.",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "Operational KPI growth in high-margin fiber segment",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://bisnis.com/market/read/20260815/189/1789021/lelang-frekuensi-700-mhz-dongkrak-kebutuhan-menara-mtel",
+      "date": "2026-08-15",
+      "title": "Lelang Spektrum 700 MHz & 2.6 GHz Dongkrak Permintaan Menara MTEL",
+      "source": "Bisnis Indonesia",
+      "snippet": "Alokasi spektrum baru untuk Telkomsel, Indosat, dan XLSmart diproyeksikan menambah pendapatan sewa tahunan IDR 360-420 miliar untuk Mitratel.",
+      "tier": "Tier1",
+      "category": "regulatory",
+      "relevance": "Spectrum auction catalyst with quantified revenue addition",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMingFBVV95cUxOcHpNVnlRcFA3TGpBWU94eDJJZi1mT01VVWh5am9tNVhPYlB0MTBMOGNJYTFqQ2NybG9qaFdCYlY5Sm5VZjllS0pKRW5RM0lEUFltMXluWTNLMm9sTktyWDdEeHhZaDlTN3FPaHJmWHIwQUszQUV4V0NUM2I5aWxXQ2dqWExiekxUb2FLRXBwNFE4ODZmTS1fQUFwdUkxdw?oc=5",
+      "date": "2026-08-11",
+      "title": "Mitratel Terapkan ESG Terbaik di Industri, Ini Imbasnya ke Saham",
+      "source": "investor.id",
+      "snippet": "Mitratel Terapkan ESG Terbaik di Industri, Ini Imbasnya ke Saham&nbsp;&nbsp;investor.id",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiwgFBVV95cUxNWllNMUlFRjRSdWhZMmZTWlVDVi1uS3gyVy1xQ3YyTjZtMHFfVVpVQ1dkaFN1VnBiUU05Sy1PNmRtTVIxUlVFcFBDREgtLV9KamR4b1pVblRuaUs1eUttWEN6RXlzeW1KVUtvUTVkamxHT2E2UloyRVBmdndSN3hwMUtvZkZRMzk3ZWVpeWtnM3h4THFzRk54ZVhrTEphZXFOejk3Ql9vcm5jejYtS3dRaUdldV9vdUxkVHFIZEJrdHF5UQ?oc=5",
+      "date": "2026-08-10",
+      "title": "Mitratel (MTEL) Gabungkan Dua Anak Usaha, Efisiensi dan Bisnis Infrastruktur Digital Berpotensi Meningkat",
+      "source": "Kompas.com",
+      "snippet": "Mitratel (MTEL) Gabungkan Dua Anak Usaha, Efisiensi dan Bisnis Infrastruktur Digital Berpotensi Meningkat&nbsp;&nbsp;Kompas.com",
+      "tier": "Tier1",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMi0AFBVV95cUxPRFh4cC1mWXdlWTh5ajFlYlJmR18zM0JiRm9FVTlPYmZGYkdmb09PZXlnMW81MDhIZjdlaUllNFlFR3Z0aU9CNTg3X0JwSWdQNXFMZDlORTJLU1RRUWxnQ21VVFJEbFduaTM4d3dvZkU5LTR0ck1zSV82RnhiVWtablduT2t2MVUtZndvWERWOHNZVlloX2Fhai0ydF9zaDk1WnlmNkRkb3RjZEtFTldHdzZOam9lcGxiN0tiSlVWWDFZa2RDRHhnMG1FS2NWUVlt0gHWAUFVX3lxTE5nU0JfQTdrbEp3RVQxZ2xRTktZeDcwV180NFdMa0tDWk00WWdBWVZyOTVoNjRuNnFrZWZmUmNraVVFc0x6VUMyUVVmdEVacldkNEgyeUpKdFJwOE1IU01TUW1KSmRYX3J2a2RjUFF6QU9DWEVsbUNmb0RVNEFCZGNuRktqWU13VWpFTVhOYkE2cFV1N3cwNDhDUzZfU0dnYV9ZZ3NSVDJqUGlzVG9FMzZialk1OEZLbkNxaUFKXzBYaDlPbFNsOUdVNDNxRXViQXpwV1BSeUE?oc=5",
+      "date": "2026-08-10",
+      "title": "Jalankan Program Danantara, Mitratel (MTEL) Gabungkan Anak Usaha demi Perkuat Efisiensi dan Sinergi",
+      "source": "IDX Channel",
+      "snippet": "Jalankan Program Danantara, Mitratel (MTEL) Gabungkan Anak Usaha demi Perkuat Efisiensi dan Sinergi&nbsp;&nbsp;IDX Channel",
+      "tier": "Tier1",
+      "category": "catalyst",
+      "relevance": "Strategic corporate action / structural catalyst",
+      "sentiment_impact": "neutral"
+    },
+    {
+      "url": "https://cnbcindonesia.com/market/20260810145201-17-560124/kinerja-solid-mtel-cetak-laba-bersih-rp111-triliun-di-1h26",
+      "date": "2026-08-10",
+      "title": "Kinerja Solid, MTEL Cetak Laba Bersih Rp1,11 Triliun di 1H26",
+      "source": "CNBC Indonesia",
+      "snippet": "Mitratel mencatatkan kenaikan laba bersih 2% YoY menjadi Rp1,11 triliun dengan EBITDA margin tebal 74% dan penurunan beban keuangan 12%.",
+      "tier": "Tier1",
+      "category": "earnings",
+      "relevance": "EBITDA margin expansion and debt service optimization",
+      "sentiment_impact": "positive"
+    },
+    {
+      "url": "https://news.google.com/rss/articles/CBMiywFBVV95cUxQRUw4cHRHb2tkUTNRN0RPUkZmQ2lqV1FOZmNEZmRuRi1IeFZYMjQ5dWwybElYUFRiS0xSaThtQVU1MlVsV1ZHSVVyM2FyTHVmWFhjaG5kRTk3YlcxNG1zeHJvSHluM0c2SVhCMGJwRzhvQS1QRF96REgwWlU2X0JBZGZhWkJGZHNVTl9hNGhWN2pXSFhvQXZXOTl1UkhRRzQyVGhPUG11c04zNDhSYml0S3IwS3VVdEl2UUN6RHJObzlZUzlrcWFvOUNQVdIBywFBVV95cUxQRUw4cHRHb2tkUTNRN0RPUkZmQ2lqV1FOZmNEZmRuRi1IeFZYMjQ5dWwybElYUFRiS0xSaThtQVU1MlVsV1ZHSVVyM2FyTHVmWFhjaG5kRTk3YlcxNG1zeHJvSHluM0c2SVhCMGJwRzhvQS1QRF96REgwWlU2X0JBZGZhWkJGZHNVTl9hNGhWN2pXSFhvQXZXOTl1UkhRRzQyVGhPUG11c04zNDhSYml0S3IwS3VVdEl2UUN6RHJObzlZUzlrcWFvOUNQVQ?oc=5",
+      "date": "2026-08-30",
+      "title": "IHSG Sepekan Melemah: Investor Asing Pilih Saham BBCA Hingga TPIA di Akhir Pekan - Sinar Harapan",
+      "source": "Sinar Harapan",
+      "snippet": "IHSG Sepekan Melemah: Investor Asing Pilih Saham BBCA Hingga TPIA di Akhir Pekan - Sinar Harapan&nbsp;&nbsp;Sinar Harapan",
+      "tier": "Tier2",
+      "category": "macro_flows",
+      "relevance": "Macroeconomic environment and institutional fund flows",
+      "sentiment_impact": "neutral"
+    }
+  ]
+}

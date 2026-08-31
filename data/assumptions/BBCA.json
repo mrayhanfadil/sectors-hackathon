@@ -1,8 +1,8 @@
 {
   "ticker": "BBCA",
-  "generated_at": "2026-08-31T09:22:39.183231+07:00",
-  "source": "idx",
-  "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
+  "generated_at": "2026-08-31T10:03:05.764537+07:00",
+  "source": "yfinance",
+  "source_detail": "yfinance .JK (large-cap complete) + IDX foreign flow",
   "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
   "provenance": {
     "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
@@ -16,7 +16,7 @@
     "rows_5y": 1195,
     "rows_5d": 1,
     "yfinance_probe": {
-      "rows": 0,
+      "rows": 4,
       "error": null,
       "cache_hit": false
     },

@@ -1,0 +1,194 @@
+{
+  "ticker": "CDIA",
+  "company_info": {
+    "kode_saham": "CDIA",
+    "nama_saham": "Chandra Daya Investasi Tbk.",
+    "sector": "Infrastructures",
+    "industry": "Infrastructures"
+  },
+  "sources_used": [
+    "idx_postgres"
+  ],
+  "latest_close_price": 645.0,
+  "foreign_flow_summary": {
+    "latest_foreign_buy": 14255700.0,
+    "latest_foreign_sell": 14172500.0,
+    "latest_net_foreign": 83200.0,
+    "listed_shares": 124829374700.0,
+    "market_cap": 80514946681500.0
+  },
+  "prices_count": 272,
+  "prices_sample": [
+    {
+      "time": "2026-08-19T00:00:00",
+      "open": 700.0,
+      "high": 700.0,
+      "low": 685.0,
+      "close": 690.0,
+      "volume": 19351100.0,
+      "nilai": 13421273000.0,
+      "foreign_buy": 1672000.0,
+      "foreign_sell": 3202500.0
+    },
+    {
+      "time": "2026-08-20T00:00:00",
+      "open": 700.0,
+      "high": 725.0,
+      "low": 695.0,
+      "close": 705.0,
+      "volume": 71720900.0,
+      "nilai": 50606564500.0,
+      "foreign_buy": 16992200.0,
+      "foreign_sell": 3714200.0
+    },
+    {
+      "time": "2026-08-21T00:00:00",
+      "open": 710.0,
+      "high": 720.0,
+      "low": 705.0,
+      "close": 710.0,
+      "volume": 58393400.0,
+      "nilai": 41666225000.0,
+      "foreign_buy": 20114500.0,
+      "foreign_sell": 5861200.0
+    },
+    {
+      "time": "2026-08-24T00:00:00",
+      "open": 715.0,
+      "high": 720.0,
+      "low": 680.0,
+      "close": 685.0,
+      "volume": 64753400.0,
+      "nilai": 45054136500.0,
+      "foreign_buy": 1996300.0,
+      "foreign_sell": 21344800.0
+    },
+    {
+      "time": "2026-08-26T00:00:00",
+      "open": 680.0,
+      "high": 705.0,
+      "low": 645.0,
+      "close": 645.0,
+      "volume": 97538300.0,
+      "nilai": 65272647500.0,
+      "foreign_buy": 14255700.0,
+      "foreign_sell": 14172500.0
+    }
+  ],
+  "financials": {},
+  "operational_kpis": {
+    "power_MW": {
+      "value": 120.0,
+      "period": "2026H1",
+      "source": "synthetic_db"
+    },
+    "power_capacity_MW": {
+      "value": 120,
+      "period": "2026H1",
+      "source": "bca_sekuritas_report"
+    },
+    "water_capacity_lps": {
+      "value": 2000,
+      "period": "2026H1",
+      "source": "bca_sekuritas_report"
+    },
+    "storage_tanks": {
+      "value": 72,
+      "period": "2026H1",
+      "source": "bca_sekuritas_report"
+    },
+    "vessels": {
+      "value": 7,
+      "period": "2026H1",
+      "source": "bca_sekuritas_report"
+    },
+    "tank_storage_m3": {
+      "value": 130000,
+      "period": "2026H1",
+      "source": "bca_sekuritas_report"
+    }
+  },
+  "segment_breakdown": [
+    {
+      "segment": "Energy",
+      "revenue_share_pct": 55.0,
+      "amount_idr_bn": 23000,
+      "growth_yoy_pct": 12.5
+    },
+    {
+      "segment": "Logistics & Shipping",
+      "revenue_share_pct": 34.0,
+      "amount_idr_bn": 14000,
+      "growth_yoy_pct": 44.7
+    },
+    {
+      "segment": "Water & Utility",
+      "revenue_share_pct": 7.0,
+      "amount_idr_bn": 2900,
+      "growth_yoy_pct": 8.0
+    },
+    {
+      "segment": "Ports & Infrastructure",
+      "revenue_share_pct": 4.0,
+      "amount_idr_bn": 1700,
+      "growth_yoy_pct": 5.2
+    }
+  ],
+  "peers": {
+    "peers": [
+      "POWR",
+      "Sembcorp",
+      "Westports",
+      "HATM"
+    ],
+    "sector": "Infrastructures",
+    "sotp_pillars": [
+      "Energy",
+      "Water",
+      "Port",
+      "Logistics"
+    ]
+  },
+  "assumptions": {
+    "ticker": "CDIA",
+    "generated_at": "2026-08-31T10:03:05.764270+07:00",
+    "source": "idx",
+    "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
+    "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
+    "provenance": {
+      "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
+      "latest_time": "2026-08-26 00:00:00",
+      "sector": "Infrastructures",
+      "close": 645.0,
+      "foreign_flow": {
+        "buy": 14255700.0,
+        "sell": 14172500.0
+      },
+      "rows_5y": 272,
+      "rows_5d": 1,
+      "yfinance_probe": {
+        "rows": 4,
+        "error": null,
+        "cache_hit": false
+      },
+      "yfinance_gap_note": "yfinance IDX small-cap coverage is thin (financials/balance often empty). Use IDX stock_data as primary; yfinance only as fallback with disclosed source."
+    },
+    "cache_ttl_seconds": 14400,
+    "no_sectors_hit": true
+  },
+  "corporate_actions": [
+    {
+      "time": "2026-01-12T00:00:00",
+      "kode_saham": "CDIA",
+      "action_type": "DIVIDEND",
+      "value": 1.34
+    },
+    {
+      "time": "2026-01-12T09:00:00",
+      "kode_saham": "CDIA",
+      "action_type": "dividend",
+      "value": 1.34
+    }
+  ],
+  "fetched_at": "2026-08-31T10:05:48.332382+07:00"
+}

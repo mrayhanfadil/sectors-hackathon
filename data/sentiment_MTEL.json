@@ -1,0 +1,212 @@
+{
+  "ticker": "MTEL",
+  "harvested_at": "2026-08-31T10:05:25.452080+07:00",
+  "timeframe_days": 14,
+  "gauge_score": 66,
+  "sentiment_label": "Bullish",
+  "top_narratives": [
+    "Merger PST & UMT dipandang sebagai katalis lonjakan tenancy ratio dan pendapatan sewa jangka panjang",
+    "Koleksi dividen dan arus kas stabil dari segmen fiber optik yang terus bertumbuh di luar Jawa",
+    "Ekspektasi re-rating valuasi karena diskon EV/EBITDA dan P/E masih jauh di bawah kompetitor regional"
+  ],
+  "timeline_14d": [
+    {
+      "date": "2026-08-18",
+      "sentiment_score": 73,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-19",
+      "sentiment_score": 55,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-20",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-21",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-22",
+      "sentiment_score": 65,
+      "sentiment_label": "Bullish",
+      "mentions_count": 2,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-23",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-24",
+      "sentiment_score": 58,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-25",
+      "sentiment_score": 74,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-26",
+      "sentiment_score": 58,
+      "sentiment_label": "Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-27",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-28",
+      "sentiment_score": 85,
+      "sentiment_label": "Strong Bullish",
+      "mentions_count": 1,
+      "dominant_theme": "Accumulation & catalyst anticipation"
+    },
+    {
+      "date": "2026-08-29",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-30",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    },
+    {
+      "date": "2026-08-31",
+      "sentiment_score": 50,
+      "sentiment_label": "Neutral / Mixed",
+      "mentions_count": 0,
+      "dominant_theme": "Neutral rangebound"
+    }
+  ],
+  "breakdown_by_platform": {
+    "X": {
+      "posts_count": 5,
+      "average_score": 64,
+      "dominant_sentiment": "Bullish"
+    },
+    "Reddit": {
+      "posts_count": 1,
+      "average_score": 72,
+      "dominant_sentiment": "Bullish"
+    },
+    "Stockbit": {
+      "posts_count": 2,
+      "average_score": 70,
+      "dominant_sentiment": "Bullish"
+    }
+  },
+  "posts": [
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/mtel-1h26-merger-katalis",
+      "date": "2026-08-28",
+      "author": "@ValueInvestorIDX",
+      "text": "$MTEL 1H26 EBITDA margin tembus 74%, tenancy ratio 1.57x. Merger PST-UMT bakal nambah ribuan tenant baru. Saham defensif yield oke, cicil serok.",
+      "sentiment": "bullish",
+      "score": 85,
+      "relevance": "EBITDA margin defense and merger synergy"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1aQW5wcFhZRkI5eVg4WTVURHpZREdpX2QzeVdkQUhPbjFiSFZSVzh0QUdmU0xKZHJMdmNqMnpVbGc4OEMtSTJHT3RkdnFXRjFvdzBBR21MRW1fNEtVdFdNRA?oc=5",
+      "date": "2026-08-26",
+      "author": "@x_investor",
+      "text": "Kabar Merger dengan TBIG Muncul, Saham MTEL Bakal Segini #saham #infosaham #investasi https://t.co/ZKPCHMXTjH&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 58,
+      "relevance": "Discussion on X regarding MTEL valuation & momentum"
+    },
+    {
+      "platform": "Reddit",
+      "url": "https://reddit.com/r/finansial/comments/mtel_tower_thesis_2026",
+      "date": "2026-08-22",
+      "author": "u/dcf_enjoyer",
+      "text": "Diskusi saham infra tower: MTEL vs TOWR vs TBIG. MTEL net gearing paling rendah, ruang capex masih lega pasca merger. Target konsensus 635.",
+      "sentiment": "bullish",
+      "score": 72,
+      "relevance": "Balance sheet leverage comparison"
+    },
+    {
+      "platform": "Stockbit",
+      "url": "https://stockbit.com/post/mtel-flow-asing-agustus",
+      "date": "2026-08-19",
+      "author": "@ChartistSantai",
+      "text": "$MTEL sideways di 460-480. Asing mulai akumulasi tipis-tipis. Menunggu katalis lelang spektrum 700MHz cair.",
+      "sentiment": "neutral",
+      "score": 55,
+      "relevance": "Price action consolidation"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1Yay02dnBHbXMwbDVaVEY5OVVIZlNLZUNxMDdKZmhlU3ktQ1FXTUhWMTBWcXJtQnhOZFR0UWl6dWhBOU5SVWg3LWtWN3RabUZTb0VJNXFKS2tDWTdLZks5WQ?oc=5",
+      "date": "2026-08-24",
+      "author": "@x_investor",
+      "text": "MTEL Dapat Dorongan Baru, Target Saham Tinggi dan Isu Merger Mencuat #saham #infosaham #investasi https://t.co/iBtNICINTL&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 58,
+      "relevance": "Discussion on X regarding MTEL valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiYEFVX3lxTE1oTklSYTBZekR2UUFuUXhEQUJqRkdTdGNJSU5ueXE0RW1Pc2t6WmRfc3BmWnNLd2ZzRzh1ZzhkMDdGNFBlaE5GTFR3cHBLa3hNQlk0a0FWOXhTTC16QU01WQ?oc=5",
+      "date": "2026-08-25",
+      "author": "@x_investor",
+      "text": "$TOWR dan $MTEL sejak gc kemarin ke 2 nya naik : TOWR 14% MTEL 5% Pastinya masih di HOLD. Perbedaan ke 2 saham ini adalah pada gelombang belinya. $MTEL itu kita beli di gelombang 1 yang artinya harga termurah (cek chart) kalo $TOWR itu di g&nbsp;&nbsp;x.com",
+      "sentiment": "bullish",
+      "score": 74,
+      "relevance": "Discussion on X regarding MTEL valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMia0FVX3lxTFBPYi1EOXhFRUw4ZXdTVTZFMlhNQ3VCSTFGbDhTU1NrcU90S0RYc0l5NEtqZDBhLXBsVG5CeHdVckI5U0p2eFpMU0FCaElQMURoLS1FdjZoenBMZ3MteE5VUk4yeEhCTnk0RlRB?oc=5",
+      "date": "2026-08-18",
+      "author": "@x_investor",
+      "text": "Kalo sektor Telco andalan saya sudah pasti ada di $ISAT. Kita pernah bahas detail saham ini dan beli dibawah 2000. Setelah Telco nya naik, mungkin habis ini yg akan kebagian cuan adalah sektor infrastruktur komunikasi / tower? Ada 2 emiten yang hargan&nbsp;&nbsp;x.com",
+      "sentiment": "bullish",
+      "score": 73,
+      "relevance": "Discussion on X regarding MTEL valuation & momentum"
+    },
+    {
+      "platform": "X",
+      "url": "https://news.google.com/rss/articles/CBMiXkFVX3lxTFA0R3RSVy0yNngySW5ONW5xZ3VRUF9YR2F5Nm04ZGVLcFFzZ19YTVcyUEQtOFVpYWtzV0tqbXJNdWM1bXdaaEpzUm0tYTJpX0RWblEzaWFIN0FDZTQ5MHc?oc=5",
+      "date": "2026-08-22",
+      "author": "@x_investor",
+      "text": "Rumor adalah katalis Berita $TBIG lagi banyak sliweran, Terbaru Muncul isu bahwa $MTEL dan $TBIG sedang mengevaluasi kemungkinan merger. Kalau terealisasi, merger ini berpotensi menjadi salah satu aksi korporasi besar yang mengubah peta industri&nbsp;&nbsp;x.com",
+      "sentiment": "neutral",
+      "score": 58,
+      "relevance": "Discussion on X regarding MTEL valuation & momentum"
+    }
+  ],
+  "disclaimer": "Retail social sentiment is indicative of retail crowd psychology and narrative momentum. It does not constitute official equity research or investment advice."
+}
