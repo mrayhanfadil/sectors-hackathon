@@ -1,0 +1,505 @@
+{
+  "meta": {
+    "template": "sotp",
+    "reason": "segments=4 > 1 -> sotp",
+    "ticker": "CDIA",
+    "company_name": "Chandra Daya Investasi",
+    "sector": "Konglomerasi — Energi/Logistik/Air/Pelabuhan",
+    "report_type": "Initiation",
+    "date": "31 Agt 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "language": "id"
+  },
+  "cover": {
+    "rating_box": {
+      "action": "HOLD",
+      "tp": 815,
+      "prev_tp": null,
+      "price": 780,
+      "upside_pct": 4.5,
+      "key_takeaways": []
+    },
+    "vs_jci": {
+      "ytd_abs": -62.9,
+      "ytd_rel": -30.9,
+      "source": "IDX, yfinance (CDIA.JK vs ^JKSE)",
+      "chart": {
+        "labels": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "Mei",
+          "Jun",
+          "Jul",
+          "Agt",
+          "Sep",
+          "Okt",
+          "Nov",
+          "Des"
+        ],
+        "series": [
+          [
+            0,
+            -12,
+            -28,
+            -41,
+            -50,
+            -55,
+            -60,
+            -58,
+            -61,
+            -62,
+            -63,
+            -63
+          ],
+          [
+            0,
+            2,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            12,
+            13,
+            14,
+            15
+          ]
+        ]
+      }
+    },
+    "shares": {
+      "outstanding": 15.0,
+      "unit": "bn",
+      "free_float_pct": 10.1
+    },
+    "esg": {
+      "found": false
+    }
+  },
+  "financial_highlights": {
+    "source": "Laporan keuangan CDIA (IDX), data diolah",
+    "years": [
+      "FY24A",
+      "FY25A",
+      "FY26F",
+      "FY27F"
+    ],
+    "rows": [
+      [
+        "Pendapatan (Rp bn)",
+        14500,
+        15200,
+        11800,
+        12900
+      ],
+      [
+        "EBITDA (Rp bn)",
+        4900,
+        4300,
+        2100,
+        2800
+      ],
+      [
+        "Net profit (Rp bn)",
+        2800,
+        2100,
+        510,
+        890
+      ],
+      [
+        "ROE (%)",
+        12.0,
+        8.4,
+        1.9,
+        3.2
+      ]
+    ]
+  },
+  "segments": [
+    {
+      "name": "Energi",
+      "revenue": 6300,
+      "yoy_pct": -8,
+      "qoq_pct": -3,
+      "share_pct": 53.4,
+      "one_off": "Normalisasi one-off Rp 15.9 bn (gain penjualan aset) dikeluarkan dari segmen Energi.",
+      "row": [
+        "Energi",
+        6300,
+        "-8%",
+        "-3%",
+        "53.4%"
+      ]
+    },
+    {
+      "name": "Logistik",
+      "revenue": 4010,
+      "yoy_pct": 44.7,
+      "qoq_pct": 12.0,
+      "share_pct": 34.0,
+      "row": [
+        "Logistik",
+        4010,
+        "+44.7%",
+        "+12.0%",
+        "34.0%"
+      ]
+    },
+    {
+      "name": "Air",
+      "revenue": 850,
+      "yoy_pct": 6,
+      "qoq_pct": 2,
+      "share_pct": 7.2,
+      "row": [
+        "Air",
+        850,
+        "+6%",
+        "+2%",
+        "7.2%"
+      ]
+    },
+    {
+      "name": "Pelabuhan",
+      "revenue": 640,
+      "yoy_pct": 9,
+      "qoq_pct": 4,
+      "share_pct": 5.4,
+      "row": [
+        "Pelabuhan",
+        640,
+        "+9%",
+        "+4%",
+        "5.4%"
+      ]
+    }
+  ],
+  "segments_src": "Laporan segmentasi CDIA 1H26 (IDX)",
+  "kpis": [],
+  "thesis": [
+    {
+      "headline": "Logistik pilar tercepat (+44.7% YoY)",
+      "detail": "Volume vessel dan TC/COA mix membaik, menjadi mesin pertumbuhan grup.",
+      "source": "Laporan 1H26 (IDX)"
+    },
+    {
+      "headline": "Normalisasi one-off bikin base FY26 rendah",
+      "detail": "One-off Rp 15.9 bn di-normalize; earnings quality kini lebih bersih.",
+      "source": "Laporan 1H26 (IDX)"
+    },
+    {
+      "headline": "M&A delay 2H26 menekan revenue guidance",
+      "detail": "Penundaan akuisisi menunda sinergi ke FY27.",
+      "source": "Disclosure IDX"
+    }
+  ],
+  "valuation": {
+    "methods": [
+      {
+        "method": "DCF",
+        "fv": 815,
+        "assumptions": {
+          "wacc": 9.8,
+          "beta": 1.05,
+          "rf": 6.2,
+          "erp": 7.4,
+          "coe": 14.0,
+          "cod": 5.5,
+          "we": 70.0,
+          "wd": 30.0,
+          "g": 4.0
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "FY26F",
+            "FY27F",
+            "FY28F"
+          ],
+          "rows": [
+            [
+              "CFO (Rp bn)",
+              1900,
+              2400,
+              2900
+            ],
+            [
+              "CAPEX (Rp bn)",
+              -1200,
+              -1000,
+              -800
+            ],
+            [
+              "FCFE (Rp bn)",
+              700,
+              1400,
+              2100
+            ]
+          ]
+        },
+        "source": "scripts/dcf.py"
+      },
+      {
+        "method": "DDM",
+        "fv": 810,
+        "assumptions": {
+          "payout_27": 40.0,
+          "payout_28": 104.0,
+          "coe": 14.0,
+          "g": 4.0
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "FY27F",
+            "FY28F"
+          ],
+          "rows": [
+            [
+              "Dividen per saham (Rp)",
+              22,
+              55
+            ]
+          ]
+        },
+        "source": "scripts/ddm.py"
+      }
+    ],
+    "blended": null,
+    "bands": null
+  },
+  "financials": [
+    {
+      "title": "Laba Rugi Ringkas",
+      "headers": [
+        "Rp bn",
+        "FY24A",
+        "FY25A",
+        "FY26F"
+      ],
+      "rows": [
+        [
+          "Pendapatan",
+          14500,
+          15200,
+          11800
+        ],
+        [
+          "EBITDA",
+          4900,
+          4300,
+          2100
+        ],
+        [
+          "Laba bersih",
+          2800,
+          2100,
+          510
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    },
+    {
+      "title": "Leverage & Likuiditas",
+      "headers": [
+        "Rasio",
+        "FY24A",
+        "FY25A",
+        "FY26F"
+      ],
+      "rows": [
+        [
+          "Gearing (%)",
+          96.0,
+          130.0,
+          170.0
+        ],
+        [
+          "Current ratio (x)",
+          1.2,
+          0.9,
+          0.7
+        ],
+        [
+          "Debt/EBITDA (x)",
+          1.9,
+          2.6,
+          4.1
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    }
+  ],
+  "risks": [
+    {
+      "bucket": "Sedimentasi (Air)",
+      "detail": "Penurunan kapasitas produksi air bersih.",
+      "source": null
+    },
+    {
+      "bucket": "Gas supply (Energi)",
+      "detail": "Ketersediaan gas untuk CCPP 120MW.",
+      "source": null
+    },
+    {
+      "bucket": "Kerusakan vessel (Logistik)",
+      "detail": "7 vessel 5-8600 DWT terpapar risiko operasional.",
+      "source": null
+    },
+    {
+      "bucket": "Iklim (Pelabuhan)",
+      "detail": "Cuaca ekstrem mengganggu bongkar muat.",
+      "source": null
+    }
+  ],
+  "peers": {
+    "tables": [
+      {
+        "pillar": "Pilar Energi",
+        "headers": [
+          "Ticker",
+          "EV/EBITDA",
+          "ROE"
+        ],
+        "rows": [
+          [
+            "POWR",
+            8.1,
+            14.0
+          ],
+          [
+            "Sembcorp",
+            9.3,
+            11.0
+          ]
+        ],
+        "source": "IDX, yfinance"
+      },
+      {
+        "pillar": "Pilar Air",
+        "headers": [
+          "Ticker",
+          "P/E",
+          "ROE"
+        ],
+        "rows": [
+          [
+            "TOWR",
+            13.2,
+            18.0
+          ],
+          [
+            "Aqua-like",
+            15.0,
+            20.0
+          ]
+        ],
+        "source": "IDX, yfinance"
+      },
+      {
+        "pillar": "Pilar Pelabuhan",
+        "headers": [
+          "Ticker",
+          "EV/EBITDA",
+          "ROE"
+        ],
+        "rows": [
+          [
+            "Westports",
+            11.5,
+            12.0
+          ],
+          [
+            "IPBB",
+            10.8,
+            9.0
+          ]
+        ],
+        "source": "IDX, yfinance"
+      },
+      {
+        "pillar": "Pilar Logistik",
+        "headers": [
+          "Ticker",
+          "EV/EBITDA",
+          "ROE"
+        ],
+        "rows": [
+          [
+            "HATM",
+            7.4,
+            8.0
+          ],
+          [
+            "SMDR",
+            6.9,
+            10.0
+          ]
+        ],
+        "source": "IDX, yfinance"
+      }
+    ]
+  },
+  "news": [],
+  "sentiment": null,
+  "strategy": null,
+  "catalysts": [],
+  "exhibits": [
+    {
+      "id": "Exhibit 5",
+      "title": "Bauran Pendapatan 4 Pilar",
+      "chart": {
+        "type": "doughnut",
+        "height": 190,
+        "data": {
+          "labels": [
+            "Energi",
+            "Logistik",
+            "Air",
+            "Pelabuhan"
+          ],
+          "datasets": [
+            {
+              "data": [
+                53.4,
+                34.0,
+                7.2,
+                5.4
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Laporan 1H26 (IDX)"
+    },
+    {
+      "id": "Exhibit 6",
+      "title": "Margin & Leverage Trajectory",
+      "chart": {
+        "type": "line",
+        "height": 170,
+        "data": {
+          "labels": [
+            "FY24A",
+            "FY25A",
+            "FY26F"
+          ],
+          "datasets": [
+            {
+              "label": "EBITDA margin (%)",
+              "data": [
+                33.8,
+                28.3,
+                17.8
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Laporan keuangan IDX"
+    }
+  ]
+}

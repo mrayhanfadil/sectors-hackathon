@@ -1,0 +1,258 @@
+{
+  "meta": {
+    "template": "strategy",
+    "reason": "explicit overlay report — market-level, not single stock",
+    "ticker": "",
+    "company_name": "",
+    "sector": "Strategy — Market Level",
+    "report_type": "Outlook",
+    "date": "31 Agt 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "language": "id"
+  },
+  "cover": {},
+  "strategy": {
+    "title": "Kembalinya Animal Spirit — Indonesia 2026 Outlook",
+    "subtitle": "Sudut pandang strategi pasar atas (top-down) untuk pasar ekuitas Indonesia.",
+    "index_target": {
+      "source": "IDX, yfinance — data historis; skenario penulis",
+      "scenarios": [
+        {
+          "name": "Bull",
+          "value": 10000,
+          "note": "Re-rating penuh + flows kembali"
+        },
+        {
+          "name": "Base",
+          "value": 9100,
+          "note": "EPS +8% × 15x P/E flat"
+        },
+        {
+          "name": "Bear",
+          "value": 7800,
+          "note": "Slowdown + outflow asing"
+        }
+      ],
+      "methodology": "Index target = EPS growth × target multiple; dikalikan basis indeks kini. Sama dengan pendekatan JPM 2026 Outlook (8% EPS × 15x).",
+      "math": {
+        "eps_growth_pct": 8,
+        "multiple": 15,
+        "current": 8450
+      }
+    },
+    "price_chart": {
+      "source": "IDX, yfinance (^JKSE 3Y)",
+      "labels": [
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12"
+      ],
+      "series": [
+        [
+          6800,
+          7050,
+          6900,
+          7200,
+          7450,
+          7300,
+          7600,
+          7900,
+          7750,
+          8100,
+          8300,
+          8450
+        ]
+      ]
+    },
+    "summary": [
+      {
+        "headline": "JCI menuju 9.100 skenario dasar",
+        "detail": "Kombinasi EPS +8% dan multiple 15x flat masih memberi ruang kenaikan.",
+        "source": "IDX, yfinance"
+      },
+      {
+        "headline": "Rotasi ke sektor domestik berlanjut",
+        "detail": "Industrials, Materials, konsumen, dan properti memimpin.",
+        "source": "IDX"
+      }
+    ],
+    "thematics": [
+      {
+        "name": "Pemulihan konsumsi",
+        "detail": "Daya beli rumahtangga pulih ditopang inflasi terkendali.",
+        "source": "BPS"
+      },
+      {
+        "name": "Perbaikan TSR",
+        "detail": "Buyback & dividen meningkatkan total shareholder return.",
+        "source": "IDX"
+      },
+      {
+        "name": "Menarik kembali dana asing",
+        "detail": "Valuasi relatif vs regional menarik setelah 2 tahun outflow.",
+        "source": "IDX, Bloomberg"
+      },
+      {
+        "name": "Kebijakan fiskal",
+        "detail": "Belanja infrastruktur & insentif manufaktur.",
+        "source": "Pemerintah"
+      },
+      {
+        "name": "Danantara sebagai swing factor",
+        "detail": "US$12bn dry powder (0.8% PDB) menopang blue chip SOE.",
+        "source": "Danantara"
+      }
+    ],
+    "sectors": [
+      {
+        "name": "Industrials",
+        "view": "OW"
+      },
+      {
+        "name": "Materials",
+        "view": "OW"
+      },
+      {
+        "name": "Consumer Staples",
+        "view": "OW"
+      },
+      {
+        "name": "Consumer Discretionary",
+        "view": "OW"
+      },
+      {
+        "name": "Property",
+        "view": "OW"
+      },
+      {
+        "name": "Financials",
+        "view": "N"
+      },
+      {
+        "name": "Comm Services",
+        "view": "N"
+      },
+      {
+        "name": "Healthcare",
+        "view": "N"
+      },
+      {
+        "name": "Energy",
+        "view": "UW"
+      },
+      {
+        "name": "Utilities",
+        "view": "UW"
+      }
+    ],
+    "sectors_src": "IDX-IC klasifikasi; penilaian internal",
+    "picks": [
+      {
+        "ticker": "BBCA",
+        "cap": "Large",
+        "rationale": "Kualitas aset & CASA — defensif inti portofolio."
+      },
+      {
+        "ticker": "ASII",
+        "cap": "Large",
+        "rationale": "Siklus mobil listrik + ekspor ASEAN."
+      },
+      {
+        "ticker": "ICBP",
+        "cap": "Large",
+        "rationale": "Pricing power bahan baku turun."
+      },
+      {
+        "ticker": "GOTO",
+        "cap": "Large",
+        "rationale": "Jalan menuju profitabilitas terkunci."
+      },
+      {
+        "ticker": "ANTM",
+        "cap": "Large",
+        "rationale": "Siklus logam + smelter nikel."
+      },
+      {
+        "ticker": "ISAT",
+        "cap": "SMID",
+        "rationale": "Tower monetization & deleveraging."
+      },
+      {
+        "ticker": "JSMR",
+        "cap": "SMID",
+        "rationale": "Volume lalu lintas naik + tarif baru."
+      }
+    ],
+    "picks_src": "IDX, yfinance — fundamental historis",
+    "flows": {
+      "narrative": "Retail mendominasi 58% ADTV Rp 14.5 tn (puncak COVID). Asing -US$2.2bn YTD / -2.6bn 2Y; 44% kepemilikan asing UW sejak 2003. MSCI Adjusted Free Float Mei 2026 = event risiko. Bid institusional via Danantara US$1.5bn + pensiun.",
+      "table": {
+        "headers": [
+          "Flow",
+          "Nilai",
+          "Periode"
+        ],
+        "rows": [
+          [
+            "Foreign net sell",
+            "-US$2.2bn",
+            "YTD 2026"
+          ],
+          [
+            "Foreign net sell (2Y)",
+            "-US$2.6bn",
+            "2024-2026"
+          ],
+          [
+            "FDI",
+            "-28%",
+            "YTD 2026"
+          ],
+          [
+            "FPI",
+            "-US$14bn",
+            "YTD 2026"
+          ]
+        ]
+      },
+      "source": "IDX, Bloomberg — data historis"
+    },
+    "danantara": {
+      "narrative": "Segregasi BPI+DAM+DIM; US$12bn dry powder (0.8% PDB) + >US$14bn SWF; 9 sektor prioritas; SOE ex-bank +25% YTD re-rating.",
+      "table": {
+        "headers": [
+          "Komponen",
+          "Nilai"
+        ],
+        "rows": [
+          [
+            "Dry powder",
+            "US$12bn"
+          ],
+          [
+            "SWF eksisting",
+            ">US$14bn"
+          ],
+          [
+            "Sektor prioritas",
+            "9"
+          ]
+        ]
+      },
+      "source": "Danantara — rilis publik"
+    }
+  },
+  "news": [],
+  "sentiment": null,
+  "catalysts": [],
+  "exhibits": []
+}

@@ -1,0 +1,448 @@
+{
+  "meta": {
+    "template": "single",
+    "reason": "segments=0, subsector=oil-pure-play -> single",
+    "ticker": "RATU",
+    "company_name": "Ratu Prabu Energi",
+    "sector": "Energi — Pure-Play Holding",
+    "report_type": "Initiation",
+    "date": "31 Agt 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "language": "id"
+  },
+  "cover": {
+    "rating_box": {
+      "action": "BUY",
+      "tp": 7880,
+      "prev_tp": null,
+      "price": 6200,
+      "upside_pct": 27.1,
+      "key_takeaways": []
+    },
+    "vs_jci": {
+      "ytd_abs": 18.4,
+      "ytd_rel": 6.2,
+      "source": "IDX, yfinance (RATU.JK vs ^JKSE)",
+      "chart": {
+        "labels": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "Mei",
+          "Jun",
+          "Jul",
+          "Agt",
+          "Sep",
+          "Okt",
+          "Nov",
+          "Des"
+        ],
+        "series": [
+          [
+            0,
+            4,
+            9,
+            12,
+            15,
+            18,
+            21,
+            19,
+            22,
+            24,
+            26,
+            27
+          ],
+          [
+            0,
+            2,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            12,
+            13,
+            14,
+            15
+          ]
+        ]
+      }
+    },
+    "shares": {
+      "outstanding": 2.71,
+      "unit": "bn",
+      "free_float_pct": 31.2
+    },
+    "shareholders": [
+      {
+        "name": "Publik",
+        "pct": 31.2
+      },
+      {
+        "name": "RETJ",
+        "pct": 45.0
+      },
+      {
+        "name": "PJUC",
+        "pct": 23.8
+      }
+    ],
+    "shareholders_src": "IDX — struktur pemegang saham",
+    "esg": {
+      "found": false
+    }
+  },
+  "financial_highlights": {
+    "source": "Laporan keuangan RATU (IDX), data diolah",
+    "years": [
+      "FY24A",
+      "FY25A",
+      "FY26F"
+    ],
+    "rows": [
+      [
+        "Pendapatan (Rp bn)",
+        1290,
+        1122,
+        1180
+      ],
+      [
+        "EBITDA (Rp bn)",
+        610,
+        540,
+        585
+      ],
+      [
+        "Net profit (Rp bn)",
+        402,
+        355,
+        390
+      ],
+      [
+        "P/E (x)",
+        129.0,
+        55.2,
+        42.7
+      ],
+      [
+        "ROE (%)",
+        88.0,
+        41.0,
+        30.0
+      ]
+    ]
+  },
+  "segments": [],
+  "kpis": [
+    {
+      "name": "Produksi Cepu",
+      "value": 169,
+      "prev": 152,
+      "unit": "k BOPD",
+      "formula": "produksi harian rata-rata",
+      "source": "SKK Migas",
+      "row": [
+        "Produksi Cepu",
+        169,
+        152,
+        "+17",
+        "k BOPD",
+        "rata-rata harian",
+        "SKK Migas"
+      ]
+    }
+  ],
+  "kpis_src": "SKK Migas, laporan bulanan lapangan",
+  "thesis": [
+    {
+      "headline": "Bottom line tahan meski revenue turun",
+      "detail": "Margin net profit naik dari 31% ke 32% karena efisiensi opex dan hedge kurs.",
+      "source": "Laporan keuangan FY24-25 (IDX)"
+    },
+    {
+      "headline": "Cepu 169k BOPD jadi mesin kas",
+      "detail": "Kontribusi lapangan Cepu mendominasi produksi dengan biaya lifting rendah.",
+      "source": "SKK Migas"
+    },
+    {
+      "headline": "Regulasi PSC/DMO terkendali",
+      "detail": "Struktur kontrak PSC existing melindungi ekonomi lapangan hingga 2031.",
+      "source": "Kontrak PSC (KKKS)"
+    },
+    {
+      "headline": "Naturally declining base dikelola via workover",
+      "detail": "Program workover rutin menahan decline rate ~8%/tahun.",
+      "source": "Laporan manajemen"
+    }
+  ],
+  "valuation": {
+    "methods": [
+      {
+        "method": "DCF",
+        "fv": 7880,
+        "assumptions": {
+          "wacc": 8.4,
+          "beta": 0.7,
+          "rf": 6.2,
+          "erp": 6.9,
+          "coe": 10.0,
+          "cod": 3.5,
+          "we": 85.0,
+          "wd": 15.0,
+          "g": 5.0
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "FY26F",
+            "FY27F",
+            "FY28F"
+          ],
+          "rows": [
+            [
+              "FCF (Rp bn)",
+              410,
+              432,
+              455
+            ],
+            [
+              "Discount factor",
+              0.92,
+              0.85,
+              0.78
+            ],
+            [
+              "PV (Rp bn)",
+              377,
+              367,
+              355
+            ]
+          ]
+        },
+        "source": "scripts/dcf.py"
+      },
+      {
+        "method": "EV/EBITDA",
+        "fv": 6960,
+        "assumptions": {
+          "multiple": 22.6
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "Nilai"
+          ],
+          "rows": [
+            [
+              "EV/EBITDA target (x)",
+              22.6
+            ],
+            [
+              "EBITDA FY26F (Rp bn)",
+              585
+            ],
+            [
+              "EV (Rp bn)",
+              13221
+            ]
+          ]
+        },
+        "source": "scripts/ev_ebitda.py"
+      }
+    ],
+    "blended": null,
+    "bands": null
+  },
+  "financials": [
+    {
+      "title": "Laba Rugi Ringkas",
+      "headers": [
+        "Rp bn",
+        "FY24A",
+        "FY25A",
+        "FY26F"
+      ],
+      "rows": [
+        [
+          "Pendapatan",
+          1290,
+          1122,
+          1180
+        ],
+        [
+          "HPP",
+          -520,
+          -470,
+          -492
+        ],
+        [
+          "EBITDA",
+          610,
+          540,
+          585
+        ],
+        [
+          "Laba bersih",
+          402,
+          355,
+          390
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    },
+    {
+      "title": "Rasio Kunci",
+      "headers": [
+        "Rasio",
+        "FY24A",
+        "FY25A",
+        "FY26F"
+      ],
+      "rows": [
+        [
+          "ROE (%)",
+          88.0,
+          41.0,
+          30.0
+        ],
+        [
+          "DER (x)",
+          0.21,
+          0.24,
+          0.22
+        ],
+        [
+          "Interest coverage (x)",
+          14.2,
+          11.8,
+          12.4
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    }
+  ],
+  "risks": [
+    {
+      "bucket": "Risiko Komoditas",
+      "detail": "Harga minyak flektuatif mempengaruhi realisasi.",
+      "source": "Laporan keuangan"
+    },
+    {
+      "bucket": "Risiko Operator",
+      "detail": "Ketergantungan pada operator lapangan.",
+      "source": null
+    },
+    {
+      "bucket": "Regulasi PSC/DMO",
+      "detail": "Perubahan ketentuan dom�estic market obligation.",
+      "source": null
+    },
+    {
+      "bucket": "Natural decline",
+      "detail": "Penurunan produksi basis legacy.",
+      "source": null
+    }
+  ],
+  "peers": {
+    "tables": [
+      {
+        "pillar": "Peers energi IDX",
+        "headers": [
+          "Ticker",
+          "P/E",
+          "EV/EBITDA",
+          "ROE"
+        ],
+        "rows": [
+          [
+            "MEDC",
+            8.9,
+            4.2,
+            22.0
+          ],
+          [
+            "ENRG",
+            12.4,
+            5.1,
+            15.0
+          ],
+          [
+            "RATU",
+            42.7,
+            22.6,
+            30.0
+          ]
+        ],
+        "source": "IDX, yfinance — data historis"
+      }
+    ]
+  },
+  "news": [],
+  "sentiment": null,
+  "strategy": null,
+  "catalysts": [],
+  "exhibits": [
+    {
+      "id": "Exhibit 3",
+      "title": "Tren Pendapatan & EBITDA",
+      "chart": {
+        "type": "bar",
+        "height": 190,
+        "data": {
+          "labels": [
+            "FY24A",
+            "FY25A",
+            "FY26F"
+          ],
+          "datasets": [
+            {
+              "label": "Pendapatan (Rp bn)",
+              "data": [
+                1290,
+                1122,
+                1180
+              ]
+            },
+            {
+              "label": "EBITDA (Rp bn)",
+              "data": [
+                610,
+                540,
+                585
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Laporan keuangan IDX"
+    },
+    {
+      "id": "Exhibit 4",
+      "title": "Trajektori Leverage (DER)",
+      "chart": {
+        "type": "line",
+        "height": 170,
+        "data": {
+          "labels": [
+            "FY24A",
+            "FY25A",
+            "FY26F"
+          ],
+          "datasets": [
+            {
+              "label": "DER (x)",
+              "data": [
+                0.21,
+                0.24,
+                0.22
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Laporan keuangan IDX"
+    }
+  ]
+}
