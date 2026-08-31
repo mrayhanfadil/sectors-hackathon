@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import os
 import time
 import logging
 from typing import Any, AsyncGenerator
@@ -135,35 +136,79 @@ class AgentRunRequest(BaseModel):
     prompt: str | None = None
 
 
-@router_agent.get("/api/agent/health", summary="ADK wiring + Spark bridge health")
+@router_agent.get("/api/agent/health", summary="ADK wiring + Spark/minimax health")
 async def agent_health():
-    """Check if ADK graph can be built with Spark bridge."""
+    """Check if ADK graph can be built with minimax (preferred) or Spark bridge."""
     started = time.time()
-    info: dict[str, Any] = {"ok": False, "provider": "spark (commandcode bridge)", "model": "meta/muse-spark-1.2-contributor"}
-    try:
-        from agents.adk.providers import spark_model, _bridge_key
-
-        key = _bridge_key()
-        info["bridge_key_present"] = bool(key)
-        info["bridge_key_prefix"] = (key[:10] + "…") if key else None
-        # quick bridge ping via litellm
-        import litellm
-
-        resp = await asyncio.to_thread(
-            lambda: litellm.completion(
-                model="openai/meta/muse-spark-1.2-contributor",
-                api_base="http://127.0.0.1:9992/v1",
-                api_key=key,
-                messages=[{"role": "user", "content": "PONG"}],
-                max_tokens=256,
+    # Prefer minimax when ADK_PROVIDER=minimax or COMMANDCODE_API_KEY exists
+    prefer_minimax = bool(
+        (os.getenv("ADK_PROVIDER", "").lower().startswith("minimax"))
+        or (os.getenv("COMMANDCODE_API_KEY"))
+        or (os.getenv("MINIMAX_MODEL"))
+    )
+    # Also probe disk for COMMANDCODE_API_KEY if not in env
+    if not prefer_minimax:
+        try:
+            import pathlib, re as _re2
+            p = pathlib.Path.home() / ".config" / "commandcode-bridge" / "env"
+            if p.exists() and _re2.search(r'COMMANDCODE_API_KEY="[^"]+"', p.read_text()):
+                prefer_minimax = True
+        except Exception:
+            pass
+    if prefer_minimax:
+        provider = "minimax/minimax-m3-free"
+        model_id = os.getenv("MINIMAX_MODEL") or "minimax/minimax-m3-free"
+        api_base = os.getenv("MINIMAX_API_BASE") or "https://api.commandcode.ai/provider/v1"
+        info: dict[str, Any] = {"ok": False, "provider": provider, "model": model_id, "api_base": api_base}
+        try:
+            import pathlib, re as _re, litellm
+            key = os.getenv("COMMANDCODE_API_KEY") or ""
+            if not key:
+                t = pathlib.Path.home().joinpath(".config/commandcode-bridge/env").read_text()
+                m = _re.search(r'COMMANDCODE_API_KEY="([^"]+)"', t)
+                if m: key = m.group(1)
+            info["bridge_key_present"] = bool(key)
+            info["bridge_key_prefix"] = (key[:10] + "…") if key else None
+            resp = await asyncio.to_thread(
+                lambda: litellm.completion(
+                    model=f"openai/{model_id}",
+                    api_base=api_base,
+                    api_key=key,
+                    messages=[{"role": "user", "content": "PONG"}],
+                    max_tokens=16,
+                )
             )
-        )
-        txt = resp.choices[0].message.content or ""
-        info["bridge_ping"] = txt.strip()[:50]
-        info["bridge_ok"] = ("PONG" in txt or "PING" in txt)
-    except Exception as e:
-        info["bridge_error"] = str(e)[:500]
-        info["bridge_ok"] = False
+            txt = resp.choices[0].message.content or ""
+            info["bridge_ping"] = txt.strip()[:50]
+            info["bridge_ok"] = ("PONG" in txt or "PING" in txt or "Pong" in txt)
+        except Exception as e:
+            info["bridge_error"] = str(e)[:600]
+            info["bridge_ok"] = False
+    else:
+        info: dict[str, Any] = {"ok": False, "provider": "spark (commandcode bridge)", "model": "meta/muse-spark-1.2-contributor"}
+        try:
+            from agents.adk.providers import spark_model, _bridge_key
+
+            key = _bridge_key()
+            info["bridge_key_present"] = bool(key)
+            info["bridge_key_prefix"] = (key[:10] + "…") if key else None
+            import litellm
+
+            resp = await asyncio.to_thread(
+                lambda: litellm.completion(
+                    model="openai/meta/muse-spark-1.2-contributor",
+                    api_base="http://127.0.0.1:9992/v1",
+                    api_key=key,
+                    messages=[{"role": "user", "content": "PONG"}],
+                    max_tokens=256,
+                )
+            )
+            txt = resp.choices[0].message.content or ""
+            info["bridge_ping"] = txt.strip()[:50]
+            info["bridge_ok"] = ("PONG" in txt or "PING" in txt)
+        except Exception as e:
+            info["bridge_error"] = str(e)[:500]
+            info["bridge_ok"] = False
 
     # Try building graph (without running)
     try:

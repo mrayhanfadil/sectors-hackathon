@@ -77,6 +77,11 @@ from .agents.instructions import (
 from .providers import deepseek_model, gemini_model, spark_model
 from .tools.finance_tools import DETERMINISTIC_TOOLS
 from .tools.mcp_sectors import maybe_sectors_mcp_toolset
+from .tools.web_tools import (
+    web_search,
+    web_extract,
+    web_search_and_extract,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -84,7 +89,24 @@ MAX_ADVERSARIAL_ITERATIONS = 4
 
 
 def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None = None):
-    """Main LLM: CommandCode Spark preferred, then DeepSeek, then Gemini."""
+    """Main LLM: minimax-m3-free preferred, then Spark, then DeepSeek, then Gemini."""
+    # 0. Prefer minimax/minimax-m3-free via CommandCode (free tier, requested)
+    if os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free"):
+        try:
+            from .providers import minimax_model
+
+            return minimax_model()
+        except Exception as e:
+            logger.info("minimax-m3-free not available (%s), trying Spark", e)
+    # Also try minimax first if COMMANDCODE_API_KEY exists (free, no bridge needed)
+    _has_cc_key = bool(os.getenv("COMMANDCODE_API_KEY") or _has_commandcode_key_on_disk())
+    if _has_cc_key:
+        try:
+            from .providers import minimax_model
+
+            return minimax_model()
+        except Exception as e:
+            logger.info("minimax auto-prefer failed (%s), trying Spark", e)
     # 1. Prefer Muse Spark via CommandCode bridge
     try:
         return spark_model()
@@ -104,7 +126,19 @@ def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None =
         except Exception as e:
             logger.warning("Gemini fallback also failed: %s", e)
             raise
-    raise ValueError("No LLM key set — need CommandCode bridge (BRIDGE_API_KEY), DEEPSEEK_API_KEY or GOOGLE_API_KEY")
+    raise ValueError("No LLM key set — need ADK_PROVIDER=minimax or CommandCode bridge (BRIDGE_API_KEY), DEEPSEEK_API_KEY or GOOGLE_API_KEY")
+
+
+def _has_commandcode_key_on_disk() -> bool:
+    import pathlib, re as _re2
+
+    p = pathlib.Path.home() / ".config" / "commandcode-bridge" / "env"
+    if p.exists():
+        try:
+            return bool(_re2.search(r'COMMANDCODE_API_KEY="[^"]+"', p.read_text()))
+        except Exception:
+            pass
+    return False
 
 
 def _function_tools() -> list[Any]:
@@ -123,6 +157,11 @@ def _build_search_subagent(
     that litellm auto-loaded). To avoid crashing the Parallel group with 400
     INVALID_ARGUMENT, degrade to Spark/DeepSeek WITHOUT GoogleSearchTool unless
     ADK_ENABLE_GOOGLE_SEARCH=true and a real Gemini key is present.
+
+    Note: GoogleSearch + functiontools cannot coexist in one LlmAgent (genai limit,
+    see adk-go-skill pitfall section). For composite search+extract, parent agents
+    should use `web_search_and_extract` FunctionTool directly instead of routing
+    through this sub-agent.
     """
     enable_google = os.getenv("ADK_ENABLE_GOOGLE_SEARCH", "").strip().lower() in ("1", "true", "yes")
     if model is None:
@@ -134,7 +173,7 @@ def _build_search_subagent(
                 logger.info("ADK_ENABLE_GOOGLE_SEARCH=true but no GOOGLE_API_KEY for %s — degrading", name)
         logger.info("Search sub-agent %s: using Spark (no GoogleSearchTool) — 0-credit mode", name)
         model = _deepseek_or_gemini()
-        suffix = "\n\nNote: Google Search grounding is disabled in this run (no valid GOOGLE_API_KEY). Produce best-effort synthetic results via your knowledge and label source=synthetic."
+        suffix = "\n\nNote: Google Search grounding is disabled in this run (no valid GOOGLE_API_KEY). Produce best-effort synthetic results via your knowledge and label source=synthetic.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
         return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
     else:
         has_google_search = True
@@ -146,6 +185,24 @@ def _build_search_subagent(
         instruction=instruction,
         tools=tools,
     )
+
+
+def _web_composite_tools() -> list[Any]:
+    """Composite web toolset — replaces Gemini+GoogleSearch search sub-agents.
+
+    Provides web_search, web_extract, and web_search_and_extract as FunctionTools
+    directly to parent agents. Avoids the GoogleSearch + functiontool conflict by
+    not using GoogleSearchTool at all (Tavily + httpx+readability cover the same
+    surface for our IDX-equity use case at $0/mo up to 1k searches).
+
+    Honest provenance: each tool returns {source: 'tavily'|'tavily_missing_key'|...}
+    so the Critic agent can verify before accepting claims.
+    """
+    return [
+        FunctionTool(web_search),
+        FunctionTool(web_extract),
+        FunctionTool(web_search_and_extract),
+    ]
 
 
 def build_graph(
@@ -172,6 +229,16 @@ def build_graph(
 
     main_model = _deepseek_or_gemini(api_key=deepseek_api_key, gemini_api_key=gemini_api_key)
     ft = _function_tools()
+
+    # Free-tier throttling: minimax-m3-free 503s on concurrency. When
+    # ADK_PROVIDER indicates minimax and ADK_PARALLEL is unset/"0", run intake
+    # + research sequentially. Also reuse the same minimax model for search
+    # sub-agents (they use _deepseek_or_gemini() which already prefers minimax)
+    # and keep them inside the sequential intake so only 1 minimax call runs
+    # at a time — otherwise AgentTool would fire a parallel sub-call and 503.
+    is_minimax = (os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free") or _has_commandcode_key_on_disk())
+    _adk_parallel_val = os.getenv("ADK_PARALLEL", "")
+    free_tier = bool(is_minimax and (_adk_parallel_val == "" or _adk_parallel_val == "0"))
 
     # -- Search sub-agents (Gemini + GoogleSearch, isolated) -----------------
     news_search_sub = _build_search_subagent(
@@ -212,23 +279,47 @@ def build_graph(
         output_key="collector_output",
     )
 
-    news_harvester = LlmAgent(
-        name="news_harvester",
-        model=main_model,
-        description="Harvests last 30d IDX news (max 8, tier-filtered).",
-        instruction=_fmt(news_harvester_instruction),
-        tools=[AgentTool(news_search_sub)],
-        output_key="news_output",
-    )
+    # Minimax free: AgentTool sub-agents double the call count and trigger
+    # 503 overloaded. Run synthetic-only (no search sub-agent) in free_tier.
+    # In all other cases we attach the composite web tools (web_search +
+    # web_extract + web_search_and_extract) so parent agents can do the 80%
+    # pattern (search + extract parallel) in a single round-trip.
+    composite_web_tools = _web_composite_tools()
 
-    social_sentiment = LlmAgent(
-        name="social_sentiment",
-        model=main_model,
-        description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit.",
-        instruction=_fmt(social_sentiment_instruction),
-        tools=[AgentTool(social_search_sub)],
-        output_key="social_output",
-    )
+    if free_tier:
+        news_harvester = LlmAgent(
+            name="news_harvester",
+            model=main_model,
+            description="Harvests last 30d IDX news (max 8, synthetic under minimax free).",
+            instruction=_fmt(news_harvester_instruction),
+            tools=[],
+            output_key="news_output",
+        )
+        social_sentiment = LlmAgent(
+            name="social_sentiment",
+            model=main_model,
+            description="Gauges retail sentiment 0-100 (synthetic under minimax free).",
+            instruction=_fmt(social_sentiment_instruction),
+            tools=[],
+            output_key="social_output",
+        )
+    else:
+        news_harvester = LlmAgent(
+            name="news_harvester",
+            model=main_model,
+            description="Harvests last 30d IDX news (max 8, tier-filtered) via Tavily search + readability extract.",
+            instruction=_fmt(news_harvester_instruction),
+            tools=composite_web_tools,
+            output_key="news_output",
+        )
+        social_sentiment = LlmAgent(
+            name="social_sentiment",
+            model=main_model,
+            description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit via Tavily + readability.",
+            instruction=_fmt(social_sentiment_instruction),
+            tools=composite_web_tools,
+            output_key="social_output",
+        )
 
     modeler = LlmAgent(
         name="modeler",
@@ -239,15 +330,24 @@ def build_graph(
         output_key="valuation_output",
     )
 
-    # Industry needs its search sub-agent routed via AgentTool (GoogleSearch isolation)
-    industry = LlmAgent(
-        name="industry",
-        model=main_model,
-        description="Macro/industry thematics with url+date citations.",
-        instruction=_fmt(industry_instruction),
-        tools=[AgentTool(industry_search_sub)],
-        output_key="industry_output",
-    )
+    if free_tier:
+        industry = LlmAgent(
+            name="industry",
+            model=main_model,
+            description="Macro/industry thematics (synthetic under minimax free).",
+            instruction=_fmt(industry_instruction),
+            tools=[],
+            output_key="industry_output",
+        )
+    else:
+        industry = LlmAgent(
+            name="industry",
+            model=main_model,
+            description="Macro/industry thematics with url+date citations via Tavily + readability.",
+            instruction=_fmt(industry_instruction),
+            tools=composite_web_tools,
+            output_key="industry_output",
+        )
 
     analyst = LlmAgent(
         name="analyst",
@@ -318,18 +418,31 @@ def build_graph(
 
     # -- Workflow composition -------------------------------------------------
     # Parallel 1: Collector + News + Social (all blocking inputs to Modeler)
-    intake_parallel = ParallelAgent(
-        name="intake_parallel",
-        sub_agents=[collector, news_harvester, social_sentiment],
-        description="Parallel intake: collector + news + social.",
-    )
-
-    # Parallel 2: Analyst + Industry + Risk + KPI (all after Modeler)
-    research_parallel = ParallelAgent(
-        name="research_parallel",
-        sub_agents=[analyst, industry, risk, kpi],
-        description="Parallel research: analyst + industry + risk + KPI.",
-    )
+    if free_tier:
+        # Sequential for free tier: avoids 3 concurrent minimax calls that 503.
+        # Keep name 'intake_parallel' so state/output_keys unchanged.
+        intake_parallel = SequentialAgent(
+            name="intake_parallel",
+            sub_agents=[collector, news_harvester, social_sentiment],
+            description="Sequential intake (free-tier throttling): collector → news → social.",
+        )
+        research_parallel = SequentialAgent(
+            name="research_parallel",
+            sub_agents=[analyst, industry, risk, kpi],
+            description="Sequential research (free-tier throttling): analyst → industry → risk → kpi.",
+        )
+    else:
+        intake_parallel = ParallelAgent(
+            name="intake_parallel",
+            sub_agents=[collector, news_harvester, social_sentiment],
+            description="Parallel intake: collector + news + social.",
+        )
+        # Parallel 2: Analyst + Industry + Risk + KPI (all after Modeler)
+        research_parallel = ParallelAgent(
+            name="research_parallel",
+            sub_agents=[analyst, industry, risk, kpi],
+            description="Parallel research: analyst + industry + risk + KPI.",
+        )
 
     # Adversarial loop — hard cap 4 iterations, exits via exit_loop tool
     adversarial_loop = LoopAgent(

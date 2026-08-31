@@ -44,6 +44,15 @@ _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 # CommandCode bridge defaults
 _SPARK_DEFAULT_MODEL = "meta/muse-spark-1.2-contributor"
+# Minimax DIRECT (like hermes custom_providers minimax-v1) — hermes config has
+# custom_providers: name minimax-v1, base https://api.minimax.io/v1, key MINIMAX_API_KEY, model MiniMax-M3.
+# We use the same direct endpoint so the full 11-agent graph doesn't hop through
+# the overloaded CommandCode free tier (minimax-m3-free @ api.commandcode.ai 503'd).
+_MINIMAX_DIRECT_MODEL = "MiniMax-M3"
+_MINIMAX_DIRECT_BASE = "https://api.minimax.io/v1"
+# Legacy CommandCode free tier (kept as fallback if MINIMAX_API_KEY missing)
+_MINIMAX_FREE_MODEL = "minimax/minimax-m3-free"
+_MINIMAX_FREE_BASE = "https://api.commandcode.ai/provider/v1"
 _SPARK_DEFAULT_BASE = "http://127.0.0.1:9992/v1"
 
 
@@ -139,6 +148,98 @@ def spark_model(
     )
 
 
+def _minimax_api_key() -> str | None:
+    """Read MINIMAX_API_KEY from env or ~/.hermes/.env (same as hermes minimax-v1)."""
+    v = os.getenv("MINIMAX_API_KEY")
+    if v and not v.strip().startswith("#"):
+        return v.strip().strip('"').strip("'")
+    import pathlib, re as _re
+    for pp in (pathlib.Path.home()/".hermes/.env", pathlib.Path.home()/".env"):
+        if pp.exists():
+            try:
+                mm = _re.search(r'^MINIMAX_API_KEY\s*=\s*"?([^"\n]+)"?', pp.read_text(), re.M)
+                if mm and not mm.group(1).strip().startswith("#"):
+                    key = mm.group(1).strip().strip('"').strip("'")
+                    if key and key != "your_minimax_api_key_here":
+                        return key
+            except Exception:
+                pass
+    return None
+
+
+def minimax_model(
+    model: str | None = None,
+    api_key: str | None = None,
+    api_base: str | None = None,
+    num_retries: int | None = None,
+) -> BaseLlm:
+    """Return a LiteLlm BaseLlm for MiniMax — DIRECT, like hermes custom_providers minimax-v1.
+
+    Direct: MiniMax-M3 @ https://api.minimax.io/v1 with MINIMAX_API_KEY from
+    ~/.hermes/.env (same key hermes uses for minimax-v1). Proven: tool calling
+    works (calc_wacc tool_call verified) and content works via minimax/MiniMax-M3.
+
+    Fallback: if MINIMAX_API_KEY missing, uses CommandCode minimax-m3-free
+    @ https://api.commandcode.ai/provider/v1 with COMMANDCODE_API_KEY.
+
+    num_retries: default 2 for direct (stable), 3 for CommandCode free (503-prone).
+    """
+    if not _litellm_available():
+        raise ImportError("litellm not installed — pip install litellm or google-adk[extensions]")
+    from google.adk.models.lite_llm import LiteLlm
+    import pathlib, re as _re
+
+    # Prefer direct MiniMax (hermes style) — stable, tool calling verified
+    direct_key = api_key or _minimax_api_key()
+    if direct_key:
+        model_id = model or os.getenv("MINIMAX_MODEL") or _MINIMAX_DIRECT_MODEL
+        base = api_base or os.getenv("MINIMAX_BASE_URL") or _MINIMAX_DIRECT_BASE
+        retries = num_retries if num_retries is not None else int(os.getenv("MINIMAX_NUM_RETRIES", "2"))
+        try:
+            import litellm as _l
+            _l.num_retries = max(_l.num_retries or 0, retries)
+        except Exception:
+            pass
+        return LiteLlm(
+            model=f"minimax/{model_id}",
+            api_base=base,
+            api_key=direct_key,
+            max_tokens=4096,
+            num_retries=retries,
+            timeout=int(os.getenv("MINIMAX_TIMEOUT", "90")),
+        )
+    # Fallback: CommandCode free tier
+    key = os.getenv("COMMANDCODE_API_KEY") or ""
+    if not key:
+        p = pathlib.Path.home()/".config"/"commandcode-bridge"/"env"
+        if p.exists():
+            try:
+                txt2 = p.read_text()
+                m = _re.search(r'COMMANDCODE_API_KEY="([^"]+)"', txt2)
+                if m:
+                    key = m.group(1).strip()
+            except Exception:
+                pass
+    if not key:
+        raise ValueError("No MiniMax key — set MINIMAX_API_KEY in ~/.hermes/.env (preferred, like hermes minimax-v1) or COMMANDCODE_API_KEY")
+    model_id = model or os.getenv("MINIMAX_MODEL") or _MINIMAX_FREE_MODEL
+    base = api_base or os.getenv("MINIMAX_API_BASE") or _MINIMAX_FREE_BASE
+    retries = num_retries if num_retries is not None else int(os.getenv("MINIMAX_NUM_RETRIES", "3"))
+    try:
+        import litellm as _l
+        _l.num_retries = max(_l.num_retries or 0, retries)
+    except Exception:
+        pass
+    return LiteLlm(
+        model=f"openai/{model_id}",
+        api_base=base,
+        api_key=key,
+        max_tokens=4096,
+        num_retries=retries,
+        timeout=int(os.getenv("MINIMAX_TIMEOUT", "120")),
+    )
+
+
 def gemini_model(
     model: str | None = None,
     api_key: str | None = None,
@@ -165,6 +266,8 @@ def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
     name = name.lower().strip()
     if name in ("spark", "muse", "muse-spark", "meta/muse-spark-1.2-contributor", "commandcode", "cc"):
         return spark_model(**kw)
+    if name in ("minimax", "minimax-m3", "minimax-m3-free", "minimax/minimax-m3-free", "minimax-free", "minimax_m3_free"):
+        return minimax_model(**kw)
     if name in ("deepseek", "deepseek-chat", "deepseek-reasoner", "deepseek-v3", "deepseek-r1"):
         # normalize model aliases
         model = kw.pop("model", None)
