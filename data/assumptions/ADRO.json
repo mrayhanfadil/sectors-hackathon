@@ -1,0 +1,27 @@
+{
+  "ticker": "ADRO",
+  "generated_at": "2026-08-31T09:22:39.183296+07:00",
+  "source": "idx",
+  "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit",
+  "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
+  "provenance": {
+    "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
+    "latest_time": "2026-08-26 00:00:00",
+    "sector": "Energy",
+    "close": 2610.0,
+    "foreign_flow": {
+      "buy": 28877000.0,
+      "sell": 22015300.0
+    },
+    "rows_5y": 1195,
+    "rows_5d": 1,
+    "yfinance_probe": {
+      "rows": 0,
+      "error": null,
+      "cache_hit": false
+    },
+    "yfinance_gap_note": "yfinance IDX small-cap coverage is thin (financials/balance often empty). Use IDX stock_data as primary; yfinance only as fallback with disclosed source."
+  },
+  "cache_ttl_seconds": 14400,
+  "no_sectors_hit": true
+}
