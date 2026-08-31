@@ -59,3 +59,4 @@ package.json
 package-lock.json
 node_modules/
 >>>>>>> wt/t07-analyst
+.worktrees/
