@@ -24,15 +24,18 @@ from typing import Any, Dict, List
 
 def _pillar_value(p: Dict[str, Any]) -> float:
     method = p.get("method", "equity")
-    if method == "ev_ebitda":
+    if "value" in p and p["value"] is not None:
+        return float(p["value"])
+    if method == "ev_ebitda" and "ebitda" in p and "multiple" in p:
         return (
             float(p["ebitda"]) * float(p["multiple"])
             - float(p.get("net_debt", 0.0))
             + float(p.get("cash", 0.0))
         )
-    if method == "pe":
+    if method == "pe" and "net_income" in p and "multiple" in p:
         return float(p["net_income"]) * float(p["multiple"])
-    return float(p.get("value", 0.0))
+    return float(p.get("equity", p.get("value", 0.0)))
+
 
 
 def sotp(

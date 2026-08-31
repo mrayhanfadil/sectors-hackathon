@@ -162,7 +162,7 @@ def _parse_list(s: str) -> List[float]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="DCF / WACC / EV/EBITDA engine")
+    ap = argparse.ArgumentParser(description="DCF / WACC / EV/EBITDA / Index Target engine")
     sub = ap.add_subparsers(dest="cmd", required=True)
 
     p = sub.add_parser("wacc")
@@ -182,8 +182,16 @@ def main() -> None:
     p.add_argument("--fcfe", action="store_true")
 
     p = sub.add_parser("ev_ebitda")
-    for a in ("ebitda", "multiple", "shares", "net_debt", "cash"):
-        p.add_argument(f"--{a}", type=float, required=(a in ("ebitda", "multiple")))
+    p.add_argument("--ebitda", type=float, required=True, help="EBITDA value")
+    p.add_argument("--multiple", type=float, required=True, help="EV/EBITDA multiple (e.g. 22.6)")
+    p.add_argument("--shares", type=float, default=1.0, help="Shares outstanding")
+    p.add_argument("--net-debt", "--net_debt", dest="net_debt", type=float, default=0.0, help="Net debt (or negative for net cash)")
+    p.add_argument("--cash", type=float, default=0.0, help="Cash (if gross debt passed as net_debt)")
+
+    p = sub.add_parser("index_target")
+    p.add_argument("--current", type=float, required=True, help="Current index level (e.g. 8425.93)")
+    p.add_argument("--eps-growth", type=float, required=True, help="Forward EPS growth decimal (e.g. 0.08)")
+    p.add_argument("--multiple", type=float, default=1.0, help="Multiple re-rating factor (default 1.0 for flat multiple)")
 
     args = ap.parse_args()
     if args.cmd == "wacc":
@@ -193,10 +201,17 @@ def main() -> None:
             _parse_list(args.fcf), args.wacc, args.g, args.shares, args.cash,
             args.net_debt, args.tv, args.mid_year, args.year0, args.fcfe,
         )
-    else:
+    elif args.cmd == "ev_ebitda":
         out = ev_ebitda(args.ebitda, args.multiple, args.shares, args.net_debt, args.cash)
+
+    elif args.cmd == "index_target":
+        out = index_target(args.current, args.eps_growth, args.multiple)
+    else:
+        ap.print_help()
+        return
     print(json.dumps(out, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
     main()
+
