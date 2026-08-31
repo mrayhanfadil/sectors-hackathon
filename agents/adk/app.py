@@ -1,0 +1,348 @@
+# Copyright 2026 Sectors Hackathon
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+
+"""Main ADK Python graph — 11 agents → Sequential/Parallel/LoopAgent(max=4).
+
+Orchestrator wiring per plan.md §3 + task T05:
+
+  Collector + News + Social  (Parallel, 3-way)
+          ↓ blocking
+      Modeler (THE BRAIN, deterministic FunctionTools)
+          ↓
+  Analyst + Industry + Risk + KPI  (Parallel, 4-way)
+          ↓
+      Writer → Visualizer → SOTP → Adversarial (LoopAgent max=4) → Critic
+
+GoogleSearch isolation: search-bearing agents get google_search tool in a
+dedicated sub-agent via AgentTool (genai limit: GoogleSearch cannot coexist
+with FunctionTool in the same LlmAgent — see adk-go-skill pitfall section).
+
+Provider: DeepSeek deepseek-chat via LiteLlm (OpenAI-compat) for main agents;
+Gemini gemini-2.0-flash for search-grounded sub-agents. Falls back to LiteLlm
+if Gemini key missing.
+
+MCP: Sectors MCP streamable HTTP via McpToolset(StreamableHTTPConnectionParams)
+with Authorization: Bearer <SECTORS_API_KEY> — lazy-connect (best-effort).
+"""
+
+from __future__ import annotations
+
+import logging
+import os
+from typing import Any
+
+from google.adk.agents.llm_agent import LlmAgent
+from google.adk.agents.loop_agent import LoopAgent
+from google.adk.agents.parallel_agent import ParallelAgent
+from google.adk.agents.sequential_agent import SequentialAgent
+from google.adk.tools.agent_tool import AgentTool
+from google.adk.tools.exit_loop_tool import exit_loop
+from google.adk.tools.function_tool import FunctionTool
+from google.adk.tools.google_search_tool import GoogleSearchTool
+
+from .agents.instructions import (
+    adversarial_instruction,
+    analyst_instruction,
+    collector_instruction,
+    critic_instruction,
+    industry_instruction,
+    industry_search_sub_instruction,
+    kpi_instruction,
+    modeler_instruction,
+    news_harvester_instruction,
+    news_search_sub_instruction,
+    risk_instruction,
+    social_search_sub_instruction,
+    social_sentiment_instruction,
+    sotp_instruction,
+    visualizer_instruction,
+    writer_instruction,
+)
+from .providers import deepseek_model, gemini_model
+from .tools.finance_tools import DETERMINISTIC_TOOLS
+from .tools.mcp_sectors import maybe_sectors_mcp_toolset
+
+logger = logging.getLogger(__name__)
+
+MAX_ADVERSARIAL_ITERATIONS = 4
+
+
+def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None = None):
+    """Main LLM: DeepSeek if key present, else Gemini fallback."""
+    deepseek_key = api_key or os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
+    if deepseek_key:
+        try:
+            return deepseek_model(api_key=deepseek_key)
+        except Exception as e:
+            logger.warning("DeepSeek model init failed (%s), falling back to Gemini", e)
+    # fallback
+    gkey = gemini_api_key or os.getenv("GOOGLE_API_KEY") or os.getenv("GEMINI_API_KEY") or ""
+    if gkey:
+        try:
+            return gemini_model(api_key=gkey)
+        except Exception as e:
+            logger.warning("Gemini fallback also failed: %s", e)
+            raise
+    raise ValueError("No LLM key set — need DEEPSEEK_API_KEY or GOOGLE_API_KEY")
+
+
+def _function_tools() -> list[Any]:
+    return [FunctionTool(func) for func in DETERMINISTIC_TOOLS] + [FunctionTool(exit_loop)]
+
+
+def _build_search_subagent(
+    name: str,
+    description: str,
+    instruction: str,
+    model=None,
+) -> LlmAgent:
+    """Search-grounded sub-agent isolated from function tools (genai limit)."""
+    if model is None:
+        try:
+            model = gemini_model()
+        except ValueError:
+            # No Gemini key — use DeepSeek with Sectors MCP fetch-news as search fallback
+            model = _deepseek_or_gemini()
+    return LlmAgent(
+        name=name,
+        model=model,
+        description=description,
+        instruction=instruction,
+        tools=[GoogleSearchTool()],
+    )
+
+
+def build_graph(
+    ticker: str = "BBCA",
+    *,
+    deepseek_api_key: str | None = None,
+    gemini_api_key: str | None = None,
+    sectors_api_key: str | None = None,
+) -> SequentialAgent:
+    """Build the full 11-agent Sequential graph. Returns the root SequentialAgent.
+
+    Args:
+        ticker: IDX ticker (bare, e.g. BBCA).
+        deepseek_api_key: DeepSeek key override (else env).
+        gemini_api_key: Gemini key override (else env, for search sub-agents).
+        sectors_api_key: Sectors API key override (else SECTORS_API_KEY env).
+
+    The root is a SequentialAgent so callers can run it via Runner/InMemorySession.
+    """
+    def _fmt(tmpl: str) -> str:
+        # Safe ticker substitution — do NOT use str.format() because instruction
+        # templates contain JSON examples with braces like {url, title, ...}
+        return tmpl.replace("{ticker}", ticker)
+
+    main_model = _deepseek_or_gemini(api_key=deepseek_api_key, gemini_api_key=gemini_api_key)
+    ft = _function_tools()
+
+    # -- Search sub-agents (Gemini + GoogleSearch, isolated) -----------------
+    news_search_sub = _build_search_subagent(
+        name="news_search_sub",
+        description="Researches IDX news via Google Search grounding.",
+        instruction=_fmt(news_search_sub_instruction),
+    )
+    social_search_sub = _build_search_subagent(
+        name="social_search_sub",
+        description="Researches retail sentiment on X/Reddit/Stockbit via Google Search.",
+        instruction=_fmt(social_search_sub_instruction),
+    )
+    industry_search_sub = _build_search_subagent(
+        name="industry_search_sub",
+        description="Researches macro/industry context via Google Search grounding.",
+        instruction=_fmt(industry_search_sub_instruction),
+    )
+
+    # -- MCP toolset (best-effort) -------------------------------------------
+    sectors_toolset = maybe_sectors_mcp_toolset(api_key=sectors_api_key)
+    if sectors_toolset is not None:
+        logger.info("Sectors MCP toolset attached")
+    else:
+        logger.info("Sectors MCP skipped (no SECTORS_API_KEY)")
+
+    collector_tools: list[Any] = []
+    if sectors_toolset is not None:
+        collector_tools.append(sectors_toolset)
+
+    # -- Leaf LlmAgents -------------------------------------------------------
+    # Collector may carry Sectors MCP; if no MCP, it's a plain LLM that emits synthetic disclosures.
+    collector = LlmAgent(
+        name="collector",
+        model=main_model,
+        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP.",
+        instruction=_fmt(collector_instruction),
+        tools=collector_tools if collector_tools else [],
+        output_key="collector_output",
+    )
+
+    news_harvester = LlmAgent(
+        name="news_harvester",
+        model=main_model,
+        description="Harvests last 30d IDX news (max 8, tier-filtered).",
+        instruction=_fmt(news_harvester_instruction),
+        tools=[AgentTool(news_search_sub)],
+        output_key="news_output",
+    )
+
+    social_sentiment = LlmAgent(
+        name="social_sentiment",
+        model=main_model,
+        description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit.",
+        instruction=_fmt(social_sentiment_instruction),
+        tools=[AgentTool(social_search_sub)],
+        output_key="social_output",
+    )
+
+    modeler = LlmAgent(
+        name="modeler",
+        model=main_model,
+        description="THE BRAIN — deterministic valuation via calc_* tools only.",
+        instruction=_fmt(modeler_instruction),
+        tools=ft,
+        output_key="valuation_output",
+    )
+
+    # Industry needs its search sub-agent routed via AgentTool (GoogleSearch isolation)
+    industry = LlmAgent(
+        name="industry",
+        model=main_model,
+        description="Macro/industry thematics with url+date citations.",
+        instruction=_fmt(industry_instruction),
+        tools=[AgentTool(industry_search_sub)],
+        output_key="industry_output",
+    )
+
+    analyst = LlmAgent(
+        name="analyst",
+        model=main_model,
+        description="Company business + ops specs with source per exhibit.",
+        instruction=_fmt(analyst_instruction),
+        output_key="analyst_output",
+    )
+
+    risk = LlmAgent(
+        name="risk",
+        model=main_model,
+        description="4-7 pillar-specific risk buckets with impact/mitigant.",
+        instruction=_fmt(risk_instruction),
+        output_key="risk_output",
+    )
+
+    kpi = LlmAgent(
+        name="kpi",
+        model=main_model,
+        description="Operational KPIs per subsector (tenancy, fiber km, BOPD, MW, etc.).",
+        instruction=_fmt(kpi_instruction),
+        tools=[FunctionTool(exit_loop)] if False else [],  # no extra tools needed
+        output_key="kpi_output",
+    )
+
+    writer = LlmAgent(
+        name="writer",
+        model=main_model,
+        description="Investment thesis — 4 bullets, every number cited from valuation/kpi.",
+        instruction=_fmt(writer_instruction),
+        output_key="writer_output",
+    )
+
+    visualizer = LlmAgent(
+        name="visualizer",
+        model=main_model,
+        description="7 mandatory charts with Source per exhibit.",
+        instruction=_fmt(visualizer_instruction),
+        output_key="visuals_output",
+    )
+
+    sotp_agent = LlmAgent(
+        name="sotp",
+        model=main_model,
+        description="SOTP aggregator — 4 pillars, peer multiples, holdco discount (skip if single).",
+        instruction=_fmt(sotp_instruction),
+        tools=[FunctionTool(calc) for calc in DETERMINISTIC_TOOLS if calc.__name__ in ("calc_sotp", "calc_multiples")],
+        output_key="sotp_output",
+    )
+
+    adversarial = LlmAgent(
+        name="adversarial",
+        model=main_model,
+        description="Red Team — challenges one claim per iteration, defender must evidence or concede.",
+        instruction=_fmt(adversarial_instruction),
+        tools=[FunctionTool(exit_loop)],
+        output_key="debate_output",
+    )
+
+    critic = LlmAgent(
+        name="critic",
+        model=main_model,
+        description="QA arbiter — REJECT on any mismatch, PASS when institutional-grade.",
+        instruction=_fmt(critic_instruction),
+        output_key="critic_output",
+    )
+
+    # -- Workflow composition -------------------------------------------------
+    # Parallel 1: Collector + News + Social (all blocking inputs to Modeler)
+    intake_parallel = ParallelAgent(
+        name="intake_parallel",
+        sub_agents=[collector, news_harvester, social_sentiment],
+        description="Parallel intake: collector + news + social.",
+    )
+
+    # Parallel 2: Analyst + Industry + Risk + KPI (all after Modeler)
+    research_parallel = ParallelAgent(
+        name="research_parallel",
+        sub_agents=[analyst, industry, risk, kpi],
+        description="Parallel research: analyst + industry + risk + KPI.",
+    )
+
+    # Adversarial loop — hard cap 4 iterations, exits via exit_loop tool
+    adversarial_loop = LoopAgent(
+        name="adversarial_loop",
+        sub_agents=[adversarial],
+        max_iterations=MAX_ADVERSARIAL_ITERATIONS,
+        description="Red Team loop — max 4 iterations, exit_loop to stop early.",
+    )
+
+    # Root Sequential graph
+    root = SequentialAgent(
+        name="equity_report_orchestrator",
+        sub_agents=[
+            intake_parallel,
+            modeler,
+            research_parallel,
+            writer,
+            visualizer,
+            sotp_agent,
+            adversarial_loop,
+            critic,
+        ],
+        description="Institutional equity report — 11 agents, Sequential + Parallel + Loop(max=4), ADK Python + MCP.",
+    )
+
+    return root
+
+
+# Convenience: export root for adk CLI discovery (adk run / adk web expects `root_agent`)
+def get_root_agent(ticker: str = "BBCA") -> SequentialAgent:
+    return build_graph(ticker=ticker)
+
+
+# Default root for `adk run` / `adk web` when ADK scans the module for `root_agent`
+try:
+    root_agent = build_graph()
+except Exception as _e:
+    # Allow import without keys (e.g. in CI/tests) — tests construct with explicit keys
+    logger.warning("root_agent not built at import (missing keys?): %s", _e)
+    root_agent = None  # type: ignore[assignment]
+
+__all__ = [
+    "MAX_ADVERSARIAL_ITERATIONS",
+    "build_graph",
+    "get_root_agent",
+    "root_agent",
+]
