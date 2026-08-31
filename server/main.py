@@ -52,13 +52,15 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
-    # CORS — allow Vite + Pages.dev
+    # CORS — allow Vite + Pages.dev (regex handles *.pages.dev preview deploys)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_list,
+        allow_origin_regex=settings.cors_allow_origin_regex,
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
+        expose_headers=["Content-Disposition", "Content-Type"],
     )
 
     # routers — 6 endpoints per T04 spec
