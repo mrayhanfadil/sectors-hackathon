@@ -122,9 +122,9 @@
         ↓
   ┌─ Data Collector (parallel, Sectors API v2) ─┐  ┌─ News Harvester (parallel, Google) ─┐  ┌─ Social Sentiment (parallel, X+Reddit) ─┐
   │  via web_search + web_extract, 0 credit     │  via xurl + web_search, 0 credit       │
-  │  • overview, financials 5-6Y, prices, segments│
+  │  • IDX data + yfinance 5Y (.JK), segments (P0) │
   │  • operational KPIs per subsector (baru)      │
-  │  • peers PER PILAR (SOTP) atau universe       │
+  │  • peers: synthetic/universe lokal (P0), Sectors SOTP P2  │
   │  • JCI benchmark + historical multiples 3Y    │
   │  • dividends, holders, ESG proxy              │
   └───────────────────┬───────────────────────────┘
@@ -169,16 +169,15 @@
 
 ## 4. Data Layer
 
-**Sectors API v2 (hemat) + Google News (0 credit):**
-- `overview` (holders CDIA 60%, MTEL TLKM 71.83%), `financials?sections=income,balance,cashflow` 5-6Y, `prices?range=5y` + `segments` kalau ada
-- `peers` — single (RATU 22) atau SOTP 4 pilar (CDIA 4 credit) atau infra comps (MTEL: TBIG, TOWR)
-- `operational_kpis` — tenancy/fiber/tower (MTEL), BOPD (RATU), MW/m³ (CDIA) — kalau API belum ada → synthetic + disclosed proxy
-- `index/JCI/prices` + historical multiples 3Y (untuk bands)
-- **News Harvester:** `web_search(ticker + 'IDX target price' / 'earnings' / 'Danantara catalyst')` → `web_extract(url)` → dedup + tier (T1 IDX/Kontan/Bisnis, T2 Reuters/Bloomberg, T3 blog) → `news.json` (url/date/title/source/tier/snippet/relevance) — max 8, last 30d, cache 1h
-- **Social Sentiment:** `search_social(ticker, days=14, max=8)` → X via `xurl` + Reddit via `web_search site:reddit.com` + Stockbit (IDX) → dedup + relevance → `sentiment.json` (platform/url/date/text/sentiment/score/relevance) + gauge 0-100 + top 3 narratives + timeline — cache 1h — Threads P1 (needs token), IG/FB skip
-- Cache 4h + synthetic fallback
+**Primary P0-P1: IDX data (user-owned) + yfinance — NO Sectors yet [LOCKED 31 Aug 2026]:**
+- **IDX data (Fadiil-owned):** `overview/holders` (CDIA 60%, MTEL TLKM 71.83%), `financials` 5-6Y (income/balance/cashflow), `segments` kalau ada. Path: user akan point ke `data/idx/*` (csv/parquet/json) — Collector baca lokal dulu, tanpa credit.
+- **yfinance (fallback pelengkap):** `prices?period=5y` (wajib `.JK` suffix: BBCA.JK/TLKM.JK), `financials/balance/cashflow` via `Ticker.financials`. Rate limit aware, cache 4h, disclose `source: yfinance` per exhibit. **Gap:** yfinance IDX fundamentals tipis untuk small caps → kalau kosong, pakai IDX data + synthetic estimasi dengan label `estimated`.
+- **Sectors API v2 — DEFERRED to P2:** `overview`, `financials?sections=`, `peers` (universe vs SOTP 4 pilar), `index/JCI/prices` + 3Y bands. Pindah dari P0 ke P2. Aktifkan hanya kalau P1 demo dengan IDX+yfinance sudah OK (Fadiil gate).
+- **News Harvester (0 credit):** `web_search(ticker + 'IDX target price' / 'earnings' / 'Danantara catalyst')` → `web_extract(url)` → dedup + tier (T1 IDX/Kontan/Bisnis, T2 Reuters/Bloomberg, T3 blog) → `news.json` — max 8, last 30d, cache 1h
+- **Social Sentiment (0 credit):** `search_social(ticker, days=14, max=8)` → X via `xurl` + Reddit via `web_search site:reddit.com` + Stockbit → `sentiment.json` + gauge 0-100 — cache 1h — Threads P1, IG/FB skip
+- Cache 4h + synthetic fallback (seed=42) tetap sebagai safety net
 
-**Synthetic:** SQLite `data/sectors.db` seed=42, 49 tickers + JCI + segments + KPI synthetic (tenancy ratio, fiber km). `data/peers.json` dual mode single/SOTP/infra. `data/assumptions/{ticker}.json` — WACC, beta, RF, RP, g, payout, prior forecast, blended weights.
+**Synthetic + IDX store:** `data/idx/` (user-owned IDX dumps) + `data/sectors.db` SQLite seed=42 (49 tickers + JCI + segments + KPI synthetic) + `data/peers.json` (dual mode) + `data/assumptions/{ticker}.json` (WACC/beta/RF/RP/g/payout/blended). Di P0-P1, Sectors tidak di-hit; `assumptions` tetap auditable dengan `source: idx|yfinance`.
 
 ## 5. Output — Adaptive 3 Templates
 
@@ -202,8 +201,8 @@
 | Phase | Tanggal | Deliverable | Owner |
 |---|---|---|---|
 | **P0 — Scaffold** | 31 Aug – 1 Sep | Branch + plan.md (RATU+CDIA+MTEL+JPM+L1-4) + `dcf/ddm/sotp/blended/bands/ggm.py` + `peers.json` (3 modes) + 4 HTML templates | DONE |
-| **P1 — Data** | 2 – 6 Sep | Sectors proxy + SQLite (segments+KPI+JCI+3Y+flows) + 5 tickers E2E (RATU, CDIA SOTP, MTEL infra, BBCA GGM, ADRO SOTP) + `source-library.md` (15 sources) | Collector |
-| **P2 — Modeler** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 (8%×15x) reproducible | Modeler |
+| **P1 — Data** | 2 – 6 Sep | **IDX+yfinance** (data/idx + yfinance .JK, cache 4h) + SQLite (segments+KPI+JCI+3Y+flows synthetic) + 5 tickers E2E (RATU/CDIA/MTEL/BBCA/ADRO) — **0 Sectors credit** + `source-library.md` (15 sources) | Collector |
+| **P2 — Modeler + Sectors Gate** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 reproducible — **GATE:** kalau P1 OK, swap data layer ke Sectors v2 (zelfde engines, source switch) | Modeler |
 | **P3 — Agents** | 11 – 18 Sep | 11 agents + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Adversarial Red Team (2-round duel + user challenge) + Social Sentiment (X+Reddit P0) + Critic arbiter | Multi-agent |
 | **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF (single/SOTP/infra/strategy) + `/report/[ticker]` + `/outlook` + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
 | **P5 — Polish & Video** | 24 – 29 Sep | 5 tickers showcase (RATU/CDIA/MTEL/BBCA/ADRO) + strategy page, video, audit swarm 3 AGY | All |
@@ -211,9 +210,9 @@
 
 ## 8. Credit Budget (1,000)
 
-- Universe 1 credit >> loop 22 (hemat 95%). SOTP 4 pilar = 4 credit vs 88 loop. Infra peers 1 credit.
-- `sections=` potong 50%, cache 4h, synthetic fallback.
-- Estimasi: 5 tickers × ~10-12 credits (KPI+JCI+bands+flows) = 50-60 credits (aman, masih <6% dari 1,000).
+- **P0-P1: 0 Sectors credit** (IDX+yfinance+synthetic). Hemat 100%.
+- **P2 (kalau gate OK):** Universe 1c >> loop 22 (hemat 95%), SOTP 4 pilar = 4c vs 88, infra 1c, `sections=` potong 50%, cache 4h.
+- Estimasi P2: 5 tickers × ~10-12c = 50-60c (masih <6% dari 1,000). P0-P1 tetap 0c.
 
 ## 9. Risks & Mitigations
 
@@ -225,7 +224,8 @@
 | Blended weight !=100% | Critic sum check (60+40) |
 | KPI tenancy salah hitung | Formula tenant/tower, Critic validate |
 | Bands tanpa 3Y data | Fallback synthetic 3Y + disclosed |
-| Credit habis | Synthetic DB |
+| Credit habis | Synthetic DB (P0-P1 tidak perlu) |
+| yfinance gap (IDX small cap fundamentals kosong) | Fallback IDX data + synthetic estimated dengan label disclosed |
 | News stale / hoax | Tier filter + date check + Critic url+date per klaim |
 | Agent sycophancy (asal terima) | Adversarial must defend/concede with evidence; Critic REJECT agree-without-evidence |
 | Sentiment noise / brigading / spam | Dedup + relevance + platform tier (X/Reddit P0, Threads P1), gauge with confidence, Critic url+date check, disclaimer |
@@ -252,6 +252,7 @@
 | Bahasa ID (default) | Retail IDX, rules §08 ID/EN equal | EN default |
 | Prior forecast Initiation only P0 | MVP simple, belum ada histori v1; CDIA revision jadi P2 | Simpan v1 + revision block |
 | ESG try-search-then-skip | Coba web_search ESG rating dulu; kalau tidak ada hide (Sectors tidak ada ESG), anti-fabrication | Hard-include (ngarang) / hard-skip |
+| Data P0-P1 IDX+yfinance, Sectors P2 | Highlight data tanpa burn credit; gate ke Sectors kalau demo OK (Fadiil decision) | Sectors dari P0 (burn 1,000 langsung) |
 
 ## 11. Open — Ide Tambahan Fadiil + Temen
 
