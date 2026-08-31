@@ -7,3 +7,5 @@ yfinance>=0.2.40
 python-multipart>=0.0.9
 cachetools>=5.3
 anyio>=4.4
+weasyprint>=69.0
+jinja2>=3.1
