@@ -1,0 +1,93 @@
+{
+  "ticker": "MTEL",
+  "name": "PT Dayamitra Telekomunikasi Tbk (Mitratel)",
+  "archetype": "infra",
+  "currency": "IDR",
+  "units": "mn",
+  "price": 460.0,
+  "shares_outstanding_mn": 81500.0,
+  "market_cap_mn": 37490000.0,
+  "date": "2026-08-27",
+  "source": {
+    "primary": "idx",
+    "label": "IDX / company filings + KSI Research 27 Aug 2026, data as of 27 Aug 2026"
+  },
+  "segments": [
+    {"pillar": "Tower leasing",    "revenue_mn": 3833000.0, "pct": 81.0, "growth_yoy": 0.01, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG, PROTELINDO", "source": "KSI Research 27 Aug 2026"},
+    {"pillar": "Fiber",            "revenue_mn": 309000.0,  "pct": 7.0,  "growth_yoy": 0.08, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG", "source": "KSI Research 27 Aug 2026"},
+    {"pillar": "Tower-related",    "revenue_mn": 299000.0,  "pct": 6.0,  "growth_yoy": 0.15, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG", "source": "KSI Research 27 Aug 2026"},
+    {"pillar": "Reseller",         "revenue_mn": 251000.0,  "pct": 6.0,  "growth_yoy": 0.0,  "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "—", "source": "KSI Research 27 Aug 2026"}
+  ],
+  "one_offs": null,
+  "financials": {
+    "years": ["2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+    "revenue_mn": [8500000.0, 9100000.0, 9500000.0, 10000000.0, 10400000.0, 10700000.0],
+    "ebitda_mn": [4590000.0, 5200000.0, 5800000.0, 6500000.0, 7100000.0, 7900000.0],
+    "net_income_mn": [2000000.0, 2200000.0, 2350000.0, 2450000.0, 2550000.0, 2500000.0],
+    "eps_mn": [24.0, 27.0, 29.0, 30.0, 31.0, 32.0],
+    "roe": [0.06, 0.065, 0.068, 0.07, 0.072, 0.075],
+    "roa": [0.045, 0.048, 0.05, 0.052, 0.054, 0.056],
+    "gearing_pct": [95.0, 90.0, 85.0, 80.0, 75.0, 70.0],
+    "debt_ebitda": [4.6, 4.2, 3.9, 3.6, 3.3, 3.0],
+    "current_ratio": [0.3, 0.4, 0.5, 0.6, 0.7, 0.8],
+    "gross_margin": [0.55, 0.58, 0.60, 0.62, 0.64, 0.66],
+    "ebitda_margin": [0.54, 0.57, 0.61, 0.65, 0.68, 0.74],
+    "net_margin": [0.235, 0.242, 0.247, 0.245, 0.245, 0.234],
+    "div_yield_pct": [2.6, 2.9, 3.1, 3.3, 3.5, 3.7]
+  },
+  "kpi": {
+    "towers": 40563,
+    "colocation": 23303,
+    "tenants": 63866,
+    "tenancy_ratio": 1.57,
+    "fiber_km": 59239,
+    "reseller_tenants": 2650,
+    "kpi_period": "1H26 (30 Jun 2026)"
+  },
+  "catalysts": [
+    {
+      "id": "MTEL-PST-UMT",
+      "title": "PST & UMT merger (eff. 1 Jul 2026) + 700MHz/2.6GHz spectrum re-farming",
+      "date": "2026-07-01",
+      "type": "merger",
+      "quantified": {
+        "tenants_added_min": 3000,
+        "tenants_added_max": 3500,
+        "annualized_revenue_min_mn": 360000.0,
+        "annualized_revenue_max_mn": 420000.0,
+        "by_fy": "FY27-29"
+      },
+      "status": "pending",
+      "source": "KSI Research 27 Aug 2026; TLKM spectrum allocation 700MHz 20/80 MHz, 2.6GHz"
+    },
+    {
+      "id": "MTEL-TENANCY",
+      "title": "Tenancy ratio uplift toward >1.6x on merger synergies",
+      "date": "2026-07-01",
+      "type": "operational",
+      "quantified": {"tenancy_ratio_target": 1.6},
+      "status": "pending",
+      "source": "KSI Research 27 Aug 2026"
+    }
+  ],
+  "peers": [
+    {"ticker": "TOWR", "name": "Sarana Menara Nusantara", "pe": 22.0, "ev_ebitda": 9.5, "sector": "Tower"},
+    {"ticker": "TBIG", "name": "Tower Bersama Infrastructure", "pe": 18.0, "ev_ebitda": 8.0, "sector": "Tower"},
+    {"ticker": "PROTELINDO", "name": "Protelindo (private)", "pe": 19.0, "ev_ebitda": 8.2, "sector": "Tower"}
+  ],
+  "bands": {
+    "pbv": {"dates": ["2024", "2025", "2026"], "values": [1.7, 1.6, 1.47], "mean": 1.59, "std": 0.12, "unit": "x"},
+    "ev_ebitda": {"dates": ["2024", "2025", "2026"], "values": [16.3, 12.0, 8.47], "mean": 12.26, "std": 3.9, "unit": "x"}
+  },
+  "esg": {
+    "source": "KSI Research ESG box (E/S/G)",
+    "date": "2026-08-27",
+    "score": "2.23/3.03/5.08",
+    "detail": "Environmental 2.23 | Social 3.03 | Governance 5.08"
+  },
+  "price_history": {
+    "ticker": {"dates": ["2025-08-27", "2026-02-27", "2026-08-27"], "close": [500.0, 480.0, 460.0]},
+    "jci": {"dates": ["2025-08-27", "2026-02-27", "2026-08-27"], "close": [7200.0, 7600.0, 7300.0]},
+    "ytd_perf": {"ticker_pct": -8.0, "jci_pct": 1.2, "relative_pct": -9.2}
+  }
+}
