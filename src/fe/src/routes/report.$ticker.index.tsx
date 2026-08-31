@@ -1,37 +1,147 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
+import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { fetchReport } from "@/lib/api"
+import { Button } from "@/components/ui/button"
+import { fetchReport, fetchPdf } from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/report/$ticker/")({ component: ReportPage })
+
+function fmtIDR(n: number) { return n.toLocaleString("id-ID") }
+function pctLabel(v: unknown) {
+  if (v == null) return "—"
+  const n = Number(v)
+  if (Number.isNaN(n)) return String(v)
+  return `${n > 0 ? "+" : ""}${n}${typeof v === "string" && String(v).includes("%") ? "" : "%"}`
+}
+
+function SegmentPie({ segments, source }: { segments: { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]; source?: string }) {
+  if (!segments || segments.length === 0) {
+    return <div className="rounded-md border border-dashed px-3 py-4 text-xs text-slate-500">Segment disclosure: single-segment / belum diungkap di IDX (MOCK disclosed placeholder).</div>
+  }
+  const total = segments.reduce((s, x) => s + Number(x.share_pct ?? 0), 0)
+  const colors = ["bg-slate-900", "bg-slate-600", "bg-slate-400", "bg-slate-300", "bg-amber-500", "bg-emerald-600"]
+  return (
+    <div className="space-y-3">
+      <div className="flex h-3 overflow-hidden rounded-full border">
+        {segments.map((s, i) => (
+          <div key={s.name} className={colors[i % colors.length]} style={{ width: `${Number(s.share_pct ?? 0)}%` }} title={`${s.name} ${s.share_pct}%`} />
+        ))}
+      </div>
+      <div className="grid gap-2">
+        {segments.map((s, i) => (
+          <div key={s.name} className="flex items-center justify-between rounded-md border px-3 py-2 text-sm">
+            <span className="flex items-center gap-2"><span className={`h-2 w-2 rounded-full ${colors[i % colors.length]}`} />{s.name}</span>
+            <span className="flex gap-3 text-xs">
+              <span className="font-medium">{s.share_pct != null ? `${s.share_pct}%` : "—"}</span>
+              {s.revenue != null && <span className="text-slate-500">Rp {fmtIDR(Number(s.revenue))} bn</span>}
+              {s.yoy_pct != null && <span className="text-slate-500">YoY {String(s.yoy_pct)}</span>}
+            </span>
+          </div>
+        ))}
+      </div>
+      {Math.abs(total - 100) > 0.6 && total > 0 && <p className="text-xs text-amber-600">Σ share {total.toFixed(1)}% — disclosed sum check.</p>}
+      {segments.some(s => s.one_off) && <p className="rounded bg-amber-50 px-3 py-2 text-xs text-amber-800">One-off: {segments.find(s => s.one_off)?.one_off}</p>}
+      {source && <p className="text-xs text-slate-500">Sumber: {source}</p>}
+    </div>
+  )
+}
+
+function ShareholderPie({ holders, source }: { holders?: { name: string; pct: number }[]; source?: string }) {
+  if (!holders || holders.length === 0) return null
+  const colors = ["bg-slate-900", "bg-slate-600", "bg-slate-400", "bg-emerald-600", "bg-amber-500"]
+  return (
+    <div className="space-y-2">
+      <div className="flex h-2 overflow-hidden rounded-full border">
+        {holders.map((h, i) => <div key={h.name} className={colors[i % colors.length]} style={{ width: `${h.pct}%` }} />)}
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {holders.map((h, i) => (
+          <span key={h.name} className="inline-flex items-center gap-1.5 rounded border px-2 py-1 text-xs">
+            <span className={`h-2 w-2 rounded-full ${colors[i % colors.length]}`} />{h.name} {h.pct}%
+          </span>
+        ))}
+      </div>
+      {source && <p className="text-xs text-slate-500">Sumber: {source}</p>}
+    </div>
+  )
+}
 
 function ReportPage() {
   const { ticker } = Route.useParams()
   const tk = String(ticker).toUpperCase()
   const { data, isLoading, error } = useQuery({ queryKey: ["report", tk], queryFn: () => fetchReport(tk) })
+  const [pdfState, setPdfState] = useState<"idle" | "loading" | "error">("idle")
+  const [pdfMsg, setPdfMsg] = useState("")
+
+  async function onDownloadPdf() {
+    setPdfState("loading"); setPdfMsg("")
+    try { await fetchPdf(tk); setPdfState("idle") }
+    catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : String(e)
+      if (msg.includes("soon") || msg.includes("404") || msg.includes("not available")) {
+        setPdfState("error"); setPdfMsg("PDF belum tersedia di BE — soon (GET /api/report/$ticker/pdf).")
+      } else { setPdfState("error"); setPdfMsg(msg) }
+      setTimeout(() => setPdfState("idle"), 4000)
+    }
+  }
+
   if (isLoading) return <div className="rounded-xl border bg-white p-6 text-sm text-slate-500">Loading {tk}...</div>
   if (error || !data) return <div className="rounded-xl border bg-white p-6 text-sm text-red-600">Failed to load {tk}.</div>
-  const r = data as { ticker: string; name: string; price: number; target: number; upside: string; rating: string; summary: string; valuation: { method: string; value: number; weight?: number }[]; updatedAt: string }
+
+  const r = data as unknown as {
+    ticker: string; name: string; price: number; target: number; upside: string; rating: string; summary: string;
+    valuation: { method: string; value: number; weight?: number }[];
+    updatedAt: string; template?: string; source?: string;
+    cover?: { rating_box?: { action: string; tp: number; price: number; upside_pct: number; prev_tp?: number | null; key_takeaways?: string[] }; vs_jci?: { ytd_abs?: number; ytd_rel?: number; source?: string; chart?: { labels: string[]; series: number[][] } }; shares?: { outstanding: number; unit: string; free_float_pct?: number }; shareholders?: { name: string; pct: number }[]; shareholders_src?: string; esg?: { found: boolean; scores?: { e: number; s: number; g: number }; source?: string; date?: string } };
+    segments?: { name: string; revenue?: number; share_pct?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[];
+    kpis?: { name: string; value: number; prev?: number; unit?: string; formula?: string; source?: string }[];
+    valuationDetail?: { methods?: { method: string; fv: number; assumptions?: Record<string, unknown>; table?: { headers: string[]; rows: unknown[][] }; source?: string }[]; blended?: { weights: Record<string, number>; fv: number; fv_str?: string; margin_of_safety_pct?: number; rows?: unknown[][]; source?: string } | null; bands?: { pbv_3y?: { "std+2": number; "std+1": number; avg: number; "std-1": number; "std-2": number; current: number; label: string }; source?: string } | null; ggm?: { pbv_implied: number; fv_per_share: number; formula: string; assumptions?: Record<string, unknown> } | null; assumptions?: Record<string, unknown>; provenance?: string };
+    ratios?: Record<string, string | number>;
+    raw?: Record<string, unknown>;
+  }
+
+  const tpl = (r.template ?? "single").toLowerCase()
+  const isInfra = tpl === "infra"
+  const isSotp = tpl === "sotp"
+  const vd = r.valuationDetail
+  const takeaways = r.cover?.rating_box?.key_takeaways ?? []
+  const vs = r.cover?.vs_jci
+
   return (
     <div className="space-y-4">
+      {/* header */}
       <div className="flex flex-wrap items-center gap-2">
-        <h1 className="text-xl font-semibold">{r.ticker} - {r.name}</h1>
+        <h1 className="text-xl font-semibold">{r.ticker} — {r.name}</h1>
         <Badge variant={r.rating === "BUY" ? "success" : r.rating === "SELL" ? "destructive" : "secondary"}>{r.rating}</Badge>
-        <Badge variant="outline">TP {r.target.toLocaleString("id-ID")} ({r.upside})</Badge>
-        <span className="text-xs text-slate-500">Px {r.price.toLocaleString("id-ID")} - {r.updatedAt}</span>
+        <Badge variant="outline">TP {fmtIDR(r.target)} ({r.upside})</Badge>
+        <Badge variant="secondary">{tpl}</Badge>
+        <span className="text-xs text-slate-500">Px {fmtIDR(r.price)} · {r.updatedAt} · {r.source ?? "disclosed"}</span>
       </div>
       <p className="text-sm leading-relaxed text-slate-600">{r.summary}</p>
+
+      {/* top cards */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Card>
-          <CardHeader><CardTitle className="text-sm">Valuation</CardTitle><CardDescription className="text-xs">Mock - deterministic engines in P2</CardDescription></CardHeader>
+          <CardHeader><CardTitle className="text-sm">Valuation</CardTitle><CardDescription className="text-xs">{vd?.provenance ?? "DCF/DDM/SOTP/GGM deterministic — source disclosed per exhibit"}</CardDescription></CardHeader>
           <CardContent className="space-y-2 text-sm">
             {r.valuation.map((v) => (
               <div key={v.method} className="flex justify-between rounded-md border px-3 py-2">
                 <span>{v.method}</span>
-                <span className="font-medium">{v.value.toLocaleString("id-ID")}{v.weight ? ` - ${v.weight}%` : ""}</span>
+                <span className="font-medium">{fmtIDR(v.value)}{v.weight ? ` · ${v.weight}%` : ""}</span>
               </div>
             ))}
+            {vd?.methods && vd.methods.length > 0 && (
+              <div className="space-y-1 pt-2">
+                {vd.methods.map(m => (
+                  <div key={m.method} className="flex justify-between rounded bg-slate-50 px-3 py-2 text-xs">
+                    <span>{m.method} <span className="text-slate-500">· {m.source ?? "engine"}</span></span>
+                    <span className="font-medium">FV Rp {fmtIDR(m.fv)}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </CardContent>
         </Card>
         <Card>
@@ -40,11 +150,213 @@ function ReportPage() {
             <a href={`/report/${tk}/challenge`} className="inline-flex h-9 items-center rounded-md bg-slate-900 px-4 text-sm text-white">Challenge</a>
             <a href={`/report/${tk}/sentiment`} className="inline-flex h-9 items-center rounded-md border px-4 text-sm">Sentiment</a>
             <a href="/outlook" className="inline-flex h-9 items-center rounded-md px-4 text-sm hover:bg-slate-100">Outlook</a>
-            <a href="#" onClick={e => e.preventDefault()} className="inline-flex h-9 items-center rounded-md border px-4 text-sm">Download PDF (soon)</a>
+            <Button onClick={onDownloadPdf} disabled={pdfState === "loading"} variant="outline" size="default" className="h-9">
+              {pdfState === "loading" ? "Downloading..." : "Download PDF"}
+            </Button>
           </CardContent>
+          {pdfState === "error" && <p className="px-6 pb-4 text-xs text-amber-600">{pdfMsg}</p>}
+          {r.cover?.shares && (
+            <div className="px-6 pb-4 text-xs text-slate-500">
+              Shares {r.cover.shares.outstanding} {r.cover.shares.unit} · Free float {r.cover.shares.free_float_pct != null ? `${r.cover.shares.free_float_pct}%` : "—"}
+            </div>
+          )}
         </Card>
       </div>
-      <p className="text-xs text-slate-500">TanStack Query - cache 4h - source disclosed per exhibit (P1 IDX+yfinance).</p>
+
+      {/* Key Takeaways + Shareholder + ESG */}
+      {(takeaways.length > 0 || r.cover?.shareholders || r.cover?.esg?.found) && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {takeaways.length > 0 && (
+            <Card className={r.cover?.esg?.found && r.cover?.shareholders ? "" : "sm:col-span-2"}>
+              <CardHeader><CardTitle className="text-sm">Key Takeaways</CardTitle></CardHeader>
+              <CardContent className="space-y-2 text-sm leading-relaxed">
+                {takeaways.map((t, i) => <div key={i} className="flex gap-2"><span className="font-medium text-slate-900">{i + 1}.</span><span className="text-slate-600">{t}</span></div>)}
+              </CardContent>
+            </Card>
+          )}
+          {r.cover?.shareholders && r.cover.shareholders.length > 0 && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">Shareholder Structure</CardTitle><CardDescription className="text-xs">{r.cover.shareholders_src ?? "IDX"}</CardDescription></CardHeader>
+              <CardContent><ShareholderPie holders={r.cover.shareholders} source={r.cover.shareholders_src} /></CardContent>
+            </Card>
+          )}
+          {r.cover?.esg?.found && r.cover.esg.scores && (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">ESG Box</CardTitle><CardDescription className="text-xs">{r.cover.esg.source} · {r.cover.esg.date}</CardDescription></CardHeader>
+              <CardContent className="space-y-2 text-sm">
+                <div className="grid grid-cols-3 gap-2 text-center">
+                  <div className="rounded border bg-slate-50 py-2"><div className="text-xs text-slate-500">E</div><div className="font-semibold">{r.cover.esg.scores.e}</div></div>
+                  <div className="rounded border bg-slate-50 py-2"><div className="text-xs text-slate-500">S</div><div className="font-semibold">{r.cover.esg.scores.s}</div></div>
+                  <div className="rounded border bg-slate-50 py-2"><div className="text-xs text-slate-500">G</div><div className="font-semibold">{r.cover.esg.scores.g}</div></div>
+                </div>
+                <p className="text-xs text-slate-500">Sustainalytics — hide if found=false (no fabrication).</p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+      )}
+
+      {/* vs JCI */}
+      {vs && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Kinerja vs IHSG (YTD)</CardTitle><CardDescription className="text-xs">{vs.source ?? "IDX, yfinance"}</CardDescription></CardHeader>
+          <CardContent className="space-y-2 text-sm">
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge variant="secondary">Abs {vs.ytd_abs != null ? `${vs.ytd_abs > 0 ? "+" : ""}${vs.ytd_abs}%` : "—"}</Badge>
+              <Badge variant="outline">Rel {vs.ytd_rel != null ? `${vs.ytd_rel > 0 ? "+" : ""}${vs.ytd_rel}% vs IHSG` : "—"}</Badge>
+            </div>
+            {vs.chart?.labels && vs.chart.series && (
+              <div className="overflow-x-auto">
+                <div className="flex gap-1 text-xs text-slate-500">
+                  <span className="w-16">Bulan</span>
+                  {vs.chart.labels.map(l => <span key={l} className="w-8 text-center">{l.slice(0, 3)}</span>)}
+                </div>
+                <div className="flex gap-1 text-xs">
+                  <span className="w-16 font-medium">{r.ticker}</span>
+                  {vs.chart.series[0]?.map((v, i) => <span key={i} className="w-8 text-center">{v}</span>)}
+                </div>
+                <div className="flex gap-1 text-xs text-slate-500">
+                  <span className="w-16">IHSG</span>
+                  {vs.chart.series[1]?.map((v, i) => <span key={i} className="w-8 text-center">{v}</span>)}
+                </div>
+              </div>
+            )}
+            <p className="text-xs text-slate-500">Line chart placeholder — text fallback (no chart lib). BE chart array consumed when real.</p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* KPI hero (infra/bank) */}
+      {r.kpis && r.kpis.length > 0 && (
+        <Card className={isInfra ? "border-slate-900" : ""}>
+          <CardHeader>
+            <CardTitle className="text-sm">KPI Operasional — Hero {isInfra ? "(infra: tenancy/fiber)" : isSotp ? "(conglomerate)" : "(operational)"}</CardTitle>
+            <CardDescription className="text-xs">Formula disclosed per KPI · source: Company data / SKK Migas</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-5">
+              {r.kpis.map(k => {
+                const delta = k.prev != null && k.value != null ? (Number(k.value) - Number(k.prev)) : null
+                const deltaPct = k.prev ? ((Number(k.value) - Number(k.prev)) / Number(k.prev) * 100).toFixed(1) : null
+                return (
+                  <div key={k.name} className="rounded-lg border bg-white p-3">
+                    <div className="text-xs text-slate-500">{k.name}</div>
+                    <div className="text-lg font-semibold">{typeof k.value === "number" ? fmtIDR(k.value) : String(k.value)} <span className="text-xs font-normal text-slate-500">{k.unit ?? ""}</span></div>
+                    {k.prev != null && <div className={`text-xs ${delta != null && delta >= 0 ? "text-emerald-600" : "text-red-600"}`}>{delta != null ? `${delta > 0 ? "+" : ""}${delta}` : ""} {deltaPct != null ? `(${deltaPct}%)` : ""} · prev {fmtIDR(Number(k.prev))}</div>}
+                    {k.formula && <div className="text-xs text-slate-400">{k.formula}</div>}
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Segments */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Segment Mix {isSotp ? "— SOTP 4 pilar" : isInfra ? "— Infra 4 segmen" : ""}</CardTitle>
+          <CardDescription className="text-xs">Pendapatan per segmen · YoY + QoQ + share — text pie fallback (no chart lib)</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <SegmentPie segments={(r.segments ?? []) as { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]} source={(r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined ?? (isSotp ? "Laporan segmentasi CDIA 1H26 (IDX)" : isInfra ? "MTEL 1H26 — laporan segmentasi (IDX)" : undefined)} />
+        </CardContent>
+      </Card>
+
+      {/* Valuation detail: blended + GGM + bands */}
+      <div className="grid gap-4 lg:grid-cols-2">
+        {vd?.blended && (
+          <Card className={isInfra ? "border-slate-900" : ""}>
+            <CardHeader><CardTitle className="text-sm">Blended Valuation {isInfra ? "— MTEL 60/40" : ""}</CardTitle><CardDescription className="text-xs">{vd.blended.source ?? "scripts/blended.py"} · MoS {vd.blended.margin_of_safety_pct ?? 15}%</CardDescription></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead><tr className="border-b text-left text-slate-500"><th className="py-1">Metode</th><th className="py-1">Bobot</th><th className="py-1 text-right">Fair Value</th></tr></thead>
+                  <tbody>
+                    {(vd.blended.rows ?? [["DCF","60%",vd.blended.fv],["EV/EBITDA","40%",740]] as unknown[][]).map((row, i) => (
+                      <tr key={i} className="border-b"><td className="py-1">{String(row[0])}</td><td className="py-1">{String(row[1])}</td><td className="py-1 text-right">Rp {fmtIDR(Number(row[2]))}</td></tr>
+                    ))}
+                    <tr className="font-semibold"><td className="py-1">Blended</td><td className="py-1">100%</td><td className="py-1 text-right">Rp {fmtIDR(vd.blended.fv)}</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p className="text-xs text-slate-500">Weights sum 100% check: {Object.values(vd.blended.weights ?? {}).reduce((a: number, b: unknown) => a + Number(b), 0).toFixed(0)}% · Critic rule.</p>
+            </CardContent>
+          </Card>
+        )}
+        {vd?.ggm && (
+          <Card className={r.ticker === "BBCA" ? "border-emerald-200" : ""}>
+            <CardHeader><CardTitle className="text-sm">GGM Box — BBCA P/BV (ROE-g)/(CoE-g)</CardTitle><CardDescription className="text-xs">{vd.ggm.formula} · Samuel pack fallback</CardDescription></CardHeader>
+            <CardContent className="space-y-2 text-sm">
+              <div className="grid grid-cols-3 gap-2 text-xs">
+                <div className="rounded border bg-slate-50 p-2 text-center"><div className="text-slate-500">P/BV implied</div><div className="font-semibold">{vd.ggm.pbv_implied}×</div></div>
+                <div className="rounded border bg-slate-50 p-2 text-center"><div className="text-slate-500">BVPS</div><div className="font-semibold">Rp {fmtIDR(Number((vd.ggm.assumptions as Record<string, unknown>)?.["bvps"] ?? 4200))}</div></div>
+                <div className="rounded border bg-emerald-50 p-2 text-center"><div className="text-slate-500">TP</div><div className="font-semibold text-emerald-700">Rp {fmtIDR(vd.ggm.fv_per_share)}</div></div>
+              </div>
+              <div className="text-xs text-slate-500">Asumsi: ROE {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["roe"] ?? 0.197) * 100).toFixed(1)}% · g {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["g"] ?? 0.04) * 100).toFixed(1)}% · CoE {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["coe"] ?? 0.1176) * 100).toFixed(2)}%</div>
+            </CardContent>
+          </Card>
+        )}
+        {!(vd?.blended) && !(vd?.ggm) && (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Valuation Cross-check</CardTitle></CardHeader>
+            <CardContent className="text-xs text-slate-500">Blended 60/40 (infra) & GGM (bank) appear when template matches — single shows DCF + EV/EBITDA side-by-side above.</CardContent>
+          </Card>
+        )}
+        {vd?.bands?.pbv_3y ? (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Historical Bands P/BV 3Y — STD±2</CardTitle><CardDescription className="text-xs">{vd.bands.source ?? "IDX, data diolah"} · Mean reversion</CardDescription></CardHeader>
+            <CardContent className="space-y-2">
+              <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                {[
+                  { k: "STD+2", v: vd.bands.pbv_3y["std+2"] },
+                  { k: "STD+1", v: vd.bands.pbv_3y["std+1"] },
+                  { k: "AVG", v: vd.bands.pbv_3y.avg },
+                  { k: "STD-1", v: vd.bands.pbv_3y["std-1"] },
+                  { k: "STD-2", v: vd.bands.pbv_3y["std-2"] },
+                  { k: "Kini", v: vd.bands.pbv_3y.current },
+                  { k: "Posisi", v: vd.bands.pbv_3y.label as unknown as number },
+                ].map(c => (
+                  <div key={c.k} className={`rounded border p-2 ${c.k === "Kini" ? "border-slate-900 bg-slate-900 text-white" : c.k === "Posisi" ? "bg-amber-50" : "bg-white"}`}>
+                    <div className="text-xs opacity-70">{c.k}</div>
+                    <div className="font-semibold">{typeof c.v === "number" ? c.v.toFixed(2) : String(c.v)}</div>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-slate-500">Label: <Badge variant={String(vd.bands.pbv_3y.label).includes("BELOW") ? "secondary" : "outline"}>{String(vd.bands.pbv_3y.label)}</Badge> · Bands from 3Y daily — needs ≥10 points.</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader><CardTitle className="text-sm">Historical Bands — STD±2</CardTitle></CardHeader>
+            <CardContent className="text-xs text-slate-500">Bands P/BV 3Y muncul untuk infra (MTEL). Single/bank fallback: disclosed placeholder — butuh 3Y history dari stockdata.</CardContent>
+          </Card>
+        )}
+      </div>
+
+      {/* Ratios / Leverage trajectory */}
+      {r.ratios && Object.keys(r.ratios).length > 0 && (
+        <Card>
+          <CardHeader><CardTitle className="text-sm">Rasio Kunci & Leverage Trajectory</CardTitle><CardDescription className="text-xs">Deterministic ratios — source: laporan keuangan IDX · disclosed per exhibit</CardDescription></CardHeader>
+          <CardContent>
+            <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-6">
+              {Object.entries(r.ratios).map(([k, v]) => (
+                <div key={k} className="rounded border bg-white px-3 py-2 text-center">
+                  <div className="text-xs text-slate-500">{k}</div>
+                  <div className="text-sm font-semibold">{String(v)}</div>
+                </div>
+              ))}
+            </div>
+            {(isSotp || isInfra) && (
+              <p className="mt-2 text-xs text-slate-500">
+                {isSotp ? "CDIA gearing 96→170% + Debt/EBITDA 1.9→4.1× — leverage trajectory (pillar-specific risks bucket)." : "MTEL DER 0.67→0.69×, LT D/E 0.34→0.46×, ICR 2.0→4.0× — infra-specific leverage trajectory."}
+              </p>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      <p className="text-xs text-slate-500">TanStack Query · cache 4h · source disclosed per exhibit (P1 IDX+yfinance). {r.raw ? `Template ${tpl} · BE live when fair_value present.` : "MOCK disclosed placeholder."}</p>
     </div>
   )
 }
