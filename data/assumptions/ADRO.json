@@ -1,0 +1,18 @@
+{
+  "rf": 0.0696,
+  "beta": 0.95,
+  "erp": 0.06,
+  "cod": 0.05,
+  "g": 0.02,
+  "we": 0.6,
+  "wd": 0.4,
+  "payout": 0.3,
+  "fcf": [9e12, 10e12, 11e12, 12e12, 13e12],
+  "shares_out": 30.9e9,
+  "net_debt": 8e12,
+  "cash": 15e12,
+  "ebitda": 32e12,
+  "ev_multiple": 5,
+  "last_price": 1800,
+  "source": "ADRO — BRIDS spin-off SOTP (AADI 6.1bn + holdco discount)"
+}

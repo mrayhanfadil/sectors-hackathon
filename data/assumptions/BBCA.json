@@ -1,0 +1,18 @@
+{
+  "rf": 0.0696,
+  "beta": 0.8,
+  "erp": 0.06,
+  "cod": 0.05,
+  "g": 0.04,
+  "payout": 0.45,
+  "fcf": [12e12, 13e12, 14e12, 15e12, 16e12],
+  "shares_out": 24.4e9,
+  "net_debt": 5e12,
+  "cash": 30e12,
+  "ebitda": 55e12,
+  "ev_multiple": 16.9,
+  "last_price": 8500,
+  "bvps": 2600,
+  "roe": 0.197,
+  "source": "BBCA — Samuel RSH 21 Oct 2025 (GGM fallback P/BV, TP 9600)"
+}

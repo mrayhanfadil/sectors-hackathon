@@ -1,0 +1,18 @@
+{
+  "rf": 0.07,
+  "beta": 0.7,
+  "erp": 0.069,
+  "cod": 0.035,
+  "we": 0.7,
+  "wd": 0.3,
+  "g": 0.05,
+  "payout": 0.3,
+  "fcf": [1.2e12, 1.5e12, 1.8e12, 2.0e12, 2.2e12],
+  "shares_out": 2.71e9,
+  "net_debt": 0,
+  "cash": 0.5e12,
+  "ebitda": 2.2e12,
+  "ev_multiple": 22.6,
+  "last_price": 10650,
+  "source": "RATU archetype — HP Sekuritas 7 Jan 2026 (WACC 8.4% -> recomputed)"
+}
