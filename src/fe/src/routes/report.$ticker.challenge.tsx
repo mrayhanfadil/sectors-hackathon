@@ -1,45 +1,111 @@
-import { createFileRoute } from "@tanstack/react-router"
 import * as React from "react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
+import { createFileRoute } from "@tanstack/react-router"
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
+import { fetchDebates, submitChallenge, fetchReport } from "@/lib/api"
+import { DebateTranscript } from "@/components/challenge/DebateTranscript"
+import { ChallengeInputForm } from "@/components/challenge/ChallengeInputForm"
+import { DebateScorecard } from "@/components/challenge/DebateScorecard"
+import { Badge } from "@/components/ui/badge"
+import { ShieldAlert, ArrowLeft } from "lucide-react"
 
-export const Route = (createFileRoute as any)("/report/$ticker/challenge")({ component: ChallengePage })
+export const Route = (createFileRoute as any)("/report/$ticker/challenge")({
+  component: ReportChallengePage,
+})
 
-function ChallengePage() {
+function ReportChallengePage() {
   const { ticker } = Route.useParams()
   const tk = String(ticker).toUpperCase()
-  const [q, setQ] = React.useState("")
-  const [log, setLog] = React.useState<{ q: string; a: string }[]>([])
-  function submit(e: React.FormEvent) {
-    e.preventDefault()
-    if (!q.trim()) return
-    const a = `Mock defense for ${tk}: claim checked vs assumptions/valuation/news.json - defend(evidence) or concede(correction). (Wire to /api/challenge in P3 - Adversarial Red Team)`
-    setLog(prev => [{ q, a }, ...prev])
-    setQ("")
-  }
+  const queryClient = useQueryClient()
+
+  const { data: report } = useQuery({
+    queryKey: ["report", tk],
+    queryFn: () => fetchReport(tk),
+  })
+
+  const { data: debates, isLoading } = useQuery({
+    queryKey: ["debates", tk],
+    queryFn: () => fetchDebates(tk),
+  })
+
+  const challengeMutation = useMutation({
+    mutationFn: (claim: string) => submitChallenge(tk, claim),
+    onSuccess: (newDebate) => {
+      queryClient.setQueryData(["debates", tk], (old: any) => [newDebate, ...(old || [])])
+    },
+  })
+
   return (
-    <div className="space-y-4">
-      <h1 className="text-xl font-semibold">Challenge & Defense - {tk}</h1>
-      <Card>
-        <CardHeader><CardTitle className="text-sm">Ketik kritik - agent harus defend pakai bukti</CardTitle><CardDescription className="text-xs">Anti-sycophancy: tidak boleh agree without evidence. Critic REJECT kalau hallu.</CardDescription></CardHeader>
-        <CardContent>
-          <form onSubmit={submit} className="flex gap-2">
-            <input value={q} onChange={e => setQ(e.target.value)} placeholder="mis: WACC 8.4% too low vs MTEL 10.1%?" className="flex-1 rounded-md border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-slate-900" />
-            <Button type="submit">Challenge</Button>
-          </form>
-          {log.length > 0 && (
-            <div className="mt-4 space-y-3">
-              {log.map((l, i) => (
-                <div key={i} className="rounded-md border p-3 text-sm">
-                  <div className="font-medium">Q: {l.q}</div>
-                  <div className="mt-1 text-slate-600">A: {l.a}</div>
-                </div>
-              ))}
+    <div className="space-y-6">
+      {/* Header Banner */}
+      <div className="rounded-xl border border-[#262c38] bg-[#111317] p-5 shadow-lg space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <a
+              href={`/report/${tk}`}
+              className="inline-flex items-center gap-1 text-xs font-mono text-amber-400 hover:underline"
+            >
+              <ArrowLeft className="h-3.5 w-3.5" />
+              <span>Back to {tk} Report</span>
+            </a>
+            <span className="text-slate-500">•</span>
+            <Badge variant="destructive" className="text-[10px]">
+              ADVERSARIAL RED TEAM AUDIT
+            </Badge>
+          </div>
+          <div className="text-xs font-mono text-slate-400">
+            Anti-Sycophancy Multi-Agent Defense Protocol
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <h1 className="font-mono text-2xl font-bold text-white">
+              {tk} — Adversarial Audit & Evidence Defense
+            </h1>
+            <p className="text-xs text-slate-300 font-sans mt-0.5">
+              Every valuation claim must be defended with empirical calculations, SEC/IDX filings, or conceded.
+            </p>
+          </div>
+
+          {report && (
+            <div className="text-right font-mono text-xs p-2 rounded bg-[#161a22] border border-[#212734]">
+              <span className="text-slate-400">Target Price: </span>
+              <strong className="text-amber-300">IDR {report.targetPrice.toLocaleString("id-ID")}</strong>
+              <span className="text-emerald-400 font-semibold ml-1.5">(+{report.upsidePct}%)</span>
             </div>
           )}
-          <p className="mt-3 text-xs text-slate-500">Log: debate.json - wired in P3 (agents/adversarial.py).</p>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
+
+      {/* Model Integrity Scorecard */}
+      {debates && debates.length > 0 && (
+        <DebateScorecard scorecard={debates[0].scorecard} ticker={tk} />
+      )}
+
+      {/* Interactive Challenge Submitter */}
+      <ChallengeInputForm
+        ticker={tk}
+        onSubmitChallenge={(claim) => challengeMutation.mutate(claim)}
+        isSubmitting={challengeMutation.isPending}
+      />
+
+      {/* Active Debates List */}
+      <div className="space-y-4">
+        <h2 className="font-mono text-sm font-bold text-slate-200 uppercase tracking-wider flex items-center gap-2">
+          <ShieldAlert className="h-4 w-4 text-amber-400" />
+          <span>Audit Debate Transcripts ({debates?.length || 0})</span>
+        </h2>
+
+        {isLoading ? (
+          <div className="p-8 text-center text-sm font-mono text-slate-400">
+            Loading debate logs...
+          </div>
+        ) : (
+          debates?.map((debate) => (
+            <DebateTranscript key={debate.debateId} debate={debate} />
+          ))
+        )}
+      </div>
     </div>
   )
 }

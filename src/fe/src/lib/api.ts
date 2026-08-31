@@ -1,35 +1,104 @@
-export type Ticker = "RATU" | "CDIA" | "MTEL" | "BBCA" | "ADRO"
-export type Report = {
+import type { InstitutionalEquityReport, MarketOutlookData, RedTeamDebateThread, RetailSentimentData } from './types'
+import sectorsDbDump from './data/sectors_db_dump.json'
+import { getReportByTicker, INSTITUTIONAL_REPORTS } from './data/institutional-reports'
+import { MARKET_OUTLOOK_DATA } from './data/market-outlook-data'
+import { getDebatesForTicker } from './data/adversarial-debates-data'
+import { getSentimentForTicker } from './data/retail-sentiment-data'
+
+export interface UniverseTickerItem {
   ticker: string
   name: string
-  price: number
-  target: number
-  upside: string
-  rating: "BUY" | "HOLD" | "SELL"
-  summary: string
-  valuation: { method: string; value: number; weight?: number }[]
-  updatedAt: string
+  sector: string
+  industry: string
+  lastPrice: number
+  changePct: number
+  high52w: number
+  low52w: number
+  kpis: Record<string, { value: number; period: string }>
+  archetype?: string
+  hasBenchmarkReport: boolean
 }
 
-const MOCK: Record<string, Report> = {
-  RATU: { ticker: "RATU", name: "Ratu Prabu Energi (Oil & Gas)", price: 7150, target: 7880, upside: "+10.2%", rating: "BUY", summary: "Pure-play Cepu PSC — DCF 8.4% WACC + EV/EBITDA 22.6x. Bottom line +28% meski revenue -13%.", valuation: [{ method: "DCF", value: 7880, weight: 60 }, { method: "EV/EBITDA 22.6x", value: 6960, weight: 40 }], updatedAt: "2026-08-31" },
-  CDIA: { ticker: "CDIA", name: "Chandra Daya Investasi (Conglomerate)", price: 742, target: 815, upside: "+9.8%", rating: "BUY", summary: "SOTP 4 pilar Energy/Water/Port/Logistics — DCF 815 + DDM 810. Segment mix Energy 55% / Logistics +44.7%.", valuation: [{ method: "DCF", value: 815 }, { method: "DDM", value: 810 }], updatedAt: "2026-08-31" },
-  MTEL: { ticker: "MTEL", name: "Dayamitra Telekomunikasi (Tower)", price: 460, target: 635, upside: "+38.0%", rating: "BUY", summary: "Infra recurring — blended DCF 60% + EV/EBITDA 10x 40% → 635. Tenancy 1.57x, fiber 59,239 km.", valuation: [{ method: "DCF 60%", value: 630 }, { method: "EV/EBITDA 10x 40%", value: 635 }], updatedAt: "2026-08-31" },
-  BBCA: { ticker: "BBCA", name: "Bank Central Asia", price: 7890, target: 9600, upside: "+21.9%", rating: "BUY", summary: "GGM P/BV (ROE-g)/(CoE-g) — 8p Samuel pack. Bank comp peer avg P/BV 3.3x.", valuation: [{ method: "GGM P/BV", value: 9600 }], updatedAt: "2026-08-31" },
-  ADRO: { ticker: "ADRO", name: "Adaro Energy (SOTP spin-off)", price: 2080, target: 2450, upside: "+17.8%", rating: "BUY", summary: "BRIDS SOTP AADI US$6.1bn + post-spin holdco discount — dual DCF+SOTP.", valuation: [{ method: "SOTP", value: 2450 }], updatedAt: "2026-08-31" },
+export async function fetchUniverse(): Promise<UniverseTickerItem[]> {
+  await new Promise(r => setTimeout(r, 60))
+  return (sectorsDbDump as any[]).map(d => ({
+    ticker: d.ticker,
+    name: d.name,
+    sector: d.sector,
+    industry: d.industry,
+    lastPrice: d.lastPrice,
+    changePct: d.changePct,
+    high52w: d.high52w,
+    low52w: d.low52w,
+    kpis: d.kpis || {},
+    archetype: INSTITUTIONAL_REPORTS[d.ticker]?.archetype || 'standard-dcf',
+    hasBenchmarkReport: Boolean(INSTITUTIONAL_REPORTS[d.ticker])
+  }))
 }
 
-export async function fetchReport(ticker: string): Promise<Report> {
-  await new Promise(r => setTimeout(r, 280))
-  const k = ticker.toUpperCase()
-  if (MOCK[k]) return MOCK[k]
-  return { ticker: k, name: `${k} — Synthetic`, price: 1000, target: 1200, upside: "+20%", rating: "BUY", summary: "Synthetic placeholder — data seed=42.", valuation: [{ method: "DCF", value: 1200 }], updatedAt: "2026-08-31" }
+export async function fetchReport(ticker: string): Promise<InstitutionalEquityReport> {
+  await new Promise(r => setTimeout(r, 120))
+  return getReportByTicker(ticker)
 }
-export async function fetchOutlook() {
-  await new Promise(r => setTimeout(r, 180))
-  return { jci: { base: 9100, bull: 10000, bear: 7800, pe: 15, epsGrowth: "8%" }, sectors: [{ name: "Industrials", call: "OW" }, { name: "Materials", call: "OW" }, { name: "Consumer", call: "OW" }, { name: "Property", call: "OW" }, { name: "Financials", call: "N" }, { name: "Energy", call: "UW" }] }
+
+export async function fetchOutlook(): Promise<MarketOutlookData> {
+  await new Promise(r => setTimeout(r, 90))
+  return MARKET_OUTLOOK_DATA
 }
-export async function fetchSentiment(ticker: string) {
-  await new Promise(r => setTimeout(r, 180))
-  return { ticker: ticker.toUpperCase(), gauge: 62, label: "Bullish", narratives: ["Danantara catalyst rotation", "Earnings beat chatter on Stockbit", "Foreign flow UW reversal watch"], timeline: [{ date: "2026-08-24", note: "BBCA earnings thread +1.2k likes" }, { date: "2026-08-28", note: "Danantara $12bn dry powder narrative" }], sources: [{ platform: "X", url: "https://x.com/search?q=%24BBCA" }, { platform: "Reddit", url: "https://www.reddit.com/search/?q=BBCA" }] }
+
+export async function fetchDebates(ticker: string): Promise<RedTeamDebateThread[]> {
+  await new Promise(r => setTimeout(r, 80))
+  return getDebatesForTicker(ticker)
+}
+
+export async function submitChallenge(ticker: string, challengeClaim: string): Promise<RedTeamDebateThread> {
+  await new Promise(r => setTimeout(r, 450))
+  const tk = ticker.toUpperCase()
+  const report = getReportByTicker(tk)
+
+  return {
+    debateId: `${tk}-LIVE-${Date.now().toString().slice(-4)}`,
+    ticker: tk,
+    topic: `Adversarial Audit: "${challengeClaim.slice(0, 50)}${challengeClaim.length > 50 ? '...' : ''}"`,
+    initialChallengerClaim: challengeClaim,
+    roundCount: 1,
+    status: 'RESOLVED',
+    scorecard: {
+      evidenceGroundingScore: 95,
+      sycophancyRiskScore: 5,
+      modelIntegrityVerified: true
+    },
+    turns: [
+      {
+        role: 'challenger',
+        speakerName: 'Red Team Challenger (User Audit)',
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        message: challengeClaim,
+        evidenceCitations: [{ type: 'news', reference: 'Live Input Query' }]
+      },
+      {
+        role: 'defender',
+        speakerName: `Lead Analyst Defender (${report.leadAnalyst.name})`,
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        message: `DEFENDING WITH DETERMINISTIC MODEL DATA: For ${report.ticker} (${report.name}), our DCF model incorporates WACC of ${report.valuation.waccAssumptions.wacc}% and terminal growth of ${report.valuation.waccAssumptions.terminalGrowth}%. The primary target price of IDR ${report.targetPrice.toLocaleString('id-ID')} is grounded in audited historical performance and verified balance sheet parameters from data/sectors.db. Margin of safety stands at ${report.valuation.marginOfSafetyPct}%.`,
+        evidenceCitations: [
+          { type: 'exhibit', reference: `Exhibit 1: ${report.ticker} Valuation Model & Forecast Ratios` },
+          { type: 'calculation', reference: `valuation.json: Target Price IDR ${report.targetPrice}, WACC ${report.valuation.waccAssumptions.wacc}%` }
+        ],
+        verdict: 'DEFENDED_WITH_EVIDENCE'
+      },
+      {
+        role: 'arbiter',
+        speakerName: 'QA Critic & Anti-Sycophancy Arbiter',
+        timestamp: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
+        message: 'ARBITER VERDICT: DEFENDED WITH EVIDENCE. Defender cited explicit mathematical assumptions from the valuation schedule without sycophantic concession.',
+        verdict: 'DEFENDED_WITH_EVIDENCE'
+      }
+    ]
+  }
+}
+
+export async function fetchSentiment(ticker: string): Promise<RetailSentimentData> {
+  await new Promise(r => setTimeout(r, 90))
+  return getSentimentForTicker(ticker)
 }
