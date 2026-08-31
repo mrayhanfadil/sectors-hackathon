@@ -93,7 +93,7 @@
 
 **DNA yang sama di 3 PDF:** cover + summary snapshot, thesis narasi + angka, risk buckets, 2 metode valuasi, exhibits dengan source, financials 5-6Y, disclaimer OJK, asumsi WACC/beta eksplisit.
 
-**Yang beda & wajib kita serap (8 → 16 upgrades):**
+**Yang beda & wajib kita serap (8 → 17 upgrades):**
 
 | # | Upgrade | Sumber | Prioritas |
 |---|---|---|---|
@@ -113,14 +113,15 @@
 | 14 | **Index target bull/base/bear + EPS×Multiple math** (JCI 9,100/10,000/7,800, 15x, 8% EPS) | **JPM Strategy** | **P1 — Baru** |
 | 15 | **Sector OW/N/UW + Top picks + Flows/MSCI + Danantara Value-Up** | **JPM** | **P1 — Baru** |
 | 16 | **GGM fallback `P/BV=(ROE-g)/(CoE-g)` + SOTP holdco discount + spin-off bridge** | **Samuel/BRIDS** | **P1 — Baru** |
+| 17 | **Retail Social Sentiment (X P0 + Reddit P0 + Stockbit, gauge 0-100 + timeline + top 3 narratives)** — Threads P1, IG/FB skip | **Fadiil Ide 3** | **P1 — Baru** |
 
-## 3. Architecture — 7+1 → 10+1 Agents (incl. News Harvester + Adversarial)
+## 3. Architecture — 7+1 → 11+1 Agents (incl. News Harvester + Adversarial + Social Sentiment)
 
 ```
-[Ticker: RATU single | CDIA SOTP | MTEL infra]  (+ Strategy JCI 9100 overlay) 
+[Ticker: RATU single | CDIA SOTP | MTEL infra]  (+ Strategy JCI 9100 overlay + Sentiment) 
         ↓
-  ┌─ Data Collector (parallel, Sectors API v2) ─┐  ┌─ News Harvester (parallel, Google) ─┐
-  │  via web_search + web_extract, 0 credit     │
+  ┌─ Data Collector (parallel, Sectors API v2) ─┐  ┌─ News Harvester (parallel, Google) ─┐  ┌─ Social Sentiment (parallel, X+Reddit) ─┐
+  │  via web_search + web_extract, 0 credit     │  via xurl + web_search, 0 credit       │
   │  • overview, financials 5-6Y, prices, segments│
   │  • operational KPIs per subsector (baru)      │
   │  • peers PER PILAR (SOTP) atau universe       │
@@ -174,6 +175,7 @@
 - `operational_kpis` — tenancy/fiber/tower (MTEL), BOPD (RATU), MW/m³ (CDIA) — kalau API belum ada → synthetic + disclosed proxy
 - `index/JCI/prices` + historical multiples 3Y (untuk bands)
 - **News Harvester:** `web_search(ticker + 'IDX target price' / 'earnings' / 'Danantara catalyst')` → `web_extract(url)` → dedup + tier (T1 IDX/Kontan/Bisnis, T2 Reuters/Bloomberg, T3 blog) → `news.json` (url/date/title/source/tier/snippet/relevance) — max 8, last 30d, cache 1h
+- **Social Sentiment:** `search_social(ticker, days=14, max=8)` → X via `xurl` + Reddit via `web_search site:reddit.com` + Stockbit (IDX) → dedup + relevance → `sentiment.json` (platform/url/date/text/sentiment/score/relevance) + gauge 0-100 + top 3 narratives + timeline — cache 1h — Threads P1 (needs token), IG/FB skip
 - Cache 4h + synthetic fallback
 
 **Synthetic:** SQLite `data/sectors.db` seed=42, 49 tickers + JCI + segments + KPI synthetic (tenancy ratio, fiber km). `data/peers.json` dual mode single/SOTP/infra. `data/assumptions/{ticker}.json` — WACC, beta, RF, RP, g, payout, prior forecast, blended weights.
@@ -187,12 +189,13 @@
   - `infra` (MTEL): 10 sections + **KPI Operational + Catalyst Quant + Blended + Bands + Key Takeaways + ESG**
   - Logic: `if segments>1 → sotp, elif subsector infra/telco → infra, else single`
 - **Challenge UI:** `/report/[ticker]/challenge` — user ketik kritik, agent relevan jawab dengan sitasi (Exhibit + url+date), tidak boleh sycophancy. Log `debate_user.json`.
+- **Sentiment UI:** `/report/[ticker]/sentiment` — gauge 0-100 (bear-bull) + top 3 retail narratives + timeline (how narrative evolved) + per-platform breakdown (X vs Reddit) + disclaimer `sentiment ≠ advice`.
 - **Wajib charts (7):** Revenue mix, Trend, Margin, Leverage trajectory, ROE/ROA, vs JCI, Peer multiples (+ Bands kalau infra), KPI (tenancy/fiber).
 
 ## 6. Tech Stack
 
 - Frontend Next.js `/report/[ticker]` + `/outlook` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (4 templates: single/SOTP/infra/strategy) | Deploy Pages.dev
-- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news,adversarial}.py`, `agents/{collector,news_harvester,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp,adversarial}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
+- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news,adversarial,social}.py`, `agents/{collector,news_harvester,social_sentiment,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp,adversarial}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
 
 ## 7. Phased Build (29 hari ke 30 Sep)
 
@@ -201,7 +204,7 @@
 | **P0 — Scaffold** | 31 Aug – 1 Sep | Branch + plan.md (RATU+CDIA+MTEL+JPM+L1-4) + `dcf/ddm/sotp/blended/bands/ggm.py` + `peers.json` (3 modes) + 4 HTML templates | DONE |
 | **P1 — Data** | 2 – 6 Sep | Sectors proxy + SQLite (segments+KPI+JCI+3Y+flows) + 5 tickers E2E (RATU, CDIA SOTP, MTEL infra, BBCA GGM, ADRO SOTP) + `source-library.md` (15 sources) | Collector |
 | **P2 — Modeler** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 (8%×15x) reproducible | Modeler |
-| **P3 — Agents** | 11 – 18 Sep | 10 agents + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Adversarial Red Team (2-round duel + user challenge) + Critic arbiter | Multi-agent |
+| **P3 — Agents** | 11 – 18 Sep | 11 agents + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Adversarial Red Team (2-round duel + user challenge) + Social Sentiment (X+Reddit P0) + Critic arbiter | Multi-agent |
 | **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF (single/SOTP/infra/strategy) + `/report/[ticker]` + `/outlook` + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
 | **P5 — Polish & Video** | 24 – 29 Sep | 5 tickers showcase (RATU/CDIA/MTEL/BBCA/ADRO) + strategy page, video, audit swarm 3 AGY | All |
 | **Submit** | 30 Sep 23:59 WIB | Commit freeze, public 90 hari | — |
@@ -225,6 +228,8 @@
 | Credit habis | Synthetic DB |
 | News stale / hoax | Tier filter + date check + Critic url+date per klaim |
 | Agent sycophancy (asal terima) | Adversarial must defend/concede with evidence; Critic REJECT agree-without-evidence |
+| Sentiment noise / brigading / spam | Dedup + relevance + platform tier (X/Reddit P0, Threads P1), gauge with confidence, Critic url+date check, disclaimer |
+| IG/FB scrape blocked | SKIP for MVP — use X+Reddit+Stockbit; document as P2 |
 
 ## 10. Decision Log
 
@@ -241,12 +246,14 @@
 | Python deterministic | Semua WACC/beta/ERP/payout eksplisit | LLM math |
 | News Harvester (Google) | Narasi + asumsi butuh freshness — Sectors EOD only, news kasih catalyst timeline | Tanpa news (cuma Sectors) |
 | Adversarial Challenge & Defense | Biar report kredibel — agent harus defend pakai bukti, bukan yes-man; user bisa challenge post-PDF | Tanpa adversarial (agent asal terima) |
+| Social Sentiment (X+Reddit P0, Threads P1, IG/FB skip) | Retail narrative tracker — gimana narasi berkembang di retail, bandingin thesis vs crowd | Tanpa sentiment (cuma news+Sectors) |
 | Pages.dev | Fadiil prefer | workers.dev |
 
 ## 11. Open — Ide Tambahan Fadiil + Temen
 
 - [x] **Ide 1 (Fadiil, 31 Aug 2026) — News Harvester Agent (Google Search) — APPROVED, POSSIBLE** → Agent khusus search berita di Google sebagai **narasi + asumsi**. Design: `agents/news_harvester.py` → `search_news(ticker, days=30, max=8)` via `web_search` + `web_extract` → dedup + tier filter (Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel, Tier2: Reuters/Bloomberg/JP, Tier3: blog) → output `news.json` {url, date, title, source, snippet, tier, relevance} → feed ke **Thesis Writer** (catalyst timeline), **Risk Officer** (regulatory/MSCI risk), **Industry/Macro** (themantic), **Modeler** (assumption delta, e.g., Danantara $12bn → flows). Critic wajib cek `url+date` per klaim. Cost: 0 Sectors credit.
 - [x] **Ide 2 (Fadiil, 31 Aug 2026) — Adversarial Challenge & Defense — APPROVED** → Agents **tidak boleh asal terima** critique. Harus **defend pakai bukti** kalau benar, **concede + revise** kalau salah. Design: `agents/adversarial.py` (Red Team) → 2 loops: **(a) Internal duel** pre-PDF: challenge Thesis/Valuation/Risk masing2 1 claim (e.g., 'WACC 8.4% too low vs MTEL 10.1%?'), target agent must `defend(evidence: calc + source)` or `concede(correction)`; Critic arbiter cek evidence vs `assumptions.json/valuation.json/news.json`; max 2 rounds; log `debate.json` {round, challenger, claim, defense, verdict}. **(b) User challenge** post-PDF: UI `/report/[ticker]/challenge` — user ketik kritik, agent yang relevan jawab dengan sitasi (Exhibit + url+date), tidak boleh sycophancy. Anti-pattern: `agree because user said` = REJECT. 
+- [x] **Ide 3 (Fadiil, 31 Aug 2026) — Social Media Sentiment (Retail Narrative Tracker) — APPROVED, PARTIAL** → Feasible **X (P0)** via `web_search site:x.com` + `xurl` skill + **Reddit (P0)** via `web_search site:reddit.com` + `web_extract` + **Stockbit** (IDX-specific, higher signal than IG). **Threads P1** via `threads-meta-api` (needs token, fallback Google index). **IG/FB P2 — SKIP for MVP** (login wall, anti-scrape, ToS risk). Design: `agents/social_sentiment.py` → `search_social(ticker, days=14, max=8)` → queries `"$BBCA"`, `"saham BBCA"`, `"BBCA bullish"` per platform → dedup + relevance → output `sentiment.json` {platform, url, date, text, sentiment: bull/bear/neutral, score 0-100, relevance} + aggregated `gauge 0-100` + `top 3 narratives` + `timeline`. Feeds: Thesis Writer (retail narrative vs thesis), Risk Officer (hype/crowded risk), Adversarial (defense vs crowd). Critic checks `url+date` per claim, REJECT if hallucinated. Cost: 0 Sectors credit. UI: `/report/[ticker]/sentiment` gauge + timeline. Disclaimer: sentiment ≠ advice.
 - [ ] Track lock-in: T03 Market Intel paling pas (RATU/CDIA/MTEL semua research), T01 AI Agents kalau tonjolin multi-agent orchestration — decide?
 - Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (GGM/bank) + ADRO (SOTP spin-off) — **quintet** cover semua engine; JPM JCI 9,100 untuk market overlay
 - Bahasa PDF: ID/EN toggle? —
@@ -255,4 +262,4 @@
 
 ---
 
-**Next step:** 2 ide Fadiil locked (News Harvester + Adversarial). Gas scaffold 7 engines (dcf/ddm/sotp/blended/bands/ggm/adversarial) + 4 templates + debate UI di branch ini. Library 15 sources ready.
+**Next step:** 3 ide Fadiil locked (News Harvester + Adversarial + Social Sentiment). Gas scaffold 8 engines (dcf/ddm/sotp/blended/bands/ggm/adversarial/social) + 4 templates + debate + sentiment UI di branch ini. Library 15 sources ready.
