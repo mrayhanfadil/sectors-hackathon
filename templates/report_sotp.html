@@ -32,6 +32,7 @@
       <div style="margin-top:16pt;">
         {{ m.exhibit_auto(ns, "Bauran Pendapatan per Segmen (1H26)", segments_src or "IDX Financial Reports") }}
         <div class="chart-wrap"><canvas id="cSeg" width="300" height="190"></canvas></div>
+        {{ m.svg_segment_mix(segments) }}
       </div>
       {% endif %}
     </div>
@@ -65,6 +66,7 @@
   <div style="margin-top:14pt;">
     {{ m.exhibit_auto(ns, "Kinerja Harga vs IHSG (YTD)", cover.vs_jci.source or "IDX, yfinance") }}
     <div class="chart-wrap"><canvas id="cVsJci" width="680" height="200"></canvas></div>
+    {{ m.svg_vs_jci(cover.vs_jci.chart.labels or [], cover.vs_jci.chart.series[0] or [], cover.vs_jci.chart.series[1] or [], meta.ticker) }}
   </div>
   {% endif %}
   {{ m.pagefoot(1) }}

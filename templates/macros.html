@@ -102,6 +102,11 @@
   .exhibit-name { font-size: 8.5pt; font-weight: 600; }
   .exhibit-src { margin-left: auto; font-size: 6.8pt; color: var(--muted); font-style: italic; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
+  .chart-svg { display: none; }
+  @media print {
+    .chart-svg { display: block !important; }
+    canvas { display: none !important; }
+  }
 
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; }
@@ -145,6 +150,69 @@
   <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
   <span>{{ pg }}</span>
 </div>
+{%- endmacro %}
+
+{# ------------------------------------------------------------------ SVG fallbacks for PDF (WeasyPrint has no JS) -- shown only in print #}
+{% macro svg_segment_mix(segments) -%}
+  {% set palette = ["#1d4ed8","#98a2b3","#f2994a","#12b76a","#7a5af8","#e31b54"] %}
+  {% set W = 680 %}{% set H = 22 %}
+  {% set ns = namespace(x=0) %}
+  <svg width="{{ W }}" height="{{ H + 22 }}" viewBox="0 0 {{ W }} {{ H + 22 }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Segment mix">
+    {% for s in segments %}
+      {% set w = ((s.share_pct if s.share_pct is not none else s.pct) | float) * W / 100 %}
+      <rect x="{{ ns.x }}" y="0" width="{{ w }}" height="{{ H }}" rx="3" fill="{{ palette[loop.index0 % palette|length] }}" />
+      {% set ns.x = ns.x + w %}
+    {% endfor %}
+    {% for s in segments %}
+      <g>
+        <rect x="{{ (loop.index0 * (W // (segments|length))) }}" y="{{ H + 6 }}" width="10" height="10" rx="2" fill="{{ palette[loop.index0 % palette|length] }}" />
+        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
+      </g>
+    {% endfor %}
+  </svg>
+{%- endmacro %}
+
+{% macro svg_vs_jci(labels, series_ticker, series_ihsg, ticker_label) -%}
+  {% set W = 680 %}{% set H = 160 %}{% set pad_l = 36 %}{% set pad_r = 12 %}{% set pad_t = 10 %}{% set pad_b = 18 %}
+  {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
+  {# find min/max across both series #}
+  {% set all_vals = (series_ticker or []) + (series_ihsg or []) %}
+  {% set vmin = all_vals | min if all_vals else 0 %}{% set vmax = all_vals | max if all_vals else 1 %}
+  {% if vmax == vmin %}{% set vmax = vmin + 1 %}{% endif %}
+  {% set n = labels|length if labels else (series_ticker|length) %}
+  {% set step = chart_w / ((n - 1) if n > 1 else 1) %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga vs IHSG">
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#f9fafb" stroke="#e4e7ec" stroke-width="0.5" rx="3"/>
+    {# grid #}
+    {% for i in range(4) %}
+      {% set y = pad_t + (i * chart_h / 3) %}
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#e4e7ec" stroke-width="0.5" stroke-dasharray="3 3"/>
+    {% endfor %}
+    {# helper to build polyline points #}
+    {% set ns = namespace(pts_t="", pts_i="") %}
+    {% for v in series_ticker or [] %}
+      {% set x = pad_l + loop.index0 * step %}{% set y = pad_t + chart_h - ((v - vmin) / (vmax - vmin) * chart_h) %}
+      {% set ns.pts_t = ns.pts_t + ("%0.1f,%0.1f " % (x, y)) %}
+    {% endfor %}
+    {% for v in series_ihsg or [] %}
+      {% set x = pad_l + loop.index0 * step %}{% set y = pad_t + chart_h - ((v - vmin) / (vmax - vmin) * chart_h) %}
+      {% set ns.pts_i = ns.pts_i + ("%0.1f,%0.1f " % (x, y)) %}
+    {% endfor %}
+    <polyline points="{{ ns.pts_t | trim }}" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_i | trim }}" fill="none" stroke="#98a2b3" stroke-width="1.2" stroke-dasharray="4 3" stroke-linejoin="round" stroke-linecap="round"/>
+    {# labels #}
+    {% for lbl in labels or [] %}
+      {% if loop.index0 % 2 == 0 %}
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
+      {% endif %}
+    {% endfor %}
+    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#475467">{{ "%.1f"|format(vmax) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 1 }}" font-size="6.5" fill="#475467">{{ "%.1f"|format(vmin) }}</text>
+    <g font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif">
+      <rect x="{{ W - 140 }}" y="{{ pad_t }}" width="8" height="8" fill="#1d4ed8" rx="1"/><text x="{{ W - 128 }}" y="{{ pad_t + 7 }}" fill="#101828">{{ ticker_label }}</text>
+      <rect x="{{ W - 70 }}" y="{{ pad_t }}" width="8" height="8" fill="#98a2b3" rx="1"/><text x="{{ W - 58 }}" y="{{ pad_t + 7 }}" fill="#101828">IHSG</text>
+    </g>
+  </svg>
 {%- endmacro %}
 
 {# ------------------------------------------------------------------ Chart.js bootstrap #}
