@@ -411,11 +411,19 @@ export async function fetchPdf(ticker: string): Promise<void> {
   try {
     r = await fetch(url)
   } catch (e) {
-    throw new Error("network error — PDF endpoint unreachable")
+    throw new Error(`network error — PDF endpoint unreachable (${API_BASE || "same-origin"}${path} — is the API up? ${(e as Error)?.message ?? String(e)})`)
   }
   if (!r.ok) {
     const text = await r.text().catch(() => "")
-    throw new Error(text || `PDF not available (${r.status}) — soon`)
+    // surface real backend message + hint
+    const hint = r.status === 404 ? " — check API url / tunnel" : r.status >= 500 ? " — server error" : ""
+    throw new Error((text?.slice(0, 400) || `PDF not available (${r.status})`) + hint)
+  }
+  // defensive: backend sometimes returns JSON error with 200
+  const ctype = r.headers.get("content-type") || ""
+  if (ctype.includes("application/json")) {
+    const j = await r.json().catch(() => null) as Record<string, unknown> | null
+    throw new Error((j?.["detail"] as string) || (j?.["message"] as string) || `unexpected JSON from PDF endpoint`)
   }
   const blob = await r.blob()
   const cd = r.headers.get("content-disposition") || ""
