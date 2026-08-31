@@ -6,24 +6,32 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""DeepSeek + Gemini provider adapter for ADK Python.
+"""DeepSeek + Gemini + CommandCode Spark provider adapter for ADK Python.
 
 DeepSeek (deepseek-chat / deepseek-reasoner) is OpenAI-compatible.
 We route it via LiteLlm so ADK's BaseLlm plumbing handles tools/prompts.
+Muse Spark via CommandCode bridge (127.0.0.1:9992) is PREFERRED when available.
 
 Gemini is native (google-genai) — used for search-grounded sub-agents
 where GoogleSearchTool requires a Gemini model.
 
 Env:
-  DEEPSEEK_API_KEY  — required for DeepSeek
+  COMMANDCODE_BRIDGE_KEY / BRIDGE_API_KEY — CommandCode bridge bearer (preferred)
+  DEEPSEEK_API_KEY  — required for DeepSeek fallback
   GOOGLE_API_KEY    — required for Gemini search sub-agent (also GEMINI_API_KEY)
   DEEPSEEK_MODEL    — default deepseek-chat (also supports deepseek-reasoner)
   GEMINI_MODEL      — default gemini-2.0-flash
+  SPARK_MODEL       — default meta/muse-spark-1.2-contributor
+  SPARK_API_BASE    — default http://127.0.0.1:9992/v1
 """
 
 from __future__ import annotations
 
 import os
+
+# Prevent litellm from auto-loading ~/.env at import time (would pick up stale GOOGLE_API_KEY from /home/fadil/.env)
+os.environ.setdefault("LITELLM_MODE", "PRODUCTION")
+
 import re
 
 from google.adk.models.base_llm import BaseLlm
@@ -33,6 +41,36 @@ from google.adk.models.base_llm import BaseLlm
 _LITELLM_AVAILABLE: bool | None = None
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
+
+# CommandCode bridge defaults
+_SPARK_DEFAULT_MODEL = "meta/muse-spark-1.2-contributor"
+_SPARK_DEFAULT_BASE = "http://127.0.0.1:9992/v1"
+
+
+def _bridge_key() -> str | None:
+    """Read CommandCode bridge key from env or ~/.config/commandcode-bridge/env."""
+    for k in ("BRIDGE_API_KEY", "COMMANDCODE_BRIDGE_KEY"):
+        v = os.getenv(k)
+        if v:
+            return v.strip().strip('"').strip("'")
+    # fallback: read bridge env file
+    import pathlib
+
+    p = pathlib.Path.home() / ".config" / "commandcode-bridge" / "env"
+    if p.exists():
+        try:
+            txt = p.read_text()
+            import re as _re
+
+            m = _re.search(r'BRIDGE_API_KEY="([^"]+)"', txt)
+            if m:
+                return m.group(1).strip()
+            m = _re.search(r"BRIDGE_API_KEY=([^\s]+)", txt)
+            if m:
+                return m.group(1).strip().strip('"').strip("'")
+        except Exception:
+            pass
+    return None
 
 
 def _litellm_available() -> bool:
@@ -74,6 +112,33 @@ def deepseek_model(
     )
 
 
+def spark_model(
+    model: str | None = None,
+    api_key: str | None = None,
+    api_base: str | None = None,
+) -> BaseLlm:
+    """Return a LiteLlm BaseLlm bound to CommandCode bridge (Muse Spark).
+
+    Preferred provider for ADK — uses Muse Spark 1M context via local bridge.
+    Falls back to reading BRIDGE_API_KEY from env or ~/.config/commandcode-bridge/env.
+    """
+    if not _litellm_available():
+        raise ImportError("litellm not installed — pip install litellm or google-adk[extensions]")
+    from google.adk.models.lite_llm import LiteLlm
+
+    key = api_key or _bridge_key() or os.getenv("DEEPSEEK_API_KEY") or ""
+    if not key:
+        raise ValueError("No bridge key — set BRIDGE_API_KEY or check ~/.config/commandcode-bridge/env")
+    model_id = model or os.getenv("SPARK_MODEL") or _SPARK_DEFAULT_MODEL
+    base = api_base or os.getenv("SPARK_API_BASE") or _SPARK_DEFAULT_BASE
+    return LiteLlm(
+        model=f"openai/{model_id}",
+        api_base=base,
+        api_key=key,
+        max_tokens=4096,  # Spark reasoning needs ≥256 visible; 4096 safe for tools
+    )
+
+
 def gemini_model(
     model: str | None = None,
     api_key: str | None = None,
@@ -98,6 +163,8 @@ def strip_thinking_tags(text: str) -> str:
 # Convenience: pick provider by name
 def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
     name = name.lower().strip()
+    if name in ("spark", "muse", "muse-spark", "meta/muse-spark-1.2-contributor", "commandcode", "cc"):
+        return spark_model(**kw)
     if name in ("deepseek", "deepseek-chat", "deepseek-reasoner", "deepseek-v3", "deepseek-r1"):
         # normalize model aliases
         model = kw.pop("model", None)
@@ -106,4 +173,4 @@ def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
         return deepseek_model(model=model, **kw)
     if name in ("gemini", "google", "gemini-2.0-flash", "gemini-flash", "gemini-2.5-flash"):
         return gemini_model(**kw)
-    raise ValueError(f"Unknown provider {name!r} — expected 'deepseek' or 'gemini'")
+    raise ValueError(f"Unknown provider {name!r} — expected 'spark'|'deepseek'|'gemini'")

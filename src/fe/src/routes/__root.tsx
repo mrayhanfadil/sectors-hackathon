@@ -10,6 +10,7 @@ export const Route = createRootRoute({
           <Link to="/" className="font-semibold tracking-tight">Sektoral<span className="text-slate-500">.id</span> <span className="ml-2 rounded bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">Institutional Report</span></Link>
           <nav className="flex items-center gap-1 text-sm">
             <a href="/" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Home</a>
+            <a href="/agent" className="rounded-md bg-slate-900 px-3 py-1.5 text-white">ADK Live</a>
             <a href="/outlook" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Outlook</a>
             <a href="/report/RATU" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Report</a>
           </nav>
