@@ -1,0 +1,8 @@
+@import "tailwindcss";
+
+:root {
+  --radius: 0.625rem;
+}
+
+* { border-color: hsl(214 32% 91%); }
+body { font-family: Inter, ui-sans-serif, system-ui, sans-serif; background: hsl(0 0% 100%); color: hsl(222 47% 11%); }
