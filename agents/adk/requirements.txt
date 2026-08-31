@@ -1,0 +1,7 @@
+google-adk==2.8.0
+mcp>=1.24,<2
+google-genai>=2.19,<3
+pydantic>=2.12,<3
+httpx>=0.27,<1
+python-dotenv>=1,<2
+litellm>=1.84
