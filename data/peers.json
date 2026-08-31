@@ -1,0 +1,113 @@
+{
+  "generated_at": "2026-08-31T09:21:35.036510+07:00",
+  "seed": 42,
+  "source": "synthetic",
+  "note": "P0-P1 synthetic fallback seed=42; P2 will swap to IDX+yfinance+Sectors",
+  "universe": [
+    "BBCA",
+    "BBRI",
+    "BMRI",
+    "BBNI",
+    "BRIS",
+    "ARTO",
+    "BNGA",
+    "PNBN",
+    "TLKM",
+    "ISAT",
+    "EXCL",
+    "MTEL",
+    "TOWR",
+    "TBIG",
+    "ADRO",
+    "PTBA",
+    "ITMG",
+    "UNTR",
+    "HRUM",
+    "BYAN",
+    "ADMR",
+    "ANTM",
+    "INCO",
+    "MDKA",
+    "NCKL",
+    "ASII",
+    "UNVR",
+    "ICBP",
+    "INDF",
+    "KLBF",
+    "SIDO",
+    "CPIN",
+    "JPFA",
+    "MYOR",
+    "RATU",
+    "CDIA",
+    "GOTO",
+    "BUKA",
+    "EMTK",
+    "SCMA",
+    "MAPI",
+    "ACES",
+    "PWON",
+    "CTRA",
+    "SMGR",
+    "INTP",
+    "PGAS",
+    "AKRA",
+    "MEDC"
+  ],
+  "by_ticker": {
+    "RATU": {
+      "peers": [
+        "MEDC",
+        "AKRA",
+        "PGAS"
+      ],
+      "sector": "Energy"
+    },
+    "CDIA": {
+      "peers": [
+        "POWR",
+        "Sembcorp",
+        "Westports",
+        "HATM"
+      ],
+      "sector": "Infrastructures",
+      "sotp_pillars": [
+        "Energy",
+        "Water",
+        "Port",
+        "Logistics"
+      ]
+    },
+    "MTEL": {
+      "peers": [
+        "TOWR",
+        "TBIG",
+        "ISAT"
+      ],
+      "sector": "Infrastructures",
+      "kpi": [
+        "towers",
+        "tenancy_ratio",
+        "fiber_km"
+      ]
+    },
+    "BBCA": {
+      "peers": [
+        "BBRI",
+        "BMRI",
+        "BBNI",
+        "BRIS"
+      ],
+      "sector": "Financials"
+    },
+    "ADRO": {
+      "peers": [
+        "PTBA",
+        "ITMG",
+        "UNTR",
+        "HRUM"
+      ],
+      "sector": "Energy"
+    }
+  }
+}
