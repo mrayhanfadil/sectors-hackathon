@@ -114,7 +114,7 @@
 | 15 | **Sector OW/N/UW + Top picks + Flows/MSCI + Danantara Value-Up** | **JPM** | **P1 — Baru** |
 | 16 | **GGM fallback `P/BV=(ROE-g)/(CoE-g)` + SOTP holdco discount + spin-off bridge** | **Samuel/BRIDS** | **P1 — Baru** |
 
-## 3. Architecture — 7+1 → 9+1 Agents (incl. News Harvester)
+## 3. Architecture — 7+1 → 10+1 Agents (incl. News Harvester + Adversarial)
 
 ```
 [Ticker: RATU single | CDIA SOTP | MTEL infra]  (+ Strategy JCI 9100 overlay) 
@@ -149,7 +149,13 @@
                             ↓
                    SOTP Aggregator (conglomerate only)
                             ↓
-                   Orchestrator + QA Critic
+                   Adversarial Red Team (Challenge & Defense) — 2 rounds max
+                   • challenger: 'WACC 8.4% too low vs MTEL 10.1%?' / 'Tenancy 1.57 over-optimistic?'
+                   • defender must: defend(evidence: calc+source) OR concede(correction)
+                   • arbiter: Critic checks vs assumptions/valuation/news.json → verdict
+                   • log: debate.json {round, challenger, claim, defense, verdict}
+                            ↓
+                   Orchestrator + QA Critic (arbiter, anti-sycophancy)
                    • angka narasi == tabel? blended weight sum 100%?
                    • segment % sum 100%? DDM payout math?
                    • KPI tenancy = tenant/tower? source per exhibit?
@@ -158,7 +164,7 @@
                    PDF Renderer (template switch: single vs SOTP vs infra)
 ```
 
-**Anti-halusinasi:** `JANGAN hitung. Panggil calc_dcf()/calc_ddm()/calc_sotp()/calc_blended()/calc_bands()`. Critic grep + math check.
+**Anti-halusinasi + Anti-sycophancy:** `JANGAN hitung. Panggil calc_*()`. `JANGAN setuju karena user bilang.` Defender harus `defend(evidence)` kalau benar — kutip `valuation.json` + Exhibit + `news.json url+date` — atau `concede(correction)` kalau salah. Critic REJECT kalau `agree without evidence`.
 
 ## 4. Data Layer
 
@@ -180,12 +186,13 @@
   - `sotp` (CDIA): 10 sections + Segment + SOTP, 4 peer tables, DCF+DDM, Revision
   - `infra` (MTEL): 10 sections + **KPI Operational + Catalyst Quant + Blended + Bands + Key Takeaways + ESG**
   - Logic: `if segments>1 → sotp, elif subsector infra/telco → infra, else single`
+- **Challenge UI:** `/report/[ticker]/challenge` — user ketik kritik, agent relevan jawab dengan sitasi (Exhibit + url+date), tidak boleh sycophancy. Log `debate_user.json`.
 - **Wajib charts (7):** Revenue mix, Trend, Margin, Leverage trajectory, ROE/ROA, vs JCI, Peer multiples (+ Bands kalau infra), KPI (tenancy/fiber).
 
 ## 6. Tech Stack
 
 - Frontend Next.js `/report/[ticker]` + `/outlook` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (4 templates: single/SOTP/infra/strategy) | Deploy Pages.dev
-- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news}.py`, `agents/{collector,news_harvester,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
+- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm,news,adversarial}.py`, `agents/{collector,news_harvester,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp,adversarial}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
 
 ## 7. Phased Build (29 hari ke 30 Sep)
 
@@ -194,7 +201,7 @@
 | **P0 — Scaffold** | 31 Aug – 1 Sep | Branch + plan.md (RATU+CDIA+MTEL+JPM+L1-4) + `dcf/ddm/sotp/blended/bands/ggm.py` + `peers.json` (3 modes) + 4 HTML templates | DONE |
 | **P1 — Data** | 2 – 6 Sep | Sectors proxy + SQLite (segments+KPI+JCI+3Y+flows) + 5 tickers E2E (RATU, CDIA SOTP, MTEL infra, BBCA GGM, ADRO SOTP) + `source-library.md` (15 sources) | Collector |
 | **P2 — Modeler** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 (8%×15x) reproducible | Modeler |
-| **P3 — Agents** | 11 – 18 Sep | 8 agents (Collector/Modeler/Analyst/Industry/Risk/KPI/Writer/Visualizer) + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Critic | Multi-agent |
+| **P3 — Agents** | 11 – 18 Sep | 10 agents + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Adversarial Red Team (2-round duel + user challenge) + Critic arbiter | Multi-agent |
 | **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF (single/SOTP/infra/strategy) + `/report/[ticker]` + `/outlook` + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
 | **P5 — Polish & Video** | 24 – 29 Sep | 5 tickers showcase (RATU/CDIA/MTEL/BBCA/ADRO) + strategy page, video, audit swarm 3 AGY | All |
 | **Submit** | 30 Sep 23:59 WIB | Commit freeze, public 90 hari | — |
@@ -217,6 +224,7 @@
 | Bands tanpa 3Y data | Fallback synthetic 3Y + disclosed |
 | Credit habis | Synthetic DB |
 | News stale / hoax | Tier filter + date check + Critic url+date per klaim |
+| Agent sycophancy (asal terima) | Adversarial must defend/concede with evidence; Critic REJECT agree-without-evidence |
 
 ## 10. Decision Log
 
@@ -232,12 +240,13 @@
 | 4 templates (single/SOTP/infra/strategy) | Tiap archetype layout beda (JPM 52p strategy beda) | 1 template |
 | Python deterministic | Semua WACC/beta/ERP/payout eksplisit | LLM math |
 | News Harvester (Google) | Narasi + asumsi butuh freshness — Sectors EOD only, news kasih catalyst timeline | Tanpa news (cuma Sectors) |
+| Adversarial Challenge & Defense | Biar report kredibel — agent harus defend pakai bukti, bukan yes-man; user bisa challenge post-PDF | Tanpa adversarial (agent asal terima) |
 | Pages.dev | Fadiil prefer | workers.dev |
 
 ## 11. Open — Ide Tambahan Fadiil + Temen
 
 - [x] **Ide 1 (Fadiil, 31 Aug 2026) — News Harvester Agent (Google Search) — APPROVED, POSSIBLE** → Agent khusus search berita di Google sebagai **narasi + asumsi**. Design: `agents/news_harvester.py` → `search_news(ticker, days=30, max=8)` via `web_search` + `web_extract` → dedup + tier filter (Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel, Tier2: Reuters/Bloomberg/JP, Tier3: blog) → output `news.json` {url, date, title, source, snippet, tier, relevance} → feed ke **Thesis Writer** (catalyst timeline), **Risk Officer** (regulatory/MSCI risk), **Industry/Macro** (themantic), **Modeler** (assumption delta, e.g., Danantara $12bn → flows). Critic wajib cek `url+date` per klaim. Cost: 0 Sectors credit.
-- [ ] Ide 2: (temen) — 
+- [x] **Ide 2 (Fadiil, 31 Aug 2026) — Adversarial Challenge & Defense — APPROVED** → Agents **tidak boleh asal terima** critique. Harus **defend pakai bukti** kalau benar, **concede + revise** kalau salah. Design: `agents/adversarial.py` (Red Team) → 2 loops: **(a) Internal duel** pre-PDF: challenge Thesis/Valuation/Risk masing2 1 claim (e.g., 'WACC 8.4% too low vs MTEL 10.1%?'), target agent must `defend(evidence: calc + source)` or `concede(correction)`; Critic arbiter cek evidence vs `assumptions.json/valuation.json/news.json`; max 2 rounds; log `debate.json` {round, challenger, claim, defense, verdict}. **(b) User challenge** post-PDF: UI `/report/[ticker]/challenge` — user ketik kritik, agent yang relevan jawab dengan sitasi (Exhibit + url+date), tidak boleh sycophancy. Anti-pattern: `agree because user said` = REJECT. 
 - [ ] Track lock-in: T03 Market Intel paling pas (RATU/CDIA/MTEL semua research), T01 AI Agents kalau tonjolin multi-agent orchestration — decide?
 - Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (GGM/bank) + ADRO (SOTP spin-off) — **quintet** cover semua engine; JPM JCI 9,100 untuk market overlay
 - Bahasa PDF: ID/EN toggle? —
@@ -246,4 +255,4 @@
 
 ---
 
-**Next step:** Drop ide tambahan → update Section 11 + scaffold 6 engines (dcf/ddm/sotp/blended/bands/ggm) + 4 templates di branch ini. Library 15 sources ready. Gas?
+**Next step:** 2 ide Fadiil locked (News Harvester + Adversarial). Gas scaffold 7 engines (dcf/ddm/sotp/blended/bands/ggm/adversarial) + 4 templates + debate UI di branch ini. Library 15 sources ready.
