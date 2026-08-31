@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>RATU — Initiation (single)</title>
+<style>
+  :root {
+    --ink: #101828; --muted: #475467; --line: #e4e7ec; --paper: #ffffff;
+    --brand: #1d4ed8; --brand-dark: #152c6e;
+    --accent: #eef2ff; --pos: #067647; --neg: #b42318; --band: #f9fafb;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  body { font-family: "Helvetica Neue", Arial, sans-serif; color: var(--ink); font-size: 9.5pt; line-height: 1.45; }
+  .page { page-break-after: always; position: relative; min-height: 1220px; max-height: 1220px;
+          overflow: hidden; padding: 50pt 40pt 64pt; }
+  .page:last-child { page-break-after: auto; }
+
+  /* running header + footer (baked per page since Playwright displayHeaderFooter is off) */
+  .rhdr { display: flex; justify-content: space-between; font-size: 7pt; letter-spacing: .08em;
+          color: var(--muted); text-transform: uppercase; border-bottom: 1.5pt solid var(--brand);
+          padding-bottom: 4pt; margin-bottom: 16pt; }
+  .rftr { position: absolute; bottom: 18pt; left: 40pt; right: 40pt; display: flex;
+          justify-content: space-between; font-size: 6.5pt; color: var(--muted);
+          border-top: .5pt solid var(--line); padding-top: 4pt; }
+
+  h2 { font-size: 14pt; color: var(--brand-dark); }
+  h3 { font-size: 10.5pt; margin: 10pt 0 4pt; color: var(--ink); }
+  p { margin: 4pt 0; }
+  .muted { color: var(--muted); }
+  .small { font-size: 7.5pt; }
+  .neg { color: var(--neg); } .pos { color: var(--pos); }
+
+  .section-head { display: flex; align-items: baseline; gap: 8pt; border-bottom: 1pt solid var(--brand);
+                  margin: 14pt 0 8pt; padding-bottom: 3pt; }
+  .section-no { font-size: 8pt; color: #fff; background: var(--brand); border-radius: 2pt;
+                padding: 1pt 5pt; letter-spacing: .05em; font-weight: 700; }
+
+  .fin-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 6pt 0; }
+  .fin-table th { background: var(--brand-dark); color: #fff; padding: 3.5pt 5pt; text-align: right;
+                  font-weight: 600; }
+  .fin-table th:first-child { text-align: left; }
+  .fin-table td { padding: 3pt 5pt; border-bottom: .5pt solid var(--line); text-align: left; }
+  .fin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .fin-table tbody tr:nth-child(even) { background: var(--band); }
+  .fin-table tfoot td { font-weight: 700; border-top: 1pt solid var(--ink); }
+
+  .exhibit-head { display: flex; align-items: baseline; gap: 6pt; margin: 10pt 0 2pt; }
+  .exhibit-id { font-size: 7.5pt; font-weight: 700; color: var(--brand-dark); }
+  .exhibit-name { font-size: 8.5pt; font-weight: 600; }
+  .exhibit-src { margin-left: auto; font-size: 6.8pt; color: var(--muted); font-style: italic; }
+  .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; }
+  .card { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; background: #fff; }
+  .card-tint { border: .75pt solid var(--line); border-left: 2.5pt solid var(--brand);
+               border-radius: 4pt; padding: 8pt; background: var(--band); }
+  .kv { display: flex; justify-content: space-between; font-size: 8.2pt; padding: 2.2pt 0;
+        border-bottom: .5pt dotted var(--line); }
+  .kv-l { color: var(--muted); } .kv-v { font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .rating-box { border: 1.5pt solid var(--brand); border-radius: 5pt; padding: 10pt; text-align: center; }
+  .rating-action { font-size: 20pt; font-weight: 800; color: var(--brand-dark); letter-spacing: .04em; }
+  .tp-big { font-size: 17pt; font-weight: 800; }
+  .badge { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: .06em;
+           padding: 1.5pt 6pt; border-radius: 2pt; }
+  .badge-ow  { background: #d1fadf; color: var(--pos); }
+  .badge-n   { background: #eaecf0; color: var(--ink); }
+  .badge-uw  { background: #fee4e2; color: var(--neg); }
+
+  .band-pos { color: var(--pos); font-weight: 700; } .band-neg { color: var(--neg); font-weight: 700; }
+
+  .disclaimer-block { border: .75pt solid var(--line); background: var(--band); border-radius: 4pt;
+                      padding: 8pt; font-size: 7pt; color: var(--muted); }
+  .disc-title { font-weight: 800; letter-spacing: .1em; color: var(--ink); margin-bottom: 3pt; }
+
+  .takeaways li { margin: 3pt 0; font-size: 8.6pt; }
+  .risk-bucket { border-left: 2.5pt solid var(--neg); padding: 4pt 8pt; margin: 5pt 0;
+                 background: #fffbfa; border-radius: 0 3pt 3pt 0; }
+  .risk-bucket b { color: var(--neg); font-size: 8.6pt; }
+  .src-tag { font-size: 6.5pt; color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="rhdr"><span>RESEARCH — Equity Report</span><span>RATU · 31 Agt 2026</span></div>
+  <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
+    <div>
+      <div class="small muted" style="letter-spacing:.12em;">INITIATION · Energi — Pure-Play Holding</div>
+      <h1 style="font-size:26pt; color:var(--brand-dark); line-height:1.1; margin:4pt 0 2pt;">Ratu Prabu Energi</h1>
+      <div style="font-size:13pt; font-weight:700; color:var(--muted);">RATU · IDX</div>
+
+      <div class="card-tint" style="margin-top:14pt;">
+        <div class="small muted">Harga: Rp 6,200 · Target Harga: Rp 7,880 · Upside +27.1%</div>
+      </div>
+
+      <div style="margin-top:16pt;">
+        <div class="exhibit-head">
+  <span class="exhibit-id">Exhibit 1</span>
+  <span class="exhibit-name">Struktur Pemegang Saham</span>
+  <span class="exhibit-src">Sumber: IDX — struktur pemegang saham</span>
+</div>
+        <div class="chart-wrap"><canvas id="cHolders" width="300" height="180"></canvas></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="rating-box">
+        <div class="rating-action">BUY</div>
+        <div class="small muted">12 bulan · eks-dividen</div>
+        <div class="tp-big" style="margin-top:6pt;">Rp 7,880</div>
+        <div class="small">Harga kini Rp 6,200</div>
+        <div class="pos" style="font-weight:700; margin-top:2pt;">
+          +27.1% upside
+        </div>
+      </div>
+      <div class="card" style="margin-top:10pt;">
+        <div class="small muted" style="margin-bottom:2pt;">INFORMASI SAHAM</div>
+        <div class="kv"><span class="kv-l">Saham beredar</span><span class="kv-v">2.71 bn</span></div>
+<div class="kv"><span class="kv-l">Free float</span><span class="kv-v">31.2%</span></div>      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:14pt;">
+    <div class="exhibit-head">
+  <span class="exhibit-id">Exhibit 2</span>
+  <span class="exhibit-name">Kinerja Harga vs IHSG (YTD)</span>
+  <span class="exhibit-src">Sumber: IDX, yfinance (RATU.JK vs ^JKSE)</span>
+</div>
+    <div class="chart-wrap"><canvas id="cVsJci" width="680" height="200"></canvas></div>
+  </div>
+  <div class="rftr">
+  <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
+  <span>1</span>
+</div>
+</div>
+
+<div class="page">
+  <div class="rhdr"><span>RESEARCH — Equity Report</span><span>RATU · 31 Agt 2026</span></div>
+  <div class="section-head"><span class="section-no">1</span><h2>Ringkasan Investasi</h2></div>
+  <p class="muted small">Snapshot Ratu Prabu Energi — seluruh angka hasil engine deterministik, asumsi eksplisit di §4.</p>
+
+  <div class="exhibit-head">
+  <span class="exhibit-id">Exhibit 3</span>
+  <span class="exhibit-name">Financial Highlights (6 tahun)</span>
+  <span class="exhibit-src">Sumber: Laporan keuangan RATU (IDX), data diolah</span>
+</div>
+  <table class="fin-table">
+  <thead><tr><th></th><th>FY24A</th><th>FY25A</th><th>FY26F</th></tr></thead>
+  <tbody>
+<tr><td class="">Pendapatan (Rp bn)</td><td class="num">1290</td><td class="num">1122</td><td class="num">1180</td></tr><tr><td class="">EBITDA (Rp bn)</td><td class="num">610</td><td class="num">540</td><td class="num">585</td></tr><tr><td class="">Net profit (Rp bn)</td><td class="num">402</td><td class="num">355</td><td class="num">390</td></tr><tr><td class="">P/E (x)</td><td class="num">129.0</td><td class="num">55.2</td><td class="num">42.7</td></tr><tr><td class="">ROE (%)</td><td class="num">88.0</td><td class="num">41.0</td><td class="num">30.0</td></tr>  </tbody>
+</table>
+
+  <div class="section-head"><span class="section-no">2</span><h2>Tesis Investasi</h2></div>
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>1. Bottom line tahan meski revenue turun</b>
+    <p class="small">Margin net profit naik dari 31% ke 32% karena efisiensi opex dan hedge kurs.</p>
+<div class="src-tag">Sumber: Laporan keuangan FY24-25 (IDX)</div>  </div>
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>2. Cepu 169k BOPD jadi mesin kas</b>
+    <p class="small">Kontribusi lapangan Cepu mendominasi produksi dengan biaya lifting rendah.</p>
+<div class="src-tag">Sumber: SKK Migas</div>  </div>
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>3. Regulasi PSC/DMO terkendali</b>
+    <p class="small">Struktur kontrak PSC existing melindungi ekonomi lapangan hingga 2031.</p>
+<div class="src-tag">Sumber: Kontrak PSC (KKKS)</div>  </div>
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>4. Naturally declining base dikelola via workover</b>
+    <p class="small">Program workover rutin menahan decline rate ~8%/tahun.</p>
+<div class="src-tag">Sumber: Laporan manajemen</div>  </div>
+  <div class="rftr">
+  <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
+  <span>2</span>
+</div>
+</div>
+
+<div class="page">
+  <div class="rhdr"><span>RESEARCH — Equity Report</span><span>RATU · 31 Agt 2026</span></div>
+  <div class="section-head"><span class="section-no">3</span><h2>Valuasi</h2></div>
+  <p class="small muted">Metode kedua dipilih adaptif: infra/dividen → DDM, konglomerasi → SOTP, lainnya → EV/EBITDA (plan §5).</p>
+
+  <h3>DCF</h3>
+  <div class="grid-3" style="margin:4pt 0;">
+    <div class="kv"><span class="kv-l">WACC</span><span class="kv-v">8.4</span></div>
+    <div class="kv"><span class="kv-l">BETA</span><span class="kv-v">0.7</span></div>
+    <div class="kv"><span class="kv-l">RF</span><span class="kv-v">6.2</span></div>
+    <div class="kv"><span class="kv-l">ERP</span><span class="kv-v">6.9</span></div>
+    <div class="kv"><span class="kv-l">COE</span><span class="kv-v">10.0</span></div>
+    <div class="kv"><span class="kv-l">COD</span><span class="kv-v">3.5</span></div>
+    <div class="kv"><span class="kv-l">WE</span><span class="kv-v">85.0</span></div>
+    <div class="kv"><span class="kv-l">WD</span><span class="kv-v">15.0</span></div>
+    <div class="kv"><span class="kv-l">G</span><span class="kv-v">5.0</span></div>
+  </div>
+<table class="fin-table">
+  <thead><tr><th>Item</th><th>FY26F</th><th>FY27F</th><th>FY28F</th></tr></thead>
+  <tbody>
+<tr><td class="">FCF (Rp bn)</td><td class="num">410</td><td class="num">432</td><td class="num">455</td></tr><tr><td class="">Discount factor</td><td class="num">0.92</td><td class="num">0.85</td><td class="num">0.78</td></tr><tr><td class="">PV (Rp bn)</td><td class="num">377</td><td class="num">367</td><td class="num">355</td></tr>  </tbody>
+</table>  <div class="card-tint" style="margin:6pt 0;">
+    <div class="kv"><span class="kv-l">Fair value (DCF)</span>
+      <span class="kv-v">Rp 7,880</span></div>
+    <div class="src-tag">Engine: scripts/dcf.py</div>
+  </div>
+  <h3>EV/EBITDA</h3>
+  <div class="grid-3" style="margin:4pt 0;">
+    <div class="kv"><span class="kv-l">MULTIPLE</span><span class="kv-v">22.6</span></div>
+  </div>
+<table class="fin-table">
+  <thead><tr><th>Item</th><th>Nilai</th></tr></thead>
+  <tbody>
+<tr><td class="">EV/EBITDA target (x)</td><td class="num">22.6</td></tr><tr><td class="">EBITDA FY26F (Rp bn)</td><td class="num">585</td></tr><tr><td class="">EV (Rp bn)</td><td class="num">13221</td></tr>  </tbody>
+</table>  <div class="card-tint" style="margin:6pt 0;">
+    <div class="kv"><span class="kv-l">Fair value (EV/EBITDA)</span>
+      <span class="kv-v">Rp 6,960</span></div>
+    <div class="src-tag">Engine: scripts/ev_ebitda.py</div>
+  </div>
+
+
+  <div class="rftr">
+  <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
+  <span>3</span>
+</div>
+</div>
+
+<div class="page">
+  <div class="rhdr"><span>RESEARCH — Equity Report</span><span>RATU · 31 Agt 2026</span></div>
+  <div class="section-head"><span class="section-no">4</span><h2>Financials 6Y + Rasio</h2></div>
+      <div class="exhibit-head">
+  <span class="exhibit-id">Exhibit 4</span>
+  <span class="exhibit-name">Tren Pendapatan &amp; EBITDA</span>
+  <span class="exhibit-src">Sumber: Laporan keuangan IDX</span>
+</div>
+      <div class="chart-wrap"><canvas id="ex1" width="680" height="190"></canvas></div>
+      <div class="exhibit-head">
+  <span class="exhibit-id">Exhibit 5</span>
+  <span class="exhibit-name">Trajektori Leverage (DER)</span>
+  <span class="exhibit-src">Sumber: Laporan keuangan IDX</span>
+</div>
+      <div class="chart-wrap"><canvas id="ex2" width="680" height="170"></canvas></div>
+
+  <h3>Laba Rugi Ringkas</h3>
+  <table class="fin-table">
+  <thead><tr><th>Rp bn</th><th>FY24A</th><th>FY25A</th><th>FY26F</th></tr></thead>
+  <tbody>
+<tr><td class="">Pendapatan</td><td class="num">1290</td><td class="num">1122</td><td class="num">1180</td></tr><tr><td class="">HPP</td><td class="num">-520</td><td class="num">-470</td><td class="num">-492</td></tr><tr><td class="">EBITDA</td><td class="num">610</td><td class="num">540</td><td class="num">585</td></tr><tr><td class="">Laba bersih</td><td class="num">402</td><td class="num">355</td><td class="num">390</td></tr>  </tbody>
+</table>
+  <div class="src-tag">Sumber: Laporan keuangan IDX</div>
+  <h3>Rasio Kunci</h3>
+  <table class="fin-table">
+  <thead><tr><th>Rasio</th><th>FY24A</th><th>FY25A</th><th>FY26F</th></tr></thead>
+  <tbody>
+<tr><td class="">ROE (%)</td><td class="num">88.0</td><td class="num">41.0</td><td class="num">30.0</td></tr><tr><td class="">DER (x)</td><td class="num">0.21</td><td class="num">0.24</td><td class="num">0.22</td></tr><tr><td class="">Interest coverage (x)</td><td class="num">14.2</td><td class="num">11.8</td><td class="num">12.4</td></tr>  </tbody>
+</table>
+  <div class="src-tag">Sumber: Laporan keuangan IDX</div>
+  <div class="rftr">
+  <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
+  <span>4</span>
+</div>
+</div>
+
+<div class="page">
+  <div class="rhdr"><span>RESEARCH — Equity Report</span><span>RATU · 31 Agt 2026</span></div>
+  <div class="section-head"><span class="section-no">5</span><h2>Perbandingan Peers</h2></div>
+    <h3>Peers energi IDX</h3>
+    <table class="fin-table">
+  <thead><tr><th>Ticker</th><th>P/E</th><th>EV/EBITDA</th><th>ROE</th></tr></thead>
+  <tbody>
+<tr><td class="">MEDC</td><td class="num">8.9</td><td class="num">4.2</td><td class="num">22.0</td></tr><tr><td class="">ENRG</td><td class="num">12.4</td><td class="num">5.1</td><td class="num">15.0</td></tr><tr><td class="">RATU</td><td class="num">42.7</td><td class="num">22.6</td><td class="num">30.0</td></tr>  </tbody>
+</table>
+    <div class="src-tag">Sumber: IDX, yfinance — data historis</div>
+
+  <div class="section-head"><span class="section-no">6</span><h2>Faktor Risiko</h2></div>
+  <div class="risk-bucket">
+    <b>Risiko Komoditas</b>
+    <p class="small">Harga minyak flektuatif mempengaruhi realisasi.</p>
+<div class="src-tag">Sumber: Laporan keuangan</div>  </div>
+  <div class="risk-bucket">
+    <b>Risiko Operator</b>
+    <p class="small">Ketergantungan pada operator lapangan.</p>
+  </div>
+  <div class="risk-bucket">
+    <b>Regulasi PSC/DMO</b>
+    <p class="small">Perubahan ketentuan domestic market obligation.</p>
+  </div>
+  <div class="risk-bucket">
+    <b>Natural decline</b>
+    <p class="small">Penurunan produksi basis legacy.</p>
+  </div>
+
+  <div class="section-head"><span class="section-no">7</span><h2>Disklaimer</h2></div>
+  <div class="disclaimer-block">
+  <p class="disc-title">INFORMASI, BUKAN SARAN INVESTASI</p>
+  <p>Laporan ini dihasilkan oleh sistem multi-agent untuk keperluan informasi dan analisis data pasar modal
+  Indonesia. Seluruh output adalah data historis dan agregat — bukan rekomendasi, prediksi, atau saran investasi.
+  Keputusan investasi sepenuhnya tanggung jawab pembaca. Selalu lakukan riset mandiri dan konsultasikan dengan
+  penasihat keuangan berlisensi sebelum berinvestasi. Performa masa lalu tidak menjamin hasil di masa depan.
+  Akurasi data tunduk pada kualitas data sumber.</p>
+</div>
+<p class="small muted" style="margin-top:6pt;">Disiapkan oleh RESEARCH — Sectors Hackathon 2026 · 31 Agt 2026 · Bahasa: ID</p>  <div class="rftr">
+  <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
+  <span>5</span>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<script>
+  Chart.defaults.font.family = "Helvetica Neue, Arial, sans-serif";
+  Chart.defaults.font.size = 8;
+  Chart.defaults.animation = false;          // PDF: no waiting for easing
+  Chart.defaults.plugins.legend.labels.boxWidth = 8;
+  Chart.defaults.plugins.tooltip.enabled = false;
+  const PALETTE = ["#1d4ed8", "#98a2b3", "#f2994a", "#12b76a", "#7a5af8", "#e31b54"];
+  function mkChart(id, cfg) {
+    const el = document.getElementById(id); if (!el) return;
+    cfg.options = Object.assign({responsive: false, devicePixelRatio: 2}, cfg.options || {});
+    cfg.options.plugins = Object.assign({tooltip: {enabled: false}}, cfg.options.plugins || {});
+    if (cfg.type === "line" && cfg.data.datasets) {
+      cfg.data.datasets.forEach(d => { d.tension = .25; d.borderWidth = d.borderWidth || 1.6; d.pointRadius = d.pointRadius || 0; });
+    }
+    if (cfg.data && cfg.data.datasets) cfg.data.datasets.forEach((d, i) => {
+      if (!d.backgroundColor && !d.borderColor) {
+        if (cfg.type === "pie" || cfg.type === "doughnut") {
+          // per-slice hues: data length may exceed PALETTE -> cycle
+          const n = (d.data || []).length;
+          d.backgroundColor = Array.from({length: n}, (_, j) => PALETTE[j % PALETTE.length]);
+        } else {
+          d.borderColor = PALETTE[i % PALETTE.length];
+          d.backgroundColor = PALETTE[i % PALETTE.length];
+        }
+      }
+    });
+    new Chart(el, cfg);
+  }
+</script>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  mkChart("cHolders", { type: "doughnut",
+    data: { labels: ["Publik", "RETJ", "PJUC"],
+            datasets: [{ data: [31.2, 45.0, 23.8] }] },
+    options: { plugins: { legend: { position: "right" } } } });
+  mkChart("cVsJci", { type: "line",
+    data: { labels: ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"],
+            datasets: [
+              { label: "RATU", data: [0, 4, 9, 12, 15, 18, 21, 19, 22, 24, 26, 27] },
+              { label: "IHSG", data: [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15] }] } });
+  mkChart("ex1", {"data": {"datasets": [{"data": [1290, 1122, 1180], "label": "Pendapatan (Rp bn)"}, {"data": [610, 540, 585], "label": "EBITDA (Rp bn)"}], "labels": ["FY24A", "FY25A", "FY26F"]}, "height": 190, "type": "bar"});
+  mkChart("ex2", {"data": {"datasets": [{"data": [0.21, 0.24, 0.22], "label": "DER (x)"}], "labels": ["FY24A", "FY25A", "FY26F"]}, "height": 170, "type": "line"});
+});
+</script>
+</body>
+</html>

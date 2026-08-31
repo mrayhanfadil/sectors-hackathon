@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+{# TEMPLATE: strategy — JPM 2026 Outlook archetype (top-down market report, NOT single-stock).
+   Sections: Cover w/ index target bull/base/bear + methodology, Investment Summary, 5 Thematics,
+   Sector OW/N/UW + Top Picks, Flows/MSCI + Danantara, Disclosures.
+   Data contract: templates/DATA_CONTRACT.md #}
+{% import "macros.html" as m %}
+{% set ns = namespace(ex=0) %}
+{% set palette = {"brand": "#7a2e8e", "brand_dark": "#4a1d5c", "accent": "#fdf4ff"} %}
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<title>{{ strategy.title }} — Strategy Outlook</title>
+{{ m.styles(palette) }}
+<style>
+  .idx-target { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; margin: 10pt 0; }
+  .scenario { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; text-align: center; }
+  .scenario .s-name { font-size: 8pt; letter-spacing: .1em; font-weight: 800; }
+  .scenario .s-val { font-size: 19pt; font-weight: 800; margin-top: 2pt; }
+  .scenario.base { border: 1.5pt solid var(--brand); background: var(--accent); }
+  .pick-row { display: grid; grid-template-columns: 60pt 1fr 2fr; gap: 8pt; padding: 4pt 0;
+              border-bottom: .5pt solid var(--line); font-size: 8.4pt; }
+</style>
+</head>
+<body>
+
+{# ================= PAGE 1 — COVER: INDEX TARGET ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Strategy Outlook", meta.date, "") }}
+  <div class="small muted" style="letter-spacing:.12em;">STRATEGY OUTLOOK · MARKET LEVEL · TOP-DOWN</div>
+  <h1 style="font-size:24pt; color:var(--brand-dark); line-height:1.15; margin:6pt 0 2pt;">{{ strategy.title }}</h1>
+  <p class="muted">{{ strategy.subtitle }}</p>
+
+  {% if strategy.index_target %}
+  {{ m.exhibit_auto(ns, "Target Indeks 12 Bulan — Bull / Base / Bear", strategy.index_target.source or "IDX, data diolah") }}
+  <div class="idx-target">
+    {% for s in strategy.index_target.scenarios %}
+    <div class="scenario {{ 'base' if s.name|lower == 'base' else '' }}">
+      <div class="s-name">{{ s.name|upper }}</div>
+      <div class="s-val">{{ s.value|idr }}</div>
+      <div class="small muted">{{ s.note }}</div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="card-tint">
+    <div class="small"><b>Metodologi:</b> {{ strategy.index_target.methodology }}</div>
+    {% if strategy.index_target.math %}
+    <div class="kv"><span class="kv-l">EPS growth</span><span class="kv-v">{{ strategy.index_target.math.eps_growth_pct }}%</span></div>
+    <div class="kv"><span class="kv-l">Target multiple</span><span class="kv-v">{{ strategy.index_target.math.multiple }}x</span></div>
+    <div class="kv"><span class="kv-l">Harga indeks kini</span><span class="kv-v">{{ strategy.index_target.math.current|idr }}</div>
+    {% endif %}
+  </div>
+  {% endif %}
+
+  {% if strategy.price_chart %}
+  <div style="margin-top:12pt;">
+    {{ m.exhibit_auto(ns, "IHSG 3 Tahun", strategy.price_chart.source or "IDX, yfinance") }}
+    <div class="chart-wrap"><canvas id="cIdx" width="680" height="190"></canvas></div>
+  </div>
+  {% endif %}
+  {{ m.pagefoot(1) }}
+</div>
+
+{# ================= PAGE 2 — INVESTMENT SUMMARY ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Strategy Outlook", meta.date, "") }}
+  {{ m.section(1, "Investment Summary") }}
+  {% for t in strategy.summary %}
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>{{ loop.index }}. {{ t.headline }}</b>
+    <p class="small">{{ t.detail }}</p>
+    {% if t.source %}<div class="src-tag">Sumber: {{ t.source }}</div>{% endif %}
+  </div>
+  {% endfor %}
+
+  {{ m.section(2, "Lessons & 5 Thematics") }}
+  {% for th in strategy.thematics %}
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>#{{ loop.index }} {{ th.name }}</b>
+    <p class="small">{{ th.detail }}</p>
+    {% if th.source %}<div class="src-tag">Sumber: {{ th.source }}</div>{% endif %}
+  </div>
+  {% endfor %}
+  {{ m.pagefoot(2) }}
+</div>
+
+{# ================= PAGE 3 — SECTOR ALLOCATION + PICKS ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Strategy Outlook", meta.date, "") }}
+  {{ m.section(3, "Alokasi Sektor — OW / N / UW") }}
+  {% if strategy.sectors %}
+  {{ m.exhibit_auto(ns, "Sektor & View", strategy.sectors_src or "IDX-IC, penilaian internal") }}
+  <div class="grid-2">
+    {% for s in strategy.sectors %}
+    <div class="kv"><span class="kv-l">{{ s.name }}</span>
+      <span class="kv-v"><span class="badge {{ 'badge-ow' if s.view == 'OW' else 'badge-n' if s.view == 'N' else 'badge-uw' }}">{{ s.view }}</span></span></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  {% if strategy.picks %}
+  {{ m.section(4, "Top Picks") }}
+  {{ m.exhibit_auto(ns, "Picks Large-Cap & SMID beserta Rationale", strategy.picks_src or "IDX, yfinance") }}
+  {% for p in strategy.picks %}
+  <div class="pick-row">
+    <b>{{ p.ticker }}</b>
+    <span class="muted small">{{ p.cap }}</span>
+    <span>{{ p.rationale }}</span>
+  </div>
+  {% endfor %}
+  {% endif %}
+  {{ m.pagefoot(3) }}
+</div>
+
+{# ================= PAGE 4 — FLOWS + DANANTARA ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Strategy Outlook", meta.date, "") }}
+  {{ m.section(5, "Flows, Kepemilikan Asing & Risiko MSCI") }}
+  {% if strategy.flows %}
+  <p class="small">{{ strategy.flows.narrative }}</p>
+  {% if strategy.flows.table %}{{ m.table(strategy.flows.table.headers, strategy.flows.table.rows) }}{% endif %}
+  <div class="src-tag">Sumber: {{ strategy.flows.source }}</div>
+  {% endif %}
+
+  {{ m.section(6, "Danantara & Policy Catalyst") }}
+  {% if strategy.danantara %}
+  <p class="small">{{ strategy.danantara.narrative }}</p>
+  {% if strategy.danantara.table %}{{ m.table(strategy.danantara.table.headers, strategy.danantara.table.rows) }}{% endif %}
+  <div class="src-tag">Sumber: {{ strategy.danantara.source }}</div>
+  {% endif %}
+
+  {{ m.section(7, "Disklaimer") }}
+  {{ m.disclaim() }}
+  {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
+  {{ m.pagefoot(4) }}
+</div>
+
+{{ m.chartjs() }}
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  {% if strategy.price_chart %}
+  mkChart("cIdx", { type: "line",
+    data: { labels: {{ (strategy.price_chart.labels or []) | tojson }},
+            datasets: [{ label: "IHSG", data: {{ (strategy.price_chart.series or [[]])[0] | tojson }} }] } });
+  {% endif %}
+});
+</script>
+</body>
+</html>
