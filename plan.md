@@ -1,6 +1,6 @@
 # Plan: Institutional-Grade Equity Report for Retail — Multi-Agent System
 
-> **Branch:** `feat/institutional-report` | **Status:** HARDENED — 4 decisions locked 31 Aug 2026, **HOLD** (jangan scaffold/build dulu — nunggu lampu hijau Fadiil)  
+> **Branch:** `feat/institutional-report` | **Status:** IMPLEMENTING — GAS 31 Aug 2026, 11 agents via Kanban (3 AGY Gemini + 3 Muse Spark 1M + 2 DeepSeek + 3 GLM)  
 > **Locked idea:** Bikin equity research report kualitas institusi (kayak HP Sekuritas RATU 7 Jan 2026) tapi accessible buat retail investor. Multi-agent, tiap agent punya expertise.  
 > **Benchmark PDFs (3+4 archetypes):** `RATU` (HP 7 Jan 2026, pure Oil) + `CDIA` (BCA 23 Jun 2026, conglomerate SOTP) + `MTEL` (KSI 27 Aug 2026, infra recurring) + `JPM 2026 Outlook` (52p strategy, JCI 9100) + 4 local global-like (Samuel BBCA, Maybank Strategy, BRIDS SOTP+DCF, Samuel Strategy). **Library 15 sources** in `references/source-library.md`.  
 > **Deadline hackathon:** 30 Sep 2026 23:59 WIB — 29 hari lagi.
@@ -273,4 +273,4 @@
 
 ---
 
-**Next step:** HARDENED — 4 decisions locked (T03/ID/Initiation/ESG-try) + Tech locked (React+TanStack / FastAPI solid / ADK+MCP). 3 ide Fadiil locked. **HOLD scaffold/build — nunggu `gas` dari Fadiil**. Library 15 sources ready.
+**Next step:** IMPLEMENTING — 11 Kanban lanes dispatched (AGY×3 Gemini, Muse Spark 1M×3, DeepSeek×2, GLM flash×2 + reviewer GLM). P0-P1 IDX+yfinance, P2 Sectors gate. Tech React+Vite/FastAPI/ADK+MCP locked.
