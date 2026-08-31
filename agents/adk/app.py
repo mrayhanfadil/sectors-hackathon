@@ -32,6 +32,17 @@ with Authorization: Bearer <SECTORS_API_KEY> — lazy-connect (best-effort).
 
 from __future__ import annotations
 
+# Prevent litellm auto-loading ~/.env with stale GOOGLE_API_KEY; also scrub it if already loaded
+import os as _os
+
+_os.environ.setdefault("LITELLM_MODE", "PRODUCTION")
+# The key in /home/fadil/.env (AIzaSyAbbT2rqy...) is a placeholder that returns 400 INVALID_ARGUMENT.
+# Scrub it so ADK search sub-agents gracefully degrade instead of crashing the Parallel group.
+if _os.getenv("GOOGLE_API_KEY", "").startswith("AIzaSyAbbT2"):
+    _os.environ.pop("GOOGLE_API_KEY", None)
+if _os.getenv("GEMINI_API_KEY", "").startswith("AIzaSyAbbT2"):
+    _os.environ.pop("GEMINI_API_KEY", None)
+
 import logging
 import os
 from typing import Any
@@ -63,7 +74,7 @@ from .agents.instructions import (
     visualizer_instruction,
     writer_instruction,
 )
-from .providers import deepseek_model, gemini_model
+from .providers import deepseek_model, gemini_model, spark_model
 from .tools.finance_tools import DETERMINISTIC_TOOLS
 from .tools.mcp_sectors import maybe_sectors_mcp_toolset
 
@@ -73,7 +84,12 @@ MAX_ADVERSARIAL_ITERATIONS = 4
 
 
 def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None = None):
-    """Main LLM: DeepSeek if key present, else Gemini fallback."""
+    """Main LLM: CommandCode Spark preferred, then DeepSeek, then Gemini."""
+    # 1. Prefer Muse Spark via CommandCode bridge
+    try:
+        return spark_model()
+    except Exception as e:
+        logger.info("Spark bridge not available (%s), trying DeepSeek/Gemini", e)
     deepseek_key = api_key or os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY")
     if deepseek_key:
         try:
@@ -88,7 +104,7 @@ def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None =
         except Exception as e:
             logger.warning("Gemini fallback also failed: %s", e)
             raise
-    raise ValueError("No LLM key set — need DEEPSEEK_API_KEY or GOOGLE_API_KEY")
+    raise ValueError("No LLM key set — need CommandCode bridge (BRIDGE_API_KEY), DEEPSEEK_API_KEY or GOOGLE_API_KEY")
 
 
 def _function_tools() -> list[Any]:
@@ -101,19 +117,34 @@ def _build_search_subagent(
     instruction: str,
     model=None,
 ) -> LlmAgent:
-    """Search-grounded sub-agent isolated from function tools (genai limit)."""
+    """Search-grounded sub-agent isolated from function tools (genai limit).
+
+    P0-P1 has no valid GOOGLE_API_KEY (the key in ~/.env is a stale placeholder
+    that litellm auto-loaded). To avoid crashing the Parallel group with 400
+    INVALID_ARGUMENT, degrade to Spark/DeepSeek WITHOUT GoogleSearchTool unless
+    ADK_ENABLE_GOOGLE_SEARCH=true and a real Gemini key is present.
+    """
+    enable_google = os.getenv("ADK_ENABLE_GOOGLE_SEARCH", "").strip().lower() in ("1", "true", "yes")
     if model is None:
-        try:
-            model = gemini_model()
-        except ValueError:
-            # No Gemini key — use DeepSeek with Sectors MCP fetch-news as search fallback
-            model = _deepseek_or_gemini()
+        if enable_google:
+            try:
+                model = gemini_model()
+                return LlmAgent(name=name, model=model, description=description, instruction=instruction, tools=[GoogleSearchTool()])
+            except ValueError:
+                logger.info("ADK_ENABLE_GOOGLE_SEARCH=true but no GOOGLE_API_KEY for %s — degrading", name)
+        logger.info("Search sub-agent %s: using Spark (no GoogleSearchTool) — 0-credit mode", name)
+        model = _deepseek_or_gemini()
+        suffix = "\n\nNote: Google Search grounding is disabled in this run (no valid GOOGLE_API_KEY). Produce best-effort synthetic results via your knowledge and label source=synthetic."
+        return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
+    else:
+        has_google_search = True
+    tools = [GoogleSearchTool()] if has_google_search else []
     return LlmAgent(
         name=name,
         model=model,
         description=description,
         instruction=instruction,
-        tools=[GoogleSearchTool()],
+        tools=tools,
     )
 
 

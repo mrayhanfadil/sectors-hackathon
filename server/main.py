@@ -8,6 +8,7 @@ from .config import get_settings
 from .cache import get_cache
 from .stockdata import get_stockdata
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge
+from .routers.agent import router_agent
 
 try:
     from .routers.pdf import router_pdf  # type: ignore
@@ -63,13 +64,14 @@ def create_app() -> FastAPI:
         expose_headers=["Content-Disposition", "Content-Type"],
     )
 
-    # routers — 6 endpoints per T04 spec
+    # routers — 6 endpoints per T04 spec + ADK agent stream
     app.include_router(router_health, tags=["health"])
     app.include_router(router_report, tags=["report"])
     app.include_router(router_outlook, tags=["outlook"])
     app.include_router(router_news, tags=["news"])
     app.include_router(router_sentiment, tags=["sentiment"])
     app.include_router(router_challenge, tags=["challenge"])
+    app.include_router(router_agent, tags=["agent"])
     if router_pdf is not None:
         app.include_router(router_pdf, tags=["pdf"])
 
@@ -85,6 +87,9 @@ def create_app() -> FastAPI:
                 "/api/news?ticker=BBCA",
                 "/api/sentiment?ticker=BBCA",
                 "/api/challenge (POST)",
+                "/api/agent/health",
+                "/api/agent/stream?ticker=BBCA (SSE live trace)",
+                "/api/agent/run (POST)",
                 "/api/health",
             ],
         }
