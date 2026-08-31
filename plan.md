@@ -2,7 +2,7 @@
 
 > **Branch:** `feat/institutional-report` | **Status:** DRAFT — nunggu ide tambahan Fadiil + temen  
 > **Locked idea:** Bikin equity research report kualitas institusi (kayak HP Sekuritas RATU 7 Jan 2026) tapi accessible buat retail investor. Multi-agent, tiap agent punya expertise.  
-> **Benchmark PDFs (3 archetypes):** `RATU` (HP Sekuritas, 7 Jan 2026, pure-play Oil) + `CDIA` (BCA Sekuritas, 23 Jun 2026, conglomerate 4-pilar) + `MTEL` (Kiwoom Sekuritas KSI, 27 Aug 2026, infra recurring — tower/fiber).  
+> **Benchmark PDFs (3+4 archetypes):** `RATU` (HP 7 Jan 2026, pure Oil) + `CDIA` (BCA 23 Jun 2026, conglomerate SOTP) + `MTEL` (KSI 27 Aug 2026, infra recurring) + `JPM 2026 Outlook` (52p strategy, JCI 9100) + 4 local global-like (Samuel BBCA, Maybank Strategy, BRIDS SOTP+DCF, Samuel Strategy). **Library 15 sources** in `references/source-library.md`.  
 > **Deadline hackathon:** 30 Sep 2026 23:59 WIB — 29 hari lagi.
 
 ---
@@ -13,7 +13,7 @@
 
 **Judges fit:** Real-world usability 40% + video storytelling 30% ("before: bingung, after: 1 PDF traceable") + technical depth 30% (multi-agent + deterministic math).
 
-**Pivot dari Sektoral.id:** Dulu 31 demo showcase, sekarang deep 1 product kredibel. 3 archetype bikin template kita anti-overfit satu sektor.
+**Pivot dari Sektoral.id:** Dulu 31 demo showcase, sekarang deep 1 product kredibel. 7 sources (3 single + 1 strategy + 4 local) bikin template anti-overfit semua sektor.
 
 ## 2. Benchmark — 3 Archetype
 
@@ -61,11 +61,39 @@
 | **Rating Guide** | BUY >+15%, TRADING BUY +5-15%, HOLD -10 to +15%, TRADING SELL -5 to -15%, SELL <-15% (12M ex-div) + Sector OVERWEIGHT/NEUTRAL/UNDERWEIGHT | Lebih granular dari RATU |
 | **Risks** | Dependency on operators (Telkomsel), competition, satellite/Open RAN, regulatory, financing (rising rates), location/natural | Spesifik infra |
 
-### 2.4 Synthesis — DNA Institutional + Upgrade List
+
+### 2.4 JPM Indonesia 2026 Outlook (J.P. Morgan, 2 Dec 2025) — Global Strategy, 52p, Henry Wibowo et al
+
+**Archetype ke-4 — strategy/top-down, bukan single-stock. Ini yang bikin report kita ada market-level narrative kayak UBS/Goldman.**
+
+| Section JPM | Isi Kunci | Delta vs RATU/CDIA/MTEL |
+|---|---|---|
+| **Cover: The return of animal spirit** | JCI **9,100 base / 10,000 bull / 7,800 bear** ( MXID 7,200/7,500/6,000), 8% EPS growth × 15x flat P/E, priced 28 Nov 2025 | **Index target bull/base/bear + methodology box** — RATU/CDIA/MTEL cuma fair value per share |
+| **OW Sectors** | **Industrials, Materials, Consumer Staples/Discretionary, Property** (N: Financials/Comm Services/Healthcare, UW: Energy/Utilities) | **Sector allocation module** dengan OW/N/UW — belum ada |
+| **Picks** | Large: BBCA/ASII/ICBP/GOTO/ANTM + SMID: ISAT/EMTK/JSMR/MAPI/PWON dengan criteria & rationale | **Top picks table + rationale** per sektor |
+| **Flows** | Retail 58% ADTV IDR14.5tn (COVID-peak), JCI vs MXID/LQ45 divergence on conglomerate speculation, MSCI Adjusted Free Float 1Q26→May 26 risk, Foreign -US$2.2bn YTD / -2.6bn 2Y, FDI -28%, FPI -14bn, 44% foreign ownership UW since 2003; Institutional bid via Danantara US$1.5bn + pension | **Flows narrative + MSCI/foreign ownership box** |
+| **Danantara Value-Up** | BPI+DAM+DIM segregation, US$12bn dry powder (0.8% GDP) + >US$14bn SWF, 9 priority sectors, SOE ex-banks +25% YTD re-rating | **Policy catalyst (Danantara) dedicated section** |
+| **5 Thematics** | #1 Consumption recovery, #2 TSR improvement, #3 Re-attracting foreign, #4 Fiscal policy, #5 Danantara swing factor + 14pp sector economics (Banks, Consumer, Autos, Metals, Cement, Energy, Property, Coal, Healthcare, Internet, Telcos) | **Thematic framework** — bisa jadi Industry Outlook yang thematic, bukan cuma Brent/IEA |
+| **Toc 52p** | p1 Cover+4 bullets, p3 Investment summary, p7 Lessons from 2025, p13-30 5 thematics, p30 Stock picks, p33 Economics+sectors, p47 Disclosures | Panjang = report strategy, bukan company update — template beda (multi-sector) |
+
+**Yang kita serap:** Index target box (bull/base/bear + EPS×Multiple math), Sector OW/N/UW, Flows/MSCI risk box, Danantara catalyst, Thematic Industry Outlook.
+
+### 2.5 Local Global-Like (4 PDFs public, verified downloadable)
+
+| # | PDF | Pages | Valuation | Global-like score | Delta yang kita serap |
+|---|---|---|---|---|---|
+| L1 | **Samuel BBCA** RSH 21 Oct 2025 (`RSH-251021-English.pdf`, 8p, 598K) — BUY TP **9,600** (21.9% upside) | 8 | GGM-implied P/BV (P/E 16.9x, P/BV 3.3x, ROE 19.7%), **no WACC/g printed** | 5.5/10 — daily pack | **GGM shortcut:** kalau tidak ada DCF, pakai GGM `P/BV = (ROE-g)/(CoE-g)` — fallback engine kalau data WACC tipis |
+| L2 | **Maybank Strategy 2025 Outlook** (`427903.pdf`, 74p, 3.6M) — JCI **7,900-8,600** (12.9-14.0x, 8% core profit growth), universe 35 stocks Fig62 | 74 | Top-down P/E band 12.9-14.0x | 8.5/10 — **60+ exhibits**, rate-sensitive weights, EV/EBITDA bands | **Outlook playbook:** 74p strategy dengan 60+ exhibits sebagai template `Market Outlook` chapter |
+| L3 | **BRIDS Morning 18 Nov 2024** (`35772`, 12p, 1.8M) — ADRO SOTP **US$6.1bn (AADI) + US$5.3-7.0bn post-spin (holdco discount)** + **GOTO DCF TP Rp90 @ 6% CAGR FY24-34 GTV** | 12 | **SOTP + DCF dual** — best disclosure | 8.0/10 — bank monthly table (mom/yoy vs target) | **SOTP holdco discount + spin-off bridge** (kayak CDIA tapi untuk demerger) |
+| L4 | **Samuel Strategy Dec 2023** (`Strategy-Report-Dec-En.pdf`, 26p, 2.6M) — JCI **7,600 base / 7,300 bear / 8,000 bull** (14.0x, 3.6/8.6/13.6% growth, 5Y avg 22.1x) | 26 | P/E 14.0x base | 7.5/10 | **Bear/base/bull growth table** dengan 3 skenario + 5Y avg reference |
+
+**Source library:** `references/source-library.md` — 15 ranked (P0 4 downloadable: CLSA HRTA 9p, Bahana Construction 19p, DBS PGAS Weekly 12p, CGSI DBS 11p; P1 6 Scribd; P2 5 gated). Liat file untuk URL + access status.
+
+### 2.6 Synthesis — DNA Institutional + Upgrade List
 
 **DNA yang sama di 3 PDF:** cover + summary snapshot, thesis narasi + angka, risk buckets, 2 metode valuasi, exhibits dengan source, financials 5-6Y, disclaimer OJK, asumsi WACC/beta eksplisit.
 
-**Yang beda & wajib kita serap (8 → 13 upgrades):**
+**Yang beda & wajib kita serap (8 → 16 upgrades):**
 
 | # | Upgrade | Sumber | Prioritas |
 |---|---|---|---|
@@ -82,6 +110,9 @@
 | 11 | **Key Takeaways box** (3 bullets di cover) + **Shareholder pie** + **ESG box** | **MTEL** | **P1 — Baru** |
 | 12 | **QoQ + YoY table** (1H vs 2Q, y/y & q/q) + quarterly momentum narasi | **MTEL** | P2 |
 | 13 | One-off normalization + Activity ratios + granular Rating Guide | CDIA + MTEL | P2 |
+| 14 | **Index target bull/base/bear + EPS×Multiple math** (JCI 9,100/10,000/7,800, 15x, 8% EPS) | **JPM Strategy** | **P1 — Baru** |
+| 15 | **Sector OW/N/UW + Top picks + Flows/MSCI + Danantara Value-Up** | **JPM** | **P1 — Baru** |
+| 16 | **GGM fallback `P/BV=(ROE-g)/(CoE-g)` + SOTP holdco discount + spin-off bridge** | **Samuel/BRIDS** | **P1 — Baru** |
 
 ## 3. Architecture — 7+1 → 8+1 Agents
 
@@ -151,26 +182,26 @@
 
 ## 6. Tech Stack
 
-- Frontend Next.js `/report/[ticker]` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (3 templates) | Deploy Pages.dev
-- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands}.py`, `agents/{collector,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp}.py`, `templates/{report_single,sotp,infra}.html`, `app/`, `demos/report/assets/api-data.js`
+- Frontend Next.js `/report/[ticker]` + `/outlook` + PDF preview + template switch | Backend FastAPI + Sectors proxy (KV 4h) | DB SQLite | PDF HTML+Tailwind+Chart.js (4 templates: single/SOTP/infra/strategy) | Deploy Pages.dev
+- Repo: `data/peers.json`, `scripts/{sectors_api,dcf,ddm,sotp,blended,bands,ggm}.py`, `agents/{collector,modeler,analyst,industry,risk,kpi,writer,visualizer,critic,sotp}.py`, `templates/{report_single,sotp,infra,strategy}.html`, `references/{global,jpm*, local-global-like/*, source-library.md}`, `app/`, `demos/report/assets/api-data.js`
 
 ## 7. Phased Build (29 hari ke 30 Sep)
 
 | Phase | Tanggal | Deliverable | Owner |
 |---|---|---|---|
-| **P0 — Scaffold** | 31 Aug – 2 Sep | Branch + plan.md (RATU+CDIA+MTEL) + `dcf_engine.py` + `ddm/sotp/blended/bands.py` + `peers.json` (3 modes) + 3 HTML templates | Hermes |
-| **P1 — Data** | 3 – 6 Sep | Sectors proxy + SQLite (segments + KPI + JCI + 3Y multiples) + 4 tickers E2E (RATU single, CDIA SOTP, MTEL infra, BBCA control) | Collector |
-| **P2 — Modeler** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands deterministic; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + bands reproducible | Modeler |
-| **P3 — Agents** | 11 – 18 Sep | 6 LLM agents + KPI Analyst + SOTP Aggregator + Visualizer (mix, leverage, vs JCI, bands, KPI) | Multi-agent |
-| **P4 — PDF + UI** | 19 – 23 Sep | 3 templates PDF + `/report/[ticker]` + Key Takeaways/ESG/Revision blocks | Frontend |
-| **P5 — Polish & Video** | 24 – 29 Sep | 4 tickers showcase, video, audit swarm 3 AGY | All |
+| **P0 — Scaffold** | 31 Aug – 1 Sep | Branch + plan.md (RATU+CDIA+MTEL+JPM+L1-4) + `dcf/ddm/sotp/blended/bands/ggm.py` + `peers.json` (3 modes) + 4 HTML templates | DONE |
+| **P1 — Data** | 2 – 6 Sep | Sectors proxy + SQLite (segments+KPI+JCI+3Y+flows) + 5 tickers E2E (RATU, CDIA SOTP, MTEL infra, BBCA GGM, ADRO SOTP) + `source-library.md` (15 sources) | Collector |
+| **P2 — Modeler** | 7 – 10 Sep | DCF+DDM+SOTP+Blended+bands+GGM; RATU 7,880/6,960 + CDIA 815/810 + MTEL 630/635 + BBCA GGM + JPM JCI 9,100 (8%×15x) reproducible | Modeler |
+| **P3 — Agents** | 11 – 18 Sep | 8 agents (Collector/Modeler/Analyst/Industry/Risk/KPI/Writer/Visualizer) + SOTP Aggregator + Strategy Thematic (JPM 5 thematics) + Critic | Multi-agent |
+| **P4 — PDF + UI** | 19 – 23 Sep | 4 templates PDF (single/SOTP/infra/strategy) + `/report/[ticker]` + `/outlook` + Key Takeaways/ESG/Revision/Flows/MSCI boxes | Frontend |
+| **P5 — Polish & Video** | 24 – 29 Sep | 5 tickers showcase (RATU/CDIA/MTEL/BBCA/ADRO) + strategy page, video, audit swarm 3 AGY | All |
 | **Submit** | 30 Sep 23:59 WIB | Commit freeze, public 90 hari | — |
 
 ## 8. Credit Budget (1,000)
 
 - Universe 1 credit >> loop 22 (hemat 95%). SOTP 4 pilar = 4 credit vs 88 loop. Infra peers 1 credit.
 - `sections=` potong 50%, cache 4h, synthetic fallback.
-- Estimasi: 4 tickers × ~10-12 credits (KPI+JCI+bands extra) = 40-48 credits (aman).
+- Estimasi: 5 tickers × ~10-12 credits (KPI+JCI+bands+flows) = 50-60 credits (aman, masih <6% dari 1,000).
 
 ## 9. Risks & Mitigations
 
@@ -189,13 +220,13 @@
 | Keputusan | Kenapa | Alternatif ditolak |
 |---|---|---|
 | Deep 1 product bukan 31 demo | Judges 40% usability | 31 demos shallow |
-| 8+1 agents + KPI Analyst + SOTP | MTEL butuh KPI, CDIA butuh SOTP | Single peer table |
-| Adaptive 2nd + blended | RATU multiples, CDIA DDM, MTEL blended 60/40 | Fixed DCF+multiples |
+| 8+1 agents + KPI + SOTP + Strategy | MTEL KPI, CDIA SOTP, JPM thematics | Single peer table |
+| Adaptive 2nd + blended + GGM | RATU multiples, CDIA DDM, MTEL blended 60/40, BBCA GGM | Fixed DCF+multiples |
 | KPI module per subsector | MTEL tenancy 1.57 & fiber km adalah thesis | Financials only |
 | Catalyst quantification | MTEL 3k tenants + 360bn itu alpha | Narasi tanpa angka |
 | Historical bands | Mean-reversion institutional | Single point multiple |
 | Key Takeaways + ESG + Holder pie | Cover institutional MTEL | Cover plain |
-| 3 templates (single/SOTP/infra) | Tiap archetype layout beda | 1 template |
+| 4 templates (single/SOTP/infra/strategy) | Tiap archetype layout beda (JPM 52p strategy beda) | 1 template |
 | Python deterministic | Semua WACC/beta/ERP/payout eksplisit | LLM math |
 | Pages.dev | Fadiil prefer | workers.dev |
 
@@ -204,11 +235,11 @@
 - [ ] Ide 1: (Fadiil) — 
 - [ ] Ide 2: (temen) —
 - [ ] Track lock-in: T03 Market Intel paling pas (RATU/CDIA/MTEL semua research), T01 AI Agents kalau tonjolin multi-agent orchestration — decide?
-- Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (bank control) — quartet cover semua template
+- Ticker awal: RATU (single) + CDIA (SOTP) + MTEL (infra) + BBCA (GGM/bank) + ADRO (SOTP spin-off) — **quintet** cover semua engine; JPM JCI 9,100 untuk market overlay
 - Bahasa PDF: ID/EN toggle? —
 - Prior forecast: simpen v1 buat revision demo atau initiation only? —
 - ESG: include box atau skip dulu (P2)? —
 
 ---
 
-**Next step:** Drop ide tambahan → update Section 11 + scaffold 5 engines + 3 templates di branch ini. Gas?
+**Next step:** Drop ide tambahan → update Section 11 + scaffold 6 engines (dcf/ddm/sotp/blended/bands/ggm) + 4 templates di branch ini. Library 15 sources ready. Gas?
