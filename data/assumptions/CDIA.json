@@ -1,0 +1,16 @@
+{
+  "rf": 0.0696,
+  "beta": 0.9,
+  "erp": 0.06,
+  "cod": 0.05,
+  "g": 0.03,
+  "payout": 0.4,
+  "fcf": [2.0e12, 2.3e12, 2.6e12, 2.9e12, 3.1e12],
+  "shares_out": 55e9,
+  "net_debt": 15e12,
+  "cash": 2e12,
+  "ebitda": 8e12,
+  "ev_multiple": 12,
+  "last_price": 800,
+  "source": "CDIA archetype — BCA Sekuritas 23 Jun 2026 (SOTP, DCF 815 + DDM 810)"
+}

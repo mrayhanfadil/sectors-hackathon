@@ -1,0 +1,21 @@
+{
+  "rf": 0.0696,
+  "beta": 0.65,
+  "erp": 0.0889,
+  "cod": 0.06,
+  "we": 0.608,
+  "wd": 0.392,
+  "g": 0.015,
+  "payout": 0.35,
+  "fcf": [4.988e12, 5.2e12, 5.4e12, 5.6e12, 5.8e12],
+  "shares_out": 81.5e9,
+  "net_debt": 21.43e12,
+  "cash": 1.643e12,
+  "ebitda": 7.451e12,
+  "ev_multiple": 10,
+  "last_price": 460,
+  "tower": 40563,
+  "tenancy_ratio": 1.57,
+  "fiber_km": 59239,
+  "source": "MTEL archetype — KSI/Kiwoom 27 Aug 2026 (WACC 10.10%, FV 630 blended 60/40)"
+}
