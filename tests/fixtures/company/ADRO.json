@@ -1,0 +1,73 @@
+{
+  "ticker": "ADRO",
+  "name": "Alamtri Resources Indonesia Tbk",
+  "archetype": "sotp",
+  "currency": "IDR",
+  "units": "mn",
+  "price": 3920.0,
+  "shares_outstanding_mn": 31960.0,
+  "market_cap_mn": 125283200.0,
+  "date": "2024-11-18",
+  "source": {
+    "primary": "idx",
+    "label": "IDX / company filings + BRIDS Morning Pack 18 Nov 2024, data as of 15 Nov 2024"
+  },
+  "segments": [
+    {"pillar": "Coal (AADI)",       "revenue_mn": 3762000.0, "pct": 60.0, "growth_yoy": -0.15, "peer_avg_pe": 6.0, "peer_avg_ev_ebitda": 3.5, "peer_set": "ITMG, PTBA, BUMI", "source": "BRIDS Morning Pack 18 Nov 2024"},
+    {"pillar": "Power (CFPP)",      "revenue_mn": 1254000.0, "pct": 20.0, "growth_yoy": 0.05,  "peer_avg_pe": 8.0, "peer_avg_ev_ebitda": 6.0, "peer_set": "BREN, POWR", "source": "BRIDS Morning Pack 18 Nov 2024"},
+    {"pillar": "Logistics",         "revenue_mn": 627000.0,  "pct": 10.0, "growth_yoy": 0.03,  "peer_avg_pe": 10.0, "peer_avg_ev_ebitda": 6.5, "peer_set": "HATM, ASSA", "source": "BRIDS Morning Pack 18 Nov 2024"},
+    {"pillar": "Renewables stub",   "revenue_mn": 627000.0,  "pct": 10.0, "growth_yoy": 0.10,  "peer_avg_pe": 15.0, "peer_avg_ev_ebitda": 9.0, "peer_set": "Global renewables peers US$1.1/GW", "source": "BRIDS Morning Pack 18 Nov 2024"}
+  ],
+  "one_offs": null,
+  "financials": {
+    "years": ["2022A", "2023A", "2024F"],
+    "revenue_mn": [8102000.0, 6518000.0, 6270000.0],
+    "ebitda_mn": [4799000.0, 2510000.0, 2126000.0],
+    "net_income_mn": [2493000.0, 1641000.0, 1162000.0],
+    "roe": [0.30, 0.19, 0.13],
+    "roa": [0.12, 0.08, 0.06],
+    "gearing_pct": [45.0, 55.0, 60.0],
+    "debt_ebitda": [0.8, 1.2, 1.5],
+    "current_ratio": [1.8, 1.6, 1.4],
+    "gross_margin": [0.55, 0.45, 0.40],
+    "ebitda_margin": [0.59, 0.39, 0.34],
+    "net_margin": [0.31, 0.25, 0.19]
+  },
+  "sotp": {
+    "method": "SOTP — peer-avg per pillar, US$6.1bn AADI + US$5.3-7.0bn post-spin ADRO",
+    "holdco_discount_pct": 0.15,
+    "pre_discount_total_mn": 920000.0,
+    "post_discount_equity_mn": 782000.0,
+    "pillars_equity_mn": {"Coal (AADI)": 540000.0, "Power (CFPP)": 210000.0, "Logistics": 90000.0, "Renewables stub": 80000.0},
+    "currency": "USD",
+    "note": "BRIDS: AADI equity US$6.1bn; ADRO post-spin US$5.3-7.0bn range reflects holdco discount"
+  },
+  "catalysts": [
+    {
+      "id": "ADRO-SPIN",
+      "title": "AADI spin-off unlocks coal + power value (value-accretive for subscribers)",
+      "date": "2024-11-18",
+      "type": "corporate_action",
+      "quantified": {"aadi_equity_usd_mn": 6100.0, "adro_post_spin_min_usd_mn": 5300.0, "adro_post_spin_max_usd_mn": 7000.0},
+      "status": "pending",
+      "source": "BRIDS Morning Pack 18 Nov 2024"
+    }
+  ],
+  "peers": [
+    {"ticker": "ITMG", "name": "Indo Tambangraya Megah", "pe": 6.0, "ev_ebitda": 3.5, "sector": "Coal"},
+    {"ticker": "PTBA", "name": "Bukit Asam", "pe": 5.5, "ev_ebitda": 3.2, "sector": "Coal"},
+    {"ticker": "BREN", "name": "Barito Renewables", "pe": 8.0, "ev_ebitda": 6.0, "sector": "Power"}
+  ],
+  "kpi": {
+    "coal_production_mt": 68.0,
+    "cfpp_capacity_gw": 2.0,
+    "capex_remainder_usd_mn": 650.0,
+    "dividend_payout_pct": 45.0
+  },
+  "price_history": {
+    "ticker": {"dates": ["2024-05-15", "2024-08-15", "2024-11-15"], "close": [3100.0, 3500.0, 3920.0]},
+    "jci": {"dates": ["2024-05-15", "2024-08-15", "2024-11-15"], "close": [7100.0, 7350.0, 7200.0]},
+    "ytd_perf": {"ticker_pct": 26.0, "jci_pct": 3.0, "relative_pct": 23.0}
+  },
+  "esg": null
+}
