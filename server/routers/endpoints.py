@@ -211,20 +211,14 @@ async def report_ticker(
 
 
 def _assumptions_for(ticker: str) -> dict:
-    """Load data/assumptions/{ticker}.json if exists else archetype defaults."""
+    """Load data/assumptions/{ticker}.json if exists and merge with archetype defaults."""
     import json
     import os
 
-    p = os.path.join(os.path.dirname(__file__), "..", "..", "data", "assumptions", f"{ticker}.json")
-    p = os.path.normpath(p)
-    if os.path.exists(p):
-        try:
-            return json.loads(open(p).read())
-        except Exception:
-            pass
-    # defaults — MTEL-like infra vs generic single
-    if ticker in ("MTEL", "TOWR", "TLKM"):
-        return {
+    t = ticker.upper().strip()
+    # base defaults per archetype
+    if t in ("MTEL", "TOWR", "TLKM"):
+        base = {
             "rf": 0.0696,
             "beta": 0.65,
             "erp": 0.0889,
@@ -244,10 +238,10 @@ def _assumptions_for(ticker: str) -> dict:
             "tower": 40563,
             "tenancy_ratio": 1.57,
             "fiber_km": 59239,
-            "source": "assumptions/MTEL.json (fallback default)",
+            "source": "assumptions/MTEL.json",
         }
-    if ticker == "RATU":
-        return {
+    elif t == "RATU":
+        base = {
             "rf": 0.07,
             "beta": 0.7,
             "erp": 0.069,
@@ -261,25 +255,91 @@ def _assumptions_for(ticker: str) -> dict:
             "ebitda": 2200e9,
             "ev_multiple": 22.6,
             "last_price": 10650,
-            "source": "assumptions/RATU.json (fallback)",
+            "source": "assumptions/RATU.json",
         }
-    # generic
-    return {
-        "rf": 0.0696,
-        "beta": 0.85,
-        "erp": 0.06,
-        "cod": 0.06,
-        "g": 0.025,
-        "payout": 0.4,
-        "fcf": [1000, 1100, 1200, 1300, 1400],
-        "shares_out": 10e9,
-        "net_debt": 5000e9,
-        "cash": 1000e9,
-        "ebitda": 3000e9,
-        "ev_multiple": 12,
-        "last_price": 1000,
-        "source": "fallback generic",
-    }
+    elif t == "CDIA":
+        base = {
+            "rf": 0.0696,
+            "beta": 0.90,
+            "erp": 0.06,
+            "cod": 0.05,
+            "g": 0.03,
+            "payout": 0.40,
+            "fcf": [800, 900, 1000, 1100, 1200],
+            "shares_out": 124.8e9,
+            "net_debt": 5000e9,
+            "cash": 1200e9,
+            "ebitda": 2500e9,
+            "ev_multiple": 12.0,
+            "last_price": 645,
+            "source": "assumptions/CDIA.json",
+        }
+    elif t == "BBCA":
+        base = {
+            "rf": 0.0696,
+            "beta": 0.80,
+            "erp": 0.06,
+            "cod": 0.05,
+            "g": 0.04,
+            "roe": 0.197,
+            "bvps": 2950,
+            "payout": 0.50,
+            "fcf": [20000, 23000, 26000, 29000, 32000],
+            "shares_out": 123.2e9,
+            "net_debt": 0,
+            "cash": 50000e9,
+            "ebitda": 35000e9,
+            "ev_multiple": 16.9,
+            "last_price": 6350,
+            "source": "assumptions/BBCA.json",
+        }
+    elif t == "ADRO":
+        base = {
+            "rf": 0.0696,
+            "beta": 0.95,
+            "erp": 0.06,
+            "cod": 0.05,
+            "g": 0.02,
+            "payout": 0.45,
+            "fcf": [5000, 5200, 5400, 5600, 5800],
+            "shares_out": 28.8e9,
+            "net_debt": 2000e9,
+            "cash": 3500e9,
+            "ebitda": 8000e9,
+            "ev_multiple": 6.5,
+            "last_price": 2610,
+            "source": "assumptions/ADRO.json",
+        }
+    else:
+        base = {
+            "rf": 0.0696,
+            "beta": 0.85,
+            "erp": 0.06,
+            "cod": 0.06,
+            "g": 0.025,
+            "payout": 0.4,
+            "fcf": [1000, 1100, 1200, 1300, 1400],
+            "shares_out": 10e9,
+            "net_debt": 5000e9,
+            "cash": 1000e9,
+            "ebitda": 3000e9,
+            "ev_multiple": 12,
+            "last_price": 1000,
+            "source": "fallback generic",
+        }
+
+    p = os.path.join(os.path.dirname(__file__), "..", "..", "data", "assumptions", f"{t}.json")
+    p = os.path.normpath(p)
+    if os.path.exists(p):
+        try:
+            loaded = json.loads(open(p, encoding="utf-8").read())
+            if isinstance(loaded, dict):
+                for k, v in loaded.items():
+                    if v is not None:
+                        base[k] = v
+        except Exception:
+            pass
+    return base
 
 
 # ---------- outlook ----------
