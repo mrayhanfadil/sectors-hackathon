@@ -1,0 +1,718 @@
+{
+  "meta": {
+    "template": "infra",
+    "reason": "segments=4, subsector=telco-infra (segments>1 would give sotp; explicit infra chosen for archetype demo — switch doc covers precedence)",
+    "ticker": "MTEL",
+    "company_name": "Dayamitra Telekomunikasi",
+    "sector": "Infrastruktur Telekomunikasi",
+    "report_type": "Initiation",
+    "date": "31 Agt 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "language": "id",
+    "subsector": "telco-infra"
+  },
+  "cover": {
+    "rating_box": {
+      "action": "BUY",
+      "tp": 635,
+      "prev_tp": 705,
+      "price": 460,
+      "upside_pct": 38.0,
+      "key_takeaways": [
+        "PST & UMT merger efektif 1 Jul 2026 membuka efisiensi opex/capex dan tenancy >1.6x.",
+        "Spectrum 700MHz/2.6GHz berpotensi menambah 3.000-3.500 tenant (+Rp 360-420 bn) by FY27-29.",
+        "DCF 60% + EV/EBITDA 40% blended TP Rp 635, margin of safety 15%."
+      ]
+    },
+    "vs_jci": {
+      "ytd_abs": 12.1,
+      "ytd_rel": -2.9,
+      "source": "IDX, yfinance (MTEL.JK vs ^JKSE)",
+      "chart": {
+        "labels": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "Mei",
+          "Jun",
+          "Jul",
+          "Agt",
+          "Sep",
+          "Okt",
+          "Nov",
+          "Des"
+        ],
+        "series": [
+          [
+            0,
+            3,
+            6,
+            8,
+            10,
+            12,
+            14,
+            13,
+            12,
+            12,
+            12,
+            12
+          ],
+          [
+            0,
+            2,
+            5,
+            6,
+            8,
+            9,
+            11,
+            12,
+            12,
+            13,
+            14,
+            15
+          ]
+        ]
+      }
+    },
+    "shares": {
+      "outstanding": 81.5,
+      "unit": "bn",
+      "free_float_pct": 28.2
+    },
+    "shareholders": [
+      {
+        "name": "TLKM",
+        "pct": 71.83
+      },
+      {
+        "name": "Publik",
+        "pct": 28.17
+      }
+    ],
+    "shareholders_src": "IDX — struktur pemegang saham",
+    "esg": {
+      "found": true,
+      "scores": {
+        "e": 2.23,
+        "s": 3.03,
+        "g": 5.08
+      },
+      "source": "Sustainalytics (public summary)",
+      "date": "2026"
+    }
+  },
+  "financial_highlights": {
+    "source": "Laporan keuangan MTEL (IDX), data diolah",
+    "years": [
+      "2023A",
+      "2024A",
+      "2025A",
+      "2026F",
+      "2027F",
+      "2028F"
+    ],
+    "rows": [
+      [
+        "Pendapatan (Rp tn)",
+        8.5,
+        9.1,
+        9.6,
+        10.0,
+        10.4,
+        10.7
+      ],
+      [
+        "Laba bersih (Rp tn)",
+        2.0,
+        2.2,
+        2.3,
+        2.4,
+        2.5,
+        2.5
+      ],
+      [
+        "EPS (Rp)",
+        24,
+        27,
+        29,
+        30,
+        31,
+        32
+      ],
+      [
+        "EBITDA margin (%)",
+        54.0,
+        58.0,
+        62.0,
+        66.0,
+        70.0,
+        74.0
+      ],
+      [
+        "Div yield (%)",
+        2.6,
+        2.9,
+        3.2,
+        3.4,
+        3.6,
+        3.7
+      ],
+      [
+        "ROE (%)",
+        6.0,
+        6.4,
+        6.7,
+        6.9,
+        7.0,
+        7.0
+      ],
+      [
+        "P/E (x)",
+        29.0,
+        25.5,
+        22.0,
+        21.0,
+        20.5,
+        20.0
+      ],
+      [
+        "EV/EBITDA (x)",
+        16.3,
+        13.9,
+        11.5,
+        10.1,
+        9.2,
+        8.5
+      ]
+    ]
+  },
+  "segments": [
+    {
+      "name": "Tower Leasing",
+      "revenue": 3833,
+      "yoy_pct": 1,
+      "qoq_pct": 2,
+      "share_pct": 49.2,
+      "row": [
+        "Tower Leasing",
+        3833,
+        "+1%",
+        "+2%",
+        "49.2%"
+      ]
+    },
+    {
+      "name": "Fiber",
+      "revenue": 309,
+      "yoy_pct": 8,
+      "qoq_pct": 3,
+      "share_pct": 17.8,
+      "row": [
+        "Fiber",
+        309,
+        "+8%",
+        "+3%",
+        "17.8%"
+      ]
+    },
+    {
+      "name": "Tower-Related",
+      "revenue": 299,
+      "yoy_pct": 15,
+      "qoq_pct": 5,
+      "share_pct": 18.2,
+      "row": [
+        "Tower-Related",
+        299,
+        "+15%",
+        "+5%",
+        "18.2%"
+      ]
+    },
+    {
+      "name": "Reseller",
+      "revenue": 251,
+      "yoy_pct": 0,
+      "qoq_pct": 0,
+      "share_pct": 14.8,
+      "row": [
+        "Reseller",
+        251,
+        "0%",
+        "0%",
+        "14.8%"
+      ]
+    }
+  ],
+  "segments_src": "MTEL 1H26 — laporan segmentasi (IDX)",
+  "kpis": [
+    {
+      "name": "Tower",
+      "value": 40563,
+      "prev": 39767,
+      "unit": "unit",
+      "formula": "jumlah tower",
+      "source": "Company data",
+      "row": [
+        "Tower",
+        40563,
+        39767,
+        "+796",
+        "unit",
+        "jumlah tower",
+        "Company data"
+      ]
+    },
+    {
+      "name": "Colocation",
+      "value": 23303,
+      "prev": 21185,
+      "unit": "unit",
+      "formula": "colocation",
+      "source": "Company data",
+      "row": [
+        "Colocation",
+        23303,
+        21185,
+        "+2118",
+        "unit",
+        "colocation",
+        "Company data"
+      ]
+    },
+    {
+      "name": "Tenant",
+      "value": 63866,
+      "prev": 60825,
+      "unit": "tenant",
+      "formula": "jumlah tenant",
+      "source": "Company data",
+      "row": [
+        "Tenant",
+        63866,
+        60825,
+        "+3041",
+        "tenant",
+        "jumlah tenant",
+        "Company data"
+      ]
+    },
+    {
+      "name": "Tenancy Ratio",
+      "value": 1.57,
+      "prev": 1.53,
+      "unit": "x",
+      "formula": "tenant/tower",
+      "source": "Company data, data diolah",
+      "row": [
+        "Tenancy Ratio",
+        1.57,
+        1.53,
+        "+0.04",
+        "x",
+        "tenant/tower",
+        "Company data"
+      ]
+    },
+    {
+      "name": "Fiber",
+      "value": 59239,
+      "prev": 54348,
+      "unit": "km",
+      "formula": "panjang jaringan",
+      "source": "Company data",
+      "row": [
+        "Fiber",
+        59239,
+        54348,
+        "+4891",
+        "km",
+        "panjang jaringan",
+        "Company data"
+      ]
+    }
+  ],
+  "kpis_src": "Company data 1H26, data diolah",
+  "thesis": [
+    {
+      "headline": "KPI operasional adalah tesis — bukan cuma P&L",
+      "detail": "Tenancy ratio 1.57x dan fiber 59.2k km mencerminkan kualitas pendapatan recurring.",
+      "source": "Company data 1H26"
+    },
+    {
+      "headline": "Merger operator menaikkan utilisasi tower",
+      "detail": "Efektif 1 Jul 2026, PST & UMT merger menaikkan tenancy ke arah >1.6x.",
+      "source": "Disclosure IDX, kontan"
+    },
+    {
+      "headline": "Spectrum auction = tenant tambahan terkuantifikasi",
+      "detail": "Alokasi 700MHz/2.6GHz ke operator mendorong perluasan jaringan — +3.000-3.500 tenant.",
+      "source": "Regulator (Kominfo/Komdigi), press release operator"
+    }
+  ],
+  "valuation": {
+    "methods": [
+      {
+        "method": "DCF",
+        "fv": 630,
+        "assumptions": {
+          "wacc": 10.1,
+          "beta": 0.65,
+          "rf": 6.96,
+          "erp": 8.89,
+          "coe": 12.74,
+          "cod": 6.0,
+          "we": 60.8,
+          "wd": 39.2,
+          "g": 1.5
+        },
+        "table": {
+          "headers": [
+            "Rp bn",
+            "2026F",
+            "2027F",
+            "2028F"
+          ],
+          "rows": [
+            [
+              "EBIT",
+              4264,
+              4750,
+              5239
+            ],
+            [
+              "EBIT(1-tax 6%)",
+              4008,
+              4465,
+              4925
+            ],
+            [
+              "+ D&A",
+              3188,
+              3423,
+              3658
+            ],
+            [
+              "− Capex",
+              -2981,
+              -2709,
+              -2437
+            ],
+            [
+              "+ ΔWC",
+              762,
+              762,
+              762
+            ],
+            [
+              "FCF",
+              4977,
+              4941,
+              4908
+            ],
+            [
+              "Terminal value",
+              "",
+              "",
+              72736
+            ]
+          ],
+          "footers": [
+            [
+              "Equity value",
+              "",
+              "",
+              51556
+            ]
+          ]
+        },
+        "source": "scripts/dcf.py"
+      },
+      {
+        "method": "EV/EBITDA",
+        "fv": 745,
+        "assumptions": {
+          "multiple": 10.0
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "Nilai"
+          ],
+          "rows": [
+            [
+              "EV/EBITDA target (x)",
+              10.0
+            ],
+            [
+              "EBITDA (Rp tn)",
+              7.45
+            ]
+          ]
+        },
+        "source": "scripts/ev_ebitda.py"
+      }
+    ],
+    "blended": {
+      "source": "scripts/blended.py",
+      "weights": {
+        "DCF": 60,
+        "EV/EBITDA": 40
+      },
+      "fv": 635,
+      "margin_of_safety_pct": 15,
+      "weights_sum_100": true,
+      "rows": [
+        [
+          "DCF",
+          "60%",
+          630
+        ],
+        [
+          "EV/EBITDA",
+          "40%",
+          745
+        ]
+      ],
+      "fv_str": "635"
+    },
+    "bands": {
+      "source": "IDX, yfinance — 3Y band, data diolah",
+      "pbv_3y": {
+        "std+2": 2.9,
+        "std+1": 2.5,
+        "avg": 2.1,
+        "std-1": 1.7,
+        "std-2": 1.3,
+        "current": 1.47,
+        "label": "BELOW AVG"
+      }
+    }
+  },
+  "financials": [
+    {
+      "title": "Laba Rugi Ringkas",
+      "headers": [
+        "Rp tn",
+        "2023A",
+        "2024A",
+        "2025A",
+        "2026F"
+      ],
+      "rows": [
+        [
+          "Pendapatan",
+          8.5,
+          9.1,
+          9.6,
+          10.0
+        ],
+        [
+          "EBITDA",
+          4.6,
+          5.3,
+          6.0,
+          6.6
+        ],
+        [
+          "Laba bersih",
+          2.0,
+          2.2,
+          2.3,
+          2.4
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    },
+    {
+      "title": "Rasio Lengkap",
+      "headers": [
+        "Rasio",
+        "2023A",
+        "2026F"
+      ],
+      "rows": [
+        [
+          "Current ratio (x)",
+          0.3,
+          0.8
+        ],
+        [
+          "LT D/E (x)",
+          0.34,
+          0.46
+        ],
+        [
+          "DER (x)",
+          0.67,
+          0.69
+        ],
+        [
+          "ICR (x)",
+          2.0,
+          4.0
+        ],
+        [
+          "Cash ratio (%)",
+          8.0,
+          57.0
+        ]
+      ],
+      "source": "Laporan keuangan IDX"
+    }
+  ],
+  "risks": [
+    {
+      "bucket": "Ketergantungan operator (Telkomsel)",
+      "detail": "Konsentrasi pendapatan pada operator besar.",
+      "source": null
+    },
+    {
+      "bucket": "Kompetisi tower/satellite/Open RAN",
+      "detail": "Teknologi alternatif menekan pricing tower.",
+      "source": null
+    },
+    {
+      "bucket": "Regulasi spektrum & tarif",
+      "detail": "Perubahan aturan memengaruhi ekspansi tenant.",
+      "source": null
+    },
+    {
+      "bucket": "Pembiayaan (suku bunga)",
+      "detail": "Hutang fiber buildout sensitif bunga.",
+      "source": null
+    }
+  ],
+  "peers": {
+    "tables": [
+      {
+        "pillar": "Tower peers regional",
+        "headers": [
+          "Ticker",
+          "EV/EBITDA",
+          "Tenancy"
+        ],
+        "rows": [
+          [
+            "TOWR",
+            8.9,
+            1.7
+          ],
+          [
+            "EDOT",
+            9.8,
+            1.4
+          ],
+          [
+            "MTEL",
+            10.1,
+            1.57
+          ]
+        ],
+        "source": "IDX, laporan perusahaan"
+      }
+    ]
+  },
+  "news": [
+    {
+      "title": "Merger PST-UMT efektif berlaku",
+      "url": "https://example.com/merger-pst-umt",
+      "date": "2026-07-01",
+      "source": "Kontan",
+      "tier": 1
+    }
+  ],
+  "sentiment": null,
+  "strategy": null,
+  "catalysts": [
+    {
+      "name": "PST & UMT Merger (eff 1 Jul 2026)",
+      "effect": "Efisiensi opex/capex, tenancy >1.6x, FWA/fiberization/IoT/power",
+      "quantified": {
+        "tenants": "—",
+        "revenue_idr_bn": "—",
+        "by": "FY27-29"
+      },
+      "source": "Disclosure IDX, Kontan"
+    },
+    {
+      "name": "Spectrum 700MHz & 2.6GHz",
+      "effect": "TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 — perluasan jaringan",
+      "quantified": {
+        "tenants": "+3.000-3.500",
+        "revenue_idr_bn": "+360-420",
+        "by": "FY27-29"
+      },
+      "source": "Komdigi, press release operator"
+    }
+  ],
+  "exhibits": [
+    {
+      "id": "Exhibit 5",
+      "title": "KPI Operasional: Tower & Tenant",
+      "chart": {
+        "type": "bar",
+        "height": 180,
+        "data": {
+          "labels": [
+            "Tower",
+            "Colocation",
+            "Tenant"
+          ],
+          "datasets": [
+            {
+              "label": "Kini",
+              "data": [
+                40563,
+                23303,
+                63866
+              ]
+            },
+            {
+              "label": "Lalu",
+              "data": [
+                39767,
+                21185,
+                60825
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Company data 1H26, data diolah"
+    },
+    {
+      "id": "Exhibit 6",
+      "title": "Margin EBITDA & Tenancy Ratio",
+      "chart": {
+        "type": "line",
+        "height": 170,
+        "data": {
+          "labels": [
+            "2023A",
+            "2024A",
+            "2025A",
+            "2026F",
+            "2027F",
+            "2028F"
+          ],
+          "datasets": [
+            {
+              "label": "EBITDA margin (%)",
+              "data": [
+                54,
+                58,
+                62,
+                66,
+                70,
+                74
+              ]
+            }
+          ]
+        }
+      },
+      "source": "Laporan keuangan IDX"
+    }
+  ]
+}
