@@ -48,3 +48,7 @@ logs/
 # Local notes
 TODO.local.md
 *.local.*
+
+# Data — synthetic fallback is large and regenerable (seed=42)
+data/sectors.db
+data/sectors.db-journal
