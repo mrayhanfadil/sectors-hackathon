@@ -81,23 +81,46 @@ async def run_report(
         parts=[genai_types.Part(text=prompt)],
     )
 
+    from .storage import AgentRunStore
+
+    store = AgentRunStore()
+    store.start_run(
+        session_id,
+        ticker,
+        prompt,
+        provider=os.getenv("ADK_PROVIDER", "minimax"),
+        model=os.getenv("MINIMAX_MODEL", "minimax/MiniMax-M3"),
+    )
+
     events: list[Any] = []
     last_text = ""
-    async for event in runner.run_async(
-        user_id=user_id, session_id=session_id, new_message=content
-    ):
-        events.append(event)
-        # collect text for debugging
-        if event.content and event.content.parts:
-            for p in event.content.parts:
-                if p.text:
-                    last_text = p.text
+    seq = 0
+    try:
+        async for event in runner.run_async(
+            user_id=user_id, session_id=session_id, new_message=content
+        ):
+            events.append(event)
+            store.append_event(session_id, seq, event)
+            seq += 1
+            # collect text for debugging
+            if event.content and event.content.parts:
+                for p in event.content.parts:
+                    if p.text:
+                        last_text = p.text
 
-    # pull session state (output_key values land here)
-    session = await session_service.get_session(
-        app_name=app_name, user_id=user_id, session_id=session_id
-    )
-    state = dict(session.state) if session and session.state else {}
+        # pull session state (output_key values land here)
+        session = await session_service.get_session(
+            app_name=app_name, user_id=user_id, session_id=session_id
+        )
+        state = dict(session.state) if session and session.state else {}
+        store.finish_run(
+            session_id, status="completed", last_text=last_text, state=state
+        )
+    except Exception as e:
+        store.finish_run(
+            session_id, status="failed", last_text=last_text, error=str(e)[:2000]
+        )
+        raise
 
     return {
         "session_id": session_id,
