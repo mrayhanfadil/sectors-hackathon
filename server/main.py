@@ -33,6 +33,7 @@ from .cache import get_cache
 from .stockdata import get_stockdata
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge
 from .routers.agent import router_agent
+from .routers.mock_sectors import router_mock_sectors
 
 try:
     from .routers.pdf import router_pdf  # type: ignore
@@ -96,6 +97,7 @@ def create_app() -> FastAPI:
     app.include_router(router_sentiment, tags=["sentiment"])
     app.include_router(router_challenge, tags=["challenge"])
     app.include_router(router_agent, tags=["agent"])
+    app.include_router(router_mock_sectors, prefix="/api/mock", tags=["mock-sectors"])
     if router_pdf is not None:
         app.include_router(router_pdf, tags=["pdf"])
 
