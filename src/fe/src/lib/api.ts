@@ -1,6 +1,6 @@
 export type Ticker = "RATU" | "CDIA" | "MTEL" | "BBCA" | "ADRO"
 
-// ——— enriched report type ———
+// --- enriched report type ---
 export type Report = {
   ticker: string
   name: string
@@ -55,14 +55,14 @@ async function apiFetch<T>(path: string, fallback: () => Promise<T> | T): Promis
   }
 }
 
-// —— fixed fixtures (mirror scripts/report_fixtures.py, light — enough for cards when BE gaps) ——
+// -- fixed fixtures (mirror scripts/report_fixtures.py, light - enough for cards when BE gaps) --
 const FIXTURE_COVER: Record<string, Report["cover"]> = {
   RATU: {
     rating_box: { action: "BUY", tp: 7880, price: 6200, upside_pct: 27.1, prev_tp: null, key_takeaways: [] },
     vs_jci: { ytd_abs: 18.4, ytd_rel: 6.2, source: "IDX, yfinance (RATU.JK vs ^JKSE)", chart: { labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"], series: [[0,4,9,12,15,18,21,19,22,24,26,27],[0,2,5,6,8,9,11,12,12,13,14,15]] } },
     shares: { outstanding: 2.71, unit: "bn", free_float_pct: 31.2 },
     shareholders: [{ name: "Publik", pct: 31.2 }, { name: "RETJ", pct: 45.0 }, { name: "PJUC", pct: 23.8 }],
-    shareholders_src: "IDX — struktur pemegang saham",
+    shareholders_src: "IDX - struktur pemegang saham",
     esg: { found: false },
   },
   CDIA: {
@@ -70,7 +70,7 @@ const FIXTURE_COVER: Record<string, Report["cover"]> = {
     vs_jci: { ytd_abs: -62.9, ytd_rel: -30.9, source: "IDX, yfinance (CDIA.JK vs ^JKSE)", chart: { labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"], series: [[0,-12,-28,-41,-50,-55,-60,-58,-61,-62,-63,-63],[0,2,5,6,8,9,11,12,12,13,14,15]] } },
     shares: { outstanding: 15.0, unit: "bn", free_float_pct: 10.1 },
     shareholders: [{ name: "Publik", pct: 10.1 }, { name: "Chandra Asri", pct: 62.3 }, { name: "Lainnya", pct: 27.6 }],
-    shareholders_src: "IDX — struktur pemegang saham",
+    shareholders_src: "IDX - struktur pemegang saham",
     esg: { found: false },
   },
   MTEL: {
@@ -85,21 +85,21 @@ const FIXTURE_COVER: Record<string, Report["cover"]> = {
     vs_jci: { ytd_abs: 12.1, ytd_rel: -2.9, source: "IDX, yfinance (MTEL.JK vs ^JKSE)", chart: { labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"], series: [[0,3,6,8,10,12,14,13,12,12,12,12],[0,2,5,6,8,9,11,12,12,13,14,15]] } },
     shares: { outstanding: 81.5, unit: "bn", free_float_pct: 28.2 },
     shareholders: [{ name: "TLKM", pct: 71.83 }, { name: "Publik", pct: 28.17 }],
-    shareholders_src: "IDX — struktur pemegang saham",
+    shareholders_src: "IDX - struktur pemegang saham",
     esg: { found: true, scores: { e: 2.23, s: 3.03, g: 5.08 }, source: "Sustainalytics (public summary)", date: "2026" },
   },
   BBCA: {
-    rating_box: { action: "BUY", tp: 9600, price: 7890, upside_pct: 21.7, prev_tp: null, key_takeaways: ["CASA >75% — funding advantage terdepan.", "CoC 1.2% & NIM 5.8% — kualitas aset premium.", "GGM P/BV (ROE-g)/(CoE-g) → TP Rp 9.600 (ROE 19.7%, payout 50%)."] },
+    rating_box: { action: "BUY", tp: 9600, price: 7890, upside_pct: 21.7, prev_tp: null, key_takeaways: ["CASA >75% - funding advantage terdepan.", "CoC 1.2% & NIM 5.8% - kualitas aset premium.", "GGM P/BV (ROE-g)/(CoE-g) → TP Rp 9.600 (ROE 19.7%, payout 50%)."] },
     vs_jci: { ytd_abs: 4.2, ytd_rel: -3.1, source: "IDX, yfinance (BBCA.JK vs ^JKSE)", chart: { labels: ["Jan","Feb","Mar","Apr","Mei","Jun","Jul","Agt","Sep","Okt","Nov","Des"], series: [[0,1,3,4,5,6,7,6,7,8,9,9],[0,2,5,6,8,9,11,12,12,13,14,15]] } },
     shares: { outstanding: 123.2, unit: "bn", free_float_pct: 44.8 },
     shareholders: [{ name: "Publik", pct: 44.8 }, { name: "Dwimuria", pct: 54.9 }, { name: "Lainnya", pct: 0.3 }],
-    shareholders_src: "IDX — struktur pemegang saham",
+    shareholders_src: "IDX - struktur pemegang saham",
     esg: { found: true, scores: { e: 3.1, s: 4.2, g: 6.1 }, source: "Sustainalytics", date: "2026" },
   },
   // TODO: verify against data/assumptions/ADRO.json / BE assumptions
   ADRO: {
     rating_box: { action: "BUY", tp: 2450, price: 2080, upside_pct: 17.8, prev_tp: null, key_takeaways: [] },
-    vs_jci: { ytd_abs: null, ytd_rel: null, source: "BRIDS — butuh verifikasi", chart: null },
+    vs_jci: { ytd_abs: null, ytd_rel: null, source: "BRIDS - butuh verifikasi", chart: null },
     shares: { outstanding: 7.98, unit: "bn", free_float_pct: 25.0 },
     shareholders: [],  // empty when not live
     shareholders_src: null,
@@ -176,7 +176,7 @@ const FIXTURE_VALUATION: Record<string, Report["valuationDetail"]> = {
       { method: "EV/EBITDA", fv: 745, assumptions: { multiple: 10.0 }, table: { headers: ["Item","Nilai"], rows: [["EV/EBITDA target (x)",10.0],["EBITDA (Rp tn)",7.45]] }, source: "scripts/ev_ebitda.py" },
     ],
     blended: { weights: { DCF: 60, "EV/EBITDA": 40 }, fv: 635, fv_str: "635", margin_of_safety_pct: 15, rows: [["DCF","60%",630],["EV/EBITDA","40%",745]], source: "scripts/blended.py", weights_sum_100: true },
-    bands: { pbv_3y: { "std+2": 2.9, "std+1": 2.5, avg: 2.1, "std-1": 1.7, "std-2": 1.3, current: 1.47, label: "BELOW AVG" }, source: "IDX, yfinance — 3Y band, data diolah" },
+    bands: { pbv_3y: { "std+2": 2.9, "std+1": 2.5, avg: 2.1, "std-1": 1.7, "std-2": 1.3, current: 1.47, label: "BELOW AVG" }, source: "IDX, yfinance - 3Y band, data diolah" },
     ggm: null,
   },
   BBCA: {
@@ -270,15 +270,15 @@ function mergeFixture(k: string, live: Report, raw: Record<string, unknown>): Re
 export async function fetchReport(ticker: string): Promise<Report> {
   const k = ticker.toUpperCase()
   const live = await apiFetch<Report>(`/api/report/${encodeURIComponent(k)}`, async () => {
-    // Honest offline fallback — NEVER fabricated numbers
+    // Honest offline fallback - NEVER fabricated numbers
     return {
       ticker: k,
-      name: `${k} — Offline`,
+      name: `${k} - Offline`,
       price: null,
       target: null,
       upside: null,
       rating: null,
-      summary: `BE tidak tersedia saat ini. Data untuk ${k} belum dapat dimuat — coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/${k}`,
+      summary: `BE tidak tersedia saat ini. Data untuk ${k} belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/${k}`,
       valuation: [],
       updatedAt: new Date().toISOString().slice(0, 10),
       source: "offline",
@@ -296,19 +296,19 @@ export async function fetchReport(ticker: string): Promise<Report> {
     const val = anyLive["valuation"] as Record<string, unknown> | undefined
     const base: Report = {
       ticker: k,
-      name: (anyLive["company_name"] as string) || (anyLive["name"] as string) || `${k} — Live`,
+      name: (anyLive["company_name"] as string) || (anyLive["name"] as string) || `${k} - Live`,
       price,
       target: Math.round(fv),
-      upside: upside != null ? `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%` : "—",
+      upside: upside != null ? `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%` : "-",
       rating: (anyLive["rating"] as Report["rating"]) ?? "HOLD",
-      summary: (anyLive["summary"] as string) || `Live DCF engine — ${(val?.["method"] as string) ?? "dcf"}`,
+      summary: (anyLive["summary"] as string) || `Live DCF engine - ${(val?.["method"] as string) ?? "dcf"}`,
       valuation: [{ method: String(val?.["method"] ?? "DCF"), value: Math.round(fv) }],
       updatedAt: String(anyLive["generated_at"] ?? new Date().toISOString().slice(0, 10)),
       source: (anyLive["source"] as string) ?? "live",
     }
     return mergeFixture(k, base, anyLive)
   }
-  // already Report-like shape — enrich with fixtures directly
+  // already Report-like shape - enrich with fixtures directly
   const raw: Record<string, unknown> = {
     ...(anyLive as Record<string, unknown>),
     template: (anyLive as Record<string, unknown>)["template"] ?? (k === "MTEL" ? "infra" : (FIXTURE_SEGMENTS[k]?.length ?? 0) > 1 ? "sotp" : "single"),
@@ -316,7 +316,7 @@ export async function fetchReport(ticker: string): Promise<Report> {
   return mergeFixture(k, live, raw)
 }
 
-// ——— outlook ———
+// --- outlook ---
 export type Outlook = {
   jci: { base: number; bull: number; bear: number; pe: number; epsGrowth: string }
   sectors: { name: string; call: string }[]
@@ -333,7 +333,7 @@ const OUTLOOK_FIXTURE: Outlook = {
   jci: { base: 9100, bull: 10000, bear: 7800, pe: 15, epsGrowth: "8%" },
   sectors: [{ name: "Industrials", call: "OW" }, { name: "Materials", call: "OW" }, { name: "Consumer Staples", call: "OW" }, { name: "Consumer Discretionary", call: "OW" }, { name: "Property", call: "OW" }, { name: "Financials", call: "N" }, { name: "Energy", call: "UW" }, { name: "Utilities", call: "UW" }],
   picks: [
-    { ticker: "BBCA", cap: "Large", rationale: "Kualitas aset & CASA — defensif inti portofolio." },
+    { ticker: "BBCA", cap: "Large", rationale: "Kualitas aset & CASA - defensif inti portofolio." },
     { ticker: "ASII", cap: "Large", rationale: "Siklus mobil listrik + ekspor ASEAN." },
     { ticker: "ICBP", cap: "Large", rationale: "Pricing power bahan baku turun." },
     { ticker: "GOTO", cap: "Large", rationale: "Jalan menuju profitabilitas terkunci." },
@@ -348,14 +348,14 @@ const OUTLOOK_FIXTURE: Outlook = {
   flows: {
     narrative: "Retail mendominasi 58% ADTV Rp 14.5 tn (puncak COVID). Asing -US$2.2bn YTD / -2.6bn 2Y; 44% kepemilikan asing UW sejak 2003. MSCI Adjusted Free Float Mei 2026 = event risiko. Bid institusional via Danantara US$1.5bn + pensiun.",
     table: { headers: ["Flow","Nilai","Periode"], rows: [["Foreign net sell","-US$2.2bn","YTD 2026"],["Foreign net sell (2Y)","-US$2.6bn","2024-2026"],["FDI","-28%","YTD 2026"],["FPI","-US$14bn","YTD 2026"]] },
-    source: "IDX, Bloomberg — data historis",
+    source: "IDX, Bloomberg - data historis",
   },
   danantara: {
     narrative: "Segregasi BPI+DAM+DIM; US$12bn dry powder (0.8% PDB) + >US$14bn SWF; 9 sektor prioritas; SOE ex-bank +25% YTD re-rating.",
     table: { headers: ["Komponen","Nilai"], rows: [["Dry powder","US$12bn"],["SWF eksisting",">US$14bn"],["Sektor prioritas","9"]] },
-    source: "Danantara — rilis publik",
+    source: "Danantara - rilis publik",
   },
-  source: "JPM 2026 Outlook (JCI 9100 base) — fixtures · Data pasar dari JPM Indonesia 2026 Outlook (52 halaman, publik) — proyeksi penulis bukan saran investasi.",
+  source: "JPM 2026 Outlook (JCI 9100 base) - fixtures · Data pasar dari JPM Indonesia 2026 Outlook (52 halaman, publik) - proyeksi penulis bukan saran investasi.",
 }
 
 export async function fetchOutlook(): Promise<Outlook> {
@@ -429,12 +429,12 @@ export async function fetchSentiment(ticker: string): Promise<Sentiment> {
       timeline: [],
       sources: [],
       empty: true,
-      note: "Sentiment belum tersedia — BE offline atau news Harvester belum return hasil.",
+      note: "Sentiment belum tersedia - BE offline atau news Harvester belum return hasil.",
     }
   })
 }
 
-// ——— pdf ———
+// --- pdf ---
 export async function fetchPdf(ticker: string): Promise<void> {
   const tk = ticker.toUpperCase()
   const path = `/api/report/${encodeURIComponent(tk)}/pdf`
@@ -443,12 +443,12 @@ export async function fetchPdf(ticker: string): Promise<void> {
   try {
     r = await fetch(url)
   } catch (e) {
-    throw new Error(`network error — PDF endpoint unreachable (${API_BASE || "same-origin"}${path} — is the API up? ${(e as Error)?.message ?? String(e)})`)
+    throw new Error(`network error - PDF endpoint unreachable (${API_BASE || "same-origin"}${path} - is the API up? ${(e as Error)?.message ?? String(e)})`)
   }
   if (!r.ok) {
     const text = await r.text().catch(() => "")
     // surface real backend message + hint
-    const hint = r.status === 404 ? " — check API url / tunnel" : r.status >= 500 ? " — server error" : ""
+    const hint = r.status === 404 ? " - check API url / tunnel" : r.status >= 500 ? " - server error" : ""
     throw new Error((text?.slice(0, 400) || `PDF not available (${r.status})`) + hint)
   }
   // defensive: backend sometimes returns JSON error with 200
@@ -470,3 +470,145 @@ export async function fetchPdf(ticker: string): Promise<void> {
   a.remove()
   setTimeout(() => URL.revokeObjectURL(href), 4000)
 }
+
+// ---------------------------------------------------------------------------
+// Mock Sectors v2 Mirrors (Free Public Upstream Data)
+// ---------------------------------------------------------------------------
+
+export type DividendItem = {
+  ex_date: string
+  payment_date: string
+  amount_per_share: number
+  currency: string
+  type: string
+}
+
+export type StockSplitItem = {
+  date: string
+  ratio: number
+}
+
+export type AgmItem = {
+  date: string
+  type: string
+  agenda: string
+}
+
+export type CorporateActionsResponse = {
+  dividend: DividendItem[]
+  upcoming_dividend?: unknown[]
+  stock_split?: StockSplitItem[]
+  right_issue?: unknown[]
+  warrant?: unknown[]
+  bonus?: unknown[]
+  agm?: AgmItem[]
+  symbol: string
+  note?: string
+}
+
+export type QuarterlyFinancialItem = {
+  symbol: string
+  date: string
+  revenue: number | null
+  earnings: number | null
+  total_assets: number | null
+  total_equity: number | null
+  operating_cash_flow: number | null
+  non_interest_income?: number | null
+  operating_expense?: number | null
+  operating_pnl?: number | null
+  earnings_before_tax?: number | null
+  tax?: number | null
+  gross_profit?: number | null
+  ebit?: number | null
+  ebitda?: number | null
+  cost_of_revenue?: number | null
+  total_liabilities?: number | null
+  total_debt?: number | null
+  stockholders_equity?: number | null
+  cash_only?: number | null
+  current_liabilities?: number | null
+  total_current_asset?: number | null
+  financing_cash_flow?: number | null
+  investing_cash_flow?: number | null
+  net_cash_flow?: number | null
+}
+
+export type QuarterlyFinancialsResponse = {
+  pagination: {
+    limit: number
+    offset: number
+    total: number
+  }
+  data: QuarterlyFinancialItem[]
+  note?: string
+}
+
+export type NewsArticleItem = {
+  title: string
+  body: string
+  source: string
+  timestamp: string
+  sector?: string
+  sub_sector?: string[]
+  tags?: string[]
+  symbols?: string[]
+  thumbnail?: string | null
+  dimension?: {
+    sentiment: "bullish" | "bearish" | "neutral" | string
+    relevance: number
+  }
+}
+
+export type NewsResponse = {
+  pagination: {
+    limit: number
+    offset: number
+    total: number
+  }
+  data: NewsArticleItem[]
+  note?: string
+}
+
+export async function fetchDividends(ticker: string): Promise<CorporateActionsResponse> {
+  const tk = ticker.toUpperCase().trim()
+  return apiFetch<CorporateActionsResponse>(
+    `/api/mock/corporate-actions?symbol=${encodeURIComponent(tk)}`,
+    () => ({
+      dividend: [],
+      upcoming_dividend: [],
+      stock_split: [],
+      right_issue: [],
+      warrant: [],
+      bonus: [],
+      agm: [],
+      symbol: tk,
+      note: `Corporate actions data not found for ${tk}`,
+    })
+  )
+}
+
+export async function fetchQuarterly(ticker: string, nQuarters = 8): Promise<QuarterlyFinancialsResponse> {
+  const tk = ticker.toUpperCase().trim()
+  return apiFetch<QuarterlyFinancialsResponse>(
+    `/api/mock/quarterly-financials?symbol=${encodeURIComponent(tk)}&n_quarters=${nQuarters}`,
+    () => ({
+      pagination: { limit: nQuarters, offset: 0, total: 0 },
+      data: [],
+      note: `Quarterly financials not found for ${tk}`,
+    })
+  )
+}
+
+export async function fetchNews(ticker: string, limit = 30): Promise<NewsResponse> {
+  const tk = ticker.toUpperCase().trim()
+  return apiFetch<NewsResponse>(
+    `/api/mock/news?symbols=${encodeURIComponent(tk)}&limit=${limit}`,
+    () => ({
+      pagination: { limit, offset: 0, total: 0 },
+      data: [],
+      note: `News feed not found for ${tk}`,
+    })
+  )
+}
+

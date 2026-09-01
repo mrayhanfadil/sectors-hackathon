@@ -261,6 +261,12 @@ async def agent_health():
         info["ok"] = False
 
     info["elapsed_ms"] = round((time.time() - started) * 1000)
+    try:
+        from .mock_sectors import get_mock_sectors_status
+
+        info["mock_sectors"] = get_mock_sectors_status()
+    except Exception:
+        pass
     return info
 
 

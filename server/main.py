@@ -31,15 +31,18 @@ import logging
 from .config import get_settings
 from .cache import get_cache
 from .stockdata import get_stockdata
+from .logging_config import setup_logging, ProductionHardeningMiddleware
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge
 from .routers.agent import router_agent
-from .routers.mock_sectors import router_mock_sectors
+from .routers.mock_sectors import router_mock_sectors, get_mock_sectors_status
 
 try:
     from .routers.pdf import router_pdf  # type: ignore
 except Exception:
     router_pdf = None  # type: ignore
 
+# Initialize structured logging
+setup_logging()
 log = logging.getLogger(__name__)
 _started = time.time()
 
@@ -56,11 +59,12 @@ async def lifespan(app: FastAPI):
         log.warning(f"stockdata startup failed (will fallback yfinance): {e}")
     log.info(f"server up — cache ttl {settings.cache_ttl}s, stockdata {settings.stockdata_url}")
     yield
+    log.info("server received shutdown signal (SIGTERM/SIGINT) — initiating graceful shutdown")
     try:
         await sd.shutdown()
-    except Exception:
-        pass
-    log.info("server down")
+    except Exception as e:
+        log.warning(f"error shutting down stockdata pool: {e}")
+    log.info("server down — cleanup complete")
 
 
 def create_app() -> FastAPI:
@@ -78,6 +82,9 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
         openapi_url="/openapi.json",
     )
+    # Production Hardening Middleware: 60 req/min rate limiter + request latency logging
+    app.add_middleware(ProductionHardeningMiddleware)
+
     # CORS — allow Vite + Pages.dev (regex handles *.pages.dev preview deploys)
     app.add_middleware(
         CORSMiddleware,
@@ -86,10 +93,32 @@ def create_app() -> FastAPI:
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
-        expose_headers=["Content-Disposition", "Content-Type"],
+        expose_headers=["Content-Disposition", "Content-Type", "X-Cache", "X-RateLimit-Limit", "X-RateLimit-Remaining"],
     )
 
-    # routers — 6 endpoints per T04 spec + ADK agent stream
+    # Enhanced health endpoint exposing mock sectors status, upstream sources, and last call timestamps
+    @app.get("/api/health", summary="Health + stockdata + cache + mock_sectors status", tags=["health"])
+    async def health():
+        sd = get_stockdata()
+        cache = get_cache(settings.cache_ttl)
+        mock_status = get_mock_sectors_status()
+        return {
+            "status": "ok",
+            "uptime_s": round(time.time() - _started, 1),
+            "stockdata": await sd.health(),
+            "cache": await cache.stats(),
+            "version": "t04-0.1.0",
+            "env": settings.env,
+            "sectors_gate": "P2 (disabled)" if not settings.sectors_api_key else "enabled",
+            "mock_sectors_router": mock_status.get("mock_sectors_router", True),
+            "registered_endpoints": mock_status.get("registered_endpoints", []),
+            "endpoints": mock_status.get("endpoints", []),
+            "upstream_sources": mock_status.get("upstream_sources", {}),
+            "last_successful_call": mock_status.get("last_successful_call", {}),
+            "mock_sectors": mock_status,
+        }
+
+    # routers — 6 endpoints per T04 spec + ADK agent stream + mock sectors layer
     app.include_router(router_health, tags=["health"])
     app.include_router(router_report, tags=["report"])
     app.include_router(router_outlook, tags=["outlook"])
@@ -117,6 +146,10 @@ def create_app() -> FastAPI:
                 "/api/agent/stream?ticker=BBCA (SSE live trace)",
                 "/api/agent/run (POST)",
                 "/api/health",
+                "/api/mock/filings?symbol=BBCA",
+                "/api/mock/news?symbols=BBCA",
+                "/api/mock/corporate-actions?symbol=BBCA",
+                "/api/mock/quarterly-financials?symbol=BBCA",
             ],
         }
 

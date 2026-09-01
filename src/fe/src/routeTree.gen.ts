@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentRouteImport } from './routes/agent'
 import { Route as OutlookRouteImport } from './routes/outlook'
+import { Route as MockSectorsTickerRouteImport } from './routes/mock-sectors.$ticker'
 import { Route as ReportTickerIndexRouteImport } from './routes/report.$ticker.index'
 import { Route as ReportTickerChallengeRouteImport } from './routes/report.$ticker.challenge'
 import { Route as ReportTickerSentimentRouteImport } from './routes/report.$ticker.sentiment'
@@ -29,6 +30,11 @@ const AgentRoute = AgentRouteImport.update({
 const OutlookRoute = OutlookRouteImport.update({
   id: '/outlook',
   path: '/outlook',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MockSectorsTickerRoute = MockSectorsTickerRouteImport.update({
+  id: '/mock-sectors/$ticker',
+  path: '/mock-sectors/$ticker',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ReportTickerIndexRoute = ReportTickerIndexRouteImport.update({
@@ -51,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
   '/outlook': typeof OutlookRoute
+  '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
   '/report/$ticker/': typeof ReportTickerIndexRoute
@@ -59,6 +66,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
   '/outlook': typeof OutlookRoute
+  '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
   '/report/$ticker': typeof ReportTickerIndexRoute
@@ -68,6 +76,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
   '/outlook': typeof OutlookRoute
+  '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
   '/report/$ticker/': typeof ReportTickerIndexRoute
@@ -78,6 +87,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agent'
     | '/outlook'
+    | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
     | '/report/$ticker/'
@@ -86,6 +96,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agent'
     | '/outlook'
+    | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
     | '/report/$ticker'
@@ -94,6 +105,7 @@ export interface FileRouteTypes {
     | '/'
     | '/agent'
     | '/outlook'
+    | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
     | '/report/$ticker/'
@@ -103,6 +115,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentRoute: typeof AgentRoute
   OutlookRoute: typeof OutlookRoute
+  MockSectorsTickerRoute: typeof MockSectorsTickerRoute
   ReportTickerChallengeRoute: typeof ReportTickerChallengeRoute
   ReportTickerSentimentRoute: typeof ReportTickerSentimentRoute
   ReportTickerIndexRoute: typeof ReportTickerIndexRoute
@@ -129,6 +142,13 @@ declare module '@tanstack/react-router' {
       path: '/outlook'
       fullPath: '/outlook'
       preLoaderRoute: typeof OutlookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/mock-sectors/$ticker': {
+      id: '/mock-sectors/$ticker'
+      path: '/mock-sectors/$ticker'
+      fullPath: '/mock-sectors/$ticker'
+      preLoaderRoute: typeof MockSectorsTickerRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/report/$ticker/': {
@@ -159,6 +179,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentRoute: AgentRoute,
   OutlookRoute: OutlookRoute,
+  MockSectorsTickerRoute: MockSectorsTickerRoute,
   ReportTickerChallengeRoute: ReportTickerChallengeRoute,
   ReportTickerSentimentRoute: ReportTickerSentimentRoute,
   ReportTickerIndexRoute: ReportTickerIndexRoute,
