@@ -144,6 +144,21 @@ def test_web_extract_live_kontan_skipped_without_network():
 # ----------------------------------------------------------------------------
 # Tool registration smoke — FunctionTool compatibility
 # ----------------------------------------------------------------------------
+def test_web_search_live_with_real_key():
+    """Live test — only runs if TAVILY_API_KEY is present AND set in env.
+
+    Skipped silently otherwise (CI without secrets, or test isolation).
+    Verifies source=tavily and at least 1 result returned.
+    """
+    if not os.environ.get("TAVILY_API_KEY"):
+        print("    (skipped — TAVILY_API_KEY not in env)")
+        return
+    out = asyncio.run(web_search("BBCA earnings 2026", n_results=3))
+    assert out["source"] == "tavily", f"expected tavily, got {out['source']}"
+    assert len(out["results"]) > 0, "expected at least 1 result"
+    assert all(r.get("url") for r in out["results"]), "all results must have url"
+
+
 def test_function_tool_wraps_cleanly():
     """Verify all 3 tools can be wrapped by ADK FunctionTool without errors."""
     from google.adk.tools.function_tool import FunctionTool
