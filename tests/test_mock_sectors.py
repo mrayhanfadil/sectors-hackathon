@@ -239,3 +239,85 @@ def test_no_fabrication_grep():
     ]
     for api in forbidden_sectors_apis:
         assert api not in content, f"Forbidden Sectors API call found in router source: {api}"
+
+
+def test_cache_hit_and_miss_behavior():
+    """Verify in-memory TTL cache produces X-Cache: MISS on first call, HIT on subsequent call."""
+    import asyncio
+    from server.cache import get_mock_cache
+
+    cache = get_mock_cache()
+    asyncio.run(cache.clear())
+
+    # Call 1: should be cache MISS
+    resp1 = client.get("/api/mock/corporate-actions?symbol=BBCA")
+    assert resp1.status_code == 200
+    assert resp1.headers.get("x-cache") == "MISS"
+    assert resp1.headers.get("cache-control") == "no-store"
+
+    # Call 2: should be cache HIT with identical payload
+    resp2 = client.get("/api/mock/corporate-actions?symbol=BBCA")
+    assert resp2.status_code == 200
+    assert resp2.headers.get("x-cache") == "HIT"
+    assert resp2.headers.get("cache-control") == "no-store"
+    assert resp1.json() == resp2.json()
+
+
+def test_health_endpoint_reports_mock_sectors():
+    """Verify /api/health returns mock_sectors discovery, upstream sources, and last call timestamps."""
+    resp = client.get("/api/health")
+    assert resp.status_code == 200
+    data = resp.json()
+
+    assert data.get("status") == "ok"
+    assert data.get("mock_sectors_router") is True
+
+    registered = data.get("registered_endpoints", [])
+    expected_endpoints = [
+        "/api/mock/filings",
+        "/api/mock/news",
+        "/api/mock/corporate-actions",
+        "/api/mock/quarterly-financials",
+    ]
+    for ep in expected_endpoints:
+        assert ep in registered, f"Missing registered endpoint in /api/health: {ep}"
+
+    sources = data.get("upstream_sources", {})
+    assert sources.get("filings") == "idx.co.id via Camoufox"
+    assert sources.get("news") == "scripts/news.py + Tavily"
+    assert sources.get("corporate_actions") == "yfinance + IDX"
+    assert sources.get("quarterly_financials") == "yfinance .JK quarterly"
+
+    last_call = data.get("last_successful_call", {})
+    assert isinstance(last_call, dict)
+    assert "/api/mock/corporate-actions" in last_call
+
+
+def test_rate_limiter_429_behavior():
+    """Verify exceeding 60 requests per minute from one IP returns 429 Too Many Requests."""
+    import asyncio
+    from server.logging_config import rate_limiter
+
+    test_ip = "203.0.113.99"
+    headers = {"X-Forwarded-For": test_ip}
+
+    # Reset rate limiter state for clean test
+    asyncio.run(rate_limiter.reset())
+
+    # Send 60 requests (allowed)
+    for _ in range(60):
+        r = client.get("/api/health", headers=headers)
+        assert r.status_code == 200
+
+    # 61st request should be throttled
+    r_throttled = client.get("/api/health", headers=headers)
+    assert r_throttled.status_code == 429
+    assert r_throttled.headers.get("retry-after") is not None
+    assert r_throttled.headers.get("x-ratelimit-limit") == "60"
+    assert r_throttled.headers.get("x-ratelimit-remaining") == "0"
+    body = r_throttled.json()
+    assert body.get("error") == "rate_limit_exceeded"
+
+    # Reset again after test
+    asyncio.run(rate_limiter.reset())
+

@@ -22,9 +22,55 @@ from typing import Any
 from bs4 import BeautifulSoup
 from fastapi import APIRouter, HTTPException, Query, Response
 
+from ..cache import cached_endpoint
+
 logger = logging.getLogger(__name__)
 
 router_mock_sectors = APIRouter()
+
+# Upstream data sources provenance
+UPSTREAM_SOURCES: dict[str, str] = {
+    "filings": "idx.co.id via Camoufox",
+    "news": "scripts/news.py + Tavily",
+    "corporate_actions": "yfinance + IDX",
+    "quarterly_financials": "yfinance .JK quarterly",
+}
+
+REGISTERED_ENDPOINTS: list[str] = [
+    "/api/mock/filings",
+    "/api/mock/news",
+    "/api/mock/corporate-actions",
+    "/api/mock/quarterly-financials",
+]
+
+_LAST_SUCCESSFUL_CALL: dict[str, str | None] = {
+    "/api/mock/filings": None,
+    "/api/mock/news": None,
+    "/api/mock/corporate-actions": None,
+    "/api/mock/quarterly-financials": None,
+}
+
+
+def record_successful_call(endpoint: str) -> None:
+    """Record ISO-8601 timestamp of a successful endpoint call in-memory."""
+    clean_ep = endpoint
+    if not clean_ep.startswith("/api/mock/"):
+        name = clean_ep.strip("/").split("/")[-1]
+        clean_ep = f"/api/mock/{name}"
+    if clean_ep in _LAST_SUCCESSFUL_CALL:
+        _LAST_SUCCESSFUL_CALL[clean_ep] = datetime.now(timezone.utc).astimezone().isoformat()
+
+
+def get_mock_sectors_status() -> dict[str, Any]:
+    """Return discoverable metadata and live health status for mock sectors router."""
+    return {
+        "mock_sectors_router": True,
+        "registered_endpoints": list(REGISTERED_ENDPOINTS),
+        "endpoints": list(REGISTERED_ENDPOINTS),
+        "upstream_sources": dict(UPSTREAM_SOURCES),
+        "last_successful_call": dict(_LAST_SUCCESSFUL_CALL),
+    }
+
 
 # Paths to repo metadata
 REPO_ROOT = Path(__file__).resolve().parents[2]
@@ -453,6 +499,7 @@ def _classify_sentiment(title: str, body: str) -> dict[str, Any]:
 # ── Route 1: GET /api/mock/filings ──────────────────────────────────────────
 
 @router_mock_sectors.get("/filings", summary="Mock Sectors v2 IdxFilings")
+@cached_endpoint(ttl=300, endpoint_name="/api/mock/filings")
 async def get_filings(
     response: Response,
     symbol: str = Query(..., description="Stock symbol, e.g. BBCA"),
@@ -463,11 +510,14 @@ async def get_filings(
     transaction_type: str | None = Query(None, description="buy | sell | others"),
     holder_type: str | None = Query(None, description="insider | institution | others"),
 ) -> dict[str, Any]:
+    """Fetch IDX disclosures and insider transactions mirroring Sectors v2 IdxFilingsItem."""
     response.headers["Cache-Control"] = "no-store"
     sym = symbol.upper().strip().replace(".JK", "")
 
     try:
         items = await _scrape_idx_disclosures(sym, transaction_type=transaction_type)
+    except HTTPException:
+        raise
     except Exception as e:
         logger.error("Error fetching filings for %s: %s", sym, e)
         raise HTTPException(status_code=503, detail=f"Upstream IDX scraper unavailable: {e}")
@@ -501,6 +551,7 @@ async def get_filings(
 # ── Route 2: GET /api/mock/news ─────────────────────────────────────────────
 
 @router_mock_sectors.get("/news", summary="Mock Sectors v2 NewsArticleList")
+@cached_endpoint(ttl=300, endpoint_name="/api/mock/news")
 async def get_news(
     response: Response,
     extension: str | None = Query(None, description="idx | mining"),
@@ -514,6 +565,7 @@ async def get_news(
     limit: int = Query(30, ge=1, le=100, description="Items limit"),
     offset: int = Query(0, ge=0, description="Items offset"),
 ) -> dict[str, Any]:
+    """Fetch curated and searched equity news mirroring Sectors v2 NewsArticleListItem."""
     response.headers["Cache-Control"] = "no-store"
 
     target_symbols = [s.strip().upper().replace(".JK", "") for s in (symbols or "").split(",") if s.strip()]
@@ -521,151 +573,166 @@ async def get_news(
     # Collect news from available free sources
     raw_articles: list[dict[str, Any]] = []
 
-    # 1. Check Tavily if key configured
-    tavily_key = os.getenv("TAVILY_API_KEY", "").strip()
-    if tavily_key:
-        try:
-            from agents.adk.tools.web_tools import web_search_and_extract
+    try:
+        # 1. Check Tavily if key configured
+        tavily_key = os.getenv("TAVILY_API_KEY", "").strip()
+        if tavily_key:
+            try:
+                from agents.adk.tools.web_tools import web_search_and_extract
 
-            query_str = f"IDX {' '.join(target_symbols)} {keyword or 'saham kinerja'}"
-            search_res = await web_search_and_extract(query_str, n_results=min(limit, 10), extract_top_n=3)
-            for ex in search_res.get("extract", {}).get("results", []):
-                t = ex.get("title", "")
-                b = ex.get("content", "")[:500]
-                u = ex.get("url", "")
-                if t:
-                    primary_sym = target_symbols[0] if target_symbols else "IDX"
-                    sec_s, sub_s = _get_sector_and_subsector(primary_sym)
+                query_str = f"IDX {' '.join(target_symbols)} {keyword or 'saham kinerja'}"
+                search_res = await web_search_and_extract(query_str, n_results=min(limit, 10), extract_top_n=3)
+                for ex in search_res.get("extract", {}).get("results", []):
+                    t = ex.get("title", "")
+                    b = ex.get("content", "")[:500]
+                    u = ex.get("url", "")
+                    if t:
+                        primary_sym = target_symbols[0] if target_symbols else "IDX"
+                        sec_s, sub_s = _get_sector_and_subsector(primary_sym)
+                        dim = _classify_sentiment(t, b)
+                        raw_articles.append({
+                            "title": t,
+                            "body": b,
+                            "source": u,
+                            "timestamp": datetime.now(timezone.utc).astimezone().isoformat(),
+                            "sector": sec_s,
+                            "sub_sector": [sub_s],
+                            "tags": ["news", dim.get("sentiment", "neutral")],
+                            "symbols": [primary_sym],
+                            "thumbnail": None,
+                            "dimension": dim,
+                        })
+            except Exception as e:
+                logger.info("Tavily search skipped: %s", e)
+
+        # 2. Check Curated news from scripts/news.py
+        try:
+            from scripts.news import CURATED_NEWS
+
+            sym_list = target_symbols if target_symbols else list(CURATED_NEWS.keys())
+            for sym in sym_list:
+                curated_list = CURATED_NEWS.get(sym, [])
+                sec_s, sub_s = _get_sector_and_subsector(sym)
+                for it in curated_list:
+                    t = it.get("title", "")
+                    b = it.get("snippet", "")
+                    u = it.get("url", "")
+                    dt = it.get("date", datetime.now().strftime("%Y-%m-%d"))
+                    ts = f"{dt}T00:00:00+07:00"
                     dim = _classify_sentiment(t, b)
                     raw_articles.append({
                         "title": t,
-                        "body": b,
+                        "body": b[:500],
                         "source": u,
-                        "timestamp": datetime.now(timezone.utc).astimezone().isoformat(),
+                        "timestamp": ts,
                         "sector": sec_s,
                         "sub_sector": [sub_s],
                         "tags": ["news", dim.get("sentiment", "neutral")],
-                        "symbols": [primary_sym],
+                        "symbols": [sym],
                         "thumbnail": None,
                         "dimension": dim,
                     })
         except Exception as e:
-            logger.info("Tavily search skipped: %s", e)
+            logger.info("Curated news read error: %s", e)
 
-    # 2. Check Curated news from scripts/news.py
-    try:
-        from scripts.news import CURATED_NEWS
+        # Filtering
+        filtered = raw_articles
+        if target_symbols:
+            filtered = [a for a in filtered if any(s in a.get("symbols", []) for s in target_symbols)]
+        if keyword:
+            kw = keyword.lower()
+            filtered = [a for a in filtered if kw in a.get("title", "").lower() or kw in a.get("body", "").lower()]
+        if sector:
+            filtered = [a for a in filtered if a.get("sector") == sector.lower()]
+        if sub_sector:
+            filtered = [a for a in filtered if sub_sector.lower() in [s.lower() for s in a.get("sub_sector", [])]]
+        if start:
+            filtered = [a for a in filtered if str(a.get("timestamp", ""))[:10] >= start]
+        if end:
+            filtered = [a for a in filtered if str(a.get("timestamp", ""))[:10] <= end]
 
-        sym_list = target_symbols if target_symbols else list(CURATED_NEWS.keys())
-        for sym in sym_list:
-            curated_list = CURATED_NEWS.get(sym, [])
-            sec_s, sub_s = _get_sector_and_subsector(sym)
-            for it in curated_list:
-                t = it.get("title", "")
-                b = it.get("snippet", "")
-                u = it.get("url", "")
-                dt = it.get("date", datetime.now().strftime("%Y-%m-%d"))
-                ts = f"{dt}T00:00:00+07:00"
-                dim = _classify_sentiment(t, b)
-                raw_articles.append({
-                    "title": t,
-                    "body": b[:500],
-                    "source": u,
-                    "timestamp": ts,
-                    "sector": sec_s,
-                    "sub_sector": [sub_s],
-                    "tags": ["news", dim.get("sentiment", "neutral")],
-                    "symbols": [sym],
-                    "thumbnail": None,
-                    "dimension": dim,
-                })
+        total = len(filtered)
+        paginated = filtered[offset : offset + limit]
+
+        res: dict[str, Any] = {
+            "pagination": {
+                "limit": limit,
+                "offset": offset,
+                "total": total,
+            },
+            "data": paginated,
+        }
+        if total == 0:
+            res["note"] = "no news found via free public sources"
+        return res
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.info("Curated news read error: %s", e)
-
-    # Filtering
-    filtered = raw_articles
-    if target_symbols:
-        filtered = [a for a in filtered if any(s in a.get("symbols", []) for s in target_symbols)]
-    if keyword:
-        kw = keyword.lower()
-        filtered = [a for a in filtered if kw in a.get("title", "").lower() or kw in a.get("body", "").lower()]
-    if sector:
-        filtered = [a for a in filtered if a.get("sector") == sector.lower()]
-    if sub_sector:
-        filtered = [a for a in filtered if sub_sector.lower() in [s.lower() for s in a.get("sub_sector", [])]]
-    if start:
-        filtered = [a for a in filtered if str(a.get("timestamp", ""))[:10] >= start]
-    if end:
-        filtered = [a for a in filtered if str(a.get("timestamp", ""))[:10] <= end]
-
-    total = len(filtered)
-    paginated = filtered[offset : offset + limit]
-
-    res: dict[str, Any] = {
-        "pagination": {
-            "limit": limit,
-            "offset": offset,
-            "total": total,
-        },
-        "data": paginated,
-    }
-    if total == 0:
-        res["note"] = "no news found via free public sources"
-    return res
+        logger.error("Error fetching news: %s", e)
+        raise HTTPException(status_code=503, detail=f"Upstream news source unavailable: {e}")
 
 
 # ── Route 3: GET /api/mock/corporate-actions ────────────────────────────────
 
 @router_mock_sectors.get("/corporate-actions", summary="Mock Sectors v2 CorporateActionsByType")
+@cached_endpoint(ttl=300, endpoint_name="/api/mock/corporate-actions")
 async def get_corporate_actions(
     response: Response,
     symbol: str = Query(..., description="Stock symbol, e.g. BBCA"),
 ) -> dict[str, Any]:
+    """Fetch corporate actions (dividends, splits, AGMs) mirroring Sectors v2 CorporateActionsByType."""
     response.headers["Cache-Control"] = "no-store"
     sym = symbol.upper().strip().replace(".JK", "")
 
-    # Dividends from yfinance
-    div_list = _derive_yfinance_dividends(sym)
-
-    # Splits from yfinance
-    splits_list: list[dict[str, Any]] = []
     try:
-        import yfinance as yf
+        # Dividends from yfinance
+        div_list = _derive_yfinance_dividends(sym)
 
-        tk = yf.Ticker(f"{sym}.JK")
-        splits = tk.splits
-        if splits is not None and len(splits) > 0:
-            for s_dt, s_val in splits.items():
-                s_date = str(s_dt.date()) if hasattr(s_dt, "date") else str(s_dt)[:10]
-                splits_list.append({"date": s_date, "ratio": float(s_val)})
-    except Exception:
-        pass
+        # Splits from yfinance
+        splits_list: list[dict[str, Any]] = []
+        try:
+            import yfinance as yf
 
-    # AGMs from IDX disclosures
-    agm_list: list[dict[str, Any]] = []
-    try:
-        agm_list = await _scrape_idx_agm_announcements(sym)
+            tk = yf.Ticker(f"{sym}.JK")
+            splits = tk.splits
+            if splits is not None and len(splits) > 0:
+                for s_dt, s_val in splits.items():
+                    s_date = str(s_dt.date()) if hasattr(s_dt, "date") else str(s_dt)[:10]
+                    splits_list.append({"date": s_date, "ratio": float(s_val)})
+        except Exception:
+            pass
+
+        # AGMs from IDX disclosures
+        agm_list: list[dict[str, Any]] = []
+        try:
+            agm_list = await _scrape_idx_agm_announcements(sym)
+        except Exception as e:
+            logger.info("AGM scrape error for %s: %s", sym, e)
+
+        res: dict[str, Any] = {
+            "dividend": div_list,
+            "upcoming_dividend": [],
+            "stock_split": splits_list,
+            "right_issue": [],
+            "warrant": [],
+            "bonus": [],
+            "agm": agm_list,
+            "symbol": sym,
+        }
+        if not div_list and not agm_list:
+            res["note"] = "no corporate actions recorded for symbol"
+        return res
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.info("AGM scrape error for %s: %s", sym, e)
-
-    res: dict[str, Any] = {
-        "dividend": div_list,
-        "upcoming_dividend": [],
-        "stock_split": splits_list,
-        "right_issue": [],
-        "warrant": [],
-        "bonus": [],
-        "agm": agm_list,
-        "symbol": sym,
-    }
-    if not div_list and not agm_list:
-        res["note"] = "no corporate actions recorded for symbol"
-    return res
+        logger.error("Error fetching corporate actions for %s: %s", sym, e)
+        raise HTTPException(status_code=503, detail=f"Upstream corporate actions source unavailable: {e}")
 
 
 # ── Route 4: GET /api/mock/quarterly-financials ─────────────────────────────
 
 @router_mock_sectors.get("/quarterly-financials", summary="Mock Sectors v2 QuarterlyFinancialItem")
+@cached_endpoint(ttl=300, endpoint_name="/api/mock/quarterly-financials")
 async def get_quarterly_financials(
     response: Response,
     symbol: str = Query(..., description="Stock symbol, e.g. BBCA"),
@@ -674,25 +741,33 @@ async def get_quarterly_financials(
     limit: int = Query(30, ge=1, le=100, description="Items limit"),
     offset: int = Query(0, ge=0, description="Items offset"),
 ) -> dict[str, Any]:
+    """Fetch quarterly financial statements mirroring Sectors v2 QuarterlyFinancialItem."""
     response.headers["Cache-Control"] = "no-store"
     sym = symbol.upper().strip().replace(".JK", "")
 
-    items = _yfinance_quarterly(sym, n_quarters=n_quarters)
+    try:
+        items = _yfinance_quarterly(sym, n_quarters=n_quarters)
 
-    if report_date:
-        items = [it for it in items if it.get("date") == report_date]
+        if report_date:
+            items = [it for it in items if it.get("date") == report_date]
 
-    total = len(items)
-    paginated = items[offset : offset + limit]
+        total = len(items)
+        paginated = items[offset : offset + limit]
 
-    res: dict[str, Any] = {
-        "pagination": {
-            "limit": limit,
-            "offset": offset,
-            "total": total,
-        },
-        "data": paginated,
-    }
-    if total == 0:
-        res["note"] = "no quarterly financials available for symbol"
-    return res
+        res: dict[str, Any] = {
+            "pagination": {
+                "limit": limit,
+                "offset": offset,
+                "total": total,
+            },
+            "data": paginated,
+        }
+        if total == 0:
+            res["note"] = "no quarterly financials available for symbol"
+        return res
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("Error fetching quarterly financials for %s: %s", sym, e)
+        raise HTTPException(status_code=503, detail=f"Upstream quarterly financials source unavailable: {e}")
+
