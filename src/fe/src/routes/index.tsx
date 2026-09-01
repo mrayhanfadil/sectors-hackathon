@@ -49,6 +49,9 @@ function Home() {
           Frontend React+Vite+TS+TanStack Query/Router CSR only (no SSR). <code className="rounded bg-slate-100 px-1">vite build -&gt; dist</code> static -&gt; Cloudflare Pages <code className="rounded bg-slate-100 px-1">*.pages.dev</code>. Overkill Next.js dihindari: no SSR, bundle kecil, dev cepat.
         </CardContent>
       </Card>
+      <p className="mt-4 text-xs text-slate-500 text-center">
+        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
+      </p>
     </div>
   )
 }

@@ -291,6 +291,9 @@ function AgentTrace() {
           </CardContent>
         </Card>
       </div>
+      <p className="mt-4 text-xs text-slate-500 text-center">
+        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
+      </p>
     </div>
   )
 }
