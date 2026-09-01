@@ -1,3 +1,27 @@
+import os
+import pathlib
+import re
+
+# Inherit env vars from ~/.hermes/.env or .env if not in current os.environ
+for _p in (
+    pathlib.Path(__file__).resolve().parents[1] / ".env",
+    pathlib.Path(".env"),
+    pathlib.Path.home() / ".hermes" / ".env",
+    pathlib.Path.home() / ".env",
+):
+    if _p.exists():
+        try:
+            for _line in _p.read_text().splitlines():
+                _line = _line.strip()
+                if _line and not _line.startswith("#") and "=" in _line:
+                    _k, _v = _line.split("=", 1)
+                    _k = _k.strip()
+                    _v = _v.strip().strip('"').strip("'")
+                    if _k and _v:
+                        os.environ.setdefault(_k, _v)
+        except Exception:
+            pass
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager

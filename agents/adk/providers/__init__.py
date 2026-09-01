@@ -149,12 +149,19 @@ def spark_model(
 
 
 def _minimax_api_key() -> str | None:
-    """Read MINIMAX_API_KEY from env or ~/.hermes/.env (same as hermes minimax-v1)."""
+    """Read MINIMAX_API_KEY from env or local .env or ~/.hermes/.env (same as hermes minimax-v1)."""
     v = os.getenv("MINIMAX_API_KEY")
     if v and not v.strip().startswith("#"):
         return v.strip().strip('"').strip("'")
     import pathlib, re as _re
-    for pp in (pathlib.Path.home()/".hermes/.env", pathlib.Path.home()/".env"):
+    search_paths = (
+        pathlib.Path(".env"),
+        pathlib.Path("sectors-hackathon/.env"),
+        pathlib.Path(__file__).resolve().parents[3] / ".env",
+        pathlib.Path.home() / ".hermes/.env",
+        pathlib.Path.home() / ".env",
+    )
+    for pp in search_paths:
         if pp.exists():
             try:
                 mm = _re.search(r'^MINIMAX_API_KEY\s*=\s*"?([^"\n]+)"?', pp.read_text(), re.M)

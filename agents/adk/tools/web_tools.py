@@ -207,9 +207,20 @@ async def _extract_one(client: httpx.AsyncClient, url: str) -> dict[str, Any]:
         # Cap to 5MB before parsing (readability chokes on huge pages)
         raw = r.text[:5_000_000]
 
+        # Strip control chars (NULs, BELs etc) — lxml.html_clean dies with
+        # "All strings must be XML compatible: Unicode or ASCII, no NULL bytes
+        # or control characters" on PDFs / binary blobs served with text/html
+        # content-type (e.g. idx.co.id quarterly PDFs). Keep tab/newline/cr.
+        raw = ''.join(ch for ch in raw if ch == '\t' or ch == '\n' or ch == '\r' or ord(ch) >= 0x20)
+
         # readability-lxml returns the article HTML; markdownify → markdown
-        doc = Document(raw)
-        article_html = doc.summary(html_partial=True)
+        try:
+            doc = Document(raw)
+            article_html = doc.summary(html_partial=True)
+        except (ValueError, Exception) as re:
+            # readability / lxml can throw on weird HTML — return empty with reason
+            return {"url": url, "title": "", "content": "", "char_count": 0,
+                    "status": "parse_error", "error": f"readability: {str(re)[:200]}"}
         content_md = md(article_html, heading_style="ATX", strip=["img", "script", "style", "iframe"])
 
         # Trim very long content — model only needs first ~5k chars
