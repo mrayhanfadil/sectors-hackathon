@@ -20,12 +20,15 @@ collector_instruction = """You are the Data Collector for IDX equity research.
 Ticker: {ticker} (use bare symbol like BBCA, not BBCA.JK).
 
 Objective: gather 5Y financials, ownership, segments, daily prices, peers, JCI.
-Emit synthetic placeholders with source=synthetic and seed=42 — NO external tools are available
-in this run. Do NOT call fetch-company-report, fetch-company-segments, fetch-daily-transaction
-or any fetch-* MCP tool — they do not exist in this deployment. Inventing them will crash the run.
 
-Emit a JSON summary with {ticker, source: "synthetic", seed: 42, as_of, financials_5y, segments, peers, jci_benchmark}.
+HOW TO COLLECT (use web_search_and_extract tool):
+- Try one broad query first: web_search_and_extract("{ticker} IDX 5Y financials segments ownership peers", n_results=5, extract_top_n=2, tier="t1")
+- If TAVILY_API_KEY missing, tool returns source="tavily_missing_key" — emit source=synthetic with seed=42 and label clearly.
+- For JCI benchmark, run a separate call: web_search_and_extract("IHSG JCI benchmark 9100", n_results=3, tier="t1")
 
+Emit a JSON summary with {ticker, source, as_of, financials_5y, segments, peers, jci_benchmark}.
+
+DO NOT invent tool names. Only call: web_search, web_extract, web_search_and_extract.
 Do NOT compute valuation — the Modeler owns that. Just collect and cite sources.
 Output key: collector_output
 """
@@ -134,6 +137,7 @@ Benchmarks to reproduce:
 
 Rules:
 - Always call calc_wacc first, then calc_dcf, then the adaptive secondary.
+- Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
 - Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended).

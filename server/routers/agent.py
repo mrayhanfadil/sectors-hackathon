@@ -140,9 +140,12 @@ class AgentRunRequest(BaseModel):
 async def agent_health():
     """Check if ADK graph can be built with minimax (preferred) or Spark bridge."""
     started = time.time()
-    # Prefer minimax when ADK_PROVIDER=minimax or COMMANDCODE_API_KEY exists
+    from agents.adk.providers import _minimax_api_key
+
+    direct_minimax_key = _minimax_api_key()
     prefer_minimax = bool(
-        (os.getenv("ADK_PROVIDER", "").lower().startswith("minimax"))
+        direct_minimax_key
+        or (os.getenv("ADK_PROVIDER", "").lower().startswith("minimax"))
         or (os.getenv("COMMANDCODE_API_KEY"))
         or (os.getenv("MINIMAX_MODEL"))
     )
@@ -155,7 +158,39 @@ async def agent_health():
                 prefer_minimax = True
         except Exception:
             pass
-    if prefer_minimax:
+
+    if direct_minimax_key:
+        provider = "minimax"
+        model_id = os.getenv("MINIMAX_MODEL") or "MiniMax-M3"
+        api_base = os.getenv("MINIMAX_BASE_URL") or "https://api.minimax.io/v1"
+        info: dict[str, Any] = {
+            "ok": False,
+            "provider": provider,
+            "model": f"minimax/{model_id}",
+            "api_base": api_base,
+            "bridge_error": None,
+        }
+        try:
+            import litellm
+            info["bridge_key_present"] = True
+            info["bridge_key_prefix"] = (direct_minimax_key[:10] + "…") if direct_minimax_key else None
+            resp = await asyncio.to_thread(
+                lambda: litellm.completion(
+                    model=f"minimax/{model_id}",
+                    api_base=api_base,
+                    api_key=direct_minimax_key,
+                    messages=[{"role": "user", "content": "Reply with PONG"}],
+                    max_tokens=256,
+                )
+            )
+            txt = resp.choices[0].message.content or ""
+            info["bridge_ping"] = txt.strip()[:50]
+            info["bridge_ok"] = bool("PONG" in txt or "PING" in txt or "Pong" in txt or txt.strip())
+            info["bridge_error"] = None
+        except Exception as e:
+            info["bridge_error"] = str(e)[:600]
+            info["bridge_ok"] = False
+    elif prefer_minimax:
         provider = "minimax/minimax-m3-free"
         model_id = os.getenv("MINIMAX_MODEL") or "minimax/minimax-m3-free"
         api_base = os.getenv("MINIMAX_API_BASE") or "https://api.commandcode.ai/provider/v1"

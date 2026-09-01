@@ -264,62 +264,44 @@ def build_graph(
     else:
         logger.info("Sectors MCP skipped (no SECTORS_API_KEY)")
 
+    # -- Leaf LlmAgents -------------------------------------------------------
+    # Composite web tools (Tavily search + readability extract) attached to any
+    # agent that needs fresh IDX data without Sectors MCP. Generated once and reused.
+    composite_web_tools = _web_composite_tools()
+
+    # Collector: Sectors MCP if present, else Tavily+readability as honest fallback.
+    # (Previously empty tools caused LLM hallucination of web_search_and_extract.)
     collector_tools: list[Any] = []
     if sectors_toolset is not None:
         collector_tools.append(sectors_toolset)
+    if not collector_tools:
+        collector_tools.extend(composite_web_tools)
 
-    # -- Leaf LlmAgents -------------------------------------------------------
-    # Collector may carry Sectors MCP; if no MCP, it's a plain LLM that emits synthetic disclosures.
     collector = LlmAgent(
         name="collector",
         model=main_model,
-        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP.",
+        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP if available, else Tavily search + readability extract.",
         instruction=_fmt(collector_instruction),
-        tools=collector_tools if collector_tools else [],
+        tools=collector_tools,
         output_key="collector_output",
     )
 
-    # Minimax free: AgentTool sub-agents double the call count and trigger
-    # 503 overloaded. Run synthetic-only (no search sub-agent) in free_tier.
-    # In all other cases we attach the composite web tools (web_search +
-    # web_extract + web_search_and_extract) so parent agents can do the 80%
-    # pattern (search + extract parallel) in a single round-trip.
-    composite_web_tools = _web_composite_tools()
-
-    if free_tier:
-        news_harvester = LlmAgent(
-            name="news_harvester",
-            model=main_model,
-            description="Harvests last 30d IDX news (max 8, synthetic under minimax free).",
-            instruction=_fmt(news_harvester_instruction),
-            tools=[],
-            output_key="news_output",
-        )
-        social_sentiment = LlmAgent(
-            name="social_sentiment",
-            model=main_model,
-            description="Gauges retail sentiment 0-100 (synthetic under minimax free).",
-            instruction=_fmt(social_sentiment_instruction),
-            tools=[],
-            output_key="social_output",
-        )
-    else:
-        news_harvester = LlmAgent(
-            name="news_harvester",
-            model=main_model,
-            description="Harvests last 30d IDX news (max 8, tier-filtered) via Tavily search + readability extract.",
-            instruction=_fmt(news_harvester_instruction),
-            tools=composite_web_tools,
-            output_key="news_output",
-        )
-        social_sentiment = LlmAgent(
-            name="social_sentiment",
-            model=main_model,
-            description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit via Tavily + readability.",
-            instruction=_fmt(social_sentiment_instruction),
-            tools=composite_web_tools,
-            output_key="social_output",
-        )
+    news_harvester = LlmAgent(
+        name="news_harvester",
+        model=main_model,
+        description="Harvests last 30d IDX news (max 8, tier-filtered) via Tavily search + readability extract.",
+        instruction=_fmt(news_harvester_instruction),
+        tools=composite_web_tools,
+        output_key="news_output",
+    )
+    social_sentiment = LlmAgent(
+        name="social_sentiment",
+        model=main_model,
+        description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit via Tavily + readability.",
+        instruction=_fmt(social_sentiment_instruction),
+        tools=composite_web_tools,
+        output_key="social_output",
+    )
 
     modeler = LlmAgent(
         name="modeler",
@@ -330,24 +312,14 @@ def build_graph(
         output_key="valuation_output",
     )
 
-    if free_tier:
-        industry = LlmAgent(
-            name="industry",
-            model=main_model,
-            description="Macro/industry thematics (synthetic under minimax free).",
-            instruction=_fmt(industry_instruction),
-            tools=[],
-            output_key="industry_output",
-        )
-    else:
-        industry = LlmAgent(
-            name="industry",
-            model=main_model,
-            description="Macro/industry thematics with url+date citations via Tavily + readability.",
-            instruction=_fmt(industry_instruction),
-            tools=composite_web_tools,
-            output_key="industry_output",
-        )
+    industry = LlmAgent(
+        name="industry",
+        model=main_model,
+        description="Macro/industry thematics with url+date citations via Tavily + readability.",
+        instruction=_fmt(industry_instruction),
+        tools=composite_web_tools,
+        output_key="industry_output",
+    )
 
     analyst = LlmAgent(
         name="analyst",
