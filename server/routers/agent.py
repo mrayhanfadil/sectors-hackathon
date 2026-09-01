@@ -348,17 +348,40 @@ async def agent_stream(
             await session_service.create_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
             p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
             content = genai_types.Content(role="user", parts=[genai_types.Part(text=p)])
+
+            from agents.adk.storage import AgentRunStore
+            store = AgentRunStore()
+            store.start_run(session_id, t, p, provider=os.getenv("ADK_PROVIDER", "minimax"), model=os.getenv("MINIMAX_MODEL", "minimax/MiniMax-M3"))
+
             seq = 0
-            async for ev in runner.run_async(user_id="user", session_id=session_id, new_message=content):
-                frame = _serialize_event(ev, seq)
-                yield f"data: {json.dumps(frame, ensure_ascii=False)}\n\n"
-                seq += 1
-                # small yield to flush
-                await asyncio.sleep(0)
+            interrupted = False
+            try:
+                async for ev in runner.run_async(user_id="user", session_id=session_id, new_message=content):
+                    frame = _serialize_event(ev, seq)
+                    store.append_event(session_id, seq, ev)
+                    yield f"data: {json.dumps(frame, ensure_ascii=False)}\n\n"
+                    seq += 1
+                    # small yield to flush
+                    await asyncio.sleep(0)
+            except (GeneratorExit, asyncio.CancelledError):
+                # SSE client disconnected mid-stream — mark run as interrupted,
+                # don't leave it stuck at status='running'.
+                interrupted = True
+                log.warning("agent_stream interrupted for %s after %d events", t, seq)
+                raise
+            finally:
+                try:
+                    if interrupted:
+                        store.finish_run(session_id, status="interrupted", last_text="", error=f"client disconnected after {seq} events")
+                    # else: completed path below will handle finish_run
+                except Exception:
+                    log.exception("store.finish_run failed in finally for %s", session_id)
 
             # final state
             session = await session_service.get_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
             state = dict(session.state) if session and session.state else {}
+            store.finish_run(session_id, status="completed", last_text="", state=state, error=None)
+
             # summarize state keys + small preview
             preview: dict[str, Any] = {}
             for k, v in state.items():
@@ -367,6 +390,11 @@ async def agent_stream(
             yield f"data: {json.dumps({'seq': seq, 'event_type': 'done', 'ticker': t, 'session_id': session_id, 'n_events': seq, 'state_keys': list(state.keys()), 'state_preview': preview, 'ts': round(time.time(),3)}, ensure_ascii=False)}\n\n"
         except Exception as e:
             log.exception("agent_stream failed for %s", t)
+            try:
+                if 'store' in locals() and 'session_id' in locals():
+                    store.finish_run(session_id, status="failed", error=str(e)[:2000])
+            except Exception:
+                pass
             yield f"data: {json.dumps({'seq': 9999, 'event_type': 'error', 'ticker': t, 'error': str(e)[:2000]})}\n\n"
 
     return StreamingResponse(_gen(), media_type="text/event-stream", headers={
@@ -374,3 +402,21 @@ async def agent_stream(
         "X-Accel-Buffering": "no",
         "Connection": "keep-alive",
     })
+
+
+@router_agent.get("/api/agent/runs", summary="List recent ADK runs")
+def list_agent_runs(ticker: str | None = Query(None), limit: int = Query(20, le=100)):
+    from agents.adk.storage import AgentRunStore
+    return {"runs": AgentRunStore().list_runs(ticker=ticker, limit=limit)}
+
+
+@router_agent.get("/api/agent/runs/{run_id}", summary="Get one ADK run + its event trace")
+def get_agent_run(run_id: str):
+    from agents.adk.storage import AgentRunStore
+    store = AgentRunStore()
+    run = store.get_run(run_id)
+    if not run:
+        return JSONResponse({"error": "not found"}, status_code=404)
+    run["events"] = store.get_events(run_id)
+    return run
+

@@ -52,6 +52,10 @@ TODO.local.md
 data/sectors.db
 data/sectors.db-journal
 data/output/
+data/agent_runs.db
+data/agent_runs.db-journal
+data/agent_runs.db-wal
+data/agent_runs.db-shm
 
 .worktrees/
 package.json
