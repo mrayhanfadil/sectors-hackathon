@@ -3,6 +3,10 @@ import { useEffect, useRef, useState, useCallback } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { StatePreview } from "@/components/agent/StatePreview"
+import { FunctionCallCard } from "@/components/agent/FunctionCallCard"
+import { FunctionResponseCard } from "@/components/agent/FunctionResponseCard"
+import { ProgressHeader } from "@/components/agent/ProgressHeader"
 
 export const Route = (createFileRoute as any)("/agent")({ component: AgentTrace })
 
@@ -156,43 +160,24 @@ function AgentTrace() {
 
   return (
     <div className="space-y-4">
-      <div className="rounded-xl border bg-white p-5">
-        <div className="flex flex-wrap items-start justify-between gap-3">
-          <div>
-            <h1 className="text-xl font-semibold tracking-tight">ADK Orchestrator — Live Trace</h1>
-            <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
-              11 agents → <span className="font-medium">Muse Spark 1M</span> via CommandCode bridge <code className="rounded bg-slate-100 px-1">127.0.0.1:9992</code> · intake_parallel(collector+news+social) → modeler(THE BRAIN, calc_* tools) → research_parallel(analyst+industry+risk+kpi) → writer→visualizer→sotp→adversarial×4→critic. Stream SSE <code className="rounded bg-slate-100 px-1">/api/agent/stream</code> for step-by-step.
-            </p>
-            {health && (
-              <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-                <Badge variant={health.ok ? "default" : "secondary"}>{health.ok ? "● Spark OK" : "○ bridge ping: " + (health.bridge_ping || health.bridge_error || "?").slice(0, 40)}</Badge>
-                <Badge variant="outline">{health.model || "meta/muse-spark-1.2-contributor"}</Badge>
-                <Badge variant="outline">{health.graph?.name || "equity_report_orchestrator"} · {health.graph?.n_subagents ?? 8} nodes</Badge>
-                <span className="text-slate-500">provider: {health.provider || "spark (commandcode bridge)"} · {health.elapsed_ms ?? "?"}ms health</span>
-                <Button size="sm" variant="outline" className="h-6 px-2 text-xs" onClick={fetchHealth}>Refresh health</Button>
-              </div>
-            )}
-          </div>
-          <Badge variant="secondary" className="shrink-0">SSE + blocking</Badge>
-        </div>
-
-        <div className="mt-4 flex flex-wrap items-end gap-2">
-          <label className="text-xs text-slate-600">Ticker
-            <input value={ticker} onChange={e => setTicker(e.target.value.toUpperCase())} placeholder="BBCA" className="ml-2 h-8 w-24 rounded-md border px-2 text-sm font-mono" maxLength={10} />
-          </label>
-          <Button onClick={() => run("stream")} disabled={running} className="h-8">
-            {running ? "Running… (SSE live)" : "▶ Run ADK (SSE live trace)"}
-          </Button>
-          <Button onClick={() => run("blocking")} disabled={running} variant="outline" className="h-8">
-            Run (blocking POST)
-          </Button>
-          <Button onClick={() => { setEvents([]); setDone(null); setError(null) }} variant="ghost" className="h-8" disabled={running}>
-            Clear
-          </Button>
-          <span className="text-xs text-slate-500">{events.length} events {done ? `· done ${done.n_events} events · keys: ${done.state_keys.join(", ") || "—"} · ${done.ms}ms` : running ? "· streaming…" : ""}</span>
-        </div>
-        {error && <div className="mt-3 rounded-md border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">{error}</div>}
-      </div>
+      <ProgressHeader
+        ticker={ticker}
+        onTickerChange={setTicker}
+        onRun={run}
+        onClear={() => {
+          setEvents([])
+          setDone(null)
+          setError(null)
+        }}
+        running={running}
+        done={done}
+        error={error}
+        events={events}
+        health={health}
+        onRefreshHealth={fetchHealth}
+        selectedFilter={filter}
+        onFilterChange={setFilter}
+      />
 
       <div className="flex flex-wrap gap-2">
         <Button size="sm" variant={filter === "all" ? "default" : "outline"} className="h-7 text-xs" onClick={() => setFilter("all")}>All ({events.length})</Button>
@@ -204,8 +189,8 @@ function AgentTrace() {
         <Button size="sm" variant={filter === "function_call" ? "default" : "outline"} className="h-7 text-xs" onClick={() => setFilter("function_call")}>🔧 function_call ({events.filter(e=>e.event_type==="function_call").length})</Button>
       </div>
 
-      {/* Timeline + raw log */}
-      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr]">
+      {/* Timeline + raw log + state preview */}
+      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr_0.55fr]">
         <Card className="overflow-hidden">
           <CardHeader className="py-3"><CardTitle className="text-sm">Timeline — {filtered.length} events {running && <span className="ml-2 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-500" />}</CardTitle></CardHeader>
           <CardContent className="p-0">
@@ -227,20 +212,14 @@ function AgentTrace() {
                   {ev.function_calls.length > 0 && (
                     <div className="mt-1.5 space-y-1">
                       {ev.function_calls.map((fc, i) => (
-                        <div key={i} className="rounded border border-amber-200 bg-amber-50 px-2 py-1.5">
-                          <div className="font-mono text-[11px] font-semibold text-amber-900">🔧 {fc.name}</div>
-                          <pre className="mt-1 max-h-32 overflow-auto whitespace-pre-wrap break-words text-[11px] text-amber-900/80">{JSON.stringify(fc.args, null, 2).slice(0, 2000)}</pre>
-                        </div>
+                        <FunctionCallCard key={fc.id || `${fc.name}-${i}`} fc={fc} />
                       ))}
                     </div>
                   )}
                   {ev.function_responses.length > 0 && (
                     <div className="mt-1.5 space-y-1">
                       {ev.function_responses.map((fr, i) => (
-                        <div key={i} className="rounded border border-emerald-200 bg-emerald-50 px-2 py-1.5">
-                          <div className="font-mono text-[11px] font-semibold text-emerald-900">↩ {fr.name}</div>
-                          <pre className="mt-1 max-h-28 overflow-auto whitespace-pre-wrap break-words text-[11px] text-emerald-900/80">{typeof fr.response === "string" ? fr.response.slice(0, 1500) : JSON.stringify(fr.response, null, 2).slice(0, 1500)}</pre>
-                        </div>
+                        <FunctionResponseCard key={fr.id || `${fr.name}-${i}`} fr={fr} />
                       ))}
                     </div>
                   )}
@@ -290,6 +269,8 @@ function AgentTrace() {
             </div>
           </CardContent>
         </Card>
+
+        <StatePreview events={events} />
       </div>
       <p className="mt-4 text-xs text-slate-500 text-center">
         Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
