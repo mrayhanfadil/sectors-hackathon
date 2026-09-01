@@ -8,7 +8,10 @@ import { fetchReport, fetchPdf } from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/report/$ticker/")({ component: ReportPage })
 
-function fmtIDR(n: number) { return n.toLocaleString("id-ID") }
+function fmtIDR(n: number | null | undefined) {
+  if (n == null || Number.isNaN(Number(n))) return "—"
+  return Number(n).toLocaleString("id-ID")
+}
 function pctLabel(v: unknown) {
   if (v == null) return "—"
   const n = Number(v)
@@ -92,7 +95,7 @@ function SegmentPie({ segments, source, rawSegments }: { segments: { name: strin
         </ul>
       )
     }
-    return <div className="rounded-md border border-dashed px-3 py-4 text-xs text-slate-500">Segment disclosure: single-segment / belum diungkap di IDX (MOCK disclosed placeholder).</div>
+    return <div className="rounded-md border border-dashed px-3 py-4 text-xs text-slate-500">Segment disclosure: single-segment / belum diungkap di IDX.</div>
   }
   const total = segments.reduce((s, x) => s + Number(x.share_pct ?? 0), 0)
   const colors = ["bg-slate-900", "bg-slate-600", "bg-slate-400", "bg-slate-300", "bg-amber-500", "bg-emerald-600"]
@@ -164,11 +167,26 @@ function ReportPage() {
   if (isLoading) return <div className="rounded-xl border bg-white p-6 text-sm text-slate-500">Loading {tk}...</div>
   if (error || !data) return <div className="rounded-xl border bg-white p-6 text-sm text-red-600">Failed to load {tk}.</div>
 
+  if (data.offline) {
+    return (
+      <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900">
+        <div className="font-medium mb-1">⚠ Backend tidak tersedia</div>
+        <p>{data.summary}</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-3 rounded-md bg-amber-900 px-3 py-1.5 text-xs text-white hover:bg-amber-800"
+        >
+          Retry
+        </button>
+      </div>
+    )
+  }
+
   const r = data as unknown as {
     ticker: string; name: string; price: number; target: number; upside: string; rating: string; summary: string;
     valuation: { method: string; value: number; weight?: number }[];
     updatedAt: string; template?: string; source?: string;
-    cover?: { rating_box?: { action: string; tp: number; price: number; upside_pct: number; prev_tp?: number | null; key_takeaways?: string[] }; vs_jci?: { ytd_abs?: number; ytd_rel?: number; source?: string; chart?: { labels: string[]; series: number[][] } }; shares?: { outstanding: number; unit: string; free_float_pct?: number }; shareholders?: { name: string; pct: number }[]; shareholders_src?: string; esg?: { found: boolean; scores?: { e: number; s: number; g: number }; source?: string; date?: string } };
+    cover?: { rating_box?: { action: string; tp: number; price: number; upside_pct: number; prev_tp?: number | null; key_takeaways?: string[] }; vs_jci?: { ytd_abs?: number | null; ytd_rel?: number | null; source?: string; chart?: { labels: string[]; series: number[][] } | null }; shares?: { outstanding: number; unit: string; free_float_pct?: number }; shareholders?: { name: string; pct: number }[]; shareholders_src?: string | null; esg?: { found: boolean; scores?: { e: number; s: number; g: number }; source?: string; date?: string } };
     segments?: { name: string; revenue?: number; share_pct?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[];
     kpis?: { name: string; value: number; prev?: number; unit?: string; formula?: string; source?: string }[];
     valuationDetail?: { methods?: { method: string; fv: number; assumptions?: Record<string, unknown>; table?: { headers: string[]; rows: unknown[][] }; source?: string }[]; blended?: { weights: Record<string, number>; fv: number; fv_str?: string; margin_of_safety_pct?: number; rows?: unknown[][]; source?: string } | null; bands?: { pbv_3y?: { "std+2": number; "std+1": number; avg: number; "std-1": number; "std-2": number; current: number; label: string }; source?: string } | null; ggm?: { pbv_implied: number; fv_per_share: number; formula: string; assumptions?: Record<string, unknown> } | null; assumptions?: Record<string, unknown>; provenance?: string };
@@ -182,6 +200,7 @@ function ReportPage() {
   const vd = r.valuationDetail
   const takeaways = r.cover?.rating_box?.key_takeaways ?? []
   const vs = r.cover?.vs_jci
+  const hasShareholders = Boolean(r.cover?.shareholders && r.cover.shareholders.length > 0)
 
   return (
     <div className="space-y-4">
@@ -238,20 +257,20 @@ function ReportPage() {
       </div>
 
       {/* Key Takeaways + Shareholder + ESG */}
-      {(takeaways.length > 0 || r.cover?.shareholders || r.cover?.esg?.found) && (
+      {(takeaways.length > 0 || hasShareholders || r.cover?.esg?.found) && (
         <div className="grid gap-4 sm:grid-cols-3">
           {takeaways.length > 0 && (
-            <Card className={r.cover?.esg?.found && r.cover?.shareholders ? "" : "sm:col-span-2"}>
+            <Card className={r.cover?.esg?.found && hasShareholders ? "" : "sm:col-span-2"}>
               <CardHeader><CardTitle className="text-sm">Key Takeaways</CardTitle></CardHeader>
               <CardContent className="space-y-2 text-sm leading-relaxed">
                 {takeaways.map((t, i) => <div key={i} className="flex gap-2"><span className="font-medium text-slate-900">{i + 1}.</span><span className="text-slate-600">{t}</span></div>)}
               </CardContent>
             </Card>
           )}
-          {r.cover?.shareholders && r.cover.shareholders.length > 0 && (
+          {hasShareholders && (
             <Card>
-              <CardHeader><CardTitle className="text-sm">Shareholder Structure</CardTitle><CardDescription className="text-xs">{r.cover.shareholders_src ?? "IDX"}</CardDescription></CardHeader>
-              <CardContent><ShareholderPie holders={r.cover.shareholders} source={r.cover.shareholders_src} /></CardContent>
+              <CardHeader><CardTitle className="text-sm">Shareholder Structure</CardTitle><CardDescription className="text-xs">{r.cover?.shareholders_src ?? "IDX"}</CardDescription></CardHeader>
+              <CardContent><ShareholderPie holders={r.cover?.shareholders} source={r.cover?.shareholders_src ?? undefined} /></CardContent>
             </Card>
           )}
           {r.cover?.esg?.found && r.cover.esg.scores && (
@@ -464,7 +483,7 @@ function ReportPage() {
         </p>
       </div>
 
-      <p className="text-xs text-slate-500">TanStack Query · cache 4h · source disclosed per exhibit (P1 IDX+yfinance). {r.raw ? `Template ${tpl} · BE live when fair_value present.` : "MOCK disclosed placeholder."}</p>
+      <p className="text-xs text-slate-500">TanStack Query · cache 4h · source disclosed per exhibit (P1 IDX+yfinance). {r.raw ? `Template ${tpl} · BE live when fair_value present.` : "Disclosed fixtures."}</p>
     </div>
   )
 }
