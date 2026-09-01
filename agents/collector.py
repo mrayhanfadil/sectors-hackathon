@@ -127,6 +127,51 @@ def _try_idx(ticker: str) -> Optional[Dict[str, Any]]:
     return None
 
 
+def _try_idx_db(ticker: str) -> Optional[Dict[str, Any]]:
+    """Live query against the IDX Morning Brief Postgres `stockdata:15437`.
+
+    Returns today's snapshot for the ticker (close, prev, volume, value, sector,
+    pct_change, turnover) so the collector can disclose an *official IDX* source
+    even when the local `data/idx/` cache is empty. Designed as a supplementary
+    layer on top of yfinance — does NOT replace prices (yfinance still owns the
+    5Y series). Source: idx-morning-brief cron (ported 2026-09-01).
+    """
+    try:
+        # Import lazily so server stays usable without IDX deps installed
+        import asyncio
+        import sys
+        from pathlib import Path as _P
+        _here = _P(__file__).resolve().parent.parent / "scripts"
+        if str(_here) not in sys.path:
+            sys.path.insert(0, str(_here))
+        from idx.idx_db_brief import get_latest_idx_data  # type: ignore
+        df = asyncio.run(get_latest_idx_data())
+        t = _ticker_norm(ticker)
+        sub = df.filter(df["kode"].str.to_uppercase() == t)
+        if sub.height == 0:
+            return None
+        row = sub.row(0, named=True)
+        return {
+            "source": "idx_db",
+            "raw": {
+                "overview": {"sector": row.get("sector"), "kode": t},
+                "today": {
+                    "close": float(row["close"]) if row.get("close") is not None else None,
+                    "prev": float(row["prev"]) if row.get("prev") is not None else None,
+                    "volume": float(row["vol"]) if row.get("vol") is not None else None,
+                    "value_idr": float(row["val"]) if row.get("val") is not None else None,
+                    "pct_change": float(row["pct_change"]) if row.get("pct_change") is not None else None,
+                    "turnover_idr": float(row["turnover"]) if row.get("turnover") is not None else None,
+                    "as_of": _now_iso(),
+                },
+            },
+            "path": "postgresql://localhost:15437/stockdata",
+        }
+    except Exception as e:
+        logger.info("IDX DB lookup skipped for %s: %s", ticker, e)
+        return None
+
+
 # ── yfinance ───────────────────────────────────────────────────────────────
 
 def _try_yfinance(ticker: str) -> Optional[Dict[str, Any]]:
@@ -431,6 +476,17 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         # Mark synthetic-supplemented fields
         if yf_hit.get("financials") is None:
             payload["financials_source"] = "synthetic_supplement"
+        # 2b) IDX DB supplementary layer (official IDX today snapshot + sector)
+        idx_db_hit = _try_idx_db(t)
+        if idx_db_hit is not None:
+            idx_today = idx_db_hit["raw"]["today"]
+            payload["today_idx"] = idx_today
+            payload["today_idx_source"] = "idx_db:postgresql://localhost:15437/stockdata"
+            # Prefer IDX-official sector over yfinance guess
+            if idx_db_hit["raw"]["overview"].get("sector"):
+                payload["company"]["sector"] = idx_db_hit["raw"]["overview"]["sector"]
+                payload["sector_source"] = "idx_db"
+            payload["sources"] = list({payload.get("source"), "idx_db", "synthetic_supplement"} - {None})
         _save_cache(t, payload)
         return payload
 
