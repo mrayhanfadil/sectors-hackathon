@@ -11,15 +11,13 @@ export const Route = createRootRoute({
           <nav className="flex items-center gap-1 text-sm">
             <a href="/" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Home</a>
             <a href="/agent" className="rounded-md bg-slate-900 px-3 py-1.5 text-white">ADK Live</a>
-            <a href="/outlook" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Outlook</a>
-            <a href="/report/RATU" className="rounded-md px-3 py-1.5 hover:bg-slate-100">Report</a>
           </nav>
         </div>
       </header>
       <main className="mx-auto max-w-6xl px-4 py-6">
         <Outlet />
       </main>
-      <footer className="border-t bg-white py-4 text-center text-xs text-slate-500">CSR - Vite + TanStack Query/Router -&gt; Cloudflare Pages - P0-P1 IDX+yfinance (0 credit)</footer>
+      <footer className="border-t bg-white py-4 text-center text-xs text-slate-500">ADK live trace (Muse Spark 1M via CommandCode bridge) - BE FastAPI :8777 - FE CSR Vite + TanStack Query/Router - Pages *.pages.dev - Bukan saran investasi</footer>
     </div>
   ),
 })
