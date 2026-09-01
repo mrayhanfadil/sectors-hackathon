@@ -280,11 +280,72 @@ function AgentTrace() {
           }
         }
 
+        let reconnectAttempted = false
+        let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+
         es.onerror = () => {
+          // Distinguish transient network blip (readyState CONNECTING) from hard close (CLOSED).
+          // EventSource auto-reconnects on transient blips. Only mark interrupted when CLOSED
+          // (server actively disconnected) — and offer a SQLite fallback so the user can
+          // resume the partial trace instead of losing it.
           setTimeout(() => {
             if (es.readyState === EventSource.CLOSED) {
+              // Stream died. Don't auto-retry the same SSE (server already marked interrupted
+              // in SQLite). Instead, fetch the partial trace from persistence so the user
+              // sees what we captured and can choose to re-run a fresh SSE.
               setRunning(false)
+              setError(
+                "Stream terputus (mungkin tab di-background, navigasi, atau koneksi idle). " +
+                  "Memuat jejak terakhir dari SQLite…"
+              )
+              // Pull latest persisted events for this ticker so the UI keeps showing what
+              // we captured before the disconnect.
+              fetch(`${apiBase}/api/agent/runs/latest?ticker=${encodeURIComponent(t)}`)
+                .then((r) => (r.status === 200 ? r.json() : null))
+                .then((j) => {
+                  if (!j || !Array.isArray(j.events)) return
+                  const normalized: TraceEvent[] = j.events.map((ev: any) => ({
+                    seq: ev.seq ?? 0,
+                    ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
+                    author: ev.author || ev.payload?.author || "",
+                    node: ev.node || ev.payload?.node || "",
+                    branch: ev.branch || ev.payload?.branch || null,
+                    event_type: ev.event_type || ev.payload?.event_type || "message",
+                    text: ev.text ?? ev.payload?.text ?? "",
+                    function_calls: ev.function_calls || ev.payload?.function_calls || [],
+                    function_responses:
+                      ev.function_responses || ev.payload?.function_responses || [],
+                    state_delta_keys:
+                      ev.state_delta_keys ||
+                      (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
+                        ? Object.keys(ev.payload.state_delta)
+                        : []),
+                    state_delta: ev.state_delta || ev.payload?.state_delta || null,
+                    transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
+                  }))
+                  if (normalized.length > 0) {
+                    setEvents(normalized)
+                    setLoadedFromDb({
+                      run_id: j.run_id,
+                      ticker: j.ticker || t,
+                      status: j.status || "interrupted",
+                      n_events: j.n_events || normalized.length,
+                      started_at: j.started_at,
+                      finished_at: j.finished_at,
+                      error: j.error,
+                    })
+                    setError(
+                      `Stream terputus setelah ${normalized.length} events. ` +
+                        `Memuat dari SQLite — klik "Jalankan Analisis" untuk retry.`
+                    )
+                  }
+                })
+                .catch(() => {
+                  /* SQLite fallback also failed — keep the original error. */
+                })
             }
+            // readyState === CONNECTING (1) means EventSource is auto-retrying the
+            // network — keep `running` true so the UI doesn't flash.
           }, 1200)
         }
 
@@ -294,6 +355,7 @@ function AgentTrace() {
             es.close()
           } catch {}
           setRunning(false)
+          setError("Batas waktu 15 menit tercapai. Coba lagi atau gunakan Mode Cepat.")
         }, 15 * 60 * 1000)
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
