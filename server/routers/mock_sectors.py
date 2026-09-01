@@ -194,7 +194,7 @@ async def _scrape_idx_disclosures(
     items: list[dict[str, Any]] = []
 
     try:
-        from camoufox.async_api import AsyncCamoufox
+        from camoufox import AsyncCamoufox
 
         async with AsyncCamoufox(headless=True) as browser:
             page = await browser.new_page()
