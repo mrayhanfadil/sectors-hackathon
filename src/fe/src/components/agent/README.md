@@ -1,50 +1,38 @@
-# Agent Visualization Components (Lane A)
+# Agent Visualization Components
 
-Components and hooks for visualizing ADK agent execution progress, live agent activity statuses, rolling throughput, and honest ETAs on the `/agent` trace route.
+Components and hooks for visualizing the 11-agent ADK institutional report pipeline on `/agent`, designed for retail investors (orang awam) with plain Indonesian explanations, visual 5-stage progress, and collapsible raw technical details for developers.
 
-## State Machine
+## Architecture & Layout
 
-Each agent transitions through the following four lifecycle states:
+The `/agent` interface is structured top-to-bottom for clarity:
 
-```
-[ idle ] (queued / gray dot)
-   │
-   ▼ (event authored within last 8s)
-[ running ] (amber pulsing dot)
-   │
-   ├─► [ error ] (event_type === "error" / red dot)
-   │
-   ▼ (transfer_to away OR age > 8s OR "done" frame received)
-[ finished ] (green check dot)
-```
+1. **Hero & Controls**: Run trigger with Indonesian labels (`Jalankan Analisis`, `Mode Cepat`, `Bersihkan`), ticker selection, and backend health status.
+2. **Cara Kerja Sistem (Explainer)**: Collapsible guide explaining the 11-agent collaborative process in everyday language.
+3. **SummaryCard (`SummaryCard.tsx`)**: Executive summary card appearing on run completion with ticker rating, target price, key findings, elapsed time, and honest disclaimer.
+4. **PhaseTimeline (`PhaseTimeline.tsx`)**: Horizontal 5-stage pipeline timeline replacing `AgentRail`:
+   - Stage 1: Pengumpulan Data (`collector`, `news_harvester`, `social_sentiment`)
+   - Stage 2: Valuasi (`modeler`)
+   - Stage 3: Riset (`analyst`, `industry`, `risk`, `kpi`)
+   - Stage 4: Penulisan (`writer`, `visualizer`, `sotp`)
+   - Stage 5: Penjaminan Kualitas (`adversarial`, `critic`)
+5. **PlainEnglishPanel (`PlainEnglishPanel.tsx`)**: Scrollable streaming feed translating raw agent function calls into 1-line plain Indonesian descriptions (e.g. "Sedang menghitung WACC untuk BBCA") with Lucide icons, durations, and an optional collapsible "Lihat detail teknis" toggle for raw JSON inspectability.
+6. **Raw Debug Panel**: Collapsible drawer at the bottom of the page for engineers to inspect raw SSE event frames and pipeline state keys.
 
-- **`idle`**: Agent has not authored any events in the current execution run.
-- **`running`**: Agent authored an event within the last 8 seconds while run is active and has not transferred execution away.
-- **`finished`**: Agent emitted completion output / transferred to another agent, or pipeline reached the `done` event.
-- **`error`**: Agent authored an event frame with `event_type === "error"`.
+## Component Overview
 
-## Component & Hook Props
+### Retail / Awam Components
+- **`AGENT_FRIENDLY_META.ts`**: Friendly Indonesian labels, Lucide icon definitions, stage mappings, and natural-language description formatters for all 16 agents and subagents.
+- **`PhaseTimeline.tsx`**: 5-stage horizontal timeline with animated active pulses, stage completion badges, and interactive agent filtering.
+- **`PlainEnglishPanel.tsx`**: Live event stream rendering friendly agent cards, human-readable actions, duration badges, and collapsible technical JSON details.
+- **`SummaryCard.tsx`**: High-level synthesis card summarizing final ratings, target prices, and QA validation.
 
-### `useAgentProgress(props: UseAgentProgressProps)`
-- **Inputs**: `events: TraceEvent[]`, `running: boolean`, `done: DonePayload | null`, `error?: string | null`
-- **Outputs**:
-  - `activeCount`: number of currently running agents (`X`).
-  - `totalCount`: total known agents in `AGENT_META_MAP` (`Y = 16`).
-  - `agentStatuses`: `Record<string, "idle" | "running" | "finished" | "error">`.
-  - `etaText`: computed from rolling throughput of last 10 events (shows `"—"` until ≥5 events).
-  - `isInterrupted`: boolean flag indicating stream closure before `done`.
+### Hooks & Shared State
+- **`useAgentProgress.ts`**: Tracks agent statuses (`idle`, `running`, `finished`, `error`), rolling ETA, active agent counts, and stream interruptions.
+- **`useStatePreview.ts`**: Aggregates state deltas and payload sizes across events.
 
-### `<AgentRail ... />`
-- `agentStatuses`: status map from `useAgentProgress`.
-- `selectedAuthor?`: active filter author key.
-- `onFilterAuthor?`: callback when an agent node is clicked.
-- `knownAgents?`: ordered array of agent metadata with phase tags.
-
-### `<ProgressHeader ... />`
-- Renders ticker controls, run actions, bridge health badges, live status pill (`X / Y agents active · N events · ETA ...`), and embeds `<AgentRail />`.
-
-## State / Function Components (Lane B)
-- **`StatePreview.tsx`**: Real-time state preview card displaying all accumulated state keys across streaming events, sorted by recency. Supports expanding keys to view up to 4000 characters of formatted JSON/string values, detects missing state deltas with subtle hints, and computes total state memory footprint footer.
-- **`useStatePreview.ts`**: Custom hook aggregating `state_delta` and `state_delta_keys` across trace events, tracking byte sizes, type tags (`[object:3.2kb]`, `[array:1.5kb]`, etc.), and sorting keys most-recently-written first.
-- **`FunctionCallCard.tsx`**: Collapsible card in amber-50/200 styling displaying tool invocations with Wrench icon, payload byte size, and full expandable arguments preview up to 8000 characters.
-- **`FunctionResponseCard.tsx`**: Collapsible card in emerald-50/200 styling displaying tool returns with CornerDownLeft icon, response byte size, and full expandable return data preview up to 6000 characters.
+### Developer / Legacy Components
+- **`AgentRail.tsx`**: Original raw agent status rail.
+- **`ProgressHeader.tsx`**: Original technical progress header with bridge health metrics.
+- **`StatePreview.tsx`**: State keys preview card displaying raw JSON deltas.
+- **`FunctionCallCard.tsx`**: Collapsible tool invocation payload card.
+- **`FunctionResponseCard.tsx`**: Collapsible tool return payload card.

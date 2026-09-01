@@ -1,63 +1,44 @@
 import { createFileRoute } from "@tanstack/react-router"
-import { useEffect, useRef, useState, useCallback } from "react"
+import { useEffect, useRef, useState, useCallback, useMemo } from "react"
+import {
+  Bot,
+  Play,
+  RotateCcw,
+  Loader2,
+  AlertCircle,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Cpu,
+  RefreshCw,
+  Clock,
+  Activity,
+  Code2,
+  HelpCircle,
+  Zap,
+} from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { StatePreview } from "@/components/agent/StatePreview"
-import { FunctionCallCard } from "@/components/agent/FunctionCallCard"
-import { FunctionResponseCard } from "@/components/agent/FunctionResponseCard"
-import { ProgressHeader } from "@/components/agent/ProgressHeader"
+import { useAgentProgress } from "@/components/agent/useAgentProgress"
+import { PhaseTimeline } from "@/components/agent/PhaseTimeline"
+import { PlainEnglishPanel } from "@/components/agent/PlainEnglishPanel"
+import { SummaryCard } from "@/components/agent/SummaryCard"
+import {
+  getFriendlyAgent,
+  type TraceEvent,
+} from "@/components/agent/AGENT_FRIENDLY_META"
 
 export const Route = (createFileRoute as any)("/agent")({ component: AgentTrace })
 
-type TraceEvent = {
-  seq: number
-  ts: number
-  author: string
-  node: string
-  branch?: string | null
-  event_type: string
-  text: string
-  function_calls: { name: string; args: Record<string, unknown>; id: string }[]
-  function_responses: { name: string; response: unknown; id: string }[]
-  state_delta_keys: string[]
-  state_delta?: Record<string, unknown> | null
-  transfer_to?: string | null
-}
-
-const AGENT_META: Record<string, { label: string; phase: string; color: string }> = {
-  collector: { label: "Collector", phase: "Intake (parallel)", color: "bg-sky-100 text-sky-800 border-sky-300" },
-  news_harvester: { label: "News Harvester", phase: "Intake (parallel)", color: "bg-amber-100 text-amber-800 border-amber-300" },
-  social_sentiment: { label: "Social Sentiment", phase: "Intake (parallel)", color: "bg-violet-100 text-violet-800 border-violet-300" },
-  news_search_sub: { label: "News Search Sub", phase: "Intake → Search", color: "bg-amber-50 text-amber-800 border-amber-200" },
-  social_search_sub: { label: "Social Search Sub", phase: "Intake → Search", color: "bg-violet-50 text-violet-800 border-violet-200" },
-  industry_search_sub: { label: "Industry Search Sub", phase: "Research → Search", color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
-  modeler: { label: "Modeler (THE BRAIN)", phase: "Valuation", color: "bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold" },
-  analyst: { label: "Analyst", phase: "Research (parallel)", color: "bg-slate-100 text-slate-800 border-slate-300" },
-  industry: { label: "Industry", phase: "Research (parallel)", color: "bg-teal-100 text-teal-800 border-teal-300" },
-  risk: { label: "Risk", phase: "Research (parallel)", color: "bg-red-100 text-red-800 border-red-300" },
-  kpi: { label: "KPI", phase: "Research (parallel)", color: "bg-cyan-100 text-cyan-800 border-cyan-300" },
-  writer: { label: "Writer", phase: "Narrative", color: "bg-indigo-100 text-indigo-800 border-indigo-300" },
-  visualizer: { label: "Visualizer", phase: "Charts", color: "bg-pink-100 text-pink-800 border-pink-300" },
-  sotp: { label: "SOTP", phase: "Aggregation", color: "bg-orange-100 text-orange-800 border-orange-300" },
-  adversarial: { label: "Adversarial (Red Team)", phase: "Red Team Loop", color: "bg-rose-100 text-rose-800 border-rose-300" },
-  critic: { label: "Critic (QA Arbiter)", phase: "QA", color: "bg-slate-900 text-white border-slate-900" },
-  system: { label: "System", phase: "-", color: "bg-slate-50 text-slate-500 border-slate-200" },
-}
-
-function AgentBadge({ author }: { author: string }) {
-  const m = AGENT_META[author] ?? { label: author || "—", phase: "", color: "bg-slate-100 text-slate-700 border-slate-200" }
-  return (
-    <span className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs ${m.color}`}>
-      {m.label}
-    </span>
-  )
-}
-
-function PhaseDot({ author }: { author: string }) {
-  const m = AGENT_META[author]
-  if (!m) return null
-  return <span className="text-[11px] text-slate-500">{m.phase}</span>
+interface HealthInfo {
+  ok?: boolean
+  model?: string
+  provider?: string
+  elapsed_ms?: number
+  bridge_ping?: string
+  bridge_error?: string
+  graph?: { name: string; n_subagents?: number; subagents?: string[] }
 }
 
 function AgentTrace() {
@@ -66,9 +47,9 @@ function AgentTrace() {
   const [running, setRunning] = useState(false)
   const [done, setDone] = useState<{ n_events: number; state_keys: string[]; ms: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
-  const [health, setHealth] = useState<any>(null)
-  const [filter, setFilter] = useState<string>("all")
-  const listRef = useRef<HTMLDivElement>(null)
+  const [health, setHealth] = useState<HealthInfo | null>(null)
+  const [filterAuthor, setFilterAuthor] = useState<string>("all")
+  const [rawDebugOpen, setRawDebugOpen] = useState(false)
   const startRef = useRef<number>(0)
 
   const apiBase = (import.meta as any).env?.VITE_API_URL || ""
@@ -78,202 +59,439 @@ function AgentTrace() {
       const r = await fetch(`${apiBase}/api/agent/health`)
       const j = await r.json()
       setHealth(j)
-    } catch (e: any) {
-      setHealth({ ok: false, error: String(e) })
+    } catch (e: unknown) {
+      setHealth({ ok: false, bridge_error: String(e) })
     }
   }, [apiBase])
 
-  useEffect(() => { fetchHealth() }, [fetchHealth])
-
-  // auto-scroll to bottom as events stream
   useEffect(() => {
-    if (listRef.current) listRef.current.scrollTop = listRef.current.scrollHeight
+    fetchHealth()
+  }, [fetchHealth])
+
+  const {
+    activeCount,
+    totalCount,
+    agentStatuses,
+    etaText,
+    isInterrupted,
+  } = useAgentProgress({
+    events,
+    running,
+    done,
+    error,
+  })
+
+  const run = useCallback(
+    async (mode: "stream" | "blocking") => {
+      setError(null)
+      setDone(null)
+      setEvents([])
+      setRunning(true)
+      startRef.current = Date.now()
+      const t = ticker.trim().toUpperCase() || "BBCA"
+
+      if (mode === "blocking") {
+        try {
+          const r = await fetch(`${apiBase}/api/agent/run`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ticker: t }),
+          })
+          const j = await r.json()
+          if (!j.ok) throw new Error(j.error || JSON.stringify(j).slice(0, 800))
+          setEvents((j.trace || []) as TraceEvent[])
+          setDone({
+            n_events: j.n_events,
+            state_keys: j.state_keys || [],
+            ms: j.elapsed_ms || Date.now() - startRef.current,
+          })
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e)
+          setError(msg.slice(0, 1000))
+        } finally {
+          setRunning(false)
+        }
+        return
+      }
+
+      // SSE stream mode (live step-by-step trace)
+      try {
+        const es = new EventSource(`${apiBase}/api/agent/stream?ticker=${encodeURIComponent(t)}`)
+        es.onmessage = (ev) => {
+          try {
+            const frame = JSON.parse(ev.data) as TraceEvent & {
+              done?: boolean
+              state_keys?: string[]
+              state_preview?: unknown
+              ticker?: string
+              error?: string
+            }
+
+            if (frame.event_type === "start") {
+              return
+            }
+
+            if (frame.event_type === "error") {
+              setError(frame.error || frame.text || "Terjadi kendala pada stream.")
+              es.close()
+              setRunning(false)
+              return
+            }
+
+            if (frame.event_type === "done") {
+              const d = frame as { n_events?: number; state_keys?: string[] }
+              setDone({
+                n_events: d.n_events || 0,
+                state_keys: d.state_keys || [],
+                ms: Date.now() - startRef.current,
+              })
+              es.close()
+              setRunning(false)
+              return
+            }
+
+            // Normal event frame
+            setEvents((prev) => [...prev, frame as TraceEvent])
+          } catch {
+            // Ignore parse errors on individual frames
+          }
+        }
+
+        es.onerror = () => {
+          setTimeout(() => {
+            if (es.readyState === EventSource.CLOSED) {
+              setRunning(false)
+            }
+          }, 1200)
+        }
+
+        // Safety timeout 15 min
+        setTimeout(() => {
+          try {
+            es.close()
+          } catch {}
+          setRunning(false)
+        }, 15 * 60 * 1000)
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        setError(msg.slice(0, 1000))
+        setRunning(false)
+      }
+    },
+    [ticker, apiBase]
+  )
+
+  const handleClear = useCallback(() => {
+    setEvents([])
+    setDone(null)
+    setError(null)
+    setFilterAuthor("all")
+  }, [])
+
+  const stateKeys = useMemo(() => {
+    const set = new Set<string>()
+    for (const ev of events) {
+      if (ev.state_delta_keys) {
+        for (const k of ev.state_delta_keys) set.add(k)
+      }
+    }
+    return Array.from(set)
   }, [events])
 
-  const run = useCallback(async (mode: "stream" | "blocking") => {
-    setError(null); setDone(null); setEvents([]); setRunning(true)
-    startRef.current = Date.now()
-    const t = ticker.trim().toUpperCase() || "BBCA"
-
-    if (mode === "blocking") {
-      try {
-        const r = await fetch(`${apiBase}/api/agent/run`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ticker: t }),
-        })
-        const j = await r.json()
-        if (!j.ok) throw new Error(j.error || JSON.stringify(j).slice(0, 800))
-        setEvents((j.trace || []) as TraceEvent[])
-        setDone({ n_events: j.n_events, state_keys: j.state_keys || [], ms: j.elapsed_ms })
-      } catch (e: any) {
-        setError(String(e.message || e).slice(0, 1000))
-      } finally { setRunning(false) }
-      return
-    }
-
-    // SSE stream mode — preferred for step-by-step visibility
-    try {
-      const es = new EventSource(`${apiBase}/api/agent/stream?ticker=${encodeURIComponent(t)}`)
-      let n = 0
-      es.onmessage = (ev) => {
-        try {
-          const frame = JSON.parse(ev.data) as TraceEvent & { done?: boolean; state_keys?: string[]; state_preview?: any; ticker?: string; error?: string }
-          if (frame.event_type === "start") {
-            // ignore
-            return
-          }
-          if (frame.event_type === "error") {
-            setError(frame.error || frame.text || "stream error")
-            es.close(); setRunning(false)
-            return
-          }
-          if ((frame as any).event_type === "done") {
-            const d = frame as any
-            setDone({ n_events: d.n_events, state_keys: d.state_keys || [], ms: Date.now() - startRef.current })
-            es.close(); setRunning(false)
-            return
-          }
-          // normal event
-          setEvents(prev => [...prev, frame as TraceEvent])
-          n++
-        } catch {}
-      }
-      es.onerror = () => {
-        // EventSource will auto-retry; treat close as done if we have events
-        // Small grace: if still running and no error frame, just close
-        setTimeout(() => {
-          if (es.readyState === EventSource.CLOSED) setRunning(false)
-        }, 1200)
-      }
-      // safety timeout 15 min
-      setTimeout(() => { try { es.close() } catch {}; setRunning(false) }, 15 * 60 * 1000)
-    } catch (e: any) {
-      setError(String(e.message || e).slice(0, 1000))
-      setRunning(false)
-    }
-  }, [ticker, apiBase])
-
-  const filtered = filter === "all" ? events : events.filter(e => e.author === filter || e.event_type === filter)
-
-  const authors = Array.from(new Set(events.map(e => e.author).filter(Boolean))).sort()
-
   return (
-    <div className="space-y-4">
-      <ProgressHeader
-        ticker={ticker}
-        onTickerChange={setTicker}
-        onRun={run}
-        onClear={() => {
-          setEvents([])
-          setDone(null)
-          setError(null)
-        }}
+    <div className="space-y-6">
+      {/* 1. Hero & Run Controls */}
+      <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 space-y-4">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-1.5">
+            <div className="flex items-center gap-2.5">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-xs">
+                <Bot className="h-5 w-5" />
+              </div>
+              <h1 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl font-sans">
+                Pusat Analisis Saham Multi-Agen AI
+              </h1>
+            </div>
+            <p className="text-sm text-slate-600 max-w-2xl leading-relaxed">
+              Pantau 11 agen AI independen yang bekerja sama mencari data IDX, menghitung valuasi finansial, menguji risiko, dan menyusun riset institusional.
+            </p>
+          </div>
+
+          {/* Status badge pill */}
+          <div className="flex flex-wrap items-center gap-2">
+            {running ? (
+              <div className="flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50/80 px-3.5 py-2 text-xs text-amber-900 shadow-2xs">
+                <span className="relative flex h-2.5 w-2.5">
+                  <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+                  <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
+                </span>
+                <span className="font-semibold">{activeCount} dari {totalCount} agen aktif</span>
+                <span className="text-slate-300">·</span>
+                <span className="flex items-center gap-1 font-mono text-slate-700">
+                  <Activity className="h-3 w-3 text-slate-500" />
+                  {events.length} aktivitas
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="flex items-center gap-1 font-mono font-semibold text-amber-800">
+                  <Clock className="h-3 w-3 text-amber-600" />
+                  ETA {etaText}
+                </span>
+              </div>
+            ) : done ? (
+              <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2 text-xs font-semibold text-emerald-900 shadow-2xs">
+                <Sparkles className="h-4 w-4 text-emerald-600" />
+                <span>Analisis Selesai</span>
+                <span className="text-slate-300">·</span>
+                <span className="font-mono text-slate-700">{done.n_events} aktivitas</span>
+                <span className="text-slate-300">·</span>
+                <span className="font-mono text-slate-600">{(done.ms / 1000).toFixed(1)}s</span>
+              </div>
+            ) : isInterrupted ? (
+              <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-900">
+                <AlertCircle className="h-4 w-4 text-amber-600" />
+                <span>Stream terhenti sementara</span>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-600">
+                <span className="h-2 w-2 rounded-full bg-slate-400" />
+                <span>Sistem Siap Dijalankan</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Input form & buttons */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-slate-100">
+          <div className="flex flex-wrap items-center gap-2.5">
+            <div className="flex items-center gap-2">
+              <label htmlFor="ticker-input" className="text-xs font-medium text-slate-700">
+                Kode Saham:
+              </label>
+              <input
+                id="ticker-input"
+                value={ticker}
+                onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                placeholder="BBCA"
+                className="h-9 w-24 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                maxLength={10}
+              />
+            </div>
+
+            <Button
+              onClick={() => run("stream")}
+              disabled={running}
+              className="h-9 gap-1.5 bg-slate-900 px-4 text-xs font-medium text-white hover:bg-slate-800 shadow-xs"
+            >
+              {running ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-white" />
+                  <span>Memproses Analisis...</span>
+                </>
+              ) : (
+                <>
+                  <Play className="h-3.5 w-3.5 fill-current" />
+                  <span>Jalankan Analisis</span>
+                </>
+              )}
+            </Button>
+
+            <Button
+              onClick={() => run("blocking")}
+              disabled={running}
+              variant="outline"
+              className="h-9 gap-1.5 text-xs font-medium text-slate-700 border-slate-300 hover:bg-slate-50"
+            >
+              <Zap className="h-3.5 w-3.5 text-slate-500" />
+              <span>Mode Cepat</span>
+            </Button>
+
+            <Button
+              onClick={handleClear}
+              variant="ghost"
+              className="h-9 gap-1 text-xs text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              disabled={running}
+            >
+              <RotateCcw className="h-3.5 w-3.5" />
+              <span>Bersihkan</span>
+            </Button>
+          </div>
+
+          {/* Model / Bridge Health Badge */}
+          {health && (
+            <div className="flex items-center gap-2 text-xs">
+              <Badge
+                variant="outline"
+                className="flex items-center gap-1 font-mono text-[11px] text-slate-600 bg-slate-50"
+              >
+                <span
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    health.ok ? "bg-emerald-500" : "bg-amber-500"
+                  }`}
+                />
+                <Cpu className="h-3 w-3 text-slate-400" />
+                <span>{health.model || "muse-spark-1.2"}</span>
+              </Badge>
+
+              <button
+                type="button"
+                onClick={fetchHealth}
+                className="text-slate-400 hover:text-slate-700 p-1"
+                title="Perbarui status server"
+              >
+                <RefreshCw className="h-3 w-3" />
+              </button>
+            </div>
+          )}
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="flex items-start gap-2.5 rounded-lg border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+            <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
+            <div className="space-y-1">
+              <span className="font-semibold">Terjadi kendala saat menjalankan pipeline:</span>
+              <p className="font-mono text-[11px] break-all">{error}</p>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 2. "Cara Kerja Sistem" Expandable */}
+      <details className="group rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600 shadow-2xs">
+        <summary className="flex cursor-pointer items-center justify-between font-medium text-slate-800 select-none">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="h-4 w-4 text-slate-500" />
+            <span className="text-sm font-semibold">Bagaimana Tim AI Bekerja?</span>
+          </div>
+          <span className="text-xs text-slate-400 group-open:hidden">Klik untuk melihat penjelasan alur</span>
+        </summary>
+        <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-600">
+          <p>
+            Analisis ini dibuat oleh 11 agen AI yang bekerja sama: mereka mencari data dari IDX dan media, menghitung valuasi secara matematis tanpa rekayasa teks, menulis laporan riset terstruktur, dan saling menguji asumsi (Red Team) sebelum disetujui. Hasilnya ditujukan untuk informasi dan bukan saran investasi resmi.
+          </p>
+          <div className="grid gap-2 pt-1 sm:grid-cols-5 text-[11px]">
+            <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
+              <div className="font-semibold text-slate-800">1. Data</div>
+              <div>Koleksi laporan IDX, berita, dan sentimen.</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
+              <div className="font-semibold text-slate-800">2. Valuasi</div>
+              <div>Kalkulasi matematis DCF, DDM, dan PE/PBV.</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
+              <div className="font-semibold text-slate-800">3. Riset</div>
+              <div>Kajian fundamental, risiko, dan KPI industri.</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
+              <div className="font-semibold text-slate-800">4. Penulisan</div>
+              <div>Penyusunan narasi tesis dan grafik visual.</div>
+            </div>
+            <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
+              <div className="font-semibold text-slate-800">5. Uji Kualitas</div>
+              <div>Debat Red Team dan verifikasi QA akhir.</div>
+            </div>
+          </div>
+        </div>
+      </details>
+
+      {/* 3. SummaryCard (Shows when finished or done) */}
+      {done && (
+        <SummaryCard ticker={ticker} events={events} done={done} />
+      )}
+
+      {/* 4. PhaseTimeline (replaces AgentRail) */}
+      <PhaseTimeline
+        agentStatuses={agentStatuses}
+        selectedAuthor={filterAuthor}
+        onFilterAuthor={setFilterAuthor}
         running={running}
         done={done}
-        error={error}
-        events={events}
-        health={health}
-        onRefreshHealth={fetchHealth}
-        selectedFilter={filter}
-        onFilterChange={setFilter}
       />
 
-      <div className="flex flex-wrap gap-2">
-        <Button size="sm" variant={filter === "all" ? "default" : "outline"} className="h-7 text-xs" onClick={() => setFilter("all")}>All ({events.length})</Button>
-        {authors.map(a => (
-          <Button key={a} size="sm" variant={filter === a ? "default" : "outline"} className="h-7 text-xs" onClick={() => setFilter(a)}>
-            <span className="mr-1"><AgentBadge author={a} /></span>
-          </Button>
-        ))}
-        <Button size="sm" variant={filter === "function_call" ? "default" : "outline"} className="h-7 text-xs" onClick={() => setFilter("function_call")}>🔧 function_call ({events.filter(e=>e.event_type==="function_call").length})</Button>
-      </div>
+      {/* 5. PlainEnglishPanel (replaces raw traces for orang awam) */}
+      <PlainEnglishPanel
+        events={events}
+        running={running}
+        ticker={ticker}
+        selectedAuthor={filterAuthor}
+        onFilterAuthor={setFilterAuthor}
+      />
 
-      {/* Timeline + raw log + state preview */}
-      <div className="grid gap-4 lg:grid-cols-[1.15fr_0.85fr_0.55fr]">
-        <Card className="overflow-hidden">
-          <CardHeader className="py-3"><CardTitle className="text-sm">Timeline — {filtered.length} events {running && <span className="ml-2 inline-block h-2 w-2 animate-pulse rounded-full bg-emerald-500" />}</CardTitle></CardHeader>
-          <CardContent className="p-0">
-            <div ref={listRef} className="max-h-[68vh] overflow-auto divide-y">
-              {filtered.length === 0 && <div className="px-4 py-10 text-center text-sm text-slate-500">Belum ada event — klik <span className="font-medium">▶ Run ADK (SSE live trace)</span> untuk mulai. Ticker default BBCA.</div>}
-              {filtered.map((ev) => (
-                <div key={ev.seq} className="px-3 py-2.5 hover:bg-slate-50">
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="font-mono text-[11px] text-slate-400">#{ev.seq}</span>
-                      <AgentBadge author={ev.author} />
-                      <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[11px] text-slate-600">{ev.event_type}</span>
-                      {ev.branch && <span className="text-[11px] text-slate-400">{ev.branch}</span>}
+      {/* 6. Raw Debug Toggle (Collapsible for developers/engineers) */}
+      <details
+        open={rawDebugOpen}
+        onToggle={(e) => setRawDebugOpen((e.currentTarget as HTMLDetailsElement).open)}
+        className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs"
+      >
+        <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-700 select-none">
+          <div className="flex items-center gap-2">
+            <Code2 className="h-4 w-4 text-slate-500" />
+            <span className="font-semibold">Lihat data teknis mentah (untuk developer)</span>
+            <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
+              {events.length} frame JSON
+            </Badge>
+          </div>
+          {rawDebugOpen ? (
+            <ChevronUp className="h-4 w-4 text-slate-400" />
+          ) : (
+            <ChevronDown className="h-4 w-4 text-slate-400" />
+          )}
+        </summary>
+
+        <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 text-xs">
+          <div className="space-y-2">
+            <div className="font-semibold text-slate-800">Kunci Memori Pipeline (State Keys):</div>
+            <div className="flex flex-wrap gap-1.5">
+              {stateKeys.length === 0 ? (
+                <span className="text-slate-400 italic">Belum ada kunci memori tersimpan</span>
+              ) : (
+                stateKeys.map((k) => (
+                  <Badge key={k} variant="secondary" className="font-mono text-[11px]">
+                    {k}
+                  </Badge>
+                ))
+              )}
+            </div>
+          </div>
+
+          <div className="space-y-2">
+            <div className="font-semibold text-slate-800">Log Frame Event SSE Mentah:</div>
+            <div className="max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-[11px] text-slate-300">
+              {events.length === 0 ? (
+                <div className="text-slate-500 italic">Belum ada frame event yang diterima.</div>
+              ) : (
+                events.map((ev) => (
+                  <div key={ev.seq} className="border-b border-slate-800 py-1.5">
+                    <div className="flex items-center gap-2 text-slate-400">
+                      <span className="text-sky-400">#{ev.seq}</span>
+                      <span className="font-bold text-amber-300">{ev.author}</span>
+                      <span className="text-emerald-400">[{ev.event_type}]</span>
+                      <span>node: {ev.node}</span>
                     </div>
-                    <span className="shrink-0 font-mono text-[11px] text-slate-400">{new Date(ev.ts * 1000).toLocaleTimeString()}</span>
+                    {ev.text && (
+                      <div className="mt-0.5 text-slate-300 whitespace-pre-wrap">{ev.text}</div>
+                    )}
+                    {ev.function_calls?.length > 0 && (
+                      <pre className="mt-0.5 text-xs text-amber-200 overflow-x-auto">
+                        {JSON.stringify(ev.function_calls, null, 2)}
+                      </pre>
+                    )}
+                    {ev.function_responses?.length > 0 && (
+                      <pre className="mt-0.5 text-xs text-emerald-200 overflow-x-auto">
+                        {JSON.stringify(ev.function_responses, null, 2)}
+                      </pre>
+                    )}
                   </div>
-                  <div className="mt-1 flex items-center gap-2"><PhaseDot author={ev.author} /></div>
-                  {ev.text && <div className="mt-1.5 whitespace-pre-wrap break-words rounded bg-slate-50 px-2 py-1.5 font-mono text-[11px] leading-relaxed text-slate-700">{ev.text.slice(0, 1200)}</div>}
-                  {ev.function_calls.length > 0 && (
-                    <div className="mt-1.5 space-y-1">
-                      {ev.function_calls.map((fc, i) => (
-                        <FunctionCallCard key={fc.id || `${fc.name}-${i}`} fc={fc} />
-                      ))}
-                    </div>
-                  )}
-                  {ev.function_responses.length > 0 && (
-                    <div className="mt-1.5 space-y-1">
-                      {ev.function_responses.map((fr, i) => (
-                        <FunctionResponseCard key={fr.id || `${fr.name}-${i}`} fr={fr} />
-                      ))}
-                    </div>
-                  )}
-                  {ev.state_delta_keys.length > 0 && (
-                    <div className="mt-1.5 flex flex-wrap gap-1">
-                      {ev.state_delta_keys.map(k => <Badge key={k} variant="secondary" className="text-[11px]">{k}</Badge>)}
-                    </div>
-                  )}
-                </div>
-              ))}
+                ))
+              )}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
+      </details>
 
-        <Card className="overflow-hidden">
-          <CardHeader className="py-3"><CardTitle className="text-sm">Graph — 11 agents (Sequential + Parallel + Loop)</CardTitle></CardHeader>
-          <CardContent className="space-y-3 text-xs leading-relaxed text-slate-600">
-            <div className="rounded-md border bg-white p-3 font-mono text-[11px] leading-5">
-              <div>intake_parallel (3× parallel)</div>
-              <div className="ml-3">├─ collector <span className="text-slate-400">(Sectors MCP or synthetic, Spark)</span></div>
-              <div className="ml-3">├─ news_harvester → news_search_sub <span className="text-slate-400">(AgentTool, Spark 0-credit)</span></div>
-              <div className="ml-3">└─ social_sentiment → social_search_sub <span className="text-slate-400">(AgentTool, Spark 0-credit)</span></div>
-              <div>↓</div>
-              <div>modeler <span className="font-semibold text-emerald-700">THE BRAIN</span> <span className="text-slate-400">calc_wacc/dcf/ddm/ggm/bands/ratios/blended (FunctionTools)</span></div>
-              <div>↓</div>
-              <div>research_parallel (4× parallel)</div>
-              <div className="ml-3">├─ analyst ├─ industry(→search_sub) ├─ risk ├─ kpi</div>
-              <div>↓</div>
-              <div>writer → visualizer → sotp → adversarial_loop(×4) → critic</div>
-            </div>
-            <div className="rounded-md bg-slate-50 p-3 text-[11px]">
-              <div className="font-medium text-slate-700">Deterministic engines (no LLM math):</div>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {["calc_wacc","calc_dcf","calc_ddm","calc_ggm","calc_multiples","calc_sotp","calc_blended","calc_historical_bands","calc_ratios"].map(n => (
-                  <Badge key={n} variant="outline" className="font-mono text-[11px]">{n}</Badge>
-                ))}
-              </div>
-              <div className="mt-2 font-medium text-slate-700">State keys (output_key):</div>
-              <div className="mt-1 flex flex-wrap gap-1">
-                {["collector_output","news_output","social_output","valuation_output","analyst_output","industry_output","risk_output","kpi_output","writer_output","visuals_output","sotp_output","debate_output","critic_output"].map(k => (
-                  <Badge key={k} variant="secondary" className="font-mono text-[11px]">{k}</Badge>
-                ))}
-              </div>
-            </div>
-            <div className="text-[11px] text-slate-500">
-              P0-P1: 0 Sectors credit, search grounding disabled (<code className="rounded bg-slate-100 px-1">ADK_ENABLE_GOOGLE_SEARCH=true</code> to enable with real GOOGLE_API_KEY). Bridge <code className="rounded bg-slate-100 px-1">BRIDGE_API_KEY</code> auto-read from <code className="rounded bg-slate-100 px-1">~/.config/commandcode-bridge/env</code>.
-            </div>
-          </CardContent>
-        </Card>
-
-        <StatePreview events={events} />
-      </div>
-      <p className="mt-4 text-xs text-slate-500 text-center">
-        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
+      {/* 7. Disclaimer Footer */}
+      <p className="text-center text-xs text-slate-500">
+        Disclaimer: Produk ini adalah informasi dan sarana edukasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
       </p>
     </div>
   )
