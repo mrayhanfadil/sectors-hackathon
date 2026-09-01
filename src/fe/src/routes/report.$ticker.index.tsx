@@ -16,8 +16,82 @@ function pctLabel(v: unknown) {
   return `${n > 0 ? "+" : ""}${n}${typeof v === "string" && String(v).includes("%") ? "" : "%"}`
 }
 
-function SegmentPie({ segments, source }: { segments: { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]; source?: string }) {
+function Sparkline({ values, width = 120, height = 30 }: { values: number[]; width?: number; height?: number }) {
+  if (!Array.isArray(values) || values.length < 2) return null
+  const min = Math.min(...values), max = Math.max(...values)
+  const range = max - min || 1
+  const points = values.map((v, i) => {
+    const x = (i / (values.length - 1)) * width
+    const y = height - ((v - min) / range) * height
+    return `${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(" ")
+  return (
+    <svg width={width} height={height} className="text-slate-700">
+      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.5" />
+    </svg>
+  )
+}
+
+function BandsChart({ bands, width = 360, height = 110 }: { bands: { "std+2": number; "std+1": number; avg: number; "std-1": number; "std-2": number; current?: number; label?: string }; width?: number; height?: number }) {
+  const p2 = Number(bands["std+2"] ?? 0)
+  const p1 = Number(bands["std+1"] ?? 0)
+  const avg = Number(bands.avg ?? 0)
+  const m1 = Number(bands["std-1"] ?? 0)
+  const m2 = Number(bands["std-2"] ?? 0)
+  const cur = bands.current != null ? Number(bands.current) : null
+
+  const allVals = [p2, p1, avg, m1, m2, ...(cur != null ? [cur] : [])].filter(v => !Number.isNaN(v))
+  if (allVals.length < 5) return null
+  const min = Math.min(...allVals) * 0.95
+  const max = Math.max(...allVals) * 1.05
+  const range = max - min || 1
+
+  const getY = (v: number) => height - ((v - min) / range) * (height - 24) - 12
+
+  const lines = [
+    { label: `+2σ (${p2.toFixed(2)})`, y: getY(p2), color: "#94a3b8", dash: "3,3" },
+    { label: `+1σ (${p1.toFixed(2)})`, y: getY(p1), color: "#cbd5e1", dash: "3,3" },
+    { label: `Mean (${avg.toFixed(2)})`, y: getY(avg), color: "#0f172a", dash: "none", strokeWidth: 1.5 },
+    { label: `-1σ (${m1.toFixed(2)})`, y: getY(m1), color: "#cbd5e1", dash: "3,3" },
+    { label: `-2σ (${m2.toFixed(2)})`, y: getY(m2), color: "#94a3b8", dash: "3,3" },
+  ]
+
+  const curY = cur != null ? getY(cur) : null
+
+  return (
+    <div className="py-2">
+      <svg viewBox={`0 0 ${width} ${height}`} className="w-full max-w-md h-auto text-xs">
+        {lines.map((l, i) => (
+          <g key={i}>
+            <line x1={80} y1={l.y} x2={width - 20} y2={l.y} stroke={l.color} strokeWidth={l.strokeWidth ?? 1} strokeDasharray={l.dash} />
+            <text x={74} y={l.y + 3} textAnchor="end" fill="#64748b" className="text-[10px] font-mono">{l.label}</text>
+          </g>
+        ))}
+        {cur != null && curY != null && (
+          <g>
+            <line x1={80} y1={curY} x2={width - 20} y2={curY} stroke="#059669" strokeWidth={1.5} />
+            <circle cx={width / 2} cy={curY} r={3.5} fill="#059669" />
+            <text x={width - 15} y={curY + 3} fill="#059669" className="text-[10px] font-semibold font-mono">
+              Kini {cur.toFixed(2)}
+            </text>
+          </g>
+        )}
+      </svg>
+    </div>
+  )
+}
+
+function SegmentPie({ segments, source, rawSegments }: { segments: { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]; source?: string; rawSegments?: unknown }) {
   if (!segments || segments.length === 0) {
+    if (rawSegments && typeof rawSegments === "object" && Object.keys(rawSegments).length > 0) {
+      return (
+        <ul className="space-y-1 text-xs text-slate-700">
+          {Object.entries(rawSegments as Record<string, unknown>).map(([seg, val]) => (
+            <li key={seg}>{seg}: {typeof val === "object" && val !== null ? JSON.stringify(val) : String(val)}</li>
+          ))}
+        </ul>
+      )
+    }
     return <div className="rounded-md border border-dashed px-3 py-4 text-xs text-slate-500">Segment disclosure: single-segment / belum diungkap di IDX (MOCK disclosed placeholder).</div>
   }
   const total = segments.reduce((s, x) => s + Number(x.share_pct ?? 0), 0)
@@ -221,7 +295,26 @@ function ReportPage() {
                 </div>
               </div>
             )}
-            <p className="text-xs text-slate-500">Line chart placeholder — text fallback (no chart lib). BE chart array consumed when real.</p>
+            {Array.isArray((r.raw as any)?.chart) && (r.raw as any).chart.length > 1 ? (
+              <div className="pt-2">
+                <Sparkline values={(r.raw as any).chart} width={240} height={40} />
+              </div>
+            ) : Array.isArray(vs.chart?.series?.[0]) && vs.chart.series[0].length > 1 ? (
+              <div className="flex flex-wrap items-center gap-4 pt-2">
+                <div className="flex items-center gap-2 text-xs text-slate-700">
+                  <span className="font-medium">{r.ticker}:</span>
+                  <Sparkline values={vs.chart.series[0]} width={140} height={30} />
+                </div>
+                {vs.chart.series[1] && (
+                  <div className="flex items-center gap-2 text-xs text-slate-500">
+                    <span>IHSG:</span>
+                    <Sparkline values={vs.chart.series[1]} width={140} height={30} />
+                  </div>
+                )}
+              </div>
+            ) : (
+              <p className="text-xs text-slate-500">Line chart placeholder — text fallback (no chart lib). BE chart array consumed when real.</p>
+            )}
           </CardContent>
         </Card>
       )}
@@ -259,7 +352,7 @@ function ReportPage() {
           <CardDescription className="text-xs">Pendapatan per segmen · YoY + QoQ + share — text pie fallback (no chart lib)</CardDescription>
         </CardHeader>
         <CardContent>
-          <SegmentPie segments={(r.segments ?? []) as { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]} source={(r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined ?? (isSotp ? "Laporan segmentasi CDIA 1H26 (IDX)" : isInfra ? "MTEL 1H26 — laporan segmentasi (IDX)" : undefined)} />
+          <SegmentPie segments={(r.segments ?? []) as { name: string; share_pct?: number; revenue?: number; yoy_pct?: unknown; qoq_pct?: unknown; one_off?: string }[]} source={(r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined ?? (isSotp ? "Laporan segmentasi CDIA 1H26 (IDX)" : isInfra ? "MTEL 1H26 — laporan segmentasi (IDX)" : undefined)} rawSegments={r.raw?.segments} />
         </CardContent>
       </Card>
 
@@ -303,35 +396,42 @@ function ReportPage() {
             <CardContent className="text-xs text-slate-500">Blended 60/40 (infra) & GGM (bank) appear when template matches — single shows DCF + EV/EBITDA side-by-side above.</CardContent>
           </Card>
         )}
-        {vd?.bands?.pbv_3y ? (
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Historical Bands P/BV 3Y — STD±2</CardTitle><CardDescription className="text-xs">{vd.bands.source ?? "IDX, data diolah"} · Mean reversion</CardDescription></CardHeader>
-            <CardContent className="space-y-2">
-              <div className="grid grid-cols-7 gap-1 text-center text-xs">
-                {[
-                  { k: "STD+2", v: vd.bands.pbv_3y["std+2"] },
-                  { k: "STD+1", v: vd.bands.pbv_3y["std+1"] },
-                  { k: "AVG", v: vd.bands.pbv_3y.avg },
-                  { k: "STD-1", v: vd.bands.pbv_3y["std-1"] },
-                  { k: "STD-2", v: vd.bands.pbv_3y["std-2"] },
-                  { k: "Kini", v: vd.bands.pbv_3y.current },
-                  { k: "Posisi", v: vd.bands.pbv_3y.label as unknown as number },
-                ].map(c => (
-                  <div key={c.k} className={`rounded border p-2 ${c.k === "Kini" ? "border-slate-900 bg-slate-900 text-white" : c.k === "Posisi" ? "bg-amber-50" : "bg-white"}`}>
-                    <div className="text-xs opacity-70">{c.k}</div>
-                    <div className="font-semibold">{typeof c.v === "number" ? c.v.toFixed(2) : String(c.v)}</div>
+        {(() => {
+          const bandsData = vd?.bands?.pbv_3y ?? ((r.raw as any)?.bands?.pbv_3y ?? (typeof (r.raw as any)?.bands === "object" && !Array.isArray((r.raw as any)?.bands) && (r.raw as any)?.bands?.["std+2"] != null ? (r.raw as any).bands : null))
+          if (bandsData) {
+            return (
+              <Card>
+                <CardHeader><CardTitle className="text-sm">Historical Bands P/BV 3Y — STD±2</CardTitle><CardDescription className="text-xs">{vd?.bands?.source ?? "IDX, data diolah"} · Mean reversion</CardDescription></CardHeader>
+                <CardContent className="space-y-2">
+                  <div className="grid grid-cols-7 gap-1 text-center text-xs">
+                    {[
+                      { k: "STD+2", v: bandsData["std+2"] },
+                      { k: "STD+1", v: bandsData["std+1"] },
+                      { k: "AVG", v: bandsData.avg },
+                      { k: "STD-1", v: bandsData["std-1"] },
+                      { k: "STD-2", v: bandsData["std-2"] },
+                      { k: "Kini", v: bandsData.current },
+                      { k: "Posisi", v: bandsData.label as unknown as number },
+                    ].map(c => (
+                      <div key={c.k} className={`rounded border p-2 ${c.k === "Kini" ? "border-slate-900 bg-slate-900 text-white" : c.k === "Posisi" ? "bg-amber-50" : "bg-white"}`}>
+                        <div className="text-xs opacity-70">{c.k}</div>
+                        <div className="font-semibold">{typeof c.v === "number" ? c.v.toFixed(2) : String(c.v ?? "—")}</div>
+                      </div>
+                    ))}
                   </div>
-                ))}
-              </div>
-              <p className="text-xs text-slate-500">Label: <Badge variant={String(vd.bands.pbv_3y.label).includes("BELOW") ? "secondary" : "outline"}>{String(vd.bands.pbv_3y.label)}</Badge> · Bands from 3Y daily — needs ≥10 points.</p>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card>
-            <CardHeader><CardTitle className="text-sm">Historical Bands — STD±2</CardTitle></CardHeader>
-            <CardContent className="text-xs text-slate-500">Bands P/BV 3Y muncul untuk infra (MTEL). Single/bank fallback: disclosed placeholder — butuh 3Y history dari stockdata.</CardContent>
-          </Card>
-        )}
+                  <BandsChart bands={bandsData} />
+                  <p className="text-xs text-slate-500">Label: <Badge variant={String(bandsData.label).includes("BELOW") ? "secondary" : "outline"}>{String(bandsData.label ?? "STD BAND")}</Badge> · Bands from 3Y daily — needs ≥10 points.</p>
+                </CardContent>
+              </Card>
+            )
+          }
+          return (
+            <Card>
+              <CardHeader><CardTitle className="text-sm">Historical Bands — STD±2</CardTitle></CardHeader>
+              <CardContent className="text-xs text-slate-500">Bands P/BV 3Y muncul untuk infra (MTEL). Single/bank fallback: disclosed placeholder — butuh 3Y history dari stockdata.</CardContent>
+            </Card>
+          )
+        })()}
       </div>
 
       {/* Ratios / Leverage trajectory */}
@@ -355,6 +455,14 @@ function ReportPage() {
           </CardContent>
         </Card>
       )}
+
+      {/* Disclaimer footer */}
+      <div className="rounded-md border bg-slate-50 p-3 text-xs text-slate-500">
+        <div className="font-semibold uppercase tracking-wide text-slate-700">INFORMASI, BUKAN SARAN INVESTASI</div>
+        <p className="mt-0.5 leading-relaxed">
+          Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi (OJK compliance).
+        </p>
+      </div>
 
       <p className="text-xs text-slate-500">TanStack Query · cache 4h · source disclosed per exhibit (P1 IDX+yfinance). {r.raw ? `Template ${tpl} · BE live when fair_value present.` : "MOCK disclosed placeholder."}</p>
     </div>

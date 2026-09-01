@@ -443,6 +443,12 @@ async def outlook():
     except Exception:
         pass
     payload = {
+        "jci_target": 9100,
+        "scenarios": {
+            "base": 9100,
+            "bull": 10000,
+            "bear": 7800,
+        },
         "jci_base": 9100,
         "jci_bull": 10000,
         "jci_bear": 7800,
@@ -482,23 +488,33 @@ async def news(
     # wire to scripts/news when available, else deterministic placeholder with honest provenance
     items = []
     try:
-        import importlib.util
-        import pathlib
-
-        # try scripts/news.py if T02 has shipped it
-        p = pathlib.Path(__file__).resolve().parents[2] / "scripts" / "news.py"
-        if p.exists():
-            spec = importlib.util.spec_from_file_location("news_mod", str(p))
-            mod = importlib.util.module_from_spec(spec)  # type: ignore
-            spec.loader.exec_module(mod)  # type: ignore
-            if hasattr(mod, "search_news"):
-                items = await mod.search_news(ticker or "", days=30, limit=limit)  # type: ignore
+        import inspect
+        try:
+            from scripts.news import news_for  # type: ignore
+            res = news_for(ticker or "", limit=limit)
+            if inspect.iscoroutine(res):
+                items = await res
+            else:
+                items = res
+        except (ImportError, AttributeError):
+            from scripts.news import search_news
+            res = search_news(ticker or "", days=30, limit=limit)
+            if inspect.iscoroutine(res):
+                items = await res
+            else:
+                items = res
     except Exception:
         items = []
     if not items:
-        # honest empty — do not fabricate headlines
+        # honest empty until scripts/news.py is added — see plans §4 data
         items = []
-    payload = {"ticker": ticker.upper() if ticker else None, "items": items[:limit], "cached": False, "note": "wire scripts/news.py search_news() when T02 lands; returns [] until then (no fabrication)"}
+    payload = {
+        "ticker": ticker.upper() if ticker else None,
+        "items": items[:limit],
+        "source": "synthetic",
+        "cached": False,
+        "note": "wire scripts/news.py search_news() when T02 lands; returns [] until then (no fabrication)",
+    }
     await cache.set(key, payload)
     return payload
 
@@ -570,39 +586,46 @@ async def sentiment(
 @router_challenge.post("/api/challenge", summary="Adversarial challenge & defense — verdict defend|concede with evidence")
 async def challenge(body: dict):
     from fastapi import HTTPException
+    import inspect
 
     ticker = (body.get("ticker") or "").upper().strip()
-    claim = (body.get("claim") or "").strip()
+    claim = (body.get("claim") or body.get("question") or "").strip()
     context = body.get("context")
     if not ticker or not claim:
         raise HTTPException(400, "ticker and claim required")
-    # wire to scripts/adversarial when available
+    # wire to agents/adversarial when available
     debate_id = hashlib.sha256(f"{ticker}:{claim}:{time.time()}".encode()).hexdigest()[:12]
     try:
-        import importlib.util
-        import pathlib
-
-        p = pathlib.Path(__file__).resolve().parents[2] / "scripts" / "adversarial.py"
-        if p.exists():
-            spec = importlib.util.spec_from_file_location("adv_mod", str(p))
-            mod = importlib.util.module_from_spec(spec)  # type: ignore
-            spec.loader.exec_module(mod)  # type: ignore
-            if hasattr(mod, "challenge"):
-                res = await mod.challenge(ticker, claim, context)  # type: ignore
-                if isinstance(res, dict):
-                    res.setdefault("debate_id", debate_id)
-                    return res
+        try:
+            from agents.adversarial import challenge as adv_challenge
+            res = adv_challenge(ticker, claim, context)
+            if inspect.iscoroutine(res):
+                res = await res
+        except (ImportError, AttributeError, TypeError):
+            try:
+                from agents.adversarial import challenge as adv_challenge
+                res = adv_challenge(claim, ticker)
+                if inspect.iscoroutine(res):
+                    res = await res
+            except Exception:
+                from scripts.adversarial import challenge as adv_challenge
+                res = adv_challenge(ticker, claim, context)
+                if inspect.iscoroutine(res):
+                    res = await res
+        if isinstance(res, dict):
+            res.setdefault("debate_id", debate_id)
+            return res
     except Exception:
         pass
     # honest fallback — must not hallucinate verdict as defend; return concede-with-correction placeholder
     # so downstream critic can still audit
     return {
         "verdict": "concede",
-        "evidence": "adversarial engine not yet wired (scripts/adversarial.py missing). Claim queued for review — no fabrication. Wire T02 adversarial.py challenge() to get defend(evidence) vs concede(correction) with debate.json log.",
+        "evidence": "adversarial challenge stubbed — see agents/adversarial.py T09",
         "exhibit_ref": None,
         "correction": None,
         "debate_id": debate_id,
         "ticker": ticker,
         "claim": claim,
-        "note": "wire scripts/adversarial.py when T02 lands",
+        "note": "adversarial challenge stubbed — see agents/adversarial.py T09",
     }

@@ -15,6 +15,8 @@ import os
 import sys
 import traceback
 
+import pytest
+
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(REPO_ROOT, "agents"))
 sys.path.insert(0, os.path.join(REPO_ROOT, "templates"))
@@ -40,6 +42,7 @@ def check(name: str, cond: bool, detail: str = "") -> None:
         msg = f"  FAIL  {name}" + (f"  ({detail})" if detail else "")
         FAILURES.append(msg)
         print(msg)
+        assert cond, msg
 
 
 def png_ok(path: str) -> bool:

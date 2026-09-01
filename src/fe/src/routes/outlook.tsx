@@ -118,6 +118,9 @@ function Outlook() {
       )}
 
       <p className="text-xs text-slate-500">Source: JPM Indonesia 2026 Outlook (JCI 9100 base) + plan §5 · Cache 4h · Thematics/flows/Danantara dari BE strategy overlay bila ada, else fixtures references/global/jpm-indonesia-2026-outlook.md.</p>
+      <p className="mt-4 text-xs text-slate-500 text-center">
+        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
+      </p>
     </div>
   )
 }
