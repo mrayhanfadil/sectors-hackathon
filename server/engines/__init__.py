@@ -132,3 +132,45 @@ def ratios(fin: dict) -> dict:
     except Exception:
         pass
     return out
+
+
+# Ported from friend's s05-s12 via scripts.dcf_engine
+from scripts.dcf_engine import (
+    beta_blume_adj,
+    compute_wacc_full,
+    wacc_table_dict,
+    project_fcff_simple,
+    terminal_value_gordon,
+    tv_dependency_check,
+    discount_and_bridge,
+    make_recommendation,
+    sensitivity_grid,
+    scenarios_bull_bear,
+    _NullFlags,
+    dcf_full,
+)
+
+__all__ = [
+    "wacc",
+    "dcf",
+    "ddm",
+    "ev_ebitda",
+    "ggm",
+    "sotp",
+    "blended",
+    "historical_bands",
+    "ratios",
+    "beta_blume_adj",
+    "compute_wacc_full",
+    "wacc_table_dict",
+    "project_fcff_simple",
+    "terminal_value_gordon",
+    "tv_dependency_check",
+    "discount_and_bridge",
+    "make_recommendation",
+    "sensitivity_grid",
+    "scenarios_bull_bear",
+    "_NullFlags",
+    "dcf_full",
+]
+

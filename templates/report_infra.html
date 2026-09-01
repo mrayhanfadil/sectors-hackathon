@@ -181,6 +181,48 @@
        valuation.bands.pbv_3y.current, valuation.bands.pbv_3y.label]]) }}
   <div class="chart-wrap" style="margin-top:6pt;"><canvas id="cBand" width="680" height="170"></canvas></div>
   {% endif %}
+
+  {% set dcf_friend = cDcf if cDcf is defined and cDcf else (dcf if dcf is defined else none) %}
+  {% if dcf_friend %}
+  <section class="dcf-friend" style="margin-top:10pt;">
+    <h3 style="color:var(--brand-dark); font-size:11pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
+    <p class="small muted">Port dari <a href="https://github.com/abidamassi/dcf-valuation-tool">abidamassi/dcf-valuation-tool</a> - math deterministic, audit-friendly.</p>
+
+    {% if dcf_friend.wacc_table %}
+    <h4 class="small" style="margin-top:6pt; font-weight:700;">WACC Breakdown</h4>
+    <div class="chart-svg">{{ m.svg_wacc_breakdown(dcf_friend.wacc_table) }}</div>
+    {% endif %}
+
+    {% if dcf_friend.sensitivity and dcf_friend.sensitivity.fair_value %}
+    <h4 class="small" style="margin-top:6pt; font-weight:700;">Sensitivity: WACC x Terminal Growth</h4>
+    <div class="chart-svg">{{ m.svg_sensitivity_heatmap(dcf_friend.sensitivity.fair_value,
+         dcf_friend.sensitivity.wacc_axis, dcf_friend.sensitivity.g_axis, dcf_friend.valuation.market_price if dcf_friend.valuation is defined else none) }}</div>
+    {% endif %}
+
+    {% if dcf_friend.scenarios %}
+    <h4 class="small" style="margin-top:6pt; font-weight:700;">Skenario Bear / Base / Bull</h4>
+    <div class="chart-svg">{{ m.svg_scenarios(dcf_friend.scenarios, dcf_friend.valuation.market_price if dcf_friend.valuation is defined else none) }}</div>
+    {% endif %}
+
+    {% if dcf_friend.valuation %}
+    <h4 class="small" style="margin-top:6pt; font-weight:700;">Bridge: Enterprise -> Equity Value</h4>
+    <div class="chart-svg">{{ m.svg_ev_equity_waterfall(dcf_friend.valuation) }}</div>
+    {% endif %}
+
+    {% if dcf_friend.recommendation %}
+    <p class="small" style="margin-top:4pt;"><strong>Rekomendasi:</strong>
+      {{ dcf_friend.recommendation.rating }}
+      {% if dcf_friend.recommendation.label %}({{ dcf_friend.recommendation.label }}){% endif %}
+      {% if dcf_friend.recommendation.note %} - {{ dcf_friend.recommendation.note }}{% endif %}
+    </p>
+    {% if dcf_friend.recommendation.reason_override %}
+    <p class="review-flag">{{ dcf_friend.recommendation.reason_override }}</p>
+    {% endif %}
+    {% endif %}
+
+    <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
+  </section>
+  {% endif %}
   {{ m.pagefoot(4) }}
 </div>
 

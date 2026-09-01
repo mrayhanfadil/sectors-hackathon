@@ -629,3 +629,30 @@ async def challenge(body: dict):
         "claim": claim,
         "note": "adversarial challenge stubbed — see agents/adversarial.py T09",
     }
+
+
+# ---------- dcf ({ticker}) ----------
+router_dcf = APIRouter(prefix="/api/dcf", tags=["dcf"])
+
+
+@router_dcf.get("/{ticker}", summary="Friend-style full DCF payload for a ticker")
+def dcf_full_endpoint(ticker: str, overrides: str | None = None):
+    """Friend-style full DCF payload for a ticker."""
+    try:
+        from ..engines import dcf_full
+    except ImportError:
+        from scripts.dcf_engine import dcf_full
+    ov = None
+    if overrides:
+        import json
+        try:
+            ov = json.loads(overrides)
+        except Exception:
+            ov = None
+    try:
+        result = dcf_full(ticker.upper(), overrides=ov)
+        result["provenance"] = result.get("provenance", "") + " :: /api/dcf endpoint"
+        return result
+    except Exception as e:
+        return {"error": str(e), "ticker": ticker, "provenance": "dcf_full error — fallback to /api/report"}
+
