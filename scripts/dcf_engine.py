@@ -24,8 +24,16 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import os
+import pathlib
+import statistics
 from typing import Any, Dict, List, Optional
 
+
+# =============================================================================
+# ORIGINAL / CLASSIC ENGINE FUNCTIONS
+# =============================================================================
 
 def wacc(
     rf: float,
@@ -157,6 +165,990 @@ def index_target(current: float, eps_growth: float, multiple: float = 1.0) -> Di
     }
 
 
+# =============================================================================
+# FRIEND'S PURE-MATH FUNCTIONS (s05 - s12)
+# =============================================================================
+
+class _NullFlags:
+    """An empty flag sink so sensitivity grids and batch runs don't flood logs."""
+    def warn(self, *a, **k): pass
+    def missing(self, *a, **k): pass
+    def zero(self, *a, **k): pass
+    def check_series(self, *a, **k): return True
+
+
+def beta_blume_adj(beta_raw: float) -> float:
+    """Blume adjusted beta = 0.67 * beta_raw + 0.33 * 1.00.
+
+    Pulls beta toward market mean of 1.00. Standard Bloomberg convention.
+    """
+    return round(0.67 * float(beta_raw) + 0.33 * 1.0, 6)
+
+
+def compute_wacc_full(
+    rf: float,
+    beta: float,
+    erp: float,
+    cod: float,
+    market_cap: float,
+    total_debt: float,
+    tax: float = 0.22,
+    size_premium: float = 0.0,
+    flags: Optional[Any] = None,
+    cod_spread_floor: float = 0.02,
+    cod_floor: float = 0.03,
+    cod_cap: float = 0.20,
+    wacc_floor: float = 0.06,
+    wacc_cap: float = 0.25,
+) -> Dict[str, Any]:
+    """Compute WACC with full breakdown, debt floor checks, and warnings.
+
+    Ke = Rf + beta * ERP + SizePremium
+    Kd floored at Rf + 200bps if debt > 0 and cod < Rf + 200bps
+    WACC = We * Ke + Wd * Kd * (1 - tax)
+    """
+    warnings: List[str] = []
+    ke = rf + beta * erp + size_premium
+
+    kd_method = "Interest Expense / average Total Debt"
+    total_debt = max(float(total_debt), 0.0)
+    market_cap = max(float(market_cap), 0.0)
+
+    if total_debt <= 0:
+        kd_pretax = rf + cod_spread_floor
+        kd_method = "No debt. Kd proxied as Rf + 200bps (zero debt weight)."
+        if flags and hasattr(flags, "warn"):
+            flags.warn("Cost of Debt", kd_method)
+    else:
+        floor_rel = rf + cod_spread_floor
+        floor_val = max(cod_floor, floor_rel)
+        if cod < floor_rel:
+            warn_msg = (
+                f"Computed Cost of Debt {cod*100:.2f}% is BELOW the risk-free rate + "
+                f"{cod_spread_floor*10000:.0f}bps ({floor_rel*100:.2f}%). "
+                f"Raised to {floor_rel*100:.2f}%."
+            )
+            warnings.append(warn_msg)
+            if flags and hasattr(flags, "warn"):
+                flags.warn("Cost of Debt", warn_msg)
+            kd_pretax = floor_rel
+            kd_method += " (raised to Rf + spread floor)"
+        else:
+            kd_pretax = cod
+
+        kd_pretax = max(min(kd_pretax, cod_cap), floor_val)
+
+    kd_aftertax = kd_pretax * (1.0 - tax)
+
+    total_cap = market_cap + total_debt
+    if total_cap > 0:
+        w_e = market_cap / total_cap
+        w_d = total_debt / total_cap
+    else:
+        w_e = 1.0
+        w_d = 0.0
+
+    wacc_raw = w_e * ke + w_d * kd_aftertax
+    wacc_val = max(min(wacc_raw, wacc_cap), wacc_floor)
+    if wacc_val != wacc_raw:
+        warnings.append(f"WACC {wacc_raw*100:.2f}% clipped to bounds [{wacc_floor*100:.2f}%, {wacc_cap*100:.2f}%]")
+
+    return {
+        "rf": round(rf, 6),
+        "erp": round(erp, 6),
+        "beta": round(beta, 6),
+        "beta_raw": round(beta, 6),
+        "beta_adj": round(beta, 6),
+        "beta_r2": None,
+        "beta_nobs": None,
+        "size_premium": round(size_premium, 6),
+        "ke": round(ke, 6),
+        "kd_pretax": round(kd_pretax, 6),
+        "kd_aftertax": round(kd_aftertax, 6),
+        "kd_method": kd_method,
+        "tax_rate": round(tax, 6),
+        "equity_value_mkt": round(market_cap, 2),
+        "debt_book": round(total_debt, 2),
+        "weight_equity": round(w_e, 6),
+        "weight_debt": round(w_d, 6),
+        "wacc_raw": round(wacc_raw, 6),
+        "wacc": round(wacc_val, 6),
+        "warnings": warnings,
+        "provenance": "Ke=Rf+beta*ERP+SizePrem; WACC=We*Ke+Wd*Kd*(1-t)",
+    }
+
+
+def wacc_table_dict(wacc_result: Dict[str, Any]) -> List[Dict[str, str]]:
+    """Format WACC breakdown rows for FE rendering."""
+    w = wacc_result
+    beta_raw_val = w.get("beta_raw", w.get("beta", 1.0))
+    beta_adj_val = w.get("beta_adj", w.get("beta", 1.0))
+    r2_val = w.get("beta_r2")
+
+    return [
+        {"label": "Risk-free rate (manual input)", "value": f"{w['rf']*100:.2f}%"},
+        {"label": "Equity Risk Premium (manual input)", "value": f"{w['erp']*100:.2f}%"},
+        {"label": "Beta raw (regression vs IHSG)", "value": f"{beta_raw_val:.3f}" if beta_raw_val is not None else "n/a"},
+        {"label": "Beta adjusted (Blume)", "value": f"{beta_adj_val:.3f}" if beta_adj_val is not None else "n/a"},
+        {"label": "Beta regression R-squared", "value": f"{r2_val:.3f}" if r2_val is not None else "n/a"},
+        {"label": "Size premium", "value": f"{w['size_premium']*100:.2f}%"},
+        {"label": "Cost of Equity (CAPM)", "value": f"{w['ke']*100:.2f}%"},
+        {"label": "Cost of Debt, pre-tax", "value": f"{w['kd_pretax']*100:.2f}%"},
+        {"label": "Effective tax rate", "value": f"{w['tax_rate']*100:.2f}%"},
+        {"label": "Cost of Debt, after-tax", "value": f"{w['kd_aftertax']*100:.2f}%"},
+        {"label": "Equity weight E/(D+E)", "value": f"{w['weight_equity']*100:.1f}%"},
+        {"label": "Debt weight D/(D+E)", "value": f"{w['weight_debt']*100:.1f}%"},
+        {"label": "WACC", "value": f"{w['wacc']*100:.2f}%"},
+    ]
+
+
+def project_fcff_simple(
+    revenue_t0: float,
+    g1: float,
+    g_terminal: float,
+    years: int = 5,
+    ebit_margin: float = 0.15,
+    tax: float = 0.22,
+    capex_pct: float = 0.06,
+    nwc_pct: float = 0.10,
+    da_pct: Optional[float] = None,
+    ebit_margin_target: Optional[float] = None,
+    invested_capital_t0: Optional[float] = None,
+    cap_terminal_at_g1: bool = True,
+) -> List[Dict[str, Any]]:
+    """Project FCFF over explicit forecast horizon with linear growth and margin fade.
+
+    Returns DataFrame-like list of dicts (plain Python, JSON-serializable).
+    """
+    N = int(years)
+    g1 = float(g1)
+    margin = float(ebit_margin)
+    g_term = float(g_terminal)
+    tax_rate = float(tax)
+
+    if cap_terminal_at_g1 and g_term > g1:
+        g_term = max(g1, 0.0)
+
+    da_r = float(da_pct) if da_pct is not None else 0.04
+    cx_r = float(capex_pct)
+    nwc_r = float(nwc_pct)
+
+    if g1 > 0 and cx_r < da_r:
+        cx_r = da_r
+
+    m_target = float(ebit_margin_target) if ebit_margin_target is not None else margin
+
+    rev0 = float(revenue_t0)
+    nwc0 = rev0 * nwc_r
+    prev_rev = rev0
+    prev_nwc = nwc0
+    prev_ic = float(invested_capital_t0) if invested_capital_t0 is not None else (rev0 * 0.5)
+
+    rows: List[Dict[str, Any]] = []
+    for t in range(1, N + 1):
+        if N > 1:
+            g_t = g1 - (g1 - g_term) * (t - 1) / (N - 1)
+            m_t = margin + (m_target - margin) * (t - 1) / (N - 1)
+        else:
+            g_t = g1
+            m_t = margin
+
+        rev = prev_rev * (1.0 + g_t)
+        ebit = rev * m_t
+        nopat = ebit * (1.0 - tax_rate)
+        da = rev * da_r
+        capex = rev * cx_r
+        nwc = rev * nwc_r
+        dnwc = nwc - prev_nwc
+
+        fcff = nopat + da - capex - dnwc
+        reinvest = capex - da + dnwc
+        rr = (reinvest / nopat) if nopat != 0 else None
+        roic = (nopat / prev_ic) if (prev_ic and prev_ic != 0) else None
+        implied_g = (rr * roic) if (rr is not None and roic is not None) else None
+
+        rows.append({
+            "year": t,
+            "growth": round(g_t, 6),
+            "revenue": round(rev, 2),
+            "ebit": round(ebit, 2),
+            "ebit_margin": round(m_t, 6),
+            "nopat": round(nopat, 2),
+            "da": round(da, 2),
+            "capex": round(capex, 2),
+            "nwc": round(nwc, 2),
+            "delta_nwc": round(dnwc, 2),
+            "fcff": round(fcff, 2),
+            "reinvestment_rate": round(rr, 6) if rr is not None else None,
+            "roic": round(roic, 6) if roic is not None else None,
+            "implied_growth": round(implied_g, 6) if implied_g is not None else None,
+        })
+
+        prev_rev = rev
+        prev_nwc = nwc
+        if prev_ic is not None:
+            prev_ic = prev_ic + reinvest
+
+    return rows
+
+
+def terminal_value_gordon(
+    fcff_last: float,
+    wacc: float,
+    g: float,
+    ebitda_last: Optional[float] = None,
+    min_spread: float = 0.04,
+    flags: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Gordon Growth terminal value: TV = FCFF_N * (1+g) / (WACC - g).
+
+    Cross-checks implied EV/EBITDA multiple.
+    """
+    g = float(g)
+    wacc = float(wacc)
+    fcff_last = float(fcff_last)
+    spread = wacc - g
+
+    if spread < min_spread:
+        reason = (
+            f"WACC ({wacc*100:.2f}%) is only {spread*100:.2f}% above terminal growth ({g*100:.2f}%). "
+            f"A minimum spread of {min_spread*10000:.0f}bps is required."
+        )
+        if flags and hasattr(flags, "warn"):
+            flags.warn("Terminal Value", reason)
+        return {
+            "terminal_growth": round(g, 6),
+            "wacc": round(wacc, 6),
+            "fcff_final": round(fcff_last, 2),
+            "fcff_terminal": None,
+            "tv_nominal": None,
+            "value": None,
+            "implied_exit_multiple": None,
+            "valid": False,
+            "reason": reason,
+        }
+
+    if fcff_last <= 0:
+        reason = f"Final year FCFF is not positive ({fcff_last:,.1f}). Gordon TV is not meaningful."
+        if flags and hasattr(flags, "warn"):
+            flags.warn("Terminal Value", reason)
+        return {
+            "terminal_growth": round(g, 6),
+            "wacc": round(wacc, 6),
+            "fcff_final": round(fcff_last, 2),
+            "fcff_terminal": None,
+            "tv_nominal": None,
+            "value": None,
+            "implied_exit_multiple": None,
+            "valid": False,
+            "reason": reason,
+        }
+
+    fcff_terminal = fcff_last * (1.0 + g)
+    tv = fcff_terminal / spread
+
+    implied_multiple = None
+    if ebitda_last is not None and ebitda_last > 0:
+        implied_multiple = round(tv / float(ebitda_last), 4)
+
+    return {
+        "terminal_growth": round(g, 6),
+        "wacc": round(wacc, 6),
+        "fcff_final": round(fcff_last, 2),
+        "fcff_terminal": round(fcff_terminal, 2),
+        "tv_nominal": round(tv, 2),
+        "value": round(tv, 2),
+        "implied_exit_multiple": implied_multiple,
+        "valid": True,
+        "reason": "",
+    }
+
+
+def tv_dependency_check(
+    pv_tv: float,
+    enterprise_value: float,
+    threshold: float = 0.80,
+    flags: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Check how much of enterprise value relies on terminal value perpetuity."""
+    if not enterprise_value or enterprise_value == 0:
+        return {"dependency_pct": 0.0, "dependency_flag": False, "share": 0.0, "flag": False}
+
+    share = float(pv_tv) / float(enterprise_value)
+    flag = bool(share >= threshold)
+    if flag and flags and hasattr(flags, "warn"):
+        flags.warn(
+            "Terminal value dependency",
+            f"{share*100:.1f}% of EV comes from terminal value (>= {threshold*100:.0f}% threshold)."
+        )
+    return {
+        "dependency_pct": round(share, 4),
+        "dependency_flag": flag,
+        "share": round(share, 4),
+        "flag": flag,
+    }
+
+
+def discount_and_bridge(
+    proj: List[Dict[str, Any]],
+    wacc: float,
+    terminal_value: Any,
+    snapshot: Dict[str, Any],
+    data: Optional[Dict[str, Any]] = None,
+    mid_year: bool = True,
+    flags: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Discount explicit cash flows and TV to enterprise value and bridge to equity value per share."""
+    wacc = float(wacc)
+    N = len(proj)
+
+    if isinstance(terminal_value, dict):
+        if not terminal_value.get("valid", True):
+            return {"valid": False, "reason": terminal_value.get("reason", "Invalid Terminal Value")}
+        tv_nominal = float(terminal_value.get("tv_nominal", terminal_value.get("value", 0.0)))
+        implied_exit = terminal_value.get("implied_exit_multiple")
+    else:
+        tv_nominal = float(terminal_value)
+        implied_exit = None
+
+    disc_rows: List[Dict[str, Any]] = []
+    pv_explicit = 0.0
+
+    for t in range(1, N + 1):
+        fcff = float(proj[t - 1]["fcff"])
+        exponent = (t - 0.5) if mid_year else float(t)
+        df = 1.0 / ((1.0 + wacc) ** exponent)
+        pv = fcff * df
+        pv_explicit += pv
+        disc_rows.append({
+            "year": t,
+            "fcff": round(fcff, 2),
+            "exponent": round(exponent, 2),
+            "discount_factor": round(df, 4),
+            "pv": round(pv, 2),
+        })
+
+    df_tv = 1.0 / ((1.0 + wacc) ** N)
+    pv_tv = tv_nominal * df_tv
+    enterprise_value = pv_explicit + pv_tv
+
+    dep = tv_dependency_check(pv_tv, enterprise_value, flags=flags)
+
+    cash = float(snapshot.get("cash", 0.0) or 0.0)
+    debt = float(snapshot.get("total_debt", snapshot.get("debt", 0.0)) or 0.0)
+    minority = float(snapshot.get("minority", 0.0) or 0.0)
+
+    equity_value = enterprise_value + cash - debt - minority
+
+    data_src = data if data is not None else snapshot
+    shares = float(data_src.get("shares_outstanding", data_src.get("shares_out", 1.0)) or 1.0)
+    price = float(data_src.get("price", data_src.get("last_price", 0.0)) or 0.0)
+
+    fv_per_share = (equity_value / shares) if shares > 0 else 0.0
+    upside = ((fv_per_share / price) - 1.0) if price > 0 else None
+
+    return {
+        "valid": True,
+        "pv_explicit": round(pv_explicit, 2),
+        "pv_terminal": round(pv_tv, 2),
+        "tv_nominal": round(tv_nominal, 2),
+        "tv_discount_factor": round(df_tv, 4),
+        "tv_share_of_ev": dep["dependency_pct"],
+        "tv_dependency_flag": dep["dependency_flag"],
+        "implied_exit_multiple": implied_exit,
+        "enterprise_value": round(enterprise_value, 2),
+        "cash": round(cash, 2),
+        "total_debt": round(debt, 2),
+        "minority": round(minority, 2),
+        "equity_value": round(equity_value, 2),
+        "shares_outstanding": shares,
+        "fair_value_per_share": round(fv_per_share, 2),
+        "market_price": price,
+        "upside": round(upside, 6) if upside is not None else None,
+        "wacc": round(wacc, 6),
+        "mid_year": mid_year,
+        "discount_table": disc_rows,
+    }
+
+
+def make_recommendation(
+    valuation: Dict[str, Any],
+    thresholds: Optional[Dict[str, float]] = None,
+    flags: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """Translate upside into BUY/HOLD/SELL rating with Review Required gate for extreme values."""
+    th = {
+        "buy": 0.10,
+        "sell": -0.10,
+        "review_up": 1.00,
+        "review_down": -0.50,
+    }
+    if thresholds:
+        th["buy"] = thresholds.get("buy", thresholds.get("buy_threshold", th["buy"]))
+        th["sell"] = thresholds.get("sell", thresholds.get("sell_threshold", th["sell"]))
+        th["review_up"] = thresholds.get("review_up", thresholds.get("review_upside_threshold", th["review_up"]))
+        th["review_down"] = thresholds.get("review_down", thresholds.get("review_downside_threshold", th["review_down"]))
+
+    upside = valuation.get("upside")
+    fv = valuation.get("fair_value_per_share", 0.0)
+    px = valuation.get("market_price", 0.0)
+
+    if upside is None or (isinstance(upside, float) and (math.isnan(upside) or math.isinf(upside))):
+        return {
+            "rating": "N/A",
+            "upside": None,
+            "label": "Cannot be rated",
+            "note": "Fair value or market price is unavailable.",
+        }
+
+    upside = float(upside)
+    if upside > th["buy"]:
+        rating, label = "BUY", "Undervalued"
+    elif upside < th["sell"]:
+        rating, label = "SELL", "Overvalued"
+    else:
+        rating, label = "HOLD", "Fairly valued"
+
+    ud_word = "upside" if upside >= 0 else "downside"
+    note = f"Model fair value IDR {fv:,.0f} versus market price IDR {px:,.0f}, {ud_word} {upside*100:+.1f}%."
+
+    result: Dict[str, Any] = {
+        "rating": rating,
+        "upside": round(upside, 6),
+        "label": label,
+        "note": note,
+        "threshold_buy": th["buy"],
+        "threshold_sell": th["sell"],
+    }
+
+    if upside > th["review_up"] or upside < th["review_down"]:
+        result["rating"] = "Review Required"
+        result["reason_override"] = (
+            "This result falls outside a defensible range for FCFF-based DCF. "
+            "The gap between fair value and market price is wide enough that "
+            "it more often signals a modelling or data issue than genuine "
+            "mispricing. Consider cross-checking with SOTP, Net Asset Value, "
+            "or relative valuation (EV/EBITDA, P/E against peers) before "
+            "drawing a conclusion."
+        )
+
+    return result
+
+
+def sensitivity_grid(
+    proj: List[Dict[str, Any]],
+    wacc_base: float,
+    g_base: float,
+    snapshot: Dict[str, Any],
+    data: Optional[Dict[str, Any]] = None,
+    steps: int = 2,
+    wacc_step: float = 0.005,
+    g_step: float = 0.0025,
+    flags: Optional[Any] = None,
+) -> Dict[str, Any]:
+    """WACC x Terminal growth sensitivity grid (2D list of lists)."""
+    wacc_axis = [round(wacc_base + i * wacc_step, 6) for i in range(-steps, steps + 1)]
+    g_axis = [round(g_base + j * g_step, 6) for j in range(-steps, steps + 1)]
+
+    fcff_final = float(proj[-1]["fcff"])
+    ebitda_final = float(proj[-1].get("ebit", 0.0) + proj[-1].get("da", 0.0))
+
+    fv_matrix: List[List[Optional[float]]] = []
+    up_matrix: List[List[Optional[float]]] = []
+
+    for w in wacc_axis:
+        row_fv: List[Optional[float]] = []
+        row_up: List[Optional[float]] = []
+        for g in g_axis:
+            tv = terminal_value_gordon(fcff_final, w, g, ebitda_final, min_spread=0.04, flags=None)
+            if not tv.get("valid"):
+                row_fv.append(None)
+                row_up.append(None)
+                continue
+            v = discount_and_bridge(proj, w, tv, snapshot, data, flags=_NullFlags())
+            if not v.get("valid"):
+                row_fv.append(None)
+                row_up.append(None)
+                continue
+            row_fv.append(round(v["fair_value_per_share"], 2))
+            row_up.append(round(v["upside"] * 100, 1) if v.get("upside") is not None else None)
+        fv_matrix.append(row_fv)
+        up_matrix.append(row_up)
+
+    valid_fvs = [x for row in fv_matrix for x in row if x is not None]
+    stats = {
+        "min": round(min(valid_fvs), 2) if valid_fvs else None,
+        "max": round(max(valid_fvs), 2) if valid_fvs else None,
+        "median": round(statistics.median(valid_fvs), 2) if valid_fvs else None,
+        "n_valid": len(valid_fvs),
+        "n_cells": len(wacc_axis) * len(g_axis),
+    }
+
+    return {
+        "fair_value": fv_matrix,
+        "upside": up_matrix,
+        "stats": stats,
+        "wacc_axis": wacc_axis,
+        "g_axis": g_axis,
+    }
+
+
+def scenarios_bull_bear(
+    proj_or_params: Any,
+    wacc_base: float,
+    g_base: float,
+    hist_std: Dict[str, float],
+    snapshot: Dict[str, Any],
+    data: Optional[Dict[str, Any]] = None,
+    k: float = 1.0,
+    g_shift: float = 0.005,
+    years: int = 5,
+    tax: float = 0.22,
+    capex_pct: float = 0.06,
+    nwc_pct: float = 0.10,
+    da_pct: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Bull, Base, Bear operational scenarios using historical standard deviations."""
+    if isinstance(proj_or_params, list) and len(proj_or_params) > 0:
+        base_g1 = float(proj_or_params[0]["growth"])
+        base_margin = float(proj_or_params[0]["ebit_margin"])
+        rev0 = float(snapshot.get("revenue", proj_or_params[0]["revenue"] / (1.0 + base_g1)))
+    else:
+        base_g1 = float(snapshot.get("g1", 0.08))
+        base_margin = float(snapshot.get("ebit_margin", 0.15))
+        rev0 = float(snapshot.get("revenue", 10000e9))
+
+    sd_g = float(hist_std.get("rev_growth_sd", hist_std.get("growth_sd", 0.03)))
+    sd_m = float(hist_std.get("ebit_margin_sd", hist_std.get("margin_sd", 0.01)))
+
+    specs = {
+        "BULL": {
+            "g1": base_g1 + k * sd_g,
+            "margin": base_margin + k * sd_m,
+            "g_term": g_base + g_shift,
+        },
+        "BASE": {
+            "g1": base_g1,
+            "margin": base_margin,
+            "g_term": g_base,
+        },
+        "BEAR": {
+            "g1": base_g1 - k * sd_g,
+            "margin": max(base_margin - k * sd_m, 0.01),
+            "g_term": max(g_base - g_shift, 0.0),
+        },
+    }
+
+    scen_out: Dict[str, Any] = {}
+    for name in ("BEAR", "BASE", "BULL"):
+        s = specs[name]
+        proj_sc = project_fcff_simple(
+            revenue_t0=rev0,
+            g1=s["g1"],
+            g_terminal=s["g_term"],
+            years=years,
+            ebit_margin=s["margin"],
+            tax=tax,
+            capex_pct=capex_pct,
+            nwc_pct=nwc_pct,
+            da_pct=da_pct,
+        )
+        fcff_last = proj_sc[-1]["fcff"]
+        ebitda_last = proj_sc[-1]["ebit"] + proj_sc[-1]["da"]
+        tv = terminal_value_gordon(fcff_last, wacc_base, s["g_term"], ebitda_last=ebitda_last, min_spread=0.04, flags=None)
+        if tv.get("valid"):
+            v = discount_and_bridge(proj_sc, wacc_base, tv, snapshot, data, flags=_NullFlags())
+            rec = make_recommendation(v)
+            scen_out[name] = {
+                "scenario": name,
+                "revenue_growth_y1": round(s["g1"], 6),
+                "ebit_margin": round(s["margin"], 6),
+                "terminal_growth": round(s["g_term"], 6),
+                "fair_value_per_share": round(v["fair_value_per_share"], 2),
+                "upside": round(v["upside"], 6) if v.get("upside") is not None else None,
+                "rating": rec["rating"],
+                "note": rec.get("note", ""),
+            }
+        else:
+            scen_out[name] = {
+                "scenario": name,
+                "revenue_growth_y1": round(s["g1"], 6),
+                "ebit_margin": round(s["margin"], 6),
+                "terminal_growth": round(s["g_term"], 6),
+                "fair_value_per_share": None,
+                "upside": None,
+                "rating": "N/A",
+                "note": tv.get("reason", ""),
+            }
+
+    return {
+        "BEAR": scen_out["BEAR"],
+        "BASE": scen_out["BASE"],
+        "BULL": scen_out["BULL"],
+    }
+
+
+def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
+    """Load default seed assumptions per archetype."""
+    t = ticker.upper().strip()
+    if t in ("MTEL", "TOWR", "TLKM"):
+        base = {
+            "ticker": t,
+            "rf": 0.0696,
+            "beta": 0.65,
+            "erp": 0.0889,
+            "cod": 0.06,
+            "we": 0.608,
+            "wd": 0.392,
+            "wacc": 0.101,
+            "g": 0.015,
+            "revenue": 9000e9,
+            "g1": 0.07,
+            "ebit_margin": 0.45,
+            "tax": 0.22,
+            "capex_pct": 0.20,
+            "nwc_pct": 0.05,
+            "shares_out": 81.5e9,
+            "shares_outstanding": 81.5e9,
+            "total_debt": 21430e9,
+            "net_debt": 21430e9,
+            "cash": 1643e9,
+            "minority": 0.0,
+            "ebitda": 7451e9,
+            "last_price": 460,
+            "price": 460,
+            "growth_sd": 0.03,
+            "margin_sd": 0.02,
+        }
+    elif t == "RATU":
+        base = {
+            "ticker": t,
+            "rf": 0.07,
+            "beta": 0.70,
+            "erp": 0.069,
+            "cod": 0.035,
+            "we": 1.0,
+            "wd": 0.0,
+            "wacc": 0.084,
+            "g": 0.025,
+            "revenue": 3000e9,
+            "g1": 0.10,
+            "ebit_margin": 0.32,
+            "tax": 0.22,
+            "capex_pct": 0.06,
+            "nwc_pct": 0.05,
+            "shares_out": 2.71e9,
+            "shares_outstanding": 2.71e9,
+            "total_debt": 0.0,
+            "net_debt": 0.0,
+            "cash": 500e9,
+            "minority": 0.0,
+            "ebitda": 585e9,
+            "last_price": 4200,
+            "price": 4200,
+            "growth_sd": 0.04,
+            "margin_sd": 0.03,
+        }
+    elif t == "CDIA":
+        base = {
+            "ticker": t,
+            "rf": 0.0696,
+            "beta": 0.90,
+            "erp": 0.06,
+            "cod": 0.05,
+            "we": 0.70,
+            "wd": 0.30,
+            "wacc": 0.09,
+            "g": 0.03,
+            "revenue": 15000e9,
+            "g1": 0.08,
+            "ebit_margin": 0.18,
+            "tax": 0.22,
+            "capex_pct": 0.08,
+            "nwc_pct": 0.08,
+            "shares_out": 124.8e9,
+            "shares_outstanding": 124.8e9,
+            "total_debt": 5000e9,
+            "net_debt": 5000e9,
+            "cash": 1200e9,
+            "minority": 0.0,
+            "ebitda": 2500e9,
+            "last_price": 645,
+            "price": 645,
+            "growth_sd": 0.05,
+            "margin_sd": 0.03,
+        }
+    elif t == "BBCA":
+        base = {
+            "ticker": t,
+            "rf": 0.0696,
+            "beta": 0.80,
+            "erp": 0.06,
+            "cod": 0.05,
+            "we": 1.0,
+            "wd": 0.0,
+            "wacc": 0.10,
+            "g": 0.04,
+            "revenue": 100000e9,
+            "g1": 0.09,
+            "ebit_margin": 0.50,
+            "tax": 0.22,
+            "capex_pct": 0.04,
+            "nwc_pct": 0.05,
+            "shares_out": 123.2e9,
+            "shares_outstanding": 123.2e9,
+            "total_debt": 0.0,
+            "net_debt": 0.0,
+            "cash": 50000e9,
+            "minority": 0.0,
+            "ebitda": 35000e9,
+            "last_price": 6350,
+            "price": 6350,
+            "growth_sd": 0.02,
+            "margin_sd": 0.02,
+        }
+    elif t == "ADRO":
+        base = {
+            "ticker": t,
+            "rf": 0.0696,
+            "beta": 0.95,
+            "erp": 0.06,
+            "cod": 0.05,
+            "we": 0.85,
+            "wd": 0.15,
+            "wacc": 0.09,
+            "g": 0.02,
+            "revenue": 60000e9,
+            "g1": 0.05,
+            "ebit_margin": 0.25,
+            "tax": 0.22,
+            "capex_pct": 0.08,
+            "nwc_pct": 0.08,
+            "shares_out": 28.8e9,
+            "shares_outstanding": 28.8e9,
+            "total_debt": 2000e9,
+            "net_debt": 2000e9,
+            "cash": 3500e9,
+            "minority": 0.0,
+            "ebitda": 8000e9,
+            "last_price": 2610,
+            "price": 2610,
+            "growth_sd": 0.08,
+            "margin_sd": 0.05,
+        }
+    else:
+        base = {
+            "ticker": t,
+            "rf": 0.065,
+            "beta": 1.0,
+            "erp": 0.07,
+            "cod": 0.085,
+            "we": 0.70,
+            "wd": 0.30,
+            "wacc": 0.10,
+            "g": 0.025,
+            "revenue": 10000e9,
+            "g1": 0.08,
+            "ebit_margin": 0.15,
+            "tax": 0.22,
+            "capex_pct": 0.06,
+            "nwc_pct": 0.10,
+            "shares_out": 10e9,
+            "shares_outstanding": 10e9,
+            "total_debt": 2000e9,
+            "net_debt": 2000e9,
+            "cash": 1000e9,
+            "minority": 0.0,
+            "ebitda": 2000e9,
+            "last_price": 1000,
+            "price": 1000,
+            "growth_sd": 0.03,
+            "margin_sd": 0.01,
+        }
+
+    # Attempt to load seed / assumptions files if available
+    cand_paths = [
+        pathlib.Path(f"data/assumptions/{t}.json"),
+        pathlib.Path("seed_assumptions.json"),
+        pathlib.Path("data/assumptions/README.json"),
+    ]
+    for p in cand_paths:
+        if p.exists():
+            try:
+                data = json.loads(p.read_text(encoding="utf-8"))
+                if isinstance(data, dict):
+                    if t in data and isinstance(data[t], dict):
+                        base.update({k: v for k, v in data[t].items() if v is not None})
+                    elif data.get("ticker") == t:
+                        base.update({k: v for k, v in data.items() if v is not None})
+            except Exception:
+                pass
+
+    return base
+
+
+def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Complete DCF valuation including WACC breakdown, FCFF projection, Gordon TV,
+
+    EV/Equity bridge, Recommendation rating with gates, WACC x g Sensitivity grid,
+    and Bull/Base/Bear scenarios. Ported from friend's s05-s12 math.
+    """
+    assum = _load_ticker_assumptions(ticker)
+    if overrides:
+        assum.update(overrides)
+
+    rf = float(assum.get("rf", 0.065))
+    beta = float(assum.get("beta", 1.0))
+    erp = float(assum.get("erp", 0.07))
+    cod = float(assum.get("cod", 0.085))
+    market_cap = float(assum.get("market_cap", (assum.get("shares_out", 1e9) * assum.get("last_price", 1000))))
+    total_debt = float(assum.get("total_debt", 0.0))
+    tax = float(assum.get("tax", 0.22))
+    size_premium = float(assum.get("size_premium", 0.0))
+
+    # 1. WACC
+    wacc_res = compute_wacc_full(
+        rf=rf,
+        beta=beta,
+        erp=erp,
+        cod=cod,
+        market_cap=market_cap,
+        total_debt=total_debt,
+        tax=tax,
+        size_premium=size_premium,
+    )
+    wacc_val = float(assum.get("wacc_override", wacc_res["wacc"]))
+    wacc_table = wacc_table_dict(wacc_res)
+
+    # 2. Forecast
+    rev0 = float(assum.get("revenue", 10000e9))
+    g1 = float(assum.get("g1", 0.08))
+    g_terminal = float(assum.get("g_terminal", assum.get("g", 0.025)))
+    years = int(assum.get("years", 5))
+    ebit_margin = float(assum.get("ebit_margin", 0.15))
+    capex_pct = float(assum.get("capex_pct", 0.06))
+    nwc_pct = float(assum.get("nwc_pct", 0.10))
+    da_pct = float(assum.get("da_pct", 0.04)) if "da_pct" in assum else None
+
+    proj = project_fcff_simple(
+        revenue_t0=rev0,
+        g1=g1,
+        g_terminal=g_terminal,
+        years=years,
+        ebit_margin=ebit_margin,
+        tax=tax,
+        capex_pct=capex_pct,
+        nwc_pct=nwc_pct,
+        da_pct=da_pct,
+    )
+
+    # 3. Terminal value
+    fcff_final = float(proj[-1]["fcff"])
+    ebitda_final = float(proj[-1]["ebit"] + proj[-1]["da"])
+    tv_res = terminal_value_gordon(
+        fcff_last=fcff_final,
+        wacc=wacc_val,
+        g=g_terminal,
+        ebitda_last=ebitda_final,
+    )
+
+    # 4. Valuation bridge
+    snapshot = {
+        "cash": float(assum.get("cash", 0.0)),
+        "total_debt": total_debt,
+        "minority": float(assum.get("minority", 0.0)),
+        "ebitda": float(assum.get("ebitda", ebitda_final)),
+        "revenue": rev0,
+    }
+    data_dict = {
+        "shares_outstanding": float(assum.get("shares_out", assum.get("shares_outstanding", 1.0))),
+        "price": float(assum.get("last_price", assum.get("price", 1000.0))),
+    }
+    val_res = discount_and_bridge(
+        proj=proj,
+        wacc=wacc_val,
+        terminal_value=tv_res,
+        snapshot=snapshot,
+        data=data_dict,
+        mid_year=bool(assum.get("mid_year", True)),
+    )
+
+    # 5. Recommendation
+    thresholds = {
+        "buy": float(assum.get("buy_threshold", 0.10)),
+        "sell": float(assum.get("sell_threshold", -0.10)),
+        "review_up": float(assum.get("review_upside_threshold", 1.00)),
+        "review_down": float(assum.get("review_downside_threshold", -0.50)),
+    }
+    rec_res = make_recommendation(val_res, thresholds=thresholds)
+
+    # 6. Sensitivity grid
+    sens_res = sensitivity_grid(
+        proj=proj,
+        wacc_base=wacc_val,
+        g_base=g_terminal,
+        snapshot=snapshot,
+        data=data_dict,
+        steps=int(assum.get("sens_steps", 2)),
+        wacc_step=float(assum.get("sens_wacc_step", 0.005)),
+        g_step=float(assum.get("sens_g_step", 0.0025)),
+    )
+
+    # 7. Bull/Base/Bear scenarios
+    hist_std = {
+        "rev_growth_sd": float(assum.get("growth_sd", 0.03)),
+        "ebit_margin_sd": float(assum.get("margin_sd", 0.01)),
+    }
+    scen_res = scenarios_bull_bear(
+        proj_or_params=proj,
+        wacc_base=wacc_val,
+        g_base=g_terminal,
+        hist_std=hist_std,
+        snapshot=snapshot,
+        data=data_dict,
+        years=years,
+        tax=tax,
+        capex_pct=capex_pct,
+        nwc_pct=nwc_pct,
+        da_pct=da_pct,
+    )
+
+    rec_payload: Dict[str, Any] = {
+        "rating": rec_res.get("rating"),
+        "upside": rec_res.get("upside"),
+        "label": rec_res.get("label"),
+        "note": rec_res.get("note"),
+    }
+    if "reason_override" in rec_res:
+        rec_payload["reason_override"] = rec_res["reason_override"]
+
+    return {
+        "wacc": wacc_res,
+        "wacc_table": wacc_table,
+        "projection": proj,
+        "terminal": {
+            "value": tv_res.get("tv_nominal"),
+            "pv": val_res.get("pv_terminal"),
+            "implied_ev_ebitda": tv_res.get("implied_exit_multiple"),
+            "dependency_pct": val_res.get("tv_share_of_ev"),
+            "dependency_flag": val_res.get("tv_dependency_flag"),
+        },
+        "valuation": {
+            "pv_explicit": val_res.get("pv_explicit"),
+            "pv_terminal": val_res.get("pv_terminal"),
+            "enterprise_value": val_res.get("enterprise_value"),
+            "equity_value": val_res.get("equity_value"),
+            "fair_value_per_share": val_res.get("fair_value_per_share"),
+            "market_price": val_res.get("market_price"),
+            "upside": val_res.get("upside"),
+        },
+        "recommendation": rec_payload,
+        "sensitivity": sens_res,
+        "scenarios": scen_res,
+        "provenance": "dcf_full: wacc+sens+scenarios from friend's s05-s12",
+    }
+
+
 def _parse_list(s: str) -> List[float]:
     return [float(x) for x in s.replace("[", "").replace("]", "").split(",") if x.strip()]
 
@@ -185,6 +1177,9 @@ def main() -> None:
     for a in ("ebitda", "multiple", "shares", "net_debt", "cash"):
         p.add_argument(f"--{a}", type=float, required=(a in ("ebitda", "multiple")))
 
+    p = sub.add_parser("dcf_full")
+    p.add_argument("--ticker", type=str, required=True)
+
     args = ap.parse_args()
     if args.cmd == "wacc":
         out = wacc(args.rf, args.beta, args.erp, args.cod, args.we, args.wd, args.tax)
@@ -193,10 +1188,15 @@ def main() -> None:
             _parse_list(args.fcf), args.wacc, args.g, args.shares, args.cash,
             args.net_debt, args.tv, args.mid_year, args.year0, args.fcfe,
         )
-    else:
+    elif args.cmd == "ev_ebitda":
         out = ev_ebitda(args.ebitda, args.multiple, args.shares, args.net_debt, args.cash)
+    elif args.cmd == "dcf_full":
+        out = dcf_full(args.ticker)
+    else:
+        out = {"error": "unknown command"}
     print(json.dumps(out, indent=2, ensure_ascii=False))
 
 
 if __name__ == "__main__":
     main()
+

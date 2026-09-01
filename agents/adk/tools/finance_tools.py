@@ -345,3 +345,15 @@ DETERMINISTIC_TOOLS = [
     calc_historical_bands,
     calc_ratios,
 ]
+
+# friend-derived math (port from abidamassi/dcf-valuation-tool, s05-s12)
+from .dcf_friend import (
+    calc_wacc_full,
+    calc_fcff_projection,
+    calc_terminal_value_check,
+    calc_dcf_full_valuation,
+    calc_recommendation,
+    calc_sensitivity_grid,
+    calc_scenarios,
+)
+

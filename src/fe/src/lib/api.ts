@@ -472,7 +472,7 @@ export async function fetchPdf(ticker: string): Promise<void> {
 }
 
 // ---------------------------------------------------------------------------
-// Mock Sectors v2 Mirrors (Free Public Upstream Data)
+// Free Public Upstream Data (Yahoo Finance .JK + IDX Keterbukaan)
 // ---------------------------------------------------------------------------
 
 export type DividendItem = {
@@ -611,4 +611,125 @@ export async function fetchNews(ticker: string, limit = 30): Promise<NewsRespons
     })
   )
 }
+
+// ---------------------------------------------------------------------------
+// DCF Friend-Style Engine Types & API
+// ---------------------------------------------------------------------------
+
+export type DcfWaccResult = {
+  rf: number
+  beta: number
+  erp: number
+  cod: number
+  ke: number
+  kd_pretax: number
+  kd_aftertax: number
+  tax_rate: number
+  size_premium: number
+  equity_value_mkt?: number
+  debt_book?: number
+  weight_equity: number
+  weight_debt: number
+  wacc_raw?: number
+  wacc: number
+  warnings?: string[]
+  provenance?: string
+}
+
+export type DcfWaccTableRow = {
+  label: string
+  value: string
+}
+
+export type DcfProjectionRow = {
+  year: number
+  growth: number
+  revenue: number
+  ebit: number
+  ebit_margin: number
+  nopat: number
+  da: number
+  capex: number
+  nwc: number
+  delta_nwc: number
+  fcff: number
+  reinvestment_rate?: number | null
+  roic?: number | null
+  implied_growth?: number | null
+}
+
+export type DcfTerminal = {
+  value?: number | null
+  pv?: number | null
+  implied_ev_ebitda?: number | null
+  dependency_pct?: number | null
+  dependency_flag?: boolean
+}
+
+export type DcfValuation = {
+  pv_explicit?: number | null
+  pv_terminal?: number | null
+  enterprise_value?: number | null
+  cash?: number | null
+  total_debt?: number | null
+  minority?: number | null
+  equity_value?: number | null
+  fair_value_per_share?: number | null
+  market_price?: number | null
+  upside?: number | null
+}
+
+export type DcfRecommendation = {
+  rating: "BUY" | "HOLD" | "SELL" | "Review Required" | string
+  upside?: number | null
+  label?: string
+  note?: string
+  reason_override?: string
+}
+
+export type DcfSensitivity = {
+  fair_value: (number | null)[][]
+  upside: (number | null)[][]
+  wacc_axis: number[]
+  g_axis: number[]
+  stats?: {
+    min?: number | null
+    max?: number | null
+    median?: number | null
+    n_valid?: number
+    n_cells?: number
+  }
+}
+
+export type DcfScenarioItem = {
+  scenario: "BEAR" | "BASE" | "BULL" | string
+  revenue_growth_y1: number
+  ebit_margin: number
+  terminal_growth: number
+  fair_value_per_share: number | null
+  upside: number | null
+  rating: string
+  note?: string
+}
+
+export type DcfFriendPayload = {
+  wacc: DcfWaccResult
+  wacc_table: DcfWaccTableRow[]
+  projection: DcfProjectionRow[]
+  terminal: DcfTerminal
+  valuation: DcfValuation
+  recommendation: DcfRecommendation
+  sensitivity: DcfSensitivity
+  scenarios: Record<string, DcfScenarioItem>
+  provenance?: string
+  error?: string
+}
+
+export async function fetchDcfFull(ticker: string): Promise<DcfFriendPayload | { error: string }> {
+  const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") || ""
+  const r = await fetch(`${base}/api/dcf/${encodeURIComponent(ticker)}`)
+  if (!r.ok) return { error: `HTTP ${r.status}` }
+  return await r.json()
+}
+
 

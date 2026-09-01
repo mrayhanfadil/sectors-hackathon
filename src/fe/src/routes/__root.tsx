@@ -46,7 +46,7 @@ function RootComponent() {
         <Outlet />
       </main>
       <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        ADK live trace (Muse Spark 1M via CommandCode bridge) - BE FastAPI :8777 - Mock Sectors v2 endpoints (corporate-actions, quarterly-financials, news, filings) - FE CSR Vite + TanStack Query/Router - Pages *.pages.dev - Bukan saran investasi
+        Bukan saran investasi — untuk riset dan edukasi saja.
       </footer>
     </div>
   )

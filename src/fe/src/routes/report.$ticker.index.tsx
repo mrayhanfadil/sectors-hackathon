@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { fetchReport, fetchPdf } from "@/lib/api"
+import { DcfFriend } from "@/components/DcfFriend"
 
 export const Route = (createFileRoute as any)("/report/$ticker/")({ component: ReportPage })
 
@@ -255,6 +256,9 @@ function ReportPage() {
           )}
         </Card>
       </div>
+
+      {/* DCF Friend-style Analysis */}
+      <DcfFriend ticker={tk} />
 
       {/* Key Takeaways + Shareholder + ESG */}
       {(takeaways.length > 0 || hasShareholders || r.cover?.esg?.found) && (

@@ -32,7 +32,7 @@ from .config import get_settings
 from .cache import get_cache
 from .stockdata import get_stockdata
 from .logging_config import setup_logging, ProductionHardeningMiddleware
-from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge
+from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf
 from .routers.agent import router_agent
 from .routers.mock_sectors import router_mock_sectors, get_mock_sectors_status
 
@@ -129,6 +129,7 @@ def create_app() -> FastAPI:
     app.include_router(router_mock_sectors, prefix="/api/mock", tags=["mock-sectors"])
     if router_pdf is not None:
         app.include_router(router_pdf, tags=["pdf"])
+    app.include_router(router_dcf, tags=["dcf"])
 
     @app.get("/", include_in_schema=False)
     async def root():
@@ -138,6 +139,7 @@ def create_app() -> FastAPI:
             "health": "/api/health",
             "endpoints": [
                 "/api/report/{ticker}",
+                "/api/dcf/{ticker}",
                 "/api/outlook",
                 "/api/news?ticker=BBCA",
                 "/api/sentiment?ticker=BBCA",

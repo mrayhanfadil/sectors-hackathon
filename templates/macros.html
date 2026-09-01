@@ -215,6 +215,196 @@
   </svg>
 {%- endmacro %}
 
+{% macro svg_wacc_breakdown(rows) -%}
+  {% set W = 680 %}
+  {% set row_h = 16 %}
+  {% set pad_x = 12 %}
+  {% set n_rows = rows|length if rows else 0 %}
+  {% set H = 26 + (n_rows * row_h) %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="WACC Breakdown">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
+    <rect x="0" y="0" width="{{ W }}" height="26" rx="4" fill="#0B1F3A"/>
+    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
+    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
+    {% for r in rows %}
+      {% set y = 26 + loop.index0 * row_h %}
+      {% set lbl = r.label if r.label is defined else (r[0] if r is sequence else r) %}
+      {% set val = r.value if r.value is defined else (r[1] if r is sequence else '') %}
+      {% set is_last = loop.last %}
+      {% if is_last %}
+        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#E1ECF6"/>
+      {% elif loop.index0 % 2 == 1 %}
+        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#F4F8FC"/>
+      {% endif %}
+      <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D6E2EE" stroke-width="0.5"/>
+      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0B1F3A">{{ lbl }}</text>
+      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val }}</text>
+    {% endfor %}
+  </svg>
+{%- endmacro %}
+
+{% macro svg_sensitivity_heatmap(matrix, wacc_axis, g_axis, price, currency="IDR") -%}
+  {% set W = 680 %}{% set H = 340 %}
+  {% set pad_l = 80 %}{% set pad_r = 20 %}{% set pad_t = 60 %}{% set pad_b = 30 %}
+  {% set chart_w = W - pad_l - pad_r %}
+  {% set chart_h = H - pad_t - pad_b %}
+  {% set n_cols = g_axis|length if g_axis else 1 %}
+  {% set n_rows = wacc_axis|length if wacc_axis else 1 %}
+  {% set cell_w = chart_w / n_cols %}
+  {% set cell_h = chart_h / n_rows %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Sensitivitas WACC x Terminal Growth">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Sensitivitas WACC x Terminal Growth</text>
+    {% if price and price > 0 %}
+    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Poppins, Arial, sans-serif" fill="#63748A">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
+    {% endif %}
+    <!-- Axis title -->
+    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#63748A" text-anchor="end">WACC \ g</text>
+    <!-- Column headers (g) -->
+    {% for g in g_axis or [] %}
+      {% set x_center = pad_l + loop.index0 * cell_w + cell_w / 2 %}
+      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
+    {% endfor %}
+    <!-- Rows (WACC) & Cells -->
+    {% for w in wacc_axis or [] %}
+      {% set row_idx = loop.index0 %}
+      {% set y_top = pad_t + row_idx * cell_h %}
+      {% set y_center = y_top + cell_h / 2 %}
+      <!-- Y label -->
+      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
+      {% set row_vals = matrix[row_idx] if (matrix and matrix|length > row_idx) else [] %}
+      {% for val in row_vals %}
+        {% set col_idx = loop.index0 %}
+        {% set x_left = pad_l + col_idx * cell_w %}
+        {% set x_center = x_left + cell_w / 2 %}
+        {% set up = ((val - price) / price * 100) if (price and price > 0 and val is not none and val is number) else none %}
+        {% if val is none %}
+          {% set bg = "#F4F8FC" %}{% set fg = "#63748A" %}{% set txt = "N/A" %}
+        {% elif up is none %}
+          {% set bg = "#E1ECF6" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+        {% elif up < -10 %}
+          {% set bg = "#FADBD8" %}{% set fg = "#78281F" %}{% set txt = val|idr if val is defined else val %}
+        {% elif up < 0 %}
+          {% set bg = "#FCEAE8" %}{% set fg = "#C0392B" %}{% set txt = val|idr if val is defined else val %}
+        {% elif up <= 10 %}
+          {% set bg = "#E1ECF6" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+        {% elif up <= 25 %}
+          {% set bg = "#A9C9E8" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+        {% else %}
+          {% set bg = "#0B1F3A" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
+        {% endif %}
+        <rect x="{{ x_left + 1 }}" y="{{ y_top + 1 }}" width="{{ cell_w - 2 }}" height="{{ cell_h - 2 }}" rx="3" fill="{{ bg }}" stroke="#D6E2EE" stroke-width="0.5"/>
+        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
+        {% if up is not none %}
+        <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
+        {% endif %}
+      {% endfor %}
+    {% endfor %}
+  </svg>
+{%- endmacro %}
+
+{% macro svg_scenarios(scenarios, price) -%}
+  {% set W = 680 %}{% set H = 220 %}
+  {% set pad_l = 60 %}{% set pad_r = 30 %}{% set pad_t = 45 %}{% set pad_b = 35 %}
+  {% set chart_w = W - pad_l - pad_r %}
+  {% set chart_h = H - pad_t - pad_b %}
+  {% set bear = scenarios.BEAR if scenarios.BEAR is defined else (scenarios.bear if scenarios.bear is defined else {}) %}
+  {% set base = scenarios.BASE if scenarios.BASE is defined else (scenarios.base if scenarios.base is defined else {}) %}
+  {% set bull = scenarios.BULL if scenarios.BULL is defined else (scenarios.bull if scenarios.bull is defined else {}) %}
+  {% set bear_v = bear.fair_value_per_share if bear.fair_value_per_share is defined else (bear.fv if bear.fv is defined else 0) %}
+  {% set base_v = base.fair_value_per_share if base.fair_value_per_share is defined else (base.fv if base.fv is defined else 0) %}
+  {% set bull_v = bull.fair_value_per_share if bull.fair_value_per_share is defined else (bull.fv if bull.fv is defined else 0) %}
+  {% set px = price if price is defined and price else 0 %}
+  {% set all_v = [bear_v or 0, base_v or 0, bull_v or 0, px or 0] %}
+  {% set vmax = (all_v | max) * 1.25 if all_v else 1 %}
+  {% if vmax <= 0 %}{% set vmax = 1 %}{% endif %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Skenario Bear / Base / Bull vs Harga Pasar">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Skenario Bear / Base / Bull vs Harga Pasar</text>
+    <!-- Background Grid -->
+    {% for i in range(4) %}
+      {% set y = pad_t + (i * chart_h / 3) %}
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#E4EEF7" stroke-width="0.5" stroke-dasharray="3 3"/>
+    {% endfor %}
+    <!-- Market Price line -->
+    {% if px > 0 %}
+      {% set y_px = pad_t + chart_h - (px / vmax * chart_h) %}
+      <line x1="{{ pad_l }}" y1="{{ y_px }}" x2="{{ W - pad_r }}" y2="{{ y_px }}" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="4 3"/>
+      <text x="{{ pad_l + 6 }}" y="{{ y_px - 4 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#C0392B">Harga Pasar: Rp {{ px|idr if px is defined else px }}</text>
+    {% endif %}
+    <!-- 3 Bars -->
+    {% set items = [
+      {"name": "BEAR", "val": bear_v, "rat": bear.rating if bear.rating is defined else "", "fill": "#E1ECF6", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"},
+      {"name": "BASE", "val": base_v, "rat": base.rating if base.rating is defined else "", "fill": "#0B1F3A", "stroke": "#0B1F3A", "text_fg": "#0B1F3A"},
+      {"name": "BULL", "val": bull_v, "rat": bull.rating if bull.rating is defined else "", "fill": "#A9C9E8", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"}
+    ] %}
+    {% set bar_w = 90 %}
+    {% for item in items %}
+      {% set cx = pad_l + (loop.index0 * 2 + 1) * (chart_w / 6) %}
+      {% set bx = cx - bar_w / 2 %}
+      {% set val = item.val or 0 %}
+      {% set bh = (val / vmax * chart_h) if vmax > 0 else 0 %}
+      {% set by = pad_t + chart_h - bh %}
+      <rect x="{{ bx }}" y="{{ by }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ item.fill }}" stroke="{{ item.stroke }}" stroke-width="1"/>
+      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
+      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ item.name }}</text>
+    {% endfor %}
+  </svg>
+{%- endmacro %}
+
+{% macro svg_ev_equity_waterfall(valuation) -%}
+  {% set W = 680 %}{% set H = 220 %}
+  {% set pad_l = 40 %}{% set pad_r = 20 %}{% set pad_t = 45 %}{% set pad_b = 42 %}
+  {% set chart_w = W - pad_l - pad_r %}
+  {% set chart_h = H - pad_t - pad_b %}
+  {% set ev_val = valuation.enterprise_value if valuation.enterprise_value is defined and valuation.enterprise_value is not none else 0 %}
+  {% set scale = 1000000000.0 if (ev_val and ev_val > 100000000) else 1.0 %}
+  {% set pv_exp = ((valuation.pv_explicit if valuation.pv_explicit is defined and valuation.pv_explicit is not none else 0) / scale) %}
+  {% set pv_term = ((valuation.pv_terminal if valuation.pv_terminal is defined and valuation.pv_terminal is not none else 0) / scale) %}
+  {% set ev = (ev_val / scale) if ev_val else (pv_exp + pv_term) %}
+  {% set cash = ((valuation.cash if valuation.cash is defined and valuation.cash is not none else 0) / scale) %}
+  {% set debt = ((valuation.total_debt if valuation.total_debt is defined and valuation.total_debt is not none else 0) / scale) %}
+  {% set minority = ((valuation.minority if valuation.minority is defined and valuation.minority is not none else 0) / scale) %}
+  {% set eq_raw = valuation.equity_value if valuation.equity_value is defined and valuation.equity_value is not none else none %}
+  {% set eq = (eq_raw / scale) if eq_raw is not none else (ev + cash - debt - minority) %}
+  {% set peak = [ev + cash, ev, eq, pv_exp + pv_term] | max %}
+  {% set vmax = (peak * 1.22) if peak > 0 else 1 %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Bridge: PV FCFF -> Equity Value (IDR bn)">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
+    <!-- Background Grid -->
+    {% for i in range(4) %}
+      {% set y = pad_t + (i * chart_h / 3) %}
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#E4EEF7" stroke-width="0.5" stroke-dasharray="3 3"/>
+    {% endfor %}
+    {% set bars = [
+      {"l1": "PV", "l2": "Explicit", "bot": 0, "top": pv_exp, "val": pv_exp, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
+      {"l1": "PV", "l2": "Terminal", "bot": pv_exp, "top": pv_exp + pv_term, "val": pv_term, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
+      {"l1": "EV", "l2": "Total", "bot": 0, "top": ev, "val": ev, "fill": "#0B1F3A", "stroke": "#0B1F3A", "sign": ""},
+      {"l1": "Cash", "l2": "", "bot": ev, "top": ev + cash, "val": cash, "fill": "#1E8F5F", "stroke": "#1E8F5F", "sign": "+"},
+      {"l1": "Total", "l2": "Debt", "bot": ev + cash - debt, "top": ev + cash, "val": -debt, "fill": "#C0392B", "stroke": "#C0392B", "sign": "-"},
+      {"l1": "Minority", "l2": "Int.", "bot": ev + cash - debt - minority, "top": ev + cash - debt, "val": -minority, "fill": "#C0392B", "stroke": "#C0392B", "sign": "-"},
+      {"l1": "Equity", "l2": "Value", "bot": 0, "top": eq, "val": eq, "fill": "#0B1F3A", "stroke": "#0B1F3A", "sign": ""}
+    ] %}
+    {% set n_bars = 7 %}
+    {% set bar_w = 48 %}
+    {% set slot_w = chart_w / n_bars %}
+    {% for b in bars %}
+      {% set cx = pad_l + (loop.index0 + 0.5) * slot_w %}
+      {% set bx = cx - bar_w / 2 %}
+      {% set y_top = pad_t + chart_h - (b.top / vmax * chart_h) %}
+      {% set y_bot = pad_t + chart_h - (b.bot / vmax * chart_h) %}
+      {% set bh = [y_bot - y_top, 2] | max %}
+      <rect x="{{ bx }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ b.fill }}" stroke="{{ b.stroke }}" stroke-width="1"/>
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.0f"|format(b.val) }}</text>
+      <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
+      {% if b.l2 %}
+      <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
+      {% endif %}
+    {% endfor %}
+  </svg>
+{%- endmacro %}
+
 {# ------------------------------------------------------------------ Chart.js bootstrap #}
 {% macro chartjs() -%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
