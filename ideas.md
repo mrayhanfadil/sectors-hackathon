@@ -124,8 +124,12 @@ Fill one row per candidate. Pick the idea with the lowest #1 risk.
 
 ## Decision (lock this section once chosen)
 
-> **Track:** TBD
-> **Idea:** TBD
-> **One-sentence problem statement:** TBD
-> **Intended audience:** TBD
-> **Locked at:** TBD
+> **Track:** T03 Market Intelligence
+> **Idea:** Institutional-grade equity report (cover: thesis/valuation/KPI/risks/ESG/holders/sentiment + adversarial challenge)
+> **One-sentence problem statement:** Retail IDX investors get institutional-grade equity research (full DCF+SOTP+GGM+blended+bands+KPI+sentiment+adversarial defense) with citations per claim and a live challenge interface — without paying Rp 5-50jt/year for a Bloomberg + Maybank/BCA Sekuritas subscription.
+> **Intended audience:** Indonesian retail investors (multi-bank user, ages 22-35) investing ≤Rp 100jt in IDX blue-chips, want institutional rigor without analyst jargon — plus OJK compliance (informasi, bukan saran investasi).
+> **Locked at:** 2026-09-01 09:42 WIB (feat/institutional-report @ 9e9167b)
+>
+> **Quintet ticker (cover semua archetype engine):** RATU (single/DCF+multiples), CDIA (SOTP+revision), MTEL (infra recurring+blended 60/40), BBCA (bank/GGM), ADRO (SOTP spin-off).
+>
+> **Why we chose T03 over T02 Asing Radar (F3 score 8.13) and T01 Macro-to-Micro Translator (4.50):** Code sudah hidup di `feat/institutional-report` (commit 9e9167b, 12/12 tests passing, FE build 162 modules). Switching now = sunk cost 5 days of Kanban work + 30 hours of lane dispatches. Institutional report juga lebih kuat di **Technical depth (30%)** dan **real-world usability (40%)** — judges reward "what a real person uses today" lebih dari clever prototype. Asing Radar tetap arsitektural-elegant tapi kategori sempit (10+10 ticker/day) vs institutional report yang universal (5 archetype × 11 agent = derived signal yang jauh lebih kaya).
