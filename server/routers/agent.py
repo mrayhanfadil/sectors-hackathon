@@ -24,7 +24,7 @@ import time
 import logging
 from typing import Any, AsyncGenerator
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Query, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import BaseModel
 
@@ -410,13 +410,24 @@ def list_agent_runs(ticker: str | None = Query(None), limit: int = Query(20, le=
     return {"runs": AgentRunStore().list_runs(ticker=ticker, limit=limit)}
 
 
+@router_agent.get("/api/agent/runs/latest", summary="Get latest completed/terminal ADK run + event trace")
+def get_latest_agent_run(ticker: str = Query("BBCA", description="IDX ticker, e.g. BBCA")):
+    from agents.adk.storage import AgentRunStore
+    store = AgentRunStore()
+    t = (ticker or "BBCA").upper().strip()
+    run = store.get_latest_completed(t)
+    if not run:
+        return Response(status_code=204)
+    run_with_events = store.get_run_with_events(run["run_id"])
+    return run_with_events or run
+
+
 @router_agent.get("/api/agent/runs/{run_id}", summary="Get one ADK run + its event trace")
 def get_agent_run(run_id: str):
     from agents.adk.storage import AgentRunStore
     store = AgentRunStore()
-    run = store.get_run(run_id)
+    run = store.get_run_with_events(run_id)
     if not run:
         return JSONResponse({"error": "not found"}, status_code=404)
-    run["events"] = store.get_events(run_id)
     return run
 

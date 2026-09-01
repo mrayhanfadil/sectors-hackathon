@@ -290,6 +290,109 @@ async def report_ticker(
     return payload
 
 
+# ---------- report/{ticker}/run ----------
+@router_report.get("/api/report/{ticker}/run", summary="Latest ADK run summary for ticker")
+def report_ticker_run(ticker: str):
+    """Return latest ADK run summary for ticker from SQLite.
+    Always returns 200 (no 404) with has_run=True/False.
+    """
+    t = ticker.upper().strip()
+    try:
+        from agents.adk.storage import AgentRunStore
+
+        store = AgentRunStore()
+        run = store.get_latest_completed(t)
+    except Exception:
+        run = None
+
+    if not run:
+        return {
+            "has_run": False,
+            "run_id": None,
+            "status": None,
+            "n_events": 0,
+            "started_at": None,
+            "finished_at": None,
+            "last_text": None,
+            "error": None,
+        }
+
+    return {
+        "has_run": True,
+        "run_id": run.get("run_id"),
+        "status": run.get("status"),
+        "n_events": run.get("n_events") if run.get("n_events") is not None else 0,
+        "started_at": run.get("started_at"),
+        "finished_at": run.get("finished_at"),
+        "last_text": run.get("last_text"),
+        "error": run.get("error"),
+    }
+
+
+# ---------- report/{ticker}/log ----------
+@router_report.get("/api/report/{ticker}/log", summary="Latest ADK run log for ticker")
+def report_ticker_log(ticker: str):
+    """Return latest ADK run log and recent history for a ticker from SQLite.
+    Always returns 200 (no 404) with has_run=True/False.
+    """
+    t = ticker.upper().strip()
+    try:
+        from agents.adk.storage import AgentRunStore
+
+        store = AgentRunStore()
+        runs = store.list_runs(ticker=t, limit=5)
+    except Exception:
+        runs = []
+
+    if not runs:
+        return {
+            "ticker": t,
+            "has_run": False,
+            "log": None,
+            "history": [],
+        }
+
+    def _calc_duration(started_at: float | None, finished_at: float | None) -> float | None:
+        if started_at is not None and finished_at is not None:
+            return round(finished_at - started_at, 2)
+        return None
+
+    latest = runs[0]
+    last_text = latest.get("last_text")
+    last_text_preview = last_text[:200] if last_text else None
+
+    log_payload = {
+        "run_id": latest.get("run_id"),
+        "status": latest.get("status"),
+        "started_at": latest.get("started_at"),
+        "finished_at": latest.get("finished_at"),
+        "duration_s": _calc_duration(latest.get("started_at"), latest.get("finished_at")),
+        "provider": latest.get("provider") or "minimax",
+        "model": latest.get("model") or "minimax/MiniMax-M3",
+        "n_events": latest.get("n_events") if latest.get("n_events") is not None else 0,
+        "last_text_preview": last_text_preview,
+        "error": latest.get("error"),
+    }
+
+    history_payload = [
+        {
+            "run_id": r.get("run_id"),
+            "status": r.get("status"),
+            "started_at": r.get("started_at"),
+            "n_events": r.get("n_events") if r.get("n_events") is not None else 0,
+            "duration_s": _calc_duration(r.get("started_at"), r.get("finished_at")),
+        }
+        for r in runs
+    ]
+
+    return {
+        "ticker": t,
+        "has_run": True,
+        "log": log_payload,
+        "history": history_payload,
+    }
+
+
 def _assumptions_for(ticker: str) -> dict:
     """Load data/assumptions/{ticker}.json if exists and merge with archetype defaults."""
     import json

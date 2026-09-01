@@ -389,6 +389,77 @@ class AgentRunStore:
                 results.append(d)
             return results
 
+    def get_latest_completed(self, ticker: str) -> dict | None:
+        """Return latest run with status in ('completed', 'interrupted', 'failed') for ticker, or None."""
+        with self._lock:
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+                SELECT * FROM agent_runs
+                WHERE UPPER(ticker) = ?
+                  AND status IN ('completed', 'interrupted', 'failed')
+                ORDER BY started_at DESC
+                LIMIT 1
+                """,
+                (ticker.upper(),),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            d = dict(row)
+            if d.get("state_json"):
+                try:
+                    d["state"] = json.loads(d["state_json"])
+                except Exception:
+                    d["state"] = d["state_json"]
+            else:
+                d["state"] = {}
+            return d
+
+    def get_run_with_events(self, run_id: str) -> dict | None:
+        """Return run dict with its ordered events attached in a single transaction/lock."""
+        with self._lock:
+            cur = self.conn.cursor()
+            cur.execute("SELECT * FROM agent_runs WHERE run_id = ?", (run_id,))
+            row = cur.fetchone()
+            if not row:
+                return None
+            d = dict(row)
+            if d.get("state_json"):
+                try:
+                    d["state"] = json.loads(d["state_json"])
+                except Exception:
+                    d["state"] = d["state_json"]
+            else:
+                d["state"] = {}
+
+            cur.execute(
+                "SELECT * FROM agent_events WHERE run_id = ? ORDER BY seq ASC",
+                (run_id,),
+            )
+            event_rows = cur.fetchall()
+            events: list[dict] = []
+            for erow in event_rows:
+                ed = dict(erow)
+                if ed.get("payload_json"):
+                    try:
+                        ed["payload"] = json.loads(ed["payload_json"])
+                    except Exception:
+                        ed["payload"] = ed["payload_json"]
+                else:
+                    ed["payload"] = {}
+                if isinstance(ed["payload"], dict):
+                    for k in ("text", "function_calls", "function_responses", "state_delta", "transfer_to"):
+                        if k in ed["payload"] and k not in ed:
+                            ed[k] = ed["payload"][k]
+                    if "state_delta" in ed["payload"] and isinstance(ed["payload"]["state_delta"], dict):
+                        ed["state_delta_keys"] = list(ed["payload"]["state_delta"].keys())
+                    elif "state_delta_keys" not in ed:
+                        ed["state_delta_keys"] = []
+                events.append(ed)
+            d["events"] = events
+            return d
+
     def get_events(self, run_id: str) -> list[dict]:
         """Return all events for run_id, ordered by seq. Parse payload_json."""
         with self._lock:
@@ -408,6 +479,14 @@ class AgentRunStore:
                         d["payload"] = d["payload_json"]
                 else:
                     d["payload"] = {}
+                if isinstance(d["payload"], dict):
+                    for k in ("text", "function_calls", "function_responses", "state_delta", "transfer_to"):
+                        if k in d["payload"] and k not in d:
+                            d[k] = d["payload"][k]
+                    if "state_delta" in d["payload"] and isinstance(d["payload"]["state_delta"], dict):
+                        d["state_delta_keys"] = list(d["payload"]["state_delta"].keys())
+                    elif "state_delta_keys" not in d:
+                        d["state_delta_keys"] = []
                 results.append(d)
             return results
 

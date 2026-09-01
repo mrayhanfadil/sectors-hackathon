@@ -16,6 +16,7 @@ import {
   Code2,
   HelpCircle,
   Zap,
+  Database,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -29,7 +30,18 @@ import {
   type TraceEvent,
 } from "@/components/agent/AGENT_FRIENDLY_META"
 
-export const Route = (createFileRoute as any)("/agent")({ component: AgentTrace })
+interface AgentSearchParams {
+  ticker?: string
+}
+
+export const Route = (createFileRoute as any)("/agent")({
+  validateSearch: (search: Record<string, unknown>): AgentSearchParams => {
+    return {
+      ticker: typeof search.ticker === "string" ? search.ticker : undefined,
+    }
+  },
+  component: AgentTrace,
+})
 
 interface HealthInfo {
   ok?: boolean
@@ -41,8 +53,20 @@ interface HealthInfo {
   graph?: { name: string; n_subagents?: number; subagents?: string[] }
 }
 
+function formatRelativeTime(ts: number | undefined | null): string {
+  if (!ts) return "baru saja"
+  const now = Date.now() / 1000
+  const diff = Math.max(0, Math.floor(now - ts))
+  if (diff < 60) return "baru saja"
+  if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`
+  return `${Math.floor(diff / 86400)} hari lalu`
+}
+
 function AgentTrace() {
-  const [ticker, setTicker] = useState("BBCA")
+  const search = (Route.useSearch ? Route.useSearch() : {}) as AgentSearchParams
+  const initialTicker = (search?.ticker || "BBCA").toUpperCase().trim()
+  const [ticker, setTicker] = useState(initialTicker)
   const [events, setEvents] = useState<TraceEvent[]>([])
   const [running, setRunning] = useState(false)
   const [done, setDone] = useState<{ n_events: number; state_keys: string[]; ms: number } | null>(null)
@@ -50,6 +74,15 @@ function AgentTrace() {
   const [health, setHealth] = useState<HealthInfo | null>(null)
   const [filterAuthor, setFilterAuthor] = useState<string>("all")
   const [rawDebugOpen, setRawDebugOpen] = useState(false)
+  const [loadedFromDb, setLoadedFromDb] = useState<{
+    run_id: string
+    ticker: string
+    status: string
+    n_events: number
+    started_at: number
+    finished_at?: number | null
+    error?: string | null
+  } | null>(null)
   const startRef = useRef<number>(0)
 
   const apiBase = (import.meta as any).env?.VITE_API_URL || ""
@@ -68,6 +101,95 @@ function AgentTrace() {
     fetchHealth()
   }, [fetchHealth])
 
+  // Sync search param ticker with state if URL changes
+  useEffect(() => {
+    if (search?.ticker) {
+      const t = search.ticker.toUpperCase().trim()
+      setTicker((prev) => (prev !== t ? t : prev))
+    }
+  }, [search?.ticker])
+
+  // Auto-load latest persisted run from SQLite on mount / ticker change
+  useEffect(() => {
+    let active = true
+    const t = ticker.trim().toUpperCase() || "BBCA"
+
+    if (running) return
+
+    async function loadLatestRun() {
+      try {
+        const r = await fetch(`${apiBase}/api/agent/runs/latest?ticker=${encodeURIComponent(t)}`)
+        if (!active) return
+        if (r.status === 200) {
+          const j = await r.json()
+          if (!active) return
+          if (j && Array.isArray(j.events) && j.events.length > 0) {
+            const normalizedEvents: TraceEvent[] = j.events.map((ev: any) => ({
+              seq: ev.seq ?? 0,
+              ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
+              author: ev.author || ev.payload?.author || "",
+              node: ev.node || ev.payload?.node || "",
+              branch: ev.branch || ev.payload?.branch || null,
+              event_type: ev.event_type || ev.payload?.event_type || "message",
+              text: ev.text ?? ev.payload?.text ?? "",
+              function_calls: ev.function_calls || ev.payload?.function_calls || [],
+              function_responses: ev.function_responses || ev.payload?.function_responses || [],
+              state_delta_keys:
+                ev.state_delta_keys ||
+                (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
+                  ? Object.keys(ev.payload.state_delta)
+                  : []),
+              state_delta: ev.state_delta || ev.payload?.state_delta || null,
+              transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
+            }))
+
+            setEvents(normalizedEvents)
+            const isCompleted = j.status === "completed"
+            if (isCompleted) {
+              setDone({
+                n_events: j.n_events || normalizedEvents.length,
+                state_keys: j.state ? Object.keys(j.state) : [],
+                ms:
+                  j.finished_at && j.started_at
+                    ? Math.max(0, Math.round((j.finished_at - j.started_at) * 1000))
+                    : 0,
+              })
+            } else {
+              setDone(null)
+            }
+            if (j.error) {
+              setError(j.error)
+            } else {
+              setError(null)
+            }
+            setLoadedFromDb({
+              run_id: j.run_id,
+              ticker: j.ticker || t,
+              status: j.status || "completed",
+              n_events: j.n_events || normalizedEvents.length,
+              started_at: j.started_at,
+              finished_at: j.finished_at,
+              error: j.error,
+            })
+            return
+          }
+        }
+        if (active) {
+          setLoadedFromDb(null)
+        }
+      } catch {
+        if (active) {
+          setLoadedFromDb(null)
+        }
+      }
+    }
+
+    loadLatestRun()
+    return () => {
+      active = false
+    }
+  }, [ticker, apiBase, running])
+
   const {
     activeCount,
     totalCount,
@@ -83,6 +205,7 @@ function AgentTrace() {
 
   const run = useCallback(
     async (mode: "stream" | "blocking") => {
+      setLoadedFromDb(null)
       setError(null)
       setDone(null)
       setEvents([])
@@ -182,6 +305,7 @@ function AgentTrace() {
   )
 
   const handleClear = useCallback(() => {
+    setLoadedFromDb(null)
     setEvents([])
     setDone(null)
     setError(null)
@@ -343,6 +467,42 @@ function AgentTrace() {
             </div>
           )}
         </div>
+
+        {/* Loaded from SQLite Header Line */}
+        {loadedFromDb && (
+          <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/90 px-3.5 py-2 text-xs text-slate-700">
+            <div className="flex flex-wrap items-center gap-2">
+              <Database className="h-3.5 w-3.5 text-slate-500 shrink-0" />
+              <span className="font-medium text-slate-800">
+                Loaded from SQLite · {loadedFromDb.n_events} events · {formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}
+              </span>
+              {loadedFromDb.status !== "completed" && (
+                <Badge
+                  variant="outline"
+                  className={`text-[11px] font-medium ${
+                    loadedFromDb.status === "failed"
+                      ? "border-rose-300 bg-rose-50 text-rose-700"
+                      : "border-amber-300 bg-amber-50 text-amber-700"
+                  }`}
+                >
+                  {loadedFromDb.status === "failed" ? "Gagal (failed)" : "Terhenti (interrupted)"}
+                </Badge>
+              )}
+            </div>
+            {loadedFromDb.status !== "completed" && (
+              <Button
+                onClick={() => run("stream")}
+                disabled={running}
+                size="sm"
+                variant="outline"
+                className="h-7 gap-1 text-xs font-medium text-slate-800 border-slate-300 bg-white hover:bg-slate-100"
+              >
+                <Play className="h-3 w-3 fill-current" />
+                <span>Resume from latest?</span>
+              </Button>
+            )}
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (

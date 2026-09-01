@@ -47,8 +47,14 @@ def test_sectors_mcp_graceful_degradation_when_none(caplog):
     intake = graph.sub_agents[0]
     collector = next((a for a in intake.sub_agents if a.name == "collector"), None)
     assert collector is not None, "Collector agent must exist in intake stage"
-    # Collector should have no MCP toolset attached
-    assert collector.tools == [], "Collector tools should be empty when Sectors MCP is skipped"
+    # Collector should NOT have any Sectors MCP toolset attached when Sectors MCP is skipped.
+    # Composite web tools (Tavily + readability) may be present as honest fallback (see
+    # _web_composite_tools); only the Sectors MCP toolset must be absent.
+    from google.adk.tools.mcp_tool import McpToolset  # type: ignore
+    sectors_tools = [t for t in collector.tools if isinstance(t, McpToolset)]
+    assert sectors_tools == [], (
+        f"Collector must have no Sectors MCP toolset when skipped, got: {sectors_tools}"
+    )
 
 
 def test_sectors_mcp_attached_when_available(caplog):
