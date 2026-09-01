@@ -203,6 +203,16 @@ def _try_yfinance(ticker: str) -> Optional[Dict[str, Any]]:
         except Exception:
             pass
 
+        quarterly_financials = None
+        quarterly_balance = None
+        quarterly_cashflow = None
+        try:
+            quarterly_financials = tk.quarterly_income_stmt
+            quarterly_balance = tk.quarterly_balance_sheet
+            quarterly_cashflow = tk.quarterly_cashflow
+        except Exception:
+            pass
+
         dividends = None
         try:
             dividends = tk.dividends
@@ -249,6 +259,9 @@ def _try_yfinance(ticker: str) -> Optional[Dict[str, Any]]:
             "financials": df_to_dict(financials),
             "balance": df_to_dict(balance),
             "cashflow": df_to_dict(cashflow),
+            "quarterly_financials": df_to_dict(quarterly_financials),
+            "quarterly_balance": df_to_dict(quarterly_balance),
+            "quarterly_cashflow": df_to_dict(quarterly_cashflow),
             "dividends": {str(k.date()) if hasattr(k, "date") else str(k): float(v) for k, v in dividends.items()} if dividends is not None and len(dividends) else {},
             "history_rows": len(hist),
         }
