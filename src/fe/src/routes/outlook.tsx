@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { ArrowLeft } from "lucide-react"
 import { fetchOutlook } from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/outlook")({ component: Outlook })
@@ -26,6 +27,7 @@ function Outlook() {
 
   return (
     <div className="space-y-6">
+      <a href="/agent" className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900"><ArrowLeft className="h-3.5 w-3.5" /> Back to ADK Live</a>
       <div>
         <h1 className="text-xl font-semibold">Market Outlook — JCI 9100 base</h1>
         <p className="text-xs text-slate-500">JPM Indonesia 2026 Outlook · EPS +{d.jci?.epsGrowth ?? "8%"} × {d.jci?.pe ?? 15}x · {d.source ?? "JPM + plan §5"}</p>
