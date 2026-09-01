@@ -181,8 +181,16 @@ def test_quarterly_bca_returns_schema():
         assert len(item["date"]) == 10  # YYYY-MM-DD format
 
 
-def test_unknown_ticker_returns_empty_data():
-    """Unknown ticker symbol=ZZZZZZ returns 200 OK with empty data + honest note."""
+def test_unknown_ticker_returns_empty_data(monkeypatch):
+    """Unknown ticker symbol=ZZZZZZ returns 200 OK with empty data + honest note.
+
+    Force Tavily off so the endpoint falls back to curated source only — curated
+    has no ZZZZZZ ticker, so result is genuinely empty. This avoids live network
+    noise polluting the unknown-ticker contract.
+    """
+    monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    monkeypatch.delenv("SECTORS_API_KEY", raising=False)
+
     # 1. Filings
     r1 = client.get("/api/mock/filings?symbol=ZZZZZZ")
     assert r1.status_code == 200

@@ -1,13 +1,36 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
+import { Loader2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { fetchReport, fetchPdf } from "@/lib/api"
 import { DcfFriend } from "@/components/DcfFriend"
+import { AdkRunCard, type Log, type HistoryItem } from "@/components/report/AdkRunCard"
 
 export const Route = (createFileRoute as any)("/report/$ticker/")({ component: ReportPage })
+
+async function fetchReportLog(ticker: string): Promise<{
+  ticker: string
+  has_run: boolean
+  log: Log
+  history: HistoryItem[]
+}> {
+  const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") || ""
+  try {
+    const res = await fetch(`${base}/api/report/${encodeURIComponent(ticker.toUpperCase())}/log`)
+    if (!res.ok) throw new Error(String(res.status))
+    return await res.json()
+  } catch {
+    return {
+      ticker: ticker.toUpperCase(),
+      has_run: false,
+      log: null,
+      history: [],
+    }
+  }
+}
 
 function fmtIDR(n: number | null | undefined) {
   if (n == null || Number.isNaN(Number(n))) return "—"
@@ -150,6 +173,10 @@ function ReportPage() {
   const { ticker } = Route.useParams()
   const tk = String(ticker).toUpperCase()
   const { data, isLoading, error } = useQuery({ queryKey: ["report", tk], queryFn: () => fetchReport(tk) })
+  const logQuery = useQuery({
+    queryKey: ["report-log", tk],
+    queryFn: () => fetchReportLog(tk),
+  })
   const [pdfState, setPdfState] = useState<"idle" | "loading" | "error">("idle")
   const [pdfMsg, setPdfMsg] = useState("")
 
@@ -214,6 +241,23 @@ function ReportPage() {
         <span className="text-xs text-slate-500">Px {fmtIDR(r.price)} · {r.updatedAt} · {r.source ?? "disclosed"}</span>
       </div>
       <p className="text-sm leading-relaxed text-slate-600">{r.summary}</p>
+
+      {/* ADK Run Log Card */}
+      {logQuery.isLoading ? (
+        <Card className="border-slate-200 bg-white p-4">
+          <div className="flex items-center gap-2 text-xs text-slate-500">
+            <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+            <span>Memuat log ADK {tk}...</span>
+          </div>
+        </Card>
+      ) : logQuery.data ? (
+        <AdkRunCard
+          ticker={tk}
+          log={logQuery.data.log}
+          history={logQuery.data.history ?? []}
+          hasRun={logQuery.data.has_run}
+        />
+      ) : null}
 
       {/* top cards */}
       <div className="grid gap-4 sm:grid-cols-2">
