@@ -25,6 +25,7 @@ import { useAgentProgress } from "@/components/agent/useAgentProgress"
 import { PhaseTimeline } from "@/components/agent/PhaseTimeline"
 import { PlainEnglishPanel } from "@/components/agent/PlainEnglishPanel"
 import { SummaryCard } from "@/components/agent/SummaryCard"
+import { RunHistoryPanel } from "@/components/agent/RunHistoryPanel"
 import {
   getFriendlyAgent,
   type TraceEvent,
@@ -83,6 +84,9 @@ function AgentTrace() {
     finished_at?: number | null
     error?: string | null
   } | null>(null)
+  const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
+  const selectedRunIdRef = useRef<string | null>(null)
+  selectedRunIdRef.current = selectedRunId
   const startRef = useRef<number>(0)
 
   const apiBase = (import.meta as any).env?.VITE_API_URL || ""
@@ -115,6 +119,15 @@ function AgentTrace() {
     const t = ticker.trim().toUpperCase() || "BBCA"
 
     if (running) return
+
+    // If user explicitly selected a run and it's already loaded for this ticker, don't overwrite with latest
+    if (
+      selectedRunIdRef.current &&
+      loadedFromDb?.run_id === selectedRunIdRef.current &&
+      loadedFromDb?.ticker === t
+    ) {
+      return
+    }
 
     async function loadLatestRun() {
       try {
@@ -188,7 +201,81 @@ function AgentTrace() {
     return () => {
       active = false
     }
-  }, [ticker, apiBase, running])
+  }, [ticker, apiBase, running, loadedFromDb?.run_id, loadedFromDb?.ticker])
+
+  const handleSelectRun = useCallback(
+    async (runId: string) => {
+      setSelectedRunId(runId)
+      selectedRunIdRef.current = runId
+      setError(null)
+      setRunning(false)
+      try {
+        const r = await fetch(`${apiBase}/api/agent/runs/${encodeURIComponent(runId)}`)
+        if (r.status === 200) {
+          const j = await r.json()
+          if (j && Array.isArray(j.events)) {
+            const normalizedEvents: TraceEvent[] = j.events.map((ev: any) => ({
+              seq: ev.seq ?? 0,
+              ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
+              author: ev.author || ev.payload?.author || "",
+              node: ev.node || ev.payload?.node || "",
+              branch: ev.branch || ev.payload?.branch || null,
+              event_type: ev.event_type || ev.payload?.event_type || "message",
+              text: ev.text ?? ev.payload?.text ?? "",
+              function_calls: ev.function_calls || ev.payload?.function_calls || [],
+              function_responses: ev.function_responses || ev.payload?.function_responses || [],
+              state_delta_keys:
+                ev.state_delta_keys ||
+                (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
+                  ? Object.keys(ev.payload.state_delta)
+                  : []),
+              state_delta: ev.state_delta || ev.payload?.state_delta || null,
+              transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
+            }))
+
+            setEvents(normalizedEvents)
+            const runTicker = (j.ticker || ticker).toUpperCase().trim()
+            if (runTicker !== ticker) {
+              setTicker(runTicker)
+            }
+            const isCompleted = j.status === "completed"
+            if (isCompleted) {
+              setDone({
+                n_events: j.n_events || normalizedEvents.length,
+                state_keys: j.state ? Object.keys(j.state) : [],
+                ms:
+                  j.finished_at && j.started_at
+                    ? Math.max(0, Math.round((j.finished_at - j.started_at) * 1000))
+                    : 0,
+              })
+            } else {
+              setDone(null)
+            }
+            if (j.error) {
+              setError(j.error)
+            } else {
+              setError(null)
+            }
+            setLoadedFromDb({
+              run_id: j.run_id,
+              ticker: runTicker,
+              status: j.status || "completed",
+              n_events: j.n_events || normalizedEvents.length,
+              started_at: j.started_at,
+              finished_at: j.finished_at,
+              error: j.error,
+            })
+          }
+        } else {
+          setError(`Gagal memuat run ${runId} (status ${r.status})`)
+        }
+      } catch (e: unknown) {
+        const msg = e instanceof Error ? e.message : String(e)
+        setError(`Gagal memuat jejak run: ${msg}`)
+      }
+    },
+    [apiBase, ticker]
+  )
 
   const {
     activeCount,
@@ -205,6 +292,8 @@ function AgentTrace() {
 
   const run = useCallback(
     async (mode: "stream" | "blocking") => {
+      setSelectedRunId(null)
+      selectedRunIdRef.current = null
       setLoadedFromDb(null)
       setError(null)
       setDone(null)
@@ -367,6 +456,8 @@ function AgentTrace() {
   )
 
   const handleClear = useCallback(() => {
+    setSelectedRunId(null)
+    selectedRunIdRef.current = null
     setLoadedFromDb(null)
     setEvents([])
     setDone(null)
@@ -386,6 +477,14 @@ function AgentTrace() {
 
   return (
     <div className="space-y-6">
+      {/* 0. Riwayat Run Panel */}
+      <RunHistoryPanel
+        currentTicker={ticker}
+        selectedRunId={selectedRunId || loadedFromDb?.run_id}
+        onSelectRun={handleSelectRun}
+        apiBase={apiBase}
+      />
+
       {/* 1. Hero & Run Controls */}
       <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs sm:p-6 space-y-4">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -456,7 +555,11 @@ function AgentTrace() {
               <input
                 id="ticker-input"
                 value={ticker}
-                onChange={(e) => setTicker(e.target.value.toUpperCase())}
+                onChange={(e) => {
+                  setSelectedRunId(null)
+                  selectedRunIdRef.current = null
+                  setTicker(e.target.value.toUpperCase())
+                }}
                 placeholder="BBCA"
                 className="h-9 w-24 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
                 maxLength={10}
