@@ -171,7 +171,7 @@ export function useAgentProgress({
   // Rolling ETA computation over the last 10 events
   const { etaText, throughputRate } = useMemo(() => {
     if (events.length < 5) {
-      return { etaText: "—", throughputRate: 0 }
+      return { etaText: "-", throughputRate: 0 }
     }
 
     if (done !== null) {
@@ -179,7 +179,7 @@ export function useAgentProgress({
     }
 
     if (!running) {
-      return { etaText: "—", throughputRate: 0 }
+      return { etaText: "-", throughputRate: 0 }
     }
 
     const windowSize = Math.min(10, events.length)

@@ -6,9 +6,10 @@ import { useStatePreview, type TraceEvent } from "./useStatePreview"
 
 export interface StatePreviewProps {
   events: TraceEvent[]
+  className?: string
 }
 
-export function StatePreview({ events }: StatePreviewProps) {
+export function StatePreview({ events, className = "" }: StatePreviewProps) {
   const { items, summaryText } = useStatePreview(events)
   const [expandedKeys, setExpandedKeys] = useState<Set<string>>(new Set())
 
@@ -25,21 +26,36 @@ export function StatePreview({ events }: StatePreviewProps) {
   }
 
   return (
-    <Card className="overflow-hidden flex flex-col h-full">
-      <CardHeader className="py-3 flex flex-row items-center justify-between space-y-0">
-        <div className="flex items-center gap-1.5">
-          <Database className="h-4 w-4 text-slate-600 shrink-0" />
-          <CardTitle className="text-sm">State Preview</CardTitle>
+    <Card className={`rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden flex flex-col ${className}`}>
+      <CardHeader className="py-3 px-3.5 flex flex-row items-center justify-between space-y-0 border-b border-slate-100 bg-white">
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs shrink-0">
+            <Database className="h-3.5 w-3.5 text-slate-700" />
+          </div>
+          <CardTitle className="text-xs font-bold tracking-tight text-slate-900 font-sans">
+            State Preview
+          </CardTitle>
         </div>
-        <Badge variant="secondary" className="text-[11px] font-mono shrink-0">
+        <Badge
+          variant="secondary"
+          className="text-[10px] font-mono text-slate-600 bg-slate-100 border border-slate-200/60 px-1.5 py-0 shrink-0"
+        >
           {items.length} keys
         </Badge>
       </CardHeader>
       <CardContent className="p-0 flex-1 flex flex-col justify-between">
-        <div className="max-h-[68vh] overflow-auto divide-y divide-slate-100">
+        <div className="max-h-[calc(100vh-240px)] overflow-y-auto divide-y divide-slate-100">
           {items.length === 0 ? (
-            <div className="px-4 py-10 text-center text-xs text-slate-500">
-              Belum ada state delta. State keys akan muncul saat agent berjalan.
+            <div className="flex flex-col items-center justify-center py-10 px-4 text-center">
+              <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100 text-slate-400 mb-2 border border-slate-200">
+                <Database className="h-4 w-4" />
+              </div>
+              <p className="text-xs font-semibold text-slate-800">
+                Belum ada run
+              </p>
+              <p className="text-[11px] text-slate-500 mt-0.5">
+                State keys akan muncul saat analisis berjalan atau run dipilih.
+              </p>
             </div>
           ) : (
             items.map((item) => {
@@ -47,7 +63,7 @@ export function StatePreview({ events }: StatePreviewProps) {
               return (
                 <div
                   key={item.key}
-                  className="px-3 py-2.5 hover:bg-slate-50 transition-colors"
+                  className="px-3 py-2.5 hover:bg-slate-50/80 transition-colors"
                 >
                   <button
                     type="button"
@@ -78,7 +94,7 @@ export function StatePreview({ events }: StatePreviewProps) {
                       <div className="mt-1 pl-5">
                         {!item.hasValue ? (
                           <div className="font-mono text-[11px] text-slate-400 flex items-center gap-1.5">
-                            <span>—</span>
+                            <span>-</span>
                             <span className="text-[10px] text-slate-400/80 italic">(not in event)</span>
                           </div>
                         ) : (
@@ -94,7 +110,7 @@ export function StatePreview({ events }: StatePreviewProps) {
                     <div className="mt-2 pl-5">
                       {!item.hasValue ? (
                         <div className="rounded border border-slate-200 bg-slate-50 px-2.5 py-2 font-mono text-[11px] text-slate-500 italic">
-                          — Nilai state belum disertakan dalam event delta ini.
+                          - Nilai state belum disertakan dalam event delta ini.
                         </div>
                       ) : (
                         <div className="space-y-1">
@@ -118,7 +134,7 @@ export function StatePreview({ events }: StatePreviewProps) {
             })
           )}
         </div>
-        <div className="border-t bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-600 flex items-center justify-between shrink-0">
+        <div className="border-t border-slate-100 bg-slate-50/80 px-3 py-2 text-xs font-medium text-slate-600 flex items-center justify-between shrink-0">
           <span>{summaryText}</span>
           <span className="text-[11px] text-slate-400 font-mono">state footprint</span>
         </div>
