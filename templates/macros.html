@@ -101,9 +101,10 @@
   .exhibit-name { font-size: 8.5pt; font-weight: 600; }
   .exhibit-src { margin-left: auto; font-size: 6.8pt; color: var(--muted); font-style: italic; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
-  .chart-svg { display: none; }
+  .chart-svg { display: block; margin-bottom: 8pt; }
+  /* Chart.js canvas is shown in browser, hidden in print+PDF (Playwright page.pdf()
+     uses print stylesheet so @media print applies here). */
   @media print {
-    .chart-svg { display: block !important; }
     canvas { display: none !important; }
   }
 
