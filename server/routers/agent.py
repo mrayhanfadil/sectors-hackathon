@@ -316,6 +316,140 @@ async def agent_run(req: AgentRunRequest):
         return JSONResponse({"ok": False, "error": str(e)[:2000], "ticker": ticker}, status_code=500)
 
 
+# === Detached executor (background task, SSE-free) ===
+async def _execute_run_to_sqlite(t: str, p: str, session_id: str) -> None:
+    """Run ADK graph and persist every event to SQLite. No SSE — client-independent.
+
+    Called as asyncio.Task from /api/agent/start. Run continues even if all
+    clients disconnect; errors/interruptions persist with reason in SQLite so
+    users can resume the same run_id later.
+    """
+    from server.storage import AgentRunStore
+    from server.stream_lifecycle import StreamLifecycleManager
+
+    store = AgentRunStore()
+    lifecycle = StreamLifecycleManager(
+        run_id=session_id,
+        ticker=t,
+        prompt=p,
+        provider=os.getenv("ADK_PROVIDER", "minimax"),
+        model=os.getenv("MINIMAX_MODEL", "minimax/MiniMax-M3"),
+        store=store,
+        flush_every_n=1,
+        flush_interval_sec=1.0,
+    )
+    await lifecycle.start()
+
+    seq = lifecycle.base_seq
+    try:
+        from agents.adk.app import build_graph
+        from google.adk.runners import Runner
+        from google.adk.sessions import InMemorySessionService
+        from google.genai import types as genai_types
+
+        root = build_graph(ticker=t)
+        session_service = InMemorySessionService()
+        runner = Runner(agent=root, app_name="sectors-equity-report", session_service=session_service)
+        await session_service.create_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
+        content = genai_types.Content(role="user", parts=[genai_types.Part(text=p)])
+
+        try:
+            async for ev in runner.run_async(user_id="user", session_id=session_id, new_message=content):
+                await lifecycle.on_event(seq, ev)
+                seq += 1
+                await asyncio.sleep(0)
+        except asyncio.CancelledError as exc:
+            log.warning("run_to_sqlite cancelled for %s after %d events", t, seq)
+            await lifecycle.on_interrupt(exc=exc, error_msg=f"task cancelled after {seq} events")
+            raise
+        except Exception as exc:
+            log.exception("run_to_sqlite execution error for %s after %d events", t, seq)
+            await lifecycle.on_error(exc=exc, error_msg=str(exc)[:2000])
+            return
+
+        try:
+            session = await session_service.get_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
+            final_state = dict(session.state) if session and session.state else None
+        except Exception:
+            final_state = None
+
+        await lifecycle.on_complete(final_state=final_state)
+        log.info("run_to_sqlite completed run_id=%s ticker=%s events=%d", session_id, t, seq)
+    except Exception as e:
+        log.exception("run_to_sqlite failed for %s", t)
+        try:
+            await lifecycle.on_error(exc=e, error_msg=str(e)[:2000])
+        except Exception:
+            pass
+    finally:
+        try:
+            await lifecycle.close()
+        except Exception:
+            pass
+
+
+# In-memory registry of active background tasks (keyed by run_id)
+_ACTIVE_TASKS: dict[str, asyncio.Task] = {}
+
+
+@router_agent.post("/api/agent/start", summary="Fire-and-forget ADK run; returns run_id immediately")
+async def agent_start(req: AgentRunRequest):
+    """Start ADK run as background task. Returns immediately with run_id.
+
+    Client polls /api/agent/runs/{run_id} to track progress (every 2s).
+    Tab close/navigate/refresh does NOT affect the run; BE drives it to completion.
+    """
+    from server.storage import AgentRunStore
+
+    ticker = (req.ticker or "BBCA").upper().strip()[:10]
+    if not ticker.isalnum():
+        return JSONResponse({"error": "invalid ticker"}, status_code=400)
+
+    # Smart session_id: reuse recent interrupted run (resume) or allocate fresh
+    store = AgentRunStore()
+    recent = store.get_recent_interrupted_run(ticker, within_seconds=600.0)
+    if recent and recent.get("run_id"):
+        session_id = recent["run_id"]
+        log.info("agent_start reusing recent interrupted run_id=%s for ticker=%s", session_id, ticker)
+    else:
+        session_id = f"{ticker.lower()}-{os.urandom(4).hex()}"
+
+    p = req.prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
+
+    # Spawn background task; do NOT await it
+    task = asyncio.create_task(_execute_run_to_sqlite(ticker, p, session_id))
+    _ACTIVE_TASKS[session_id] = task
+    task.add_done_callback(lambda t: _ACTIVE_TASKS.pop(session_id, None))
+
+    return {
+        "ok": True,
+        "run_id": session_id,
+        "ticker": ticker,
+        "status": "started",
+        "message": "Run started in background. Poll /api/agent/runs/{run_id} or /api/agent/runs/{run_id}/status to track progress.",
+    }
+
+
+@router_agent.get("/api/agent/runs/{run_id}/status", summary="Lightweight status endpoint for polling")
+def get_run_status(run_id: str):
+    """Returns just status + n_events + finished_at + reason. Cheap for polling."""
+    from server.storage import AgentRunStore
+    store = AgentRunStore()
+    run = store.get_run(run_id)
+    if not run:
+        return Response(status_code=404)
+    return {
+        "run_id": run["run_id"],
+        "ticker": run.get("ticker"),
+        "status": run.get("status"),
+        "n_events": run.get("n_events", 0),
+        "finished_at": run.get("finished_at"),
+        "started_at": run.get("started_at"),
+        "reason": run.get("reason"),
+        "is_active": run_id in _ACTIVE_TASKS,
+    }
+
+
 @router_agent.get("/api/agent/stream", summary="SSE live trace — step-by-step agent activity")
 async def agent_stream(
     ticker: str = Query("BBCA", description="IDX ticker, e.g. BBCA"),
