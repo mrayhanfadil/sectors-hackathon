@@ -118,37 +118,48 @@
   {{ m.pagefoot(2) }}
 </div>
 
-{# ================= PAGE 3 — SEGMENTS + PERFORMANCE ================= #}
+{# ================= PAGE 3 — SEGMENTS + QUARTERLY P&L ================= #}
 <div class="page">
   {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
   {% if segments %}
   {{ m.section(3, "Segment Breakdown + Momentum Kuartalan") }}
-  {{ m.exhibit_auto(ns, "Pendapatan per Segmen: YoY + QoQ", segments_src or "IDX Financial Reports") }}
-  {{ m.table(["Segmen", "Pendapatan (Rp bn)", "YoY", "QoQ", "Bauran"],
+  {{ m.exhibit_auto(ns, "Pendapatan per Segmen: 1H26 vs 1H25 + Q2-26 vs Q1-26", segments_src or "IDX Financial Reports") }}
+  {{ m.table(["Segmen", "1H25", "1H26", "y/y", "Q2-25", "Q1-26", "Q2-26", "y/y", "q/q"],
      segments | map(attribute="row") | list) }}
   {% endif %}
 
-  {% if financial_highlights %}
-  {{ m.section(4, "Ringkasan Investasi") }}
-  {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
-  {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
+  {% if quarterly_pl %}
+  {{ m.exhibit_auto(ns, "Income Statement Kuartalan — 1H26 vs 1H25 + Q2-26 vs Q1-26", quarterly_pl.source) }}
+  {{ m.table(quarterly_pl.headers, quarterly_pl.rows) }}
   {% endif %}
-
-  {{ m.section(5, "Tesis Investasi") }}
-  {% for t in thesis %}
-  <div class="card-tint" style="margin:5pt 0;">
-    <b>{{ loop.index }}. {{ t.headline }}</b>
-    <p class="small">{{ t.detail }}</p>
-    {% if t.source %}<div class="src-tag">Sumber: {{ t.source }}</div>{% endif %}
-  </div>
-  {% endfor %}
   {{ m.pagefoot(3) }}
 </div>
 
-{# ================= PAGE 4 — VALUATION: DCF + BLENDED + BANDS ================= #}
+{# ================= PAGE 4 — QUARTERLY BALANCE + RATIOS + OPERATIONAL KPI ================= #}
 <div class="page">
   {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
-  {{ m.section(6, "Valuasi — DCF Detail + Blended + Bands") }}
+  {% if quarterly_balance %}
+  {{ m.section(4, "Balance Sheet & Rasio Kuartalan") }}
+  {{ m.exhibit_auto(ns, "Balance Sheet Kuartalan", quarterly_balance.source) }}
+  {{ m.table(quarterly_balance.headers, quarterly_balance.rows) }}
+  {% endif %}
+
+  {% if quarterly_ratios %}
+  {{ m.exhibit_auto(ns, "Rasio Kuartalan — Margin, Profitability, Leverage", quarterly_ratios.source) }}
+  {{ m.table(quarterly_ratios.headers, quarterly_ratios.rows) }}
+  {% endif %}
+
+  {% if quarterly_kpi %}
+  {{ m.exhibit_auto(ns, "Operational KPI Kuartalan (Net Add per Quarter)", quarterly_kpi.source) }}
+  {{ m.table(quarterly_kpi.headers, quarterly_kpi.rows) }}
+  {% endif %}
+  {{ m.pagefoot(4) }}
+</div>
+
+{# ================= PAGE 5 — VALUATION: DCF + BLENDED + BANDS ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(5, "Valuasi — DCF Detail + Blended + Bands") }}
 
   {% for vm in valuation.methods %}
   <h3>{{ vm.method }}</h3>
@@ -226,24 +237,61 @@
   {{ m.pagefoot(4) }}
 </div>
 
-{# ================= PAGE 5 — FINANCIALS + EXHIBITS ================= #}
+{# ================= PAGE 5 — VALUATION continued (DCF friend + recom) ================= #}
+{# Above page 5 already opens; this block intentionally empty — exhibits+financials moved to pages 8/9 #}
+
+{# ================= PAGE 6 — FINANCIAL HIGHLIGHTS + THESIS + EXHIBITS ================= #}
 <div class="page">
   {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
-  {{ m.section(7, "Financials 6Y + Rasio") }}
-  {% for ex in exhibits if ex.chart %}
-    {{ m.exhibit_auto(ns, ex.title, ex.source) }}
-    <div class="chart-wrap"><canvas id="ex{{ loop.index }}" width="680" height="{{ ex.chart.height or 200 }}"></canvas></div>
-  {% endfor %}
+  {% if financial_highlights %}
+  {{ m.section(6, "Ringkasan Investasi — Financial Highlights (6 tahun)") }}
+  {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
+  {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
+  {% endif %}
 
-  {% for stmt in financials %}
-  <h3>{{ stmt.title }}</h3>
-  {{ m.table(stmt.headers, stmt.rows) }}
-  <div class="src-tag">Sumber: {{ stmt.source }}</div>
+  {{ m.section(7, "Tesis Investasi") }}
+  {% for t in thesis %}
+  <div class="card-tint" style="margin:5pt 0;">
+    <b>{{ loop.index }}. {{ t.headline }}</b>
+    <p class="small">{{ t.detail }}</p>
+    {% if t.source %}<div class="src-tag">Sumber: {{ t.source }}</div>{% endif %}
+  </div>
   {% endfor %}
-  {{ m.pagefoot(5) }}
+  {{ m.pagefoot(6) }}
 </div>
 
-{# ================= PAGE 6 — PEERS + RISKS + DISCLAIMER ================= #}
+{# ================= PAGE 8 — FULL FINANCIALS (Income / Balance / CF / Ratios) ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {% if financials %}
+  {{ m.section(8, "Income Statement, Balance Sheet & Cash Flow") }}
+  {% for stmt in financials %}
+    {% if stmt.title == "Income Statement" or stmt.title == "Balance Sheet" or stmt.title == "Cash Flow Statement" %}
+    <h3>{{ stmt.title }}</h3>
+    {{ m.table(stmt.headers, stmt.rows) }}
+    <div class="src-tag">Sumber: {{ stmt.source }}</div>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+  {{ m.pagefoot(8) }}
+</div>
+
+{# ================= PAGE 9 — FINANCIAL RATIOS (30+) ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {% if financials %}
+  {% for stmt in financials %}
+    {% if stmt.title and "Financial Ratios" in stmt.title %}
+    {{ m.section(9, stmt.title) }}
+    {{ m.table(stmt.headers, stmt.rows) }}
+    <div class="src-tag">Sumber: {{ stmt.source }}</div>
+    {% endif %}
+  {% endfor %}
+  {% endif %}
+  {{ m.pagefoot(9) }}
+</div>
+
+{# ================= PAGE 7 — PEERS + RISKS ================= #}
 <div class="page">
   {{ m.running("RESEARCH — Equity Report", meta.ticker if false else meta.date, meta.ticker) }}
   {{ m.section(8, "Perbandingan Peers") }}
@@ -263,11 +311,39 @@
     {% if r.source %}<div class="src-tag">Sumber: {{ r.source }}</div>{% endif %}
   </div>
   {% endfor %}
-
-  {{ m.section(10, "Disklaimer") }}
-  {{ m.disclaim() }}
-  {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
   {{ m.pagefoot(6) }}
+</div>
+
+{# ================= PAGE 7 — RATING GUIDE + DISCLAIMER + CONTACT ================= #}
+<div class="page">
+  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.section(10, "Rating Guide, Disclaimer & Kontak") }}
+
+  {{ m.rating_guide() }}
+
+  <h3 style="margin-top:10pt;">DISCLAIMER</h3>
+  {{ m.disclaim() }}
+
+  <h3 style="margin-top:10pt;">OTHER DISCLOSURES</h3>
+  <div class="card-tint">
+    <p class="small">Seluruh laporan RESEARCH tersedia di <b>www.skt.id/research</b>. Tidak semua konten riset
+      didistribusikan ulang, dikirim via email, atau disediakan ke agregator pihak ketiga. Setiap perbedaan data
+      dalam laporan ini dapat diakibatkan oleh metode kalkulasi yang berbeda atau penyesuaian setelahnya.</p>
+  </div>
+
+  {% if meta.prepared_by %}
+  <p class="small muted" style="margin-top:8pt;"><b>Disiapkan oleh</b> {{ meta.prepared_by }} · {{ meta.date }} ·
+    Bahasa: {{ meta.language|upper }}</p>
+  {% endif %}
+  {% if meta.analyst %}
+  <p class="small muted"><b>Analis</b>: {{ meta.analyst.name }} ({{ meta.analyst.role }})
+    {% if meta.analyst.email %}· {{ meta.analyst.email }}{% endif %}</p>
+  {% endif %}
+  {% if meta.head_office %}
+  <p class="small muted"><b>Kantor Pusat</b>: {{ meta.head_office }}</p>
+  {% endif %}
+
+  {{ m.pagefoot(7) }}
 </div>
 
 {{ m.chartjs() }}
