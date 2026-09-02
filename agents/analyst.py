@@ -18,6 +18,7 @@ from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 import json
 import math
+import os
 
 # ---------------------------------------------------------------------------
 # Provenance helper — every exhibit must carry source
@@ -32,7 +33,7 @@ ARCHETYPE_SOURCES = {
 # ---------------------------------------------------------------------------
 # Data models — input is ticker + resolved context from Collector/Modeler
 # ---------------------------------------------------------------------------
-Archetype = Literal["single", "sotp", "infra"]
+Archetype = Literal["single", "sotp", "infra", "bank", "coal", "unknown"]
 
 @dataclass
 class TimelineEvent:
@@ -117,8 +118,8 @@ class CompanyProfile:
         errors: list[str] = []
         if not self.ticker:
             errors.append("ticker required")
-        if self.archetype not in ("single", "sotp", "infra"):
-            errors.append(f"archetype {self.archetype!r} must be single|sotp|infra")
+        if self.archetype not in ("single", "sotp", "infra", "bank", "coal", "unknown"):
+            errors.append(f"archetype {self.archetype!r} must be single|sotp|infra|bank|coal|unknown")
         if self.ipo and self.ipo.free_float_pct is not None:
             if not 0 < self.ipo.free_float_pct <= 100:
                 errors.append(f"free_float_pct {self.ipo.free_float_pct} out of range")
@@ -230,96 +231,270 @@ def build_analyst_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Synthetic fixtures for offline dev / tests (seed=42 style — matches plan.md data layer)
+# Dynamic archetype fixtures (offline dev / tests)
 # ---------------------------------------------------------------------------
-def fixture_ratu() -> CompanyProfile:
-    return CompanyProfile(
-        ticker="RATU",
-        name="Raharja Energi Cepu Tbk",
-        archetype="single",
-        subsector="oil-holding",
-        established=2006,
-        history=[
-            TimelineEvent(2006, "Founded", "PT Raharja Energi Cepu established as PSC holding vehicle", ARCHETYPE_SOURCES["RATU"]),
-            TimelineEvent(2011, "Participating Interest", "Acquired participating interest in Cepu Block via RETJ/PJUC", ARCHETYPE_SOURCES["RATU"]),
-            TimelineEvent(2023, "IPO", "IPO at IDR 1,150 — 88% proceeds to RETJ/PJUC acquisition", ARCHETYPE_SOURCES["RATU"]),
-            TimelineEvent(2024, "Production", "Cepu gross 169k BOPD (SKK Migas), RATU net entitlement via PSC", ARCHETYPE_SOURCES["RATU"]),
-        ],
-        ipo=IPODetail(
-            ipo_date="2023-05-08",
-            ipo_price=1150,
-            listing_price=10650,
-            shares_offered_bn=0.844,
-            shares_outstanding_bn=2.71,
-            free_float_pct=31.2,
-            proceeds_use=[{"to": "RETJ", "pct": 52}, {"to": "PJUC", "pct": 36}, {"to": "Working capital", "pct": 12}],
-            underwriter="HP Sekuritas",
-            source=ARCHETYPE_SOURCES["RATU"],
-        ),
-        holders=[
-            Holder("PT Raharja Energi Investama", 45.3, 1.23, ARCHETYPE_SOURCES["RATU"]),
-            Holder("Public (free float)", 31.2, 0.85, ARCHETYPE_SOURCES["RATU"]),
-            Holder("PT Jenggala Energi", 23.5, 0.64, ARCHETYPE_SOURCES["RATU"]),
-        ],
-        bod=[
-            BODMember("Direktur Utama", "President Director", "2023", "Ex-RETJ, PSC Cepu operator experience", ARCHETYPE_SOURCES["RATU"]),
-            BODMember("Direktur Keuangan", "Finance Director", "2023", "", ARCHETYPE_SOURCES["RATU"]),
-            BODMember("Direktur Operasional", "Operations Director", "2023", "", ARCHETYPE_SOURCES["RATU"]),
-            BODMember("Direktur Teknik", "Technical Director", "2023", "", ARCHETYPE_SOURCES["RATU"]),
-            BODMember("Direktur SDM", "HR Director", "2023", "", ARCHETYPE_SOURCES["RATU"]),
-            BODMember("Direktur Kepatuhan", "Compliance Director", "2023", "", ARCHETYPE_SOURCES["RATU"]),
-        ],
-        psc=[
-            PSCStructure("Cepu", "ExxonMobil Cepu Ltd", 2.4, 169000, "PSC", "2035", "SKK Migas", 25.0, ARCHETYPE_SOURCES["RATU"]),
-        ],
-        segments=[
-            BusinessSegment("Cepu PSC entitlement", 100.0, None, None, None, {"gross_bopd": 169000, "net_bopd": 4056}, ARCHETYPE_SOURCES["RATU"]),
-        ],
-        key_specs={"gross_bopd": 169000, "net_bopd": 4056, "bopd_source": "SKK Migas"},
-        as_of="2026-08-31",
-        source_tier="T1",
-    )
+def _load_assumptions(ticker: str, assum: Optional[dict] = None) -> dict:
+    """Load data/assumptions/{ticker}.json if available, merged with passed assum dict."""
+    data: dict = {}
+    t = ticker.upper().strip() if ticker else ""
+    if t:
+        base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data", "assumptions"))
+        path = os.path.join(base_dir, f"{t}.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                    if isinstance(loaded, dict):
+                        data.update(loaded)
+            except Exception:
+                pass
+    if assum and isinstance(assum, dict):
+        data.update(assum)
+    return data
 
 
-def fixture_mtel() -> CompanyProfile:
-    return CompanyProfile(
-        ticker="MTEL",
-        name="Dayamitra Telekomunikasi Tbk",
-        archetype="infra",
-        subsector="tower-infra",
-        established=2006,
-        history=[
-            TimelineEvent(2006, "Founded", "Telkom infra arm — tower portfolio build-out", ARCHETYPE_SOURCES["MTEL"]),
-            TimelineEvent(2021, "IPO", "IPO tower infra, TLKM retains 71.83%", ARCHETYPE_SOURCES["MTEL"]),
-            TimelineEvent(2024, "Fiber expansion", "Fiber 59,239 km (+9% y/y), tenancy 1.57x", ARCHETYPE_SOURCES["MTEL"]),
-        ],
-        ipo=IPODetail(
-            ipo_date="2021-11-22",
-            ipo_price=800,
-            shares_outstanding_bn=81.5,
-            free_float_pct=28.17,
-            proceeds_use=[{"to": "Tower acquisition", "pct": 60}, {"to": "Fiber build", "pct": 25}, {"to": "Working capital", "pct": 15}],
-            underwriter="Mandiri Sekuritas",
-            source=ARCHETYPE_SOURCES["MTEL"],
-        ),
-        holders=[
-            Holder("PT Telkom Indonesia (Persero) Tbk", 71.83, 58.54, ARCHETYPE_SOURCES["MTEL"]),
-            Holder("Public", 28.17, 22.96, ARCHETYPE_SOURCES["MTEL"]),
-        ],
-        bod=[
-            BODMember("President Director", "President Director", "2021", "Telkom Group", ARCHETYPE_SOURCES["MTEL"]),
-            BODMember("Finance Director", "Finance Director", "2021", "", ARCHETYPE_SOURCES["MTEL"]),
-            BODMember("Operations Director", "Operations Director", "2021", "", ARCHETYPE_SOURCES["MTEL"]),
-        ],
-        psc=[],
-        segments=[
-            BusinessSegment("Tower leasing", 81.7, 3833, 1.0, 0.8, {"towers": 40563}, ARCHETYPE_SOURCES["MTEL"]),
-            BusinessSegment("Fiber", 6.6, 309, 8.0, 2.1, {"km": 59239}, ARCHETYPE_SOURCES["MTEL"]),
-            BusinessSegment("Tower-Related", 6.4, 299, 15.0, 3.2, {}, ARCHETYPE_SOURCES["MTEL"]),
-            BusinessSegment("Reseller", 5.3, 251, 0.0, 0.5, {"tenants": 2650}, ARCHETYPE_SOURCES["MTEL"]),
-        ],
-        key_specs={"towers": 40563, "tenancy_ratio": 1.57, "fiber_km": 59239},
-        as_of="2026-08-31",
-        source_tier="T1",
-    )
+def fixture_from_archetype(
+    ticker: str,
+    archetype: str = "single",
+    assum: Optional[dict] = None,
+) -> CompanyProfile:
+    """Dynamic archetype-driven CompanyProfile fixture generator."""
+    merged_assum = _load_assumptions(ticker, assum)
+    t = ticker.upper().strip() if ticker else "UNKNOWN"
+    arch = (archetype or "").lower().strip()
+
+    if arch in ("oil-holding", "single-pillar", "single"):
+        arch_norm = "single"
+    elif arch in ("conglomerate", "sotp", "multi"):
+        arch_norm = "sotp"
+    elif arch in ("tower-infra", "tower", "infra", "telecom"):
+        arch_norm = "infra"
+    elif arch in ("bank", "banking", "financials"):
+        arch_norm = "bank"
+    elif arch in ("coal", "mining"):
+        arch_norm = "coal"
+    elif arch == "unknown":
+        arch_norm = "unknown"
+    else:
+        arch_norm = arch if arch in ("single", "sotp", "infra", "bank", "coal") else "unknown"
+
+    source_label = f"assumption_derived archetype={arch_norm}"
+    as_of_val = merged_assum.get("generated_at") or merged_assum.get("as_of") or "2026-08-31"
+    if isinstance(as_of_val, str) and "T" in as_of_val:
+        as_of_val = as_of_val.split("T")[0]
+
+    if arch_norm == "single":
+        return CompanyProfile(
+            ticker=t,
+            name=f"{t} Energy Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="single",
+            subsector="oil-holding",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[
+                BusinessSegment(
+                    name="Core Oil & Gas / Upstream",
+                    revenue_share_pct=100.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"gross_bopd": 169000, "net_bopd": 4056},
+                    source=source_label,
+                ),
+            ],
+            key_specs={"gross_bopd": 169000, "net_bopd": 4056},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "sotp":
+        return CompanyProfile(
+            ticker=t,
+            name=f"{t} Nusantara Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="sotp",
+            subsector="conglomerate",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[
+                BusinessSegment(
+                    name="Pillar A - Energy & Resources",
+                    revenue_share_pct=50.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"capacity_mw": 120},
+                    source=source_label,
+                ),
+                BusinessSegment(
+                    name="Pillar B - Infrastructure & Logistics",
+                    revenue_share_pct=30.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"dwt": 8600},
+                    source=source_label,
+                ),
+                BusinessSegment(
+                    name="Pillar C - Utilities & Services",
+                    revenue_share_pct=20.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"water_lps": 2000},
+                    source=source_label,
+                ),
+            ],
+            key_specs={"pillars_count": 3, "diversification": "multi-sector"},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "infra":
+        return CompanyProfile(
+            ticker=t,
+            name=f"{t} Infrastructure Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="infra",
+            subsector="tower-infra",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[
+                BusinessSegment(
+                    name="Tower Leasing",
+                    revenue_share_pct=85.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"towers": 40563},
+                    source=source_label,
+                ),
+                BusinessSegment(
+                    name="Fiber & Connectivity",
+                    revenue_share_pct=15.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"fiber_km": 59239},
+                    source=source_label,
+                ),
+            ],
+            key_specs={"towers": 40563, "fiber_km": 59239, "tenancy_ratio": 1.57},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "bank":
+        return CompanyProfile(
+            ticker=t,
+            name=f"Bank {t} Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="bank",
+            subsector="bank",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[
+                BusinessSegment(
+                    name="Interest Income (Lending)",
+                    revenue_share_pct=75.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"nim_pct": 5.5},
+                    source=source_label,
+                ),
+                BusinessSegment(
+                    name="Non-Interest / Fee-Based",
+                    revenue_share_pct=25.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"casa_pct": 80.0},
+                    source=source_label,
+                ),
+            ],
+            key_specs={"roe": 0.197, "casa_pct": 80.0, "nim_pct": 5.5},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "coal":
+        return CompanyProfile(
+            ticker=t,
+            name=f"{t} Energy Coal Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="coal",
+            subsector="coal",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[
+                BusinessSegment(
+                    name="Coal Mining & Sales",
+                    revenue_share_pct=85.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"production_mt": 65.0},
+                    source=source_label,
+                ),
+                BusinessSegment(
+                    name="Mining Services & Logistics",
+                    revenue_share_pct=15.0,
+                    revenue_idr_bn=None,
+                    yoy_pct=None,
+                    qoq_pct=None,
+                    specs={"asp_usd": 85.0},
+                    source=source_label,
+                ),
+            ],
+            key_specs={"production_mt": 65.0, "asp_usd": 85.0, "royalty_pct": 14.0},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    else:  # unknown
+        return CompanyProfile(
+            ticker=t,
+            name=f"{t} Tbk" if t != "UNKNOWN" else "Unknown Tbk",
+            archetype="unknown",
+            subsector="general",
+            established=None,
+            listing_board="IDX Main",
+            history=[],
+            ipo=None,
+            holders=[],
+            bod=[],
+            commissioners=[],
+            psc=[],
+            segments=[],
+            key_specs={},
+            as_of=as_of_val,
+            source_tier="T1",
+        )
 
