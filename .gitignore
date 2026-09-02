@@ -61,3 +61,6 @@ data/agent_runs.db-shm
 package.json
 package-lock.json
 node_modules/
+
+# Typst fonts (downloaded once)
+assets/fonts/*.ttf
