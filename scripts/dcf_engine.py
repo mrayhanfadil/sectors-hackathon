@@ -1018,6 +1018,11 @@ def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[st
         size_premium=size_premium,
     )
     wacc_val = float(assum.get("wacc_override", wacc_res["wacc"]))
+    if "wacc_override" in assum:
+        # Honour the override in the displayed breakdown table + provenance so the
+        # FE/PDF WACC matches the analyst's intended rate even if the floor logic
+        # pushed the computed value higher.
+        wacc_res = {**wacc_res, "wacc": wacc_val, "wacc_raw": wacc_val}
     wacc_table = wacc_table_dict(wacc_res)
 
     # 2. Forecast
@@ -1141,6 +1146,13 @@ def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[st
             "fair_value_per_share": val_res.get("fair_value_per_share"),
             "market_price": val_res.get("market_price"),
             "upside": val_res.get("upside"),
+            # Bridge inputs (so SVG waterfall + reviewer can see net-debt build):
+            "cash": snapshot.get("cash"),
+            "total_debt": snapshot.get("total_debt"),
+            "minority": snapshot.get("minority"),
+            "ebitda": snapshot.get("ebitda"),
+            "shares_outstanding": data_dict.get("shares_outstanding"),
+            "last_price": data_dict.get("price"),
         },
         "recommendation": rec_payload,
         "sensitivity": sens_res,

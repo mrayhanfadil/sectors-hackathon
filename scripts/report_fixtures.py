@@ -14,7 +14,29 @@ import json
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
+ASSUMPTIONS = HERE.parent / "data" / "assumptions"
 FIXTURES = HERE / "fixtures"
+
+
+def _build_cdcf(ticker: str) -> dict:
+    """Friend-style DCF output (Abida Massi port) from data/assumptions/{ticker}.json.
+
+    Returns wacc_table + sensitivity + scenarios + valuation + recommendation in the
+    shape consumed by templates/report_infra.html Friend-Style DCF block. Empty dict
+    if the engine can't run (graceful fallback so PDF render doesn't crash).
+    """
+    try:
+        sys_mod = __import__("sys")
+        if str(HERE) not in sys_mod.path:
+            sys_mod.path.insert(0, str(HERE))
+        from dcf_engine import dcf_full  # noqa: PLC0415
+
+        out = dcf_full(ticker)
+        if not isinstance(out, dict) or "error" in out:
+            return {"_engine_unavailable": True, "_ticker": ticker, "_raw": out}
+        return out
+    except Exception as exc:  # noqa: BLE001
+        return {"_engine_unavailable": True, "_ticker": ticker, "_error": str(exc)}
 
 # months labels used by price charts
 MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
@@ -589,6 +611,11 @@ def mtel_infra() -> dict:
              "quantified": {"tenants": "+3.000-3.500", "revenue_idr_bn": "+360-420", "by": "FY27-29"},
              "source": "Komdigi, press release operator"},
         ],
+
+        # Friend-style DCF (Abida Massi port — scripts/dcf_engine.py::dcf_full)
+        # Populated from data/assumptions/MTEL.json (KSI MTEL 1H26 WACC build).
+        "cDcf": _build_cdcf("MTEL"),
+
         "exhibits": [
             {"id": "Exhibit 5", "title": "KPI Operasional: Tower & Tenant",
              "chart": {"type": "bar", "height": 180,
