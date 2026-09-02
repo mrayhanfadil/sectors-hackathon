@@ -1,79 +1,214 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { fetchSentiment } from "@/lib/api"
+import { Loader2, AlertCircle, RefreshCw } from "lucide-react"
+import { Button } from "@/components/ui/button"
+import { fetchReport, fetchSentiment, fetchNews, fetchReportLog } from "@/lib/api"
+import { ReportHeader } from "@/components/report/ReportHeader"
+import { SentimentStatCards } from "@/components/report/SentimentStatCards"
+import { SentimentChart } from "@/components/report/SentimentChart"
+import { SentimentNewsList } from "@/components/report/SentimentNewsList"
+import { AdkRunCard, type Log, type HistoryItem } from "@/components/report/AdkRunCard"
 
-export const Route = (createFileRoute as any)("/report/$ticker/sentiment")({ component: SentimentPage })
+export const Route = (createFileRoute as any)("/report/$ticker/sentiment")({
+  component: SentimentPage,
+})
 
 function SentimentPage() {
   const { ticker } = Route.useParams()
   const tk = String(ticker).toUpperCase()
-  const { data, isLoading } = useQuery({ queryKey: ["sentiment", tk], queryFn: () => fetchSentiment(tk) })
-  if (isLoading) return <div className="text-sm text-slate-500">Loading sentiment {tk}...</div>
-  if (!data) return <div className="text-sm text-red-600">Failed to load sentiment.</div>
-  const s = data as any
 
-  if (s.empty || s.gauge == null) {
+  // Queries
+  const reportQuery = useQuery({
+    queryKey: ["report", tk],
+    queryFn: () => fetchReport(tk),
+  })
+
+  const sentimentQuery = useQuery({
+    queryKey: ["sentiment", tk],
+    queryFn: () => fetchSentiment(tk),
+  })
+
+  const newsQuery = useQuery({
+    queryKey: ["news", tk],
+    queryFn: () => fetchNews(tk, 30),
+  })
+
+  const logQuery = useQuery({
+    queryKey: ["report-log", tk],
+    queryFn: () => fetchReportLog(tk),
+  })
+
+  const isLoading = reportQuery.isLoading || sentimentQuery.isLoading
+  const reportData = reportQuery.data
+  const sentimentData = sentimentQuery.data
+  const newsData = newsQuery.data
+  const logData = logQuery.data
+
+  // Loading skeleton
+  if (isLoading) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h1 className="text-xl font-semibold">Retail Sentiment - {tk}</h1>
-          <a href={`/report/${tk}`} className="text-xs text-slate-500 underline hover:text-slate-900">← Back to Report</a>
-        </div>
-        <Card className="border-amber-200 bg-amber-50/50">
-          <CardHeader>
-            <CardTitle className="text-sm text-amber-900">Sentiment Belum Tersedia</CardTitle>
-            <CardDescription className="text-xs text-amber-700">
-              {s.note || "Sentiment belum tersedia — BE offline atau news Harvester belum return hasil."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-xs text-slate-600">
-              Data sentimen ritel (X, Reddit, Stockbit) diagregasi secara dinamis saat News Harvester dan Social Sentiment agents berjalan.
+      <div className="space-y-6">
+        <ReportHeader ticker={tk} activeTab="sentiment" />
+        <div className="rounded-xl border border-slate-200 bg-white p-8 text-center shadow-2xs">
+          <div className="flex flex-col items-center justify-center space-y-3">
+            <Loader2 className="h-6 w-6 animate-spin text-slate-700" />
+            <p className="text-sm font-medium text-slate-800">
+              Memuat data sentimen ritel & analisis narasi untuk {tk}...
             </p>
-          </CardContent>
-        </Card>
+            <p className="text-xs text-slate-500">
+              Mengagregasi sinyal sentimen dari Stockbit, X (Twitter), dan media finansial IDX.
+            </p>
+          </div>
+        </div>
       </div>
     )
   }
 
-  return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Retail Sentiment - {tk}</h1>
-        <a href={`/report/${tk}`} className="text-xs text-slate-500 underline hover:text-slate-900">← Back to Report</a>
+  // Error State
+  if (sentimentQuery.isError && !sentimentData) {
+    return (
+      <div className="space-y-6">
+        <ReportHeader
+          ticker={tk}
+          activeTab="sentiment"
+          companyName={reportData?.name}
+          rating={reportData?.rating}
+          price={reportData?.price}
+          targetPrice={reportData?.target}
+          upside={reportData?.upside}
+          updatedAt={reportData?.updatedAt}
+        />
+        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-6 text-slate-800 shadow-2xs">
+          <div className="flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5" />
+            <div className="space-y-2">
+              <h3 className="text-sm font-semibold text-rose-900">
+                Gagal memuat data sentimen untuk {tk}
+              </h3>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Terjadi kendala saat menghubungi modul agregasi sentimen. Anda dapat mencoba memuat ulang atau memeriksa status koneksi backend.
+              </p>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  sentimentQuery.refetch()
+                  newsQuery.refetch()
+                }}
+                className="h-8 gap-1.5 text-xs bg-white cursor-pointer"
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                <span>Coba Lagi</span>
+              </Button>
+            </div>
+          </div>
+        </div>
       </div>
-      <div className="grid gap-4 sm:grid-cols-3">
-        <Card className="sm:col-span-1">
-          <CardHeader><CardTitle className="text-sm">Gauge</CardTitle><CardDescription className="text-xs">0 bear - 100 bull</CardDescription></CardHeader>
-          <CardContent>
-            <div className="text-3xl font-semibold">{s.gauge}<span className="text-base font-normal text-slate-500">/100</span></div>
-            <Badge variant={Number(s.gauge) > 60 ? "success" : Number(s.gauge) < 40 ? "destructive" : "secondary"} className="mt-2">{s.label ?? "Neutral"}</Badge>
-            <p className="mt-2 text-xs text-slate-500">Disclaimer: sentiment is not advice.</p>
-          </CardContent>
-        </Card>
-        <Card className="sm:col-span-2">
-          <CardHeader><CardTitle className="text-sm">Top narratives</CardTitle></CardHeader>
-          <CardContent className="space-y-2 text-sm">
-            {s.narratives && s.narratives.length > 0 ? (
-              s.narratives.map((n: string, i: number) => <div key={i} className="rounded-md border px-3 py-2">#{i+1} {n}</div>)
-            ) : (
-              <p className="text-xs text-slate-500">Belum ada narasi yang terdeteksi.</p>
-            )}
-            {s.timeline && s.timeline.length > 0 && (
-              <div className="pt-2">
-                <div className="text-xs font-medium text-slate-700">Timeline</div>
-                {s.timeline.map((t: { date: string; note: string }) => <div key={t.date} className="text-xs text-slate-600">{t.date} - {t.note}</div>)}
-              </div>
-            )}
-            {s.sources && s.sources.length > 0 && (
-              <div className="flex gap-2 pt-2">
-                {s.sources.map((src: { platform: string; url: string }) => <a key={src.platform} href={src.url} target="_blank" rel="noreferrer" className="text-xs underline">{src.platform}</a>)}
-              </div>
-            )}
-          </CardContent>
-        </Card>
+    )
+  }
+
+  // Offline or Backend unavailable state
+  if (reportData?.offline) {
+    return (
+      <div className="space-y-6">
+        <ReportHeader
+          ticker={tk}
+          activeTab="sentiment"
+          companyName={reportData.name}
+          updatedAt={reportData.updatedAt}
+        />
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-2xs">
+          <div className="font-semibold mb-1">Peringatan: Backend Offline</div>
+          <p className="text-xs leading-relaxed text-amber-800">
+            {reportData.summary}
+          </p>
+          <Button
+            size="sm"
+            onClick={() => window.location.reload()}
+            className="mt-3 bg-amber-900 text-white hover:bg-amber-800 text-xs"
+          >
+            Muat Ulang Halaman
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Prepare news articles and social items
+  const articles = newsData?.data || []
+  const socialItems = sentimentData?.items || []
+
+  return (
+    <div className="space-y-6 pb-12">
+      {/* Shared Report Header */}
+      <ReportHeader
+        ticker={tk}
+        activeTab="sentiment"
+        companyName={reportData?.name}
+        rating={reportData?.rating}
+        price={reportData?.price}
+        targetPrice={reportData?.target}
+        upside={reportData?.upside}
+        updatedAt={reportData?.updatedAt}
+        source={reportData?.source}
+      />
+
+      {/* Intro Description */}
+      <div className="space-y-1">
+        <h2 className="text-base font-bold tracking-tight text-slate-900">
+          Pelacak Sentimen & Narasi Komunitas Ritel ({tk})
+        </h2>
+        <p className="text-xs leading-relaxed text-slate-600 max-w-3xl">
+          Pemantauan opini ritel publik secara real-time yang memetakan optimisme vs pesimisme pasar di media sosial (Stockbit, X) dan pemberitaan pers IDX. Berguna untuk mengidentifikasi potensi divergensi antara valuasi fundamental institusional dan ekspektasi harga ritel.
+        </p>
+      </div>
+
+      {/* Top Stat Cards */}
+      <SentimentStatCards
+        ticker={tk}
+        sentiment={sentimentData}
+        newsCount={articles.length}
+        socialCount={socialItems.length}
+      />
+
+      {/* Visual Sentiment Chart & Narrative Dial */}
+      <SentimentChart
+        ticker={tk}
+        sentiment={sentimentData}
+        isLoading={sentimentQuery.isLoading}
+      />
+
+      {/* News & Social Feed */}
+      <SentimentNewsList
+        ticker={tk}
+        articles={articles}
+        socialItems={socialItems}
+        isLoading={newsQuery.isLoading}
+      />
+
+      {/* ADK Run Card - Accessible directly from sentiment sub-route */}
+      {logData ? (
+        <div className="space-y-2 pt-2">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600">
+            Status Eksekusi Agent & Jejak ADK ({tk})
+          </h3>
+          <AdkRunCard
+            ticker={tk}
+            log={logData.log as Log}
+            history={(logData.history || []) as HistoryItem[]}
+            hasRun={logData.has_run}
+          />
+        </div>
+      ) : null}
+
+      {/* Shared Footer Disclaimer */}
+      <div className="rounded-lg border border-slate-200 bg-slate-50 p-4 text-xs text-slate-500 shadow-2xs">
+        <div className="font-semibold uppercase tracking-wider text-slate-700">
+          INFORMASI, BUKAN SARAN INVESTASI
+        </div>
+        <p className="mt-1 leading-relaxed text-[11px] text-slate-600">
+          Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional (kepatuhan regulasi OJK). Data sentimen bersumber dari publikasi pihak ketiga yang diagregasikan secara otomatis.
+        </p>
       </div>
     </div>
   )

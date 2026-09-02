@@ -3,7 +3,6 @@ import { Link } from "@tanstack/react-router"
 import {
   Bot,
   Inbox,
-  ArrowRight,
   ChevronDown,
   ChevronUp,
   History,

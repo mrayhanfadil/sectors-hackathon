@@ -412,8 +412,20 @@ export type Sentiment = {
   gauge: number | null
   label?: string | null
   narratives: string[]
+  top_narratives?: string[]
   timeline: { date: string; note: string }[]
   sources: { platform: string; url: string }[]
+  items?: {
+    platform?: string
+    text?: string
+    sentiment?: string
+    date?: string
+    url?: string
+    score?: number
+    timestamp?: string
+    author?: string
+  }[]
+  confidence?: number | null
   empty?: boolean
   note?: string
 }
@@ -469,6 +481,51 @@ export async function fetchPdf(ticker: string): Promise<void> {
   a.click()
   a.remove()
   setTimeout(() => URL.revokeObjectURL(href), 4000)
+}
+
+// --- adk report log ---
+export type ReportLogItem = {
+  run_id: string
+  status: "completed" | "interrupted" | "failed" | "running" | string
+  started_at: number
+  finished_at: number | null
+  duration_s: number | null
+  provider: string
+  model: string
+  n_events: number
+  last_text_preview: string | null
+  error: string | null
+}
+
+export type ReportLogHistoryItem = {
+  run_id: string
+  status: string
+  started_at: number
+  n_events: number
+  duration_s: number | null
+}
+
+export type ReportLogResponse = {
+  ticker: string
+  has_run: boolean
+  log: ReportLogItem | null
+  history: ReportLogHistoryItem[]
+}
+
+export async function fetchReportLog(ticker: string): Promise<ReportLogResponse> {
+  const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") || ""
+  try {
+    const res = await fetch(`${base}/api/report/${encodeURIComponent(ticker.toUpperCase())}/log`)
+    if (!res.ok) throw new Error(String(res.status))
+    return await res.json()
+  } catch {
+    return {
+      ticker: ticker.toUpperCase(),
+      has_run: false,
+      log: null,
+      history: [],
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------
