@@ -24,6 +24,7 @@ export interface AgentRunItem {
   provider?: string | null
   model?: string | null
   prompt?: string | null
+  is_active?: boolean
 }
 
 export interface RunHistoryPanelProps {
@@ -48,9 +49,10 @@ function formatRelativeTime(ts: number | undefined | null): string {
 function formatRunDuration(
   startedAt: number,
   finishedAt?: number | null,
-  status?: string
+  status?: string,
+  isActive?: boolean
 ): string {
-  if (status === "running" && !finishedAt) {
+  if ((status === "running" || isActive) && !finishedAt) {
     const elapsed = Math.max(0, Math.floor(Date.now() / 1000 - startedAt))
     return `${elapsed}s (aktif)`
   }
@@ -69,18 +71,23 @@ function truncateRunId(runId: string): string {
   return `${runId.slice(0, 14)}…`
 }
 
-function renderStatusBadge(status: string) {
-  switch (status) {
-    case "running":
-      return (
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
-          <span className="relative flex h-2 w-2">
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
-            <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
-          </span>
-          <span>Berjalan</span>
+function renderStatusBadge(status: string, isActive?: boolean) {
+  if (isActive || status === "running") {
+    return (
+      <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-300 bg-amber-50 px-2 py-0.5 text-[11px] font-semibold text-amber-800">
+        <span className="relative flex h-2 w-2">
+          <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
+          <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
         </span>
-      )
+        <span>Berjalan</span>
+        <span className="inline-flex items-center font-mono text-[10px] text-amber-900 font-bold ml-0.5">
+          ● Live
+        </span>
+      </span>
+    )
+  }
+
+  switch (status) {
     case "completed":
       return (
         <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
@@ -176,7 +183,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
     fetchRuns(false)
   }, [fetchRuns])
 
-  const runningRuns = runs.filter((r) => r.status === "running")
+  const runningRuns = runs.filter((r) => r.status === "running" || r.is_active)
   const hasRunning = runningRuns.length > 0
 
   return (
@@ -331,7 +338,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
 
                         {/* Status badge */}
                         <td className="py-2.5 px-3 whitespace-nowrap">
-                          {renderStatusBadge(run.status)}
+                          {renderStatusBadge(run.status, run.is_active)}
                         </td>
 
                         {/* Events count */}
@@ -353,7 +360,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
 
                         {/* Duration */}
                         <td className="py-2.5 px-3 whitespace-nowrap font-mono text-[11px] text-slate-600">
-                          {formatRunDuration(run.started_at, run.finished_at, run.status)}
+                          {formatRunDuration(run.started_at, run.finished_at, run.status, run.is_active)}
                         </td>
 
                         {/* Run ID */}

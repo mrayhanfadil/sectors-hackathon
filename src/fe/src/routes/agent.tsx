@@ -18,7 +18,6 @@ import {
   Zap,
   Database,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAgentProgress } from "@/components/agent/useAgentProgress"
@@ -26,10 +25,7 @@ import { PhaseTimeline } from "@/components/agent/PhaseTimeline"
 import { PlainEnglishPanel } from "@/components/agent/PlainEnglishPanel"
 import { SummaryCard } from "@/components/agent/SummaryCard"
 import { RunHistoryPanel } from "@/components/agent/RunHistoryPanel"
-import {
-  getFriendlyAgent,
-  type TraceEvent,
-} from "@/components/agent/AGENT_FRIENDLY_META"
+import { type TraceEvent } from "@/components/agent/AGENT_FRIENDLY_META"
 
 interface AgentSearchParams {
   ticker?: string
@@ -54,6 +50,28 @@ interface HealthInfo {
   graph?: { name: string; n_subagents?: number; subagents?: string[] }
 }
 
+function normalizeEvents(rawEvents: any[]): TraceEvent[] {
+  if (!Array.isArray(rawEvents)) return []
+  return rawEvents.map((ev: any) => ({
+    seq: ev.seq ?? 0,
+    ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
+    author: ev.author || ev.payload?.author || "",
+    node: ev.node || ev.payload?.node || "",
+    branch: ev.branch || ev.payload?.branch || null,
+    event_type: ev.event_type || ev.payload?.event_type || "message",
+    text: ev.text ?? ev.payload?.text ?? "",
+    function_calls: ev.function_calls || ev.payload?.function_calls || [],
+    function_responses: ev.function_responses || ev.payload?.function_responses || [],
+    state_delta_keys:
+      ev.state_delta_keys ||
+      (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
+        ? Object.keys(ev.payload.state_delta)
+        : []),
+    state_delta: ev.state_delta || ev.payload?.state_delta || null,
+    transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
+  }))
+}
+
 function formatRelativeTime(ts: number | undefined | null): string {
   if (!ts) return "baru saja"
   const now = Date.now() / 1000
@@ -65,11 +83,12 @@ function formatRelativeTime(ts: number | undefined | null): string {
 }
 
 function AgentTrace() {
-  const search = (Route.useSearch ? Route.useSearch() : {}) as AgentSearchParams
+  const search = Route.useSearch() as AgentSearchParams
   const initialTicker = (search?.ticker || "BBCA").toUpperCase().trim()
   const [ticker, setTicker] = useState(initialTicker)
   const [events, setEvents] = useState<TraceEvent[]>([])
   const [running, setRunning] = useState(false)
+  const [pollCount, setPollCount] = useState(0)
   const [done, setDone] = useState<{ n_events: number; state_keys: string[]; ms: number } | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [health, setHealth] = useState<HealthInfo | null>(null)
@@ -83,13 +102,30 @@ function AgentTrace() {
     started_at: number
     finished_at?: number | null
     error?: string | null
+    reason?: string | null
   } | null>(null)
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null)
   const selectedRunIdRef = useRef<string | null>(null)
-  selectedRunIdRef.current = selectedRunId
+  useEffect(() => {
+    selectedRunIdRef.current = selectedRunId
+  }, [selectedRunId])
   const startRef = useRef<number>(0)
+  const pollCleanupRef = useRef<(() => void) | null>(null)
 
   const apiBase = (import.meta as any).env?.VITE_API_URL || ""
+
+  const stopPolling = useCallback(() => {
+    if (pollCleanupRef.current) {
+      pollCleanupRef.current()
+      pollCleanupRef.current = null
+    }
+  }, [])
+
+  useEffect(() => {
+    return () => {
+      stopPolling()
+    }
+  }, [stopPolling])
 
   const fetchHealth = useCallback(async () => {
     try {
@@ -137,25 +173,7 @@ function AgentTrace() {
           const j = await r.json()
           if (!active) return
           if (j && Array.isArray(j.events) && j.events.length > 0) {
-            const normalizedEvents: TraceEvent[] = j.events.map((ev: any) => ({
-              seq: ev.seq ?? 0,
-              ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
-              author: ev.author || ev.payload?.author || "",
-              node: ev.node || ev.payload?.node || "",
-              branch: ev.branch || ev.payload?.branch || null,
-              event_type: ev.event_type || ev.payload?.event_type || "message",
-              text: ev.text ?? ev.payload?.text ?? "",
-              function_calls: ev.function_calls || ev.payload?.function_calls || [],
-              function_responses: ev.function_responses || ev.payload?.function_responses || [],
-              state_delta_keys:
-                ev.state_delta_keys ||
-                (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
-                  ? Object.keys(ev.payload.state_delta)
-                  : []),
-              state_delta: ev.state_delta || ev.payload?.state_delta || null,
-              transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
-            }))
-
+            const normalizedEvents = normalizeEvents(j.events)
             setEvents(normalizedEvents)
             const isCompleted = j.status === "completed"
             if (isCompleted) {
@@ -183,6 +201,7 @@ function AgentTrace() {
               started_at: j.started_at,
               finished_at: j.finished_at,
               error: j.error,
+              reason: j.reason,
             })
             return
           }
@@ -203,36 +222,156 @@ function AgentTrace() {
     }
   }, [ticker, apiBase, running, loadedFromDb?.run_id, loadedFromDb?.ticker])
 
+  const startPolling = useCallback(
+    (runId: string, runTicker: string) => {
+      stopPolling()
+      let cancelled = false
+      let consecutive404s = 0
+
+      const pollStep = async () => {
+        if (cancelled) return
+        setPollCount((prev) => prev + 1)
+
+        try {
+          const statusRes = await fetch(
+            `${apiBase}/api/agent/runs/${encodeURIComponent(runId)}/status`
+          )
+
+          if (cancelled) return
+
+          if (statusRes.status === 404) {
+            consecutive404s++
+            if (consecutive404s > 5) {
+              stopPolling()
+              setRunning(false)
+              setError(`Run ${runId} tidak ditemukan di server.`)
+            }
+            return
+          }
+
+          consecutive404s = 0
+
+          if (!statusRes.ok) return
+
+          const statusData = await statusRes.json()
+          if (cancelled) return
+
+          const currentStatus = statusData.status || "running"
+
+          setLoadedFromDb((prev) => ({
+            run_id: runId,
+            ticker: statusData.ticker || runTicker,
+            status: currentStatus,
+            n_events: statusData.n_events || 0,
+            started_at: statusData.started_at || prev?.started_at || Date.now() / 1000,
+            finished_at: statusData.finished_at || null,
+            error: statusData.reason || null,
+            reason: statusData.reason || null,
+          }))
+
+          if (
+            currentStatus === "completed" ||
+            currentStatus === "failed" ||
+            currentStatus === "interrupted"
+          ) {
+            stopPolling()
+            setRunning(false)
+
+            try {
+              const fullRes = await fetch(
+                `${apiBase}/api/agent/runs/${encodeURIComponent(runId)}`
+              )
+              if (fullRes.ok && !cancelled) {
+                const fullData = await fullRes.json()
+                const normalized = normalizeEvents(fullData.events || [])
+                setEvents(normalized)
+
+                if (currentStatus === "completed") {
+                  setDone({
+                    n_events: fullData.n_events || normalized.length,
+                    state_keys: fullData.state ? Object.keys(fullData.state) : [],
+                    ms:
+                      fullData.finished_at && fullData.started_at
+                        ? Math.max(
+                            0,
+                            Math.round((fullData.finished_at - fullData.started_at) * 1000)
+                          )
+                        : Date.now() - startRef.current,
+                  })
+                  setError(null)
+                } else if (currentStatus === "failed") {
+                  setDone(null)
+                  setError(fullData.error || fullData.reason || "Analisis gagal diselesaikan.")
+                } else {
+                  setDone(null)
+                  setError(
+                    `Analisis terhenti (${fullData.reason || "interrupted"}). Klik "Jalankan Analisis" untuk melanjutkan.`
+                  )
+                }
+
+                setLoadedFromDb({
+                  run_id: fullData.run_id || runId,
+                  ticker: fullData.ticker || runTicker,
+                  status: currentStatus,
+                  n_events: fullData.n_events || normalized.length,
+                  started_at: fullData.started_at || statusData.started_at,
+                  finished_at: fullData.finished_at || statusData.finished_at,
+                  error: fullData.error || fullData.reason,
+                  reason: fullData.reason || statusData.reason,
+                })
+              }
+            } catch {
+              // Full fetch fallback
+            }
+            return
+          }
+
+          // While running: fetch full events incrementally so the UI updates live
+          if (currentStatus === "running") {
+            try {
+              const fullRes = await fetch(
+                `${apiBase}/api/agent/runs/${encodeURIComponent(runId)}`
+              )
+              if (fullRes.ok && !cancelled) {
+                const fullData = await fullRes.json()
+                if (Array.isArray(fullData.events) && fullData.events.length > 0) {
+                  const normalized = normalizeEvents(fullData.events)
+                  setEvents(normalized)
+                }
+              }
+            } catch {
+              // Non-fatal incremental fetch blip
+            }
+          }
+        } catch {
+          // Network blip, continue next poll interval
+        }
+      }
+
+      pollStep()
+      const intervalId = setInterval(pollStep, 2000)
+      pollCleanupRef.current = () => {
+        cancelled = true
+        clearInterval(intervalId)
+      }
+    },
+    [apiBase, stopPolling]
+  )
+
   const handleSelectRun = useCallback(
     async (runId: string) => {
+      stopPolling()
       setSelectedRunId(runId)
       selectedRunIdRef.current = runId
       setError(null)
       setRunning(false)
+      setPollCount(0)
       try {
         const r = await fetch(`${apiBase}/api/agent/runs/${encodeURIComponent(runId)}`)
         if (r.status === 200) {
           const j = await r.json()
-          if (j && Array.isArray(j.events)) {
-            const normalizedEvents: TraceEvent[] = j.events.map((ev: any) => ({
-              seq: ev.seq ?? 0,
-              ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
-              author: ev.author || ev.payload?.author || "",
-              node: ev.node || ev.payload?.node || "",
-              branch: ev.branch || ev.payload?.branch || null,
-              event_type: ev.event_type || ev.payload?.event_type || "message",
-              text: ev.text ?? ev.payload?.text ?? "",
-              function_calls: ev.function_calls || ev.payload?.function_calls || [],
-              function_responses: ev.function_responses || ev.payload?.function_responses || [],
-              state_delta_keys:
-                ev.state_delta_keys ||
-                (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
-                  ? Object.keys(ev.payload.state_delta)
-                  : []),
-              state_delta: ev.state_delta || ev.payload?.state_delta || null,
-              transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
-            }))
-
+          if (j) {
+            const normalizedEvents = normalizeEvents(j.events || [])
             setEvents(normalizedEvents)
             const runTicker = (j.ticker || ticker).toUpperCase().trim()
             if (runTicker !== ticker) {
@@ -264,7 +403,14 @@ function AgentTrace() {
               started_at: j.started_at,
               finished_at: j.finished_at,
               error: j.error,
+              reason: j.reason,
             })
+
+            // If selected run is still active in BE, resume polling it!
+            if (j.status === "running") {
+              setRunning(true)
+              startPolling(j.run_id, runTicker)
+            }
           }
         } else {
           setError(`Gagal memuat run ${runId} (status ${r.status})`)
@@ -274,7 +420,7 @@ function AgentTrace() {
         setError(`Gagal memuat jejak run: ${msg}`)
       }
     },
-    [apiBase, ticker]
+    [apiBase, ticker, stopPolling, startPolling]
   )
 
   const {
@@ -291,13 +437,15 @@ function AgentTrace() {
   })
 
   const run = useCallback(
-    async (mode: "stream" | "blocking") => {
+    async (mode: "detached" | "blocking" | "sse" = "detached") => {
+      stopPolling()
       setSelectedRunId(null)
       selectedRunIdRef.current = null
       setLoadedFromDb(null)
       setError(null)
       setDone(null)
       setEvents([])
+      setPollCount(0)
       setRunning(true)
       startRef.current = Date.now()
       const t = ticker.trim().toUpperCase() || "BBCA"
@@ -311,7 +459,7 @@ function AgentTrace() {
           })
           const j = await r.json()
           if (!j.ok) throw new Error(j.error || JSON.stringify(j).slice(0, 800))
-          setEvents((j.trace || []) as TraceEvent[])
+          setEvents(normalizeEvents(j.trace || []))
           setDone({
             n_events: j.n_events,
             state_keys: j.state_keys || [],
@@ -326,144 +474,148 @@ function AgentTrace() {
         return
       }
 
-      // SSE stream mode (live step-by-step trace)
-      try {
-        const es = new EventSource(`${apiBase}/api/agent/stream?ticker=${encodeURIComponent(t)}`)
-        es.onmessage = (ev) => {
-          try {
-            const frame = JSON.parse(ev.data) as TraceEvent & {
-              done?: boolean
-              state_keys?: string[]
-              state_preview?: unknown
-              ticker?: string
-              error?: string
-            }
+      if (mode === "sse") {
+        // SSE stream fallback
+        try {
+          const es = new EventSource(`${apiBase}/api/agent/stream?ticker=${encodeURIComponent(t)}`)
+          es.onmessage = (ev) => {
+            try {
+              const frame = JSON.parse(ev.data) as TraceEvent & {
+                done?: boolean
+                state_keys?: string[]
+                state_preview?: unknown
+                ticker?: string
+                error?: string
+              }
 
-            if (frame.event_type === "start") {
-              return
-            }
+              if (frame.event_type === "start") return
 
-            if (frame.event_type === "error") {
-              setError(frame.error || frame.text || "Terjadi kendala pada stream.")
-              es.close()
-              setRunning(false)
-              return
-            }
+              if (frame.event_type === "error") {
+                setError(frame.error || frame.text || "Terjadi kendala pada stream.")
+                es.close()
+                setRunning(false)
+                return
+              }
 
-            if (frame.event_type === "done") {
-              const d = frame as { n_events?: number; state_keys?: string[] }
-              setDone({
-                n_events: d.n_events || 0,
-                state_keys: d.state_keys || [],
-                ms: Date.now() - startRef.current,
-              })
-              es.close()
-              setRunning(false)
-              return
-            }
+              if (frame.event_type === "done") {
+                const d = frame as { n_events?: number; state_keys?: string[] }
+                setDone({
+                  n_events: d.n_events || 0,
+                  state_keys: d.state_keys || [],
+                  ms: Date.now() - startRef.current,
+                })
+                es.close()
+                setRunning(false)
+                return
+              }
 
-            // Normal event frame
-            setEvents((prev) => [...prev, frame as TraceEvent])
-          } catch {
-            // Ignore parse errors on individual frames
+              setEvents((prev) => [...prev, frame as TraceEvent])
+            } catch {}
           }
-        }
 
-        let reconnectAttempted = false
-        let reconnectTimer: ReturnType<typeof setTimeout> | null = null
+          es.onerror = () => {
+            setTimeout(() => {
+              if (es.readyState === EventSource.CLOSED) {
+                setRunning(false)
+                setError("Stream terputus. Memuat jejak dari SQLite…")
+                fetch(`${apiBase}/api/agent/runs/latest?ticker=${encodeURIComponent(t)}`)
+                  .then((r) => (r.status === 200 ? r.json() : null))
+                  .then((j) => {
+                    if (!j || !Array.isArray(j.events)) return
+                    const normalized = normalizeEvents(j.events)
+                    if (normalized.length > 0) {
+                      setEvents(normalized)
+                      setLoadedFromDb({
+                        run_id: j.run_id,
+                        ticker: j.ticker || t,
+                        status: j.status || "interrupted",
+                        n_events: j.n_events || normalized.length,
+                        started_at: j.started_at,
+                        finished_at: j.finished_at,
+                        error: j.error,
+                        reason: j.reason,
+                      })
+                    }
+                  })
+                  .catch(() => {})
+              }
+            }, 1200)
+          }
 
-        es.onerror = () => {
-          // Distinguish transient network blip (readyState CONNECTING) from hard close (CLOSED).
-          // EventSource auto-reconnects on transient blips. Only mark interrupted when CLOSED
-          // (server actively disconnected) — and offer a SQLite fallback so the user can
-          // resume the partial trace instead of losing it.
           setTimeout(() => {
-            if (es.readyState === EventSource.CLOSED) {
-              // Stream died. Don't auto-retry the same SSE (server already marked interrupted
-              // in SQLite). Instead, fetch the partial trace from persistence so the user
-              // sees what we captured and can choose to re-run a fresh SSE.
-              setRunning(false)
-              setError(
-                "Stream terputus (mungkin tab di-background, navigasi, atau koneksi idle). " +
-                  "Memuat jejak terakhir dari SQLite…"
-              )
-              // Pull latest persisted events for this ticker so the UI keeps showing what
-              // we captured before the disconnect.
-              fetch(`${apiBase}/api/agent/runs/latest?ticker=${encodeURIComponent(t)}`)
-                .then((r) => (r.status === 200 ? r.json() : null))
-                .then((j) => {
-                  if (!j || !Array.isArray(j.events)) return
-                  const normalized: TraceEvent[] = j.events.map((ev: any) => ({
-                    seq: ev.seq ?? 0,
-                    ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),
-                    author: ev.author || ev.payload?.author || "",
-                    node: ev.node || ev.payload?.node || "",
-                    branch: ev.branch || ev.payload?.branch || null,
-                    event_type: ev.event_type || ev.payload?.event_type || "message",
-                    text: ev.text ?? ev.payload?.text ?? "",
-                    function_calls: ev.function_calls || ev.payload?.function_calls || [],
-                    function_responses:
-                      ev.function_responses || ev.payload?.function_responses || [],
-                    state_delta_keys:
-                      ev.state_delta_keys ||
-                      (ev.payload?.state_delta && typeof ev.payload.state_delta === "object"
-                        ? Object.keys(ev.payload.state_delta)
-                        : []),
-                    state_delta: ev.state_delta || ev.payload?.state_delta || null,
-                    transfer_to: ev.transfer_to || ev.payload?.transfer_to || null,
-                  }))
-                  if (normalized.length > 0) {
-                    setEvents(normalized)
-                    setLoadedFromDb({
-                      run_id: j.run_id,
-                      ticker: j.ticker || t,
-                      status: j.status || "interrupted",
-                      n_events: j.n_events || normalized.length,
-                      started_at: j.started_at,
-                      finished_at: j.finished_at,
-                      error: j.error,
-                    })
-                    setError(
-                      `Stream terputus setelah ${normalized.length} events. ` +
-                        `Memuat dari SQLite — klik "Jalankan Analisis" untuk retry.`
-                    )
-                  }
-                })
-                .catch(() => {
-                  /* SQLite fallback also failed — keep the original error. */
-                })
-            }
-            // readyState === CONNECTING (1) means EventSource is auto-retrying the
-            // network — keep `running` true so the UI doesn't flash.
-          }, 1200)
+            try {
+              es.close()
+            } catch {}
+            setRunning(false)
+          }, 15 * 60 * 1000)
+        } catch (e: unknown) {
+          const msg = e instanceof Error ? e.message : String(e)
+          setError(msg.slice(0, 1000))
+          setRunning(false)
+        }
+        return
+      }
+
+      // Default: Detached fire-and-forget background task + polling
+      try {
+        const res = await fetch(`${apiBase}/api/agent/start`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ticker: t }),
+        })
+
+        if (!res.ok) {
+          const errJson = await res.json().catch(() => ({}))
+          throw new Error(errJson.error || `HTTP ${res.status}: Gagal memulai background run.`)
         }
 
-        // Safety timeout 15 min
-        setTimeout(() => {
-          try {
-            es.close()
-          } catch {}
-          setRunning(false)
-          setError("Batas waktu 15 menit tercapai. Coba lagi atau gunakan Mode Cepat.")
-        }, 15 * 60 * 1000)
+        const data = await res.json()
+        if (!data.ok || !data.run_id) {
+          throw new Error(data.error || "Server tidak mengembalikan run_id yang valid.")
+        }
+
+        const runId = data.run_id
+        const runTicker = (data.ticker || t).toUpperCase().trim()
+        if (runTicker !== ticker) {
+          setTicker(runTicker)
+        }
+        setSelectedRunId(runId)
+        selectedRunIdRef.current = runId
+
+        setLoadedFromDb({
+          run_id: runId,
+          ticker: runTicker,
+          status: "running",
+          n_events: 0,
+          started_at: Date.now() / 1000,
+          finished_at: null,
+          error: null,
+          reason: null,
+        })
+
+        // Start polling loop every 2s
+        startPolling(runId, runTicker)
       } catch (e: unknown) {
         const msg = e instanceof Error ? e.message : String(e)
         setError(msg.slice(0, 1000))
         setRunning(false)
       }
     },
-    [ticker, apiBase]
+    [ticker, apiBase, stopPolling, startPolling]
   )
 
   const handleClear = useCallback(() => {
+    stopPolling()
+    setRunning(false)
     setSelectedRunId(null)
     selectedRunIdRef.current = null
     setLoadedFromDb(null)
     setEvents([])
     setDone(null)
     setError(null)
+    setPollCount(0)
     setFilterAuthor("all")
-  }, [])
+  }, [stopPolling])
 
   const stateKeys = useMemo(() => {
     const set = new Set<string>()
@@ -514,7 +666,12 @@ function AgentTrace() {
                 <span className="text-slate-300">·</span>
                 <span className="flex items-center gap-1 font-mono text-slate-700">
                   <Activity className="h-3 w-3 text-slate-500" />
-                  {events.length} aktivitas
+                  {events.length > 0 ? events.length : (loadedFromDb?.n_events ?? 0)} aktivitas
+                </span>
+                <span className="text-slate-300">·</span>
+                <span className="flex items-center gap-1 font-mono text-slate-600" title={`Polling aktif (#${pollCount})`}>
+                  <RefreshCw className="h-3 w-3 animate-spin text-slate-500" />
+                  <span>polling setiap 2 detik</span>
                 </span>
                 <span className="text-slate-300">·</span>
                 <span className="flex items-center gap-1 font-mono font-semibold text-amber-800">
@@ -534,7 +691,7 @@ function AgentTrace() {
             ) : isInterrupted ? (
               <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2 text-xs font-medium text-amber-900">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
-                <span>Stream terhenti sementara</span>
+                <span>Analisis terhenti sementara</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2 text-xs font-medium text-slate-600">
@@ -556,6 +713,8 @@ function AgentTrace() {
                 id="ticker-input"
                 value={ticker}
                 onChange={(e) => {
+                  stopPolling()
+                  setRunning(false)
                   setSelectedRunId(null)
                   selectedRunIdRef.current = null
                   setTicker(e.target.value.toUpperCase())
@@ -567,7 +726,7 @@ function AgentTrace() {
             </div>
 
             <Button
-              onClick={() => run("stream")}
+              onClick={() => run("detached")}
               disabled={running}
               className="h-9 gap-1.5 bg-slate-900 px-4 text-xs font-medium text-white hover:bg-slate-800 shadow-xs"
             >
@@ -647,16 +806,22 @@ function AgentTrace() {
                   className={`text-[11px] font-medium ${
                     loadedFromDb.status === "failed"
                       ? "border-rose-300 bg-rose-50 text-rose-700"
+                      : loadedFromDb.status === "running"
+                      ? "border-amber-300 bg-amber-50 text-amber-700"
                       : "border-amber-300 bg-amber-50 text-amber-700"
                   }`}
                 >
-                  {loadedFromDb.status === "failed" ? "Gagal (failed)" : "Terhenti (interrupted)"}
+                  {loadedFromDb.status === "failed"
+                    ? "Gagal (failed)"
+                    : loadedFromDb.status === "running"
+                    ? "Sedang Berjalan (running)"
+                    : "Terhenti (interrupted)"}
                 </Badge>
               )}
             </div>
-            {loadedFromDb.status !== "completed" && (
+            {loadedFromDb.status !== "completed" && loadedFromDb.status !== "running" && (
               <Button
-                onClick={() => run("stream")}
+                onClick={() => run("detached")}
                 disabled={running}
                 size="sm"
                 variant="outline"
@@ -780,7 +945,7 @@ function AgentTrace() {
           </div>
 
           <div className="space-y-2">
-            <div className="font-semibold text-slate-800">Log Frame Event SSE Mentah:</div>
+            <div className="font-semibold text-slate-800">Log Frame Event Aktivitas (JSON):</div>
             <div className="max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-[11px] text-slate-300">
               {events.length === 0 ? (
                 <div className="text-slate-500 italic">Belum ada frame event yang diterima.</div>

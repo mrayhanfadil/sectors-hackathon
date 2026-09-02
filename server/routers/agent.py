@@ -405,8 +405,27 @@ async def agent_start(req: AgentRunRequest):
     if not ticker.isalnum():
         return JSONResponse({"error": "invalid ticker"}, status_code=400)
 
-    # Smart session_id: reuse recent interrupted run (resume) or allocate fresh
+    from server.storage import AgentRunStore
     store = AgentRunStore()
+
+    # Concurrency lock: refuse to start if there is already an active run for this ticker.
+    # Active = status='running' AND has events in last 60 seconds (avoid stale rows).
+    active_for_ticker = [
+        r for r in store.list_runs(ticker=ticker, limit=10)
+        if r["status"] == "running" and (time.time() - r.get("started_at", 0)) < 60
+    ]
+    if active_for_ticker:
+        log.info("agent_start refused for ticker=%s: %d active run(s) already", ticker, len(active_for_ticker))
+        return JSONResponse({
+            "ok": False,
+            "ticker": ticker,
+            "error": "active_run_exists",
+            "message": f"Ticker {ticker} sudah ada run berjalan. Tunggu sampai selesai atau klik row yang sedang jalan.",
+            "active_run_id": active_for_ticker[0]["run_id"],
+            "n_active": len(active_for_ticker),
+        }, status_code=409)
+
+    # Smart session_id: reuse recent interrupted run (resume) or allocate fresh
     recent = store.get_recent_interrupted_run(ticker, within_seconds=600.0)
     if recent and recent.get("run_id"):
         session_id = recent["run_id"]
