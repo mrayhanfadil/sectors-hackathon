@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 import json
+import os
 
 ARCHETYPE_SOURCES = {
     "RATU": "HP Sekuritas 7 Jan 2026 — RATU",
@@ -223,34 +224,217 @@ JPM_FIVE_THEMATICS: list[Thematic] = [
 ]
 
 
-def fixture_ratu_industry() -> IndustryOutlook:
-    return IndustryOutlook(
-        ticker="RATU",
-        subsector="oil-holding",
-        archetype="single",
-        commodities=[
-            CommodityAssumption("Brent", "USD/bbl", 82.0, 80.0, 78.0, -2.4,
-                                "IEA OMR Jan 2026: demand +1.1mb/d, OPEC+ spare 5.2mb/d", ARCHETYPE_SOURCES["IEA"], "2026-01-15"),
-        ],
-        regulator=RegulatorContext("SKK Migas", "PSC Cost Recovery", "DMO 25%, Cepu expiry 2035", "PP 28/2025: SLA + positive fictitious approval", ARCHETYPE_SOURCES["RATU"]),
-        thematics=JPM_FIVE_THEMATICS,
-        danantara=DanantaraContext(),
-        sector_stance="UW Energy (JPM Table 2/17) — RATU hedged via Cepu PSC floor; Energy UW but PSC cost-recovery buffers Brent downside",
-        index_target={"base": 9100, "bull": 10000, "bear": 7800, "eps_growth": 8, "pe": 15, "bridge": "8500x1.08x1.00"},
-        as_of="2026-08-31",
-    )
+def _load_assumptions(ticker: str, assum: Optional[dict] = None) -> dict:
+    """Load data/assumptions/{ticker}.json if available, merged with passed assum dict."""
+    data: dict = {}
+    t = ticker.upper().strip() if ticker else ""
+    if t:
+        base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data", "assumptions"))
+        path = os.path.join(base_dir, f"{t}.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                    if isinstance(loaded, dict):
+                        data.update(loaded)
+            except Exception:
+                pass
+    if assum and isinstance(assum, dict):
+        data.update(assum)
+    return data
 
 
-def fixture_mtel_industry() -> IndustryOutlook:
-    return IndustryOutlook(
-        ticker="MTEL",
-        subsector="tower-infra",
-        archetype="infra",
-        commodities=[],
-        regulator=RegulatorContext("Kominfo", "Spectrum licensing", "700MHz & 2.6GHz allocation (TLKM 20/80 MHz)", "Spectrum 700MHz & 2.6GHz -> +3k tenants pipeline", ARCHETYPE_SOURCES["MTEL"]),
-        thematics=JPM_FIVE_THEMATICS,
-        danantara=DanantaraContext(),
-        sector_stance="N Communication Services (JPM) — infra recurring, tower demand tied to FWA/fiberization/IoT; Telco OW via ISAT/MTEL tenants",
-        index_target={"base": 9100, "bull": 10000, "bear": 7800, "eps_growth": 8, "pe": 15, "bridge": "8500x1.08x1.00"},
-        as_of="2026-08-31",
-    )
+def fixture_from_archetype(
+    ticker: str,
+    archetype: str = "single",
+    assum: Optional[dict] = None,
+) -> IndustryOutlook:
+    """Dynamic archetype-driven IndustryOutlook fixture generator."""
+    merged_assum = _load_assumptions(ticker, assum)
+    t = ticker.upper().strip() if ticker else "UNKNOWN"
+    arch = (archetype or "").lower().strip()
+
+    if arch in ("oil-holding", "single-pillar", "single"):
+        arch_norm = "single"
+    elif arch in ("conglomerate", "sotp", "multi"):
+        arch_norm = "sotp"
+    elif arch in ("tower-infra", "tower", "infra", "telecom"):
+        arch_norm = "infra"
+    elif arch in ("bank", "banking", "financials"):
+        arch_norm = "bank"
+    elif arch in ("coal", "mining"):
+        arch_norm = "coal"
+    elif arch == "unknown":
+        arch_norm = "unknown"
+    else:
+        arch_norm = arch if arch in ("single", "sotp", "infra", "bank", "coal") else "unknown"
+
+    source_label = f"assumption_derived archetype={arch_norm}"
+    as_of_val = merged_assum.get("generated_at") or merged_assum.get("as_of") or "2026-08-31"
+    if isinstance(as_of_val, str) and "T" in as_of_val:
+        as_of_val = as_of_val.split("T")[0]
+
+    danantara_block = DanantaraContext()
+    index_target_dict = {"base": 9100, "bull": 10000, "bear": 7800, "eps_growth": 8, "pe": 15, "bridge": "8500x1.08x1.00"}
+
+    if arch_norm == "single":
+        return IndustryOutlook(
+            ticker=t,
+            subsector="oil-holding",
+            archetype="single",
+            commodities=[
+                CommodityAssumption(
+                    commodity="Brent",
+                    unit="USD/bbl",
+                    spot=82.0,
+                    forecast_2026=80.0,
+                    forecast_2027=78.0,
+                    yoy_pct=-2.4,
+                    driver="IEA OMR Jan 2026: demand +1.1mb/d, OPEC+ spare 5.2mb/d",
+                    source=source_label,
+                    as_of=as_of_val,
+                ),
+            ],
+            regulator=RegulatorContext(
+                regulator="SKK Migas",
+                regime="PSC Cost Recovery",
+                key_term="DMO 25%, Cepu expiry 2035",
+                change_risk="PP 28/2025: SLA + positive fictitious approval",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="UW Energy (JPM) — single-pillar commodity exposure hedged via PSC floor",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "sotp":
+        return IndustryOutlook(
+            ticker=t,
+            subsector="conglomerate",
+            archetype="sotp",
+            commodities=[
+                CommodityAssumption(
+                    commodity="Coal",
+                    unit="USD/t",
+                    spot=135.0,
+                    forecast_2026=130.0,
+                    forecast_2027=125.0,
+                    yoy_pct=-3.7,
+                    driver="Global multi-pillar energy balance",
+                    source=source_label,
+                    as_of=as_of_val,
+                ),
+            ],
+            regulator=RegulatorContext(
+                regulator="Multi-Ministry (MEMR/MoT)",
+                regime="Multi-sector concession/licensing",
+                key_term="Concession terms across energy/ports/water",
+                change_risk="PP 28/2025 regulatory harmonization",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="OW Conglomerates (JPM T2_tsr / T5_danantara) — multi-pillar diversification & TSR re-rating",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "infra":
+        return IndustryOutlook(
+            ticker=t,
+            subsector="tower-infra",
+            archetype="infra",
+            commodities=[],
+            regulator=RegulatorContext(
+                regulator="Kominfo",
+                regime="Spectrum licensing",
+                key_term="700MHz & 2.6GHz allocation (TLKM 20/80 MHz)",
+                change_risk="Spectrum 700MHz & 2.6GHz -> tenant rollout pipeline",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="N Communication Services (JPM) — infra recurring, tower demand tied to FWA/fiberization",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "bank":
+        return IndustryOutlook(
+            ticker=t,
+            subsector="bank",
+            archetype="bank",
+            commodities=[],
+            regulator=RegulatorContext(
+                regulator="OJK / Bank Indonesia",
+                regime="Banking Prudential Regulation",
+                key_term="CAR min 15%, BI-Rate policy, LDR target",
+                change_risk="BI monetary easing & liquidity requirements",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="OW Financials (JPM T3_foreign) — loan growth 10-12%, NIM resilience, ROE expansion",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "coal":
+        return IndustryOutlook(
+            ticker=t,
+            subsector="coal",
+            archetype="coal",
+            commodities=[
+                CommodityAssumption(
+                    commodity="Newcastle Coal",
+                    unit="USD/t",
+                    spot=140.0,
+                    forecast_2026=135.0,
+                    forecast_2027=130.0,
+                    yoy_pct=-3.5,
+                    driver="Thermal coal power demand in Asia",
+                    source=source_label,
+                    as_of=as_of_val,
+                ),
+            ],
+            regulator=RegulatorContext(
+                regulator="MEMR (ESDM)",
+                regime="IUPK / Mining Concession",
+                key_term="DMO 25% price cap $70/t for power, progressive royalty 14-28%",
+                change_risk="PP 28/2025 SLA & RKAB approval",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="UW Coal (JPM T4_fiscal) — high cash dividend yield offset by ASP moderation",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    else:  # unknown
+        return IndustryOutlook(
+            ticker=t,
+            subsector="general",
+            archetype="unknown",
+            commodities=[],
+            regulator=RegulatorContext(
+                regulator="IDX / OJK",
+                regime="Capital Market Regulation",
+                key_term="Public listing disclosure & governance",
+                change_risk="OJK free-float & governance rules",
+                source=source_label,
+            ),
+            thematics=JPM_FIVE_THEMATICS,
+            danantara=danantara_block,
+            sector_stance="N General Market — neutral stance pending sector categorization",
+            index_target=index_target_dict,
+            as_of=as_of_val,
+            source_tier="T1",
+        )

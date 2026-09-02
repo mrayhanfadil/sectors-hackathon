@@ -18,6 +18,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 import json
+import os
 
 ARCHETYPE_SOURCES = {
     "RATU": "HP Sekuritas 7 Jan 2026 — RATU (4 buckets)",
@@ -174,32 +175,111 @@ def build_risk_prompt(
 # ---------------------------------------------------------------------------
 # Fixtures — offline dev / tests
 # ---------------------------------------------------------------------------
-def fixture_ratu_risk() -> RiskAssessment:
-    buckets = [
-        RiskBucket("R1", "Commodity", "Commodity — Brent downside", "Brent -10% -> net entitlement value -9% (PSC cost recovery buffers partial). IEA OMR Jan 2026 demand +1.1mb/d vs OPEC+ spare 5.2mb/d.", "Revenue -9% ~ IDR 120bn (calc_sensitivity_impact)", "High", "Medium", "PSC cost-recovery floors + DMO pricing buffer; hedge via term lifting", None, ARCHETYPE_SOURCES["RATU"], "2026-08-31"),
-        RiskBucket("R2", "Operator", "Operator — Cepu execution", "Cepu gross 169k BOPD operated by ExxonMobil Cepu Ltd — RATU non-operator (2.4% PI via RETJ/PJUC).", "Production deferral 5% -> net -202 BOPD", "Medium", "Low", "SKK Migas oversight + operator track record; PSC technical committee", None, ARCHETYPE_SOURCES["RATU"], "2026-08-31"),
-        RiskBucket("R3", "Regulatory", "Regulatory — PSC/DMO & fiscal terms", "DMO 25% at regulated price + PSC expiry 2035 + potential gross-split migration. PP 28/2025 SLA risk.", "DMO price -20% vs ICP -> netback -5%", "Medium", "Medium", "Grandfathered PSC terms until 2035; engagement via SKK Migas", None, ARCHETYPE_SOURCES["RATU"], "2026-08-31"),
-        RiskBucket("R4", "Natural Decline", "Natural decline — reservoir depletion", "Cepu natural decline ~6-8% p.a. without infill drilling; reserve replacement critical.", "Plateau 169k -> decline -10k BOPD p.a.", "Medium", "Medium", "Infill drilling + EOR; SKK Migas POD approval", None, ARCHETYPE_SOURCES["RATU"], "2026-08-31"),
-    ]
-    return RiskAssessment("RATU", "single", "oil-holding", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", "2026-08-31", "T1")
+def _load_assumptions(ticker: str, assum: Optional[dict] = None) -> dict:
+    """Load data/assumptions/{ticker}.json if available, merged with passed assum dict."""
+    data: dict = {}
+    t = ticker.upper().strip() if ticker else ""
+    if t:
+        base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data", "assumptions"))
+        path = os.path.join(base_dir, f"{t}.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                    if isinstance(loaded, dict):
+                        data.update(loaded)
+            except Exception:
+                pass
+    if assum and isinstance(assum, dict):
+        data.update(assum)
+    return data
 
 
-def fixture_mtel_risk() -> RiskAssessment:
-    buckets = [
-        RiskBucket("R1", "Dependency", "Dependency on operators (Telkomsel 71.83%)", "TLKM 71.83% holder + anchor tenant — tenancy concentration. Telkomsel capex cycle drives tower demand.", "Loss of 5% tenants -> revenue -4.3%", "High", "Medium", "Long-term MLA + TLKM strategic alignment; diversify to ISAT/EXCL tenants", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-        RiskBucket("R2", "Competition", "Competition — tower infra pricing", "Towerco competition (TOWR, TBIG) pressures lease rates; colocation pricing.", "Lease rate -5% -> EBITDA margin -2pp", "Medium", "Medium", "Scale (40,563 towers) + tenancy 1.57x operating leverage", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-        RiskBucket("R3", "Technology", "Technology — satellite / Open RAN", "LEO satellite + Open RAN could bypass tower in remote; long-term structural.", "Remote 10% sites at risk -> fiber offset", "Medium", "Low", "Fiber 59,239 km diversification; monitor Starlink/OneWeb rollout", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-        RiskBucket("R4", "Regulatory", "Regulatory — spectrum & tower permits", "Kominfo 700MHz/2.6GHz allocation reshapes tenant demand; local IMB/permit risk (PP 28/2025).", "Permit delay 6M -> fiber rollout push 1Q", "Medium", "Medium", "Kominfo spectrum pipeline + PP 28/2025 positive fictitious approval", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-        RiskBucket("R5", "Financing", "Financing — rising rates", "Debt 21.4T (MTEL 2024) — rising BI rate + IDR volatility raises CoD; WACC 10.10% sensitive.", "CoD +100bps -> WACC +39bps -> FV -4%", "Medium", "Medium", "60.8% equity / 39.2% debt; refinance ladder; rate hedge", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-        RiskBucket("R6", "Location/Natural", "Location / natural — site & disaster", "Tower sites in seismic/flood zones; location risk + natural disaster.", "Site damage 0.5% p.a. -> capex +1%", "Low", "Medium", "Geographic diversification 40k+ sites; insurance", None, ARCHETYPE_SOURCES["MTEL"], "2026-08-31"),
-    ]
-    return RiskAssessment("MTEL", "infra", "tower-infra", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", "2026-08-31", "T1")
+def fixture_from_archetype(
+    ticker: str,
+    archetype: str = "single",
+    assum: Optional[dict] = None,
+) -> RiskAssessment:
+    """Dynamic archetype-driven RiskAssessment fixture generator."""
+    merged_assum = _load_assumptions(ticker, assum)
+    t = ticker.upper().strip() if ticker else "UNKNOWN"
+    arch = (archetype or "").lower().strip()
 
+    if arch in ("oil-holding", "single-pillar", "single"):
+        arch_norm = "single"
+    elif arch in ("conglomerate", "sotp", "multi"):
+        arch_norm = "sotp"
+    elif arch in ("tower-infra", "tower", "infra", "telecom"):
+        arch_norm = "infra"
+    elif arch in ("bank", "banking", "financials"):
+        arch_norm = "bank"
+    elif arch in ("coal", "mining"):
+        arch_norm = "coal"
+    elif arch == "unknown":
+        arch_norm = "unknown"
+    else:
+        arch_norm = arch if arch in ("single", "sotp", "infra", "bank", "coal") else "unknown"
 
-def fixture_mtel_risk_with_msci() -> RiskAssessment:
-    """MTEL + JPM J3 MSCI bucket (7 -> 8) — for tickers in JPM flows narrative."""
-    base = fixture_mtel_risk()
-    msci = RiskBucket("R7", "Index & Regulatory", "Index & Regulatory — MSCI Adjusted Free Float", "MSCI Adjusted Free Float announced 1Q26 -> May-26 impl (JPM p8-9). Low-float conglomerate rally at risk; retail 58% ADTV.", "Free-float cut 10% -> index weight -15% -> passive outflow", "High", "Medium", "Monitor MSCI consultation; free-float >28% (MTEL 28.17%) above threshold", None, ARCHETYPE_SOURCES["JPM"], "2026-08-31")
-    base.buckets.append(msci)
-    base.top_risk_id = pick_top_risk(base.buckets)
-    return base
+    source_label = f"assumption_derived archetype={arch_norm}"
+    as_of_val = merged_assum.get("generated_at") or merged_assum.get("as_of") or "2026-08-31"
+    if isinstance(as_of_val, str) and "T" in as_of_val:
+        as_of_val = as_of_val.split("T")[0]
+
+    if arch_norm == "single":
+        buckets = [
+            RiskBucket("R1", "Commodity", "Commodity — Brent downside", "Brent -10% -> net entitlement value -9% (PSC cost recovery buffers partial). IEA OMR Jan 2026 demand +1.1mb/d vs OPEC+ spare 5.2mb/d.", "Revenue -9% ~ IDR 120bn (calc_sensitivity_impact)", "High", "Medium", "PSC cost-recovery floors + DMO pricing buffer; hedge via term lifting", None, source_label, as_of_val),
+            RiskBucket("R2", "Operator", "Operator — Cepu execution", "Cepu gross 169k BOPD operated by ExxonMobil Cepu Ltd — non-operator (2.4% PI).", "Production deferral 5% -> net -202 BOPD", "Medium", "Low", "SKK Migas oversight + operator track record; PSC technical committee", None, source_label, as_of_val),
+            RiskBucket("R3", "Regulatory", "Regulatory — PSC/DMO & fiscal terms", "DMO 25% at regulated price + PSC expiry 2035 + potential gross-split migration. PP 28/2025 SLA risk.", "DMO price -20% vs ICP -> netback -5%", "Medium", "Medium", "Grandfathered PSC terms until 2035; engagement via SKK Migas", None, source_label, as_of_val),
+            RiskBucket("R4", "Natural Decline", "Natural decline — reservoir depletion", "Natural decline ~6-8% p.a. without infill drilling; reserve replacement critical.", "Plateau 169k -> decline -10k BOPD p.a.", "Medium", "Medium", "Infill drilling + EOR; SKK Migas POD approval", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "single", "oil-holding", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")
+
+    elif arch_norm == "sotp":
+        buckets = [
+            RiskBucket("R1", "Pillar-specific", "Pillar 1 (Energy) — Off-take & gas supply", "Power purchase agreement off-take curtailment or fuel gas supply disruption.", "Energy EBITDA -5%", "Medium", "Medium", "Long-term take-or-pay off-take agreements with state utility", "Energy", source_label, as_of_val),
+            RiskBucket("R2", "Pillar-specific", "Pillar 2 (Water) — Concession & volume", "Industrial water concession intake turbidity or dry season raw water volume.", "Water volume -8%", "Low", "Medium", "Dual water intake reservoirs and sedimentation management", "Water", source_label, as_of_val),
+            RiskBucket("R3", "Pillar-specific", "Pillar 3 (Port) — Throughput & tank occupancy", "Regional commodity shipment volatility impacting liquid storage and jetty throughput.", "Port throughput -10%", "Medium", "Low", "Multi-year commercial tank storage contracts", "Port", source_label, as_of_val),
+            RiskBucket("R4", "Pillar-specific", "Pillar 4 (Logistics) — Vessel charter & fuel costs", "Vessel damage, charter rate volatility, or bunker fuel spikes.", "Logistics margin -2pp", "Medium", "Medium", "Time-charter contracts with bunker cost pass-through clauses", "Logistics", source_label, as_of_val),
+            RiskBucket("R5", "Financing", "Holding — Leverage & debt service", "HoldCo leverage servicing dependent on operating subsidiary dividend upstreaming.", "DSCR tighter by 0.3x", "Medium", "Medium", "Diversified cash flows across 4 independent pillars", None, source_label, as_of_val),
+            RiskBucket("R6", "Regulatory", "Cross-pillar regulatory & licensing compliance", "PP 28/2025 SLA risk across environmental and concession permits.", "Permit delay 3-6 months", "Medium", "Low", "Dedicated regulatory affairs unit and centralized compliance tracking", None, source_label, as_of_val),
+            RiskBucket("R7", "Location/Natural", "Climate & sedimentation risk", "Extreme rainfall causing port sedimentation and river intake flooding.", "Dredging capex +IDR 15bn", "Low", "Medium", "Scheduled maintenance dredging and flood mitigation dykes", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "sotp", "conglomerate", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")
+
+    elif arch_norm == "infra":
+        buckets = [
+            RiskBucket("R1", "Dependency", "Dependency on anchor operators (TLKM 71.83%)", "Anchor tenant concentration and operator capex cycle.", "Loss of 5% tenants -> revenue -4.3%", "High", "Medium", "Long-term MLA + strategic alignment; diversify to other telco tenants", None, source_label, as_of_val),
+            RiskBucket("R2", "Competition", "Competition — tower infra pricing", "Towerco competition pressures lease rates and colocation renewals.", "Lease rate -5% -> EBITDA margin -2pp", "Medium", "Medium", "Scale (40k+ towers) + tenancy 1.57x operating leverage", None, source_label, as_of_val),
+            RiskBucket("R3", "Technology", "Technology — satellite / Open RAN", "LEO satellite + Open RAN could bypass macro towers in remote areas.", "Remote 10% sites at risk -> fiber offset", "Medium", "Low", "Fiber 59k+ km diversification; monitor satellite rollout", None, source_label, as_of_val),
+            RiskBucket("R4", "Regulatory", "Regulatory — spectrum & tower permits", "Kominfo 700MHz/2.6GHz allocation reshapes tenant demand; local permit risk.", "Permit delay 6M -> fiber rollout push 1Q", "Medium", "Medium", "Kominfo spectrum pipeline + PP 28/2025 positive fictitious approval", None, source_label, as_of_val),
+            RiskBucket("R5", "Financing", "Financing — rising rates", "Debt servicing sensitive to benchmark interest rate hikes and WACC.", "CoD +100bps -> WACC +39bps -> FV -4%", "Medium", "Medium", "Prudent debt ratio, refinance ladder, interest rate hedges", None, source_label, as_of_val),
+            RiskBucket("R6", "Location/Natural", "Location / natural — site & disaster", "Tower sites in seismic/flood zones; location risk + natural disaster.", "Site damage 0.5% p.a. -> capex +1%", "Low", "Medium", "Geographic diversification 40k+ sites; insurance coverage", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "infra", "tower-infra", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")
+
+    elif arch_norm == "bank":
+        buckets = [
+            RiskBucket("R1", "Regulatory", "Monetary policy & reserve requirements", "BI rate policy shifts, statutory reserve adjustments, or lending caps.", "NIM compression -20-30 bps", "High", "Medium", "Strong CASA franchise keeping funding costs low", None, source_label, as_of_val),
+            RiskBucket("R2", "Financing", "Credit risk & asset quality deterioration", "Macro downturn increasing non-performing loans (NPL/LAR).", "Credit cost +30-50 bps", "High", "Low", "Conservative credit underwriting and high coverage (>200%)", None, source_label, as_of_val),
+            RiskBucket("R3", "Competition", "Competition from FinTech & digital banking", "Disruption in fee-based income and payment processing.", "Fee growth slowdown -2%", "Medium", "Medium", "Extensive digital ecosystem and transaction banking platform", None, source_label, as_of_val),
+            RiskBucket("R4", "ESG", "Cybersecurity & IT operational risk", "System outages or data security incidents impacting operations.", "Operational disruption impact", "Medium", "Low", "Multi-tier cybersecurity framework and disaster recovery sites", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "bank", "bank", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")
+
+    elif arch_norm == "coal":
+        buckets = [
+            RiskBucket("R1", "Commodity", "Commodity — Thermal coal price cyclicality", "Global energy transition and ASP decline impacting topline cash generation.", "Revenue -15% if ASP drops 15%", "High", "High", "First-quartile low cash cost position ($40-45/t)", None, source_label, as_of_val),
+            RiskBucket("R2", "Regulatory", "Regulatory — Royalty tariffs & DMO cap", "Progressive royalty rates (14-28%) and mandatory 25% domestic market obligation.", "Margin compression -3-4pp", "High", "Medium", "Full regulatory compliance and long-term utility contracts", None, source_label, as_of_val),
+            RiskBucket("R3", "ESG", "ESG & decarbonization policies", "Global coal divestment policies restricting long-term capital access.", "Valuation multiple de-rating", "High", "Medium", "Strategic diversification into renewables and mineral processing", None, source_label, as_of_val),
+            RiskBucket("R4", "Location/Natural", "Weather & logistics disruptions", "Monsoon rainfall disrupting mining pits and river barging logistics.", "Quarterly volume deferral 5-10%", "Medium", "Medium", "Pit dewatering infrastructure and buffer stockpile management", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "coal", "coal", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")
+
+    else:  # unknown
+        buckets = [
+            RiskBucket("R1", "Regulatory", "Regulatory & compliance risk", "General corporate governance and regulatory compliance obligations.", "Compliance variance", "Medium", "Medium", "Strict adherence to OJK and IDX listing regulations", None, source_label, as_of_val),
+            RiskBucket("R2", "Competition", "Market competition risk", "Competitive market dynamics impacting revenue growth and margins.", "Margin variance +-2%", "Medium", "Medium", "Product differentiation and customer retention", None, source_label, as_of_val),
+            RiskBucket("R3", "Financing", "Macroeconomic & funding risk", "Interest rate fluctuations and working capital requirements.", "Funding cost +-50bps", "Medium", "Low", "Prudent balance sheet and liquidity management", None, source_label, as_of_val),
+            RiskBucket("R4", "ESG", "Operational & continuity risk", "Operational disruptions or business interruption risks.", "Operational variance +-3%", "Low", "Low", "Business continuity planning and internal controls", None, source_label, as_of_val),
+        ]
+        return RiskAssessment(t, "unknown", "general", buckets, pick_top_risk(buckets), "Risiko di atas adalah ringkasan — bukan daftar lengkap.", as_of_val, "T1")

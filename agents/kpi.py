@@ -21,6 +21,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
 import json
+import os
 
 ARCHETYPE_SOURCES = {
     "RATU": "HP Sekuritas 7 Jan 2026 — RATU (BOPD)",
@@ -28,7 +29,7 @@ ARCHETYPE_SOURCES = {
     "MTEL": "KSI/Kiwoom 27 Aug 2026 — MTEL (Tower/Fiber tenancy HERO)",
 }
 
-Subsector = Literal["tower-infra", "oil-holding", "conglomerate", "bank", "coal", "property", "telco"]
+Subsector = Literal["tower-infra", "oil-holding", "conglomerate", "bank", "coal", "property", "telco", "general"]
 
 
 @dataclass
@@ -261,41 +262,187 @@ def build_kpi_prompt(
 # ---------------------------------------------------------------------------
 # Fixtures — offline dev / tests
 # ---------------------------------------------------------------------------
-def fixture_mtel_kpi() -> KPIBundle:
-    return KPIBundle(
-        ticker="MTEL",
-        subsector="tower-infra",
-        archetype="infra",
-        tower=TowerKPI(),
-        catalysts=[
-            CatalystQuant(
-                "PST & UMT Merger", "2026-07-01", (3000, 3500), (360, 420), "FY27-29",
-                "opex/capex efficiency, tenancy >1.6x, FWA/fiberization/IoT/power", ARCHETYPE_SOURCES["MTEL"]
+def _load_assumptions(ticker: str, assum: Optional[dict] = None) -> dict:
+    """Load data/assumptions/{ticker}.json if available, merged with passed assum dict."""
+    data: dict = {}
+    t = ticker.upper().strip() if ticker else ""
+    if t:
+        base_dir = os.path.normpath(os.path.join(os.path.dirname(__file__), "..", "data", "assumptions"))
+        path = os.path.join(base_dir, f"{t}.json")
+        if os.path.exists(path):
+            try:
+                with open(path, "r", encoding="utf-8") as f:
+                    loaded = json.load(f)
+                    if isinstance(loaded, dict):
+                        data.update(loaded)
+            except Exception:
+                pass
+    if assum and isinstance(assum, dict):
+        data.update(assum)
+    return data
+
+
+def fixture_from_archetype(
+    ticker: str,
+    archetype: str = "single",
+    assum: Optional[dict] = None,
+) -> KPIBundle:
+    """Dynamic archetype-driven KPIBundle fixture generator."""
+    merged_assum = _load_assumptions(ticker, assum)
+    t = ticker.upper().strip() if ticker else "UNKNOWN"
+    arch = (archetype or "").lower().strip()
+
+    if arch in ("oil-holding", "single-pillar", "single"):
+        arch_norm = "single"
+    elif arch in ("conglomerate", "sotp", "multi"):
+        arch_norm = "sotp"
+    elif arch in ("tower-infra", "tower", "infra", "telecom"):
+        arch_norm = "infra"
+    elif arch in ("bank", "banking", "financials"):
+        arch_norm = "bank"
+    elif arch in ("coal", "mining"):
+        arch_norm = "coal"
+    elif arch == "unknown":
+        arch_norm = "unknown"
+    else:
+        arch_norm = arch if arch in ("single", "sotp", "infra", "bank", "coal") else "unknown"
+
+    source_label = f"assumption_derived archetype={arch_norm}"
+    as_of_val = merged_assum.get("generated_at") or merged_assum.get("as_of") or "2026-08-31"
+    if isinstance(as_of_val, str) and "T" in as_of_val:
+        as_of_val = as_of_val.split("T")[0]
+
+    if arch_norm == "single":
+        return KPIBundle(
+            ticker=t,
+            subsector="oil-holding",
+            archetype="single",
+            oil=OilKPI(
+                gross_bopd=169000,
+                net_bopd=4056.0,
+                participation_pct=2.4,
+                dmo_pct=25.0,
+                reserve_life_years=None,
+                source=source_label,
+                as_of=as_of_val,
             ),
-            CatalystQuant(
-                "Spectrum 700MHz & 2.6GHz", "2026-07-01", (3000, 3500), (360, 420), "FY27-29",
-                "TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 -> tenant pipeline", ARCHETYPE_SOURCES["MTEL"]
+            catalysts=[],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
+
+    elif arch_norm == "sotp":
+        return KPIBundle(
+            ticker=t,
+            subsector="conglomerate",
+            archetype="sotp",
+            conglomerate=ConglomerateKPI(
+                pillars=[
+                    {"pillar": "Energy", "spec": "120MW CCPP", "unit": "MW", "value": 120, "yoy_pct": 4.2},
+                    {"pillar": "Water", "spec": "2,000 l/s", "unit": "l/s", "value": 2000, "yoy_pct": 2.1},
+                    {"pillar": "Port", "spec": "72 tanks 130k m3", "unit": "m3", "value": 130000, "yoy_pct": 3.0},
+                    {"pillar": "Logistics", "spec": "7 vessels 5-8600 DWT", "unit": "DWT", "value": 8600, "yoy_pct": 1.5},
+                ],
+                source=source_label,
+                as_of=as_of_val,
             ),
-        ],
-        as_of="2026-08-31",
-    )
+            catalysts=[],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
 
+    elif arch_norm == "infra":
+        return KPIBundle(
+            ticker=t,
+            subsector="tower-infra",
+            archetype="infra",
+            tower=TowerKPI(
+                towers=40563,
+                towers_yoy_pct=2.0,
+                colocation=23303,
+                colocation_yoy_pct=10.0,
+                tenants=63866,
+                tenants_yoy_pct=5.0,
+                reseller_tenants=2650,
+                tenancy_ratio=1.57,
+                tenancy_ratio_prior=1.53,
+                fiber_km=59239,
+                fiber_yoy_pct=9.0,
+                towers_added_q=180,
+                towers_removed_q=12,
+                tenants_added_q=820,
+                tenants_removed_q=95,
+                source=source_label,
+                as_of=as_of_val,
+            ),
+            catalysts=[
+                CatalystQuant(
+                    title="PST & UMT Merger",
+                    effective_date="2026-07-01",
+                    tenants_added=(3000, 3500),
+                    revenue_idr_bn_annualized=(360, 420),
+                    by_fy="FY27-29",
+                    opex_efficiency="opex/capex efficiency, tenancy >1.6x, FWA/fiberization/IoT/power",
+                    source=source_label,
+                ),
+                CatalystQuant(
+                    title="Spectrum 700MHz & 2.6GHz",
+                    effective_date="2026-07-01",
+                    tenants_added=(3000, 3500),
+                    revenue_idr_bn_annualized=(360, 420),
+                    by_fy="FY27-29",
+                    opex_efficiency="TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 -> tenant pipeline",
+                    source=source_label,
+                ),
+            ],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
 
-def fixture_ratu_kpi() -> KPIBundle:
-    return KPIBundle(
-        ticker="RATU",
-        subsector="oil-holding",
-        archetype="single",
-        oil=OilKPI(),
-        as_of="2026-08-31",
-    )
+    elif arch_norm == "bank":
+        return KPIBundle(
+            ticker=t,
+            subsector="bank",
+            archetype="bank",
+            generic={
+                "nim_pct": 5.5,
+                "casa_pct": 80.0,
+                "car_pct": 28.0,
+                "npl_pct": 0.6,
+                "roe_pct": 19.7,
+                "ldr_pct": 79.0,
+                "source": source_label,
+            },
+            catalysts=[],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
 
+    elif arch_norm == "coal":
+        return KPIBundle(
+            ticker=t,
+            subsector="coal",
+            archetype="coal",
+            generic={
+                "production_mt": 65.0,
+                "sales_mt": 65.0,
+                "asp_usd": 85.0,
+                "cash_cost_usd": 42.0,
+                "royalty_pct": 14.0,
+                "source": source_label,
+            },
+            catalysts=[],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
 
-def fixture_cdia_kpi() -> KPIBundle:
-    return KPIBundle(
-        ticker="CDIA",
-        subsector="conglomerate",
-        archetype="sotp",
-        conglomerate=ConglomerateKPI(),
-        as_of="2026-08-31",
-    )
+    else:  # unknown
+        return KPIBundle(
+            ticker=t,
+            subsector="general",
+            archetype="unknown",
+            generic={"source": source_label},
+            catalysts=[],
+            as_of=as_of_val,
+            source_tier="T1",
+        )
