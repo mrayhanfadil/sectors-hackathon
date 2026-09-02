@@ -131,37 +131,43 @@
 }
 
 // ------ Financial table (with header band, alternating rows, tab nums) ------
-#let fin-table(headers, rows, footers: (), palette: DEFAULT_PALETTE) = {
-  set text(font: FONT_MONO, size: 7.5pt, features: (tnum: true))
+#let fin-table(headers, rows, footers: (), columns: none, palette: DEFAULT_PALETTE) = {
+  set text(font: FONT_MONO, size: 7.5pt, features: ("tnum",))
   set table(
     stroke: 0.5pt + palette.line,
     fill: (col, row) => if row == 0 { palette.brand_dark } else if calc.odd(row) { palette.band } else { palette.paper },
     inset: (x: 4pt, y: 2.5pt),
   )
+  // Coerce tuple-of-tuples (typst markup) into array-of-arrays for .enumerate()
+  let headers-arr = if type(headers) == array { headers } else { headers.pos() }
+  let rows-arr = if type(rows) == array { rows } else { rows.pos() }
+  let cols = if columns != none { columns } else { (1.6fr, ..(1fr,) * (headers-arr.len() - 1)) }
   // Header row
-  let header-cells = headers.map(h => table.cell(
+  let header-cells = headers-arr.enumerate().map(((i, h)) => table.cell(
     text(fill: white, weight: "bold", size: 7.5pt)[#h],
-    align: if h == headers.first() { left } else { right },
+    align: if i == 0 { left } else { right },
   ))
   // Body rows
-  let body-cells = rows.map(row => row.map((c, i) => table.cell(
-    align: if i == 0 { left } else { right },
-    [#c],
-  )))
+  let body-cells = rows-arr.map(row => {
+    let row-arr = if type(row) == array { row } else { row.pos() }
+    row-arr.enumerate().map(((i, c)) => table.cell(
+      align: if i == 0 { left } else { right },
+      [#c],
+    ))
+  })
   // Footer rows (totals)
-  let footer-cells = footers.map(row => row.map((c, i) => table.cell(
+  let footer-cells = footers.map(row => row.enumerate().map(((i, c)) => table.cell(
     text(weight: "bold"),
     align: if i == 0 { left } else { right },
     [#c],
   )))
   table(
-    columns: headers.len(),
-    align: (col, row) => if row == 0 { center } else { left },
-    [#header-cells],
-    ..body-cells.flatten().map(c => [#c]),
+    columns: cols,
+    ..header-cells,
+    ..body-cells.flatten(),
     ..(if footers.len() > 0 {
-      [#footer-cells]
-    } else { [] }),
+      footer-cells.flatten()
+    } else { () }),
   )
 }
 
@@ -169,27 +175,28 @@
 #let card(palette, fill-left-border: true, content) = {
   block(
     width: 100%,
-    stroke: 0.75pt + palette.line,
+    stroke: if fill-left-border {
+      (left: 2.5pt + palette.brand, top: 0.75pt + palette.line, right: 0.75pt + palette.line, bottom: 0.75pt + palette.line)
+    } else {
+      0.75pt + palette.line
+    },
     radius: 4pt,
     inset: 8pt,
     fill: palette.band,
   )[
-    #if fill-left-border {
-      line(start: (-8pt, 0pt), end: (-8pt, 0pt), length: 100%, stroke: 2.5pt + palette.brand)
-    }
     #content
   ]
 }
 
 // ------ Rating box (BUY badge + TP + upside) ------
-#let rating-box(action, tp, price, upside-pct, prev-tp: none, palette) = {
+#let rating-box(action, tp, price, upside-pct, prev-tp: none, palette: DEFAULT_PALETTE) = {
   block(
     width: 100%,
     stroke: 1.5pt + palette.brand,
     radius: 5pt,
     inset: 10pt,
-    align: center,
   )[
+    #set align(center)
     #set text(font: FONT_SANS)
     #text(size: T_RATING, weight: "black", fill: palette.brand_dark)[#action]
     #v(2pt)
