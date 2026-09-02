@@ -46,20 +46,27 @@ class StreamLifecycleManager:
 
         self.accumulated_state: dict[str, Any] = {}
         self.event_count: int = 0
+        self.base_seq: int = 0  # offset for resume; appended events start at this index
         self._last_flush_time: float = time.time()
         self._is_dirty: bool = False
         self._closed: bool = False
         self._bg_task: asyncio.Task | None = None
 
     async def start(self) -> None:
-        """Start the run in the database and spawn background periodic flusher."""
-        self.store.start_run(
+        """Start the run in the database and spawn background periodic flusher.
+
+        If a row with this run_id already exists (resuming from interrupt), preserve
+        existing events and load their count into self.base_seq so new events append
+        rather than overwrite.
+        """
+        self.base_seq = self.store.start_run(
             run_id=self.run_id,
             ticker=self.ticker,
             prompt=self.prompt,
             provider=self.provider,
             model=self.model,
         )
+        self.event_count = self.base_seq
         self._last_flush_time = time.time()
         if self.flush_interval_sec > 0:
             self._bg_task = asyncio.create_task(self._periodic_flusher())
