@@ -311,21 +311,54 @@ class AgentRunStore:
         prompt: str | None,
         provider: str | None = None,
         model: str | None = None,
-    ) -> None:
-        """Insert agent_runs row with status='running', started_at=now()."""
+    ) -> int:
+        """Set status='running', started_at=now() on agent_runs row for run_id.
+
+        If a row with this run_id already exists (e.g. resume after interrupt),
+        UPDATE in place to preserve the existing event count, finished_at, and
+        accumulated state. Otherwise INSERT a fresh row.
+
+        Returns base_seq — the next event seq to use (n_events of the existing row
+        if resuming, 0 if fresh). The SSE handler must add its local counter to
+        base_seq when appending events, so new events never collide with prior seqs.
+        """
         started_at = time.time()
         with self._lock:
             cur = self.conn.cursor()
-            cur.execute(
-                """
-                INSERT OR REPLACE INTO agent_runs (
-                    run_id, ticker, started_at, finished_at, status, reason,
-                    provider, model, prompt, n_events, last_text, state_json, error
-                ) VALUES (?, ?, ?, NULL, 'running', NULL, ?, ?, ?, 0, NULL, NULL, NULL)
-                """,
-                (run_id, ticker.upper(), started_at, provider, model, prompt),
-            )
+            cur.execute("SELECT n_events FROM agent_runs WHERE run_id = ?", (run_id,))
+            row = cur.fetchone()
+            if row is not None:
+                # Resume: keep existing events, just flip status + reset started_at
+                base_seq = int(row["n_events"] or 0)
+                cur.execute(
+                    """
+                    UPDATE agent_runs
+                    SET status = 'running',
+                        started_at = ?,
+                        finished_at = NULL,
+                        reason = NULL,
+                        error = NULL,
+                        provider = COALESCE(?, provider),
+                        model = COALESCE(?, model),
+                        prompt = COALESCE(?, prompt)
+                    WHERE run_id = ?
+                    """,
+                    (started_at, provider, model, prompt, run_id),
+                )
+            else:
+                # Fresh run
+                base_seq = 0
+                cur.execute(
+                    """
+                    INSERT INTO agent_runs (
+                        run_id, ticker, started_at, finished_at, status, reason,
+                        provider, model, prompt, n_events, last_text, state_json, error
+                    ) VALUES (?, ?, ?, NULL, 'running', NULL, ?, ?, ?, 0, NULL, NULL, NULL)
+                    """,
+                    (run_id, ticker.upper(), started_at, provider, model, prompt),
+                )
             self.conn.commit()
+            return base_seq
 
     def append_event(self, run_id: str, seq: int, event: Any) -> None:
         """Insert one agent_events row. Extract author/node/event_type/ts from event;
@@ -495,6 +528,33 @@ class AgentRunStore:
                     d["state"] = {}
                 results.append(d)
             return results
+
+    def get_recent_interrupted_run(self, ticker: str, within_seconds: float = 600.0) -> dict | None:
+        """Return most recent 'interrupted' run for ticker if it finished within the last `within_seconds`.
+
+        Used by SSE stream to append new events to an existing interrupted row instead of
+        creating a duplicate row when the client reconnects shortly after disconnect.
+        Returns None if no recent interrupted run exists.
+        """
+        import time as _time
+        cutoff = _time.time() - within_seconds
+        with self._lock:
+            cur = self.conn.cursor()
+            cur.execute(
+                """
+                SELECT * FROM agent_runs
+                WHERE UPPER(ticker) = ?
+                  AND status = 'interrupted'
+                  AND finished_at >= ?
+                ORDER BY finished_at DESC
+                LIMIT 1
+                """,
+                (ticker.upper().strip(), cutoff),
+            )
+            row = cur.fetchone()
+            if not row:
+                return None
+            return dict(row)
 
     def get_latest_completed(self, ticker: str | None = None) -> dict | None:
         """Return latest run with status in ('completed', 'interrupted', 'failed') for ticker (or across all tickers if ticker is None), or None."""

@@ -334,12 +334,24 @@ async def agent_stream(
     async def _gen() -> AsyncGenerator[str, None]:
         # open
         yield f"data: {json.dumps({'seq': -1, 'event_type': 'start', 'ticker': t, 'ts': round(time.time(),3)})}\n\n"
-        session_id = f"{t.lower()}-{os.urandom(4).hex()}"
-        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
 
         from server.storage import AgentRunStore
         from server.stream_lifecycle import StreamLifecycleManager
-        store = AgentRunStore()
+
+        # Smart session_id: if there is a recent interrupted run for this ticker
+        # (within 10 minutes), reuse its run_id so new events append to the same row
+        # instead of creating a duplicate run row. Otherwise allocate a fresh id.
+        store_for_resume = AgentRunStore()
+        recent = store_for_resume.get_recent_interrupted_run(t, within_seconds=600.0)
+        if recent and recent.get("run_id"):
+            session_id = recent["run_id"]
+            log.info("agent_stream reusing recent interrupted run_id=%s for ticker=%s", session_id, t)
+        else:
+            session_id = f"{t.lower()}-{os.urandom(4).hex()}"
+
+        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
+
+        store = store_for_resume
         lifecycle = StreamLifecycleManager(
             run_id=session_id,
             ticker=t,
@@ -352,7 +364,8 @@ async def agent_stream(
         )
         await lifecycle.start()
 
-        seq = 0
+        # Start seq after lifecycle has set base_seq (handles resume correctly)
+        seq = lifecycle.base_seq
         try:
             from agents.adk.app import build_graph
             from google.adk.runners import Runner
