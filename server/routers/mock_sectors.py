@@ -99,60 +99,74 @@ MONTH_ID_MAP = {
 
 # ── Metadata Helpers ────────────────────────────────────────────────────────
 
-def _get_sector_and_subsector(symbol: str) -> tuple[str, str]:
-    """Retrieve sector and sub_sector slug for a symbol from repo metadata."""
+def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
+    """Dynamically resolve (sector, sub_sector) slugs without hardcoded taxonomy table.
+
+    1. Tries data/assumptions/<SYM>.json -> reads provenance.sector + archetype
+    2. Falls back to data/peers.json by_ticker.<SYM>.sector
+    3. Falls back to yfinance .info.sector (+ industry) if available
+    4. Returns ("unknown", "unknown") honestly — no fabrication
+    """
     sym = symbol.upper().strip().replace(".JK", "")
+
+    def _slugify(val: str) -> str:
+        return val.lower().strip().replace(" ", "-").replace("_", "-")
+
+    # 1. Tries data/assumptions/<SYM>.json -> reads provenance.sector + archetype
     assump_path = DATA_ASSUMPTIONS_DIR / f"{sym}.json"
     if assump_path.exists():
         try:
             data = json.loads(assump_path.read_text(encoding="utf-8"))
             sec = data.get("provenance", {}).get("sector") or data.get("sector")
+            arch = data.get("archetype") or data.get("provenance", {}).get("archetype") or data.get("template")
             if sec:
-                sec_str = sec.lower().replace(" ", "-")
-                sub_str = "banks" if sec_str == "financials" and sym.startswith("BB") else sec_str
-                return sec_str, sub_str
+                sec_slug = _slugify(sec)
+                if arch:
+                    sub_slug = _slugify(arch)
+                else:
+                    sub_slug = "banks" if sec_slug in ("financials", "financial-services") and sym.startswith("BB") else sec_slug
+                return sec_slug, sub_slug
         except Exception:
             pass
 
+    # 2. Falls back to data/peers.json by_ticker.<SYM>.sector
     if DATA_PEERS_PATH.exists():
         try:
             peers_data = json.loads(DATA_PEERS_PATH.read_text(encoding="utf-8"))
             by_t = peers_data.get("by_ticker", {}).get(sym, {})
             sec = by_t.get("sector")
+            arch = by_t.get("archetype") or by_t.get("sub_sector") or by_t.get("subsector")
             if sec:
-                sec_str = sec.lower().replace(" ", "-")
-                sub_str = "banks" if sec_str == "financials" and sym.startswith("BB") else sec_str
-                return sec_str, sub_str
+                sec_slug = _slugify(sec)
+                if arch:
+                    sub_slug = _slugify(arch)
+                else:
+                    sub_slug = "banks" if sec_slug in ("financials", "financial-services") and sym.startswith("BB") else sec_slug
+                return sec_slug, sub_slug
         except Exception:
             pass
 
-    known_taxonomy = {
-        "BBCA": ("financials", "banks"),
-        "BBRI": ("financials", "banks"),
-        "BMRI": ("financials", "banks"),
-        "BBNI": ("financials", "banks"),
-        "BRIS": ("financials", "banks"),
-        "ADRO": ("energy", "coal"),
-        "RATU": ("energy", "oil-and-gas"),
-        "CDIA": ("infrastructures", "utilities"),
-        "MTEL": ("infrastructures", "telecommunication"),
-        "TLKM": ("infrastructures", "telecommunication"),
-        "ISAT": ("infrastructures", "telecommunication"),
-        "EXCL": ("infrastructures", "telecommunication"),
-        "TOWR": ("infrastructures", "telecommunication"),
-        "ASII": ("consumer-cyclicals", "automotive"),
-        "UNVR": ("consumer-non-cyclicals", "personal-care"),
-        "ICBP": ("consumer-non-cyclicals", "food-and-beverage"),
-        "INDF": ("consumer-non-cyclicals", "food-and-beverage"),
-        "KLBF": ("healthcare", "pharmaceuticals"),
-        "ANTM": ("basic-materials", "metals-and-mining"),
-        "MDKA": ("basic-materials", "metals-and-mining"),
-        "INCO": ("basic-materials", "metals-and-mining"),
-        "PGAS": ("utilities", "gas-utilities"),
-    }
-    if sym in known_taxonomy:
-        return known_taxonomy[sym]
-    return "general", "general"
+    # 3. Falls back to yfinance .info.sector if network available
+    try:
+        import yfinance as yf
+        tk = yf.Ticker(f"{sym}.JK")
+        info = tk.info or {}
+        sec = info.get("sector")
+        ind = info.get("industry")
+        if sec:
+            sec_slug = _slugify(sec)
+            sub_slug = _slugify(ind) if ind else sec_slug
+            return sec_slug, sub_slug
+    except Exception:
+        pass
+
+    # 4. Returns ("unknown", "unknown") honestly — no fabrication
+    return "unknown", "unknown"
+
+
+def _get_sector_and_subsector(symbol: str) -> tuple[str, str]:
+    """Retrieve sector and sub_sector slug for a symbol (delegates to _resolve_taxonomy)."""
+    return _resolve_taxonomy(symbol)
 
 
 def _parse_idx_timestamp(text: str) -> str:
