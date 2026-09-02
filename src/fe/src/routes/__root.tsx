@@ -19,10 +19,12 @@ function RootComponent() {
         : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
     }`
 
+  const maxWidthClass = isAgentActive ? "max-w-[1440px]" : "max-w-6xl"
+
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <header className="sticky top-0 z-10 border-b border-slate-200/80 bg-white/85 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3">
+        <div className={`mx-auto flex ${maxWidthClass} items-center justify-between px-4 py-3`}>
           <Link to="/" className="font-semibold tracking-tight text-slate-900">
             Sektoral<span className="text-slate-500">.id</span>{" "}
             <span className="ml-2 rounded bg-slate-900 px-1.5 py-0.5 text-xs font-medium text-white">
@@ -42,11 +44,11 @@ function RootComponent() {
           </nav>
         </div>
       </header>
-      <main className="mx-auto max-w-6xl px-4 py-6">
+      <main className={`mx-auto ${maxWidthClass} px-4 py-6`}>
         <Outlet />
       </main>
       <footer className="border-t border-slate-200 bg-white py-4 text-center text-xs text-slate-500">
-        Bukan saran investasi — untuk riset dan edukasi saja.
+        Bukan saran investasi - untuk riset dan edukasi saja.
       </footer>
     </div>
   )

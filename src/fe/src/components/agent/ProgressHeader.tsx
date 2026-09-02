@@ -106,7 +106,7 @@ export const ProgressHeader = memo(function ProgressHeader({
                 />
                 {health.ok
                   ? "Spark OK"
-                  : `Bridge ping: ${(health.bridge_ping || health.bridge_error || "—").slice(0, 30)}`}
+                  : `Bridge ping: ${(health.bridge_ping || health.bridge_error || "-").slice(0, 30)}`}
               </Badge>
               <Badge variant="outline" className="font-mono text-[11px] text-slate-600">
                 <Cpu className="mr-1 h-3 w-3 text-slate-400" />
@@ -116,7 +116,7 @@ export const ProgressHeader = memo(function ProgressHeader({
                 {health.graph?.name || "equity_report_orchestrator"} · {health.graph?.n_subagents ?? 8} nodes
               </Badge>
               <span className="text-[11px] text-slate-500 font-mono">
-                provider: {health.provider || "spark (commandcode bridge)"} · {health.elapsed_ms ?? "—"}ms
+                provider: {health.provider || "spark (commandcode bridge)"} · {health.elapsed_ms ?? "-"}ms
               </span>
               <Button
                 size="sm"
@@ -253,7 +253,7 @@ export const ProgressHeader = memo(function ProgressHeader({
         <div className="text-xs text-slate-500 font-mono">
           {events.length} events{" "}
           {done ? (
-            `· done ${done.n_events} events · keys: ${done.state_keys.join(", ") || "—"} · ${done.ms}ms`
+            `· done ${done.n_events} events · keys: ${done.state_keys.join(", ") || "-"} · ${done.ms}ms`
           ) : running ? (
             `· streaming… (${activeCount} active · ETA ${etaText})`
           ) : isInterrupted ? (
