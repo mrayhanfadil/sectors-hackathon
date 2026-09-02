@@ -64,8 +64,7 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: "Helvetica Neue", Arial, sans-serif; color: var(--ink); font-size: 9.5pt; line-height: 1.45; }
-  .page { page-break-after: always; position: relative; min-height: 1220px; max-height: 1220px;
-          overflow: hidden; padding: 50pt 40pt 64pt; }
+  .page { page-break-after: always; position: relative; padding: 50pt 40pt 64pt; }
   .page:last-child { page-break-after: auto; }
 
   /* running header + footer (baked per page since Playwright displayHeaderFooter is off) */
@@ -149,6 +148,26 @@
 <div class="rftr">
   <span>Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)</span>
   <span>{{ pg }}</span>
+</div>
+{%- endmacro %}
+
+{% macro rating_guide() -%}
+<div class="card-tint" style="margin:6pt 0;">
+  <div class="small" style="font-weight:800; letter-spacing:.08em; margin-bottom:4pt;">PANDUAN RATING</div>
+  <table class="fin-table" style="margin:0;">
+    <thead><tr><th>Kategori</th><th>Definisi</th></tr></thead>
+    <tbody>
+      <tr><td><b>SECTOR / INDUSTRY — OVERWEIGHT</b></td><td>Sektor & industri berpotensi dan kondisi baik</td></tr>
+      <tr><td><b>SECTOR / INDUSTRY — NEUTRAL</b></td><td>Sektor & industri stabil atau cenderung stagnant</td></tr>
+      <tr><td><b>SECTOR / INDUSTRY — UNDERWEIGHT</b></td><td>Sektor & industri tantangan dan kondisi buruk</td></tr>
+      <tr><td><b>STOCK — BUY</b></td><td>Performa &gt; +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK — TRADING BUY</b></td><td>Performa +5% sampai +15%, minor sampai medium term</td></tr>
+      <tr><td><b>STOCK — HOLD</b></td><td>Performa -10% sampai +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK — SELL</b></td><td>Performa &lt; -15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK — TRADING SELL</b></td><td>Performa -5% sampai -15%, minor sampai medium term</td></tr>
+      <tr><td><b>STOCK — NOT RATED</b></td><td>Saham di luar cakupan riset reguler</td></tr>
+    </tbody>
+  </table>
 </div>
 {%- endmacro %}
 
