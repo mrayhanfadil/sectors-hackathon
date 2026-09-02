@@ -393,6 +393,34 @@ def report_ticker_log(ticker: str):
     }
 
 
+def _live_price(tkr: str, base_fallback: float) -> tuple[float, str]:
+    """Try yfinance -> assumptions file -> base fixture. Returns (price, source_label)."""
+    # 1) yfinance (live)
+    try:
+        import yfinance as _yf
+        h = _yf.Ticker(f"{tkr}.JK").history(period="5d")
+        if h is not None and not h.empty and "Close" in h.columns:
+            price = float(h["Close"].dropna().iloc[-1])
+            if price > 0:
+                return round(price, 2), "yfinance"
+    except Exception:
+        pass
+    # 2) assumptions file (dated snapshot)
+    try:
+        import json as _j
+        import pathlib as _pl
+        ass = _pl.Path(f"/home/fadil/projects/sectors-hackathon/data/assumptions/{tkr}.json")
+        if ass.exists():
+            d = _j.loads(ass.read_text())
+            prov = d.get("provenance") or {}
+            if prov.get("close"):
+                return float(prov["close"]), "assumptions:" + d.get("generated_at", "")
+    except Exception:
+        pass
+    # 3) base fixture (last resort, honest label)
+    return base_fallback, "fixture (outdated)"
+
+
 def _assumptions_for(ticker: str) -> dict:
     """Load data/assumptions/{ticker}.json if exists and merge with archetype defaults."""
     import json
@@ -458,6 +486,7 @@ def _assumptions_for(ticker: str) -> dict:
             "source": "assumptions/CDIA.json",
         }
     elif t == "BBCA":
+        _live, _src = _live_price("BBCA", 7890)
         base = {
             "rf": 0.0696,
             "beta": 0.80,
@@ -473,7 +502,8 @@ def _assumptions_for(ticker: str) -> dict:
             "cash": 50000e9,
             "ebitda": 35000e9,
             "ev_multiple": 16.9,
-            "last_price": 7890,  # fixture 7890, not 6350
+            "last_price": _live,
+            "price_source": _src,
             "source": "assumptions/BBCA.json",
         }
     elif t == "ADRO":
