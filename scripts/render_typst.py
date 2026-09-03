@@ -124,7 +124,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
             pass
     return cache
 
-def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS) -> bool:
+def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS, ticker: str | None = None) -> bool:
     """Compile via Python `typst` lib or fallback to CLI binary."""
     try:
         import typst as _t
@@ -137,6 +137,8 @@ def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS) ->
         cmd = ["typst", "compile", "--root", "/"]
         if font_path.exists():
             cmd.extend(["--font-path", str(font_path)])
+        if ticker:
+            cmd.extend(["--input", f"ticker={ticker}"])
         cmd.extend([str(input_typ), str(output_pdf)])
         result = subprocess.run(
             cmd,
@@ -159,10 +161,15 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
                "band": "#f9fafb", "paper": "#ffffff",
                "pos": "#067647", "neg": "#b42318"}
     charts_dir = generate_charts(ticker, data, palette)
-    template_file = TEMPLATES / "archetypes" / TEMPLATE_FILES.get(template_name, "report_single.typ")
+    # Per-ticker template override: templates/typst/archetypes/POWR_infra.typ
+    ticker_specific = TEMPLATES / "archetypes" / f"{ticker.lower()}_{template_name}.typ"
+    if ticker_specific.exists():
+        template_file = ticker_specific
+    else:
+        template_file = TEMPLATES / "archetypes" / TEMPLATE_FILES.get(template_name, "report_single.typ")
     if not template_file.exists():
         raise FileNotFoundError(f"template {template_file} not built yet")
-    if not compile_typst(template_file, out_pdf):
+    if not compile_typst(template_file, out_pdf, ticker=ticker):
         raise RuntimeError(f"typst compile failed for {ticker}")
     try:
         return out_pdf.read_text(encoding="utf-8", errors="ignore")
