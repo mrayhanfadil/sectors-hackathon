@@ -101,6 +101,88 @@ def _domain_tier(url: str) -> str:
 
 
 # ----------------------------------------------------------------------------
+# Tavily API Key Pool (Round-Robin with Cooldown)
+# ----------------------------------------------------------------------------
+_KEY_POOL: list[str] = []
+_KEY_STATE: dict[str, dict[str, Any]] = {}  # key -> {healthy: bool, cooldown_until: float, last_error: str}
+_LAST_ROTATION: int = 0  # round-robin index
+_COOLDOWN_SECONDS = 60
+
+
+def _load_key_pool() -> list[str]:
+    """Load from TAVILY_API_KEYS (comma-sep) or fallback TAVILY_API_KEY."""
+    multi = os.getenv("TAVILY_API_KEYS", "").strip()
+    if multi:
+        keys = [k.strip() for k in multi.split(",") if k.strip()]
+        if keys:
+            return keys
+    single = os.getenv("TAVILY_API_KEY", "").strip()
+    return [single] if single else []
+
+
+def _init_pool() -> None:
+    global _KEY_POOL, _KEY_STATE
+    keys = _load_key_pool()
+    if keys != _KEY_POOL:
+        _KEY_POOL = keys
+        _KEY_STATE = {
+            k: _KEY_STATE.get(k, {"healthy": True, "cooldown_until": 0.0, "last_error": ""})
+            for k in _KEY_POOL
+        }
+
+
+def _pick_key() -> str | None:
+    """Round-robin pick first healthy key (cooldown expired)."""
+    _init_pool()
+    global _LAST_ROTATION
+    if not _KEY_POOL:
+        return None
+    now = time.time()
+    n = len(_KEY_POOL)
+    for i in range(n):
+        idx = (_LAST_ROTATION + i) % n
+        key = _KEY_POOL[idx]
+        st = _KEY_STATE[key]
+        if not st["healthy"] and st["cooldown_until"] < now:
+            st["healthy"] = True
+        if st["healthy"] and st["cooldown_until"] < now:
+            _LAST_ROTATION = (idx + 1) % n  # next call rotates to the following key
+            return key
+    return None  # all keys in cooldown
+
+
+def _mark_unhealthy(key: str, reason: str, cooldown_s: int = _COOLDOWN_SECONDS) -> None:
+    _KEY_STATE[key] = {"healthy": False, "cooldown_until": time.time() + cooldown_s, "last_error": reason}
+
+
+def _mark_healthy(key: str) -> None:
+    _KEY_STATE[key] = {"healthy": True, "cooldown_until": 0.0, "last_error": ""}
+
+
+def _pool_stats() -> dict[str, Any]:
+    """Return pool state for /api/health or debugging."""
+    _init_pool()
+    now = time.time()
+    for k in _KEY_POOL:
+        if not _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] < now:
+            _KEY_STATE[k]["healthy"] = True
+    return {
+        "total": len(_KEY_POOL),
+        "healthy": sum(1 for k in _KEY_POOL if _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] < now),
+        "in_cooldown": sum(1 for k in _KEY_POOL if not _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] > now),
+        "keys": [
+            {
+                "prefix": k[:10] + "...",
+                "healthy": _KEY_STATE[k]["healthy"],
+                "cooldown_remaining_s": max(0, int(_KEY_STATE[k]["cooldown_until"] - now)),
+                "last_error": _KEY_STATE[k]["last_error"],
+            }
+            for k in _KEY_POOL
+        ],
+    }
+
+
+# ----------------------------------------------------------------------------
 # Tool 1: web_search — Tavily REST wrapper
 # ----------------------------------------------------------------------------
 async def web_search(
@@ -125,10 +207,10 @@ async def web_search(
     Honest behavior: if TAVILY_API_KEY is missing, returns empty results with
     source='tavily_missing_key' so the Critic can flag the provenance.
     """
-    api_key = os.getenv("TAVILY_API_KEY", "").strip()
+    _init_pool()
     fetched_at = datetime.now(timezone.utc).isoformat()
 
-    if not api_key:
+    if not _KEY_POOL:
         return {
             "query": query,
             "tier": tier,
@@ -138,7 +220,6 @@ async def web_search(
         }
 
     payload: dict[str, Any] = {
-        "api_key": api_key,
         "query": query,
         "max_results": min(max(1, n_results), 20),
         "search_depth": "advanced",
@@ -150,20 +231,54 @@ async def web_search(
     if days > 0:
         payload["days"] = min(days, 365)
 
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as cli:
-            r = await cli.post("https://api.tavily.com/search", json=payload)
-            r.raise_for_status()
-            data = r.json()
-    except httpx.HTTPError as e:
-        logger.warning("Tavily search failed: %s", e)
+    attempts = 0
+    last_error = ""
+    data: dict[str, Any] | None = None
+
+    while attempts < len(_KEY_POOL):
+        api_key = _pick_key()
+        if not api_key:
+            break
+        attempts += 1
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as cli:
+                r = await cli.post("https://api.tavily.com/search", json={**payload, "api_key": api_key})
+                r.raise_for_status()
+                data = r.json()
+                _mark_healthy(api_key)
+                break
+        except httpx.HTTPStatusError as e:
+            code = e.response.status_code if e.response is not None else 0
+            # Auth/quota/rate-limit → unhealthy + try next
+            if code in (401, 403, 429, 500, 502, 503, 504):
+                _mark_unhealthy(api_key, f"HTTP {code}", _COOLDOWN_SECONDS)
+                last_error = f"HTTP {code}"
+                continue
+            # Other 4xx → don't mark unhealthy, just fail
+            logger.warning("Tavily search failed (key %s...): %s", api_key[:10], e)
+            return {
+                "query": query,
+                "tier": tier,
+                "source": "tavily_error",
+                "fetched_at": fetched_at,
+                "results": [],
+                "error": str(e),
+            }
+        except httpx.HTTPError as e:
+            _mark_unhealthy(api_key, str(e), _COOLDOWN_SECONDS)
+            last_error = str(e)
+            continue
+
+    if data is None:
+        # All keys exhausted
         return {
             "query": query,
             "tier": tier,
             "source": "tavily_error",
             "fetched_at": fetched_at,
             "results": [],
-            "error": str(e),
+            "error": last_error or "all_keys_exhausted",
+            "all_keys_exhausted": True,
         }
 
     raw_results = data.get("results", []) or []
@@ -359,12 +474,12 @@ if __name__ == "__main__":
     import json
     import sys
 
-    if not os.getenv("TAVILY_API_KEY"):
-        print("TAVILY_API_KEY not set — running extract-only smoke test")
+    if not _load_key_pool():
+        print("TAVILY_API_KEY / TAVILY_API_KEYS not set — running extract-only smoke test")
         out = asyncio.run(web_extract(["https://www.idx.co.id/"]))
         print(json.dumps(out, indent=2)[:1500])
         sys.exit(0)
 
-    print("Running composite smoke test with TAVILY_API_KEY present...")
+    print("Running composite smoke test with Tavily key pool present...")
     out = asyncio.run(web_search_and_extract("BBCA IDX earnings 2026", n_results=3, extract_top_n=2))
     print(json.dumps(out, indent=2, default=str)[:3000])

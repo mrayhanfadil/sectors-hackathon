@@ -2,8 +2,9 @@ import os
 import pathlib
 import re
 
-# Inherit env vars from ~/.hermes/.env or .env if not in current os.environ
+# Inherit env vars from ~/.hermes/.env, ~/.config/sectors-be/env, or .env if not in current os.environ
 for _p in (
+    pathlib.Path.home() / ".config" / "sectors-be" / "env",
     pathlib.Path(__file__).resolve().parents[1] / ".env",
     pathlib.Path(".env"),
     pathlib.Path.home() / ".hermes" / ".env",
@@ -35,6 +36,7 @@ from .logging_config import setup_logging, ProductionHardeningMiddleware
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf
 from .routers.agent import router_agent
 from .routers.mock_sectors import router_mock_sectors, get_mock_sectors_status
+from .startup import startup_hook, router_diagnostic
 
 try:
     from .routers.pdf import router_pdf  # type: ignore
@@ -49,6 +51,7 @@ _started = time.time()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    await startup_hook()
     settings = get_settings()
     # init cache + stockdata pool
     cache = get_cache(settings.cache_ttl)
@@ -127,6 +130,7 @@ def create_app() -> FastAPI:
     app.include_router(router_challenge, tags=["challenge"])
     app.include_router(router_agent, tags=["agent"])
     app.include_router(router_mock_sectors, prefix="/api/mock", tags=["mock-sectors"])
+    app.include_router(router_diagnostic)
     if router_pdf is not None:
         app.include_router(router_pdf, tags=["pdf"])
     app.include_router(router_dcf, tags=["dcf"])
