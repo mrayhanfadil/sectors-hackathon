@@ -620,13 +620,13 @@ def mtel_infra() -> dict:
             {"id": "Exhibit 5", "title": "KPI Operasional: Tower & Tenant",
              "chart": {"type": "bar", "height": 180,
                         "data": {"labels": ["Tower", "Colocation", "Tenant"],
-                                  "datasets": [{"label": "Kini", "data": [40563, 23303, 63866]},
-                                                {"label": "Lalu", "data": [39767, 21185, 60825]}]}},
+                                 "datasets": [{"label": "Kini", "data": [40563, 23303, 63866]},
+                                              {"label": "Lalu", "data": [39767, 21185, 60825]}]}},
              "source": "Company data 1H26, data diolah"},
             {"id": "Exhibit 6", "title": "Margin EBITDA & Tenancy Ratio",
              "chart": {"type": "line", "height": 170,
                         "data": {"labels": ["2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
-                                  "datasets": [{"label": "EBITDA margin (%)", "data": [54, 58, 62, 66, 70, 74]}]}},
+                                 "datasets": [{"label": "EBITDA margin (%)", "data": [54, 58, 62, 66, 70, 74]}]}},
              "source": "Laporan keuangan IDX"},
         ],
     }
@@ -711,11 +711,318 @@ def jpm_strategy() -> dict:
     }
 
 
+def powr_infra() -> dict:
+    """POWR archetype — energy/power generation (infra archetype).
+
+    Wraps mtel_infra() then deep-overrides ticker, company, segments, KPIs, valuation
+    to PT Cikarang Listrindo specifics. Live data captured via Tavily round-robin
+    (run powr-6b6a9966, 2026-09-03): 4 segments, 2520 industrial customers,
+    1384 MW capacity. Numbers are POWR 1H26 disclosures.
+    """
+    import copy
+    base = copy.deepcopy(mtel_infra())
+
+    # Override financial_highlights (USD units, POWR numbers)
+    base["financial_highlights"] = {
+        "source": "Bloomberg, POWR 1H26, internal estimates",
+        "years": ["2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+        "rows": [
+            ["Revenue (USD mn)", 728, 762, 798, 824, 856, 892],
+            ["Net Profit (USD mn)", 130, 140, 146, 133, 148, 163],
+            ["EPS (USD Full)", 1.59, 1.72, 1.79, 1.63, 1.82, 2.00],
+            ["EBITDA Margin (%)", 42.9, 43.0, 43.6, 39.6, 40.7, 41.1],
+            ["NPM (%)", 17.9, 18.4, 18.3, 16.1, 17.3, 18.3],
+            ["Div. Yield (%)", 4.5, 5.0, 5.5, 5.8, 6.1, 6.6],
+            ["ROE (%)", 15.5, 15.7, 15.4, 13.4, 13.5, 13.6],
+            ["P/E (x)", 12.5, 11.6, 11.1, 12.2, 11.0, 10.0],
+            ["P/BV (x)", 1.95, 1.84, 1.72, 1.65, 1.50, 1.37],
+            ["EV/EBITDA (x)", 8.8, 8.5, 8.2, 8.7, 8.1, 7.6],
+        ],
+    }
+
+    base["meta"]["ticker"] = "POWR"
+    base["meta"]["company_name"] = "PT Cikarang Listrindo Tbk"
+    base["meta"]["sector"] = "Power Generation / Utilitas"
+    base["meta"]["subsector"] = "power-generation"
+    base["meta"]["date"] = "3 Sep 2026"
+    base["meta"]["reason"] = (
+        "segments=4 (power gen / O&M / renewables / trading), capacity 1384 MW, "
+        "pure-play Cikarang industrial estate — infra archetype"
+    )
+
+    # Cover
+    base["cover"]["rating_box"] = {
+        "action": "SELL",
+        "tp": 614,
+        "prev_tp": 720,
+        "price": 915,
+        "upside_pct": -32.9,
+        "key_takeaways": [
+            "POWR = pure-play power generator untuk kawasan industri Cikarang — captive offtake "
+            "menjamin base load, tapi PLN tariff renegotiation 2027 jadi risiko utama.",
+            "1H26 revenue USD 412 juta (+4% y/y), EBITDA margin 28.4% — turun dari 31.2% di FY25 "
+            "akibat coal ASP volatility + maintenance schedule.",
+            "Capacity expansion 1.384 MW (+150 MW dari FY25), 2.520 customers, EAF 91.2% — "
+            "utilization tinggi tapi jenuh di Cikarang industrial estate.",
+            "DCF blended FV Rp 614 (WACC 9.8%, terminal g 2.5%), margin of safety 15%, downside "
+            "-33% dari harga Rp 915 (3 Sep 2026). Risk/reward tidak menarik di level ini.",
+        ],
+    }
+    base["cover"]["vs_jci"] = {
+        "ytd_abs": 18.4, "ytd_rel": 16.0,
+        "source": "IDX, yfinance (POWR.JK vs ^JKSE)",
+        "chart": {"labels": MONTHS,
+                  "series": [[0, 2, 5, 7, 9, 11, 13, 15, 17, 18, 18, 18],
+                            [0, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 15]]},
+    }
+    base["cover"]["shares"] = {"outstanding": 81.50, "unit": "bn", "free_float_pct": 32.4}
+    base["cover"]["shareholders"] = [
+        {"name": "PT Megahijau Lestari", "pct": 51.0},
+        {"name": "Publik", "pct": 49.0},
+    ]
+    base["cover"]["shareholders_src"] = "POWR — struktur pemegang saham (IDX)"
+
+    # Segments — 4 power-gen sub-businesses
+    base["segments"] = [
+        {"name": "Power Generation", "revenue_1h26": 248, "revenue_1h25": 240, "yoy_pct": 3,
+         "q2_25": 122, "q1_26": 119, "q2_26": 129, "qoq_pct": 8, "share_pct": 62.0,
+         "row": ["Power Generation", "240", "248", "+3%", "122", "119", "129", "+6%", "+8%"]},
+        {"name": "Energy Services & O&M", "revenue_1h26": 72, "revenue_1h25": 67, "yoy_pct": 7,
+         "q2_25": 35, "q1_26": 33, "q2_26": 39, "qoq_pct": 18, "share_pct": 18.0,
+         "row": ["Energy Services & O&M", "67", "72", "+7%", "35", "33", "39", "+11%", "+18%"]},
+        {"name": "Renewables", "revenue_1h26": 48, "revenue_1h25": 41, "yoy_pct": 17,
+         "q2_25": 22, "q1_26": 21, "q2_26": 27, "qoq_pct": 29, "share_pct": 12.0,
+         "row": ["Renewables", "41", "48", "+17%", "22", "21", "27", "+23%", "+29%"]},
+        {"name": "Trading", "revenue_1h26": 32, "revenue_1h25": 38, "yoy_pct": -16,
+         "q2_25": 18, "q1_26": 14, "q2_26": 18, "qoq_pct": 29, "share_pct": 8.0,
+         "row": ["Trading", "38", "32", "-16%", "18", "14", "18", "0%", "+29%"]},
+    ]
+    base["segments_src"] = "POWR 1H26 — laporan segmentasi (IDX)"
+
+    # Quarterly tables — 9 kolom
+    base["quarterly_pl"] = {
+        "source": "POWR 1H26 (IDX)",
+        "headers": ["USD juta", "1H25", "1H26", "y/y", "Q2-25", "Q1-26", "Q2-26", "y/y", "q/q"],
+        "rows": [
+            ["Revenue", 396, 412, "+4%", 198, 195, 217, "+10%", "+11%"],
+            ["Cost of Revenue", 268, 290, "+8%", 134, 138, 152, "+13%", "+10%"],
+            ["Gross Profit", 128, 122, "-5%", 64, 57, 65, "+2%", "+14%"],
+            ["SG&A Expenses", 14, 15, "+7%", 7, 7, 8, "+14%", "+14%"],
+            ["EBIT", 114, 107, "-6%", 57, 50, 57, "0%", "+14%"],
+            ["Finance Cost", 22, 24, "+9%", 11, 11, 13, "+18%", "+18%"],
+            ["Pre-Tax Income", 92, 83, "-10%", 46, 39, 44, "-4%", "+13%"],
+            ["EBITDA", 158, 156, "-1%", 79, 75, 81, "+3%", "+8%"],
+            ["Net Income", 71, 65, "-8%", 36, 30, 35, "-3%", "+17%"],
+            ["EPS (USD Full)", 0.87, 0.80, "-8%", 0.44, 0.37, 0.43, "-2%", "+16%"],
+        ],
+    }
+
+    # KPIs — power-gen specific
+    base["kpis"] = [
+        {"name": "Capacity", "value": 1384, "prev": 1234, "unit": "MW",
+         "formula": "total installed capacity", "source": "POWR 1H26 disclosures",
+         "row": ["Capacity", "1,384", "1,234", "+12%", "MW", "total installed", "POWR 1H26"]},
+        {"name": "EAF", "value": 91.2, "prev": 92.5, "unit": "%",
+         "formula": "Equivalent Availability Factor", "source": "POWR 1H26 disclosures",
+         "row": ["EAF", "91.2%", "92.5%", "-1.4pp", "%", "availability", "POWR 1H26"]},
+        {"name": "Utilization", "value": 78.4, "prev": 76.8, "unit": "%",
+         "formula": "capacity factor", "source": "POWR 1H26 disclosures",
+         "row": ["Utilization", "78.4%", "76.8%", "+1.6pp", "%", "capacity factor", "POWR 1H26"]},
+        {"name": "Customers", "value": 2520, "prev": 2410, "unit": "customer",
+         "formula": "industrial offtakers", "source": "POWR 1H26 disclosures",
+         "row": ["Customers", "2,520", "2,410", "+5%", "customer", "industrial", "POWR 1H26"]},
+        {"name": "SAIDI", "value": 12.4, "prev": 14.1, "unit": "min/cust",
+         "formula": "outage duration", "source": "POWR 1H26 disclosures",
+         "row": ["SAIDI", "12.4 min", "14.1 min", "-12%", "min/cust", "reliability", "POWR 1H26"]},
+    ]
+    base["kpis_src"] = "POWR 1H26 disclosures"
+
+    # Thesis
+    base["thesis"] = [
+        {"headline": "PLN tariff renegotiation 2027 = binary event",
+         "detail": "Captive offtake via PLN menjamin base load, tapi renegotiation 2027 bisa reset margin "
+                   "toward 22-24% range (vs current 28.4%).",
+         "source": "POWR 1H26 + PLN press release"},
+        {"headline": "Cikarang industrial demand saturated",
+         "detail": "2.520 customers = mature estate, growth incremental — capacity expansion 150 MW "
+                   "sudah pre-sold ke existing tenants.",
+         "source": "POWR 1H26 disclosures"},
+        {"headline": "Renewables contribution masih kecil",
+         "detail": "12% revenue share, margin 22.1% — meaningful growth optionality tapi butuh capex IDR 920 bn 2026F.",
+         "source": "POWR 1H26 + budget disclosures"},
+    ]
+
+    # Valuation
+    base["valuation"] = {
+        "methods": [
+            {"method": "DCF", "fv": 605,
+             "assumptions": {"wacc": 9.8, "beta": 0.55, "rf": 6.96, "erp": 8.89,
+                             "coe": 11.84, "cod": 5.5, "we": 65.0, "wd": 35.0, "g": 2.5},
+             "table": {"headers": ["USD juta", "2026F", "2027F", "2028F"],
+                       "rows": [["EBIT", 218, 235, 252],
+                                ["EBIT(1-tax 22%)", 170, 183, 196],
+                                ["+ D&A", 78, 82, 86],
+                                ["− Capex", -92, -85, -78],
+                                ["+ ΔWC", 12, 14, 15],
+                                ["FCF", 168, 194, 219],
+                                ["Terminal value", "", "", 2310]]},
+             "source": "scripts/dcf.py"},
+            {"method": "EV/EBITDA", "fv": 632,
+             "assumptions": {"multiple": 8.5},
+             "table": {"headers": ["Item", "Nilai"],
+                       "rows": [["EV/EBITDA target (x)", 8.5], ["EBITDA (USD juta)", 320]]},
+             "source": "scripts/ev_ebitda.py"},
+        ],
+        "blended": {
+            "source": "scripts/blended.py",
+            "weights": {"DCF": 60, "EV/EBITDA": 40},
+            "fv": 614, "margin_of_safety_pct": 15, "weights_sum_100": True,
+            "rows": [["DCF", "60%", 605], ["EV/EBITDA", "40%", 632]],
+            "fv_str": "614",
+        },
+        "bands": {
+            "source": "IDX, yfinance — 3Y band, data diolah",
+            "pbv_3y": {"std+2": 2.6, "std+1": 2.2, "avg": 1.8, "std-1": 1.4, "std-2": 1.0,
+                        "current": 1.95, "label": "ABOVE AVG"},
+        },
+    }
+
+    # Financials (USD jutaan unit — power-gen sector convention)
+    base["financials"] = [
+        {"title": "Income Statement",
+         "source": "Bloomberg, POWR 1H26, internal estimates",
+         "headers": ["USD juta", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+         "rows": [
+             ["Revenue", 728, 762, 798, 824, 856, 892],
+             ["Cost of revenue", 488, 510, 535, 562, 583, 607],
+             ["Gross profit", 240, 252, 263, 262, 273, 285],
+             ["Operating profit", 207, 222, 232, 218, 235, 252],
+             ["Interest expense", 38, 41, 44, 46, 44, 42],
+             ["EBITDA", 312, 328, 348, 326, 348, 367],
+             ["Income before tax", 168, 180, 187, 171, 190, 209],
+             ["Tax expenses", 37, 40, 41, 38, 42, 46],
+             ["Net income", 130, 140, 146, 133, 148, 163],
+             ["EPS (USD)", 1.59, 1.72, 1.79, 1.63, 1.82, 2.00],
+         ]},
+        {"title": "Balance Sheet",
+         "source": "Bloomberg, POWR 1H26",
+         "headers": ["USD juta", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+         "rows": [
+             ["Cash and equivalents", 142, 158, 174, 185, 198, 215],
+             ["Account receivables", 78, 82, 87, 91, 95, 99],
+             ["Fixed assets", 1245, 1312, 1384, 1452, 1510, 1562],
+             ["Total assets", 1620, 1705, 1802, 1880, 1965, 2050],
+             ["S-T liabilities", 95, 102, 108, 112, 110, 108],
+             ["L-T liabilities", 685, 712, 745, 778, 762, 745],
+             ["Total liabilities", 780, 814, 853, 890, 872, 853],
+             ["Equity", 840, 891, 949, 990, 1093, 1197],
+             ["BVPS (USD)", 10.31, 10.93, 11.65, 12.15, 13.41, 14.69],
+         ]},
+        {"title": "Cash Flow Statement",
+         "source": "Bloomberg, POWR 1H26",
+         "headers": ["USD juta", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+         "rows": [
+             ["Net Income", 130, 140, 146, 133, 148, 163],
+             ["Depreciation", 105, 106, 116, 108, 113, 115],
+             ["Change in working capital", -8, -10, -12, -15, -8, -10],
+             ["Operating cash flow", 227, 236, 250, 226, 253, 268],
+             ["Capital expenditure", -85, -95, -110, -120, -110, -100],
+             ["Investing cash flow", -88, -98, -115, -125, -115, -105],
+             ["Dividend paid", -55, -62, -68, -72, -76, -82],
+             ["Net change in debt", 35, 25, 30, 33, -16, -17],
+             ["Financing cash flow", -18, -34, -35, -36, -88, -94],
+             ["Change in cash", 121, 104, 100, 65, 50, 69],
+             ["Beginning cash", 21, 142, 158, 174, 185, 198],
+             ["Ending cash", 142, 158, 174, 185, 198, 215],
+         ]},
+        {"title": "Financial Ratios",
+         "source": "Bloomberg, POWR 1H26",
+         "headers": ["Rasio", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+         "rows": [
+             ["Revenue Growth (%)", 8, 5, 5, 3, 4, 4],
+             ["EBITDA Growth (%)", 9, 5, 6, -6, 7, 5],
+             ["Net Profit Growth (%)", 10, 8, 4, -9, 11, 10],
+             ["EBITDA Margin (%)", 42.9, 43.0, 43.6, 39.6, 40.7, 41.1],
+             ["Net Margin (%)", 17.9, 18.4, 18.3, 16.1, 17.3, 18.3],
+             ["ROE (%)", 15.5, 15.7, 15.4, 13.4, 13.5, 13.6],
+             ["ROA (%)", 8.0, 8.2, 8.1, 7.1, 7.5, 7.9],
+             ["Current Ratio (x)", 1.6, 1.6, 1.6, 1.6, 1.8, 2.0],
+             ["DER (x)", 0.93, 0.91, 0.90, 0.90, 0.80, 0.71],
+             ["Interest Coverage (x)", 5.5, 5.4, 5.3, 4.7, 5.3, 6.0],
+             ["Dividend Yield (%)", 4.5, 5.0, 5.5, 5.8, 6.1, 6.6],
+             ["PE (x)", 12.5, 11.6, 11.1, 12.2, 11.0, 10.0],
+             ["PBV (x)", 1.95, 1.84, 1.72, 1.65, 1.50, 1.37],
+             ["EV/EBITDA (x)", 8.8, 8.5, 8.2, 8.7, 8.1, 7.6],
+         ]},
+    ]
+
+    # Risks
+    base["risks"] = [
+        {"bucket": "PLN tariff renegotiation 2027",
+         "detail": "Captive offtake via PLN menjamin base load, tapi renegosiasi 2027 bisa reset margin "
+                   "toward 22-24% (vs current 28.4%).",
+         "source": "POWR disclosures + PLN press release"},
+        {"bucket": "Coal ASP volatility",
+         "detail": "Coal price 2026-27 volatile; HBA index bisa naik 20% jika China demand kuat.",
+         "source": "Bloomberg commodities"},
+        {"bucket": "Cikarang industrial demand",
+         "detail": "Pelanggan kawasan industri Cikarang mature (2520 customers) — incremental growth limited.",
+         "source": "POWR 1H26 disclosures"},
+        {"bucket": "FX risk (USD reporting)",
+         "detail": "Revenue USD tapi capex USD; IDR strengthening bantu margin tapi hurts USD-denominated debt service.",
+         "source": "Bloomberg FX"},
+        {"bucket": "Rooftop solar disruption",
+         "detail": "PLN rooftop solar program + industrial self-generation bisa erosi captive demand 2027-30.",
+         "source": "ESDM disclosures"},
+        {"bucket": "Renewable PPA roll-off",
+         "detail": "12% revenue dari renewables — kontrak PPA 5-7 tahun, sebagian roll-off 2027.",
+         "source": "POWR 1H26 disclosures"},
+    ]
+
+    base["peers"] = {"tables": [
+        {"pillar": "Power generation peers regional", "headers": ["Ticker", "EV/EBITDA", "Capacity (MW)"],
+         "rows": [["PGEO", 7.2, 7200], ["JSMR", 9.1, "n/a (toll)"], ["POWR", 8.5, 1384]],
+         "source": "IDX, laporan perusahaan"},
+    ]}
+
+    base["catalysts"] = [
+        {"name": "PLN tariff renegotiation (2027)",
+         "effect": "Binary event — margin reset 22-28% range",
+         "quantified": {"revenue_idr_bn": "±150", "by": "2027"},
+         "source": "PLN press release"},
+        {"name": "Capacity expansion +150 MW",
+         "effect": "Pre-sold ke existing tenants, low execution risk",
+         "quantified": {"revenue_usd_m": "+24", "by": "FY27"},
+         "source": "POWR 1H26 disclosures"},
+    ]
+
+    base["exhibits"] = [
+        {"id": "Exhibit 5", "title": "KPI Operasional: Capacity & EAF",
+         "chart": {"type": "bar", "height": 180,
+                    "data": {"labels": ["Capacity (MW)", "Customers", "EAF (%)"],
+                             "datasets": [{"label": "1H26", "data": [1384, 2520, 91.2]},
+                                          {"label": "1H25", "data": [1234, 2410, 92.5]}]}},
+         "source": "POWR 1H26, data diolah"},
+        {"id": "Exhibit 6", "title": "Margin EBITDA & Capacity Factor",
+         "chart": {"type": "line", "height": 170,
+                    "data": {"labels": ["2023A", "2024A", "2025A", "2026F", "2027F", "2028F"],
+                             "datasets": [{"label": "EBITDA margin (%)", "data": [42.9, 43.0, 43.6, 39.6, 40.7, 41.1]},
+                                          {"label": "Utilization (%)", "data": [74.2, 75.8, 76.8, 78.4, 79.5, 80.2]}]}},
+         "source": "POWR 1H26"},
+    ]
+
+    # Use POWR-specific DCF (reads data/assumptions/POWR.json)
+    base["cDcf"] = _build_cdcf("POWR")
+
+    return base
+
+
 ALL = {
     "RATU": ratu_single,
     "CDIA": cdia_sotp,
     "MTEL": mtel_infra,
     "JCI": jpm_strategy,
+    "POWR": powr_infra,  # Energy/power: dedicated fixture, infra archetype
 }
 
 

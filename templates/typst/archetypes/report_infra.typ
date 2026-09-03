@@ -1,13 +1,23 @@
 // =====================================================================
 // report_infra.typ — Institutional equity research (Infra archetype)
-// Case: MTEL (PT Dayamitra Telekomunikasi Tbk) — 11 Pages Comprehensive Report
+// Multi-ticker parameterized template for infrastructure / recurring archetypes
 // =====================================================================
 #import "../common/theme.typ": *
 
 #show: set-page-defaults
 
+#let ticker = sys.inputs.at("ticker", default: "MTEL")
+#let default-data-path = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(ticker) + "/report_data.json"
+#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data = json(data-path)
+
+#let m = data.at("meta")
+#let cover = data.at("cover").at("rating_box")
+#let unit = m.at("report_unit", default: if data.at("quarterly_pl", default: (:)).at("headers", default: ()).len() > 0 { data.quarterly_pl.headers.at(0) } else { "Rp Miliar" })
+#let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
+
 #let PALETTE = (
-  brand: rgb("#067647"),       // emerald green (telecom infra)
+  brand: rgb("#067647"),       // emerald green (infra archetype)
   brand_dark: rgb("#054f31"),
   accent: rgb("#ecfdf3"),
   ink: rgb("#101828"),
@@ -74,29 +84,33 @@
 }
 
 // Colors for segment pillars
-#let C_TOWER = rgb("#067647")
-#let C_FIBER = rgb("#0284c7")
-#let C_RELATED = rgb("#d97706")
-#let C_RESELLER = rgb("#7c3aed")
+#let SEG_COLORS = (
+  rgb("#067647"),
+  rgb("#0284c7"),
+  rgb("#d97706"),
+  rgb("#7c3aed"),
+  rgb("#0891b2"),
+  rgb("#4f46e5"),
+)
 
 // =====================================================================
 // PAGE 1 — COVER & SNAPSHOT
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 1, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 1, PALETTE, [
   #grid(
     columns: (2fr, 1.15fr),
     column-gutter: 12pt,
     [
       #text(size: T_SMALL, fill: PALETTE.muted, tracking: 0.12em, weight: "bold")[
-        EQUITY UPDATE · INFRASTRUKTUR TELEKOMUNIKASI
+        #upper(m.at("report_type", default: "EQUITY UPDATE")) · #upper(m.sector)
       ]
       #v(3pt)
       #text(size: T_COVER_TITLE, weight: "bold", fill: PALETTE.brand_dark)[
-        Dayamitra Telekomunikasi
+        #m.company_name
       ]
       #v(1pt)
       #text(size: 12.5pt, weight: "bold", fill: PALETTE.muted)[
-        MTEL · IDX · Sektor Infrastruktur Telekomunikasi
+        #m.ticker · IDX · Sektor #m.sector
       ]
       #v(6pt)
 
@@ -104,57 +118,66 @@
         #text(size: 7.8pt, weight: "bold", fill: PALETTE.brand_dark)[KEY TAKEAWAYS & HIGHLIGHTS]
         #v(3pt)
         #list(
-          [PST & UMT merger efektif 1 Jul 2026 membuka efisiensi opex/capex dan tenancy >1,6x.],
-          [Spectrum 700MHz/2.6GHz berpotensi menambah 3.000–3.500 tenant (+Rp 360–420 bn) by FY27–29.],
-          [DCF 60% + EV/EBITDA 40% blended TP Rp 635, margin of safety 15%, upside +38% dari harga Rp 460.],
+          ..cover.key_takeaways.map(t => [#t])
         )
       ]
 
       #v(6pt)
-      #exhibit-header("Exhibit 1", "Bauran Pendapatan per Segmen (1H26)", "MTEL 1H26 (IDX)")
+      #exhibit-header("Exhibit 1", "Bauran Pendapatan per Segmen (1H26)", data.at("segments_src", default: m.ticker + " 1H26 (IDX)"))
       #v(2pt)
       #block(width: 100%)[
-        #grid(
-          columns: (49.2%, 17.8%, 18.2%, 14.8%),
-          rect(width: 100%, height: 7pt, fill: C_TOWER, radius: (left: 2pt)),
-          rect(width: 100%, height: 7pt, fill: C_FIBER),
-          rect(width: 100%, height: 7pt, fill: C_RELATED),
-          rect(width: 100%, height: 7pt, fill: C_RESELLER, radius: (right: 2pt)),
-        )
-        #v(2pt)
-        #grid(
-          columns: (1.2fr, 1fr, 1.2fr, 1fr),
-          [#box(width: 4.5pt, height: 4.5pt, fill: C_TOWER, radius: 1pt) #text(size: 6.2pt)[ Tower 49,2%]],
-          [#box(width: 4.5pt, height: 4.5pt, fill: C_FIBER, radius: 1pt) #text(size: 6.2pt)[ Fiber 17,8%]],
-          [#box(width: 4.5pt, height: 4.5pt, fill: C_RELATED, radius: 1pt) #text(size: 6.2pt)[ Related 18,2%]],
-          [#box(width: 4.5pt, height: 4.5pt, fill: C_RESELLER, radius: 1pt) #text(size: 6.2pt)[ Reseller 14,8%]],
-        )
+        #let segs = data.at("segments", default: ())
+        #if segs.len() > 0 {
+          let seg-cols = segs.map(s => s.share_pct * 1%)
+          grid(
+            columns: seg-cols,
+            ..segs.enumerate().map(((i, s)) => rect(
+              width: 100%,
+              height: 7pt,
+              fill: SEG_COLORS.at(calc.rem(i, SEG_COLORS.len())),
+              radius: if i == 0 { (left: 2pt) } else if i == segs.len() - 1 { (right: 2pt) } else { 0pt }
+            ))
+          )
+          v(2pt)
+          let label-cols = (1fr,) * segs.len()
+          grid(
+            columns: label-cols,
+            ..segs.enumerate().map(((i, s)) => [
+              #box(width: 4.5pt, height: 4.5pt, fill: SEG_COLORS.at(calc.rem(i, SEG_COLORS.len())), radius: 1pt) #text(size: 6.2pt)[ #s.name #s.share_pct%]
+            ])
+          )
+        }
       ]
       #v(2pt)
+      #let seg-headers = ("Segmen Bisnis", "1H26 (" + unit + ")", "Bauran (%)", "YoY (%)", "Status")
+      #let seg-rows = data.at("segments", default: ()).enumerate().map(((i, s)) => (
+        s.name,
+        str(s.revenue_1h26),
+        str(s.share_pct) + "%",
+        if s.yoy_pct > 0 { "+" + str(s.yoy_pct) + "%" } else { str(s.yoy_pct) + "%" },
+        if i == 0 { "Core Anchor" } else if i == 1 { "Growth Driver" } else if i == 2 { "High Expansion" } else { "Stable Cashflow" }
+      ))
+      #let total-rev = data.at("segments", default: ()).fold(0, (acc, s) => acc + s.revenue_1h26)
+      #let seg-total-row = ([*Total Pendapatan 1H26*], [*#str(total-rev)*], [*100,0%*], [*+2,1%*], [*Konsolidasian*])
       #fin-table(
-        ("Segmen Bisnis", "1H26 (Rp bn)", "Bauran (%)", "YoY (%)", "Status"),
-        (
-          ("Tower Leasing", "3.833", "49,2%", "+1,0%", "Core Anchor"),
-          ("Fiber Optic", "309", "17,8%", "+8,0%", "Growth Driver"),
-          ("Tower-Related Business", "299", "18,2%", "+15,0%", "High Expansion"),
-          ("Reseller", "251", "14,8%", "0,0%", "Stable Cashflow"),
-          ([*Total Pendapatan 1H26*], [*4.691*], [*100,0%*], [*+2,1%*], [*Konsolidasian*]),
-        ),
+        seg-headers,
+        (..seg-rows, seg-total-row),
         palette: PALETTE,
       )
 
       #v(6pt)
-      #exhibit-header("Exhibit 2", "Kinerja Harga MTEL vs IHSG (YTD)", "IDX & yfinance (MTEL.JK vs ^JKSE)")
+      #let vs-jci = data.cover.at("vs_jci", default: (:))
+      #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "IDX & yfinance"))
       #v(2pt)
-      #chart-placeholder("Kinerja Harga MTEL (+12,1% YTD) vs IHSG (-2,9% Relatif)", caption: "Alpha Relatif vs IHSG · Sumber: IDX & yfinance", height: 60pt, palette: PALETTE)
+      #chart-placeholder("Kinerja Harga " + m.ticker + " (" + (if vs-jci.at("ytd_abs", default: 0) > 0 { "+" } else { "" }) + str(vs-jci.at("ytd_abs", default: 0)) + "% YTD) vs IHSG (" + (if vs-jci.at("ytd_rel", default: 0) > 0 { "+" } else { "" }) + str(vs-jci.at("ytd_rel", default: 0)) + "% Relatif)", caption: "Alpha Relatif vs IHSG · Sumber: " + vs-jci.at("source", default: "IDX & yfinance"), height: 60pt, palette: PALETTE)
     ],
     [
       #rating-box(
-        "BUY",
-        "635",
-        "460",
-        38.0,
-        prev-tp: "815",
+        cover.action,
+        str(cover.tp),
+        str(cover.price),
+        cover.upside_pct,
+        prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
         palette: PALETTE,
       )
 
@@ -162,18 +185,19 @@
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR & SAHAM]
         #v(2.5pt)
+        #let sh = data.cover.at("shares", default: (:))
         #grid(
           columns: (1fr, auto),
           row-gutter: 3pt,
-          text(size: 7pt)[Harga Kini], text(size: 7pt, weight: "bold")[Rp 460],
-          text(size: 7pt)[Target Harga (12M)], text(size: 7pt, weight: "bold")[Rp 635],
-          text(size: 7pt)[TP Sebelumnya], text(size: 7pt, weight: "bold")[Rp 815],
-          text(size: 7pt)[Potensi Kenaikan], text(size: 7pt, weight: "bold", fill: PALETTE.pos)[+38,0% (BUY)],
-          text(size: 7pt)[Saham Beredar], text(size: 7pt, weight: "bold")[81,50 Miliar],
-          text(size: 7pt)[Kapitalisasi Pasar], text(size: 7pt, weight: "bold")[Rp 37,49 T],
-          text(size: 7pt)[Free Float], text(size: 7pt, weight: "bold")[28,2%],
-          text(size: 7pt)[52-Wk Range], text(size: 7pt, weight: "bold")[420 - 710],
-          text(size: 7pt)[Indeks Konstituen], text(size: 7pt, weight: "bold")[LQ45 / IDX80 / KOMPAS100],
+          text(size: 7pt)[Harga Kini], text(size: 7pt, weight: "bold")[Rp #cover.price],
+          text(size: 7pt)[Target Harga (12M)], text(size: 7pt, weight: "bold")[Rp #cover.tp],
+          text(size: 7pt)[TP Sebelumnya], text(size: 7pt, weight: "bold")[#(if cover.at("prev_tp", default: none) != none { "Rp " + str(cover.prev_tp) } else { "—" })],
+          text(size: 7pt)[Potensi #(if cover.upside_pct >= 0 { "Kenaikan" } else { "Penurunan" })], text(size: 7pt, weight: "bold", fill: if cover.upside_pct >= 0 { PALETTE.pos } else { PALETTE.neg })[#(if cover.upside_pct > 0 { "+" } else { "" })#cover.upside_pct% (#cover.action)],
+          text(size: 7pt)[Saham Beredar], text(size: 7pt, weight: "bold")[#sh.at("outstanding", default: 81.50) Miliar],
+          text(size: 7pt)[Kapitalisasi Pasar], text(size: 7pt, weight: "bold")[Rp #str(calc.round(sh.at("outstanding", default: 81.50) * cover.price / 1000, digits: 2)) T],
+          text(size: 7pt)[Free Float], text(size: 7pt, weight: "bold")[#sh.at("free_float_pct", default: 28.2)%],
+          text(size: 7pt)[52-Wk Range], text(size: 7pt, weight: "bold")[#sh.at("range_52w", default: "420 - 710")],
+          text(size: 7pt)[Indeks Konstituen], text(size: 7pt, weight: "bold")[#sh.at("indices", default: "LQ45 / IDX80 / KOMPAS100")],
         )
       ]
 
@@ -181,27 +205,32 @@
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[STRUKTUR KEPEMILIKAN]
         #v(2.5pt)
+        #let sh-list = data.cover.at("shareholders", default: ())
         #grid(
           columns: (1fr, auto),
           row-gutter: 3pt,
-          text(size: 7pt)[PT Telkom Indonesia (TLKM)], text(size: 7pt, weight: "bold")[71,83%],
-          text(size: 7pt)[Publik (Free Float)], text(size: 7pt, weight: "bold")[28,17%],
+          ..sh-list.map(s => (
+            text(size: 7pt)[#s.name],
+            text(size: 7pt, weight: "bold")[#s.pct%]
+          )).flatten()
         )
         #v(2pt)
-        #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Sumber: IDX struktur pemegang saham]
+        #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Sumber: #data.cover.at("shareholders_src", default: "IDX struktur pemegang saham")]
       ]
 
       #v(5pt)
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SKOR ESG (SUSTAINALYTICS 2026)]
+        #let esg = data.cover.at("esg", default: (:))
+        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SKOR ESG (#upper(esg.at("source", default: "SUSTAINALYTICS")) #esg.at("date", default: "2026"))]
         #v(2.5pt)
+        #let scores = esg.at("scores", default: (:))
         #grid(
           columns: (1fr, auto),
           row-gutter: 3pt,
-          text(size: 7pt)[Lingkungan (E)], text(size: 7pt, weight: "bold")[2,23 / 10],
-          text(size: 7pt)[Sosial (S)], text(size: 7pt, weight: "bold")[3,03 / 10],
-          text(size: 7pt)[Tata Kelola (G)], text(size: 7pt, weight: "bold")[5,08 / 10],
-          text(size: 7pt)[Kategori Risiko ESG], text(size: 7pt, weight: "bold", fill: PALETTE.brand)[Low to Medium Risk],
+          text(size: 7pt)[Lingkungan (E)], text(size: 7pt, weight: "bold")[#scores.at("e", default: "2.23") / 10],
+          text(size: 7pt)[Sosial (S)], text(size: 7pt, weight: "bold")[#scores.at("s", default: "3.03") / 10],
+          text(size: 7pt)[Tata Kelola (G)], text(size: 7pt, weight: "bold")[#scores.at("g", default: "5.08") / 10],
+          text(size: 7pt)[Kategori Risiko ESG], text(size: 7pt, weight: "bold", fill: PALETTE.brand)[#esg.at("risk_category", default: "Low to Medium Risk")],
         )
       ]
     ]
@@ -213,116 +242,68 @@
 // =====================================================================
 // PAGE 2 — KPI OPERASIONAL HERO & KATALIS TERKUANTIFIKASI
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 2, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 2, PALETTE, [
   #section-header(1, "KPI Operasional — Hero Section", PALETTE)
 
+  #let kpis = data.at("kpis", default: ())
   #text(size: 7.8pt)[
-    KPI per subsektor infrastruktur telekomunikasi (tenancy ratio = tenant/tower, fiber optic deployment km) adalah tesis utama bisnis *recurring infra* — bukan hanya sekadar metrik P&L kuartalan. Portofolio menara MTEL terbesar di Asia Tenggara memperkuat skala keekonomian dan daya tawar terhadap seluruh MNO.
+    KPI per subsektor #m.sector (#kpis.map(k => k.name).join(", ")) adalah tesis utama bisnis *recurring infra* — bukan hanya sekadar metrik P&L kuartalan. Portofolio operasional #m.ticker memperkuat skala keekonomian dan keunggulan kompetitif di industri.
   ]
   #v(4pt)
 
-  #grid(
-    columns: (1fr, 1fr, 1fr, 1fr, 1.15fr),
-    gutter: 6pt,
-    card(PALETTE)[
-      #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[TOTAL TOWER]
-      #v(1pt)
-      #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[40.563]
-      #text(size: 6.5pt, weight: "bold")[ unit]
-      #v(1pt)
-      #text(size: 6.2pt, fill: PALETTE.pos, weight: "bold")[+796 (+2,0% YoY)]
-    ],
-    card(PALETTE)[
-      #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[COLOCATION]
-      #v(1pt)
-      #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[23.303]
-      #text(size: 6.5pt, weight: "bold")[ unit]
-      #v(1pt)
-      #text(size: 6.2pt, fill: PALETTE.pos, weight: "bold")[+2.178 (+10,3% YoY)]
-    ],
-    card(PALETTE)[
-      #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[TOTAL TENANT]
-      #v(1pt)
-      #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[63.866]
-      #text(size: 6.5pt, weight: "bold")[ tnt]
-      #v(1pt)
-      #text(size: 6.2pt, fill: PALETTE.pos, weight: "bold")[+2.959 (+4,9% YoY)]
-    ],
-    card(PALETTE)[
-      #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[TENANCY RATIO]
-      #v(1pt)
-      #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[1,57x]
-      #text(size: 6.5pt, weight: "bold")[ rasio]
-      #v(1pt)
-      #text(size: 6.2pt, fill: PALETTE.pos, weight: "bold")[+0,04x (vs 1,53x)]
-    ],
-    card(PALETTE)[
-      #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[FIBER OPTIC]
-      #v(1pt)
-      #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[59.239]
-      #text(size: 6.5pt, weight: "bold")[ km]
-      #v(1pt)
-      #text(size: 6.2pt, fill: PALETTE.pos, weight: "bold")[+4.792 km (+8,8% YoY)]
-    ],
-  )
+  #if kpis.len() > 0 {
+    grid(
+      columns: (1fr,) * kpis.len(),
+      gutter: 6pt,
+      ..kpis.map(k => card(PALETTE)[
+        #text(size: 6.5pt, fill: PALETTE.muted, weight: "bold")[#upper(k.name)]
+        #v(1pt)
+        #text(size: 11.5pt, weight: "black", fill: PALETTE.brand_dark)[#k.row.at(1)]
+        #text(size: 6.5pt, weight: "bold")[ #k.unit]
+        #v(1pt)
+        #text(size: 6.2pt, fill: if str(k.row.at(3)).starts-with("-") { PALETTE.neg } else { PALETTE.pos }, weight: "bold")[#k.row.at(3) YoY]
+      ])
+    )
+  }
 
   #v(6pt)
-  #exhibit-header("Exhibit 3", "Tabel KPI Operasional vs Periode Lalu (1H26 vs 1H25)", "Company data 1H26, data diolah")
+  #exhibit-header("Exhibit 3", "Tabel KPI Operasional vs Periode Lalu (1H26 vs 1H25)", data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
   #fin-table(
     ("Metrik KPI", "Kini (1H26)", "Lalu (1H25)", "Perubahan (Δ)", "Satuan", "Formula & Karakteristik", "Sumber Data"),
-    (
-      ("Jumlah Menara (Tower)", "40.563", "39.782", "+781 (+2,0%)", "unit", "Total owned towers", "Company data 1H26"),
-      ("Kolokasi (Colocation)", "23.303", "21.125", "+2.178 (+10,3%)", "unit", "Sewa tambahan di menara existing", "Company data 1H26"),
-      ("Jumlah Penyewa (Tenant)", "63.866", "60.907", "+2.959 (+4,9%)", "tenant", "Total tenant aktif MNO", "Company data 1H26"),
-      ("Tenancy Ratio", "1,57x", "1,53x", "+0,04x (+2,6%)", "x", "Tenant / Tower (Utilisasi aset)", "Company data, diolah"),
-      ("Jaringan Fiber Optic", "59.239", "54.447", "+4.792 (+8,8%)", "km", "Panjang fiber terbangun", "Company data 1H26"),
-      ("Penyewa Reseller", "2.650", "2.659", "-9 (-0,3%)", "tenant", "Reseller managed tenancy", "Company data 1H26"),
-    ),
+    kpis.map(k => k.row),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 4", "Perbandingan Visual Menara, Kolokasi & Total Tenant", "Company data 1H26 & Analisis Riset")
+  #exhibit-header("Exhibit 4", "Perbandingan Visual KPI Operasional " + m.ticker, data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
-  #chart-placeholder("Grafik Komparasi: Tower 40.563 (+2%) · Colocation 23.303 (+10%) · Tenant 63.866 (+5%)", caption: "Pertumbuhan Colocation Lebih Cepat Mengindikasikan Efisiensi Margin Operasional", height: 65pt, palette: PALETTE)
+  #chart-placeholder("Grafik Komparasi KPI " + m.ticker, caption: "Pertumbuhan KPI Operasional Mengindikasikan Efisiensi Margin dan Skala", height: 65pt, palette: PALETTE)
 
   #v(6pt)
   #section-header(2, "Katalis Pertumbuhan Terkuantifikasi", PALETTE)
   #v(-2pt)
 
-  #grid(
-    columns: (1fr, 1fr),
-    gutter: 8pt,
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.brand_dark)[1. Merger PST & UMT (Efektif 1 Juli 2026)]
-      #v(2pt)
-      #text(size: 7.2pt)[
-        *Dampak Operasional & Finansial:* \
-        Konsolidasi operator telekomunikasi membuka optimalisasi belanja modal dan opex jaringan. Rasio tenancy MTEL diproyeksikan terdorong melampaui *>1,60x*, disertai peningkatan permintaan solusi terintegrasi: Fixed Wireless Access (FWA), fiberization, IoT, dan power management.
-      ]
-      #v(3pt)
-      #grid(
-        columns: (1fr, auto),
-        text(size: 6.8pt, fill: PALETTE.muted)[Target Tenancy: >1,60x],
-        text(size: 6.8pt, weight: "bold", fill: PALETTE.pos)[Periode: FY27–FY29],
-      )
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.brand_dark)[2. Lelang Spektrum 700MHz & 2,6GHz]
-      #v(2pt)
-      #text(size: 7.2pt)[
-        *Dampak Kuantitatif Terukur:* \
-        Alokasi frekuensi baru oleh Komdigi (TLKM 20/80 MHz, ISAT 20/60 MHz, EXCL 30/50 MHz) mendorong kewajiban perluasan cakupan broadband ke luar Jawa. MTEL berpotensi menambah *3.000–3.500 tenant baru* atau setara *+Rp 360–420 miliar pendapatan tahunan*.
-      ]
-      #v(3pt)
-      #grid(
-        columns: (1fr, auto),
-        text(size: 6.8pt, fill: PALETTE.muted)[+3.000 s.d. 3.500 Tenant],
-        text(size: 6.8pt, weight: "bold", fill: PALETTE.pos)[+Rp 360–420 bn (FY27–29)],
-      )
-    ],
-  )
+  #let cats = data.at("catalysts", default: ())
+  #if cats.len() > 0 {
+    grid(
+      columns: (1fr,) * cats.len(),
+      gutter: 8pt,
+      ..cats.enumerate().map(((i, c)) => card(PALETTE)[
+        #text(weight: "bold", fill: PALETTE.brand_dark)[#(i + 1). #c.name]
+        #v(2pt)
+        #text(size: 7.2pt)[
+          *Dampak Operasional & Finansial:*           #c.effect
+        ]
+        #v(3pt)
+        #grid(
+          columns: (1fr, auto),
+          text(size: 6.8pt, fill: PALETTE.muted)[#c.at("source", default: "")],
+          text(size: 6.8pt, weight: "bold", fill: PALETTE.pos)[Periode: #c.quantified.at("by", default: "FY27–29")],
+        )
+      ])
+    )
+  }
 ])
 
 #pagebreak()
@@ -330,55 +311,37 @@
 // =====================================================================
 // PAGE 3 — SEGMENT BREAKDOWN QUARTERLY + INCOME STATEMENT QUARTERLY
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 3, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 3, PALETTE, [
   #section-header(3, "Segment Breakdown & Kinerja Laba Rugi Kuartalan", PALETTE)
 
   #text(size: 7.8pt)[
-    Analisis momentum kinerja keuangan kuartalan menunjukkan pertumbuhan stabil pada segmen inti sewa menara dan lonjakan pendapatan fiber (+8% y/y) serta bisnis terkait menara (+15% y/y), merefleksikan diversifikasi portofolio infrastruktur digital yang solid.
+    Analisis momentum kinerja keuangan kuartalan menunjukkan pertumbuhan portofolio #m.company_name (#m.ticker) merefleksikan diversifikasi portofolio dan eksekusi operasional yang solid.
   ]
   #v(4pt)
 
-  #exhibit-header("Exhibit 5", "Pendapatan per Segmen: 1H26 vs 1H25 & Momentum Kuartalan (Rp Miliar)", "MTEL 1H26 Laporan Segmentasi (IDX)")
+  #exhibit-header("Exhibit 5", "Pendapatan per Segmen: 1H26 vs 1H25 & Momentum Kuartalan (" + unit + ")", data.at("segments_src", default: m.ticker + " 1H26 Laporan Segmentasi (IDX)"))
   #v(2pt)
   #fin-table(
     ("Segmen Bisnis", "1H25", "1H26", "YoY (%)", "Q2-25", "Q1-26", "Q2-26", "YoY (Q2)", "QoQ (%)"),
-    (
-      ("Tower Leasing", "3.798", "3.833", "+1,0%", "1.956", "1.847", "1.986", "+1,5%", "+7,5%"),
-      ("Fiber Optic", "287", "309", "+8,0%", "147", "152", "157", "+6,8%", "+3,3%"),
-      ("Tower-Related Business", "260", "299", "+15,0%", "113", "166", "133", "+17,7%", "-19,9%"),
-      ("Reseller", "251", "251", "0,0%", "118", "129", "122", "+3,4%", "-5,4%"),
-      ([*Total Pendapatan Segmen*], [*4.596*], [*4.691*], [*+2,1%*], [*2.334*], [*2.294*], [*2.398*], [*+2,7%*], [*+4,5%*]),
-    ),
+    data.at("segments", default: ()).map(s => s.row),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 6", "Laporan Laba Rugi Kuartalan (1H25 vs 1H26 & Q2-25 vs Q2-26)", "Laporan Keuangan MTEL (IDX)")
+  #exhibit-header("Exhibit 6", "Laporan Laba Rugi Kuartalan (1H25 vs 1H26 & Q2-25 vs Q2-26)", data.quarterly_pl.source)
   #v(2pt)
   #fin-table(
-    ("Akun Laba Rugi (Rp Miliar)", "1H25", "1H26", "YoY (%)", "Q2-25", "Q1-26", "Q2-26", "YoY (Q2)", "QoQ (%)"),
-    (
-      ("Pendapatan Bersih (Revenue)", "4.596", "4.691", "+2,1%", "2.334", "2.294", "2.398", "+2,7%", "+4,5%"),
-      ("Beban Pokok Pendapatan (COGS)", "(2.209)", "(2.348)", "+6,3%", "(1.109)", "(1.159)", "(1.189)", "+7,2%", "+2,6%"),
-      ("Laba Kotor (Gross Profit)", "2.388", "2.343", "-1,9%", "1.226", "1.134", "1.209", "-1,4%", "+6,6%"),
-      ("Beban Usaha (SG&A)", "(139)", "(149)", "+7,2%", "(79)", "(63)", "(86)", "+8,9%", "+36,5%"),
-      ("Laba Usaha (EBIT)", "1.744", "1.667", "-4,4%", "898", "814", "853", "-5,0%", "+4,8%"),
-      ("Beban Keuangan & Bunga", "(649)", "(569)", "-12,3%", "(308)", "(282)", "(287)", "-6,8%", "+1,8%"),
-      ("Laba Sebelum Pajak (EBT)", "1.177", "1.175", "-0,2%", "630", "584", "591", "-6,2%", "+1,2%"),
-      ("Beban Pajak Penghasilan", "(83)", "(64)", "-22,9%", "(62)", "(39)", "(25)", "-59,7%", "-35,9%"),
-      ("EBITDA", "3.510", "3.510", "0,0%", "1.800", "1.717", "1.793", "-0,4%", "+4,4%"),
-      ("Laba Bersih Tahun Berjalan", "1.094", "1.111", "+1,6%", "568", "545", "566", "-0,4%", "+3,9%"),
-      ("EPS (IDR Penuh)", "13,00", "13,30", "+2,3%", "6,80", "6,52", "6,77", "-0,4%", "+3,8%"),
-    ),
+    data.quarterly_pl.headers,
+    data.quarterly_pl.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(6pt)
   #card(PALETTE)[
-    #text(weight: "bold", fill: PALETTE.ink)[Catatan Kinerja 1H26 & Efisiensi Beban Bunga]
+    #text(weight: "bold", fill: PALETTE.ink)[Catatan Kinerja 1H26 & Efisiensi Operasional]
     #v(2pt)
     #text(size: 7.2pt)[
-      Laba bersih 1H26 tercatat sebesar Rp 1.111 miliar (+1,6% YoY) ditopang oleh penurunan beban keuangan sebesar 12,3% YoY menjadi Rp 569 miliar (vs Rp 649 miliar di 1H25) hasil dari repricing utang dan pelunasan pinjaman berbiaya tinggi, mengimbangi sedikit kenaikan beban depresiasi fiber optic.
+      Kinerja 1H26 #m.company_name (#m.ticker) mencerminkan ketahanan pendapatan dan disiplin efisiensi beban operasional serta struktur modal, menopang profitabilitas berkelanjutan di sektor #m.sector.
     ]
   ]
 ])
@@ -388,60 +351,32 @@
 // =====================================================================
 // PAGE 4 — BALANCE SHEET, RATIOS & OPERATIONAL KPI QUARTERLY
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 4, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 4, PALETTE, [
   #section-header(4, "Neraca Keuangan, Rasio & KPI Kuartalan", PALETTE)
 
-  #exhibit-header("Exhibit 7", "Neraca Keuangan Kuartalan Ringkas (Rp Miliar)", "MTEL 1H26 (IDX)")
+  #exhibit-header("Exhibit 7", "Neraca Keuangan Kuartalan Ringkas (" + data.quarterly_balance.headers.at(0) + ")", data.quarterly_balance.source)
   #v(2pt)
   #fin-table(
-    ("Pos Neraca", "1H25", "1H26", "YoY (%)", "Q2-25", "Q1-26", "Q2-26", "YoY (Q2)", "QoQ (%)"),
-    (
-      ("Kas & Setara Kas", "2.768", "1.952", "-29,5%", "2.768", "2.836", "1.952", "-29,5%", "-31,2%"),
-      ("Utang Jangka Pendek (ST Debt)", "4.466", "4.416", "-1,1%", "4.466", "4.477", "4.416", "-1,1%", "-1,4%"),
-      ("Utang Jangka Panjang (LT Debt)", "15.728", "16.575", "+5,4%", "15.728", "16.592", "16.575", "+5,4%", "-0,1%"),
-      ("Total Liabilitas", "27.661", "28.055", "+1,4%", "27.661", "26.904", "28.055", "+1,4%", "+4,3%"),
-      ("Ekuitas Bersih", "32.416", "32.051", "-1,1%", "32.416", "33.659", "32.051", "-1,1%", "-4,8%"),
-      ("Total Aset", "60.076", "60.106", "+0,1%", "60.076", "60.563", "60.106", "+0,1%", "-0,8%"),
-    ),
+    data.quarterly_balance.headers,
+    data.quarterly_balance.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 8", "Rasio Keuangan Kuartalan (12 Rasio Kunci)", "Perhitungan Analis & IDX")
+  #exhibit-header("Exhibit 8", "Rasio Keuangan Kuartalan", data.quarterly_ratios.source)
   #v(2pt)
   #fin-table(
-    ("Rasio Finansial", "1H25", "1H26", "Perubahan", "Q2-25", "Q1-26", "Q2-26", "YoY (Q2)", "QoQ (%)"),
-    (
-      ("Gross Profit Margin (GPM %)", "51,95%", "49,94%", "-2,01%", "52,51%", "49,45%", "50,41%", "-2,10%", "+0,96%"),
-      ("Operating Profit Margin (OPM %)", "37,94%", "35,53%", "-2,41%", "38,46%", "35,48%", "35,58%", "-2,88%", "+0,10%"),
-      ("Net Profit Margin (NPM %)", "23,81%", "23,69%", "-0,12%", "24,34%", "23,76%", "23,61%", "-0,73%", "-0,15%"),
-      ("EBITDA Margin (%)", "76,36%", "74,83%", "-1,53%", "77,11%", "74,87%", "74,78%", "-2,33%", "-0,09%"),
-      ("Return on Equity (ROE %)", "6,80%", "6,90%", "+0,10%", "7,00%", "6,50%", "7,10%", "+0,10%", "+0,60%"),
-      ("Return on Assets (ROA %)", "3,60%", "3,70%", "+0,10%", "3,80%", "3,60%", "3,80%", "0,00%", "+0,20%"),
-      ("Debt to Equity Ratio (DER x)", "0,62x", "0,65x", "+0,03x", "0,62x", "0,63x", "0,65x", "+0,03x", "+0,02x"),
-      ("Debt to Assets Ratio (DAR x)", "0,46x", "0,47x", "+0,01x", "0,46x", "0,44x", "0,47x", "+0,01x", "+0,03x"),
-      ("Liabilities to Equity (x)", "0,85x", "0,88x", "+0,03x", "0,85x", "0,80x", "0,88x", "+0,03x", "+0,08x"),
-      ("Interest Coverage Ratio (ICR x)", "5,41x", "6,17x", "+0,76x", "5,85x", "6,08x", "6,25x", "+0,40x", "+0,17x"),
-      ("Current Ratio (x)", "0,28x", "0,38x", "+0,10x", "0,25x", "0,47x", "0,38x", "+0,13x", "-0,09x"),
-      ("Cash Ratio (%)", "5,00%", "8,00%", "+3,00%", "7,00%", "24,00%", "8,00%", "+1,00%", "-16,00%"),
-    ),
+    data.quarterly_ratios.headers,
+    data.quarterly_ratios.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 9", "Operational KPI Kuartalan (Net Additions per Kuartal)", "Company data 1H26")
+  #exhibit-header("Exhibit 9", "Operational KPI Kuartalan", data.quarterly_kpi.source)
   #v(2pt)
   #fin-table(
-    ("KPI Operasional", "1H25", "1H26", "YoY (%)", "1Q25", "2Q25", "3Q25", "4Q25", "1Q26", "2Q26"),
-    (
-      ("Menara (Tower Unit)", "39.782", "40.563", "+2,0%", "+189", "+189", "+320", "+128", "+97", "+236"),
-      ("Kolokasi (Colocation)", "21.125", "23.303", "+10,3%", "+202", "+459", "+760", "+969", "+152", "+297"),
-      ("Total Penyewa (Tenant)", "60.907", "63.866", "+4,9%", "+391", "+648", "+1.080", "+1.097", "+249", "+533"),
-      ("Penyewa Reseller", "2.659", "2.650", "-0,3%", "-71", "-30", "+0", "-9", "+0", "+0"),
-      ("Tenant inc. Reseller", "63.566", "66.516", "+4,6%", "+320", "+618", "+1.080", "+1.088", "+249", "+533"),
-      ("Tenancy Ratio (x)", "1,53x", "1,57x", "+2,6%", "—", "—", "—", "—", "—", "—"),
-      ("Fiber Optic (km)", "54.447", "59.239", "+8,8%", "+2.505", "+903", "+1.146", "+1.606", "+1.080", "+960"),
-    ),
+    data.quarterly_kpi.headers,
+    data.quarterly_kpi.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 ])
@@ -451,8 +386,13 @@
 // =====================================================================
 // PAGE 5 — DCF TABLE + BLENDED VALUATION + P/BV BANDS
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 5, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 5, PALETTE, [
   #section-header(5, "Metodologi Valuasi: DCF, Blended & Bands", PALETTE)
+
+  #let dcf_meth = data.valuation.methods.at(0)
+  #let ev_meth = data.valuation.methods.at(1)
+  #let dcf_ass = dcf_meth.assumptions
+  #let blended = data.valuation.blended
 
   #grid(
     columns: (1.2fr, 1fr),
@@ -461,22 +401,14 @@
       #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Metode 1: Discounted Cash Flow (DCF)]
       #v(2pt)
       #text(size: 6.8pt, fill: PALETTE.muted)[
-        Asumsi: WACC 10,10%, Beta 0,65, Rf 6,96%, ERP 8,89%, CoE 12,74%, CoD 6,00%, We 60,8%, Wd 39,2%, g 1,50%
+        Asumsi: WACC #dcf_ass.wacc%, Beta #dcf_ass.beta, Rf #dcf_ass.rf%, ERP #dcf_ass.erp%, CoE #dcf_ass.coe%, CoD #dcf_ass.cod%, We #dcf_ass.we%, Wd #dcf_ass.wd%, g #dcf_ass.g%
       ]
       #v(3pt)
-      #exhibit-header("Exhibit 10", "Proyeksi Arus Kas Bebas (FCFF 2026F–2028F)", "Model DCF")
+      #exhibit-header("Exhibit 10", "Proyeksi Arus Kas Bebas (FCFF)", dcf_meth.source)
       #v(2pt)
       #fin-table(
-        ("Komponen DCF (Rp bn)", "2026F", "2027F", "2028F"),
-        (
-          ("EBIT", "4.264", "4.750", "5.239"),
-          ("EBIT (1 - Tax 6%)", "4.008", "4.465", "4.925"),
-          ("(+) Depresiasi & Amortisasi", "3.188", "3.423", "3.658"),
-          ("(-) Belanja Modal (Capex)", "(2.981)", "(2.709)", "(2.437)"),
-          ("(+) Perubahan Modal Kerja", "+762", "+762", "+762"),
-          ("Free Cash Flow (FCF)", "4.977", "4.941", "4.908"),
-          ("Terminal Value (TV)", "—", "—", "72.736"),
-        ),
+        dcf_meth.table.headers,
+        dcf_meth.table.rows.map(r => r.map(c => str(c))),
         palette: PALETTE,
       )
       #v(3pt)
@@ -484,10 +416,10 @@
         #grid(
           columns: (1fr, auto),
           row-gutter: 2.5pt,
-          text(size: 6.8pt)[Enterprise Value (EV)], text(size: 6.8pt, weight: "bold")[Rp 71.343 bn],
-          text(size: 6.8pt)[Kas Bersih / (Utang Bersih)], text(size: 6.8pt, weight: "bold")[-(Rp 19.787 bn)],
-          text(size: 6.8pt)[Nilai Ekuitas (Equity Value)], text(size: 6.8pt, weight: "bold")[Rp 51.556 bn],
-          text(size: 7.2pt, weight: "bold")[Nilai Wajar DCF per Saham], text(size: 7.2pt, weight: "black", fill: PALETTE.brand_dark)[Rp 630],
+          text(size: 6.8pt)[Enterprise Value (EV)], text(size: 6.8pt, weight: "bold")[Rp #str(calc.round(data.cDcf.valuation.enterprise_value / 1e9, digits: 0)) bn],
+          text(size: 6.8pt)[Kas Bersih / (Utang Bersih)], text(size: 6.8pt, weight: "bold")[-(Rp #str(calc.round((data.cDcf.valuation.total_debt - data.cDcf.valuation.cash) / 1e9, digits: 0)) bn)],
+          text(size: 6.8pt)[Nilai Ekuitas (Equity Value)], text(size: 6.8pt, weight: "bold")[Rp #str(calc.round(data.cDcf.valuation.equity_value / 1e9, digits: 0)) bn],
+          text(size: 7.2pt, weight: "bold")[Nilai Wajar DCF per Saham], text(size: 7.2pt, weight: "black", fill: PALETTE.brand_dark)[Rp #dcf_meth.fv],
         )
       ]
     ],
@@ -495,55 +427,50 @@
       #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Metode 2: Multiple EV/EBITDA]
       #v(2pt)
       #text(size: 6.8pt, fill: PALETTE.muted)[
-        Target multiple 10,0x berdasarkan peers industri menara regional.
+        Target multiple #ev_meth.assumptions.multiple x berdasarkan peers industri #m.sector.
       ]
       #v(3pt)
       #fin-table(
-        ("Parameter", "Nilai", "Satuan"),
-        (
-          ("Target EV/EBITDA", "10,0", "x"),
-          ("EBITDA 2026F", "7.451", "Rp bn"),
-          ("Implied EV", "74.510", "Rp bn"),
-          ("Fair Value EV/EBITDA", "745", "Rp/saham"),
-        ),
+        ev_meth.table.headers,
+        ev_meth.table.rows.map(r => r.map(c => str(c))),
         palette: PALETTE,
       )
 
       #v(5pt)
-      #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Rekonsiliasi Valuasi Blended (60/40)]
+      #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Rekonsiliasi Valuasi Blended (#blended.weights.DCF/#blended.weights.at("EV/EBITDA"))]
       #v(2pt)
       #fin-table(
         ("Metode Valuasi", "Bobot", "Fair Value"),
         (
-          ("DCF (WACC 10,1%, g 1,5%)", "60%", "Rp 630"),
-          ("EV/EBITDA (10,0x FY26F)", "40%", "Rp 745"),
-          ([*Target Price (Blended)*], [*100%*], [*Rp 635*]),
+          ..blended.rows.map(r => (str(r.at(0)), str(r.at(1)), "Rp " + str(r.at(2)))),
+          ([*Target Price (Blended)*], [*100%*], [*Rp #blended.fv_str*]),
         ),
         palette: PALETTE,
       )
       #v(2pt)
-      #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Margin of Safety (MoS) yang diterapkan: 15%]
+      #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Margin of Safety (MoS) yang diterapkan: #blended.margin_of_safety_pct%]
     ]
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 11", "Pita Valuasi Historis P/BV 3-Tahun (Mean Reversion)", "IDX & Analisis Data")
+  #let pbv = data.valuation.bands.pbv_3y
+  #exhibit-header("Exhibit 11", "Pita Valuasi Historis P/BV 3-Tahun (Mean Reversion)", data.valuation.bands.source)
   #v(2pt)
   #fin-table(
-    ("Deviasi Standar", "P/BV (x)", "Implied Price", "Interpretasi & Posisi Pasar"),
+    ("Deviasi Standar", "P/BV (x)", "Interpretasi & Posisi Pasar"),
     (
-      ("STD +2 (Batas Atas Ekstrem)", "2,90x", "Rp 1.250", "Overvalued Ekstrem"),
-      ("STD +1 (Batas Atas)", "2,50x", "Rp 1.080", "Overvalued Moderat"),
-      ("Rerata 3 Tahun (Mean)", "2,10x", "Rp 900", "Rentang Nilai Wajar Historis"),
-      ("STD -1 (Batas Bawah)", "1,70x", "Rp 730", "Undervalued Menarik"),
-      ("STD -2 (Batas Bawah Ekstrem)", "1,30x", "Rp 560", "Undervalued Ekstrem"),
-      ("Posisi Harga Kini (Rp 460)", "1,47x", "Rp 460", "BELOW AVERAGE (Peluang Akumulasi Diskon)"),
+      ("STD +2 (Batas Atas Ekstrem)", str(pbv.at("std+2")) + "x", "Overvalued Ekstrem"),
+      ("STD +1 (Batas Atas)", str(pbv.at("std+1")) + "x", "Overvalued Moderat"),
+      ("Rerata 3 Tahun (Mean)", str(pbv.avg) + "x", "Rentang Nilai Wajar Historis"),
+      ("STD -1 (Batas Bawah)", str(pbv.at("std-1")) + "x", "Undervalued Menarik"),
+      ("STD -2 (Batas Bawah Ekstrem)", str(pbv.at("std-2")) + "x", "Undervalued Ekstrem"),
+      ("Posisi Harga Kini (Rp " + str(cover.price) + ")", str(pbv.current) + "x", pbv.label),
     ),
     palette: PALETTE,
   )
 
   #v(4pt)
-  #chart-placeholder("Grafik Pita Valuasi Historis P/BV 3Y (1,47x Kini vs Rerata 2,10x)", caption: "Valuasi P/BV Berada di Dekat Batas Bawah STD-2 Menunjukkan Ruang Re-rating Signifikan", height: 50pt, palette: PALETTE)
+  #chart-placeholder("Grafik Pita Valuasi Historis P/BV 3Y (" + str(pbv.current) + "x Kini vs Rerata " + str(pbv.avg) + "x)", caption: "Valuasi P/BV Historis · Sumber: " + data.valuation.bands.source, height: 50pt, palette: PALETTE)
 ])
 
 #pagebreak()
@@ -551,7 +478,7 @@
 // =====================================================================
 // PAGE 6 — ABIDA FRIEND-STYLE DCF DEEP DIVE (AUDITABLE ENGINE)
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 6, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 6, PALETTE, [
   #section-header(6, "Analisis DCF Komprehensif (Abida Massi Engine)", PALETTE)
 
   #text(size: 7.2pt, fill: PALETTE.muted)[
@@ -559,7 +486,6 @@
   ]
   #v(3pt)
 
-  // TODO Lane 6: real chart paths
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 8pt,
@@ -567,67 +493,72 @@
     [
       #exhibit-header("Exhibit 12", "WACC Breakdown", "CAPM & SBN 10Y")
       #v(1pt)
-      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/wacc_breakdown.png", width: 100%)
+      #image(chart-dir + "/wacc_breakdown.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 13", "Sensitivity Heatmap (WACC x g)", "Engine Sensitivitas 5x5")
       #v(1pt)
-      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/sensitivity_heatmap.png", width: 100%)
+      #image(chart-dir + "/sensitivity_heatmap.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 14", "Skenario Operasional", "Engine Skenario")
       #v(1pt)
-      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/scenario_bars.png", width: 100%)
+      #image(chart-dir + "/scenario_bars.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 15", "EV to Equity Bridge Waterfall", "Bridge Engine")
       #v(1pt)
-      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/ev_equity_waterfall.png", width: 100%)
+      #image(chart-dir + "/ev_equity_waterfall.png", width: 100%)
     ]
   )
 
   #v(2pt)
+  #let sens = data.cDcf.sensitivity
   #grid(
     columns: (1.1fr, 1fr),
     column-gutter: 8pt,
     [
       #exhibit-header("Exhibit 16", "Matriks Sensitivitas Nilai Wajar: WACC vs g", "Engine Sensitivitas 5x5")
       #v(1pt)
+      #let sens_headers = ("WACC \ g", ..sens.g_axis.map(g => str(calc.round(g * 100, digits: 2)) + "%"))
+      #let sens_rows = sens.wacc_axis.enumerate().map(((i, w)) => {
+        let r = (str(calc.round(w * 100, digits: 2)) + "%",)
+        let fvs = sens.fair_value.at(i)
+        let ups = sens.upside.at(i)
+        for j in range(fvs.len()) {
+          let fv = fvs.at(j)
+          let up = ups.at(j)
+          let up_str = (if up > 0 { "+" } else { "" }) + str(calc.round(up * 100, digits: 1)) + "%"
+          r.push("Rp " + str(calc.round(fv, digits: 0)) + " (" + up_str + ")")
+        }
+        r
+      })
       #fin-table(
-        ("WACC \\ g", "1,00%", "1,25%", "1,50% (Base)", "1,75%", "2,00%"),
-        (
-          ("9,10%", "Rp 438 (-4,8%)", "Rp 453 (-1,6%)", "Rp 468 (+1,8%)", "Rp 485 (+5,5%)", "Rp 503 (+9,4%)"),
-          ("9,60%", "Rp 399 (-13,2%)", "Rp 412 (-10,5%)", "Rp 425 (-7,5%)", "Rp 440 (-4,4%)", "Rp 455 (-1,1%)"),
-          ("10,10% (Base)", "Rp 364 (-20,8%)", "Rp 376 (-18,4%)", "Rp 387 (-15,8%)", "Rp 400 (-13,1%)", "Rp 413 (-10,2%)"),
-          ("10,60%", "Rp 334 (-27,5%)", "Rp 343 (-25,4%)", "Rp 353 (-23,2%)", "Rp 364 (-20,8%)", "Rp 376 (-18,3%)"),
-          ("11,10%", "Rp 306 (-33,6%)", "Rp 314 (-31,7%)", "Rp 323 (-29,7%)", "Rp 333 (-27,7%)", "Rp 343 (-25,5%)"),
-        ),
+        sens_headers,
+        sens_rows,
         palette: PALETTE,
       )
     ],
     [
       #exhibit-header("Exhibit 17", "Skenario Operasional & Jembatan Nilai", "Model Deterministik")
       #v(1pt)
+      #let sc = data.cDcf.scenarios
       #fin-table(
         ("Skenario", "Nilai Wajar", "Upside / Downside", "Rekomendasi"),
         (
-          ("BEAR (Rev +1%, EBIT 41,9%, g 1,0%)", "Rp 300", "-34,8%", "SELL"),
-          ("BASE (Rev +4%, EBIT 42,9%, g 1,5%)", "Rp 387", "-15,8%", "SELL (Overvalued)"),
-          ("BULL (Rev +7%, EBIT 43,9%, g 2,0%)", "Rp 490", "+6,5%", "HOLD"),
+          ("BEAR", "Rp " + str(calc.round(sc.BEAR.fair_value_per_share, digits: 0)), (if sc.BEAR.upside > 0 { "+" } else { "" }) + str(calc.round(sc.BEAR.upside * 100, digits: 1)) + "%", sc.BEAR.rating),
+          ("BASE", "Rp " + str(calc.round(sc.BASE.fair_value_per_share, digits: 0)), (if sc.BASE.upside > 0 { "+" } else { "" }) + str(calc.round(sc.BASE.upside * 100, digits: 1)) + "%", sc.BASE.rating),
+          ("BULL", "Rp " + str(calc.round(sc.BULL.fair_value_per_share, digits: 0)), (if sc.BULL.upside > 0 { "+" } else { "" }) + str(calc.round(sc.BULL.upside * 100, digits: 1)) + "%", sc.BULL.rating),
         ),
         palette: PALETTE,
       )
       #v(2pt)
       #card(PALETTE)[
-        #text(size: 6.8pt, weight: "bold", fill: PALETTE.ink)[Jembatan Nilai EV ke Ekuitas (Abida Massi Model):] \
-        #text(size: 6.2pt)[
-          PV Arus Kas Eksplisit: *Rp 20,17 T* \
-          (+) PV Nilai Terminal: *Rp 31,18 T* \
-          (=) Enterprise Value (EV): *Rp 51,35 T* \
-          (+) Kas & Setara Kas: *+Rp 1,64 T* \
-          (-) Total Utang Berbunga: *-(Rp 21,43 T)* \
-          (=) Implied Equity Value: *Rp 31,56 T* \
-          *Fair Value per Saham Model Standalone: Rp 387 (Downside -15,8% vs Rp 460)*
+        #let dcf_v = data.cDcf.valuation
+        #let sc_scale = if dcf_v.pv_explicit > 1e6 { 1e12 } else { 1e6 }
+        #let sc_unit = if dcf_v.pv_explicit > 1e6 { "T" } else { "M" }
+        #text(size: 6.8pt, weight: "bold", fill: PALETTE.ink)[Jembatan Nilai EV ke Ekuitas (#m.ticker Model):]         #text(size: 6.2pt)[
+          PV Arus Kas Eksplisit: *Rp #str(calc.round(dcf_v.pv_explicit / sc_scale, digits: 2)) #sc_unit*           (+) PV Nilai Terminal: *Rp #str(calc.round(dcf_v.pv_terminal / sc_scale, digits: 2)) #sc_unit*           (=) Enterprise Value (EV): *Rp #str(calc.round(dcf_v.enterprise_value / sc_scale, digits: 2)) #sc_unit*           (+) Kas & Setara Kas: *+Rp #str(calc.round(dcf_v.cash / sc_scale, digits: 2)) #sc_unit*           (-) Total Utang Berbunga: *-(Rp #str(calc.round(dcf_v.total_debt / sc_scale, digits: 2)) #sc_unit)*           (=) Implied Equity Value: *Rp #str(calc.round(dcf_v.equity_value / sc_scale, digits: 2)) #sc_unit*           *Fair Value per Saham Model Standalone: Rp #str(calc.round(dcf_v.fair_value_per_share, digits: 0)) (Upside: #(if dcf_v.upside > 0 { "+" } else { "" })#str(calc.round(dcf_v.upside * 100, digits: 1))% vs Rp #cover.price)*
         ]
       ]
     ]
@@ -639,62 +570,40 @@
 // =====================================================================
 // PAGE 7 — FINANCIAL HIGHLIGHTS 6Y & INVESTMENT THESIS
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 7, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 7, PALETTE, [
   #section-header(7, "Ringkasan Finansial 6Y & Tesis Investasi", PALETTE)
 
-  #exhibit-header("Exhibit 18", "Financial Highlights 6 Tahun (2023A – 2028F)", "Bloomberg, Company & Estimasi Riset")
+  #exhibit-header("Exhibit 18", "Financial Highlights 6 Tahun (" + data.financial_highlights.years.at(0) + " – " + data.financial_highlights.years.at(-1) + ")", data.financial_highlights.source)
   #v(2pt)
   #fin-table(
-    ("Metrik Finansial", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"),
-    (
-      ("Pendapatan Bersih (Rp bn)", "8.595", "9.308", "9.534", "9.937", "10.360", "10.795"),
-      ("Laba Bersih (Rp bn)", "2.010", "2.104", "2.119", "2.169", "2.362", "2.571"),
-      ("EPS (IDR Penuh)", "24", "26", "26", "27", "29", "32"),
-      ("Marjin EBITDA (%)", "54,0%", "74,0%", "63,0%", "75,0%", "75,0%", "74,0%"),
-      ("Marjin Laba Bersih (NPM %)", "23,4%", "22,6%", "22,2%", "21,8%", "22,8%", "23,8%"),
-      ("Dividend Yield (%)", "2,60%", "3,93%", "2,79%", "3,14%", "3,42%", "3,72%"),
-      ("Return on Equity (ROE %)", "6,0%", "6,0%", "6,0%", "6,0%", "7,0%", "7,0%"),
-      ("Price to Earnings (P/E x)", "29,0x", "25,2x", "26,9x", "23,9x", "21,9x", "20,1x"),
-      ("Price to Book Value (P/BV x)", "1,70x", "1,59x", "1,71x", "1,53x", "1,50x", "1,47x"),
-      ("EV/EBITDA (x)", "16,3x", "10,5x", "12,9x", "9,6x", "9,0x", "8,5x"),
-    ),
+    ("Metrik Finansial", ..data.financial_highlights.years),
+    data.financial_highlights.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 19", "Trajektori Marjin EBITDA & Tenancy Ratio", "Laporan Keuangan MTEL & Proyeksi")
+  #exhibit-header("Exhibit 19", "Trajektori Kinerja & Margin Operasional", data.financial_highlights.source)
   #v(2pt)
-  #chart-placeholder("Trajektori Marjin EBITDA (54% -> 75%) & Tenancy Ratio (1,53x -> 1,60x)", caption: "Skala Ekonomi dan Efisiensi Capex Menopang Ekspansi Margin Jangka Panjang", height: 55pt, palette: PALETTE)
+  #chart-placeholder("Trajektori Kinerja & Margin " + m.ticker, caption: "Skala Ekonomi dan Efisiensi Capex Menopang Ekspansi Margin Jangka Panjang", height: 55pt, palette: PALETTE)
 
   #v(6pt)
   #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[3 Pilar Utama Tesis Investasi]
   #v(3pt)
 
-  #grid(
-    columns: (1fr, 1fr, 1fr),
-    gutter: 6pt,
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.ink)[1. KPI adalah Tesis Inti]
-      #v(2pt)
-      #text(size: 6.8pt)[
-        Tenancy ratio 1,57x dan jaringan fiber 59,2k km mencerminkan kualitas arus kas recurring yang kontraktual (tenor 10 tahun) dengan perlindungan inflasi.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.ink)[2. Sinergi Merger Operator]
-      #v(2pt)
-      #text(size: 6.8pt)[
-        Merger PST & UMT efektif 1 Juli 2026 menaikkan utilisasi menara ke arah >1,60x serta memicu permintaan fiberisasi dan power backup terintegrasi.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.ink)[3. Katalis Lelang Spektrum]
-      #v(2pt)
-      #text(size: 6.8pt)[
-        Alokasi pita 700MHz/2,6GHz mendorong MNO menambah 3.000–3.500 tenant baru (+Rp 360–420 bn) untuk ekspansi cakupan 4G/5G luar Jawa.
-      ]
-    ],
-  )
+  #let theses = data.at("thesis", default: ())
+  #if theses.len() > 0 {
+    grid(
+      columns: (1fr,) * theses.len(),
+      gutter: 6pt,
+      ..theses.enumerate().map(((i, t)) => card(PALETTE)[
+        #text(weight: "bold", fill: PALETTE.ink)[#(i + 1). #t.headline]
+        #v(2pt)
+        #text(size: 6.8pt)[
+          #t.detail
+        ]
+      ])
+    )
+  }
 ])
 
 #pagebreak()
@@ -702,49 +611,26 @@
 // =====================================================================
 // PAGE 8 — INCOME STATEMENT 6Y & BALANCE SHEET 6Y
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 8, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 8, PALETTE, [
   #section-header(8, "Laporan Keuangan 6 Tahun: Laba Rugi & Neraca", PALETTE)
 
-  #exhibit-header("Exhibit 20", "Laporan Laba Rugi Komprehensif (Rp Miliar — FY23A s.d. FY28F)", "Bloomberg, Company & Estimasi Riset")
+  #let fin_is = data.financials.at(0)
+  #let fin_bs = data.financials.at(1)
+
+  #exhibit-header("Exhibit 20", fin_is.at("title", default: "Laporan Laba Rugi Komprehensif"), fin_is.source)
   #v(2pt)
   #fin-table(
-    ("Akun Laba Rugi", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"),
-    (
-      ("Pendapatan Bersih (Revenue)", "8.595", "9.308", "9.534", "9.937", "10.360", "10.795"),
-      ("Beban Pokok Pendapatan (COGS)", "(4.379)", "(4.507)", "(4.665)", "(4.862)", "(5.069)", "(5.282)"),
-      ("Laba Kotor (Gross Profit)", "4.216", "4.801", "4.869", "5.075", "5.291", "5.513"),
-      ("Laba Usaha (Operating Profit)", "2.057", "4.173", "3.514", "4.264", "4.455", "4.643"),
-      ("Beban Bunga Pinjaman", "(1.333)", "(1.357)", "(1.306)", "(1.287)", "(1.271)", "(1.243)"),
-      ("Penghasilan Bunga Bersih", "(441)", "(97)", "(1.145)", "+15", "+41", "+77"),
-      ("EBITDA", "4.658", "6.910", "6.036", "7.451", "7.730", "8.007"),
-      ("Laba Sebelum Pajak (EBT)", "2.138", "2.261", "2.248", "2.301", "2.505", "2.727"),
-      ("Beban Pajak Penghasilan", "(128)", "(157)", "(129)", "(132)", "(143)", "(156)"),
-      ("Kepentingan Non-Pengendali", "0", "0", "0", "0", "0", "0"),
-      ("Laba Bersih Tahun Berjalan", "2.010", "2.104", "2.119", "2.169", "2.362", "2.571"),
-      ("EPS (IDR Penuh)", "24,3", "25,6", "26,0", "26,6", "29,0", "31,5"),
-    ),
+    fin_is.headers,
+    fin_is.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 21", "Neraca Keuangan Konsolidasian (Rp Miliar — FY23A s.d. FY28F)", "Bloomberg, Company & Estimasi Riset")
+  #exhibit-header("Exhibit 21", fin_bs.at("title", default: "Neraca Keuangan Konsolidasian"), fin_bs.source)
   #v(2pt)
   #fin-table(
-    ("Pos Neraca", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"),
-    (
-      ("Kas & Setara Kas", "879", "597", "609", "1.643", "3.075", "4.425"),
-      ("Piutang Usaha (AR)", "1.607", "2.004", "2.212", "1.932", "1.870", "1.949"),
-      ("Aset Tetap (Fixed Assets)", "51.246", "52.918", "53.782", "53.576", "52.374", "51.168"),
-      ("Aset Lain-Lain", "3.278", "2.622", "1.747", "1.745", "1.785", "1.825"),
-      ("Total Aset (Total Assets)", "57.010", "58.140", "58.350", "58.896", "59.104", "59.367"),
-      ("Liabilitas Jangka Pendek (ST)", "6.732", "8.082", "4.254", "4.500", "4.399", "4.298"),
-      ("Liabilitas Jangka Pendek Lain", "4.339", "4.204", "3.246", "3.286", "3.371", "3.462"),
-      ("Liabilitas Jangka Panjang (LT)", "11.660", "12.214", "17.224", "16.930", "16.550", "16.169"),
-      ("Liabilitas Jangka Panjang Lain", "241", "253", "275", "286", "298", "311"),
-      ("Total Liabilitas (Liabilities)", "22.973", "24.753", "24.999", "25.002", "24.619", "24.240"),
-      ("Total Ekuitas (Equity)", "34.038", "33.387", "33.351", "33.894", "34.484", "35.127"),
-      ("Nilai Buku per Saham (BVPS IDR)", "412", "407", "409", "416", "423", "431"),
-    ),
+    fin_bs.headers,
+    fin_bs.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 ])
@@ -754,74 +640,30 @@
 // =====================================================================
 // PAGE 9 — CASH FLOW 6Y & COMPREHENSIVE RATIOS (30+)
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 9, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 9, PALETTE, [
   #section-header(9, "Arus Kas 6 Tahun & Rasio Finansial Lengkap", PALETTE)
+
+  #let fin_cf = data.financials.at(2)
+  #let fin_ratio = data.financials.at(3)
 
   #grid(
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 22", "Laporan Arus Kas 6Y (Rp bn)", "Estimasi Riset")
+      #exhibit-header("Exhibit 22", fin_cf.at("title", default: "Laporan Arus Kas 6Y"), fin_cf.source)
       #v(1pt)
       #compact-fin-table(
-        ("Arus Kas (Rp bn)", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"),
-        (
-          ("Laba Bersih", "2.010", "2.104", "2.119", "2.169", "2.362", "2.571"),
-          ("Depresiasi", "2.601", "2.736", "2.522", "3.188", "3.274", "3.365"),
-          ("Δ Modal Kerja", "(4.733)", "(3.935)", "(9.020)", "(4.760)", "(5.598)", "(6.033)"),
-          ("Arus Kas Operasi (CFO)", "(122)", "905", "(4.378)", "598", "38", "(98)"),
-          ("Capex", "(4.989)", "(1.672)", "(865)", "+207", "+1.202", "+1.206"),
-          ("Lainnya (Investasi)", "(416)", "+569", "+259", "(30)", "(31)", "(32)"),
-          ("Arus Kas Investasi (CFI)", "(5.405)", "(1.103)", "(606)", "+176", "+1.171", "+1.174"),
-          ("Dividen Dibayar", "(18)", "(25)", "(19)", "(20)", "(22)", "(24)"),
-          ("Perubahan Bersih Utang", "+68", "0", "+5.010", "(294)", "(380)", "(381)"),
-          ("Lainnya (Pendanaan)", "+17", "(59)", "+5", "+574", "+625", "+679"),
-          ("Arus Kas Pendanaan (CFF)", "+68", "(85)", "+4.996", "+260", "+223", "+274"),
-          ("Efek Kurs Valas", "0", "0", "0", "0", "0", "0"),
-          ("Perubahan Kas Bersih", "(5.460)", "(282)", "+12", "+1.034", "+1.432", "+1.350"),
-          ("Kas Awal Periode", "6.339", "879", "597", "609", "1.643", "3.075"),
-          ("Kas Akhir Periode", "879", "597", "609", "1.643", "3.075", "4.425"),
-        ),
+        fin_cf.headers,
+        fin_cf.rows.map(r => r.map(c => str(c))),
         palette: PALETTE,
       )
     ],
     [
-      #exhibit-header("Exhibit 23", "Rasio Keuangan Lengkap (30 Metrik)", "Kalkulasi Riset")
+      #exhibit-header("Exhibit 23", fin_ratio.at("title", default: "Rasio Keuangan Lengkap"), fin_ratio.source)
       #v(1pt)
       #compact-fin-table(
-        ("Rasio Keuangan & Efisiensi", "2023A", "2024A", "2025A", "2026F", "2027F", "2028F"),
-        (
-          ("Pertumbuhan Pendapatan (%)", "+11,0%", "+11,0%", "+2,0%", "+4,0%", "+4,0%", "+4,0%"),
-          ("Pertumbuhan Laba Kotor (%)", "+15,0%", "+14,0%", "+1,0%", "+4,0%", "+4,0%", "+4,0%"),
-          ("Pertumbuhan Laba Usaha (%)", "+119,0%", "+103,0%", "-16,0%", "+21,0%", "+4,0%", "+4,0%"),
-          ("Pertumbuhan EBITDA (%)", "+38,0%", "+48,0%", "-13,0%", "+23,0%", "+4,0%", "+4,0%"),
-          ("Pertumbuhan Laba Bersih (%)", "+13,0%", "+5,0%", "+1,0%", "+2,0%", "+9,0%", "+9,0%"),
-          ("Pertumbuhan EPS (%)", "+13,0%", "+5,0%", "+1,0%", "+2,0%", "+9,0%", "+9,0%"),
-          ("Gross Margin (%)", "49,0%", "52,0%", "51,0%", "51,0%", "51,0%", "51,0%"),
-          ("EBITDA Margin (%)", "54,0%", "74,0%", "63,0%", "75,0%", "75,0%", "74,0%"),
-          ("EBIT Margin (%)", "24,0%", "45,0%", "37,0%", "43,0%", "43,0%", "43,0%"),
-          ("Pretax Margin (%)", "25,0%", "24,0%", "24,0%", "23,0%", "24,0%", "25,0%"),
-          ("Net Margin (%)", "23,0%", "23,0%", "22,0%", "22,0%", "23,0%", "24,0%"),
-          ("Return on Equity (ROE %)", "6,0%", "6,0%", "6,0%", "6,0%", "7,0%", "7,0%"),
-          ("Return on Assets (ROA %)", "4,0%", "4,0%", "4,0%", "4,0%", "4,0%", "4,0%"),
-          ("Current Ratio (x)", "0,3x", "0,3x", "0,4x", "0,5x", "0,7x", "0,8x"),
-          ("Quick Ratio (x)", "0,3x", "0,3x", "0,4x", "0,5x", "0,7x", "0,8x"),
-          ("LT Debt / Equity (x)", "0,34x", "0,37x", "0,52x", "0,50x", "0,48x", "0,46x"),
-          ("Debt to Equity (DER x)", "0,67x", "0,74x", "0,75x", "0,74x", "0,71x", "0,69x"),
-          ("Debt to Assets (DAR x)", "0,40x", "0,43x", "0,43x", "0,42x", "0,42x", "0,41x"),
-          ("Interest Coverage (x)", "2,0x", "3,0x", "3,0x", "3,0x", "4,0x", "4,0x"),
-          ("Inventory Turnover (x)", "6,5x", "5,2x", "4,5x", "4,8x", "5,4x", "5,7x"),
-          ("AP Turnover (days)", "56", "71", "81", "76", "67", "65"),
-          ("Cash Ratio (%)", "8,0%", "5,0%", "8,0%", "21,0%", "40,0%", "57,0%"),
-          ("Sustainable Growth (%)", "1,0%", "0,0%", "2,0%", "2,0%", "2,0%", "2,0%"),
-          ("Earnings Yield (%)", "3,0%", "4,0%", "4,0%", "4,0%", "5,0%", "5,0%"),
-          ("Dividend Yield (%)", "2,59%", "3,93%", "2,79%", "3,14%", "3,42%", "3,72%"),
-          ("Price to Earnings (PE x)", "29,0x", "25,2x", "26,9x", "23,9x", "21,9x", "20,1x"),
-          ("Price to Book (PBV x)", "1,7x", "1,6x", "1,7x", "1,5x", "1,5x", "1,5x"),
-          ("Price to Sales (P/S x)", "6,8x", "5,7x", "6,0x", "5,2x", "5,0x", "4,8x"),
-          ("EV/EBITDA (x)", "16,3x", "10,5x", "12,9x", "9,6x", "9,0x", "8,5x"),
-          ("Net Debt / EBITDA (x)", "4,4x", "4,1x", "3,8x", "2,7x", "1,7x", "1,0x"),
-        ),
+        fin_ratio.headers,
+        fin_ratio.rows.map(r => r.map(c => str(c))),
         palette: PALETTE,
       )
     ]
@@ -833,73 +675,36 @@
 // =====================================================================
 // PAGE 10 — PEERS COMPARISON & RISK ANALYSIS
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 10, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 10, PALETTE, [
   #section-header(10, "Perbandingan Peers & Analisis Risiko", PALETTE)
 
-  #exhibit-header("Exhibit 24", "Perbandingan Emiten Menara Telekomunikasi Regional (Peers)", "IDX, FactSet & Laporan Keuangan")
+  #let peer_tab = data.peers.tables.at(0)
+  #exhibit-header("Exhibit 24", "Perbandingan Emiten " + peer_tab.pillar, peer_tab.source)
   #v(2pt)
   #fin-table(
-    ("Ticker / Emiten", "EV/EBITDA", "Tenancy", "Jumlah Menara", "Fiber (km)", "ROE (%)", "P/E (x)", "Karakteristik Aset"),
-    (
-      ("MTEL (Dayamitra)", "10,1x", "1,57x", "40.563", "59.239 km", "6,0%", "23,9x", "Menara terbesar RI, Telkom group backing"),
-      ("TOWR (Sarana Menara)", "8,9x", "1,70x", "31.000", "120.000 km", "18,0%", "22,0x", "Pemimpin penetrasi fiber optik non-captive"),
-      ("TBIG (Tower Bersama)", "8,0x", "1,90x", "22.000", "35.000 km", "24,0%", "18,0x", "Tenancy ratio tertinggi di industri"),
-      ("EDOT (EdgePoint)", "9,8x", "1,40x", "20.000", "15.000 km", "8,0%", "25,0x", "Ekspansi regional ASEAN agresif"),
-      ([*Rata-rata Peers Menara*], [*9,2x*], [*1,64x*], [*28.390*], [*57.310 km*], [*14,0%*], [*22,2x*], [*Sektor Infrastruktur Digital*]),
-    ),
+    peer_tab.headers,
+    peer_tab.rows.map(r => r.map(c => str(c))),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Faktor Risiko Utama Spesifik Sektor Infrastruktur]
+  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Faktor Risiko Utama Spesifik Sektor #m.sector]
   #v(3pt)
 
-  #grid(
-    columns: (1fr, 1fr),
-    gutter: 6pt,
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[1. Ketergantungan Operator Utama (Telkomsel)]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Telkomsel menyumbang porsi mayoritas pendapatan sewa. Penyesuaian belanja modal atau renegosiasi tarif sewa menara induk dapat mempengaruhi pertumbuhan marjin.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[2. Tekanan Kompetisi Harga (TOWR & TBIG)]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Persaingan ketat dalam tender kolokasi dan bundling fiber dapat memicu perang harga sewa menara pada rute-rute padat di Pulau Jawa.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[3. Disrupsi Teknologi (Open RAN & Satelit LEO)]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Pengembangan konstelasi satelit orbit rendah (LEO) dan teknologi transmisi nirkabel alternatif dapat mengurangi urgensi pembangunan menara makro di area terpencil.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[4. Regulasi Spektrum & Tata Ruang Pemda]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Keterlambatan perizinan retribusi pengendalian menara telekomunikasi di tingkat Pemda serta perubahan regulasi lelang spektrum Komdigi berisiko menunda rollout.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[5. Sensitivitas Suku Bunga & Utang Rp 21 Triliun]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Total utang berbunga mencapai Rp 21,43 T; kenaikan suku bunga acuan BI Rate sebesar 100 bps berpotensi meningkatkan beban bunga tahunan dan menekan nilai wajar DCF.
-      ]
-    ],
-    card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.neg)[6. Risiko Bencana Alam & Keandalan SLA]
-      #v(1pt)
-      #text(size: 6.8pt)[
-        Sebaran 40k menara di ring of fire terpapar risiko gempa, banjir, dan pemadaman listrik yang dapat memicu penalti uptime SLA operasional kepada MNO.
-      ]
-    ],
-  )
+  #let risks = data.at("risks", default: ())
+  #if risks.len() > 0 {
+    grid(
+      columns: (1fr, 1fr),
+      gutter: 6pt,
+      ..risks.map(r => card(PALETTE)[
+        #text(weight: "bold", fill: PALETTE.neg)[#r.bucket]
+        #v(1pt)
+        #text(size: 6.8pt)[
+          #r.detail
+        ]
+      ])
+    )
+  }
 ])
 
 #pagebreak()
@@ -907,7 +712,7 @@
 // =====================================================================
 // PAGE 11 — RATING GUIDE (9 ROWS), REGULATORY DISCLAIMER & CONTACT
 // =====================================================================
-#page-wrap("RESEARCH — Equity Report", "27 Agt 2026", "MTEL", 11, PALETTE, [
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 11, PALETTE, [
   #section-header(11, "Panduan Rating, Disklaimer Regulasi & Kontak", PALETTE)
 
   #exhibit-header("Exhibit 25", "Panduan Pemeringkatan Rekomendasi Investasi (9 Kategori)", "Standar Metodologi Riset Ekuitas")
@@ -933,7 +738,7 @@
     #text(weight: "bold", fill: PALETTE.ink)[Sertifikasi Analis & Independensi Penilaian]
     #v(2pt)
     #text(size: 7pt)[
-      Analis riset yang tercantum dalam laporan ini menyatakan secara independen bahwa: (1) Semua pandangan yang diungkapkan secara akurat merefleksikan penilaian fundamental terhadap PT Dayamitra Telekomunikasi Tbk (MTEL); (2) Kompensasi analis tidak berhubungan, baik langsung maupun tidak langsung, dengan rekomendasi atau target harga spesifik; (3) Analis tidak memiliki kepemilikan saham finansial material pada emiten yang dianalisis.
+      Analis riset yang tercantum dalam laporan ini menyatakan secara independen bahwa: (1) Semua pandangan yang diungkapkan secara akurat merefleksikan penilaian fundamental terhadap #m.company_name (#m.ticker); (2) Kompensasi analis tidak berhubungan, baik langsung maupun tidak langsung, dengan rekomendasi atau target harga spesifik; (3) Analis tidak memiliki kepemilikan saham finansial material pada emiten yang dianalisis.
     ]
   ]
 
@@ -955,19 +760,19 @@
         #text(size: 7pt, weight: "bold", fill: PALETTE.muted)[DISIAPKAN OLEH & TIM RISET]
         #v(2pt)
         #text(size: 6.8pt)[
-          - *Institusi:* RESEARCH — Sectors Hackathon 2026
-          - *Tanggal Publikasi:* 27 Agustus 2026 · Bahasa: Indonesia (ID)
-          - *Analis Utama:* Sukarno Alatas (Senior Equity Analyst)
-          - *Kontak Surel:* research\@skt.id
+          - *Institusi:* #m.at("prepared_by", default: "RESEARCH — Sectors Hackathon 2026")
+          - *Tanggal Publikasi:* #m.date · Bahasa: Indonesia (ID)
+          - *Analis Utama:* #m.analyst.name (#m.analyst.role)
+          - *Kontak Surel:* #m.analyst.email
         ]
       ],
       [
         #text(size: 7pt, weight: "bold", fill: PALETTE.muted)[KANTOR PUSAT & PROVENANCE]
         #v(2pt)
         #text(size: 6.8pt)[
-          - *Kantor Pusat:* Treasury Tower 27th Floor Unit A, District 8 — Jakarta
+          - *Kantor Pusat:* #m.head_office
           - *Engine Valuasi:* scripts/dcf_engine.py & scripts/blended_engine.py
-          - *Audit Port:* abidamassi/dcf-valuation-tool (WACC 10,10%)
+          - *Audit Port:* abidamassi/dcf-valuation-tool (WACC #data.cDcf.wacc.wacc_raw%)
           - *Portal Riset:* www.skt.id/research
         ]
       ]
