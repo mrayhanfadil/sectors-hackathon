@@ -567,22 +567,22 @@
     [
       #exhibit-header("Exhibit 12", "WACC Breakdown", "CAPM & SBN 10Y")
       #v(1pt)
-      #image("/tmp/render_mtel/charts/wacc_breakdown.png", width: 100%)
+      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/wacc_breakdown.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 13", "Sensitivity Heatmap (WACC x g)", "Engine Sensitivitas 5x5")
       #v(1pt)
-      #image("/tmp/render_mtel/charts/sensitivity_heatmap.png", width: 100%)
+      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/sensitivity_heatmap.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 14", "Skenario Operasional", "Engine Skenario")
       #v(1pt)
-      #image("/tmp/render_mtel/charts/scenario_bars.png", width: 100%)
+      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/scenario_bars.png", width: 100%)
     ],
     [
       #exhibit-header("Exhibit 15", "EV to Equity Bridge Waterfall", "Bridge Engine")
       #v(1pt)
-      #image("/tmp/render_mtel/charts/ev_equity_waterfall.png", width: 100%)
+      #image("/home/fadil/projects/sectors-hackathon/output/cache/render_mtel/charts/ev_equity_waterfall.png", width: 100%)
     ]
   )
 

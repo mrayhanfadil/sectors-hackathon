@@ -7,7 +7,9 @@ HERE = Path(__file__).resolve().parent
 PROJECT = HERE.parent
 FONTS = PROJECT / "assets" / "fonts"
 TEMPLATES = PROJECT / "templates" / "typst"
-CACHE_ROOT = Path(os.environ.get("TYPST_CACHE_DIR", "/tmp/render_typst"))
+# Charts live inside the project (output/cache) so typst sandbox can embed them.
+# Default can still be overridden via TYPST_CACHE_DIR for testing.
+CACHE_ROOT = Path(os.environ.get("TYPST_CACHE_DIR", str(PROJECT / "output" / "cache")))
 TEMPLATE_FILES = {
     "single": "report_single.typ",
     "sotp": "report_sotp.typ",

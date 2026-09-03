@@ -64,3 +64,4 @@ node_modules/
 
 # Typst fonts (downloaded once)
 assets/fonts/*.ttf
+output/cache/
