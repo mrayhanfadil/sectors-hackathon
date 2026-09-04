@@ -584,7 +584,7 @@
   #v(6pt)
   #exhibit-header("Exhibit 19", "Trajektori Kinerja & Margin Operasional", data.financial_highlights.source)
   #v(2pt)
-  #chart-placeholder("Trajektori Kinerja & Margin " + m.ticker, caption: "Skala Ekonomi dan Efisiensi Capex Menopang Ekspansi Margin Jangka Panjang", height: 55pt, palette: PALETTE)
+  #image(chart-dir + "/margin_trajectory.png", width: 100%)
 
   #v(6pt)
   #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[3 Pilar Utama Tesis Investasi]

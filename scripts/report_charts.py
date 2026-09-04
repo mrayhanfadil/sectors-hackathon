@@ -10,6 +10,7 @@ Generates minimalist, publication-grade PNG charts for research reports:
 7. chart_scenario_bars: Bear / Base / Bull scenario comparison
 8. chart_ev_equity_waterfall: EV to Equity valuation waterfall bridge
 9. chart_index_trend: Macro trend line with shaded area
+10. chart_margin_trajectory: Revenue bars + multi-margin trajectory time-series
 """
 
 from __future__ import annotations
@@ -775,6 +776,172 @@ def chart_index_trend(
     return _save_fig(fig, out)
 
 
+# ---------------------------------------------------------------------------
+# 10. chart_margin_trajectory: Revenue bars + multi-margin trajectory
+# ---------------------------------------------------------------------------
+def chart_margin_trajectory(
+    years: Sequence[str],
+    revenue: Sequence[float],
+    ebitda_margin: Sequence[float],
+    operating_margin: Sequence[float],
+    net_margin: Sequence[float],
+    palette: Optional[Dict[str, Any]] = None,
+    out_path: Optional[Union[str, Path]] = None,
+    out: Optional[Union[str, Path]] = None,
+    source: str = "",
+    caption: str = "",
+    figsize: Tuple[float, float] = (6.8, 3.0),
+) -> Optional[Path]:
+    """4-series trajectory chart: Revenue bars (left axis) + 3 margin lines (right axis)."""
+    target_out = out_path or out
+    if target_out is None:
+        target_out = "margin_trajectory.png"
+
+    if not years or not revenue:
+        print("[warn] chart_margin_trajectory: missing required years or revenue data")
+        return None
+
+    try:
+        rev_vals = [float(v) for v in revenue]
+        ebitda_vals = [float(v) for v in ebitda_margin] if ebitda_margin else []
+        op_vals = [float(v) for v in operating_margin] if operating_margin else []
+        net_vals = [float(v) for v in net_margin] if net_margin else []
+        year_labels = [str(y) for y in years]
+    except Exception as exc:
+        print(f"[warn] chart_margin_trajectory: invalid numeric data: {exc}")
+        return None
+
+    if len(year_labels) != len(rev_vals):
+        print("[warn] chart_margin_trajectory: years and revenue length mismatch")
+        return None
+
+    p = _get_palette(palette)
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=200)
+    _apply_style(ax1, p, horizontal_grid=True)
+
+    n = len(year_labels)
+    x = np.arange(n)
+    bar_width = 0.40
+
+    # Left Y axis: Revenue bars
+    bars = ax1.bar(
+        x,
+        rev_vals,
+        width=bar_width,
+        color=p.get("accent", "#ecfdf3"),
+        edgecolor=p.get("brand_dark", "#054f31"),
+        linewidth=0.8,
+        label="Revenue",
+        zorder=2,
+    )
+
+    # Value labels on top of bars
+    for bar, val in zip(bars, rev_vals):
+        label_text = f"{val:,.0f}" if val >= 10 else f"{val:.1f}"
+        ax1.annotate(
+            label_text,
+            xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=6.8,
+            color=p.get("muted", "#475467"),
+            zorder=3,
+        )
+
+    max_rev = max(rev_vals) if rev_vals else 1.0
+    ax1.set_ylim(0, max_rev * 1.35)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(year_labels, fontsize=7.5, fontweight="semibold", color=p["ink"])
+    ax1.set_xlim(-0.45, n - 0.55)
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:,.0f}"))
+
+    # Right Y axis: EBITDA / Operating / Net margin lines
+    ax2 = ax1.twinx()
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["left"].set_visible(False)
+    ax2.spines["right"].set_color(p.get("line", "#e4e7ec"))
+    ax2.spines["bottom"].set_color(p.get("line", "#e4e7ec"))
+    ax2.spines["right"].set_linewidth(0.75)
+    ax2.tick_params(colors=p.get("muted", "#475467"), labelsize=7.0, length=3, width=0.75)
+    ax2.yaxis.grid(False)
+
+    color_ebitda = p.get("brand", "#067647")
+    color_op = "#0e7490"  # Institutional slate cyan
+    color_net = "#7c3aed"  # Institutional purple
+
+    all_margins = ebitda_vals + op_vals + net_vals
+
+    if ebitda_vals and len(ebitda_vals) == n:
+        ax2.plot(x, ebitda_vals, color=color_ebitda, linewidth=2.0, marker="o", markersize=3.8, label="EBITDA Margin", zorder=5)
+        min_base = min(all_margins) * 0.8 if all_margins else 0
+        ax2.fill_between(x, ebitda_vals, min_base, color=color_ebitda, alpha=0.06, zorder=3)
+        for xi, val in zip(x, ebitda_vals):
+            ax2.annotate(
+                f"{val:.1f}%",
+                xy=(xi, val),
+                xytext=(0, 4),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=6.6,
+                fontweight="bold",
+                color=p["brand_dark"],
+                zorder=6,
+            )
+
+    if op_vals and len(op_vals) == n:
+        ax2.plot(x, op_vals, color=color_op, linewidth=1.7, linestyle="--", marker="s", markersize=3.2, label="Operating Margin", zorder=5)
+        for xi, val in zip(x, op_vals):
+            ax2.annotate(
+                f"{val:.1f}%",
+                xy=(xi, val),
+                xytext=(0, 4),
+                textcoords="offset points",
+                ha="center",
+                va="bottom",
+                fontsize=6.5,
+                color=color_op,
+                zorder=6,
+            )
+
+    if net_vals and len(net_vals) == n:
+        ax2.plot(x, net_vals, color=color_net, linewidth=1.7, linestyle=":", marker="^", markersize=3.5, label="Net Margin", zorder=5)
+        for xi, val in zip(x, net_vals):
+            ax2.annotate(
+                f"{val:.1f}%",
+                xy=(xi, val),
+                xytext=(0, -10),
+                textcoords="offset points",
+                ha="center",
+                va="top",
+                fontsize=6.5,
+                color=color_net,
+                zorder=6,
+            )
+
+    if all_margins:
+        min_m = min(all_margins)
+        max_m = max(all_margins)
+        ax2.set_ylim(max(0, min_m - 8), max_m + 12)
+    ax2.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:.0f}%"))
+
+    # Combined legend
+    h1, l1 = ax1.get_legend_handles_labels()
+    h2, l2 = ax2.get_legend_handles_labels()
+    ax1.legend(h1 + h2, l1 + l2, loc="upper right", frameon=False, fontsize=7.0, ncol=4)
+
+    ax1.set_title("Trajektori Kinerja & Margin Operasional", loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8)
+
+    if caption:
+        fig.text(0.01, -0.02, caption, fontsize=6.8, color=p["muted"], ha="left", style="italic")
+    if source:
+        fig.text(0.99, -0.02, f"Source: {source}", fontsize=6.8, color=p["muted"], ha="right", style="italic")
+
+    return _save_fig(fig, target_out)
+
+
 __all__ = [
     "DEFAULT_PALETTE",
     "chart_vs_jci",
@@ -786,5 +953,7 @@ __all__ = [
     "chart_scenario_bars",
     "chart_ev_equity_waterfall",
     "chart_index_trend",
+    "chart_margin_trajectory",
 ]
+
 
