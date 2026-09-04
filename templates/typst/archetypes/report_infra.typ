@@ -169,7 +169,7 @@
       #let vs-jci = data.cover.at("vs_jci", default: (:))
       #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "IDX & yfinance"))
       #v(2pt)
-      #chart-placeholder("Kinerja Harga " + m.ticker + " (" + (if vs-jci.at("ytd_abs", default: 0) > 0 { "+" } else { "" }) + str(vs-jci.at("ytd_abs", default: 0)) + "% YTD) vs IHSG (" + (if vs-jci.at("ytd_rel", default: 0) > 0 { "+" } else { "" }) + str(vs-jci.at("ytd_rel", default: 0)) + "% Relatif)", caption: "Alpha Relatif vs IHSG · Sumber: " + vs-jci.at("source", default: "IDX & yfinance"), height: 60pt, palette: PALETTE)
+      #image(chart-dir + "/vs_jci.png", width: 100%)
     ],
     [
       #rating-box(
@@ -278,7 +278,7 @@
   #v(6pt)
   #exhibit-header("Exhibit 4", "Perbandingan Visual KPI Operasional " + m.ticker, data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
-  #chart-placeholder("Grafik Komparasi KPI " + m.ticker, caption: "Pertumbuhan KPI Operasional Mengindikasikan Efisiensi Margin dan Skala", height: 65pt, palette: PALETTE)
+  #image(chart-dir + "/kpi_bars.png", width: 100%)
 
   #v(6pt)
   #section-header(2, "Katalis Pertumbuhan Terkuantifikasi", PALETTE)
@@ -470,7 +470,7 @@
   )
 
   #v(4pt)
-  #chart-placeholder("Grafik Pita Valuasi Historis P/BV 3Y (" + str(pbv.current) + "x Kini vs Rerata " + str(pbv.avg) + "x)", caption: "Valuasi P/BV Historis · Sumber: " + data.valuation.bands.source, height: 50pt, palette: PALETTE)
+  #image(chart-dir + "/pbv_bands.png", width: 100%)
 ])
 
 #pagebreak()
