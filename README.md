@@ -64,6 +64,14 @@ sectors-hackathon/
 
 Project code will live under `experiment/<track-slug>/` once we commit code (see "Branching & commits" below).
 
+### Institutional Typography & PDF Engine
+Research publication reports are compiled via Typst using formal corporate research typography tokens:
+- **Serif Body:** Source Serif 4 (`assets/fonts/SourceSerif4-VF.ttf`)
+- **Sans-Serif UI / Headings:** Inter (`assets/fonts/Inter-VF.ttf`)
+- **Monospace / Numerics:** JetBrains Mono (`assets/fonts/JetBrainsMono-VF.ttf`)
+
+See [`docs/valuation-framework.md`](docs/valuation-framework.md) for the valuation methodology, gate architecture, and full presentation standards.
+
 ---
 
 ## Branching & commits

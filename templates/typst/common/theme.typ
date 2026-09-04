@@ -2,7 +2,7 @@
 // common/theme.typ — Institutional equity research design tokens
 // =====================================================================
 // Universal theme applicable to all 4 archetypes (single / sotp / infra / strategy).
-// Fonts: Newsreader (serif body), IBM Plex Sans (headings/UI), IBM Plex Mono (numerics)
+// Fonts: Source Serif 4 (serif body), Inter (headings/UI), JetBrains Mono (numerics)
 // Palette: institutional charcoal/slate base + archetype-specific brand color
 // =====================================================================
 
@@ -33,9 +33,9 @@
 )
 
 // ------ Font fallback chains ------
-#let FONT_SERIF = ("Newsreader", "Liberation Serif", "DejaVu Serif")
-#let FONT_SANS = ("IBM Plex Sans", "Liberation Sans", "DejaVu Sans")
-#let FONT_MONO = ("IBM Plex Mono", "Liberation Mono", "DejaVu Sans Mono")
+#let FONT_SERIF = ("Source Serif 4", "Liberation Serif", "DejaVu Serif")
+#let FONT_SANS = ("Inter", "Liberation Sans", "DejaVu Sans")
+#let FONT_MONO = ("JetBrains Mono", "Liberation Mono", "DejaVu Sans Mono")
 
 // ------ Typography scale ------
 #let T_BODY = 8.5pt
@@ -49,12 +49,13 @@
 
 // ------ Set page geometry + fonts ------
 #let set-page-defaults(doc) = {
+  set document(keywords: ("Font: Source Serif 4, Inter, JetBrains Mono",))
   set page(
     paper: "a4",
     margin: (left: MARGIN_LR, right: MARGIN_LR, top: MARGIN_TB, bottom: MARGIN_TB),
   )
   set text(
-    font: FONT_SANS,
+    font: FONT_SERIF,
     size: T_BODY,
     lang: "id",
     fill: rgb("#101828"),
@@ -68,9 +69,9 @@
 // ------ Running header ------
 #let running-header(brand-label, date, ticker) = {
   v(-2pt)
-  text(size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em, upper(brand-label))
+  text(font: FONT_SANS, size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em, upper(brand-label))
   h(1fr)
-  text(size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em)[#ticker · #date]
+  text(font: FONT_SANS, size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em)[#ticker · #date]
   v(-2pt)
   line(length: 100%, stroke: 1.5pt + rgb("#067647"))
   v(8pt)
@@ -78,7 +79,7 @@
 
 // ------ Page footer ------
 #let page-footer(pg-num, palette) = {
-  set text(size: FOOTER_SIZE, fill: rgb("#475467"))
+  set text(font: FONT_SANS, size: FOOTER_SIZE, fill: rgb("#475467"))
   v(-2pt)
   line(length: 100%, stroke: 0.5pt + rgb("#e4e7ec"))
   v(4pt)
@@ -95,12 +96,12 @@
 // ------ Section header ------
 #let section-header(no, title, palette) = {
   block(width: 100%)[
-    #set text(size: T_H2, weight: "bold", fill: palette.brand_dark)
+    #set text(font: FONT_SANS, size: T_H2, weight: "bold", fill: palette.brand_dark)
     #grid(
       columns: (auto, 1fr),
       align: (left, left),
       [
-        #set text(size: 7pt, weight: "bold", fill: white)
+        #set text(font: FONT_SANS, size: 7pt, weight: "bold", fill: white)
         #box(
           fill: palette.brand,
           inset: (x: 5pt, y: 1pt),
@@ -119,7 +120,7 @@
 // ------ Exhibit header (id + name + source, baseline-aligned) ------
 #let exhibit-header(id, title, source) = {
   block(width: 100%)[
-    #set text(size: 7.5pt, weight: "bold", fill: rgb("#054f31"))
+    #set text(font: FONT_SANS, size: 7.5pt, weight: "bold", fill: rgb("#054f31"))
     #grid(
       columns: (auto, 1fr, auto),
       align: (left, left, right),

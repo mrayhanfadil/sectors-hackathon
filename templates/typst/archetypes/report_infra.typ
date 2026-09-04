@@ -117,8 +117,10 @@
       #v(6pt)
 
       #card(PALETTE)[
-        #text(size: 7.8pt, weight: "bold", fill: PALETTE.brand_dark)[KEY TAKEAWAYS & HIGHLIGHTS]
-        #v(3pt)
+        #text(size: 7.8pt, weight: "bold", fill: PALETTE.brand_dark)[EXECUTIVE SUMMARY / KEY POINTS]
+        #v(1pt)
+        #text(size: 6pt, style: "italic", fill: PALETTE.muted)[Core investment thesis, rating stance, target price derivation, and operational highlights.]
+        #v(2.5pt)
         #list(
           ..cover.key_takeaways.map(t => [#t])
         )
@@ -189,6 +191,8 @@
       #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR & SAHAM]
+        #v(1pt)
+        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
         #v(2.5pt)
         #let sh = data.cover.at("shares", default: (:))
         #grid(
@@ -392,7 +396,7 @@
 // PAGE 5 — DCF TABLE + BLENDED VALUATION + P/BV BANDS
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 5, PALETTE, [
-  #section-header(5, "Metodologi Valuasi: DCF, Blended & Bands", PALETTE)
+  #section-header(5, "Valuation Methodology: DCF, Blended & Bands", PALETTE)
 
   #let dcf_meth = data.valuation.methods.at(0)
   #let ev_meth = data.valuation.methods.at(1)
@@ -481,13 +485,13 @@
 #pagebreak()
 
 // =====================================================================
-// PAGE 6 — ABIDA FRIEND-STYLE DCF DEEP DIVE (AUDITABLE ENGINE)
+// PAGE 6 — COMPREHENSIVE DCF DEEP DIVE (AUDITABLE ENGINE)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 6, PALETTE, [
-  #section-header(6, "Analisis DCF Komprehensif (Abida Massi Engine)", PALETTE)
+  #section-header(6, "Analisis DCF Komprehensif", PALETTE)
 
   #text(size: 7.2pt, fill: PALETTE.muted)[
-    Porting algoritma deterministik dari _abidamassi/dcf-valuation-tool_ untuk transparansi matematis audit, analisis sensitivitas 5x5, dan pengujian ketahanan skenario operasional.
+    Discounted Cash Flow (DCF) Model — Model deterministik multi-periode mengevaluasi nilai intrinsik ekuitas melalui proyeksi arus kas bebas eksplisit (FCFF) dan nilai terminal, dilengkapi Cost of Capital Build, Sensitivity Analysis 5x5, dan Scenario Analysis (Bear / Base / Bull).
   ]
   #v(3pt)
 
@@ -496,17 +500,17 @@
     column-gutter: 8pt,
     row-gutter: 4pt,
     [
-      #exhibit-header("Exhibit 12", "WACC Breakdown", "CAPM & SBN 10Y")
+      #exhibit-header("Exhibit 12", "Cost of Capital Build", "CAPM & SBN 10Y")
       #v(1pt)
       #image(chart-dir + "/wacc_breakdown.png", width: 100%)
     ],
     [
-      #exhibit-header("Exhibit 13", "Sensitivity Heatmap (WACC x g)", "Engine Sensitivitas 5x5")
+      #exhibit-header("Exhibit 13", "Sensitivity Analysis — Heatmap (WACC vs. g)", "Engine Sensitivitas 5x5")
       #v(1pt)
       #image(chart-dir + "/sensitivity_heatmap.png", width: 100%)
     ],
     [
-      #exhibit-header("Exhibit 14", "Skenario Operasional", "Engine Skenario")
+      #exhibit-header("Exhibit 14", "Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
       #v(1pt)
       #image(chart-dir + "/scenario_bars.png", width: 100%)
     ],
@@ -523,7 +527,7 @@
     columns: (1.1fr, 1fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 16", "Matriks Sensitivitas Nilai Wajar: WACC vs g", "Engine Sensitivitas 5x5")
+      #exhibit-header("Exhibit 16", "Sensitivity Analysis — Matriks Nilai Wajar (WACC vs. g)", "Engine Sensitivitas 5x5")
       #v(1pt)
       #let sens_headers = ("WACC \ g", ..sens.g_axis.map(g => str(calc.round(g * 100, digits: 2)) + "%"))
       #let sens_rows = sens.wacc_axis.enumerate().map(((i, w)) => {
@@ -545,11 +549,11 @@
       )
     ],
     [
-      #exhibit-header("Exhibit 17", "Skenario Operasional & Jembatan Nilai", "Model Deterministik")
+      #exhibit-header("Exhibit 17", "Scenario Analysis (Bear / Base / Bull) & Jembatan Nilai", "Model Deterministik")
       #v(1pt)
       #let sc = data.cDcf.scenarios
       #fin-table(
-        ("Skenario", "Nilai Wajar", "Upside / Downside", "Rekomendasi"),
+        ("Scenario", "Nilai Wajar", "Upside / Downside", "Investment Recommendation"),
         (
           ("BEAR", "Rp " + str(calc.round(sc.BEAR.fair_value_per_share, digits: 0)), (if sc.BEAR.upside > 0 { "+" } else { "" }) + str(calc.round(sc.BEAR.upside * 100, digits: 1)) + "%", sc.BEAR.rating),
           ("BASE", "Rp " + str(calc.round(sc.BASE.fair_value_per_share, digits: 0)), (if sc.BASE.upside > 0 { "+" } else { "" }) + str(calc.round(sc.BASE.upside * 100, digits: 1)) + "%", sc.BASE.rating),
@@ -681,10 +685,10 @@
 // PAGE 10 — PEERS COMPARISON & RISK ANALYSIS
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 10, PALETTE, [
-  #section-header(10, "Perbandingan Peers & Analisis Risiko", PALETTE)
+  #section-header(10, "Peer Comparison & Investment Risks", PALETTE)
 
   #let peer_tab = data.peers.tables.at(0)
-  #exhibit-header("Exhibit 24", "Perbandingan Emiten " + peer_tab.pillar, peer_tab.source)
+  #exhibit-header("Exhibit 24", "Peer Comparison — Emiten " + peer_tab.pillar, peer_tab.source)
   #v(2pt)
   #fin-table(
     peer_tab.headers,
@@ -693,7 +697,7 @@
   )
 
   #v(6pt)
-  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Faktor Risiko Utama Spesifik Sektor #m.sector]
+  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks — Sektor #m.sector]
   #v(3pt)
 
   #let risks = data.at("risks", default: ())
@@ -718,9 +722,9 @@
 // PAGE 11 — RATING GUIDE (9 ROWS), REGULATORY DISCLAIMER & CONTACT
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 11, PALETTE, [
-  #section-header(11, "Panduan Rating, Disklaimer Regulasi & Kontak", PALETTE)
+  #section-header(11, "Investment Recommendation Framework, Disklaimer Regulasi & Kontak", PALETTE)
 
-  #exhibit-header("Exhibit 25", "Panduan Pemeringkatan Rekomendasi Investasi (9 Kategori)", "Standar Metodologi Riset Ekuitas")
+  #exhibit-header("Exhibit 25", "Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas")
   #v(2pt)
   #fin-table(
     ("Kategori Peringkat", "Definisi Kriteria (12 Bulan Eks-Dividen)", "Implikasi bagi Keputusan Investor"),

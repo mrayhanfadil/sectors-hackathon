@@ -67,10 +67,12 @@
       #v(8pt)
 
       #card(PALETTE)[
-        #text(weight: "bold", fill: PALETTE.ink)[Snapshot Investasi]
-        #v(3pt)
+        #text(weight: "bold", fill: PALETTE.ink)[Executive Summary / Key Points]
+        #v(1pt)
+        #text(size: 6pt, style: "italic", fill: PALETTE.muted)[Core investment thesis, rating stance, target price derivation, and operational highlights.]
+        #v(2.5pt)
         #text(size: T_BODY)[
-          Inisiasi liputan dengan rekomendasi *BUY* dan target harga *Rp 7.880* (+27,1% upside). Arus kas Lapangan Banyu Urip (Blok Cepu) menopang marjin EBITDA \~49,6%, efisiensi lifting cost USD 4,85/bbl, dan neraca net cash tanpa utang berbunga.
+          Inisiasi liputan dengan Investment Recommendation *BUY* dan target harga *Rp 7.880* (+27,1% upside). Arus kas Lapangan Banyu Urip (Blok Cepu) menopang marjin EBITDA \~49,6%, efisiensi lifting cost USD 4,85/bbl, dan neraca net cash tanpa utang berbunga.
         ]
       ]
 
@@ -108,6 +110,8 @@
       #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI SAHAM]
+        #v(1pt)
+        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
         #v(2.5pt)
         #let sh = data.cover.at("shares", default: (:))
         #grid(
@@ -287,7 +291,7 @@
 // PAGE 4 — VALUATION (DCF, MULTIPLES, BLENDED & BANDS)
 // =====================================================================
 #page-wrap("RESEARCH — Equity Report", "31 Agt 2026", "RATU", 4, PALETTE, [
-  #section-header(3, "Metodologi & Hasil Valuasi", PALETTE)
+  #section-header(3, "Valuation Methodology & Hasil Valuasi", PALETTE)
 
   #grid(
     columns: (1.15fr, 1fr),
@@ -385,17 +389,17 @@
 #pagebreak()
 
 // =====================================================================
-// PAGE 5 — ABIDA FRIEND-STYLE DCF DEEP DIVE
+// PAGE 5 — COMPREHENSIVE DCF DEEP DIVE
 // =====================================================================
 #page-wrap("RESEARCH — Equity Report", "31 Agt 2026", "RATU", 5, PALETTE, [
-  #section-header(4, "Analisis DCF Komprehensif (Abida Friend-Style)", PALETTE)
+  #section-header(4, "Analisis DCF Komprehensif", PALETTE)
   
   #text(size: 7.2pt, fill: PALETTE.muted)[
-    Porting algoritma deterministik dari repository _abidamassi/dcf-valuation-tool_ untuk transparansi matematis audit, analisis sensitivitas 5x5, dan pengujian ketahanan skenario.
+    Discounted Cash Flow (DCF) Model — Model deterministik multi-periode mengevaluasi nilai intrinsik ekuitas melalui proyeksi arus kas bebas eksplisit (FCFF) dan nilai terminal, dilengkapi Cost of Capital Build, Sensitivity Analysis 5x5, dan Scenario Analysis (Bear / Base / Bull).
   ]
   #v(6pt)
 
-  #exhibit-header("Exhibit 8", "Rincian Parameter Biaya Modal (WACC Breakdown)", "Model CAPM & SBN 10Y")
+  #exhibit-header("Exhibit 8", "Cost of Capital Build", "Model CAPM & SBN 10Y")
   #v(2pt)
   #fin-table(
     ("Komponen WACC", "Nilai", "Metodologi / Sumber"),
@@ -414,7 +418,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 9", "Matriks Sensitivitas: WACC vs Terminal Growth (g)", "Engine Sensitivitas 5x5")
+  #exhibit-header("Exhibit 9", "Sensitivity Analysis — WACC vs Terminal Growth (g)", "Engine Sensitivitas 5x5")
   #v(2pt)
   #fin-table(
     ("WACC \\ g", "4,50%", "4,75%", "5,00% (Base)", "5,25%", "5,50%"),
@@ -433,10 +437,10 @@
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 10", "Skenario Operasional", "Engine Skenario")
+      #exhibit-header("Exhibit 10", "Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
       #v(2pt)
       #fin-table(
-        ("Skenario", "Nilai Wajar", "Rekomendasi"),
+        ("Scenario", "Nilai Wajar", "Investment Recommendation"),
         (
           ("BEAR (Rev +6%, EBIT 29%)", "Rp 3.567", "SELL (-15,1%)"),
           ("BASE (Rev +10%, EBIT 32%)", "Rp 4.562", "HOLD (+8,6%)"),
@@ -532,9 +536,9 @@
 // PAGE 7 — PEERS, RISKS, RATING GUIDE & DISCLAIMER
 // =====================================================================
 #page-wrap("RESEARCH — Equity Report", "31 Agt 2026", "RATU", 7, PALETTE, [
-  #section-header(6, "Komparasi Peers & Analisis Risiko", PALETTE)
+  #section-header(6, "Peer Comparison & Investment Risks", PALETTE)
 
-  #exhibit-header("Exhibit 15", "Perbandingan Emiten Sektor Energi Terbuka (IDX Peers)", "IDX & Bloomberg")
+  #exhibit-header("Exhibit 15", "Peer Comparison — Emiten Sektor Energi Terbuka (IDX Peers)", "IDX & Bloomberg")
   #v(2pt)
   #fin-table(
     ("Ticker", "Market Cap", "P/E (x)", "EV/EBITDA", "P/BV (x)", "ROE (%)", "Gearing"),
@@ -550,7 +554,7 @@
   )
 
   #v(6pt)
-  #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Faktor Risiko Utama]
+  #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
   #v(3pt)
   #grid(
     columns: (1fr, 1fr),
@@ -587,7 +591,7 @@
 
   #v(6pt)
   #card(PALETTE)[
-    #text(size: 7pt, weight: "bold", fill: PALETTE.brand_dark)[PANDUAN RATING REKOMENDASI]
+    #text(size: 7pt, weight: "bold", fill: PALETTE.brand_dark)[PANDUAN RATING REKOMENDASI (INVESTMENT RECOMMENDATION)]
     #v(2pt)
     #text(size: 6.5pt)[
       - *BUY*: Ekspektasi total return > +15% dalam 12 bulan (eks-dividen).

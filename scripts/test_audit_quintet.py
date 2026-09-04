@@ -1,65 +1,62 @@
-"""Pytest wrapper for scripts/audit_quintet_gates.py — exercises all 5 quintet tickers.
+"""Pytest test suite for Valuation Method Selection Framework quintet audit (5/5 PASS).
 
-Runs the audit script (which has all 5 expectations hardcoded) as a subprocess and
-asserts on its exit code + output. The audit script imports from agents.valuation.gates
-itself, so this also indirectly verifies the gate runner public API is intact.
+Exercises each of the 5 quintet tickers with realistic financial parameters
+and verifies deterministic method selection, thin data disclosures, SOTP cross-checks,
+and rating override logic.
 """
 
 from __future__ import annotations
 
-import subprocess
-import sys
-from pathlib import Path
-
 import pytest
 
-REPO_ROOT = Path(__file__).resolve().parent.parent
-AUDIT_SCRIPT = REPO_ROOT / "scripts" / "audit_quintet_gates.py"
+from agents.valuation.gates import evaluate
+from scripts.audit_quintet_gates import QUINTET, EXPECTATIONS
 
 
-@pytest.fixture(scope="module")
-def audit_result() -> subprocess.CompletedProcess:
-    return subprocess.run(
-        [sys.executable, str(AUDIT_SCRIPT)],
-        capture_output=True,
-        text=True,
-        cwd=str(REPO_ROOT),
-    )
+def test_ratu_audit_verdict():
+    """RATU: mature single-business oil holding -> FCFF/WACC DCF, no override."""
+    ticker = "RATU"
+    verdict = evaluate(ticker, **QUINTET[ticker])
+    assert verdict.primary == "FCFF/WACC DCF"
+    assert verdict.rating_override is None
+    assert verdict.thin_data is False
+    assert EXPECTATIONS[ticker](verdict) is True
 
 
-def test_audit_exits_zero(audit_result):
-    assert audit_result.returncode == 0, (
-        f"Audit script failed (rc={audit_result.returncode}):\n"
-        f"STDOUT:\n{audit_result.stdout}\n"
-        f"STDERR:\n{audit_result.stderr}"
-    )
+def test_cdia_audit_verdict():
+    """CDIA: 2y filing history (<4y) -> DCF (shortened horizon), thin_data=True, 1a_filing_history failed."""
+    ticker = "CDIA"
+    verdict = evaluate(ticker, **QUINTET[ticker])
+    assert verdict.primary == "DCF (shortened horizon)"
+    assert verdict.thin_data is True
+    assert "1a_filing_history" in verdict.gates_failed
+    assert EXPECTATIONS[ticker](verdict) is True
 
 
-def test_audit_summary_line_present(audit_result):
-    assert "ALL QUINTET TICKERS MATCH EXPECTED METHOD VERDICTS" in audit_result.stdout
+def test_mtel_audit_verdict():
+    """MTEL: infra tower with NCI 25% (15-40% band) -> FCFF/WACC DCF with mandatory SOTP cross-check reason."""
+    ticker = "MTEL"
+    verdict = evaluate(ticker, **QUINTET[ticker])
+    assert verdict.primary == "FCFF/WACC DCF"
+    assert any("SOTP cross-check" in r for r in verdict.reasons)
+    assert verdict.rating_override is None
+    assert EXPECTATIONS[ticker](verdict) is True
 
 
-@pytest.mark.parametrize("ticker", ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"])
-def test_audit_lists_each_ticker(audit_result, ticker: str):
-    assert ticker in audit_result.stdout
+def test_bbca_audit_verdict():
+    """BBCA: tier-1 private bank -> Gate 0 financial institution route -> DDM / Excess Return."""
+    ticker = "BBCA"
+    verdict = evaluate(ticker, **QUINTET[ticker])
+    assert verdict.primary == "DDM / Excess Return"
+    assert verdict.rating_override is None
+    assert EXPECTATIONS[ticker](verdict) is True
 
 
-def test_cdia_thin_data_in_audit_output(audit_result):
-    """CDIA verdict must include the thin-data disclosure marker."""
-    # The audit table shows `True` under the Thin column for CDIA
-    cdia_line = next(
-        (line for line in audit_result.stdout.splitlines() if line.startswith("CDIA")),
-        None,
-    )
-    assert cdia_line is not None, "CDIA line not found in audit output"
-    assert "True" in cdia_line, f"CDIA should be marked thin=True, got: {cdia_line}"
+def test_adro_audit_verdict():
+    """ADRO: commodity coal mining -> Gate 0/3 finite reserves route -> NAV / Reserve-based."""
+    ticker = "ADRO"
+    verdict = evaluate(ticker, **QUINTET[ticker])
+    assert verdict.primary == "NAV / Reserve-based"
+    assert verdict.rating_override is None
+    assert EXPECTATIONS[ticker](verdict) is True
 
-
-def test_bbcA_ddm_in_audit_output(audit_result):
-    """BBCA verdict must show DDM as primary method."""
-    bbca_line = next(
-        (line for line in audit_result.stdout.splitlines() if line.startswith("BBCA")),
-        None,
-    )
-    assert bbca_line is not None, "BBCA line not found in audit output"
-    assert "DDM / Excess Return" in bbca_line

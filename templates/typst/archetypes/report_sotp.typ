@@ -80,10 +80,12 @@
         #v(5pt)
 
         #card(PALETTE)[
-          #text(weight: "bold", fill: PALETTE.ink)[Snapshot Investasi]
-          #v(2pt)
+          #text(weight: "bold", fill: PALETTE.ink)[Executive Summary / Key Points]
+          #v(1pt)
+          #text(size: 6pt, style: "italic", fill: PALETTE.muted)[Core investment thesis, rating stance, target price derivation, and operational highlights.]
+          #v(2.5pt)
           #text(size: 8pt)[
-            Inisiasi liputan dengan rekomendasi *HOLD* dan target harga *Rp 815* (+4,5% upside). CDIA adalah holding infrastruktur terintegrasi dengan 4 pilar bisnis: Energi, Logistik, Air, dan Pelabuhan. Logistik menjadi motor pertumbuhan utama (+44,7% YoY), sementara normalisasi one-off Rp 15,9 bn pada FY26 menopang kualitas laba jangka panjang.
+            Inisiasi liputan dengan Investment Recommendation *HOLD* dan target harga *Rp 815* (+4,5% upside). CDIA adalah holding infrastruktur terintegrasi dengan 4 pilar bisnis: Energi, Logistik, Air, dan Pelabuhan. Logistik menjadi motor pertumbuhan utama (+44,7% YoY), sementara normalisasi one-off Rp 15,9 bn pada FY26 menopang kualitas laba jangka panjang.
           ]
         ]
 
@@ -150,6 +152,8 @@
         #v(4pt)
         #card(PALETTE)[
           #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR]
+          #v(1pt)
+          #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
           #v(2.5pt)
           #let sh = data.cover.at("shares", default: (:))
           #grid(
@@ -169,6 +173,8 @@
         #v(4pt)
         #card(PALETTE)[
           #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[STRUKTUR PEMEGANG SAHAM]
+          #v(1pt)
+          #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Ownership distribution, controlling shareholder stakes, and free-float allocation.]
           #v(2.5pt)
           #grid(
             columns: (1fr, auto),
@@ -388,10 +394,10 @@
   4,
   PALETTE,
   [
-    #section-header(3, "Valuasi SOTP & Blended Fair Value", PALETTE)
+    #section-header(3, "Valuation Methodology — SOTP & Blended Fair Value", PALETTE)
 
     #card(PALETTE)[
-      #text(weight: "bold", fill: PALETTE.ink)[Metodologi Valuasi SOTP (Sum-Of-The-Parts)]
+      #text(weight: "bold", fill: PALETTE.ink)[Valuation Methodology: Sum-Of-The-Parts (SOTP)]
       #v(2pt)
       #text(size: 7.8pt)[
         Valuasi CDIA menggunakan pendekatan *Sum-Of-The-Parts (SOTP)* untuk mengukur nilai intrinsik masing-masing pilar berdasarkan karakteristik industri spesifiknya. Diskon holding (Holdco Discount) sebesar *15,0%* diterapkan pada level konsolidasi guna mengakomodasi struktur konglomerasi dan kompleksitas alokasi modal.
@@ -424,17 +430,17 @@
         ("DCF (Discounted Cash Flow)", "50,0%", "815", "408", "WACC 9,8% · Beta 1,05 · Rf 6,2% · ERP 7,4% · g 4,0%"),
         ("DDM (Dividend Discount Model)", "30,0%", "810", "243", "CoE 14,0% · Payout FY27 40% / FY28 104% · g 4,0%"),
         ("SOTP (Multiples Diskon 15%)", "20,0%", "825", "165", "Peer-based multiple · 15% Holdco discount applied"),
-        ([*Target Price (Blended)*], [*100,0%*], [*Rp 815*], [*Rp 815*], [*Rekomendasi: HOLD (Upside +4,5%)*]),
+        ([*Target Price (Blended)*], [*100,0%*], [*Rp 815*], [*Rp 815*], [*Investment Recommendation: HOLD (Upside +4,5%)*]),
       ),
       palette: PALETTE,
     )
 
     #v(5pt)
     #card(PALETTE)[
-      #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[KESIMPULAN & MARGIN OF SAFETY]
+      #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INVESTMENT RECOMMENDATION & MARGIN OF SAFETY]
       #v(2pt)
       #text(size: 7.8pt)[
-        Target harga blended ditetapkan pada *Rp 815 per saham*, menghasilkan potensi kenaikan sebesar *+4,5%* dari harga penutupan terakhir Rp 780. Mengingat upside berada di rentang -10% s.d. +15%, rekomendasi kami adalah *HOLD*. Valuasi ini merefleksikan margin kehati-hatian terhadap penundaan integrasi M&A serta normalisasi earnings base pada FY26F.
+        Target harga blended ditetapkan pada *Rp 815 per saham*, menghasilkan potensi kenaikan sebesar *+4,5%* dari harga penutupan terakhir Rp 780. Mengingat upside berada di rentang -10% s.d. +15%, our view: *HOLD*. Valuasi ini merefleksikan margin kehati-hatian terhadap penundaan integrasi M&A serta normalisasi earnings base pada FY26F.
       ]
     ]
   ]
@@ -532,7 +538,7 @@
   6,
   PALETTE,
   [
-    #section-header(5, "Faktor Risiko — Spesifik Pilar & Konglomerasi", PALETTE)
+    #section-header(5, "Investment Risks — Spesifik Pilar & Konglomerasi", PALETTE)
 
     #text(size: 8pt)[
       Evaluasi risiko komprehensif mencakup eksposur operasional tiap pilar bisnis serta risiko struktural holding terkait leverage finansial dan ketergantungan pasokan.
@@ -624,17 +630,17 @@
   7,
   PALETTE,
   [
-    #section-header(6, "Panduan Rekomendasi & Disklaimer Regulasi", PALETTE)
+    #section-header(6, "Investment Recommendation Framework & Disklaimer Regulasi", PALETTE)
 
     #text(size: 8pt)[
       Standar metodologi pemeringkatan saham, independensi sertifikasi analis riset, serta disklaimer kepatuhan regulasi Otoritas Jasa Keuangan (OJK).
     ]
 
     #v(5pt)
-    #section-header("6.1", "Definisi Rating Rekomendasi Investasi (12 Bulan)", PALETTE)
+    #section-header("6.1", "Definisi Rating Investment Recommendation (12 Bulan)", PALETTE)
     #v(-3pt)
     #fin-table(
-      ("Rekomendasi", "Kriteria Total Return (12M Eks-Dividen)", "Implikasi bagi Investor"),
+      ("Investment Recommendation", "Kriteria Total Return (12M Eks-Dividen)", "Implikasi bagi Investor"),
       (
         ("BUY", "Total Return Ekspektasi > +15%", "Potensi kenaikan harga substansial di atas biaya modal ekuitas."),
         ("TRADING BUY", "Total Return Ekspektasi +5% s.d. +15%", "Peluang trading jangka pendek/menengah berbasis katalis tertentu."),
