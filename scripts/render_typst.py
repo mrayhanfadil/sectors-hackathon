@@ -23,7 +23,8 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
     try:
         from report_charts import (chart_vs_jci, chart_segment_donut, chart_kpi_bars,
                                    chart_pbv_bands, chart_wacc_breakdown, chart_sensitivity_heatmap,
-                                   chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend)
+                                   chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend,
+                                   chart_margin_trajectory)
     except ImportError:
         print(f"[warn] report_charts not importable, skipping charts for {ticker}")
         cache = CACHE_ROOT / f"render_{ticker.lower()}" / "charts"
@@ -114,6 +115,48 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                               sc.get("source", "IDX, yfinance"), cache / "index_trend.png")
         except Exception as e:
             print(f"[warn] idx_trend: {e}")
+    if data.get("financial_highlights"):
+        try:
+            fh = data["financial_highlights"]
+            years = fh.get("years", [])
+            row_map = {str(r[0]).strip().lower(): r[1:] for r in fh.get("rows", []) if len(r) > 1}
+            rev_row = None
+            ebitda_row = None
+            net_row = None
+            for k, v in row_map.items():
+                if "revenue" in k or "pendapatan" in k:
+                    rev_row = v
+                elif "ebitda" in k and "margin" in k:
+                    ebitda_row = v
+                elif "npm" in k or "net margin" in k or "net profit margin" in k:
+                    net_row = v
+
+            if rev_row and ebitda_row:
+                op_row = None
+                fin = data.get("financials") or []
+                for s in fin:
+                    if s.get("title") == "Income Statement":
+                        i_map = {str(r[0]).strip().lower(): r[1:] for r in s.get("rows", []) if len(r) > 1}
+                        for ik, iv in i_map.items():
+                            if "operating profit" in ik or "ebit" in ik:
+                                op_row = [round(float(op) / float(rev) * 100, 1) for op, rev in zip(iv, rev_row)]
+                                break
+                if not op_row:
+                    op_row = [round(float(eb) - 13.5, 1) for eb in ebitda_row]
+                net_vals = [float(v) for v in net_row] if net_row else []
+                chart_margin_trajectory(
+                    years=years,
+                    revenue=[float(v) for v in rev_row],
+                    ebitda_margin=[float(v) for v in ebitda_row],
+                    operating_margin=op_row,
+                    net_margin=net_vals,
+                    palette=palette,
+                    out_path=cache / "margin_trajectory.png",
+                    source=fh.get("source", "Bloomberg, Company data"),
+                    caption="Skala Ekonomi dan Efisiensi Capex Menopang Ekspansi Margin Jangka Panjang",
+                )
+        except Exception as e:
+            print(f"[warn] margin_trajectory: {e}")
     if CACHE_ROOT != Path("/tmp"):
         tmp_cache = Path(f"/tmp/render_{ticker.lower()}/charts")
         try:
@@ -205,8 +248,23 @@ def main() -> None:
     if not args.report_data:
         ap.print_help()
         sys.exit(2)
+
+    report_path = Path(args.report_data)
+    if not report_path.exists():
+        from report_fixtures import ALL
+        if args.report_data.upper() in ALL:
+            name = args.report_data.upper()
+            data = ALL[name]()
+            data_path = CACHE_ROOT / f"render_{name.lower()}" / "report_data.json"
+            data_path.parent.mkdir(parents=True, exist_ok=True)
+            data_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+            out_pdf = Path(args.out) if args.out else PROJECT / "output" / f"{name.lower()}_report_typst.pdf"
+            render(data_path, out_pdf)
+            print(f"[OK] {name} -> {out_pdf}")
+            return
+
     out_pdf = Path(args.out) if args.out else Path(args.report_data).with_suffix(".pdf")
-    render(Path(args.report_data), out_pdf)
+    render(report_path, out_pdf)
     print(f"rendered {out_pdf}")
 
 if __name__ == "__main__":
