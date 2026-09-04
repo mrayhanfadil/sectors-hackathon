@@ -36,7 +36,9 @@
     #set text(font: FONT_SANS, size: 6pt)
     #block(width: 100%)[
       #set text(size: 6.8pt, weight: "bold", fill: palette.brand_dark, tracking: 0.04em)
-      Method Selection Framework
+      Valuation Methodology
+      #v(0.5pt)
+      #text(size: 4.8pt, style: "italic", fill: palette.muted)[Deterministic gate framework governing primary and cross-check valuation model selection.]
       #v(2pt)
       #line(length: 100%, stroke: 0.75pt + palette.brand)
       #v(2.5pt)

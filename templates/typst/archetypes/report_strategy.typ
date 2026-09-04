@@ -70,7 +70,9 @@
       #v(5pt)
 
       #card(PALETTE)[
-        #text(size: 7.8pt, weight: "bold", fill: PALETTE.brand_dark)[RINGKASAN STRATEGI & HIGHLIGHT PASAR]
+        #text(size: 7.8pt, weight: "bold", fill: PALETTE.brand_dark)[EXECUTIVE SUMMARY / KEY POINTS]
+        #v(1pt)
+        #text(size: 6pt, style: "italic", fill: PALETTE.muted)[Core macroeconomic thesis, index target derivation, and market allocation stance.]
         #v(2.5pt)
         #list(
           [Siklus pelonggaran moneter global (Fed rate cuts) dan penurunan BI-Rate ke 5,25%–5,50% membuka ekspansi likuiditas pasar modal domestik.],
@@ -131,6 +133,8 @@
       #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[PARAMETER VALUASI INDEKS]
+        #v(1pt)
+        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Composite index targets, forward valuation multiples, and aggregate return metrics.]
         #v(2.5pt)
         #grid(
           columns: (1fr, auto),
@@ -150,6 +154,8 @@
       #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[PANDUAN ALOKASI ASET 2026]
+        #v(1pt)
+        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Asset allocation weighting recommendation across equities, fixed income, and cash.]
         #v(2.5pt)
         #grid(
           columns: (1fr, auto),
@@ -163,6 +169,8 @@
       #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SEKTOR TOP PICKS]
+        #v(1pt)
+        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[High-conviction sectoral exposures and individual equity selection priorities.]
         #v(2pt)
         #text(size: 6.5pt)[
           - *Perbankan:* BBCA (CASA & Quality)
@@ -181,7 +189,7 @@
 // PAGE 2 — INDEX TARGET SCENARIOS (BULL / BASE / BEAR + MATH DERIVATION)
 // =====================================================================
 #page-wrap("RESEARCH — Strategy Outlook", "31 Agt 2026", "IHSG / JCI", 2, PALETTE, [
-  #section-header(1, "Skenario Target Indeks IHSG & Penurunan Matematis (Math Derivation)", PALETTE)
+  #section-header(1, "Scenario Analysis (Bear / Base / Bull) — Target Indeks IHSG", PALETTE)
 
   #text(size: 7.6pt)[
     Metodologi penetapan target IHSG memadukan proyeksi laba per saham agregat (*Consolidated EPS*) konstituen indeks dengan kelipatan valuasi (*Forward P/E Multiple*) berbasis deviasi standar historis 5 tahun. Kerangka kerja top-down ini menguji ketahanan pasar dalam 3 skenario makro: Bull, Base, dan Bear.
@@ -272,7 +280,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 4", "Matriks Sensitivitas 5x5: Pertumbuhan EPS vs Kelipatan P/E Forward", "Engine Sensitivitas Valuasi Indeks")
+  #exhibit-header("Exhibit 4", "Sensitivity Analysis — Pertumbuhan EPS vs Kelipatan P/E Forward", "Engine Sensitivitas Valuasi Indeks")
   #v(2pt)
   #fin-table(
     ("Forward P/E \\ EPS Growth", "+4,0% (Rp 584)", "+6,0% (Rp 596)", "+8,0% (Base Rp 607)", "+10,0% (Rp 618)", "+12,0% (Rp 625)"),
@@ -444,9 +452,9 @@
 // PAGE 5 — RATING GUIDE & DISCLAIMER
 // =====================================================================
 #page-wrap("RESEARCH — Strategy Outlook", "31 Agt 2026", "IHSG / JCI", 5, PALETTE, [
-  #section-header(4, "Panduan Rating, Metodologi Riset & Disklaimer Kepatuhan OJK", PALETTE)
+  #section-header(4, "Panduan Rating, Valuation Methodology & Disklaimer Kepatuhan OJK", PALETTE)
 
-  #exhibit-header("Exhibit 9", "Panduan Pemeringkatan Rekomendasi Investasi (9 Kategori)", "Standar Metodologi Riset Ekuitas Institusional")
+  #exhibit-header("Exhibit 9", "Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas Institusional")
   #v(2pt)
   #fin-table(
     ("Kategori Peringkat", "Definisi Kriteria (Horizon 12-Bulan Eks-Dividen)", "Implikasi bagi Alokasi Portofolio"),
@@ -466,7 +474,7 @@
 
   #v(4pt)
   #card(PALETTE)[
-    #text(size: 7.2pt, weight: "bold", fill: PALETTE.ink)[Kerangka Metodologi Riset Strategi & Proyeksi Pasar]
+    #text(size: 7.2pt, weight: "bold", fill: PALETTE.ink)[Valuation Methodology — Riset Strategi & Proyeksi Pasar]
     #v(2pt)
     #text(size: 6.5pt)[
       Model Strategi Pasar memadukan pendekatan makroekonomi *Top-Down* (analisis siklus moneter BI/Fed, inflasi, fiskal, dan neraca transaksi berjalan) dengan agregasi fundamental *Bottom-Up* dari 120+ emiten dalam cakupan semesta riset yang mencakup >85% kapitalisasi pasar IHSG. Penetapan target kelipatan valuasi (*Forward P/E Multiple*) berbasis pita deviasi standar historis 5-tahun dan penyesuaian terhadap yield spread obligasi negara (SBN 10-Tahun).
