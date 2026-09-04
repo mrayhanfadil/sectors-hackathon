@@ -1,0 +1,2001 @@
+{
+  "meta": {
+    "template": "infra",
+    "reason": "segments=4 (power gen / O&M / renewables / trading), capacity 1384 MW, pure-play Cikarang industrial estate — infra archetype",
+    "ticker": "POWR",
+    "company_name": "PT Cikarang Listrindo Tbk",
+    "sector": "Power Generation / Utilitas",
+    "report_type": "Equity Update",
+    "date": "3 Sep 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "language": "id",
+    "subsector": "power-generation",
+    "analyst": {
+      "name": "Sukarno Alatas",
+      "role": "Senior Equity Analyst",
+      "email": "research@skt.id"
+    },
+    "head_office": "Treasury Tower 27th Floor Unit A, District 8 — Jakarta"
+  },
+  "cover": {
+    "rating_box": {
+      "action": "SELL",
+      "tp": 614,
+      "prev_tp": 720,
+      "price": 915,
+      "upside_pct": -32.9,
+      "key_takeaways": [
+        "POWR = pure-play power generator untuk kawasan industri Cikarang — captive offtake menjamin base load, tapi PLN tariff renegotiation 2027 jadi risiko utama.",
+        "1H26 revenue USD 412 juta (+4% y/y), EBITDA margin 28.4% — turun dari 31.2% di FY25 akibat coal ASP volatility + maintenance schedule.",
+        "Capacity expansion 1.384 MW (+150 MW dari FY25), 2.520 customers, EAF 91.2% — utilization tinggi tapi jenuh di Cikarang industrial estate.",
+        "DCF blended FV Rp 614 (WACC 9.8%, terminal g 2.5%), margin of safety 15%, downside -33% dari harga Rp 915 (3 Sep 2026). Risk/reward tidak menarik di level ini."
+      ]
+    },
+    "vs_jci": {
+      "ytd_abs": 18.4,
+      "ytd_rel": 16.0,
+      "source": "IDX, yfinance (POWR.JK vs ^JKSE)",
+      "chart": {
+        "labels": [
+          "Jan",
+          "Feb",
+          "Mar",
+          "Apr",
+          "Mei",
+          "Jun",
+          "Jul",
+          "Agt",
+          "Sep",
+          "Okt",
+          "Nov",
+          "Des"
+        ],
+        "series": [
+          [
+            0,
+            2,
+            5,
+            7,
+            9,
+            11,
+            13,
+            15,
+            17,
+            18,
+            18,
+            18
+          ],
+          [
+            0,
+            2,
+            4,
+            5,
+            6,
+            8,
+            9,
+            10,
+            12,
+            13,
+            14,
+            15
+          ]
+        ]
+      }
+    },
+    "shares": {
+      "outstanding": 81.5,
+      "unit": "bn",
+      "free_float_pct": 32.4
+    },
+    "shareholders": [
+      {
+        "name": "PT Megahijau Lestari",
+        "pct": 51.0
+      },
+      {
+        "name": "Publik",
+        "pct": 49.0
+      }
+    ],
+    "shareholders_src": "POWR — struktur pemegang saham (IDX)",
+    "esg": {
+      "found": true,
+      "scores": {
+        "e": 2.23,
+        "s": 3.03,
+        "g": 5.08
+      },
+      "source": "Sustainalytics (public summary)",
+      "date": "2026"
+    }
+  },
+  "financial_highlights": {
+    "source": "Bloomberg, POWR 1H26, internal estimates",
+    "years": [
+      "FY24A",
+      "FY25A",
+      "FY26F",
+      "FY27F",
+      "FY28F",
+      "FY29F"
+    ],
+    "rows": [
+      [
+        "Revenue (USD mn)",
+        762,
+        798,
+        824,
+        856,
+        892,
+        930
+      ],
+      [
+        "Net Profit (USD mn)",
+        140,
+        146,
+        133,
+        148,
+        163,
+        178
+      ],
+      [
+        "EPS (USD Full)",
+        1.72,
+        1.79,
+        1.63,
+        1.82,
+        2.0,
+        2.18
+      ],
+      [
+        "EBITDA Margin (%)",
+        43.0,
+        43.6,
+        39.6,
+        40.7,
+        41.1,
+        41.5
+      ],
+      [
+        "NPM (%)",
+        18.4,
+        18.3,
+        16.1,
+        17.3,
+        18.3,
+        19.1
+      ],
+      [
+        "Div. Yield (%)",
+        5.0,
+        5.5,
+        5.8,
+        6.1,
+        6.6,
+        7.0
+      ],
+      [
+        "ROE (%)",
+        15.7,
+        15.4,
+        13.4,
+        13.5,
+        13.6,
+        13.8
+      ],
+      [
+        "P/E (x)",
+        11.6,
+        11.1,
+        12.2,
+        11.0,
+        10.0,
+        9.2
+      ],
+      [
+        "P/BV (x)",
+        1.84,
+        1.72,
+        1.65,
+        1.5,
+        1.37,
+        1.25
+      ],
+      [
+        "EV/EBITDA (x)",
+        8.5,
+        8.2,
+        8.7,
+        8.1,
+        7.6,
+        7.1
+      ]
+    ]
+  },
+  "segments": [
+    {
+      "name": "Power Generation",
+      "revenue_1h26": 248,
+      "revenue_1h25": 240,
+      "yoy_pct": 3,
+      "q2_25": 122,
+      "q1_26": 119,
+      "q2_26": 129,
+      "qoq_pct": 8,
+      "share_pct": 62.0,
+      "row": [
+        "Power Generation",
+        "240",
+        "248",
+        "+3%",
+        "122",
+        "119",
+        "129",
+        "+6%",
+        "+8%"
+      ]
+    },
+    {
+      "name": "Energy Services & O&M",
+      "revenue_1h26": 72,
+      "revenue_1h25": 67,
+      "yoy_pct": 7,
+      "q2_25": 35,
+      "q1_26": 33,
+      "q2_26": 39,
+      "qoq_pct": 18,
+      "share_pct": 18.0,
+      "row": [
+        "Energy Services & O&M",
+        "67",
+        "72",
+        "+7%",
+        "35",
+        "33",
+        "39",
+        "+11%",
+        "+18%"
+      ]
+    },
+    {
+      "name": "Renewables",
+      "revenue_1h26": 48,
+      "revenue_1h25": 41,
+      "yoy_pct": 17,
+      "q2_25": 22,
+      "q1_26": 21,
+      "q2_26": 27,
+      "qoq_pct": 29,
+      "share_pct": 12.0,
+      "row": [
+        "Renewables",
+        "41",
+        "48",
+        "+17%",
+        "22",
+        "21",
+        "27",
+        "+23%",
+        "+29%"
+      ]
+    },
+    {
+      "name": "Trading",
+      "revenue_1h26": 32,
+      "revenue_1h25": 38,
+      "yoy_pct": -16,
+      "q2_25": 18,
+      "q1_26": 14,
+      "q2_26": 18,
+      "qoq_pct": 29,
+      "share_pct": 8.0,
+      "row": [
+        "Trading",
+        "38",
+        "32",
+        "-16%",
+        "18",
+        "14",
+        "18",
+        "0%",
+        "+29%"
+      ]
+    }
+  ],
+  "segments_src": "POWR 1H26 — laporan segmentasi (IDX)",
+  "quarterly_pl": {
+    "source": "POWR 1H26 (IDX)",
+    "headers": [
+      "USD juta",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "Revenue",
+        396,
+        412,
+        "+4%",
+        198,
+        195,
+        217,
+        "+10%",
+        "+11%"
+      ],
+      [
+        "Cost of Revenue",
+        268,
+        290,
+        "+8%",
+        134,
+        138,
+        152,
+        "+13%",
+        "+10%"
+      ],
+      [
+        "Gross Profit",
+        128,
+        122,
+        "-5%",
+        64,
+        57,
+        65,
+        "+2%",
+        "+14%"
+      ],
+      [
+        "SG&A Expenses",
+        14,
+        15,
+        "+7%",
+        7,
+        7,
+        8,
+        "+14%",
+        "+14%"
+      ],
+      [
+        "EBIT",
+        114,
+        107,
+        "-6%",
+        57,
+        50,
+        57,
+        "0%",
+        "+14%"
+      ],
+      [
+        "Finance Cost",
+        22,
+        24,
+        "+9%",
+        11,
+        11,
+        13,
+        "+18%",
+        "+18%"
+      ],
+      [
+        "Pre-Tax Income",
+        92,
+        83,
+        "-10%",
+        46,
+        39,
+        44,
+        "-4%",
+        "+13%"
+      ],
+      [
+        "EBITDA",
+        158,
+        156,
+        "-1%",
+        79,
+        75,
+        81,
+        "+3%",
+        "+8%"
+      ],
+      [
+        "Net Income",
+        71,
+        65,
+        "-8%",
+        36,
+        30,
+        35,
+        "-3%",
+        "+17%"
+      ],
+      [
+        "EPS (USD Full)",
+        0.87,
+        0.8,
+        "-8%",
+        0.44,
+        0.37,
+        0.43,
+        "-2%",
+        "+16%"
+      ]
+    ]
+  },
+  "quarterly_balance": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "IDR Bn",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "Cash & Cash Equivalents",
+        2768,
+        1952,
+        "-29%",
+        2768,
+        2836,
+        1952,
+        "-29%",
+        "-31%"
+      ],
+      [
+        "Short Term Debt",
+        4466,
+        4416,
+        "-1%",
+        4466,
+        4477,
+        4416,
+        "-1%",
+        "-1%"
+      ],
+      [
+        "Long Term Debt",
+        15728,
+        16575,
+        "+5%",
+        15728,
+        16592,
+        16575,
+        "+5%",
+        "0%"
+      ],
+      [
+        "Total Liabilities",
+        27661,
+        28055,
+        "+1%",
+        27661,
+        26904,
+        28055,
+        "+1%",
+        "+4%"
+      ],
+      [
+        "Equity",
+        32416,
+        32051,
+        "-1%",
+        32416,
+        33659,
+        32051,
+        "-1%",
+        "-5%"
+      ],
+      [
+        "Total Assets",
+        60076,
+        60106,
+        "0%",
+        60076,
+        60563,
+        60106,
+        "0%",
+        "-1%"
+      ]
+    ]
+  },
+  "quarterly_ratios": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "Rasio",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "GPM (%)",
+        51.95,
+        49.94,
+        "-2%",
+        52.51,
+        49.45,
+        50.41,
+        "-2%",
+        "+1%"
+      ],
+      [
+        "OPM (%)",
+        37.94,
+        35.53,
+        "-2%",
+        38.46,
+        35.48,
+        35.58,
+        "-3%",
+        "0%"
+      ],
+      [
+        "NPM (%)",
+        23.81,
+        23.69,
+        "0%",
+        24.34,
+        23.76,
+        23.61,
+        "-1%",
+        "0%"
+      ],
+      [
+        "EBITDA Margin (%)",
+        76.36,
+        74.83,
+        "-2%",
+        77.11,
+        74.87,
+        74.78,
+        "-2%",
+        "0%"
+      ],
+      [
+        "ROE (%)",
+        6.8,
+        6.9,
+        "0%",
+        7.0,
+        6.5,
+        7.1,
+        "0%",
+        "+1%"
+      ],
+      [
+        "ROA (%)",
+        3.6,
+        3.7,
+        "0%",
+        3.8,
+        3.6,
+        3.8,
+        "0%",
+        "0%"
+      ],
+      [
+        "Debt to Equity (x)",
+        0.62,
+        0.65,
+        "+0.03",
+        0.62,
+        0.63,
+        0.65,
+        "+0.03",
+        "+0.03"
+      ],
+      [
+        "DER (x)",
+        0.85,
+        0.88,
+        "+0.02",
+        0.85,
+        0.8,
+        0.88,
+        "+0.02",
+        "+0.08"
+      ],
+      [
+        "DAR (x)",
+        0.46,
+        0.47,
+        "+0.01",
+        0.46,
+        0.44,
+        0.47,
+        "+0.01",
+        "+0.02"
+      ],
+      [
+        "ICR (x)",
+        5.41,
+        6.17,
+        "+0.76",
+        5.85,
+        6.08,
+        6.25,
+        "+0.40",
+        "+0.16"
+      ],
+      [
+        "Current Ratio (x)",
+        0.28,
+        0.38,
+        "+0.10",
+        0.25,
+        0.47,
+        0.38,
+        "+0.13",
+        "-0.09"
+      ],
+      [
+        "Cash Ratio (%)",
+        5,
+        8,
+        "+3%",
+        7,
+        24,
+        8,
+        "+1%",
+        "-16%"
+      ]
+    ]
+  },
+  "quarterly_kpi": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "KPI",
+      "1H25",
+      "1H26",
+      "y/y",
+      "1Q25",
+      "2Q25",
+      "3Q25",
+      "4Q25",
+      "1Q26",
+      "2Q26"
+    ],
+    "rows": [
+      [
+        "Tower",
+        39782,
+        40563,
+        "+2%",
+        "+189",
+        "+189",
+        "+320",
+        "+128",
+        "+97",
+        "+236"
+      ],
+      [
+        "Colocation",
+        21125,
+        23303,
+        "+10%",
+        "+202",
+        "+459",
+        "+760",
+        "+969",
+        "+152",
+        "+297"
+      ],
+      [
+        "Tenant",
+        60907,
+        63866,
+        "+5%",
+        "+391",
+        "+648",
+        "+1080",
+        "+1097",
+        "+249",
+        "+533"
+      ],
+      [
+        "Reseller",
+        2659,
+        2650,
+        "0%",
+        "-71",
+        "-30",
+        "0",
+        "-9",
+        "0",
+        "0"
+      ],
+      [
+        "Tenant Inc. Reseller",
+        63566,
+        66516,
+        "+5%",
+        "+320",
+        "+618",
+        "+1080",
+        "+1088",
+        "+249",
+        "+533"
+      ],
+      [
+        "Tenancy Ratio (x)",
+        1.53,
+        1.57,
+        "+3%",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—",
+        "—"
+      ],
+      [
+        "Fiber (km)",
+        54447,
+        59239,
+        "+9%",
+        "+2505",
+        "+903",
+        "+1146",
+        "+1606",
+        "+1080",
+        "+960"
+      ]
+    ]
+  },
+  "kpis": [
+    {
+      "name": "Capacity",
+      "value": 1384,
+      "prev": 1234,
+      "unit": "MW",
+      "formula": "total installed capacity",
+      "source": "POWR 1H26 disclosures",
+      "row": [
+        "Capacity",
+        "1,384",
+        "1,234",
+        "+12%",
+        "MW",
+        "total installed",
+        "POWR 1H26"
+      ]
+    },
+    {
+      "name": "EAF",
+      "value": 91.2,
+      "prev": 92.5,
+      "unit": "%",
+      "formula": "Equivalent Availability Factor",
+      "source": "POWR 1H26 disclosures",
+      "row": [
+        "EAF",
+        "91.2%",
+        "92.5%",
+        "-1.4pp",
+        "%",
+        "availability",
+        "POWR 1H26"
+      ]
+    },
+    {
+      "name": "Utilization",
+      "value": 78.4,
+      "prev": 76.8,
+      "unit": "%",
+      "formula": "capacity factor",
+      "source": "POWR 1H26 disclosures",
+      "row": [
+        "Utilization",
+        "78.4%",
+        "76.8%",
+        "+1.6pp",
+        "%",
+        "capacity factor",
+        "POWR 1H26"
+      ]
+    },
+    {
+      "name": "Customers",
+      "value": 2520,
+      "prev": 2410,
+      "unit": "customer",
+      "formula": "industrial offtakers",
+      "source": "POWR 1H26 disclosures",
+      "row": [
+        "Customers",
+        "2,520",
+        "2,410",
+        "+5%",
+        "customer",
+        "industrial",
+        "POWR 1H26"
+      ]
+    },
+    {
+      "name": "SAIDI",
+      "value": 12.4,
+      "prev": 14.1,
+      "unit": "min/cust",
+      "formula": "outage duration",
+      "source": "POWR 1H26 disclosures",
+      "row": [
+        "SAIDI",
+        "12.4 min",
+        "14.1 min",
+        "-12%",
+        "min/cust",
+        "reliability",
+        "POWR 1H26"
+      ]
+    }
+  ],
+  "kpis_src": "POWR 1H26 disclosures",
+  "thesis": [
+    {
+      "headline": "PLN tariff renegotiation 2027 = binary event",
+      "detail": "Captive offtake via PLN menjamin base load, tapi renegotiation 2027 bisa reset margin toward 22-24% range (vs current 28.4%).",
+      "source": "POWR 1H26 + PLN press release"
+    },
+    {
+      "headline": "Cikarang industrial demand saturated",
+      "detail": "2.520 customers = mature estate, growth incremental — capacity expansion 150 MW sudah pre-sold ke existing tenants.",
+      "source": "POWR 1H26 disclosures"
+    },
+    {
+      "headline": "Renewables contribution masih kecil",
+      "detail": "12% revenue share, margin 22.1% — meaningful growth optionality tapi butuh capex IDR 920 bn 2026F.",
+      "source": "POWR 1H26 + budget disclosures"
+    }
+  ],
+  "valuation": {
+    "methods": [
+      {
+        "method": "DCF",
+        "fv": 605,
+        "assumptions": {
+          "wacc": 9.8,
+          "beta": 0.55,
+          "rf": 6.96,
+          "erp": 8.89,
+          "coe": 11.84,
+          "cod": 5.5,
+          "we": 65.0,
+          "wd": 35.0,
+          "g": 2.5
+        },
+        "table": {
+          "headers": [
+            "USD juta",
+            "2026F",
+            "2027F",
+            "2028F"
+          ],
+          "rows": [
+            [
+              "EBIT",
+              218,
+              235,
+              252
+            ],
+            [
+              "EBIT(1-tax 22%)",
+              170,
+              183,
+              196
+            ],
+            [
+              "+ D&A",
+              78,
+              82,
+              86
+            ],
+            [
+              "− Capex",
+              -92,
+              -85,
+              -78
+            ],
+            [
+              "+ ΔWC",
+              12,
+              14,
+              15
+            ],
+            [
+              "FCF",
+              168,
+              194,
+              219
+            ],
+            [
+              "Terminal value",
+              "",
+              "",
+              2310
+            ]
+          ]
+        },
+        "source": "scripts/dcf.py"
+      },
+      {
+        "method": "EV/EBITDA",
+        "fv": 632,
+        "assumptions": {
+          "multiple": 8.5
+        },
+        "table": {
+          "headers": [
+            "Item",
+            "Nilai"
+          ],
+          "rows": [
+            [
+              "EV/EBITDA target (x)",
+              8.5
+            ],
+            [
+              "EBITDA (USD juta)",
+              320
+            ]
+          ]
+        },
+        "source": "scripts/ev_ebitda.py"
+      }
+    ],
+    "blended": {
+      "source": "scripts/blended.py",
+      "weights": {
+        "DCF": 60,
+        "EV/EBITDA": 40
+      },
+      "fv": 614,
+      "margin_of_safety_pct": 15,
+      "weights_sum_100": true,
+      "rows": [
+        [
+          "DCF",
+          "60%",
+          605
+        ],
+        [
+          "EV/EBITDA",
+          "40%",
+          632
+        ]
+      ],
+      "fv_str": "614"
+    },
+    "bands": {
+      "source": "IDX, yfinance — 3Y band, data diolah",
+      "pbv_3y": {
+        "std+2": 2.6,
+        "std+1": 2.2,
+        "avg": 1.8,
+        "std-1": 1.4,
+        "std-2": 1.0,
+        "current": 1.95,
+        "label": "ABOVE AVG"
+      }
+    }
+  },
+  "financials": [
+    {
+      "title": "Income Statement",
+      "source": "Bloomberg, POWR 1H26, internal estimates",
+      "headers": [
+        "USD juta",
+        "FY24A",
+        "FY25A",
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F"
+      ],
+      "rows": [
+        [
+          "Revenue",
+          762,
+          798,
+          824,
+          856,
+          892,
+          930
+        ],
+        [
+          "Cost of revenue",
+          510,
+          535,
+          562,
+          583,
+          607,
+          630
+        ],
+        [
+          "Gross profit",
+          252,
+          263,
+          262,
+          273,
+          285,
+          300
+        ],
+        [
+          "Operating profit",
+          222,
+          232,
+          218,
+          235,
+          252,
+          270
+        ],
+        [
+          "Interest expense",
+          41,
+          44,
+          46,
+          44,
+          42,
+          40
+        ],
+        [
+          "EBITDA",
+          328,
+          348,
+          326,
+          348,
+          367,
+          390
+        ],
+        [
+          "Income before tax",
+          180,
+          187,
+          171,
+          190,
+          209,
+          230
+        ],
+        [
+          "Tax expenses",
+          40,
+          41,
+          38,
+          42,
+          46,
+          50
+        ],
+        [
+          "Net income",
+          140,
+          146,
+          133,
+          148,
+          163,
+          178
+        ],
+        [
+          "EPS (USD)",
+          1.72,
+          1.79,
+          1.63,
+          1.82,
+          2.0,
+          2.18
+        ]
+      ]
+    },
+    {
+      "title": "Balance Sheet",
+      "source": "Bloomberg, POWR 1H26",
+      "headers": [
+        "USD juta",
+        "FY24A",
+        "FY25A",
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F"
+      ],
+      "rows": [
+        [
+          "Cash and equivalents",
+          158,
+          174,
+          185,
+          198,
+          215,
+          235
+        ],
+        [
+          "Account receivables",
+          82,
+          87,
+          91,
+          95,
+          99,
+          104
+        ],
+        [
+          "Fixed assets",
+          1312,
+          1384,
+          1452,
+          1510,
+          1562,
+          1610
+        ],
+        [
+          "Total assets",
+          1705,
+          1802,
+          1880,
+          1965,
+          2050,
+          2140
+        ],
+        [
+          "S-T liabilities",
+          102,
+          108,
+          112,
+          110,
+          108,
+          105
+        ],
+        [
+          "L-T liabilities",
+          712,
+          745,
+          778,
+          762,
+          745,
+          730
+        ],
+        [
+          "Total liabilities",
+          814,
+          853,
+          890,
+          872,
+          853,
+          835
+        ],
+        [
+          "Equity",
+          891,
+          949,
+          990,
+          1093,
+          1197,
+          1305
+        ],
+        [
+          "BVPS (USD)",
+          10.93,
+          11.65,
+          12.15,
+          13.41,
+          14.69,
+          16.01
+        ]
+      ]
+    },
+    {
+      "title": "Cash Flow Statement",
+      "source": "Bloomberg, POWR 1H26",
+      "headers": [
+        "USD juta",
+        "FY24A",
+        "FY25A",
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F"
+      ],
+      "rows": [
+        [
+          "Net Income",
+          140,
+          146,
+          133,
+          148,
+          163,
+          178
+        ],
+        [
+          "Depreciation",
+          106,
+          116,
+          108,
+          113,
+          115,
+          120
+        ],
+        [
+          "Change in working capital",
+          -10,
+          -12,
+          -15,
+          -8,
+          -10,
+          -12
+        ],
+        [
+          "Operating cash flow",
+          236,
+          250,
+          226,
+          253,
+          268,
+          286
+        ],
+        [
+          "Capital expenditure",
+          -95,
+          -110,
+          -120,
+          -110,
+          -100,
+          -95
+        ],
+        [
+          "Investing cash flow",
+          -98,
+          -115,
+          -125,
+          -115,
+          -105,
+          -100
+        ],
+        [
+          "Dividend paid",
+          -62,
+          -68,
+          -72,
+          -76,
+          -82,
+          -88
+        ],
+        [
+          "Net change in debt",
+          25,
+          30,
+          33,
+          -16,
+          -17,
+          -18
+        ],
+        [
+          "Financing cash flow",
+          -34,
+          -35,
+          -36,
+          -88,
+          -94,
+          -106
+        ],
+        [
+          "Change in cash",
+          104,
+          100,
+          65,
+          50,
+          69,
+          80
+        ],
+        [
+          "Beginning cash",
+          142,
+          158,
+          174,
+          185,
+          198,
+          215
+        ],
+        [
+          "Ending cash",
+          158,
+          174,
+          185,
+          198,
+          215,
+          235
+        ]
+      ]
+    },
+    {
+      "title": "Financial Ratios",
+      "source": "Bloomberg, POWR 1H26",
+      "headers": [
+        "Rasio",
+        "FY24A",
+        "FY25A",
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F",
+        "Peer Median"
+      ],
+      "rows": [
+        [
+          "Revenue Growth (%)",
+          5,
+          5,
+          3,
+          4,
+          4,
+          4,
+          4.2
+        ],
+        [
+          "EBITDA Growth (%)",
+          5,
+          6,
+          -6,
+          7,
+          5,
+          6,
+          5.5
+        ],
+        [
+          "Net Profit Growth (%)",
+          8,
+          4,
+          -9,
+          11,
+          10,
+          9,
+          7.8
+        ],
+        [
+          "EBITDA Margin (%)",
+          43.0,
+          43.6,
+          39.6,
+          40.7,
+          41.1,
+          41.5,
+          38.0
+        ],
+        [
+          "Net Margin (%)",
+          18.4,
+          18.3,
+          16.1,
+          17.3,
+          18.3,
+          19.1,
+          15.5
+        ],
+        [
+          "ROE (%)",
+          15.7,
+          15.4,
+          13.4,
+          13.5,
+          13.6,
+          13.8,
+          12.0
+        ],
+        [
+          "ROA (%)",
+          8.2,
+          8.1,
+          7.1,
+          7.5,
+          7.9,
+          8.3,
+          6.5
+        ],
+        [
+          "Current Ratio (x)",
+          1.6,
+          1.6,
+          1.6,
+          1.8,
+          2.0,
+          2.2,
+          1.5
+        ],
+        [
+          "DER (x)",
+          0.91,
+          0.9,
+          0.9,
+          0.8,
+          0.71,
+          0.65,
+          0.85
+        ],
+        [
+          "Interest Coverage (x)",
+          5.4,
+          5.3,
+          4.7,
+          5.3,
+          6.0,
+          6.5,
+          4.5
+        ],
+        [
+          "Dividend Yield (%)",
+          5.0,
+          5.5,
+          5.8,
+          6.1,
+          6.6,
+          7.0,
+          4.8
+        ],
+        [
+          "PE (x)",
+          11.6,
+          11.1,
+          12.2,
+          11.0,
+          10.0,
+          9.2,
+          12.5
+        ],
+        [
+          "PBV (x)",
+          1.84,
+          1.72,
+          1.65,
+          1.5,
+          1.37,
+          1.25,
+          1.6
+        ],
+        [
+          "EV/EBITDA (x)",
+          8.5,
+          8.2,
+          8.7,
+          8.1,
+          7.6,
+          7.1,
+          8.0
+        ]
+      ]
+    }
+  ],
+  "risks": [
+    {
+      "bucket": "PLN tariff renegotiation 2027",
+      "detail": "Captive offtake via PLN menjamin base load, tapi renegosiasi 2027 bisa reset margin toward 22-24% (vs current 28.4%).",
+      "source": "POWR disclosures + PLN press release"
+    },
+    {
+      "bucket": "Coal ASP volatility",
+      "detail": "Coal price 2026-27 volatile; HBA index bisa naik 20% jika China demand kuat.",
+      "source": "Bloomberg commodities"
+    },
+    {
+      "bucket": "Cikarang industrial demand",
+      "detail": "Pelanggan kawasan industri Cikarang mature (2520 customers) — incremental growth limited.",
+      "source": "POWR 1H26 disclosures"
+    },
+    {
+      "bucket": "FX risk (USD reporting)",
+      "detail": "Revenue USD tapi capex USD; IDR strengthening bantu margin tapi hurts USD-denominated debt service.",
+      "source": "Bloomberg FX"
+    },
+    {
+      "bucket": "Rooftop solar disruption",
+      "detail": "PLN rooftop solar program + industrial self-generation bisa erosi captive demand 2027-30.",
+      "source": "ESDM disclosures"
+    },
+    {
+      "bucket": "Renewable PPA roll-off",
+      "detail": "12% revenue dari renewables — kontrak PPA 5-7 tahun, sebagian roll-off 2027.",
+      "source": "POWR 1H26 disclosures"
+    }
+  ],
+  "peers": {
+    "tables": [
+      {
+        "pillar": "Power generation peers regional",
+        "headers": [
+          "Ticker",
+          "EV/EBITDA",
+          "Capacity (MW)"
+        ],
+        "rows": [
+          [
+            "PGEO",
+            7.2,
+            7200
+          ],
+          [
+            "JSMR",
+            9.1,
+            "n/a (toll)"
+          ],
+          [
+            "POWR",
+            8.5,
+            1384
+          ],
+          [
+            "Rata-rata",
+            8.3,
+            4292
+          ],
+          [
+            "Median",
+            8.5,
+            4292
+          ]
+        ],
+        "source": "IDX, laporan perusahaan"
+      }
+    ]
+  },
+  "news": [
+    {
+      "title": "Merger PST-UMT efektif berlaku",
+      "url": "https://example.com/merger-pst-umt",
+      "date": "2026-07-01",
+      "source": "Kontan",
+      "tier": 1
+    }
+  ],
+  "sentiment": null,
+  "strategy": null,
+  "catalysts": [
+    {
+      "name": "PLN tariff renegotiation (2027)",
+      "effect": "Binary event — margin reset 22-28% range",
+      "quantified": {
+        "revenue_idr_bn": "±150",
+        "by": "2027"
+      },
+      "source": "PLN press release"
+    },
+    {
+      "name": "Capacity expansion +150 MW",
+      "effect": "Pre-sold ke existing tenants, low execution risk",
+      "quantified": {
+        "revenue_usd_m": "+24",
+        "by": "FY27"
+      },
+      "source": "POWR 1H26 disclosures"
+    }
+  ],
+  "cDcf": {
+    "wacc": {
+      "rf": 0.0696,
+      "erp": 0.0889,
+      "beta": 0.55,
+      "beta_raw": 0.55,
+      "beta_adj": 0.55,
+      "beta_r2": null,
+      "beta_nobs": null,
+      "size_premium": 0.0,
+      "ke": 0.118495,
+      "kd_pretax": 0.0896,
+      "kd_aftertax": 0.069888,
+      "kd_method": "Interest Expense / average Total Debt (raised to Rf + spread floor)",
+      "tax_rate": 0.22,
+      "equity_value_mkt": 74600000000000.0,
+      "debt_book": 11670000000000.0,
+      "weight_equity": 0.864727,
+      "weight_debt": 0.135273,
+      "wacc_raw": 0.098,
+      "wacc": 0.098,
+      "warnings": [
+        "Computed Cost of Debt 5.50% is BELOW the risk-free rate + 200bps (8.96%). Raised to 8.96%."
+      ],
+      "provenance": "Ke=Rf+beta*ERP+SizePrem; WACC=We*Ke+Wd*Kd*(1-t)"
+    },
+    "wacc_table": [
+      {
+        "label": "Risk-free rate (manual input)",
+        "value": "6.96%"
+      },
+      {
+        "label": "Equity Risk Premium (manual input)",
+        "value": "8.89%"
+      },
+      {
+        "label": "Beta raw (regression vs IHSG)",
+        "value": "0.550"
+      },
+      {
+        "label": "Beta adjusted (Blume)",
+        "value": "0.550"
+      },
+      {
+        "label": "Beta regression R-squared",
+        "value": "n/a"
+      },
+      {
+        "label": "Size premium",
+        "value": "0.00%"
+      },
+      {
+        "label": "Cost of Equity (CAPM)",
+        "value": "11.85%"
+      },
+      {
+        "label": "Cost of Debt, pre-tax",
+        "value": "8.96%"
+      },
+      {
+        "label": "Effective tax rate",
+        "value": "22.00%"
+      },
+      {
+        "label": "Cost of Debt, after-tax",
+        "value": "6.99%"
+      },
+      {
+        "label": "Equity weight E/(D+E)",
+        "value": "86.5%"
+      },
+      {
+        "label": "Debt weight D/(D+E)",
+        "value": "13.5%"
+      },
+      {
+        "label": "WACC",
+        "value": "9.80%"
+      }
+    ],
+    "projection": [
+      {
+        "year": 1,
+        "growth": 0.08,
+        "revenue": 13348800000000.0,
+        "ebit": 3524083200000.0,
+        "ebit_margin": 0.264,
+        "nopat": 2748784896000.0,
+        "da": 1748692800000.0,
+        "capex": 1948924800000.0,
+        "nwc": 200232000000.0,
+        "delta_nwc": 14832000000.0,
+        "fcff": 2533720896000.0,
+        "reinvestment_rate": 0.07824,
+        "roic": 0.444787,
+        "implied_growth": 0.0348
+      },
+      {
+        "year": 2,
+        "growth": 0.069,
+        "revenue": 14269867200000.0,
+        "ebit": 3767244940800.0,
+        "ebit_margin": 0.264,
+        "nopat": 2938451053824.0,
+        "da": 1869352603200.0,
+        "capex": 2083400611200.0,
+        "nwc": 214048008000.0,
+        "delta_nwc": 13816008000.0,
+        "fcff": 2710587037824.0,
+        "reinvestment_rate": 0.077546,
+        "roic": 0.459487,
+        "implied_growth": 0.035631
+      },
+      {
+        "year": 3,
+        "growth": 0.058,
+        "revenue": 15097519497600.0,
+        "ebit": 3985745147366.4,
+        "ebit_margin": 0.264,
+        "nopat": 3108881214945.79,
+        "da": 1977775054185.6,
+        "capex": 2204237846649.6,
+        "nwc": 226462792464.0,
+        "delta_nwc": 12414784464.0,
+        "fcff": 2870003638017.79,
+        "reinvestment_rate": 0.076837,
+        "roic": 0.469412,
+        "implied_growth": 0.036068
+      },
+      {
+        "year": 4,
+        "growth": 0.047,
+        "revenue": 15807102913987.2,
+        "ebit": 4173075169292.62,
+        "ebit_margin": 0.264,
+        "nopat": 3254998632048.24,
+        "da": 2070730481732.32,
+        "capex": 2307837025442.13,
+        "nwc": 237106543709.81,
+        "delta_nwc": 10643751245.81,
+        "fcff": 3007248337092.63,
+        "reinvestment_rate": 0.076114,
+        "roic": 0.474365,
+        "implied_growth": 0.036106
+      },
+      {
+        "year": 5,
+        "growth": 0.036,
+        "revenue": 16376158618890.74,
+        "ebit": 4323305875387.16,
+        "ebit_margin": 0.264,
+        "nopat": 3372178582801.98,
+        "da": 2145276779074.69,
+        "capex": 2390919158358.05,
+        "nwc": 245642379283.36,
+        "delta_nwc": 8535835573.55,
+        "fcff": 3118000367945.07,
+        "reinvestment_rate": 0.075375,
+        "roic": 0.474316,
+        "implied_growth": 0.035752
+      },
+      {
+        "year": 6,
+        "growth": 0.025,
+        "revenue": 16785562584363.01,
+        "ebit": 4431388522271.83,
+        "ebit_margin": 0.264,
+        "nopat": 3456483047372.03,
+        "da": 2198908698551.55,
+        "capex": 2450692137317.0,
+        "nwc": 251783438765.45,
+        "delta_nwc": 6141059482.08,
+        "fcff": 3198558549124.5,
+        "reinvestment_rate": 0.074621,
+        "roic": 0.469393,
+        "implied_growth": 0.035026
+      }
+    ],
+    "terminal": {
+      "value": 44911267299350.85,
+      "pv": 25629567021883.17,
+      "implied_ev_ebitda": 6.7736,
+      "dependency_pct": 0.6605,
+      "dependency_flag": false
+    },
+    "valuation": {
+      "pv_explicit": 13173668016362.24,
+      "pv_terminal": 25629567021883.17,
+      "enterprise_value": 38803235038245.41,
+      "equity_value": 29908235038245.41,
+      "fair_value_per_share": 366.97,
+      "market_price": 915.0,
+      "upside": -0.598937,
+      "cash": 2775000000000.0,
+      "total_debt": 11670000000000.0,
+      "minority": 0.0,
+      "ebitda": 4890000000000.0,
+      "shares_outstanding": 81500000000.0,
+      "last_price": 915.0
+    },
+    "recommendation": {
+      "rating": "Review Required",
+      "upside": -0.598937,
+      "label": "Overvalued",
+      "note": "Model fair value IDR 367 versus market price IDR 915, downside -59.9%.",
+      "reason_override": "This result falls outside a defensible range for FCFF-based DCF. The gap between fair value and market price is wide enough that it more often signals a modelling or data issue than genuine mispricing. Consider cross-checking with SOTP, Net Asset Value, or relative valuation (EV/EBITDA, P/E against peers) before drawing a conclusion."
+    },
+    "sensitivity": {
+      "fair_value": [
+        [
+          411.72,
+          426.17,
+          441.76,
+          458.65,
+          476.99
+        ],
+        [
+          376.26,
+          388.48,
+          401.6,
+          415.72,
+          430.96
+        ],
+        [
+          345.38,
+          355.82,
+          366.97,
+          378.92,
+          391.74
+        ],
+        [
+          318.25,
+          327.24,
+          336.81,
+          347.02,
+          357.92
+        ],
+        [
+          294.23,
+          302.04,
+          310.31,
+          319.11,
+          328.47
+        ]
+      ],
+      "upside": [
+        [
+          -55.0,
+          -53.4,
+          -51.7,
+          -49.9,
+          -47.9
+        ],
+        [
+          -58.9,
+          -57.5,
+          -56.1,
+          -54.6,
+          -52.9
+        ],
+        [
+          -62.3,
+          -61.1,
+          -59.9,
+          -58.6,
+          -57.2
+        ],
+        [
+          -65.2,
+          -64.2,
+          -63.2,
+          -62.1,
+          -60.9
+        ],
+        [
+          -67.8,
+          -67.0,
+          -66.1,
+          -65.1,
+          -64.1
+        ]
+      ],
+      "stats": {
+        "min": 294.23,
+        "max": 476.99,
+        "median": 366.97,
+        "n_valid": 25,
+        "n_cells": 25
+      },
+      "wacc_axis": [
+        0.088,
+        0.093,
+        0.098,
+        0.103,
+        0.108
+      ],
+      "g_axis": [
+        0.02,
+        0.0225,
+        0.025,
+        0.0275,
+        0.03
+      ]
+    },
+    "scenarios": {
+      "BEAR": {
+        "scenario": "BEAR",
+        "revenue_growth_y1": 0.05,
+        "ebit_margin": 0.254,
+        "terminal_growth": 0.02,
+        "fair_value_per_share": 289.91,
+        "upside": -0.683159,
+        "rating": "Review Required",
+        "note": "Model fair value IDR 290 versus market price IDR 915, downside -68.3%."
+      },
+      "BASE": {
+        "scenario": "BASE",
+        "revenue_growth_y1": 0.08,
+        "ebit_margin": 0.264,
+        "terminal_growth": 0.025,
+        "fair_value_per_share": 366.97,
+        "upside": -0.598937,
+        "rating": "Review Required",
+        "note": "Model fair value IDR 367 versus market price IDR 915, downside -59.9%."
+      },
+      "BULL": {
+        "scenario": "BULL",
+        "revenue_growth_y1": 0.11,
+        "ebit_margin": 0.274,
+        "terminal_growth": 0.03,
+        "fair_value_per_share": 460.21,
+        "upside": -0.497033,
+        "rating": "SELL",
+        "note": "Model fair value IDR 460 versus market price IDR 915, downside -49.7%."
+      }
+    },
+    "provenance": "dcf_full: wacc+sens+scenarios from friend's s05-s12"
+  },
+  "exhibits": [
+    {
+      "id": "Exhibit 5",
+      "title": "KPI Operasional: Capacity & EAF",
+      "chart": {
+        "type": "bar",
+        "height": 180,
+        "data": {
+          "labels": [
+            "Capacity (MW)",
+            "Customers",
+            "EAF (%)"
+          ],
+          "datasets": [
+            {
+              "label": "1H26",
+              "data": [
+                1384,
+                2520,
+                91.2
+              ]
+            },
+            {
+              "label": "1H25",
+              "data": [
+                1234,
+                2410,
+                92.5
+              ]
+            }
+          ]
+        }
+      },
+      "source": "POWR 1H26, data diolah"
+    },
+    {
+      "id": "Exhibit 6",
+      "title": "Margin EBITDA & Capacity Factor",
+      "chart": {
+        "type": "line",
+        "height": 170,
+        "data": {
+          "labels": [
+            "FY24A",
+            "FY25A",
+            "FY26F",
+            "FY27F",
+            "FY28F",
+            "FY29F"
+          ],
+          "datasets": [
+            {
+              "label": "EBITDA margin (%)",
+              "data": [
+                43.0,
+                43.6,
+                39.6,
+                40.7,
+                41.1,
+                41.5
+              ]
+            },
+            {
+              "label": "Utilization (%)",
+              "data": [
+                75.8,
+                76.8,
+                78.4,
+                79.5,
+                80.2,
+                81.0
+              ]
+            }
+          ]
+        }
+      },
+      "source": "POWR 1H26"
+    }
+  ]
+}

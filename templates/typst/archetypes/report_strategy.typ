@@ -370,20 +370,23 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 6", "Daftar Saham Pilihan Utama (Top Picks 2026)", "Semesta Riset Ekuitas")
+  #exhibit-header("Exhibit 6", "Peer Comparison — Valuasi Saham Pilihan Utama (Top Picks 2026)", "Semesta Riset Ekuitas")
   #v(1.5pt)
 
   #fin-table(
-    ("Ticker", "Cap", "Rationale"),
+    ("Ticker", "Cap", "P/E (x)", "ROE (%)", "PBV (x)", "Karakteristik & Rationale"),
     (
-      ("BBCA", "Large", "Kualitas aset terbaik di kelasnya (NPL 1,8%), CASA 82%, penerima utama capital inflow institusi asing."),
-      ("ASII", "Large", "Pemulihan penjualan 4W/2W pasca-pemangkasan suku bunga, dividen yield atraktif 6,5%, diversifikasi nikel UNTR."),
-      ("ICBP", "Large", "Ekspansi margin bruto dari penurunan biaya gandum dan kemasan; pertumbuhan volume stabil di domestik & Pinehill."),
-      ("GOTO", "Large", "Perbaikan adjusted EBITDA positif, monetisasi ekosistem GoPay fintech lending, dan sinergi e-commerce TikTok Shop."),
-      ("ANTM", "Mid", "Katalis rekor harga emas global, operasional smelter Feronikel Haltim, serta partisipasi ekosistem baterai EV."),
-      ("ISAT", "Large", "Peningkatan ARPU seluler berkelanjutan, sinergi merger PST & UMT, serta ekspansi infrastruktur data center AI."),
-      ("JSMR", "Mid", "Pertumbuhan volume lalu lintas tol stabil (+3%–4%), penyesuaian tarif berkala, dan potensi de-leveraging via Danantara."),
+      ("BBCA", "Large", "14,5x", "18,5%", "2,3x", "Kualitas aset prima (NPL 1,8%), CASA 82%, penerima inflow asing."),
+      ("ASII", "Large", "8,5x", "14,0%", "1,1x", "Pemulihan 4W/2W pasca-rate cut, dividen yield 6,5%."),
+      ("ICBP", "Large", [*13,2x*], "19,2%", "2,5x", "Ekspansi margin bruto dari deflasi gandum & kemasan."),
+      ("GOTO", "Large", "28,0x", "3,5%", "1,2x", "Perbaikan adjusted EBITDA positif, fintech GoPay & TikTok."),
+      ("ANTM", "Mid", "12,0x", "15,5%", "1,6x", "Rekor harga emas global, Feronikel Haltim, baterai EV."),
+      ("ISAT", "Large", [*13,8x*], "16,8%", "1,8x", "Kenaikan ARPU seluler, sinergi merger, data center AI."),
+      ("JSMR", "Mid", "10,2x", "12,0%", "1,0x", "Pertumbuhan volume tol stabil (+3%–4%), de-leveraging Danantara."),
+      ([*Rata-rata Peers (Average)*], [*Large/Mid*], [*14,3x*], [*14,2%*], [*1,64x*], [*Rerata tertimbang semesta Top Picks IHSG*]),
+      ([*Median Peers*], [*Large/Mid*], [*13,2x*], [*15,5%*], [*1,60x*], [*Nilai median semesta Top Picks IHSG*]),
     ),
+    columns: (0.9fr, 0.7fr, 0.8fr, 0.8fr, 0.8fr, 3.8fr),
     palette: PALETTE,
   )
 ])
@@ -433,6 +436,20 @@
       ([*Total Konsolidasi Danantara*], [*SWF*], [*Rp 8.079 T*], [*Rp 1.783 T*], [*Setara \~USD 520 Miliar (\~38% terhadap PDB Indonesia 2026)*]),
     ),
     columns: (1.5fr, 0.7fr, 1.1fr, 1.1fr, 3.4fr),
+    palette: PALETTE,
+  )
+
+  #v(2pt)
+  #exhibit-header("Exhibit 7b", "Konsolidasi Laba Rugi Agregat Konstituen IHSG 6 Tahun", "Konsensus Bloomberg & IDX")
+  #v(1.5pt)
+  #fin-table(
+    ("Akun Laba Rugi Agregat", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
+    (
+      ("Pendapatan Agregat (Rp T)", "3.120", "3.310", "3.575", "3.860", "4.170", "4.500"),
+      ("EBITDA Agregat (Rp T)", "1.040", "1.105", "1.215", "1.320", "1.440", "1.570"),
+      ("Laba Bersih Agregat (Rp T)", "412", "438", "473", "515", "562", "615"),
+      ("Pertumbuhan EPS (%)", "+5,2%", "+6,0%", "+8,0%", "+8,9%", "+9,1%", "+9,4%"),
+    ),
     palette: PALETTE,
   )
 
