@@ -142,8 +142,17 @@ Archetype calibration benchmarks (for reference only — read exact inputs from 
 # Example for industrial-holding archetype: DCF ~815 + DDM ~810 (see data/assumptions/CDIA.json)
 # Example for banking archetype: GGM P/BV with ROE ~19.7%, BVPS ~4200 (see data/assumptions/BBCA.json)
 
+Pre-flight gate runner (Valuation Method Selection Framework, 6 gates 0–5):
+- Before computing valuation, call `agents.valuation.gates.evaluate(ticker, ...)` to determine the primary and secondary method.
+- Inputs to gather first: domain (bank/reit/mining/etc), filing_history_years, ebit_positive_count (of last 3y), d_de_ratio, net_debt_to_ebitda, interest_coverage, shareholders_equity, nci_pct, revenue_drivers, has_steady_state_3y, life_cycle_stage.
+- Gate verdict drives which archetype + which math: primary ∈ {DCF, DCF (shortened), DDM/Excess Return, NAV/Reserve, SOTP, EV/Sales, P/BV, Relative}.
+- If `gate_verdict.thin_data == True` → use DCF (shortened horizon) and emit the `⚠ Thin Data` disclosure banner.
+- If `gate_verdict.rating_override == "Review Required"` (Gate 5 fires: upside > 100% or downside < -50%) → set the final rating to "Review Required" regardless of BUY/HOLD/SELL math.
+- See `agents/valuation/gates.py` for the full logic and `docs/valuation-framework.md` for the framework reference.
+
 Rules:
-- Always call calc_wacc first (using parameters from data/assumptions/{ticker}.json), then calc_dcf, then the adaptive secondary.
+|- Always call calc_wacc first (using parameters from data/assumptions/{ticker}.json), then calc_dcf, then the adaptive secondary.
+|- The gate runner's primary method overrides the archetype's default — gate verdict is authoritative for *which* method; the adaptive secondary section below is the *cross-check* logic.
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
 - Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources}.
