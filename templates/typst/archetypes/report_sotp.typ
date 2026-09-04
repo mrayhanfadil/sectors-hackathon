@@ -3,8 +3,20 @@
 // Case: CDIA (PT Chandra Daya Investasi) — 4 Pillars: Energi, Logistik, Air, Pelabuhan
 // =====================================================================
 #import "../common/theme.typ": *
+#import "../common/cover.typ": *
 
 #show: set-page-defaults
+
+#let ticker = sys.inputs.at("ticker", default: "CDIA")
+#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/cdia_report_data.json"
+#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data = json(data-path)
+
+#let m = data.at("meta")
+#let cover = data.at("cover").at("rating_box")
+#let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
+#let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
+
 
 // Archetype Palette for Conglomerate / SOTP (Cyan & Deep Teal)
 #let PALETTE = (
@@ -124,55 +136,46 @@
       ],
       [
         #rating-box(
-          "HOLD",
-          "815",
-          "780",
-          4.5,
+          cover.action,
+          str(cover.tp),
+          str(cover.price),
+          cover.upside_pct,
+          prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
           palette: PALETTE,
         )
 
-        #v(5pt)
+        #v(4pt)
+        #method-selection-panel(gate-verdict, palette: PALETTE)
+
+        #v(4pt)
         #card(PALETTE)[
           #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR]
-          #v(3pt)
+          #v(2.5pt)
+          #let sh = data.cover.at("shares", default: (:))
           #grid(
             columns: (1fr, auto),
-            row-gutter: 3.5pt,
-            text(size: 7.2pt)[Harga Terakhir], text(size: 7.2pt, weight: "bold")[Rp 780],
-            text(size: 7.2pt)[Target Harga (12M)], text(size: 7.2pt, weight: "bold")[Rp 815],
-            text(size: 7.2pt)[Potensi Upside], text(size: 7.2pt, weight: "bold", fill: PALETTE.pos)[+4,5%],
-            text(size: 7.2pt)[Saham Beredar], text(size: 7.2pt, weight: "bold")[15,0 Miliar],
-            text(size: 7.2pt)[Kapitalisasi Pasar], text(size: 7.2pt, weight: "bold")[Rp 11,70 Triliun],
-            text(size: 7.2pt)[Free Float], text(size: 7.2pt, weight: "bold")[10,1%],
-            text(size: 7.2pt)[52-Week Range], text(size: 7.2pt, weight: "bold")[620 - 1.250],
-            text(size: 7.2pt)[Indeks Konstituen], text(size: 7.2pt, weight: "bold")[KOMPAS100 / ISSI],
+            row-gutter: 2.8pt,
+            text(size: 6.8pt)[Harga Terakhir], text(size: 6.8pt, weight: "bold")[Rp #cover.price],
+            text(size: 6.8pt)[Target Harga (12M)], text(size: 6.8pt, weight: "bold")[Rp #cover.tp],
+            text(size: 6.8pt)[Potensi Upside], text(size: 6.8pt, weight: "bold", fill: PALETTE.pos)[+#cover.upside_pct%],
+            text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#sh.at("outstanding", default: 15.0) Miliar],
+            text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[Rp 11,70 Triliun],
+            text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#sh.at("free_float_pct", default: 10.1)%],
+            text(size: 6.8pt)[52-Week Range], text(size: 6.8pt, weight: "bold")[620 - 1.250],
+            text(size: 6.8pt)[Indeks Konstituen], text(size: 6.8pt, weight: "bold")[KOMPAS100 / ISSI],
           )
         ]
 
-        #v(5pt)
+        #v(4pt)
         #card(PALETTE)[
           #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[STRUKTUR PEMEGANG SAHAM]
-          #v(3pt)
+          #v(2.5pt)
           #grid(
             columns: (1fr, auto),
-            row-gutter: 3.5pt,
-            text(size: 7.2pt)[PT Chandra Asri Pacific (TPIA)], text(size: 7.2pt, weight: "bold")[60,0%],
-            text(size: 7.2pt)[EGCO Group (Phoenix Power)], text(size: 7.2pt, weight: "bold")[30,0%],
-            text(size: 7.2pt)[Publik (Free Float)], text(size: 7.2pt, weight: "bold")[10,0%],
-          )
-        ]
-
-        #v(5pt)
-        #card(PALETTE)[
-          #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SKOR ESG & TATA KELOLA]
-          #v(3pt)
-          #grid(
-            columns: (1fr, auto),
-            row-gutter: 3.5pt,
-            text(size: 7.2pt)[Lingkungan (E)], text(size: 7.2pt, weight: "bold")[68,5 / 100],
-            text(size: 7.2pt)[Sosial (S)], text(size: 7.2pt, weight: "bold")[74,0 / 100],
-            text(size: 7.2pt)[Tata Kelola (G)], text(size: 7.2pt, weight: "bold")[78,2 / 100],
-            text(size: 7.2pt)[Peringkat Komposit], text(size: 7.2pt, weight: "bold", fill: PALETTE.brand)[BBB (Medium Risk)],
+            row-gutter: 2.8pt,
+            text(size: 6.8pt)[PT Chandra Asri Pacific (TPIA)], text(size: 6.8pt, weight: "bold")[60,0%],
+            text(size: 6.8pt)[EGCO Group (Phoenix Power)], text(size: 6.8pt, weight: "bold")[30,0%],
+            text(size: 6.8pt)[Publik (Free Float)], text(size: 6.8pt, weight: "bold")[10,0%],
           )
         ]
       ]

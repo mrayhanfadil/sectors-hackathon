@@ -4,10 +4,10 @@
     "reason": "segments=0, subsector=oil-pure-play -> single",
     "ticker": "RATU",
     "company_name": "Ratu Prabu Energi",
-    "sector": "Energi — Pure-Play Holding",
+    "sector": "Energi \u2014 Pure-Play Holding",
     "report_type": "Initiation",
     "date": "31 Agt 2026",
-    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "prepared_by": "RESEARCH \u2014 Sectors Hackathon 2026",
     "language": "id"
   },
   "cover": {
@@ -89,7 +89,7 @@
         "pct": 23.8
       }
     ],
-    "shareholders_src": "IDX — struktur pemegang saham",
+    "shareholders_src": "IDX \u2014 struktur pemegang saham",
     "esg": {
       "found": false
     }
@@ -375,7 +375,7 @@
             30.0
           ]
         ],
-        "source": "IDX, yfinance — data historis"
+        "source": "IDX, yfinance \u2014 data historis"
       }
     ]
   },
@@ -444,5 +444,49 @@
       },
       "source": "Laporan keuangan IDX"
     }
-  ]
+  ],
+  "gate_verdict": {
+    "primary": "FCFF/WACC DCF",
+    "secondary": "Relative Valuation",
+    "rating": "BUY",
+    "thin_data": false,
+    "gates": [
+      {
+        "gate": "0",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Consumer retail, single business"
+      },
+      {
+        "gate": "1",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "8y filing, EBIT+ 3/3y"
+      },
+      {
+        "gate": "2",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "NCI 5%, DCF proceeds"
+      },
+      {
+        "gate": "3",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Volume-driven"
+      },
+      {
+        "gate": "4",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Mature, stable FCF"
+      },
+      {
+        "gate": "5",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Upside +25.9% in band"
+      }
+    ]
+  }
 }

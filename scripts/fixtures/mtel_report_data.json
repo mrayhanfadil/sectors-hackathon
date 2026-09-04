@@ -1,15 +1,21 @@
 {
   "meta": {
     "template": "infra",
-    "reason": "segments=4, subsector=telco-infra (segments>1 would give sotp; explicit infra chosen for archetype demo — switch doc covers precedence)",
+    "reason": "segments=4, subsector=telco-infra (segments>1 would give sotp; explicit infra chosen for archetype demo \u2014 switch doc covers precedence)",
     "ticker": "MTEL",
     "company_name": "Dayamitra Telekomunikasi",
     "sector": "Infrastruktur Telekomunikasi",
-    "report_type": "Initiation",
-    "date": "31 Agt 2026",
-    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "report_type": "Equity Update",
+    "date": "27 Agt 2026",
+    "prepared_by": "RESEARCH \u2014 Sectors Hackathon 2026",
     "language": "id",
-    "subsector": "telco-infra"
+    "subsector": "telco-infra",
+    "analyst": {
+      "name": "Sukarno Alatas",
+      "role": "Senior Equity Analyst",
+      "email": "research@skt.id"
+    },
+    "head_office": "Treasury Tower 27th Floor Unit A, District 8 \u2014 Jakarta"
   },
   "cover": {
     "rating_box": {
@@ -19,9 +25,10 @@
       "price": 460,
       "upside_pct": 38.0,
       "key_takeaways": [
-        "PST & UMT merger efektif 1 Jul 2026 membuka efisiensi opex/capex dan tenancy >1.6x.",
-        "Spectrum 700MHz/2.6GHz berpotensi menambah 3.000-3.500 tenant (+Rp 360-420 bn) by FY27-29.",
-        "DCF 60% + EV/EBITDA 40% blended TP Rp 635, margin of safety 15%."
+        "1H26 revenue IDR 4.69 tn (+2% y/y), didukung fiber (+8%) dan tower-related (+15%); net profit IDR 1.11 tn (+2%) meski margin tertekan.",
+        "PST & UMT merger efektif 1 Jul 2026 \u2014 efisiensi opex/capex, target tenancy >1.6x, katalis baru FWA/fiberization/IoT/power.",
+        "Spectrum 700MHz/2.6GHz berpotensi menambah 3.000-3.500 tenant (+IDR 360-420 bn revenue) by FY27-29.",
+        "DCF 60% + EV/EBITDA 40% blended TP IDR 635, margin of safety 15%, upside +38% dari harga IDR 460 (26 Agt 2026)."
       ]
     },
     "vs_jci": {
@@ -90,7 +97,7 @@
         "pct": 28.17
       }
     ],
-    "shareholders_src": "IDX — struktur pemegang saham",
+    "shareholders_src": "IDX \u2014 struktur pemegang saham",
     "esg": {
       "found": true,
       "scores": {
@@ -103,7 +110,7 @@
     }
   },
   "financial_highlights": {
-    "source": "Laporan keuangan MTEL (IDX), data diolah",
+    "source": "Bloomberg, Company & KSI Research estimates",
     "years": [
       "2023A",
       "2024A",
@@ -114,188 +121,695 @@
     ],
     "rows": [
       [
-        "Pendapatan (Rp tn)",
-        8.5,
-        9.1,
-        9.6,
-        10.0,
-        10.4,
-        10.7
+        "Revenue (IDR Bn)",
+        8595,
+        9308,
+        9534,
+        9937,
+        10360,
+        10795
       ],
       [
-        "Laba bersih (Rp tn)",
-        2.0,
-        2.2,
-        2.3,
-        2.4,
-        2.5,
-        2.5
+        "Net Profit (IDR Bn)",
+        2010,
+        2104,
+        2119,
+        2169,
+        2362,
+        2571
       ],
       [
-        "EPS (Rp)",
+        "EPS (IDR Full)",
         24,
+        26,
+        26,
         27,
         29,
-        30,
-        31,
         32
       ],
       [
-        "EBITDA margin (%)",
+        "EBITDA Margin (%)",
         54.0,
-        58.0,
-        62.0,
-        66.0,
-        70.0,
+        74.0,
+        63.0,
+        75.0,
+        75.0,
         74.0
       ],
       [
-        "Div yield (%)",
+        "NPM (%)",
+        23.4,
+        22.6,
+        22.2,
+        21.8,
+        22.8,
+        23.8
+      ],
+      [
+        "Div. Yield (%)",
         2.6,
-        2.9,
-        3.2,
+        3.9,
+        2.8,
+        3.1,
         3.4,
-        3.6,
         3.7
       ],
       [
         "ROE (%)",
         6.0,
-        6.4,
-        6.7,
-        6.9,
+        6.0,
+        6.0,
+        6.0,
         7.0,
         7.0
       ],
       [
         "P/E (x)",
         29.0,
-        25.5,
-        22.0,
-        21.0,
-        20.5,
-        20.0
+        25.17,
+        26.93,
+        23.86,
+        21.92,
+        20.14
+      ],
+      [
+        "P/BV (x)",
+        1.7,
+        1.59,
+        1.71,
+        1.53,
+        1.5,
+        1.47
       ],
       [
         "EV/EBITDA (x)",
         16.3,
-        13.9,
-        11.5,
-        10.1,
-        9.2,
-        8.5
+        10.52,
+        12.91,
+        9.6,
+        9.01,
+        8.47
       ]
     ]
   },
   "segments": [
     {
       "name": "Tower Leasing",
-      "revenue": 3833,
+      "revenue_1h26": 3833,
+      "revenue_1h25": 3798,
       "yoy_pct": 1,
+      "q2_25": 1956,
+      "q1_26": 1847,
+      "q2_26": 1986,
       "qoq_pct": 2,
       "share_pct": 49.2,
       "row": [
         "Tower Leasing",
-        3833,
+        "3,798",
+        "3,833",
         "+1%",
+        "1,956",
+        "1,847",
+        "1,986",
         "+2%",
-        "49.2%"
+        "+8%"
       ]
     },
     {
       "name": "Fiber",
-      "revenue": 309,
+      "revenue_1h26": 309,
+      "revenue_1h25": 287,
       "yoy_pct": 8,
+      "q2_25": 147,
+      "q1_26": 152,
+      "q2_26": 157,
       "qoq_pct": 3,
       "share_pct": 17.8,
       "row": [
         "Fiber",
-        309,
+        "287",
+        "309",
         "+8%",
+        "147",
+        "152",
+        "157",
         "+3%",
-        "17.8%"
+        "+7%"
       ]
     },
     {
-      "name": "Tower-Related",
-      "revenue": 299,
+      "name": "Tower-Related Business",
+      "revenue_1h26": 299,
+      "revenue_1h25": 260,
       "yoy_pct": 15,
-      "qoq_pct": 5,
+      "q2_25": 113,
+      "q1_26": 166,
+      "q2_26": 133,
+      "qoq_pct": -20,
       "share_pct": 18.2,
       "row": [
-        "Tower-Related",
-        299,
+        "Tower-Related Business",
+        "260",
+        "299",
         "+15%",
-        "+5%",
-        "18.2%"
+        "113",
+        "166",
+        "133",
+        "-20%",
+        "+18%"
       ]
     },
     {
       "name": "Reseller",
-      "revenue": 251,
+      "revenue_1h26": 251,
+      "revenue_1h25": 251,
       "yoy_pct": 0,
-      "qoq_pct": 0,
+      "q2_25": 118,
+      "q1_26": 129,
+      "q2_26": 122,
+      "qoq_pct": -5,
       "share_pct": 14.8,
       "row": [
         "Reseller",
-        251,
+        "251",
+        "251",
         "0%",
-        "0%",
-        "14.8%"
+        "118",
+        "129",
+        "122",
+        "-5%",
+        "+3%"
       ]
     }
   ],
-  "segments_src": "MTEL 1H26 — laporan segmentasi (IDX)",
+  "segments_src": "MTEL 1H26 \u2014 laporan segmentasi (IDX)",
+  "quarterly_pl": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "IDR Bn",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "Revenue",
+        4596,
+        4691,
+        "+2%",
+        2334,
+        2294,
+        2398,
+        "+3%",
+        "+5%"
+      ],
+      [
+        "Cost of Revenue",
+        2209,
+        2348,
+        "+6%",
+        1109,
+        1159,
+        1189,
+        "+7%",
+        "+3%"
+      ],
+      [
+        "Gross Profit",
+        2388,
+        2343,
+        "-2%",
+        1226,
+        1134,
+        1209,
+        "-1%",
+        "+7%"
+      ],
+      [
+        "SG&A Expenses",
+        139,
+        149,
+        "+7%",
+        79,
+        63,
+        86,
+        "+8%",
+        "+37%"
+      ],
+      [
+        "EBIT",
+        1744,
+        1667,
+        "-4%",
+        898,
+        814,
+        853,
+        "-5%",
+        "+5%"
+      ],
+      [
+        "Finance Cost",
+        649,
+        569,
+        "-12%",
+        308,
+        282,
+        287,
+        "-7%",
+        "+2%"
+      ],
+      [
+        "Pre-Tax Income",
+        1177,
+        1175,
+        "0%",
+        630,
+        584,
+        591,
+        "-6%",
+        "+1%"
+      ],
+      [
+        "EBITDA",
+        3510,
+        3510,
+        "0%",
+        1800,
+        1717,
+        1793,
+        "0%",
+        "+4%"
+      ],
+      [
+        "Net Income",
+        1094,
+        1111,
+        "+2%",
+        568,
+        545,
+        566,
+        "0%",
+        "+4%"
+      ],
+      [
+        "EPS (Full IDR)",
+        13,
+        13.3,
+        "+3%",
+        6.799,
+        6.523,
+        6.774,
+        "0%",
+        "+4%"
+      ]
+    ]
+  },
+  "quarterly_balance": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "IDR Bn",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "Cash & Cash Equivalents",
+        2768,
+        1952,
+        "-29%",
+        2768,
+        2836,
+        1952,
+        "-29%",
+        "-31%"
+      ],
+      [
+        "Short Term Debt",
+        4466,
+        4416,
+        "-1%",
+        4466,
+        4477,
+        4416,
+        "-1%",
+        "-1%"
+      ],
+      [
+        "Long Term Debt",
+        15728,
+        16575,
+        "+5%",
+        15728,
+        16592,
+        16575,
+        "+5%",
+        "0%"
+      ],
+      [
+        "Total Liabilities",
+        27661,
+        28055,
+        "+1%",
+        27661,
+        26904,
+        28055,
+        "+1%",
+        "+4%"
+      ],
+      [
+        "Equity",
+        32416,
+        32051,
+        "-1%",
+        32416,
+        33659,
+        32051,
+        "-1%",
+        "-5%"
+      ],
+      [
+        "Total Assets",
+        60076,
+        60106,
+        "0%",
+        60076,
+        60563,
+        60106,
+        "0%",
+        "-1%"
+      ]
+    ]
+  },
+  "quarterly_ratios": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "Rasio",
+      "1H25",
+      "1H26",
+      "y/y",
+      "Q2-25",
+      "Q1-26",
+      "Q2-26",
+      "y/y",
+      "q/q"
+    ],
+    "rows": [
+      [
+        "GPM (%)",
+        51.95,
+        49.94,
+        "-2%",
+        52.51,
+        49.45,
+        50.41,
+        "-2%",
+        "+1%"
+      ],
+      [
+        "OPM (%)",
+        37.94,
+        35.53,
+        "-2%",
+        38.46,
+        35.48,
+        35.58,
+        "-3%",
+        "0%"
+      ],
+      [
+        "NPM (%)",
+        23.81,
+        23.69,
+        "0%",
+        24.34,
+        23.76,
+        23.61,
+        "-1%",
+        "0%"
+      ],
+      [
+        "EBITDA Margin (%)",
+        76.36,
+        74.83,
+        "-2%",
+        77.11,
+        74.87,
+        74.78,
+        "-2%",
+        "0%"
+      ],
+      [
+        "ROE (%)",
+        6.8,
+        6.9,
+        "0%",
+        7.0,
+        6.5,
+        7.1,
+        "0%",
+        "+1%"
+      ],
+      [
+        "ROA (%)",
+        3.6,
+        3.7,
+        "0%",
+        3.8,
+        3.6,
+        3.8,
+        "0%",
+        "0%"
+      ],
+      [
+        "Debt to Equity (x)",
+        0.62,
+        0.65,
+        "+0.03",
+        0.62,
+        0.63,
+        0.65,
+        "+0.03",
+        "+0.03"
+      ],
+      [
+        "DER (x)",
+        0.85,
+        0.88,
+        "+0.02",
+        0.85,
+        0.8,
+        0.88,
+        "+0.02",
+        "+0.08"
+      ],
+      [
+        "DAR (x)",
+        0.46,
+        0.47,
+        "+0.01",
+        0.46,
+        0.44,
+        0.47,
+        "+0.01",
+        "+0.02"
+      ],
+      [
+        "ICR (x)",
+        5.41,
+        6.17,
+        "+0.76",
+        5.85,
+        6.08,
+        6.25,
+        "+0.40",
+        "+0.16"
+      ],
+      [
+        "Current Ratio (x)",
+        0.28,
+        0.38,
+        "+0.10",
+        0.25,
+        0.47,
+        0.38,
+        "+0.13",
+        "-0.09"
+      ],
+      [
+        "Cash Ratio (%)",
+        5,
+        8,
+        "+3%",
+        7,
+        24,
+        8,
+        "+1%",
+        "-16%"
+      ]
+    ]
+  },
+  "quarterly_kpi": {
+    "source": "MTEL 1H26 (IDX)",
+    "headers": [
+      "KPI",
+      "1H25",
+      "1H26",
+      "y/y",
+      "1Q25",
+      "2Q25",
+      "3Q25",
+      "4Q25",
+      "1Q26",
+      "2Q26"
+    ],
+    "rows": [
+      [
+        "Tower",
+        39782,
+        40563,
+        "+2%",
+        "+189",
+        "+189",
+        "+320",
+        "+128",
+        "+97",
+        "+236"
+      ],
+      [
+        "Colocation",
+        21125,
+        23303,
+        "+10%",
+        "+202",
+        "+459",
+        "+760",
+        "+969",
+        "+152",
+        "+297"
+      ],
+      [
+        "Tenant",
+        60907,
+        63866,
+        "+5%",
+        "+391",
+        "+648",
+        "+1080",
+        "+1097",
+        "+249",
+        "+533"
+      ],
+      [
+        "Reseller",
+        2659,
+        2650,
+        "0%",
+        "-71",
+        "-30",
+        "0",
+        "-9",
+        "0",
+        "0"
+      ],
+      [
+        "Tenant Inc. Reseller",
+        63566,
+        66516,
+        "+5%",
+        "+320",
+        "+618",
+        "+1080",
+        "+1088",
+        "+249",
+        "+533"
+      ],
+      [
+        "Tenancy Ratio (x)",
+        1.53,
+        1.57,
+        "+3%",
+        "\u2014",
+        "\u2014",
+        "\u2014",
+        "\u2014",
+        "\u2014",
+        "\u2014"
+      ],
+      [
+        "Fiber (km)",
+        54447,
+        59239,
+        "+9%",
+        "+2505",
+        "+903",
+        "+1146",
+        "+1606",
+        "+1080",
+        "+960"
+      ]
+    ]
+  },
   "kpis": [
     {
       "name": "Tower",
       "value": 40563,
-      "prev": 39767,
+      "prev": 39782,
       "unit": "unit",
       "formula": "jumlah tower",
-      "source": "Company data",
+      "source": "Company data 1H26",
       "row": [
         "Tower",
-        40563,
-        39767,
-        "+796",
+        "40,563",
+        "39,782",
+        "+2%",
         "unit",
         "jumlah tower",
-        "Company data"
+        "Company data 1H26"
       ]
     },
     {
       "name": "Colocation",
       "value": 23303,
-      "prev": 21185,
+      "prev": 21125,
       "unit": "unit",
-      "formula": "colocation",
-      "source": "Company data",
+      "formula": "jumlah colocation",
+      "source": "Company data 1H26",
       "row": [
         "Colocation",
-        23303,
-        21185,
-        "+2118",
+        "23,303",
+        "21,125",
+        "+10%",
         "unit",
-        "colocation",
-        "Company data"
+        "jumlah colocation",
+        "Company data 1H26"
       ]
     },
     {
       "name": "Tenant",
       "value": 63866,
-      "prev": 60825,
+      "prev": 60907,
       "unit": "tenant",
       "formula": "jumlah tenant",
-      "source": "Company data",
+      "source": "Company data 1H26",
       "row": [
         "Tenant",
-        63866,
-        60825,
-        "+3041",
+        "63,866",
+        "60,907",
+        "+5%",
         "tenant",
         "jumlah tenant",
-        "Company data"
+        "Company data 1H26"
       ]
     },
     {
@@ -304,39 +818,39 @@
       "prev": 1.53,
       "unit": "x",
       "formula": "tenant/tower",
-      "source": "Company data, data diolah",
+      "source": "Company data 1H26",
       "row": [
         "Tenancy Ratio",
-        1.57,
-        1.53,
+        "1.57x",
+        "1.53x",
         "+0.04",
         "x",
         "tenant/tower",
-        "Company data"
+        "Company data 1H26"
       ]
     },
     {
       "name": "Fiber",
       "value": 59239,
-      "prev": 54348,
+      "prev": 54447,
       "unit": "km",
       "formula": "panjang jaringan",
-      "source": "Company data",
+      "source": "Company data 1H26",
       "row": [
-        "Fiber",
-        59239,
-        54348,
-        "+4891",
+        "Fiber (km)",
+        "59,239",
+        "54,447",
+        "+9%",
         "km",
         "panjang jaringan",
-        "Company data"
+        "Company data 1H26"
       ]
     }
   ],
-  "kpis_src": "Company data 1H26, data diolah",
+  "kpis_src": "Company data 1H26",
   "thesis": [
     {
-      "headline": "KPI operasional adalah tesis — bukan cuma P&L",
+      "headline": "KPI operasional adalah tesis \u2014 bukan cuma P&L",
       "detail": "Tenancy ratio 1.57x dan fiber 59.2k km mencerminkan kualitas pendapatan recurring.",
       "source": "Company data 1H26"
     },
@@ -347,7 +861,7 @@
     },
     {
       "headline": "Spectrum auction = tenant tambahan terkuantifikasi",
-      "detail": "Alokasi 700MHz/2.6GHz ke operator mendorong perluasan jaringan — +3.000-3.500 tenant.",
+      "detail": "Alokasi 700MHz/2.6GHz ke operator mendorong perluasan jaringan \u2014 +3.000-3.500 tenant.",
       "source": "Regulator (Kominfo/Komdigi), press release operator"
     }
   ],
@@ -394,13 +908,13 @@
               3658
             ],
             [
-              "− Capex",
+              "\u2212 Capex",
               -2981,
               -2709,
               -2437
             ],
             [
-              "+ ΔWC",
+              "+ \u0394WC",
               762,
               762,
               762
@@ -478,7 +992,7 @@
       "fv_str": "635"
     },
     "bands": {
-      "source": "IDX, yfinance — 3Y band, data diolah",
+      "source": "IDX, yfinance \u2014 3Y band, data diolah",
       "pbv_3y": {
         "std+2": 2.9,
         "std+1": 2.5,
@@ -492,96 +1006,708 @@
   },
   "financials": [
     {
-      "title": "Laba Rugi Ringkas",
+      "title": "Income Statement",
+      "source": "Bloomberg, Company & KSI Research estimates",
       "headers": [
-        "Rp tn",
+        "End 31 Dec (IDR Bn)",
         "2023A",
         "2024A",
         "2025A",
-        "2026F"
+        "2026F",
+        "2027F",
+        "2028F"
       ],
       "rows": [
         [
-          "Pendapatan",
-          8.5,
-          9.1,
-          9.6,
-          10.0
+          "Revenue",
+          8595,
+          9308,
+          9534,
+          9937,
+          10360,
+          10795
+        ],
+        [
+          "Costs of revenue",
+          4379,
+          4507,
+          4665,
+          4862,
+          5069,
+          5282
+        ],
+        [
+          "Gross profit",
+          4216,
+          4801,
+          4869,
+          5075,
+          5291,
+          5513
+        ],
+        [
+          "Operating profit",
+          2057,
+          4173,
+          3514,
+          4264,
+          4455,
+          4643
+        ],
+        [
+          "Interest expense",
+          1333,
+          1357,
+          1306,
+          1287,
+          1271,
+          1243
+        ],
+        [
+          "Interest income",
+          -441,
+          -97,
+          -1145,
+          15,
+          41,
+          77
         ],
         [
           "EBITDA",
-          4.6,
-          5.3,
-          6.0,
-          6.6
+          4658,
+          6910,
+          6036,
+          7451,
+          7730,
+          8007
         ],
         [
-          "Laba bersih",
-          2.0,
-          2.2,
-          2.3,
-          2.4
+          "Income before tax",
+          2138,
+          2261,
+          2248,
+          2301,
+          2505,
+          2727
+        ],
+        [
+          "Tax expenses",
+          128,
+          157,
+          129,
+          132,
+          143,
+          156
+        ],
+        [
+          "Minority interests",
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "Net income",
+          2010,
+          2104,
+          2119,
+          2169,
+          2362,
+          2571
+        ],
+        [
+          "EPS (IDR)",
+          24.3,
+          25.6,
+          26.0,
+          26.6,
+          29.0,
+          31.5
         ]
-      ],
-      "source": "Laporan keuangan IDX"
+      ]
     },
     {
-      "title": "Rasio Lengkap",
+      "title": "Balance Sheet",
+      "source": "Bloomberg, Company & KSI Research estimates",
       "headers": [
-        "Rasio",
+        "End 31 Dec (IDR Bn)",
         "2023A",
-        "2026F"
+        "2024A",
+        "2025A",
+        "2026F",
+        "2027F",
+        "2028F"
       ],
       "rows": [
         [
-          "Current ratio (x)",
+          "Cash and equivalents",
+          879,
+          597,
+          609,
+          1643,
+          3075,
+          4425
+        ],
+        [
+          "Account receivables",
+          1607,
+          2004,
+          2212,
+          1932,
+          1870,
+          1949
+        ],
+        [
+          "Fixed assets",
+          51246,
+          52918,
+          53782,
+          53576,
+          52374,
+          51168
+        ],
+        [
+          "Other assets",
+          3278,
+          2622,
+          1747,
+          1745,
+          1785,
+          1825
+        ],
+        [
+          "Total assets",
+          57010,
+          58140,
+          58350,
+          58896,
+          59104,
+          59367
+        ],
+        [
+          "S-T liabilities",
+          6732,
+          8082,
+          4254,
+          4500,
+          4399,
+          4298
+        ],
+        [
+          "Other S-T liabilities",
+          4339,
+          4204,
+          3246,
+          3286,
+          3371,
+          3462
+        ],
+        [
+          "L-T liabilities",
+          11660,
+          12214,
+          17224,
+          16930,
+          16550,
+          16169
+        ],
+        [
+          "Other L-T liabilities",
+          241,
+          253,
+          275,
+          286,
+          298,
+          311
+        ],
+        [
+          "Total liabilities",
+          22973,
+          24753,
+          24999,
+          25002,
+          24619,
+          24240
+        ],
+        [
+          "Equity",
+          34038,
+          33387,
+          33351,
+          33894,
+          34484,
+          35127
+        ],
+        [
+          "BVPS (IDR)",
+          412,
+          407,
+          409,
+          416,
+          423,
+          431
+        ]
+      ]
+    },
+    {
+      "title": "Cash Flow Statement",
+      "source": "Bloomberg, Company & KSI Research estimates",
+      "headers": [
+        "End 31 Dec (IDR Bn)",
+        "2023A",
+        "2024A",
+        "2025A",
+        "2026F",
+        "2027F",
+        "2028F"
+      ],
+      "rows": [
+        [
+          "Net Income",
+          2010,
+          2104,
+          2119,
+          2169,
+          2362,
+          2571
+        ],
+        [
+          "Depreciation",
+          2601,
+          2736,
+          2522,
+          3188,
+          3274,
+          3365
+        ],
+        [
+          "Change in working capital",
+          -4733,
+          -3935,
+          -9020,
+          -4760,
+          -5598,
+          -6033
+        ],
+        [
+          "Operating cash flow",
+          -122,
+          905,
+          -4378,
+          598,
+          38,
+          -98
+        ],
+        [
+          "Capital expenditure",
+          -4989,
+          -1672,
+          -865,
+          207,
+          1202,
+          1206
+        ],
+        [
+          "Others",
+          -416,
+          569,
+          259,
+          -30,
+          -31,
+          -32
+        ],
+        [
+          "Investing cash flow",
+          -5405,
+          -1103,
+          -606,
+          176,
+          1171,
+          1174
+        ],
+        [
+          "Dividend paid",
+          -18,
+          -25,
+          -19,
+          -20,
+          -22,
+          -24
+        ],
+        [
+          "Net change in debt",
+          68,
+          0,
+          5010,
+          -294,
+          -380,
+          -381
+        ],
+        [
+          "Others",
+          17,
+          -59,
+          5,
+          574,
+          625,
+          679
+        ],
+        [
+          "Financing cash flow",
+          68,
+          -85,
+          4996,
+          260,
+          223,
+          274
+        ],
+        [
+          "Effect of Foreign Exc. Rates",
+          0,
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          "Change in cash",
+          -5460,
+          -282,
+          12,
+          1034,
+          1432,
+          1350
+        ],
+        [
+          "Beginning cash flow",
+          6339,
+          879,
+          597,
+          609,
+          1643,
+          3075
+        ],
+        [
+          "Ending cash flow",
+          879,
+          597,
+          609,
+          1643,
+          3075,
+          4425
+        ]
+      ]
+    },
+    {
+      "title": "Financial Ratios \u2014 Stronger Earnings, Healthier Balance Sheet",
+      "source": "Bloomberg, Company & KSI Research estimates",
+      "headers": [
+        "Rasio",
+        "2023A",
+        "2024A",
+        "2025A",
+        "2026F",
+        "2027F",
+        "2028F"
+      ],
+      "rows": [
+        [
+          "Revenue Growth (%)",
+          11,
+          11,
+          2,
+          4,
+          4,
+          4
+        ],
+        [
+          "Gross Profit Growth (%)",
+          15,
+          14,
+          1,
+          4,
+          4,
+          4
+        ],
+        [
+          "Operating Profit Growth (%)",
+          119,
+          103,
+          -16,
+          21,
+          4,
+          4
+        ],
+        [
+          "EBITDA Growth (%)",
+          38,
+          48,
+          -13,
+          23,
+          4,
+          4
+        ],
+        [
+          "Net Profit Growth (%)",
+          13,
+          5,
+          1,
+          2,
+          9,
+          9
+        ],
+        [
+          "EPS Growth (%)",
+          13,
+          5,
+          1,
+          2,
+          9,
+          9
+        ],
+        [
+          "Gross Margin (%)",
+          49,
+          52,
+          51,
+          51,
+          51,
+          51
+        ],
+        [
+          "EBITDA Margin (%)",
+          54,
+          74,
+          63,
+          75,
+          75,
+          74
+        ],
+        [
+          "EBIT Margin (%)",
+          24,
+          45,
+          37,
+          43,
+          43,
+          43
+        ],
+        [
+          "Pretax Margin (%)",
+          25,
+          24,
+          24,
+          23,
+          24,
+          25
+        ],
+        [
+          "Net Margin (%)",
+          23,
+          23,
+          22,
+          22,
+          23,
+          24
+        ],
+        [
+          "ROE (%)",
+          6,
+          6,
+          6,
+          6,
+          7,
+          7
+        ],
+        [
+          "ROA (%)",
+          4,
+          4,
+          4,
+          4,
+          4,
+          4
+        ],
+        [
+          "Current Ratio (x)",
           0.3,
+          0.3,
+          0.4,
+          0.5,
+          0.7,
           0.8
         ],
         [
-          "LT D/E (x)",
+          "Quick Ratio (x)",
+          0.3,
+          0.3,
+          0.4,
+          0.5,
+          0.7,
+          0.8
+        ],
+        [
+          "LT D/Equity (x)",
           0.34,
+          0.37,
+          0.52,
+          0.5,
+          0.48,
           0.46
         ],
         [
           "DER (x)",
           0.67,
+          0.74,
+          0.75,
+          0.74,
+          0.71,
           0.69
         ],
         [
-          "ICR (x)",
-          2.0,
-          4.0
+          "DAR (x)",
+          0.4,
+          0.43,
+          0.43,
+          0.42,
+          0.42,
+          0.41
         ],
         [
-          "Cash ratio (%)",
-          8.0,
-          57.0
+          "Interest Coverage (x)",
+          2,
+          3,
+          3,
+          3,
+          4,
+          4
+        ],
+        [
+          "Inventory Turnover (x)",
+          6.5,
+          5.2,
+          4.5,
+          4.8,
+          5.4,
+          5.7
+        ],
+        [
+          "AP Turnover (days)",
+          56,
+          71,
+          81,
+          76,
+          67,
+          65
+        ],
+        [
+          "Cash Ratio (%)",
+          8,
+          5,
+          8,
+          21,
+          40,
+          57
+        ],
+        [
+          "Sustainable Growth (%)",
+          1,
+          0,
+          2,
+          2,
+          2,
+          2
+        ],
+        [
+          "Earning Yield (%)",
+          3,
+          4,
+          4,
+          4,
+          5,
+          5
+        ],
+        [
+          "Dividend Yield (%)",
+          2.59,
+          3.93,
+          2.79,
+          3.14,
+          3.42,
+          3.72
+        ],
+        [
+          "PE (x)",
+          29.0,
+          25.2,
+          26.9,
+          23.9,
+          21.9,
+          20.1
+        ],
+        [
+          "PBV (x)",
+          1.7,
+          1.6,
+          1.7,
+          1.5,
+          1.5,
+          1.5
+        ],
+        [
+          "P/Sales (x)",
+          6.8,
+          5.7,
+          6.0,
+          5.2,
+          5.0,
+          4.8
+        ],
+        [
+          "EV/EBITDA (x)",
+          16.3,
+          10.5,
+          12.9,
+          9.6,
+          9.0,
+          8.5
         ]
-      ],
-      "source": "Laporan keuangan IDX"
+      ]
     }
   ],
   "risks": [
     {
       "bucket": "Ketergantungan operator (Telkomsel)",
-      "detail": "Konsentrasi pendapatan pada operator besar.",
-      "source": null
+      "detail": "Telkomsel adalah kontributor revenue terbesar MTEL \u2014 perubahan strategi belanja modal atau insentif internal operator dapat menekan pertumbuhan tenancy & fiber.",
+      "source": "Bloomberg, Company disclosures"
     },
     {
-      "bucket": "Kompetisi tower/satellite/Open RAN",
-      "detail": "Teknologi alternatif menekan pricing tower.",
-      "source": null
+      "bucket": "Kompetisi TBIG & TOWR",
+      "detail": "Tekanan pricing dari kompetitor tower dan masuknya teknologi alternatif (Open RAN, satellite LEO) dapat mengikis margin leasing.",
+      "source": "Bloomberg, laporan pesaing"
+    },
+    {
+      "bucket": "Risiko teknologi",
+      "detail": "Disrupsi dari Open RAN, satellite broadband, atau konsolidasi operator yang menunda colocation tenancy ratio.",
+      "source": "Bloomberg, riset eksternal"
     },
     {
       "bucket": "Regulasi spektrum & tarif",
-      "detail": "Perubahan aturan memengaruhi ekspansi tenant.",
-      "source": null
+      "detail": "Perubahan aturan Kominfo/Komdigi atas spektrum 700MHz/2.6GHz, tarif sewa tower, atau konsesi dapat memengaruhi revenue & utilisasi.",
+      "source": "Kominfo/Komdigi, press release"
     },
     {
-      "bucket": "Pembiayaan (suku bunga)",
-      "detail": "Hutang fiber buildout sensitif bunga.",
-      "source": null
+      "bucket": "Pembiayaan (sukubunga)",
+      "detail": "Sensitivitas hutang IDR 21 tn terhadap kenaikan BI Rate \u2014 WACC naik 1% menurunkan DCF ~IDR 80.",
+      "source": "Bloomberg, internal sensitivity"
+    },
+    {
+      "bucket": "Risiko lokasi & bencana",
+      "detail": "Lokasi tower di zona gempa/volkanik/rawa tinggi; banjir & pemadaman listrik berulang menurunkan uptime SLA.",
+      "source": "Company disclosures, BMKG"
     }
   ],
   "peers": {
@@ -630,15 +1756,15 @@
       "name": "PST & UMT Merger (eff 1 Jul 2026)",
       "effect": "Efisiensi opex/capex, tenancy >1.6x, FWA/fiberization/IoT/power",
       "quantified": {
-        "tenants": "—",
-        "revenue_idr_bn": "—",
+        "tenants": "\u2014",
+        "revenue_idr_bn": "\u2014",
         "by": "FY27-29"
       },
       "source": "Disclosure IDX, Kontan"
     },
     {
       "name": "Spectrum 700MHz & 2.6GHz",
-      "effect": "TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 — perluasan jaringan",
+      "effect": "TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 \u2014 perluasan jaringan",
       "quantified": {
         "tenants": "+3.000-3.500",
         "revenue_idr_bn": "+360-420",
@@ -647,6 +1773,343 @@
       "source": "Komdigi, press release operator"
     }
   ],
+  "cDcf": {
+    "wacc": {
+      "rf": 0.0696,
+      "erp": 0.0889,
+      "beta": 0.65,
+      "beta_raw": 0.65,
+      "beta_adj": 0.65,
+      "beta_r2": null,
+      "beta_nobs": null,
+      "size_premium": 0.0,
+      "ke": 0.127385,
+      "kd_pretax": 0.0896,
+      "kd_aftertax": 0.084224,
+      "kd_method": "Interest Expense / average Total Debt (raised to Rf + spread floor)",
+      "tax_rate": 0.06,
+      "equity_value_mkt": 37500000000000.0,
+      "debt_book": 21430000000000.0,
+      "weight_equity": 0.636348,
+      "weight_debt": 0.363652,
+      "wacc_raw": 0.101,
+      "wacc": 0.101,
+      "warnings": [
+        "Computed Cost of Debt 6.00% is BELOW the risk-free rate + 200bps (8.96%). Raised to 8.96%."
+      ],
+      "provenance": "Ke=Rf+beta*ERP+SizePrem; WACC=We*Ke+Wd*Kd*(1-t)"
+    },
+    "wacc_table": [
+      {
+        "label": "Risk-free rate (manual input)",
+        "value": "6.96%"
+      },
+      {
+        "label": "Equity Risk Premium (manual input)",
+        "value": "8.89%"
+      },
+      {
+        "label": "Beta raw (regression vs IHSG)",
+        "value": "0.650"
+      },
+      {
+        "label": "Beta adjusted (Blume)",
+        "value": "0.650"
+      },
+      {
+        "label": "Beta regression R-squared",
+        "value": "n/a"
+      },
+      {
+        "label": "Size premium",
+        "value": "0.00%"
+      },
+      {
+        "label": "Cost of Equity (CAPM)",
+        "value": "12.74%"
+      },
+      {
+        "label": "Cost of Debt, pre-tax",
+        "value": "8.96%"
+      },
+      {
+        "label": "Effective tax rate",
+        "value": "6.00%"
+      },
+      {
+        "label": "Cost of Debt, after-tax",
+        "value": "8.42%"
+      },
+      {
+        "label": "Equity weight E/(D+E)",
+        "value": "63.6%"
+      },
+      {
+        "label": "Debt weight D/(D+E)",
+        "value": "36.4%"
+      },
+      {
+        "label": "WACC",
+        "value": "10.10%"
+      }
+    ],
+    "projection": [
+      {
+        "year": 1,
+        "growth": 0.04,
+        "revenue": 10334480000000.0,
+        "ebit": 4433491920000.0,
+        "ebit_margin": 0.429,
+        "nopat": 4167482404800.0,
+        "da": 3307033600000.0,
+        "capex": 3307033600000.0,
+        "nwc": 516724000000.0,
+        "delta_nwc": 19874000000.0,
+        "fcff": 4147608404800.0,
+        "reinvestment_rate": 0.004769,
+        "roic": 0.838781,
+        "implied_growth": 0.004
+      },
+      {
+        "year": 2,
+        "growth": 0.035,
+        "revenue": 10696186800000.0,
+        "ebit": 4588664137200.0,
+        "ebit_margin": 0.429,
+        "nopat": 4313344288968.0,
+        "da": 3422779776000.0,
+        "capex": 3422779776000.0,
+        "nwc": 534809340000.0,
+        "delta_nwc": 18085340000.0,
+        "fcff": 4295258948968.0,
+        "reinvestment_rate": 0.004193,
+        "roic": 0.864679,
+        "implied_growth": 0.003625
+      },
+      {
+        "year": 3,
+        "growth": 0.03,
+        "revenue": 11017072404000.0,
+        "ebit": 4726324061316.0,
+        "ebit_margin": 0.429,
+        "nopat": 4442744617637.04,
+        "da": 3525463169280.0,
+        "capex": 3525463169280.0,
+        "nwc": 550853620200.0,
+        "delta_nwc": 16044280200.0,
+        "fcff": 4426700337437.04,
+        "reinvestment_rate": 0.003611,
+        "roic": 0.887403,
+        "implied_growth": 0.003205
+      },
+      {
+        "year": 4,
+        "growth": 0.025,
+        "revenue": 11292499214100.0,
+        "ebit": 4844482162848.9,
+        "ebit_margin": 0.429,
+        "nopat": 4553813233077.96,
+        "da": 3613599748512.0,
+        "capex": 3613599748512.0,
+        "nwc": 564624960705.0,
+        "delta_nwc": 13771340505.0,
+        "fcff": 4540041892572.96,
+        "reinvestment_rate": 0.003024,
+        "roic": 0.906682,
+        "implied_growth": 0.002742
+      },
+      {
+        "year": 5,
+        "growth": 0.02,
+        "revenue": 11518349198382.0,
+        "ebit": 4941371806105.88,
+        "ebit_margin": 0.429,
+        "nopat": 4644889497739.52,
+        "da": 3685871743482.24,
+        "capex": 3685871743482.24,
+        "nwc": 575917459919.1,
+        "delta_nwc": 11292499214.1,
+        "fcff": 4633596998525.42,
+        "reinvestment_rate": 0.002431,
+        "roic": 0.922287,
+        "implied_growth": 0.002242
+      },
+      {
+        "year": 6,
+        "growth": 0.015,
+        "revenue": 11691124436357.73,
+        "ebit": 5015492383197.46,
+        "ebit_margin": 0.429,
+        "nopat": 4714562840205.62,
+        "da": 3741159819634.47,
+        "capex": 3741159819634.47,
+        "nwc": 584556221817.89,
+        "delta_nwc": 8638761898.79,
+        "fcff": 4705924078306.83,
+        "reinvestment_rate": 0.001832,
+        "roic": 0.934027,
+        "implied_growth": 0.001711
+      }
+    ],
+    "terminal": {
+      "value": 55540848133505.02,
+      "pv": 31180896199915.21,
+      "implied_ev_ebitda": 6.3427,
+      "dependency_pct": 0.6072,
+      "dependency_flag": false
+    },
+    "valuation": {
+      "pv_explicit": 20170330385833.9,
+      "pv_terminal": 31180896199915.21,
+      "enterprise_value": 51351226585749.11,
+      "equity_value": 31564226585749.11,
+      "fair_value_per_share": 387.29,
+      "market_price": 460.0,
+      "upside": -0.158063,
+      "cash": 1643000000000.0,
+      "total_debt": 21430000000000.0,
+      "minority": 0.0,
+      "ebitda": 7451000000000.0,
+      "shares_outstanding": 81500000000.0,
+      "last_price": 460.0
+    },
+    "recommendation": {
+      "rating": "SELL",
+      "upside": -0.158063,
+      "label": "Overvalued",
+      "note": "Model fair value IDR 387 versus market price IDR 460, downside -15.8%."
+    },
+    "sensitivity": {
+      "fair_value": [
+        [
+          438.07,
+          452.76,
+          468.42,
+          485.13,
+          503.03
+        ],
+        [
+          399.12,
+          411.83,
+          425.33,
+          439.69,
+          454.99
+        ],
+        [
+          364.49,
+          375.57,
+          387.29,
+          399.72,
+          412.91
+        ],
+        [
+          333.5,
+          343.21,
+          353.47,
+          364.3,
+          375.76
+        ],
+        [
+          305.6,
+          314.17,
+          323.19,
+          332.69,
+          342.72
+        ]
+      ],
+      "upside": [
+        [
+          -4.8,
+          -1.6,
+          1.8,
+          5.5,
+          9.4
+        ],
+        [
+          -13.2,
+          -10.5,
+          -7.5,
+          -4.4,
+          -1.1
+        ],
+        [
+          -20.8,
+          -18.4,
+          -15.8,
+          -13.1,
+          -10.2
+        ],
+        [
+          -27.5,
+          -25.4,
+          -23.2,
+          -20.8,
+          -18.3
+        ],
+        [
+          -33.6,
+          -31.7,
+          -29.7,
+          -27.7,
+          -25.5
+        ]
+      ],
+      "stats": {
+        "min": 305.6,
+        "max": 503.03,
+        "median": 387.29,
+        "n_valid": 25,
+        "n_cells": 25
+      },
+      "wacc_axis": [
+        0.091,
+        0.096,
+        0.101,
+        0.106,
+        0.111
+      ],
+      "g_axis": [
+        0.01,
+        0.0125,
+        0.015,
+        0.0175,
+        0.02
+      ]
+    },
+    "scenarios": {
+      "BEAR": {
+        "scenario": "BEAR",
+        "revenue_growth_y1": 0.01,
+        "ebit_margin": 0.419,
+        "terminal_growth": 0.01,
+        "fair_value_per_share": 300.14,
+        "upside": -0.34753,
+        "rating": "SELL",
+        "note": "Model fair value IDR 300 versus market price IDR 460, downside -34.8%."
+      },
+      "BASE": {
+        "scenario": "BASE",
+        "revenue_growth_y1": 0.04,
+        "ebit_margin": 0.429,
+        "terminal_growth": 0.015,
+        "fair_value_per_share": 387.29,
+        "upside": -0.158063,
+        "rating": "SELL",
+        "note": "Model fair value IDR 387 versus market price IDR 460, downside -15.8%."
+      },
+      "BULL": {
+        "scenario": "BULL",
+        "revenue_growth_y1": 0.07,
+        "ebit_margin": 0.439,
+        "terminal_growth": 0.02,
+        "fair_value_per_share": 490.0,
+        "upside": 0.065215,
+        "rating": "HOLD",
+        "note": "Model fair value IDR 490 versus market price IDR 460, upside +6.5%."
+      }
+    },
+    "provenance": "dcf_full: wacc+sens+scenarios from friend's s05-s12"
+  },
   "exhibits": [
     {
       "id": "Exhibit 5",
@@ -714,5 +2177,49 @@
       },
       "source": "Laporan keuangan IDX"
     }
-  ]
+  ],
+  "gate_verdict": {
+    "primary": "FCFF/WACC DCF",
+    "secondary": "Relative Valuation",
+    "rating": "BUY",
+    "thin_data": false,
+    "gates": [
+      {
+        "gate": "0",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Infra tower, single business"
+      },
+      {
+        "gate": "1",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "6y filing, EBIT+ 3/3y"
+      },
+      {
+        "gate": "2",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "NCI 25% in 15-40% band, SOTP cross-check"
+      },
+      {
+        "gate": "3",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Volume + rental"
+      },
+      {
+        "gate": "4",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Mature, stable FCF"
+      },
+      {
+        "gate": "5",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Upside +33.4% in band"
+      }
+    ]
+  }
 }
