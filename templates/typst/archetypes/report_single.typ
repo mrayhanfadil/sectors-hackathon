@@ -1,7 +1,19 @@
 // report_single.typ — Institutional equity research report (RATU single ticker archetype)
 #import "../common/theme.typ": *
+#import "../common/cover.typ": *
 
 #show: set-page-defaults
+
+#let ticker = sys.inputs.at("ticker", default: "RATU")
+#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/ratu_report_data.json"
+#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data = json(data-path)
+
+#let m = data.at("meta")
+#let cover = data.at("cover").at("rating_box")
+#let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
+#let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
+
 
 #let PALETTE = (
   brand: rgb("#1d4ed8"),        // royal blue (energy/holding)
@@ -82,41 +94,34 @@
     ],
     [
       #rating-box(
-        "BUY",
-        "7.880",
-        "6.200",
-        27.1,
+        cover.action,
+        str(cover.tp),
+        str(cover.price),
+        cover.upside_pct,
+        prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
         palette: PALETTE,
       )
 
-      #v(6pt)
+      #v(4pt)
+      #method-selection-panel(gate-verdict, palette: PALETTE)
+
+      #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI SAHAM]
-        #v(3pt)
+        #v(2.5pt)
+        #let sh = data.cover.at("shares", default: (:))
         #grid(
           columns: (1fr, auto),
-          row-gutter: 4pt,
-          text(size: T_SMALL)[Harga Kini], text(size: T_SMALL, weight: "bold")[Rp 6.200],
-          text(size: T_SMALL)[Target Harga], text(size: T_SMALL, weight: "bold")[Rp 7.880],
-          text(size: T_SMALL)[Saham Beredar], text(size: T_SMALL, weight: "bold")[2,71 Miliar],
-          text(size: T_SMALL)[Kapitalisasi Pasar], text(size: T_SMALL, weight: "bold")[Rp 16,80 T],
-          text(size: T_SMALL)[Free Float], text(size: T_SMALL, weight: "bold")[31,2% (845,5 Jt)],
-          text(size: T_SMALL)[52-Wk Range], text(size: T_SMALL, weight: "bold")[4.500 - 8.200],
-          text(size: T_SMALL)[Rerata Nilai 3M], text(size: T_SMALL, weight: "bold")[Rp 14,2 M/hari],
-          text(size: T_SMALL)[Klasifikasi Indeks], text(size: T_SMALL, weight: "bold")[MSCI / IDX80 / JII],
+          row-gutter: 2.8pt,
+          text(size: 6.8pt)[Harga Kini], text(size: 6.8pt, weight: "bold")[Rp #cover.price],
+          text(size: 6.8pt)[Target Harga], text(size: 6.8pt, weight: "bold")[Rp #cover.tp],
+          text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#sh.at("outstanding", default: 2.71) Miliar],
+          text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[Rp 16,80 T],
+          text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#sh.at("free_float_pct", default: 31.2)%],
+          text(size: 6.8pt)[52-Wk Range], text(size: 6.8pt, weight: "bold")[4.500 - 8.200],
+          text(size: 6.8pt)[Rerata Nilai 3M], text(size: 6.8pt, weight: "bold")[Rp 14,2 M/hari],
+          text(size: 6.8pt)[Klasifikasi Indeks], text(size: 6.8pt, weight: "bold")[MSCI / IDX80 / JII],
         )
-      ]
-
-      #v(6pt)
-      #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[METODE VALUASI]
-        #v(3pt)
-        #text(size: 7.2pt)[
-          - *DCF (WACC 8,4%, g 5,0%)*: Rp 7.880 (60%)
-          - *EV/EBITDA Target (22,6x)*: Rp 6.960 (40%)
-          - *Margin of Safety (MoS)*: 15%
-          - *P/BV 3Y Band*: 1,47x (Below Rerata 2,10x)
-        ]
       ]
     ]
   )

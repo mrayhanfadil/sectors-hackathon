@@ -3,8 +3,19 @@
 // Case: JCI / IHSG (Indeks Harga Saham Gabungan) — Indonesia 2026 Strategy Outlook
 // =====================================================================
 #import "../common/theme.typ": *
+#import "../common/cover.typ": *
 
 #show: set-page-defaults
+
+#let ticker = sys.inputs.at("ticker", default: "JCI")
+#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/jci_report_data.json"
+#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data = json(data-path)
+
+#let m = data.at("meta")
+#let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
+#let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
+
 
 // Archetype Palette for Strategy / Macro Outlook (Deep Indigo & Slate)
 #let PALETTE = (
@@ -113,6 +124,9 @@
         #v(1.5pt)
         #text(size: 6.5pt, fill: PALETTE.muted)[Rentang Skenario: 7.800 – 10.000]
       ]
+
+      #v(4pt)
+      #method-selection-panel(gate-verdict, palette: PALETTE)
 
       #v(4pt)
       #card(PALETTE)[

@@ -167,7 +167,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
             pass
     return cache
 
-def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS, ticker: str | None = None) -> bool:
+def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS, ticker: str | None = None, data_path: Path | None = None) -> bool:
     """Compile via Python `typst` lib or fallback to CLI binary."""
     try:
         import typst as _t
@@ -182,6 +182,8 @@ def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS, ti
             cmd.extend(["--font-path", str(font_path)])
         if ticker:
             cmd.extend(["--input", f"ticker={ticker}"])
+        if data_path:
+            cmd.extend(["--input", f"data_path={data_path}"])
         cmd.extend([str(input_typ), str(output_pdf)])
         result = subprocess.run(
             cmd,
@@ -212,7 +214,7 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
         template_file = TEMPLATES / "archetypes" / TEMPLATE_FILES.get(template_name, "report_single.typ")
     if not template_file.exists():
         raise FileNotFoundError(f"template {template_file} not built yet")
-    if not compile_typst(template_file, out_pdf, ticker=ticker):
+    if not compile_typst(template_file, out_pdf, ticker=ticker, data_path=report_data_path):
         raise RuntimeError(f"typst compile failed for {ticker}")
     try:
         return out_pdf.read_text(encoding="utf-8", errors="ignore")

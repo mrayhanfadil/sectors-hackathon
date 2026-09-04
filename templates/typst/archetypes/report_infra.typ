@@ -3,16 +3,18 @@
 // Multi-ticker parameterized template for infrastructure / recurring archetypes
 // =====================================================================
 #import "../common/theme.typ": *
+#import "../common/cover.typ": *
 
 #show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "MTEL")
-#let default-data-path = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(ticker) + "/report_data.json"
+#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/mtel_report_data.json"
 #let data-path = sys.inputs.at("data_path", default: default-data-path)
 #let data = json(data-path)
 
 #let m = data.at("meta")
 #let cover = data.at("cover").at("rating_box")
+#let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
 #let unit = m.at("report_unit", default: if data.at("quarterly_pl", default: (:)).at("headers", default: ()).len() > 0 { data.quarterly_pl.headers.at(0) } else { "Rp Miliar" })
 #let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
 
@@ -152,12 +154,12 @@
       #let seg-headers = ("Segmen Bisnis", "1H26 (" + unit + ")", "Bauran (%)", "YoY (%)", "Status")
       #let seg-rows = data.at("segments", default: ()).enumerate().map(((i, s)) => (
         s.name,
-        str(s.revenue_1h26),
+        str(s.at("revenue_1h26", default: s.at("revenue", default: 0))),
         str(s.share_pct) + "%",
         if s.yoy_pct > 0 { "+" + str(s.yoy_pct) + "%" } else { str(s.yoy_pct) + "%" },
         if i == 0 { "Core Anchor" } else if i == 1 { "Growth Driver" } else if i == 2 { "High Expansion" } else { "Stable Cashflow" }
       ))
-      #let total-rev = data.at("segments", default: ()).fold(0, (acc, s) => acc + s.revenue_1h26)
+      #let total-rev = data.at("segments", default: ()).fold(0, (acc, s) => acc + s.at("revenue_1h26", default: s.at("revenue", default: 0)))
       #let seg-total-row = ([*Total Pendapatan 1H26*], [*#str(total-rev)*], [*100,0%*], [*+2,1%*], [*Konsolidasian*])
       #fin-table(
         seg-headers,
@@ -181,7 +183,10 @@
         palette: PALETTE,
       )
 
-      #v(5pt)
+      #v(4pt)
+      #method-selection-panel(gate-verdict, palette: PALETTE)
+
+      #v(4pt)
       #card(PALETTE)[
         #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR & SAHAM]
         #v(2.5pt)

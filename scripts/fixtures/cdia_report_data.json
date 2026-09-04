@@ -4,10 +4,10 @@
     "reason": "segments=4 > 1 -> sotp",
     "ticker": "CDIA",
     "company_name": "Chandra Daya Investasi",
-    "sector": "Konglomerasi — Energi/Logistik/Air/Pelabuhan",
+    "sector": "Konglomerasi \u2014 Energi/Logistik/Air/Pelabuhan",
     "report_type": "Initiation",
     "date": "31 Agt 2026",
-    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "prepared_by": "RESEARCH \u2014 Sectors Hackathon 2026",
     "language": "id"
   },
   "cover": {
@@ -501,5 +501,49 @@
       },
       "source": "Laporan keuangan IDX"
     }
-  ]
+  ],
+  "gate_verdict": {
+    "primary": "DCF (shortened horizon)",
+    "secondary": "Relative Valuation",
+    "rating": "BUY",
+    "thin_data": true,
+    "gates": [
+      {
+        "gate": "0",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Consumer IPO"
+      },
+      {
+        "gate": "1",
+        "verdict": "Fail",
+        "passed": false,
+        "rationale": "2y filing history < 4y"
+      },
+      {
+        "gate": "2",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "NCI 5%, DCF proceeds"
+      },
+      {
+        "gate": "3",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Volume-driven"
+      },
+      {
+        "gate": "4",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Growth stage"
+      },
+      {
+        "gate": "5",
+        "verdict": "Pass",
+        "passed": true,
+        "rationale": "Upside +22.6% in band"
+      }
+    ]
+  }
 }
