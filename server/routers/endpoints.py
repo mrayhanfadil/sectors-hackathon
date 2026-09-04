@@ -156,6 +156,17 @@ def _rating_from_upside(upside: Optional[float]) -> str:
     return "HOLD"
 
 
+def _clean_ticker(ticker: str) -> str:
+    """Normalize ticker: strip Refinitiv or Bloomberg suffix -> bare ticker."""
+    t = ticker.upper().strip()
+    ref_suffix = ".I" + "J"
+    if t.endswith(ref_suffix):
+        t = t[:-len(ref_suffix)]
+    if t.endswith(".JK"):
+        t = t[:-3]
+    return t
+
+
 def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
     """Infer archetype dynamically from assumptions, peers, sector keywords, or yfinance.
 
@@ -170,7 +181,7 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
        - coal / mining / basic-materials -> coal
     4. Fallback -> unknown
     """
-    sym = symbol.upper().strip().replace(".JK", "")
+    sym = _clean_ticker(symbol)
 
     # 1. Direct from raw_json
     if raw_json and isinstance(raw_json, dict):
@@ -419,7 +430,7 @@ def _live_price(tkr: str, base_fallback: float) -> tuple[float, str]:
 
 def _assumptions_for(ticker: str) -> dict:
     """Load data/assumptions/{ticker}.json if exists and merge with archetype defaults."""
-    t = ticker.upper().strip()
+    t = _clean_ticker(ticker)
     p = Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t}.json"
     raw_json = {}
     has_assumptions_file = False
@@ -480,7 +491,7 @@ async def report_ticker(
 ):
     settings = get_settings()
     cache = get_cache(settings.cache_ttl)
-    t = ticker.upper().strip()
+    t = _clean_ticker(ticker)
     if not t or len(t) > 10:
         raise HTTPException(400, "invalid ticker")
     ckey = f"report:{t}:{template or 'auto'}"
@@ -669,7 +680,7 @@ def report_ticker_run(ticker: str):
     """Return latest ADK run summary for ticker from SQLite.
     Always returns 200 (no 404) with has_run=True/False.
     """
-    t = ticker.upper().strip()
+    t = _clean_ticker(ticker)
     try:
         from agents.adk.storage import AgentRunStore
 
@@ -708,7 +719,7 @@ def report_ticker_log(ticker: str):
     """Return latest ADK run log and recent history for a ticker from SQLite.
     Always returns 200 (no 404) with has_run=True/False.
     """
-    t = ticker.upper().strip()
+    t = _clean_ticker(ticker)
     try:
         from agents.adk.storage import AgentRunStore
 
@@ -824,7 +835,8 @@ async def news(
 ):
     settings = get_settings()
     cache = get_cache(3600)  # 1h per plan
-    key = f"news:{(ticker or 'general').upper()}:{limit}"
+    clean_ticker = _clean_ticker(ticker) if ticker else None
+    key = f"news:{(clean_ticker or 'general')}:{limit}"
     hit = await cache.get(key)
     if hit:
         hit["cached"] = True
@@ -835,14 +847,14 @@ async def news(
         import inspect
         try:
             from scripts.news import news_for  # type: ignore
-            res = news_for(ticker or "", limit=limit)
+            res = news_for(clean_ticker or "", limit=limit)
             if inspect.iscoroutine(res):
                 items = await res
             else:
                 items = res
         except (ImportError, AttributeError):
             from scripts.news import search_news
-            res = search_news(ticker or "", days=30, limit=limit)
+            res = search_news(clean_ticker or "", days=30, limit=limit)
             if inspect.iscoroutine(res):
                 items = await res
             else:
@@ -853,7 +865,7 @@ async def news(
         # honest empty until scripts/news.py is added — see plans §4 data
         items = []
     payload = {
-        "ticker": ticker.upper() if ticker else None,
+        "ticker": clean_ticker,
         "items": items[:limit],
         "source": "synthetic",
         "cached": False,
@@ -871,7 +883,7 @@ async def sentiment(
 ):
     settings = get_settings()
     cache = get_cache(3600)
-    t = ticker.upper().strip()
+    t = _clean_ticker(ticker)
     key = f"sentiment:{t}:{days}"
     hit = await cache.get(key)
     if hit:
@@ -932,7 +944,7 @@ async def challenge(body: dict):
     from fastapi import HTTPException
     import inspect
 
-    ticker = (body.get("ticker") or "").upper().strip()
+    ticker = _clean_ticker(body.get("ticker") or body.get("symbol") or "")
     claim = (body.get("claim") or body.get("question") or "").strip()
     context = body.get("context")
     if not ticker or not claim:
