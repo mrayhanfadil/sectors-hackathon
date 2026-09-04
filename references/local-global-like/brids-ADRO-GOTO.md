@@ -19,8 +19,8 @@
 ## 1. Cover (p1 — Equity SNAPSHOT)
 
 - **Header:** `Monday, 18 Nov 2024 │ Equity SNAPSHOT │ BRI Danareksa Sekuritas – Equity │ FROM EQUITY RESEARCH DESK`
-- **Idea of the Day #1 — ADRO:** `Adaro Energy: Potential upside from AADI post spin-off; lowered rating to Hold with a higher TP of Rp4,100 (ADRO.IJ Rp3,920; HOLD TP 4,100)` — 3 bullets: AADI US$6.1bn + ADRO post-spin US$5.3–7.0bn, risk = Holdco discount, rating cut to Hold despite higher TP.
-- **Idea of the Day #2 — GOTO:** `Confirming growth trajectories in 9M24; Further monetization through tech advancements (GOTO.IJ Rp64; BUY TP Rp90)` — 3 bullets: 9M24 adj. EBITDA -13bn → 3Q24 +137bn, CM growth ODS+GTF, DCF TP Rp90 @ 6% CAGR FY24-34 GTV.
+- **Idea of the Day #1 — ADRO:** `Adaro Energy: Potential upside from AADI post spin-off; lowered rating to Hold with a higher TP of Rp4,100 (ADRO.JK Rp3,920; HOLD TP 4,100)` — 3 bullets: AADI US$6.1bn + ADRO post-spin US$5.3–7.0bn, risk = Holdco discount, rating cut to Hold despite higher TP.
+- **Idea of the Day #2 — GOTO:** `Confirming growth trajectories in 9M24; Further monetization through tech advancements (GOTO.JK Rp64; BUY TP Rp90)` — 3 bullets: 9M24 adj. EBITDA -13bn → 3Q24 +137bn, CM growth ODS+GTF, DCF TP Rp90 @ 6% CAGR FY24-34 GTV.
 - **Right rail:** Market News (BBCA Oct24, Seabank Sep24, China consumer, Indonesia trade US$2.47bn), Sector (commodity daily, downstream 26 commodities Rp9,542T, housing Rp48.5T), Corporate (DSSA/FREN), Previous reports (Ciputra, Jasa Marga, AHAP, SILO, Macro Strategy Post-Trump), Equity indices close/chg/YTD/vol (table).
 - **Footer CTA:** `To see the full version of this report, please click here.` (×2 — indicates this is a **snapshot teaser**, not the full initiation)
 

@@ -143,6 +143,7 @@ Archetype calibration benchmarks (for reference only — read exact inputs from 
 # Example for banking archetype: GGM P/BV with ROE ~19.7%, BVPS ~4200 (see data/assumptions/BBCA.json)
 
 Pre-flight gate runner (Valuation Method Selection Framework, 6 gates 0–5):
+- ASSERTION: agents.valuation.gates.evaluate() is strictly the FIRST upstream filter the orchestrator calls, BEFORE any valuation math or assumption adjustments.
 - Before computing valuation, call `agents.valuation.gates.evaluate(ticker, ...)` to determine primary/secondary method. Pass the verdict to the next agent.
 - Inputs to gather first: domain (bank/reit/mining/etc), filing_history_years, ebit_positive_count (of last 3y), d_de_ratio, net_debt_to_ebitda, interest_coverage, shareholders_equity, nci_pct, revenue_drivers, has_steady_state_3y, life_cycle_stage.
 - Gate verdict drives which archetype + which math: primary ∈ {DCF, DCF (shortened), DDM/Excess Return, NAV/Reserve, SOTP, EV/Sales, P/BV, Relative}.
@@ -150,13 +151,23 @@ Pre-flight gate runner (Valuation Method Selection Framework, 6 gates 0–5):
 - If `gate_verdict.rating_override == "Review Required"` (Gate 5 fires: upside > 100% or downside < -50%) → set the final rating to "Review Required" regardless of BUY/HOLD/SELL math.
 - See `agents/valuation/gates.py` for the full logic and `docs/valuation-framework.md` for the framework reference.
 
+Assumption modulation (News + Sentiment Engine Wire):
+- Call `agents.valuation.assumptions.adjust_assumptions(ticker, base_assumptions, news, sentiment)` AFTER `evaluate()` but BEFORE `calc_dcf` / `calc_ddm` / `calc_ggm`.
+- Modulate base revenue growth and capex projections using real-time signals from news_harvester and social_sentiment:
+  * sentiment_score > 0.6 (bullish) → boost revenue_growth by up to +15%
+  * sentiment_score < -0.6 (bearish) → cut revenue_growth by up to -15%
+  * news_count_last_30d > 20 AND avg_news_sentiment > 0 → boost capex by up to +10%
+  * clean fallback to base assumptions if news/sentiment unavailable.
+
 Rules:
-|- Always call calc_wacc first (using parameters from data/assumptions/{ticker}.json), then calc_dcf, then the adaptive secondary.
-|- The gate runner's primary method overrides the archetype's default — gate verdict is authoritative for *which* method; the adaptive secondary section below is the *cross-check* logic.
+- Gate runner evaluate() is strictly the FIRST call upstream before anything else (assertion: gates first).
+- Call adjust_assumptions() AFTER evaluate() but BEFORE calc_dcf / calc_ddm / calc_ggm.
+- Always call calc_wacc first (using parameters from modulated assumptions), then calc_dcf / calc_ddm / calc_ggm, then the adaptive secondary.
+- The gate runner's primary method overrides the archetype's default — gate verdict is authoritative for *which* method; the adaptive secondary section below is the *cross-check* logic.
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
-- Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources}.
-- Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended).
+- Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
+- Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
 
 Output key: valuation_output
 """
