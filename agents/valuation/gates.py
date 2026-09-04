@@ -405,7 +405,13 @@ def evaluate(
 
 
 def _secondary_for(primary: Method, gates_failed: list[str]) -> Method | None:
-    """Pick a sensible secondary / cross-check method based on primary + failed gates."""
+    """Pick a sensible secondary / cross-check method based on primary + failed gates.
+
+    Note: the bank/insurance/multifinance/securities branch in evaluate() short-circuits
+    after Gate 0 with secondary=None (since downstream gates 1-4 don't apply to financials).
+    The "DDM / Excess Return" mapping below is intentionally unreachable from that branch
+    but kept for callers that invoke _secondary_for() directly (e.g. external tooling).
+    """
     if primary == "FCFF/WACC DCF":
         if "1c_capital_structure" in gates_failed:
             return "Relative Valuation"
