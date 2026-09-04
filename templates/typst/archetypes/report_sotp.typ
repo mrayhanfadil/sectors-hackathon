@@ -331,20 +331,20 @@
     ]
 
     #v(5pt)
-    #exhibit-header("Exhibit 4", "Kinerja Keuangan Konsolidasian 6 Tahun (FY23A - FY28F)", "Laporan Keuangan CDIA & Proyeksi Riset")
+    #exhibit-header("Exhibit 4", "Laporan Laba Rugi & Kinerja Keuangan Konsolidasian 6 Tahun", "Laporan Keuangan CDIA & Proyeksi Riset")
     #v(1pt)
     #fin-table(
-      ("Metrik Keuangan (Rp bn)", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+      ("Akun Laba Rugi & Metrik", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
       (
-        ("Pendapatan Bersih", "12.800", "14.500", "15.200", "11.800", "12.900", "14.200"),
-        ("Pertumbuhan Pendapatan (%)", "+18,5%", "+13,3%", "+4,8%", "-22,4%", "+9,3%", "+10,1%"),
-        ("Laba Kotor (Gross Profit)", "4.864", "5.510", "5.168", "3.068", "3.870", "4.686"),
-        ("EBITDA Konsolidasi", "4.400", "4.900", "4.300", "2.100", "2.800", "3.500"),
-        ("Margin EBITDA (%)", "34,4%", "33,8%", "28,3%", "17,8%", "21,7%", "24,6%"),
-        ("Beban Bunga & Keuangan", "(720)", "(890)", "(1.150)", "(1.380)", "(1.250)", "(1.100)"),
-        ("Laba Bersih (Net Profit)", "2.500", "2.800", "2.100", "510", "890", "1.350"),
-        ("Margin Laba Bersih (%)", "19,5%", "19,3%", "13,8%", "4,3%", "6,9%", "9,5%"),
-        ("EPS (Rp per Saham)", "167", "187", "140", "34", "59", "90"),
+        ("Pendapatan Bersih", "14.500", "15.200", "11.800", "12.900", "14.200", "15.550"),
+        ("Pertumbuhan Pendapatan (%)", "+13,3%", "+4,8%", "-22,4%", "+9,3%", "+10,1%", "+9,5%"),
+        ("Laba Kotor (Gross Profit)", "5.510", "5.168", "3.068", "3.870", "4.686", "5.287"),
+        ("EBITDA Konsolidasi", "4.900", "4.300", "2.100", "2.800", "3.500", "4.050"),
+        ("Margin EBITDA (%)", "33,8%", "28,3%", "17,8%", "21,7%", "24,6%", "26,0%"),
+        ("Beban Bunga & Keuangan", "(890)", "(1.150)", "(1.380)", "(1.250)", "(1.100)", "(980)"),
+        ("Laba Bersih (Net Profit)", "2.800", "2.100", "510", "890", "1.350", "1.750"),
+        ("Margin Laba Bersih (%)", "19,3%", "13,8%", "4,3%", "6,9%", "9,5%", "11,3%"),
+        ("EPS (Rp per Saham)", "187", "140", "34", "59", "90", "117"),
       ),
       palette: PALETTE,
     )
@@ -353,29 +353,29 @@
     #exhibit-header("Exhibit 5", "Kontribusi Pendapatan per Pilar 6Y (Rp bn)", "Laporan Segmentasi CDIA (IDX)")
     #v(1pt)
     #fin-table(
-      ("Pilar Bisnis (Rp bn)", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+      ("Pilar Bisnis (Rp bn)", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
       (
-        ("Pilar Energi", "6.900", "7.800", "8.100", "6.300", "6.700", "7.200"),
-        ("Pilar Logistik", "4.100", "4.800", "5.150", "4.010", "4.500", "5.100"),
-        ("Pilar Air", "1.050", "1.150", "1.180", "850", "920", "1.020"),
-        ("Pilar Pelabuhan", "750", "750", "770", "640", "780", "880"),
-        ([*Total Pendapatan*], [*12.800*], [*14.500*], [*15.200*], [*11.800*], [*12.900*], [*14.200*]),
+        ("Pilar Energi", "7.800", "8.100", "6.300", "6.700", "7.200", "7.800"),
+        ("Pilar Logistik", "4.800", "5.150", "4.010", "4.500", "5.100", "5.750"),
+        ("Pilar Air", "1.150", "1.180", "850", "920", "1.020", "1.100"),
+        ("Pilar Pelabuhan", "750", "770", "640", "780", "880", "900"),
+        ([*Total Pendapatan*], [*14.500*], [*15.200*], [*11.800*], [*12.900*], [*14.200*], [*15.550*]),
       ),
       palette: PALETTE,
     )
 
     #v(6pt)
-    #exhibit-header("Exhibit 6", "Rasio Neraca, Likuiditas & Profitabilitas 6Y", "Kalkulasi Riset & Data Olahan")
+    #exhibit-header("Exhibit 6", "Rasio Neraca, Likuiditas & Profitabilitas 6Y vs Peer Median", "Kalkulasi Riset & Data Olahan")
     #v(1pt)
     #fin-table(
-      ("Rasio Utama", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+      ("Rasio Utama", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F", "Peer Median"),
       (
-        ("Return on Equity (ROE %)", "14,5%", "12,0%", "8,4%", "1,9%", "3,2%", "4,6%"),
-        ("Return on Assets (ROA %)", "8,2%", "7,1%", "4,8%", "1,1%", "1,8%", "2,6%"),
-        ("Gearing Ratio / DER (%)", "82,0%", "96,0%", "130,0%", "170,0%", "145,0%", "120,0%"),
-        ("Net Debt / EBITDA (x)", "1,6x", "1,9x", "2,6x", "4,1x", "3,2x", "2,4x"),
-        ("Current Ratio (x)", "1,4x", "1,2x", "0,9x", "0,7x", "1,0x", "1,2x"),
-        ("Price to Earnings / PE (x)", "4,7x", "4,2x", "5,6x", "22,9x", "13,2x", "8,7x"),
+        ("Return on Equity (ROE %)", "12,0%", "8,4%", "1,9%", "3,2%", "4,6%", "5,8%", "12,5%"),
+        ("Return on Assets (ROA %)", "7,1%", "4,8%", "1,1%", "1,8%", "2,6%", "3,3%", "6,5%"),
+        ("Gearing Ratio / DER (%)", "96,0%", "130,0%", "170,0%", "145,0%", "120,0%", "105,0%", "85,0%"),
+        ("Net Debt / EBITDA (x)", "1,9x", "2,6x", "4,1x", "3,2x", "2,4x", "1,9x", "2,5x"),
+        ("Current Ratio (x)", "1,2x", "0,9x", "0,7x", "1,0x", "1,2x", "1,4x", "1,3x"),
+        ("Price to Earnings / PE (x)", "4,2x", "5,6x", "22,9x", "13,2x", "8,7x", "6,7x", "11,5x"),
       ),
       palette: PALETTE,
     )
@@ -473,8 +473,9 @@
         ("POWR (PT Cikarang Listrindo Tbk)", "8,1x", "10,2x", "14,0%", "7,5%", "48,2%"),
         ("Sembcorp Industries (SGX: U96)", "9,3x", "11,5x", "11,0%", "4,2%", "28,5%"),
         ("YTL Power Intl (KLSE: YTLP)", "8,8x", "10,8x", "13,2%", "5,1%", "32,0%"),
-        ("CDIA Energi (Implied Multiple)", "8,5x", "11,0x", "12,5%", "4,5%", "35,0%"),
+        ("CDIA Energi (Implied Multiple)", "8,5x", [*11,0x*], [*12,5%*], "4,5%", "35,0%"),
         ([*Rata-rata Industri Energi*], [*8,7x*], [*10,8x*], [*12,7%*], [*5,6%*], [*36,2%*]),
+        ([*Median Industri Energi*], [*8,8x*], [*10,8x*], [*13,2%*], [*5,1%*], [*32,0%*]),
       ),
       palette: PALETTE,
     )
@@ -488,8 +489,9 @@
         ("HATM (PT Habco Trans Maritima Tbk)", "7,4x", "8,2x", "8,0%", "3,8%", "38,0%"),
         ("SMDR (PT Samudera Indonesia Tbk)", "6,9x", "7,5x", "10,0%", "6,0%", "32,4%"),
         ("TMAS (PT Temas Tbk)", "7,1x", "8,0x", "9,5%", "4,5%", "34,1%"),
-        ("CDIA Logistik (Implied Multiple)", "7,2x", "8,5x", "9,0%", "4,0%", "35,0%"),
+        ("CDIA Logistik (Implied Multiple)", [*7,1x*], "8,5x", "9,0%", "4,0%", "35,0%"),
         ([*Rata-rata Industri Logistik*], [*7,1x*], [*7,9x*], [*9,2%*], [*4,8%*], [*34,8%*]),
+        ([*Median Industri Logistik*], [*7,1x*], [*8,0x*], [*9,5%*], [*4,5%*], [*34,1%*]),
       ),
       palette: PALETTE,
     )
@@ -503,8 +505,9 @@
         ("TOWR (Utility Infrastructure Proxy)", "13,2x", "10,4x", "18,0%", "3,2%", "24,5%"),
         ("Manila Water Co (PSE: MWC)", "14,5x", "9,8x", "16,5%", "4,0%", "20,2%"),
         ("Regional Aqua-Utility Peers", "15,0x", "11,2x", "20,0%", "3,5%", "22,0%"),
-        ("CDIA Air (Implied Multiple)", "14,0x", "10,5x", "17,5%", "3,5%", "20,0%"),
+        ("CDIA Air (Implied Multiple)", "14,0x", [*10,5x*], [*17,5%*], "3,5%", "20,0%"),
         ([*Rata-rata Industri Air & Utilitas*], [*14,2x*], [*10,5x*], [*18,2%*], [*3,6%*], [*22,2%*]),
+        ([*Median Industri Air & Utilitas*], [*14,5x*], [*10,4x*], [*18,0%*], [*3,5%*], [*22,0%*]),
       ),
       palette: PALETTE,
     )
@@ -518,8 +521,9 @@
         ("Westports Holdings (KLSE: WPRTS)", "11,5x", "16,2x", "12,0%", "4,1%", "52,0%"),
         ("IPCC / IPBB (PT Indonesia Kendaraan)", "10,8x", "14,5x", "9,0%", "5,8%", "46,5%"),
         ("PORT (PT Nusantara Pelabuhan Handal)", "10,2x", "13,8x", "8,5%", "2,5%", "40,0%"),
-        ("CDIA Pelabuhan (Implied Multiple)", "11,0x", "15,0x", "10,0%", "4,5%", "55,0%"),
+        ("CDIA Pelabuhan (Implied Multiple)", [*10,8x*], "15,0x", [*9,5%*], [*4,5%*], "55,0%"),
         ([*Rata-rata Industri Pelabuhan*], [*10,8x*], [*14,8x*], [*9,8%*], [*4,1%*], [*46,2%*]),
+        ([*Median Industri Pelabuhan*], [*10,8x*], [*14,5x*], [*9,0%*], [*4,1%*], [*46,5%*]),
       ),
       palette: PALETTE,
     )

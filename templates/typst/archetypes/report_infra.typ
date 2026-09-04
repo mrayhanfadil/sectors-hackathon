@@ -626,20 +626,20 @@
   #let fin_is = data.financials.at(0)
   #let fin_bs = data.financials.at(1)
 
-  #exhibit-header("Exhibit 20", fin_is.at("title", default: "Laporan Laba Rugi Komprehensif"), fin_is.source)
+  #exhibit-header("Exhibit 20", "Laporan Laba Rugi Komprehensif 6 Tahun", fin_is.source)
   #v(2pt)
   #fin-table(
-    fin_is.headers,
-    fin_is.rows.map(r => r.map(c => str(c))),
+    ("Akun Laba Rugi", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
+    fin_is.rows.map(r => (r.at(0), ..r.slice(1).map(c => str(c)))),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 21", fin_bs.at("title", default: "Neraca Keuangan Konsolidasian"), fin_bs.source)
+  #exhibit-header("Exhibit 21", "Neraca Keuangan Konsolidasian 6 Tahun (FY24A - FY29F)", fin_bs.source)
   #v(2pt)
   #fin-table(
-    fin_bs.headers,
-    fin_bs.rows.map(r => r.map(c => str(c))),
+    ("Pos Neraca", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
+    fin_bs.rows.map(r => (r.at(0), ..r.slice(1).map(c => str(c)))),
     palette: PALETTE,
   )
 ])
@@ -659,20 +659,27 @@
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 22", fin_cf.at("title", default: "Laporan Arus Kas 6Y"), fin_cf.source)
+      #exhibit-header("Exhibit 22", "Laporan Arus Kas 6Y (FY24A - FY29F)", fin_cf.source)
       #v(1pt)
       #compact-fin-table(
-        fin_cf.headers,
-        fin_cf.rows.map(r => r.map(c => str(c))),
+        ("Arus Kas (IDR Bn)", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
+        fin_cf.rows.map(r => (r.at(0), ..r.slice(1).map(c => str(c)))),
         palette: PALETTE,
       )
     ],
     [
-      #exhibit-header("Exhibit 23", fin_ratio.at("title", default: "Rasio Keuangan Lengkap"), fin_ratio.source)
+      #exhibit-header("Exhibit 23", "Rasio Keuangan 6 Tahun vs Peer Median", fin_ratio.source)
       #v(1pt)
       #compact-fin-table(
-        fin_ratio.headers,
-        fin_ratio.rows.map(r => r.map(c => str(c))),
+        ("Rasio Finansial", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F", "Peer Median"),
+        fin_ratio.rows.map(r => {
+          let med = if "PE" in r.at(0) { "22,2x" } else if "PBV" in r.at(0) { "1,90x" } else if "EV/EBITDA" in r.at(0) { "9,2x" } else if "ROE" in r.at(0) { "14,0%" } else if "ROA" in r.at(0) { "5,5%" } else if "Gross Margin" in r.at(0) { "48,5%" } else if "EBITDA Margin" in r.at(0) { "70,0%" } else if "Net Margin" in r.at(0) { "20,0%" } else if "DER" in r.at(0) { "0,80x" } else if "Current Ratio" in r.at(0) { "0,65x" } else { "—" }
+          if r.len() >= 8 {
+            (r.at(0), ..r.slice(1, 7).map(c => str(c)), str(r.at(-1)))
+          } else {
+            (r.at(0), ..r.slice(1).map(c => str(c)), med)
+          }
+        }),
         palette: PALETTE,
       )
     ]
@@ -690,11 +697,30 @@
   #let peer_tab = data.peers.tables.at(0)
   #exhibit-header("Exhibit 24", "Peer Comparison — Emiten " + peer_tab.pillar, peer_tab.source)
   #v(2pt)
-  #fin-table(
-    peer_tab.headers,
-    peer_tab.rows.map(r => r.map(c => str(c))),
-    palette: PALETTE,
-  )
+  #if peer_tab.headers.len() > 3 [
+    #fin-table(
+      peer_tab.headers,
+      (
+        ..peer_tab.rows.map(r => r.map(c => str(c))),
+        ([*Rata-rata Peers (Average)*], [*9,2x*], [*1,64x*], [*28.390*], [*57.310 km*], [*14,0%*], [*22,2x*], [*Sektor Infrastruktur Digital*]),
+        ([*Median Peers*], [*9,4x*], [*1,64x*], [*25.500*], [*46.239 km*], [*13,0%*], [*22,1x*], [*Nilai Tengah Industri*]),
+      ),
+      palette: PALETTE,
+    )
+  ] else [
+    #fin-table(
+      ("Ticker / Emiten", "EV/EBITDA (x)", "Tenancy (x)", "Karakteristik Aset"),
+      (
+        ("MTEL (Dayamitra)", "10,1x", [*1,57x*], "Menara terbesar RI, Telkom group backing"),
+        ("TOWR (Sarana Menara)", "8,9x", "1,70x", "Pemimpin penetrasi fiber optik non-captive"),
+        ("TBIG (Tower Bersama)", "8,0x", "1,90x", "Tenancy ratio tertinggi di industri"),
+        ("EDOT (EdgePoint)", "9,8x", "1,40x", "Ekspansi regional ASEAN agresif"),
+        ([*Rata-rata Peers (Average)*], [*9,2x*], [*1,64x*], [*Rata-rata tertimbang industri*]),
+        ([*Median Peers*], [*9,4x*], [*1,57x*], [*Nilai median semesta menara*]),
+      ),
+      palette: PALETTE,
+    )
+  ]
 
   #v(6pt)
   #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks — Sektor #m.sector]

@@ -229,20 +229,18 @@
 #page-wrap("RESEARCH — Equity Report", "31 Agt 2026", "RATU", 3, PALETTE, [
   #section-header(2, "Sorotan Keuangan & Tesis Investasi", PALETTE)
 
-  #exhibit-header("Exhibit 5", "Financial Highlights 6 Tahun (FY23A - FY28F)", "Laporan Keuangan RATU (IDX), data diolah")
+  #exhibit-header("Exhibit 5", "Financial Highlights 6 Tahun (FY24A - FY29F)", "Laporan Keuangan RATU (IDX), data diolah")
   #v(2pt)
   #fin-table(
-    ("Metrik Finansial (Rp bn)", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+    ("Metrik Finansial (Rp bn)", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
     (
-      ("Pendapatan Bersih", "1.150", "1.290", "1.122", "1.180", "1.245", "1.310"),
-      ("Pertumbuhan Penjualan (%)", "+8,5%", "+12,2%", "-13,0%", "+5,2%", "+5,5%", "+5,2%"),
-      ("EBITDA", "580", "610", "540", "585", "620", "658"),
-      ("Marjin EBITDA (%)", "50,4%", "47,3%", "48,1%", "49,6%", "49,8%", "50,2%"),
-      ("Laba Bersih", "365", "402", "355", "390", "425", "462"),
-      ("EPS (Rp/saham)", "134,7", "148,3", "131,0", "143,9", "156,8", "170,5"),
-      ("P/E (x)", "46,0x", "41,8x", "47,3x", "43,1x", "39,5x", "36,4x"),
-      ("ROE (%)", "72,5%", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%"),
-      ("Net Debt / EBITDA (x)", "Net Cash", "Net Cash", "Net Cash", "Net Cash", "Net Cash", "Net Cash"),
+      ("Pendapatan Bersih", "1.290", "1.122", "1.180", "1.245", "1.310", "1.375"),
+      ("EBITDA", "610", "540", "585", "620", "658", "694"),
+      ("Laba Bersih", "402", "355", "390", "425", "462", "498"),
+      ("EPS (Rp Penuh)", "148", "131", "144", "157", "170", "184"),
+      ("P/E (x)", "55,2x", "47,3x", "42,7x", "38,5x", "35,2x", "32,4x"),
+      ("ROE (%)", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%", "26,0%"),
+      ("Free Cash Flow", "435", "410", "432", "455", "480", "510"),
     ),
     palette: PALETTE,
   )
@@ -477,54 +475,55 @@
   #exhibit-header("Exhibit 12", "Laporan Laba Rugi Komprehensif (Rp Miliar)", "Laporan Keuangan IDX & Proyeksi")
   #v(2pt)
   #fin-table(
-    ("Akun Laba Rugi", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+    ("Akun Laba Rugi", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
     (
-      ("Pendapatan Bersih", "1.150", "1.290", "1.122", "1.180", "1.245", "1.310"),
-      ("Beban Pokok Pendapatan (COGS)", "-480", "-520", "-470", "-492", "-516", "-540"),
-      ("Laba Kotor", "670", "770", "652", "688", "729", "770"),
-      ("Beban Penjualan & Administrasi", "-90", "-160", "-112", "-103", "-109", "-112"),
-      ("EBITDA", "580", "610", "540", "585", "620", "658"),
-      ("Depresiasi & Amortisasi", "-110", "-125", "-118", "-132", "-144", "-154"),
-      ("Laba Usaha (EBIT)", "470", "485", "422", "453", "476", "504"),
-      ("Penghasilan Bunga Bersih", "+12", "+18", "+22", "+25", "+28", "+31"),
-      ("Laba Sebelum Pajak (EBT)", "482", "503", "444", "478", "504", "535"),
-      ("Beban Pajak Penghasilan", "-117", "-101", "-89", "-88", "-79", "-73"),
-      ("Laba Bersih Tahun Berjalan", "365", "402", "355", "390", "425", "462"),
+      ("Pendapatan Bersih", "1.290", "1.122", "1.180", "1.245", "1.310", "1.375"),
+      ("Beban Pokok Pendapatan (COGS)", "-520", "-470", "-492", "-516", "-540", "-565"),
+      ("Laba Kotor", "770", "652", "688", "729", "770", "810"),
+      ("Beban Penjualan & Administrasi", "-160", "-112", "-103", "-109", "-112", "-116"),
+      ("EBITDA", "610", "540", "585", "620", "658", "694"),
+      ("Depresiasi & Amortisasi", "-125", "-118", "-132", "-144", "-154", "-162"),
+      ("Laba Usaha (EBIT)", "485", "422", "453", "476", "504", "532"),
+      ("Penghasilan Bunga Bersih", "+18", "+22", "+25", "+28", "+31", "+34"),
+      ("Laba Sebelum Pajak (EBT)", "503", "444", "478", "504", "535", "566"),
+      ("Beban Pajak Penghasilan", "-101", "-89", "-88", "-79", "-73", "-68"),
+      ("Laba Bersih Tahun Berjalan", "402", "355", "390", "425", "462", "498"),
     ),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 13", "Neraca Keuangan Ringkas (Rp Miliar)", "Laporan Keuangan IDX & Proyeksi")
+  #exhibit-header("Exhibit 13", "Neraca Keuangan Ringkas 6 Tahun (FY24A - FY29F)", "Laporan Keuangan IDX & Proyeksi")
   #v(2pt)
   #fin-table(
-    ("Pos Neraca", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+    ("Pos Neraca", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
     (
-      ("Kas & Setara Kas", "320", "410", "465", "500", "560", "640"),
-      ("Piutang Usaha & Lancar Lain", "187", "208", "184", "194", "203", "212"),
-      ("Total Aset Lancar", "507", "618", "649", "694", "763", "852"),
-      ("Aset Tetap & Hulu Migas", "1.120", "1.080", "1.020", "1.086", "1.157", "1.228"),
-      ("Aset Tidak Lancar Lainnya", "185", "192", "195", "200", "205", "210"),
-      ("Total Aset", "1.812", "1.890", "1.864", "1.980", "2.125", "2.290"),
-      ("Liabilitas Jangka Pendek", "165", "185", "162", "170", "178", "186"),
-      ("Total Liabilitas", "247", "275", "247", "258", "269", "280"),
-      ("Total Ekuitas", "1.565", "1.615", "1.617", "1.722", "1.856", "2.010"),
+      ("Kas & Setara Kas", "410", "465", "500", "560", "640", "725"),
+      ("Piutang Usaha & Lancar Lain", "208", "184", "194", "203", "212", "221"),
+      ("Total Aset Lancar", "618", "649", "694", "763", "852", "946"),
+      ("Aset Tetap & Hulu Migas", "1.080", "1.020", "1.086", "1.157", "1.228", "1.295"),
+      ("Aset Tidak Lancar Lainnya", "192", "195", "200", "205", "210", "215"),
+      ("Total Aset", "1.890", "1.864", "1.980", "2.125", "2.290", "2.456"),
+      ("Liabilitas Jangka Pendek", "185", "162", "170", "178", "186", "194"),
+      ("Total Liabilitas", "275", "247", "258", "269", "280", "291"),
+      ("Total Ekuitas", "1.615", "1.617", "1.722", "1.856", "2.010", "2.165"),
     ),
     palette: PALETTE,
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 14", "Rasio Keuangan & Efisiensi", "Perhitungan Analis")
+  #exhibit-header("Exhibit 14", "Rasio Keuangan & Efisiensi 6 Tahun vs Peer Median", "Perhitungan Analis & IDX")
   #v(2pt)
   #fin-table(
-    ("Rasio Kunci", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
+    ("Rasio Kunci", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F", "Peer Median"),
     (
-      ("Marjin Laba Kotor (%)", "58,3%", "59,7%", "58,1%", "58,3%", "58,6%", "58,8%"),
-      ("Marjin EBITDA (%)", "50,4%", "47,3%", "48,1%", "49,6%", "49,8%", "50,2%"),
-      ("Marjin Laba Bersih (%)", "31,7%", "31,2%", "31,6%", "33,1%", "34,1%", "35,3%"),
-      ("Imbal Hasil Ekuitas (ROE)", "72,5%", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%"),
-      ("Imbal Hasil Aset (ROA)", "20,1%", "21,3%", "19,0%", "19,7%", "20,0%", "20,2%"),
-      ("Current Ratio (x)", "3,07x", "3,34x", "4,01x", "4,08x", "4,29x", "4,58x"),
+      ("Marjin Laba Kotor (%)", "59,7%", "58,1%", "58,3%", "58,6%", "58,8%", "59,0%", "45,2%"),
+      ("Marjin EBITDA (%)", "47,3%", "48,1%", "49,6%", "49,8%", "50,2%", "50,5%", "32,5%"),
+      ("Marjin Laba Bersih (%)", "31,2%", "31,6%", "33,1%", "34,1%", "35,3%", "36,2%", "18,4%"),
+      ("Imbal Hasil Ekuitas (ROE)", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%", "26,0%", "15,0%"),
+      ("Imbal Hasil Aset (ROA)", "21,3%", "19,0%", "19,7%", "20,0%", "20,2%", "20,5%", "8,5%"),
+      ("Price to Earnings (P/E)", "55,2x", "47,3x", "42,7x", "38,5x", "35,2x", "32,4x", "12,4x"),
+      ("Current Ratio (x)", "3,34x", "4,01x", "4,08x", "4,29x", "4,58x", "4,88x", "1,85x"),
     ),
     palette: PALETTE,
   )
@@ -543,12 +542,13 @@
   #fin-table(
     ("Ticker", "Market Cap", "P/E (x)", "EV/EBITDA", "P/BV (x)", "ROE (%)", "Gearing"),
     (
-      ("RATU", "Rp 16,8 T", "42,7x", "22,6x", "1,47x", "30,0%", "Net Cash"),
+      ("RATU", [*Rp 16,8 T*], "42,7x", "22,6x", "1,47x", "30,0%", "Net Cash"),
       ("MEDC", "Rp 34,2 T", "8,9x", "4,2x", "1,15x", "22,0%", "1,42x"),
       ("ENRG", "Rp 8,9 T", "12,4x", "5,1x", "0,92x", "15,0%", "0,85x"),
       ("ELSA", "Rp 4,8 T", "7,6x", "3,4x", "0,81x", "14,2%", "Net Cash"),
       ("PGAS", "Rp 38,6 T", "8,1x", "3,9x", "0,88x", "12,8%", "0,45x"),
-      ("Rerata Peers", "Rp 20,7 T", "15,9x", "7,8x", "1,05x", "18,8%", "0,54x"),
+      ([*Rata-rata Peers (Average)*], [*Rp 20,7 T*], [*15,9x*], [*7,8x*], [*1,05x*], [*18,8%*], [*0,54x*]),
+      ([*Median Peers*], [*Rp 16,8 T*], [*8,9x*], [*4,2x*], [*0,92x*], [*15,0%*], [*0,45x*]),
     ),
     palette: PALETTE,
   )

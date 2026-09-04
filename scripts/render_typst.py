@@ -24,7 +24,8 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
         from report_charts import (chart_vs_jci, chart_segment_donut, chart_kpi_bars,
                                    chart_pbv_bands, chart_wacc_breakdown, chart_sensitivity_heatmap,
                                    chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend,
-                                   chart_margin_trajectory)
+                                   chart_margin_trajectory,
+                                   peer_pe_bar, peer_evebitda_bar, peer_pb_scatter)
     except ImportError:
         print(f"[warn] report_charts not importable, skipping charts for {ticker}")
         cache = CACHE_ROOT / f"render_{ticker.lower()}" / "charts"
@@ -157,6 +158,29 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                 )
         except Exception as e:
             print(f"[warn] margin_trajectory: {e}")
+    if data.get("peers"):
+        try:
+            peers_data = data["peers"]
+            peer_list: list[dict] = []
+            if isinstance(peers_data, dict) and peers_data.get("tables"):
+                for t in peers_data["tables"]:
+                    hdrs = [str(h).strip().lower().replace(" ", "_").replace("/", "_").replace("(x)", "").strip() for h in t.get("headers", [])]
+                    for r in t.get("rows", []):
+                        row_dict = {}
+                        for h, val in zip(hdrs, r):
+                            row_dict[h] = val
+                        if "ticker" in row_dict or "emiten" in row_dict:
+                            if "emiten" in row_dict and "ticker" not in row_dict:
+                                row_dict["ticker"] = row_dict["emiten"]
+                            peer_list.append(row_dict)
+            elif isinstance(peers_data, list):
+                peer_list = peers_data
+            if peer_list:
+                peer_pe_bar(peer_list, ticker, palette, cache / "peer_pe.png")
+                peer_evebitda_bar(peer_list, ticker, palette, cache / "peer_evebitda.png")
+                peer_pb_scatter(peer_list, ticker, palette, cache / "peer_pb.png")
+        except Exception as e:
+            print(f"[warn] peer charts: {e}")
     if CACHE_ROOT != Path("/tmp"):
         tmp_cache = Path(f"/tmp/render_{ticker.lower()}/charts")
         try:

@@ -4,10 +4,10 @@
     "reason": "segments=4 > 1 -> sotp",
     "ticker": "CDIA",
     "company_name": "Chandra Daya Investasi",
-    "sector": "Konglomerasi \u2014 Energi/Logistik/Air/Pelabuhan",
+    "sector": "Konglomerasi — Energi/Logistik/Air/Pelabuhan",
     "report_type": "Initiation",
     "date": "31 Agt 2026",
-    "prepared_by": "RESEARCH \u2014 Sectors Hackathon 2026",
+    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
     "language": "id"
   },
   "cover": {
@@ -85,7 +85,9 @@
       "FY24A",
       "FY25A",
       "FY26F",
-      "FY27F"
+      "FY27F",
+      "FY28F",
+      "FY29F"
     ],
     "rows": [
       [
@@ -93,28 +95,36 @@
         14500,
         15200,
         11800,
-        12900
+        12900,
+        14100,
+        15400
       ],
       [
         "EBITDA (Rp bn)",
         4900,
         4300,
         2100,
-        2800
+        2800,
+        3200,
+        3700
       ],
       [
         "Net profit (Rp bn)",
         2800,
         2100,
         510,
-        890
+        890,
+        1150,
+        1420
       ],
       [
         "ROE (%)",
         12.0,
         8.4,
         1.9,
-        3.2
+        3.2,
+        4.0,
+        4.8
       ]
     ]
   },
@@ -217,26 +227,30 @@
             "Item",
             "FY26F",
             "FY27F",
-            "FY28F"
+            "FY28F",
+            "FY29F"
           ],
           "rows": [
             [
               "CFO (Rp bn)",
               1900,
               2400,
-              2900
+              2900,
+              3400
             ],
             [
               "CAPEX (Rp bn)",
               -1200,
               -1000,
-              -800
+              -800,
+              -750
             ],
             [
               "FCFE (Rp bn)",
               700,
               1400,
-              2100
+              2100,
+              2650
             ]
           ]
         },
@@ -255,13 +269,15 @@
           "headers": [
             "Item",
             "FY27F",
-            "FY28F"
+            "FY28F",
+            "FY29F"
           ],
           "rows": [
             [
               "Dividen per saham (Rp)",
               22,
-              55
+              55,
+              68
             ]
           ]
         },
@@ -278,26 +294,38 @@
         "Rp bn",
         "FY24A",
         "FY25A",
-        "FY26F"
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F"
       ],
       "rows": [
         [
           "Pendapatan",
           14500,
           15200,
-          11800
+          11800,
+          12900,
+          14100,
+          15400
         ],
         [
           "EBITDA",
           4900,
           4300,
-          2100
+          2100,
+          2800,
+          3200,
+          3700
         ],
         [
           "Laba bersih",
           2800,
           2100,
-          510
+          510,
+          890,
+          1150,
+          1420
         ]
       ],
       "source": "Laporan keuangan IDX"
@@ -308,26 +336,42 @@
         "Rasio",
         "FY24A",
         "FY25A",
-        "FY26F"
+        "FY26F",
+        "FY27F",
+        "FY28F",
+        "FY29F",
+        "Peer Median"
       ],
       "rows": [
         [
           "Gearing (%)",
           96.0,
           130.0,
-          170.0
+          170.0,
+          155.0,
+          140.0,
+          125.0,
+          110.0
         ],
         [
           "Current ratio (x)",
           1.2,
           0.9,
-          0.7
+          0.7,
+          0.8,
+          0.9,
+          1.0,
+          1.1
         ],
         [
           "Debt/EBITDA (x)",
           1.9,
           2.6,
-          4.1
+          4.1,
+          3.5,
+          3.0,
+          2.5,
+          2.8
         ]
       ],
       "source": "Laporan keuangan IDX"
@@ -374,6 +418,16 @@
             "Sembcorp",
             9.3,
             11.0
+          ],
+          [
+            "Rata-rata",
+            8.7,
+            12.5
+          ],
+          [
+            "Median",
+            8.7,
+            12.5
           ]
         ],
         "source": "IDX, yfinance"
@@ -395,6 +449,16 @@
             "Aqua-like",
             15.0,
             20.0
+          ],
+          [
+            "Rata-rata",
+            14.1,
+            19.0
+          ],
+          [
+            "Median",
+            14.1,
+            19.0
           ]
         ],
         "source": "IDX, yfinance"
@@ -416,6 +480,16 @@
             "IPBB",
             10.8,
             9.0
+          ],
+          [
+            "Rata-rata",
+            11.2,
+            10.5
+          ],
+          [
+            "Median",
+            11.2,
+            10.5
           ]
         ],
         "source": "IDX, yfinance"
@@ -437,6 +511,16 @@
             "SMDR",
             6.9,
             10.0
+          ],
+          [
+            "Rata-rata",
+            7.2,
+            9.0
+          ],
+          [
+            "Median",
+            7.2,
+            9.0
           ]
         ],
         "source": "IDX, yfinance"
@@ -485,7 +569,10 @@
           "labels": [
             "FY24A",
             "FY25A",
-            "FY26F"
+            "FY26F",
+            "FY27F",
+            "FY28F",
+            "FY29F"
           ],
           "datasets": [
             {
@@ -493,7 +580,10 @@
               "data": [
                 33.8,
                 28.3,
-                17.8
+                17.8,
+                21.7,
+                22.7,
+                24.0
               ]
             }
           ]
@@ -501,49 +591,5 @@
       },
       "source": "Laporan keuangan IDX"
     }
-  ],
-  "gate_verdict": {
-    "primary": "DCF (shortened horizon)",
-    "secondary": "Relative Valuation",
-    "rating": "BUY",
-    "thin_data": true,
-    "gates": [
-      {
-        "gate": "0",
-        "verdict": "Pass",
-        "passed": true,
-        "rationale": "Consumer IPO"
-      },
-      {
-        "gate": "1",
-        "verdict": "Fail",
-        "passed": false,
-        "rationale": "2y filing history < 4y"
-      },
-      {
-        "gate": "2",
-        "verdict": "Pass",
-        "passed": true,
-        "rationale": "NCI 5%, DCF proceeds"
-      },
-      {
-        "gate": "3",
-        "verdict": "Pass",
-        "passed": true,
-        "rationale": "Volume-driven"
-      },
-      {
-        "gate": "4",
-        "verdict": "Pass",
-        "passed": true,
-        "rationale": "Growth stage"
-      },
-      {
-        "gate": "5",
-        "verdict": "Pass",
-        "passed": true,
-        "rationale": "Upside +22.6% in band"
-      }
-    ]
-  }
+  ]
 }
