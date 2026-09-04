@@ -121,13 +121,18 @@ DO NOT use archetype defaults — read from assumptions file for THIS ticker ({t
 Available tools:
 - calc_wacc(risk_free, beta, equity_risk_premium, cost_of_debt, weight_equity, tax_rate)
 - calc_dcf(free_cash_flows, wacc, terminal_growth, shares_outstanding, net_debt, cash)
-- calc_ddm(dividends, cost_of_equity, terminal_growth, shares_outstanding)
+- calc_ddm(dividends, cost_of_equity, terminal_growth, shares_outstanding)  ← CoE, NOT WACC
 - calc_multiples(ebitda, ev_ebitda, shares_outstanding, net_debt, cash)
-- calc_ggm(roe, cost_of_equity, growth, book_value_per_share)
+- calc_ggm(roe, cost_of_equity, growth, book_value_per_share)            ← CoE, NOT WACC
 - calc_sotp(segments: [{name, value, discount}])
 - calc_blended(dcf_value, multiples_value, w_dcf=0.6, w_multiples=0.4)
 - calc_historical_bands(series)
 - calc_ratios(revenue, ebitda, net_income, total_debt, cash, equity, interest_expense, ...)
+
+DISCOUNT-RATE DISCIPLINE (Abida rule, 2026-09-04):
+- DCF (calc_dcf) uses WACC — discounted cash flows belong to the firm, discount at the firm's blended cost of capital.
+- DDM (calc_ddm) and GGM (calc_ggm) use Cost of Equity (CoE), NOT WACC — these discount equity cash flows (dividends, residual income), which belong to shareholders and must be discounted at the shareholders' required return.
+- Never pass WACC to calc_ddm or calc_ggm. Derive CoE separately via CAPM: CoE = Rf + β × ERP (or read from `cost_of_equity` in the assumptions file when present).
 
 Adaptive valuation (auto-pick 2nd method based on archetype):
 - bank archetype (e.g. P/BV, ROE driven) → GGM as secondary
