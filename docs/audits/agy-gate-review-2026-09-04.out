@@ -1,0 +1,66 @@
+```
+REVIEW-VERDICT: PASS
+
+CRITICAL ISSUES (must fix before merge):
+None.
+
+NON-CRITICAL ISSUES (nice to fix):
+- None blocking. In `agents/valuation/gates.py`: `_secondary_for()` defines a secondary mapping for `"DDM / Excess Return"` -> `"Relative Valuation"`, but the bank branch in `evaluate()` intentionally short-circuits with `secondary=None` (which matches BBCA audit expectations). This is architecturally clean, but adding a brief docstring note in `_secondary_for()` clarifying that financial short-circuit bypasses it would aid maintainability.
+
+VERIFIED:
+- Gate 0 logic matches PDF (bank/reit/mining/holding/single) ✓
+- Gate 1 thin-data fallback = shortened DCF + thin_data flag ✓
+- Gate 5 auto-override = rating_override="Review Required" ✓
+- All 5 quintet verdicts match expected (RATU=DCF, CDIA=DCF-thin, MTEL=DCF+SOTP, BBCA=DDM, ADRO=NAV) ✓
+- Cover panel macro renders correctly ✓
+- Orchestrator wiring references correct param names ✓
+- 26+ gate tests PASS, 9 audit tests PASS ✓
+
+FILES REVIEWED: agents/valuation/gates.py, agents/valuation/test_gates.py, templates/typst/common/cover.typ, agents/adk/agents/instructions.py, scripts/audit_quintet_gates.py, docs/valuation-framework.md, templates/typst/archetypes/report_*.typ
+```
+
+---
+
+### Detailed Review Analysis
+
+#### 1. `agents/valuation/gates.py` (Gate Runner Logic & Public API)
+- **Gate 0 (Business Model)**: Faithfully routes financials (`bank`, `insurance`, `multifinance`, `securities`) to `"DDM / Excess Return"`, `reit` to `"NAV / Reserve-based"`, finite reserves (`mining`, `oil_gas`, `plantation`) to `"NAV / Reserve-based"`, `holding_dissimilar` to `"SOTP"`, and `single_business` to DCF evaluation. Financial institutions cleanly skip non-applicable debt/EBITDA/FCF gates (Gates 1–4) and evaluate Gate 5 only.
+- **Gate 1 (Data Eligibility)**:
+  - **1a (Filing History)**: Strictly implements the user-decision delta: `< 4y` history triggers `primary = "DCF (shortened horizon)"` and sets `thin_data = True` (rather than defaulting to pure Relative Valuation).
+  - **1b (Profitability)**: Failing EBIT in $\ge 2$ of last 3 years escalates to Relative Valuation (`EV/Sales` / `Price/Sales`).
+  - **1c (Capital Structure)**: Leverage breaches ($D/(D+E) > 80\%$, $\text{Net Debt}/\text{EBITDA} > 6\text{x}$, $\text{ICR} < 1\text{x}$) retain DCF as primary while enforcing a mandatory Relative Valuation cross-check reason.
+  - **1d (Equity Base)**: Negative shareholders' equity correctly restricts to EV-based multiples.
+- **Gate 2 (Ownership Structure)**: Correctly segments $\text{NCI} \le 15\%$ (DCF), $15\% < \text{NCI} \le 40\%$ (DCF + SOTP cross-check), and $\text{NCI} > 40\%$ (SOTP primary).
+- **Gate 3 (Cyclicality)**: Commodity-driven revenue (`commodity_coal`, `commodity_nickel`, `commodity_cpo`, `commodity_oil`) selects `"NAV / Reserve-based"`; ramping assets with $< 3\text{y}$ steady state select `"Relative Valuation"`.
+- **Gate 4 (Life-Cycle Stage)**: `pre_revenue` / `high_growth_pre_profit` $\rightarrow$ `EV/Sales`; `mature` $\rightarrow$ DCF; `decline` $\rightarrow$ `P/BV`.
+- **Gate 5 (Output Sanity)**: Explicitly implements the user-decision delta: $\text{upside} > 100\%$ or $\text{downside} < -50\%$ sets `rating_override = "Review Required"`. $\text{Terminal Value} > 80\%\ \text{of EV}$ logs a warning flag for cross-check without overriding the rating.
+- **Code Quality**: Zero external runtime dependencies (pure Python stdlib), typed dataclass `GateVerdict` with `to_dict()`, clear typing, and deterministic execution.
+
+#### 2. `agents/valuation/test_gates.py` (Test Suite)
+- **Coverage**: 26 unit tests covering every individual branch of Gates 0 through 5.
+- **Quintet Verification**: Full integration coverage for `RATU`, `CDIA`, `MTEL`, `BBCA`, and `ADRO`.
+- **Delta Assertions**: Explicitly validates `thin_data is True` for `CDIA` and `rating_override == "Review Required"` on extreme upside/downside, confirming that high TV share flags without triggering an override.
+
+#### 3. `templates/typst/common/cover.typ` (Method Selection Panel)
+- **Macro Design**: `#let method-selection-panel(gate-verdict, palette: DEFAULT_PALETTE)` safely guards against `none` verdicts.
+- **Visuals & Layout**:
+  - Renders 3-column table (`Gate`, `Verdict`, `Rationale`) with theme-aware borders and alternating band fills.
+  - Renders `Verdict` in `palette.neg` (red) when `passed == false` and `palette.ink` when true.
+  - Summary row highlights Primary, Secondary, and Rating.
+  - Displays `⚠ Thin Data — DCF with shortened horizon, history <4y` banner exclusively when `thin_data` is `true`.
+- **Typst Compatibility**: Fully valid Typst syntax compatible with all 4 archetype templates.
+
+#### 4. `agents/adk/agents/instructions.py` (Orchestrator Wiring)
+- **Pre-Flight Hook**: `modeler_instruction` explicitly instructs the LLM to invoke `agents.valuation.gates.evaluate(ticker, ...)` before computing valuation math.
+- **Parameter Completeness**: The documented parameter checklist mirrors `evaluate()` keyword arguments (`domain`, `filing_history_years`, `ebit_positive_count`, `d_de_ratio`, `net_debt_to_ebitda`, `interest_coverage`, `shareholders_equity`, `nci_pct`, `revenue_drivers`, `has_steady_state_3y`, `life_cycle_stage`).
+- **Behavioral Guidance**: Explains `thin_data` banner emission and `rating_override` mechanics.
+
+#### 5. Integration & End-to-End Verification
+- **Audit Script & Tests**: `scripts/audit_quintet_gates.py` and `scripts/test_audit_quintet.py` confirm 5/5 quintet pass:
+  - `RATU`: `FCFF/WACC DCF` (Secondary: `Relative Valuation`, Override: None)
+  - `CDIA`: `DCF (shortened horizon)` (Secondary: `Relative Valuation`, Thin: `True`)
+  - `MTEL`: `FCFF/WACC DCF` (Secondary: `Relative Valuation`, SOTP cross-check attached)
+  - `BBCA`: `DDM / Excess Return` (Secondary: `-`, Override: None)
+  - `ADRO`: `NAV / Reserve-based` (Secondary: `FCFF/WACC DCF`, Override: None)
+- **Template Integration**: All 4 archetypes (`report_single.typ`, `report_sotp.typ`, `report_infra.typ`, `report_strategy.typ`) import `cover.typ` and invoke `#method-selection-panel(gate-verdict, palette: PALETTE)`.
+- **Documentation**: `docs/valuation-framework.md` and `references/framework-valuation.pdf` provide a complete reference trace for the 6-gate methodology and user-decided deltas.
