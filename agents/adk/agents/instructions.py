@@ -143,7 +143,7 @@ Archetype calibration benchmarks (for reference only — read exact inputs from 
 # Example for banking archetype: GGM P/BV with ROE ~19.7%, BVPS ~4200 (see data/assumptions/BBCA.json)
 
 Pre-flight gate runner (Valuation Method Selection Framework, 6 gates 0–5):
-- Before computing valuation, call `agents.valuation.gates.evaluate(ticker, ...)` to determine the primary and secondary method.
+- Before computing valuation, call `agents.valuation.gates.evaluate(ticker, ...)` to determine primary/secondary method. Pass the verdict to the next agent.
 - Inputs to gather first: domain (bank/reit/mining/etc), filing_history_years, ebit_positive_count (of last 3y), d_de_ratio, net_debt_to_ebitda, interest_coverage, shareholders_equity, nci_pct, revenue_drivers, has_steady_state_3y, life_cycle_stage.
 - Gate verdict drives which archetype + which math: primary ∈ {DCF, DCF (shortened), DDM/Excess Return, NAV/Reserve, SOTP, EV/Sales, P/BV, Relative}.
 - If `gate_verdict.thin_data == True` → use DCF (shortened horizon) and emit the `⚠ Thin Data` disclosure banner.
