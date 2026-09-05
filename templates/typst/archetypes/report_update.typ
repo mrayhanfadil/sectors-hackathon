@@ -33,15 +33,15 @@
   text(size: 5.5pt, fill: gray)[Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance). Lihat pengungkapan penting di akhir laporan.]
 }
 #let upd-wrap(prep, date, ticker, pg, body) = {
-  set page(paper: "a4", margin: (x: 14mm, y: 12mm), footer: upd-foot(prep, date, ticker, pg), numbering: none)
+  set page(paper: "a4", margin: (x: 11mm, y: 9mm), footer: upd-foot(prep, date, ticker, pg), numbering: none)
   body
 }
-#let h-main(txt) = text(size: 11pt, weight: "bold", fill: NAVY_D)[#txt]
-#let h-sec(txt) = text(size: 9.5pt, weight: "bold", fill: NAVY)[#txt]
+#let h-main(txt) = text(size: 10pt, weight: "bold", fill: NAVY_D)[#txt]
+#let h-sec(txt) = text(size: 9pt, weight: "bold", fill: NAVY)[#txt]
 #let side-h(txt) = text(size: 7.5pt, weight: "bold", fill: white)[#txt]
 #let side-box(title, body) = {
-  block(fill: NAVY, inset: 4pt, radius: 2pt, width: 100%)[#side-h(title)]
-  block(fill: PAPER2, inset: 4pt, radius: 2pt, width: 100%)[#body]
+  block(fill: NAVY, inset: 3pt, radius: 2pt, width: 100%)[#side-h(title)]
+  block(fill: PAPER2, inset: 3pt, radius: 2pt, width: 100%)[#body]
   v(4pt)
 }
 #let kv(k, v) = grid(columns: (1fr, auto), gutter: 4pt, text(size: 7pt)[#k], text(size: 7pt, weight: "bold")[#v])
@@ -69,16 +69,16 @@
     text(size: 7.5pt, fill: NAVY)[#RDATE],
     text(size: 7.5pt, weight: "bold", fill: NAVY)[Equity Research – Company Update],
   )
-  #v(2pt)
-  #text(size: 20pt, weight: "bold", fill: NAVY_D)[#CO]
+  #v(1pt)
+  #text(size: 16pt, weight: "bold", fill: NAVY_D)[#CO]
   #v(1pt)
   #text(size: 10pt, fill: NAVY)[(#TICK IJ) — #SECTOR]
   #v(1pt)
-  #text(size: 12pt, weight: "bold")[#cover.at("headline", default: "")]
-  #v(6pt)
+  #text(size: 10.5pt, weight: "bold")[#cover.at("headline", default: "")]
+  #v(3pt)
   #grid(columns: (52mm, 1fr), gutter: 6pt, [
-    #block(fill: NAVY, inset: 5pt, radius: 2pt, width: 100%)[#text(size: 11pt, weight: "bold", fill: white)[#RACT]]
-    #v(4pt)
+    #block(fill: NAVY, inset: 3pt, radius: 2pt, width: 100%)[#text(size: 10pt, weight: "bold", fill: white)[#RACT]]
+    #v(1pt)
     #side-box("Harga & Valuasi")[
       #kv("Last Price (Rp)", str(RPRICE))
       #kv("Target Price (Rp)", str(RTP))
@@ -97,13 +97,13 @@
     #side-box("Analyst")[#text(size: 7pt)[#PREP]]
   ], [
     #for t in data.at("thesis", default: ()) [
-      #text(size: 8pt)[• #t.at("headline", default: "") — #t.at("detail", default: "")]
-      #v(2pt)
+      #text(size: 7.5pt)[• #t.at("headline", default: "") — #t.at("detail", default: "")]
+      #v(1pt)
     ]
-    #v(4pt)
+    #v(1pt)
     #let fh = data.at("financial_highlights", default: (:))
     #h-sec("Key Financials")
-    #v(2pt)
+    #v(1pt)
     #fin-table(
       ("Year to 31 Dec", ..fh.at("years", default: ())),
       fh.at("rows", default: (("—",))).map(r => r.map(c => str(c))),
@@ -121,15 +121,15 @@
     text(size: 7.5pt, fill: NAVY)[#RDATE],
     text(size: 7.5pt, weight: "bold", fill: NAVY)[Equity Research – Company Update],
   )
-  #v(4pt)
+  #v(1pt)
   #let earn = data.at("earnings", default: (:))
   #h-main(earn.at("title", default: "Quarterly Results"))
-  #v(2pt)
-  #text(size: 8pt)[#earn.at("narrative", default: "")]
-  #v(4pt)
+  #v(1pt)
+  #text(size: 7.5pt)[#earn.at("narrative", default: "")]
+  #v(1pt)
   #let et = earn.at("table", default: (:))
   #h-sec(et.at("title", default: "Results"))
-  #v(2pt)
+  #v(1pt)
   #fin-table(
     et.at("headers", default: ("—",)),
     et.at("rows", default: (("—",))).map(r => r.map(c => str(c))),
@@ -137,10 +137,10 @@
   )
   #v(1pt)
   #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Sumber: #et.at("source", default: "-")]
-  #v(6pt)
+  #v(3pt)
   #let kr = data.at("key_ratios", default: (:))
   #h-sec(kr.at("title", default: "Key Ratios"))
-  #v(2pt)
+  #v(1pt)
   #fin-table(
     kr.at("headers", default: ("—",)),
     kr.at("rows", default: (("—",))).map(r => r.map(c => str(c))),
@@ -154,13 +154,13 @@
 // ============ PAGE 3 — valuation (DDM) ============
 #upd-wrap(PREP, RDATE, TICK, 3, [
   #h-main("Valuation — Dividend Discount Model")
-  #v(2pt)
+  #v(1pt)
   #let val = data.at("valuation", default: (:))
-  #text(size: 8pt)[#val.at("narrative", default: "")]
-  #v(4pt)
+  #text(size: 7.5pt)[#val.at("narrative", default: "")]
+  #v(1pt)
   #for mt in val.at("methods", default: ()) [
     #h-sec(mt.at("title", default: mt.at("method", default: "Metode")))
-    #v(2pt)
+    #v(1pt)
     #let tb = mt.at("table", default: (:))
     #fin-table(
       tb.at("headers", default: ("Parameter", "Nilai", "Keterangan")),
@@ -169,37 +169,34 @@
     )
     #v(1pt)
     #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Sumber: #mt.at("source", default: "-")]
-    #v(4pt)
+    #v(1pt)
   ]
   #card(PALETTE)[
     #text(weight: "bold")[Kesimpulan Valuasi]
-    #v(2pt)
-    #text(size: 8pt)[#val.at("conclusion", default: "")]
+    #v(1pt)
+    #text(size: 7.5pt)[#val.at("conclusion", default: "")]
   ]
-])
-
-#pagebreak()
-// ============ PAGE 4 — outlook + risks ============
-#upd-wrap(PREP, RDATE, TICK, 4, [
-  #h-main("Outlook & Risks")
-  #v(2pt)
-  #let ol = data.at("outlook", default: "")
-  #if type(ol) == str [#text(size: 8pt)[#ol]] else [#for p in ol [#text(size: 8pt)[• #p]]]
   #v(6pt)
+  #h-main("Outlook & Risks")
+  #v(1pt)
+  #let ol = data.at("outlook", default: "")
+  #if type(ol) == str [#text(size: 7.5pt)[#ol]] else [#for p in ol [#text(size: 7.5pt)[• #p]]]
+  #v(3pt)
   #h-sec("Investment Risks")
-  #v(2pt)
+  #v(1pt)
   #let risks_list = data.at("risks", default: ())
   #grid(
     columns: (1fr, 1fr),
     gutter: 5pt,
     ..risks_list.map(r => card(PALETTE)[
       #text(weight: "bold", fill: PALETTE.neg)[#r.at("bucket", default: "-")]
-      #v(2pt)
+      #v(1pt)
       #text(size: 7pt)[#r.at("detail", default: "")]
     ]),
   )
-  #v(6pt)
+  #v(3pt)
   #text(size: 7.5pt, weight: "bold", fill: NAVY)[Rating Guide]
-  #v(2pt)
+  #v(1pt)
   #text(size: 7pt)[BUY: upside > +15% · HOLD: -15% s/d +15% · SELL: downside < -15% · Ulasan tahunan atau saat Noble Events.]
-])
+]
+)
