@@ -42,7 +42,9 @@
   "shareholders_src": "yfinance (insiders 74,46%); rincian nominee tidak dirinci di sini",
   "market": {
    "market_cap": "Rp 172,5 T",
-   "index_class": "IDX"
+   "index_class": "IDX",
+   "range_52w": "1.205 - 8.466",
+   "avg_value_3m": "Rp 1.128 M/hari"
   },
   "price_chart": {
    "label": "TPIA -71,2% vs IHSG -18,7% (12M Okt-25→Sep-26, rebased)",
