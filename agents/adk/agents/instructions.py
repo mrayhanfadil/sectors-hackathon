@@ -408,6 +408,11 @@ Rules:
   MUST emit one specific challenge. You may call exit_loop ONLY after debate.json holds
   >=1 completed round whose defense cites at least one calc_* recomputation AND one
   url+date source. Placeholder debate ("in progress") + exit_loop = automatic Critic REJECT.
+- SUBMIT PROTOCOL (hard rule): after the defense, you MUST call the submit_debate tool
+  with the full JSON array. If it returns ok:false, fix the listed errors and resubmit
+  (loop cap is 4 iterations — budget them). Call exit_loop ONLY after submit_debate
+  returns ok:true. Your FINAL message must be exactly the accepted JSON array and
+  nothing else — that text is what debate_output stores and the Critic audits.
 - Call exit_loop when done (after verdict received or 2 rounds complete).
 
 Output key: debate_output

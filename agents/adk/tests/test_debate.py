@@ -91,3 +91,15 @@ def test_missing_round_key_fails():
     ok, errors = validate_debate(bad)
     assert not ok
     assert any("verdict" in e for e in errors)
+
+
+def test_submit_debate_tool():
+    import json
+
+    from agents.adk.debate import submit_debate
+
+    good = submit_debate(json.dumps(VALID))
+    assert good == {"ok": True, "n_rounds": 1}
+    bad = submit_debate("Red-team review complete — exiting the loop.")
+    assert bad["ok"] is False
+    assert bad["errors"]

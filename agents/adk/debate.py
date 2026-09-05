@@ -95,3 +95,17 @@ def validate_debate(output: Any) -> tuple[bool, list[str]]:
         elif "defense" in r:
             errors.append(f"{tag}.defense: must be an object")
     return (len(errors) == 0), errors
+
+
+def submit_debate(debate_json: str) -> dict:
+    """FunctionTool for the adversarial agent: submit the debate for validation.
+
+    Returns {"ok": True, "n_rounds": N} when the debate meets the schema, else
+    {"ok": False, "errors": [...]} so the agent can fix and resubmit in-loop.
+    The agent's final message must be exactly the accepted JSON array.
+    """
+    ok, errors = validate_debate(debate_json)
+    if ok:
+        rounds, _ = _coerce(debate_json)
+        return {"ok": True, "n_rounds": len(rounds)}
+    return {"ok": False, "errors": errors}
