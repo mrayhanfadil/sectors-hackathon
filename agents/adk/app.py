@@ -87,6 +87,7 @@ from .agents.instructions import (
 )
 from .providers import deepseek_model, gemini_model, spark_model
 from .tools.finance_tools import DETERMINISTIC_TOOLS
+from .debate import submit_debate
 from .tools.mcp_sectors import maybe_sectors_mcp_toolset
 from .tools.web_tools import (
     web_search,
@@ -395,7 +396,7 @@ def build_graph(
         model=main_model,
         description="Red Team — challenges one claim per iteration, defender must evidence or concede.",
         instruction=_fmt(adversarial_instruction),
-        tools=[FunctionTool(exit_loop)]
+        tools=[FunctionTool(exit_loop), FunctionTool(submit_debate)]
         + [
             FunctionTool(calc)
             for calc in DETERMINISTIC_TOOLS
