@@ -204,6 +204,48 @@ def _build_search_subagent(
     )
 
 
+def _assumptions_block(ticker: str) -> str:
+    """Server-side assumptions injection (AGY audit 2026-09-05, F4).
+
+    Agents have no file-read tool, so the old "read data/assumptions/{T}.json"
+    instruction was aspirational and the modeler silently invented beta/rf/erp.
+    This loads the file HERE and pastes binding constraints into the prompt.
+    Missing file → explicit loud banner, never silent defaults.
+    """
+    import json as _json
+    from pathlib import Path as _Path
+
+    t = (ticker or "").upper().strip()
+    p = _Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t}.json"
+    if not p.exists():
+        return (
+            f"\n\nBINDING ASSUMPTIONS FOR {t}: NO data/assumptions/{t}.json EXISTS. "
+            "You MUST derive beta/rf/erp/g from live collector data and disclose "
+            "every parameter as estimated with its source — never present invented "
+            "parameters as file-loaded.\n"
+        )
+    try:
+        a = _json.loads(p.read_text())
+    except Exception as e:
+        return (
+            f"\n\nBINDING ASSUMPTIONS FOR {t}: file exists but UNPARSEABLE ({e}). "
+            "Treat as missing: derive + disclose per above.\n"
+        )
+    lines = [f"\n\nBINDING ASSUMPTIONS FOR {t} (from data/assumptions/{t}.json — these OVERRIDE your priors):"]
+    for k in ("beta", "rf", "erp", "cod", "g", "g1", "g2", "payout", "dps",
+              "shares_out", "last_price", "gate_primary", "archetype"):
+        if k in a:
+            lines.append(f"- {k} = {a[k]}")
+    if "beta_note" in a:
+        lines.append(f"- beta_note: {a['beta_note']}")
+    lines.append(
+        "If live market data contradicts any value above (e.g. price moved), use the LIVE "
+        "value for market figures but keep the STRUCTURAL parameters (beta/rf/erp/gate_primary) "
+        "and disclose the deviation. Never silently substitute your own beta."
+    )
+    return "\n".join(lines) + "\n"
+
+
 def _web_composite_tools() -> list[Any]:
     """Composite web toolset — replaces Gemini+GoogleSearch search sub-agents.
 
@@ -325,7 +367,7 @@ def build_graph(
         name="modeler",
         model=main_model,
         description="THE BRAIN — deterministic valuation via calc_* tools only.",
-        instruction=_fmt(modeler_instruction),
+        instruction=_fmt(modeler_instruction) + _assumptions_block(ticker),
         tools=ft,
         output_key="valuation_output",
     )
@@ -370,7 +412,7 @@ def build_graph(
         name="writer",
         model=main_model,
         description="Investment thesis — 4 bullets, every number cited from valuation/kpi.",
-        instruction=_fmt(writer_instruction),
+        instruction=_fmt(writer_instruction) + _assumptions_block(ticker),
         output_key="writer_output",
     )
 

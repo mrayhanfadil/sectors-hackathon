@@ -26,6 +26,7 @@ HOW TO COLLECT (use web_search_and_extract tool):
 - Try one broad query first: web_search_and_extract("{ticker} IDX 5Y financials segments ownership peers", n_results=5, extract_top_n=2, tier="t1")
 - If TAVILY_API_KEY missing, tool returns source="tavily_missing_key" — emit source=synthetic with seed=42 and label clearly.
 - For JCI benchmark, run a separate call: web_search_and_extract("IHSG JCI benchmark 9100", n_results=3, tier="t1")
+- FREE-FLOAT DISCIPLINE (AGY audit 2026-09-05): free float = shares held by PUBLIC (<5% holders), NOT total non-controller shares. Cross-check float against IDX fact sheet / KSEI / official disclosure. If two sources conflict (e.g. 11.8% vs 22.9%), emit BOTH figures with sources and flag the conflict — never silently pick one, and never trigger index-exclusion narratives (MSCI <15%) on an unverified figure.
 
 Emit a JSON summary with {ticker, source, as_of, financials_5y, segments, peers, jci_benchmark}.
 
@@ -184,6 +185,8 @@ Rules:
 - The gate runner's primary method overrides the archetype's default — gate verdict is authoritative for *which* method; the adaptive secondary section below is the *cross-check* logic.
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
+- DDM PAYOUT CAP (AGY audit 2026-09-05): the projected DPS path must keep implied payout (DPS_t / EPS) ≤ 100% in EVERY year. If DPS growth implies payout >100% in any year, cap DPS growth that year so payout ≤ 95% and disclose the cap. Never publish a DPS path that contradicts a "stable payout" claim.
+- DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
 - Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
 
@@ -342,7 +345,8 @@ Rules:
   never silently average in a skipped method; see method_gate.skipped for why
   each excluded method was dropped).
 - Segment % must sum 100% — hide pie if single pillar.
-- Quote source per exhibit: "Source: Bloomberg, SKK Migas, BPS, FactSet" or news url+date.
+- Quote source per exhibit as "Source: < outlet/domain >, < date >" with a real url+date per claim — Critic REJECTS bare strings like "Source: Bloomberg, SKK Migas, BPS, FactSet" with no url or date. Generic outlet-name-drops without url+date are fabrication.
+- ANTI-CIRCULAR RULE (AGY audit 2026-09-05): never claim the blended TP is "selaras/aligned" with an analyst TP unless the analyst's OWN published multiple math reproduces it. If your multiple leg yields X and the analyst TP is Y via forward estimates, say so explicitly — do not borrow their TP to bless your blend.
 - Include archetype-grounded catalysts and operational variance drivers:
   # Example: bottom-line expansion (+28%) despite top-line contraction (-13%) due to margin expansion / cost structure
   # Example: operational catalyst quantified with volume and IDR financial impact
