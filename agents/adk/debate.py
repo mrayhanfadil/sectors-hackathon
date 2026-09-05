@@ -109,3 +109,50 @@ def submit_debate(debate_json: str) -> dict:
         rounds, _ = _coerce(debate_json)
         return {"ok": True, "n_rounds": len(rounds)}
     return {"ok": False, "errors": errors}
+
+
+def _as_dict(v: Any) -> dict | None:
+    if isinstance(v, dict):
+        return v
+    if isinstance(v, str):
+        try:
+            parsed = json.loads(v)
+        except Exception:
+            return None
+        return parsed if isinstance(parsed, dict) else None
+    return None
+
+
+def extract_accepted_debate(events: list[dict]) -> list | None:
+    """Return the last submit_debate payload accepted with ok:true, else None.
+
+    Operates on serialized event dicts (store.get_events / API shape with
+    function_calls + function_responses hoisted). Deterministic backfill source
+    when the agent's final narration text — not the JSON — lands in state.
+
+    Calls and their responses live in DIFFERENT events (call at seq N, response
+    at seq N+1), so pairing is done with a FIFO queue across the event order:
+    each ok:true response accepts the earliest still-pending submit call.
+    """
+    accepted: list | None = None
+    pending: list[dict] = []
+    for e in events or []:
+        for c in e.get("function_calls") or []:
+            if isinstance(c, dict) and c.get("name") == "submit_debate":
+                pending.append(c)
+        for r in e.get("function_responses") or []:
+            if not (isinstance(r, dict) and r.get("name") == "submit_debate"):
+                continue
+            if not pending:
+                continue
+            call = pending.pop(0)
+            resp = _as_dict(r.get("response"))
+            if resp and resp.get("ok") is True:
+                args = _as_dict(call.get("args"))
+                payload = (args or {}).get("debate_json")
+                rounds, err = _coerce(payload) if payload is not None else (None, "missing")
+                if err is None and isinstance(rounds, list) and rounds:
+                    ok, _ = validate_debate(rounds)
+                    if ok:
+                        accepted = rounds
+    return accepted
