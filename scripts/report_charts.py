@@ -187,7 +187,7 @@ def chart_vs_jci(
     ax.set_ylim(y_min - y_pad, y_max + y_pad)
     ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:+.0f}%" if val != 0 else "0%"))
 
-    ax.set_title(f"{ticker} vs IHSG (12M %)"), loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8)
+    ax.set_title(f"{ticker} vs IHSG 12M %", loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8)
     if source:
         fig.text(0.99, -0.01, f"Source: {source}", fontsize=6.8, color=p["muted"], ha="right", style="italic")
 
