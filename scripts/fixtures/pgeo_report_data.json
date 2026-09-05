@@ -360,5 +360,52 @@
  "sentiment": null,
  "strategy": null,
  "exhibits": [],
- "pbv_caption": "PGEO di P/BV 1,31 vs rata-rata 1,32 (±1σ 1,06–1,57): pasar membayar premi atas BVPS."
+ "pbv_caption": "PGEO di P/BV 1,31 vs rata-rata 1,32 (±1σ 1,06–1,57): pasar membayar premi atas BVPS.",
+ "statements": {
+  "title": "Financial Statements (yfinance)",
+  "years": [
+   "2025",
+   "2024",
+   "2023"
+  ],
+  "income": [
+   [
+    "Revenue",
+    "0",
+    "0",
+    "0"
+   ],
+   [
+    "Laba Bersih",
+    "0",
+    "0",
+    "0"
+   ]
+  ],
+  "unit": "US$ juta (perseroan lapor USD)",
+  "source": "yfinance annuals"
+ },
+ "market_hist": {
+  "high52": "1.470",
+  "low52": "770",
+  "divs": [
+   [
+    "2023-06-14",
+    "10,9"
+   ],
+   [
+    "2024-06-06",
+    "47,8"
+   ],
+   [
+    "2025-06-16",
+    "53,1"
+   ],
+   [
+    "2026-04-30",
+    "49,4"
+   ]
+  ],
+  "source": "yfinance"
+ }
 }

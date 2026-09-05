@@ -195,3 +195,33 @@
     #text(size: 6.5pt)[Laporan ini disusun untuk tujuan edukasi dalam rangka hackathon dan bukan rekomendasi transaksi efek. Penulis dapat memegang posisi pada efek yang dibahas. Metodologi, asumsi, dan sumber data diungkap di dalam laporan; angka forward-looking bersifat estimasi dan dapat bias. Investor wajib melakukan analisis mandiri.]
   ]
 ])
+
+#pagebreak()
+// ============ P4 — financial statements + market history ============
+#wrap(TICK, 4, [
+  #let st = data.at("statements", default: none)
+  #if st != none [
+    #h-main("Financial Statements")
+    #v(1pt)
+    #text(size: 7.5pt, fill: MUT)[Unit: #st.at("unit", default: "-")]
+    #v(2pt)
+    #h-sec("Income Statement (ringkas)")
+    #v(2pt)
+    #fin-table(("Pos", ..st.at("years", default: ())), st.at("income", default: (("—",))).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
+    #v(1pt)
+    #src(st.at("source", default: "-"))
+    #v(4pt)
+  ]
+  #let mh = data.at("market_hist", default: none)
+  #if mh != none [
+    #h-sec("Riwayat Pasar & Dividen")
+    #v(2pt)
+    #fin-table(("Statistik 52M", "Nilai"), (("Tertinggi", mh.at("high52", default: "-")), ("Terendah", mh.at("low52", default: "-"))), palette: PAL2, font: SANS)
+    #v(3pt)
+    #h-sec("Dividen Terakhir")
+    #v(2pt)
+    #fin-table(("Ex-date", "DPS (Rp)"), mh.at("divs", default: (("—", "—"),)).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
+    #v(1pt)
+    #src(mh.at("source", default: "-"))
+  ]
+])
