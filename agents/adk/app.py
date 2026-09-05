@@ -241,7 +241,7 @@ def build_graph(
     # sub-agents (they use _deepseek_or_gemini() which already prefers minimax)
     # and keep them inside the sequential intake so only 1 minimax call runs
     # at a time — otherwise AgentTool would fire a parallel sub-call and 503.
-    is_minimax = (os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free") or _has_commandcode_key_on_disk())
+    is_minimax = os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free")
     _adk_parallel_val = os.getenv("ADK_PARALLEL", "")
     free_tier = bool(is_minimax and (_adk_parallel_val == "" or _adk_parallel_val == "0"))
 
