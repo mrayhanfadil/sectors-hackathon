@@ -66,3 +66,118 @@ def test_record_peer_request_immutability():
     new_state = record_peer_request(state, frm="industry", to="news", fields=["regulations"], reason="policy update")
     assert len(state["peer_requests"]) == 1
     assert len(new_state["peer_requests"]) == 2
+
+
+def test_function_tool_wrapper_request_peer_data():
+    import json
+    from google.adk.tools import FunctionTool
+    from agents.adk.tools.peer_tools import request_peer_data
+
+    ft = FunctionTool(request_peer_data)
+    assert ft.name == "request_peer_data"
+    assert "request_peer_data" in ft.description.lower() or "peer" in ft.description.lower()
+
+
+def test_request_peer_data_lifecycle_with_state():
+    import json
+    from agents.adk.tools.peer_tools import request_peer_data
+
+    state = {
+        "collector_output": json.dumps({"segments": ["Banking", "Treasury"], "peers": ["BBRI", "BMRI"]}),
+        "peer_requests": [],
+    }
+
+    # 1st request — should be fulfilled
+    res1 = request_peer_data(
+        target_agent="collector",
+        needed_fields=["segments"],
+        reason="Need segments breakdown for operational thesis",
+        from_agent="analyst",
+        tool_context=state,
+    )
+    assert res1["status"] == "fulfilled"
+    assert res1["data"]["segments"] == ["Banking", "Treasury"]
+    assert len(state["peer_requests"]) == 1
+
+    # 2nd request — recorded
+    res2 = request_peer_data(
+        target_agent="news_harvester",
+        needed_fields=["catalysts"],
+        reason="Need catalyst headlines for risk analysis",
+        from_agent="risk",
+        tool_context=state,
+    )
+    assert res2["status"] in ("fulfilled", "recorded")
+    assert len(state["peer_requests"]) == 2
+
+    # 3rd request — recorded
+    res3 = request_peer_data(
+        target_agent="collector",
+        needed_fields=["peers"],
+        reason="Need peer comparison for industry outlook",
+        from_agent="industry",
+        tool_context=state,
+    )
+    assert res3["status"] == "fulfilled"
+    assert res3["data"]["peers"] == ["BBRI", "BMRI"]
+    assert len(state["peer_requests"]) == 3
+
+    # 4th request — rejected (quota exceeded)
+    res4 = request_peer_data(
+        target_agent="collector",
+        needed_fields=["financials_5y"],
+        reason="Need financials",
+        from_agent="kpi",
+        tool_context=state,
+    )
+    assert res4["status"] == "rejected"
+    assert "quota reached" in res4["message"].lower() or "limit" in res4["message"].lower()
+    assert len(state["peer_requests"]) == 3  # Not added
+
+
+def test_request_peer_data_validation_error():
+    from agents.adk.tools.peer_tools import request_peer_data
+
+    state = {}
+    res = request_peer_data(
+        target_agent="collector",
+        needed_fields=[],
+        reason="Need data",
+        from_agent="analyst",
+        tool_context=state,
+    )
+    assert res["status"] == "error"
+    assert "needed_fields" in res["message"]
+
+
+def test_peer_wiring_snippet_file_exists_and_valid():
+    import pathlib
+
+    snippet_path = pathlib.Path(__file__).parent.parent / "tools" / "PEER_WIRING.snippet.md"
+    assert snippet_path.exists(), "PEER_WIRING.snippet.md must exist"
+
+    content = snippet_path.read_text(encoding="utf-8")
+    assert "from agents.adk.tools.peer_tools import request_peer_data" in content
+    assert "FunctionTool(request_peer_data)" in content
+    assert "needed_fields" in content
+    assert "proceed-with-gaps" in content or "provenance" in content
+
+
+def test_research_instructions_have_peer_protocol():
+    from agents.adk.agents.instructions import (
+        analyst_instruction,
+        industry_instruction,
+        risk_instruction,
+        kpi_instruction,
+    )
+
+    for name, instr in [
+        ("analyst", analyst_instruction),
+        ("industry", industry_instruction),
+        ("risk", risk_instruction),
+        ("kpi", kpi_instruction),
+    ]:
+        assert "request_peer_data" in instr, f"{name}_instruction must mention request_peer_data"
+        assert "needed_fields" in instr, f"{name}_instruction must mention needed_fields"
+        assert "peer_requests sudah 3" in instr or "peer_requests" in instr, f"{name}_instruction must mention 3-strike rule"
+
