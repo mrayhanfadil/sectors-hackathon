@@ -58,7 +58,7 @@
       ]
       #v(4pt)
       #text(size: T_COVER_TITLE, weight: "bold", fill: PALETTE.brand_dark)[
-        #m.at("company_name", default: "Ratu Prabu Energi")
+        #m.at("company_name", default: if m.ticker == "RATU" { "Ratu Prabu Energi" } else { "—" })
       ]
       #v(2pt)
       #text(size: 13pt, weight: "bold", fill: PALETTE.muted)[
@@ -79,7 +79,7 @@
           )
         ] else [
           #text(size: T_BODY)[
-            Inisiasi liputan dengan Investment Recommendation *BUY* dan target harga *Rp 7.880* (+27,1% upside). Arus kas Lapangan Banyu Urip (Blok Cepu) menopang marjin EBITDA \~49,6%, efisiensi lifting cost USD 4,85/bbl, dan neraca net cash tanpa utang berbunga.
+            #if m.ticker == "RATU" [Inisiasi liputan dengan Investment Recommendation *BUY* dan target harga *Rp 7.880* (+27,1% upside). Arus kas Lapangan Banyu Urip (Blok Cepu) menopang marjin EBITDA \~49,6%, efisiensi lifting cost USD 4,85/bbl, dan neraca net cash tanpa utang berbunga.] else [Ringkasan eksekutif belum tersedia untuk ticker ini — lengkapi fixture sebelum render.]
           ]
         ]
       ]
@@ -102,7 +102,7 @@
             (
               s.at("name", default: "-"),
               if type(s.at("pct", default: "-")) == str { s.pct } else { str(s.pct) + "%" },
-              s.at("status", default: if s.name == "Publik" { "Non-Warkat" } else if s.name == "RETJ" { "Pengendali" } else if s.name == "PJUC" { "Strategis" } else { "-" }),
+              s.at("status", default: if s.name == "Publik" { "Non-Warkat" } else { "-" }),
             )
           }
         })
@@ -377,7 +377,7 @@
   #let dcf_beta = dcf_assump.at("beta", default: 0.70)
   #let dcf_rf = dcf_assump.at("rf", default: 6.20)
   #let dcf_erp = dcf_assump.at("erp", default: 6.90)
-  #let dcf_fv = if dcf_m != none { dcf_m.at("fv", default: 7880) } else { 7880 }
+  #let dcf_fv = if dcf_m != none { dcf_m.at("fv", default: cover.tp) } else { cover.tp }
   #let dcf_table = if dcf_m != none { dcf_m.at("table", default: (:)) } else { (:) }
   #let dcf_headers = dcf_table.at("headers", default: ("Komponen DCF (Rp bn)", "FY26F", "FY27F", "FY28F", "FY29F"))
   #let default_dcf_rows = (
@@ -669,7 +669,7 @@
   #let peer_tables = peer_data.at("tables", default: ())
   #let peer_tab = if peer_tables.len() > 0 { peer_tables.at(0) } else { (:) }
   #let default_peer_headers = ("Ticker", "Market Cap", "P/E (x)", "EV/EBITDA", "P/BV (x)", "ROE (%)", "Gearing")
-  #let default_peer_rows = (
+  #let default_peer_rows = if m.ticker == "RATU" { (
     (m.ticker, [*Rp 16,8 T*], "42,7x", "22,6x", "1,47x", "30,0%", "Net Cash"),
     ("MEDC", "Rp 34,2 T", "8,9x", "4,2x", "1,15x", "22,0%", "1,42x"),
     ("ENRG", "Rp 8,9 T", "12,4x", "5,1x", "0,92x", "15,0%", "0,85x"),
@@ -677,7 +677,7 @@
     ("PGAS", "Rp 38,6 T", "8,1x", "3,9x", "0,88x", "12,8%", "0,45x"),
     ([*Rata-rata Peers (Average)*], [*Rp 20,7 T*], [*15,9x*], [*7,8x*], [*1,05x*], [*18,8%*], [*0,54x*]),
     ([*Median Peers*], [*Rp 16,8 T*], [*8,9x*], [*4,2x*], [*0,92x*], [*15,0%*], [*0,45x*]),
-  )
+  )} else { ((m.ticker, "-", "-", "-", "-", "-", "-"),) }
   #let peer_title = if peer_tab.at("pillar", default: none) != none { "Peer Comparison — " + peer_tab.pillar } else { "Peer Comparison — Emiten Sektor " + m.sector }
   #let peer_src = peer_tab.at("source", default: "IDX & Bloomberg")
   #let peer_headers = peer_tab.at("headers", default: default_peer_headers)
