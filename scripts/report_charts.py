@@ -425,9 +425,14 @@ def chart_wacc_breakdown(
             continue
 
         v_str = str(v_raw)
-        clean_num_str = v_str.replace("%", "").replace(",", "").strip()
+        tmp = v_str.replace("%", "").strip()
+        # ID decimal comma vs thousand separators: "6,85"->6.85; "1.234,56"->1234.56
+        if "," in tmp and "." not in tmp:
+            tmp = tmp.replace(",", ".")
+        elif "," in tmp and "." in tmp:
+            tmp = tmp.replace(".", "").replace(",", ".")
         try:
-            val_num = float(clean_num_str)
+            val_num = float(tmp)
         except ValueError:
             continue
 

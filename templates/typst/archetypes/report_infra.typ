@@ -173,7 +173,9 @@
       #let vs-jci = data.cover.at("vs_jci", default: (:))
       #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "IDX & yfinance"))
       #v(2pt)
-      #image(chart-dir + "/vs_jci.png", width: 100%)
+      #if data.at("charts", default: (:)).at("vs_jci", default: false) {
+      image(chart-dir + "/vs_jci.png", width: 100%)
+      }
     ],
     [
       #rating-box(
@@ -287,7 +289,9 @@
   #v(6pt)
   #exhibit-header("Exhibit 4", "Perbandingan Visual KPI Operasional " + m.ticker, data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
-  #image(chart-dir + "/kpi_bars.png", width: 100%)
+  #if data.at("charts", default: (:)).at("kpi_bars", default: false) {
+  image(chart-dir + "/kpi_bars.png", width: 100%)
+  }
 
   #v(6pt)
   #section-header(2, "Katalis Pertumbuhan Terkuantifikasi", PALETTE)
@@ -479,7 +483,9 @@
   )
 
   #v(4pt)
-  #image(chart-dir + "/pbv_bands.png", width: 100%)
+  #if data.at("charts", default: (:)).at("pbv_bands", default: false) {
+  image(chart-dir + "/pbv_bands.png", width: 100%)
+  }
 ])
 
 #pagebreak()
@@ -502,22 +508,30 @@
     [
       #exhibit-header("Exhibit 12", "Cost of Capital Build", "CAPM & SBN 10Y")
       #v(1pt)
-      #image(chart-dir + "/wacc_breakdown.png", width: 100%)
+      #if data.at("charts", default: (:)).at("wacc_breakdown", default: false) {
+      image(chart-dir + "/wacc_breakdown.png", width: 100%)
+      }
     ],
     [
       #exhibit-header("Exhibit 13", "Sensitivity Analysis — Heatmap (WACC vs. g)", "Engine Sensitivitas 5x5")
       #v(1pt)
-      #image(chart-dir + "/sensitivity_heatmap.png", width: 100%)
+      #if data.at("charts", default: (:)).at("sensitivity_heatmap", default: false) {
+      image(chart-dir + "/sensitivity_heatmap.png", width: 100%)
+      }
     ],
     [
       #exhibit-header("Exhibit 14", "Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
       #v(1pt)
-      #image(chart-dir + "/scenario_bars.png", width: 100%)
+      #if data.at("charts", default: (:)).at("scenario_bars", default: false) {
+      image(chart-dir + "/scenario_bars.png", width: 100%)
+      }
     ],
     [
       #exhibit-header("Exhibit 15", "EV to Equity Bridge Waterfall", "Bridge Engine")
       #v(1pt)
-      #image(chart-dir + "/ev_equity_waterfall.png", width: 100%)
+      #if data.at("charts", default: (:)).at("ev_equity_waterfall", default: false) {
+      image(chart-dir + "/ev_equity_waterfall.png", width: 100%)
+      }
     ]
   )
 
@@ -593,7 +607,9 @@
   #v(6pt)
   #exhibit-header("Exhibit 19", "Trajektori Kinerja & Margin Operasional", data.financial_highlights.source)
   #v(2pt)
-  #image(chart-dir + "/margin_trajectory.png", width: 100%)
+  #if data.at("charts", default: (:)).at("margin_trajectory", default: false) {
+  image(chart-dir + "/margin_trajectory.png", width: 100%)
+  }
 
   #v(6pt)
   #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[3 Pilar Utama Tesis Investasi]

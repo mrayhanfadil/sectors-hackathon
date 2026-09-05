@@ -143,6 +143,10 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         return base
 
     assum = _assumptions_for_inner(t)
+    if assum.get("source") == "fallback generic":
+        raise HTTPException(
+            422, f"no verified assumptions for {t} — refusing generic fallback "
+            f"(add data/assumptions/{t}.json)")
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
     raw_fcf = assum.get("fcf") or [1000, 1100, 1200, 1300, 1400]
