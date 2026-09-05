@@ -439,7 +439,7 @@
           text(size: 7pt)[PV Nilai Terminal (TV)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("pv_tv", default: "-")],
           text(size: 7pt)[Enterprise Value (EV)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("ev", default: "-")],
           text(size: 7pt)[Kas Bersih / (Utang)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("net_cash", default: "-")],
-          text(size: 7.5pt, weight: "bold")[Nilai Wajar DCF per Saham], text(size: 7.5pt, weight: "black", fill: PALETTE.brand_dark)[Rp #dcf_fv],
+          text(size: 7.5pt, weight: "bold")[Nilai Wajar DCF per Saham], text(size: 7.5pt, weight: "black", fill: PALETTE.brand_dark)[#if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }],
         )
       ]
     ],
@@ -460,8 +460,8 @@
       #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Valuasi Blended (#blended_weights)]
       #v(2pt)
       #let blended_rows = (
-        ("DCF (WACC " + str(dcf_wacc) + "%, g " + str(dcf_g) + "%)", "60%", "Rp " + str(dcf_fv)),
-        ("EV/EBITDA (" + str(mult_multiple) + "x)", "40%", "Rp " + str(mult_fv)),
+        ("DCF (WACC " + str(dcf_wacc) + "%, g " + str(dcf_g) + "%)", "comparison", if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }),
+        ("EV/EBITDA (" + str(mult_multiple) + "x)", "primary", "Rp " + str(mult_fv)),
         ("Target Price (TP 12M)", "100%", "Rp " + str(blended_fv)),
       )
       #fin-table(
