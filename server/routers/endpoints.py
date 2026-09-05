@@ -576,10 +576,20 @@ async def report_ticker(
         except Exception:
             pass
 
-    # load assumptions file if present, else defaults per archetype
+    # load assumptions file if present, else LOUD failure (no fabricated valuations)
     assum = _assumptions_for(t)
     archetype = assum.get("archetype", "unknown")
     has_assump_file = assum.get("has_assumptions_file", False)
+    if not has_assump_file:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"No valuation engine for {t}: missing data/assumptions/{t}.json. "
+                f"Deterministic fallback is disabled to avoid fabricated ratings. "
+                f"Run the full agent instead: POST /api/agent/start "
+                f"{{\"ticker\": \"{t}\"}} — every number via calc_* tools."
+            ),
+        )
 
     # deterministic valuation via engines (never LLM)
     from ..engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
