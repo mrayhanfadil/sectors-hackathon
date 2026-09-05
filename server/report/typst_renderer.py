@@ -42,6 +42,7 @@ from agents.valuation.gates import (
 )
 
 ARCHETYPE_TEMPLATE_FILES = {
+    "update": "report_update.typ",
     "single": "report_single.typ",
     "sotp": "report_sotp.typ",
     "infra": "report_infra.typ",

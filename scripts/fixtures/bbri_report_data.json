@@ -1,0 +1,405 @@
+{
+ "meta": {
+  "ticker": "BBRI",
+  "company_name": "Bank Rakyat Indonesia",
+  "sector": "Financials — Perbankan (BUMN)",
+  "template": "update",
+  "report_type": "Company Update",
+  "date": "5 Sep 2026",
+  "language": "id",
+  "prepared_by": "RESEARCH — Sectors Hackathon 2026"
+ },
+ "cover": {
+  "headline": "2Q26 Earnings: Beat; Robust Loan Growth and Lower Opex Amid Higher Provisions",
+  "rating_box": {
+   "action": "BUY",
+   "tp": 4105,
+   "price": 3390,
+   "upside_pct": 21.09,
+   "prev_tp": null,
+   "key_takeaways": [
+    "DDM (CoE 13,85%, g 5%) atas DPS Rp346 → FV Rp4.105 (+21,1%)",
+    "P/BV 1,60x vs justified 1,58x — konsisten silang",
+    "Yield 10,2%, payout 85%"
+   ]
+  },
+  "shares": {
+   "outstanding": 149.88,
+   "unit": "miliar lembar",
+   "free_float_pct": 46.3
+  },
+  "shareholders": [
+   [
+    "Danantara Asset Management",
+    "53,2%"
+   ],
+   [
+    "Publik",
+    "46,8%*"
+   ]
+  ],
+  "shareholders_src": "BRIDS/Lotus 01-Sep-2026 (*residual terhitung)",
+  "market": {
+   "market_cap": "Rp 510,8 T",
+   "index_class": "IDX",
+   "avg_value_3m": "Rp 819,8 M/hari"
+  },
+  "price_chart": {
+   "title": "BBRI relative to JCI Index",
+   "label": "BBRI vs IHSG (12M, rebased)",
+   "caption": "Sumber: yfinance BBRI.JK vs ^JKSE monthly closes"
+  },
+  "summary": "Update liputan BBRI pasca 2Q26 dengan rekomendasi BUY dan target harga Rp4.105 (+21,09%). Framework Gate (bank) me-route ke DDM sebagai primer: DPS FY25 Rp346, payout 85%, CoE 13,85% (beta 1,0 assumed), g 5%. P/BV 1,60x vs justified 1,58x (ROE 19%) — silang konsisten.",
+  "vs_jci": {
+   "chart": {
+    "labels": [
+     "Oct-25",
+     "Nov-25",
+     "Dec-25",
+     "Jan-26",
+     "Feb-26",
+     "Mar-26",
+     "Apr-26",
+     "May-26",
+     "Jun-26",
+     "Jul-26",
+     "Aug-26",
+     "Sep-26"
+    ],
+    "series": [
+     [
+      0.0,
+      -7.5,
+      -4.6,
+      -0.7,
+      1.9,
+      -13.2,
+      -17.0,
+      -18.1,
+      -24.2,
+      -15.6,
+      -9.8,
+      -5.9
+     ],
+     [
+      0.0,
+      4.2,
+      5.9,
+      2.0,
+      0.9,
+      -13.7,
+      -14.8,
+      -24.9,
+      -30.9,
+      -23.6,
+      -20.1,
+      -18.7
+     ]
+    ]
+   },
+   "source": "yfinance BBRI.JK vs ^JKSE monthly closes, rebased"
+  }
+ },
+ "thesis": [
+  {
+   "headline": "PPOP solid menutup provisi",
+   "detail": "PPOP +4% qoq/+18% yoy ditopang loan growth; opex turun; provisi naik 11% qoq/22% yoy (coverage BUMN) — net 2Q26 Rp15,3 triliun.",
+   "source": "Lotus/BRIDS 01-Sep-2026"
+  },
+  {
+   "headline": "Kredit broad-based, CASA terjaga",
+   "detail": "Kredit Rp1.645 triliun (+5% qoq/+16% yoy, korporasi +47% yoy); DPK Rp1.581 triliun; CASA 67,6%; LDR 90,8%; NPL 2,9% (-11bps).",
+   "source": "Lotus/BRIDS 01-Sep-2026"
+  },
+  {
+   "headline": "DDM primer, silang P/BV pas",
+   "detail": "DPS Rp346 (yield 10,2%) pada g 5% dan CoE 13,85% → Rp4.105. Justified P/BV 1,58x vs spot 1,60x — harga wajar secara relatif, murah secara dividen.",
+   "source": "model + yfinance"
+  }
+ ],
+ "financial_highlights": {
+  "years": [
+   "FY22A",
+   "FY23A",
+   "FY24A",
+   "FY25A",
+   "1H26"
+  ],
+  "rows": [
+   [
+    "Net Interest Income (Rp miliar)",
+    115487,
+    125612,
+    129671,
+    136846,
+    "-"
+   ],
+   [
+    "Laba Bersih (Rp miliar)",
+    51170,
+    60100,
+    59945,
+    56652,
+    30800
+   ],
+   [
+    "ROE (%)",
+    "-",
+    "-",
+    "-",
+    19.0,
+    "-"
+   ],
+   [
+    "DPS (Rp)",
+    "-",
+    "-",
+    343.4,
+    346.0,
+    "-"
+   ]
+  ],
+  "source": "yfinance annuals + Lotus 2Q26 (1H26 = 15,5 + 15,3 T)"
+ },
+ "earnings": {
+  "title": "2Q26 Results: Beat on PPOP, Provisions Up",
+  "narrative": "BBRI membukukan laba bersih Rp15,3 triliun di 2Q26. PPOP tumbuh 4% qoq/18% yoy ditopang pertumbuhan kredit solid, sementara opex turun. Provisi naik 11% qoq/22% yoy (coverage BUMN, CoC membaik ke 3%). NIM 7,5% (EA yield 10,3% turun), CIR dan CoC sesuai guidance. Pencairan semester I termasuk ~Rp22,8 triliun ke Pertamina Patra Niaga.",
+  "table": {
+   "title": "BBRI 2Q26 Results",
+   "headers": [
+    "Metrik",
+    "1Q26",
+    "2Q26",
+    "Keterangan"
+   ],
+   "rows": [
+    [
+     "Laba bersih (Rp triliun)",
+     "15,5",
+     "15,3",
+     "yfinance + Lotus"
+    ],
+    [
+     "Kredit (Rp triliun)",
+     "-",
+     "1.645",
+     "+5% qoq/+16% yoy"
+    ],
+    [
+     "DPK (Rp triliun)",
+     "-",
+     "1.581",
+     "+2% qoq/+7% yoy"
+    ],
+    [
+     "CASA (%)",
+     "-",
+     "67,6",
+     "terjaga"
+    ],
+    [
+     "LDR (%)",
+     "-",
+     "90,8",
+     "+358bps yoy"
+    ],
+    [
+     "NPL (%)",
+     "-",
+     "2,9",
+     "-11bps qoq"
+    ],
+    [
+     "NIM (%)",
+     "-",
+     "7,5",
+     "EA yield 10,3%"
+    ]
+   ],
+   "source": "Lotus/BRIDS 01-Sep-2026 + yfinance"
+  }
+ },
+ "key_ratios": {
+  "title": "Key Ratios (spot vs guidance)",
+  "headers": [
+   "Rasio",
+   "Nilai",
+   "Keterangan"
+  ],
+  "rows": [
+   [
+    "NIM",
+    "7,5%",
+    "2Q26; guidance unchanged"
+   ],
+   [
+    "CASA",
+    "67,6%",
+    "2Q26"
+   ],
+   [
+    "LDR",
+    "90,8%",
+    "2Q26"
+   ],
+   [
+    "NPL",
+    "2,9%",
+    "-11bps qoq"
+   ],
+   [
+    "ROE",
+    "19,0%",
+    "TTM yfinance"
+   ],
+   [
+    "P/BV",
+    "1,60x",
+    "vs justified 1,58x"
+   ],
+   [
+    "P/E",
+    "8,3x",
+    "trailing yfinance"
+   ],
+   [
+    "Payout / yield",
+    "85% / 10,2%",
+    "DPS 346 @3390"
+   ]
+  ],
+  "source": "Lotus 2Q26 + yfinance 05-Sep-2026"
+ },
+ "valuation": {
+  "narrative": "Bank dinilai via DDM (Gate 0: institusi finansial — DCF tak cocok, ekuitas = nilai). Arus dividen BBRI mapan (payout 85%) membuat Gordon DDM primer yang kredibel; P/BV justified sebagai cross-check.",
+  "methods": [
+   {
+    "method": "DDM",
+    "title": "Dividend Discount Model (Gordon)",
+    "fv": 4105,
+    "source": "model: DPS FY25 346 (137,0 + 209,0 yfinance), g 5%, beta 1,0 assumed",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "DPS FY25",
+       "Rp 346",
+       "137,0 + 209,0 (yfinance)"
+      ],
+      [
+       "Risk-free (SBN 10Y)",
+       "6,96%",
+       "asumsi"
+      ],
+      [
+       "Beta (assumed, spot 0,18 n.m.)",
+       "1,00",
+       "bank BUMN large-cap"
+      ],
+      [
+       "ERP Indonesia",
+       "6,89%",
+       "Damodaran"
+      ],
+      [
+       "Cost of Equity",
+       "13,85%",
+       "Rf + beta x ERP"
+      ],
+      [
+       "Growth perpetual",
+       "5,00%",
+       "asumsi konservatif"
+      ],
+      [
+       "Fair Value DDM",
+       "Rp 4.105",
+       "346 x 1,05 / (13,85% - 5%)"
+      ]
+     ]
+    }
+   },
+   {
+    "method": "P/BV",
+    "title": "Cross-check P/BV Justified",
+    "fv": 3357,
+    "source": "model: (ROE-g)/(CoE-g) x BVPS 2.125",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "ROE",
+       "19,0%",
+       "TTM yfinance"
+      ],
+      [
+       "Justified P/BV",
+       "1,58x",
+       "(19%-5%)/(13,85%-5%)"
+      ],
+      [
+       "BVPS",
+       "Rp 2.125",
+       "yfinance"
+      ],
+      [
+       "Implied price",
+       "Rp 3.357",
+       "mendukung HOLD-atas; DDM primer"
+      ]
+     ]
+    }
+   }
+  ],
+  "blended": {
+   "fair_value": 4105,
+   "weights": "DDM primer (bank); P/BV silang"
+  },
+  "conclusion": "FV Rp4.105 (DDM Gordon: DPS 346, g 5%, CoE 13,85%) vs Rp3.390 (+21,09%, BUY). P/BV justified 1,58x vs spot 1,60x — pasar menghargai wajar secara relatif; thesis BUY datang dari arus dividen (yield 10,2%), bukan ekspansi multiple."
+ },
+ "outlook": [
+  "Guidance loan growth dinaikkan; korporasi (+47% yoy) memimpin, UMKM menyusul.",
+  "NIM, CIR, CoC guidance unchanged — disiplin pricing DPK menjaga CASA 67,6%.",
+  "Watchpoints: coverage BUMN lanjutan, EA yield (10,3%), eksekusi disbursement H2."
+ ],
+ "risks": [
+  {
+   "bucket": "Provisi BUMN lanjutan",
+   "detail": "Coverage SOE menekan net 2-3 kuartal; CoC 3% masih di atas through-the-cycle.",
+   "source": "Lotus 2Q26"
+  },
+  {
+   "bucket": "Kompresi NIM",
+   "detail": "EA yield turun ke 10,3%; LDR 90,8% membatasi ruang pricing DPK.",
+   "source": "Lotus 2Q26"
+  },
+  {
+   "bucket": "Konsentrasi korporasi",
+   "detail": "Pertumbuhan dipimpin korporasi (+47%); kualitas aset UMKM/SME diawasi (NPL 2,9%).",
+   "source": "Lotus 2Q26"
+  },
+  {
+   "bucket": "Sensitivitas CoE",
+   "detail": "Tiap 100bps CoE menggeser FV ~Rp400. Lihat tabel DDM.",
+   "source": "model"
+  }
+ ],
+ "kpis": [],
+ "kpis_src": "-",
+ "segments": [],
+ "catalysts": [],
+ "esg": {
+  "found": false
+ },
+ "sentiment": null,
+ "strategy": null,
+ "exhibits": []
+}
