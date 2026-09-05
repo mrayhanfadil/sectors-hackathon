@@ -972,6 +972,7 @@ def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
         pathlib.Path("seed_assumptions.json"),
         pathlib.Path("data/assumptions/README.json"),
     ]
+    loaded_from_file = False
     for p in cand_paths:
         if p.exists():
             try:
@@ -979,10 +980,17 @@ def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
                 if isinstance(data, dict):
                     if t in data and isinstance(data[t], dict):
                         base.update({k: v for k, v in data[t].items() if v is not None})
+                        loaded_from_file = True
                     elif data.get("ticker") == t:
                         base.update({k: v for k, v in data.items() if v is not None})
+                        loaded_from_file = True
             except Exception:
                 pass
+
+    if base.get("source") == "fallback generic" and not loaded_from_file:
+        raise ValueError(
+            f"no assumptions for {t}: refusing generic dummy DCF "
+            f"(add data/assumptions/{t}.json or a hardcoded base)")
 
     return base
 

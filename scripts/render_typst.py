@@ -237,6 +237,17 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
                "band": "#f9fafb", "paper": "#ffffff",
                "pos": "#067647", "neg": "#b42318"}
     charts_dir = generate_charts(ticker, data, palette)
+    data["charts"] = {}
+    for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
+                  "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
+                  "ev_equity_waterfall", "margin_trajectory", "index_trend",
+                  "relval_bars", "peer_pe", "peer_evebitda", "peer_pb"]:
+        _p = charts_dir / f"{_name}.png"
+        data["charts"][_name] = bool(_p.exists() and _p.stat().st_size > 2048)
+    try:
+        report_data_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    except Exception:
+        pass
     # Per-ticker template override: templates/typst/archetypes/POWR_infra.typ
     ticker_specific = TEMPLATES / "archetypes" / f"{ticker.lower()}_{template_name}.typ"
     if ticker_specific.exists():

@@ -249,10 +249,10 @@ def test_ticker_ratu_contract(rendered_reports):
 
 
 def test_ticker_cdia_contract(rendered_reports):
-    """CDIA: primary=DCF (shortened horizon), '⚠ Thin Data' in text, 'Thin Data' banner."""
+    """CDIA: primary=Relative Valuation (ramping fleet), thin-data banner present."""
     params = _get_ticker_gate_params("CDIA", rendered_reports["CDIA"]["data"])
     verdict = evaluate("CDIA", **params)
-    assert verdict.primary == "DCF (shortened horizon)"
+    assert verdict.primary == "Relative Valuation"
     assert verdict.thin_data is True
 
     text = rendered_reports["CDIA"]["text"]
