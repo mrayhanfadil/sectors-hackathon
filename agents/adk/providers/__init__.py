@@ -95,6 +95,9 @@ def _litellm_available() -> bool:
     return _LITELLM_AVAILABLE
 
 
+from .opencode_responses import OpenGoResponsesLlm, spark13_model
+
+
 def deepseek_model(
     model: str | None = None,
     api_key: str | None = None,
@@ -273,6 +276,13 @@ def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
     name = name.lower().strip()
     if name in ("spark", "muse", "muse-spark", "meta/muse-spark-1.2-contributor", "commandcode", "cc"):
         return spark_model(**kw)
+    if name in (
+        "opencode-go", "opencode", "opengo", "spark13", "spark-1.3",
+        "muse-spark-1.3-contributor", "meta/muse-spark-1.3-contributor",
+    ):
+        # Muse Spark 1.3 lives on opencode-go Responses API (Hermes-style),
+        # NOT on chat-completions — see providers/opencode_responses.py.
+        return spark13_model(**kw)
     if name in ("minimax", "minimax-m3", "minimax-m3-free", "minimax/minimax-m3-free", "minimax-free", "minimax_m3_free"):
         return minimax_model(**kw)
     if name in ("deepseek", "deepseek-chat", "deepseek-reasoner", "deepseek-v3", "deepseek-r1"):
