@@ -153,9 +153,9 @@
 #pagebreak()
 // ============ P3 — valuation + outlook + risks + rating guide ============
 #wrap(TICK, 3, [
-  #h-main("Valuation — Dividend Discount Model")
-  #v(2pt)
   #let val = data.at("valuation", default: (:))
+  #h-main("Valuation — " + val.at("heading", default: "Relative Valuation"))
+  #v(2pt)
   #text(size: 7.5pt)[#val.at("narrative", default: "")]
   #v(3pt)
   #for mt in val.at("methods", default: ()) [

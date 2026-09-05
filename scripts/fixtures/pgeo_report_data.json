@@ -320,7 +320,8 @@
     "current": 1.31,
     "label": "PGEO P/BV band (monthly close / BVPS year-end x Rp16.200, yfinance)"
    }
-  }
+  },
+  "heading": "Dividend Discount Model (Dua Tahap)"
  },
  "outlook": [
   "Eksekusi 672MW → 1GW adalah satu-satunya variabel yang dapat membalik thesis.",

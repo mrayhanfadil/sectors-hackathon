@@ -1,0 +1,366 @@
+{
+ "meta": {
+  "ticker": "SSIA",
+  "company_name": "Surya Semesta Internusa",
+  "sector": "Properti — Kawasan Industri & Konstruksi",
+  "template": "update",
+  "report_type": "Company Update",
+  "date": "5 Sep 2026",
+  "language": "id",
+  "prepared_by": "RESEARCH — Sectors Hackathon 2026"
+ },
+ "cover": {
+  "headline": "1H26 Rebound Priced In; Forward Earnings Leave No Room",
+  "rating_box": {
+   "action": "HOLD",
+   "tp": 1675,
+   "price": 1810,
+   "upside_pct": -7.5,
+   "prev_tp": null,
+   "key_takeaways": [
+    "1H26 net Rp263 M (+rebound dari rugi FY25) → EPS forward ~Rp112",
+    "Forward P/E 15x → FV Rp1.675 (-7,5%) — pasar di 16,2x sudah membayar penuh",
+    "Trailing P/E 41,5x & P/BV 1,47x tidak bermakna di titik balik"
+   ]
+  },
+  "shares": {
+   "outstanding": 4.705,
+   "unit": "miliar lembar",
+   "free_float_pct": null
+  },
+  "shareholders": [],
+  "shareholders_src": "lihat keterbukaan IDX (tidak ditampilkan — hindari kutip tanpa sumber)",
+  "market": {
+   "market_cap": "Rp 8,5 T",
+   "index_class": "IDX",
+   "avg_value_3m": "Rp 34,9 M/hari"
+  },
+  "price_chart": {
+   "title": "SSIA relative to JCI Index",
+   "label": "SSIA vs IHSG (12M, rebased)",
+   "caption": "yfinance SSIA.JK vs ^JKSE monthly closes"
+  },
+  "summary": "Update SSIA dengan rekomendasi HOLD dan target harga Rp1.675 (-7,5%). Rugi FY25 (Rp-89 M) membuat kelipatan trailing tak bermakna; laba 1H26 Rp263 M menganualisasi EPS ~Rp112 yang pada 15x fair menghasilkan Rp1.675 — pasar di Rp1.810 (16,2x forward) sudah membayar rebound penuh.",
+  "vs_jci": {
+   "chart": {
+    "labels": [
+     "Oct-25",
+     "Nov-25",
+     "Dec-25",
+     "Jan-26",
+     "Feb-26",
+     "Mar-26",
+     "Apr-26",
+     "May-26",
+     "Jun-26",
+     "Jul-26",
+     "Aug-26",
+     "Sep-26"
+    ],
+    "series": [
+     [
+      0.0,
+      20.2,
+      7.7,
+      0.6,
+      -11.2,
+      -13.8,
+      14.4,
+      7.4,
+      -3.8,
+      6.1,
+      24.8,
+      16.4
+     ],
+     [
+      0.0,
+      4.2,
+      5.9,
+      2.0,
+      0.9,
+      -13.7,
+      -14.8,
+      -24.9,
+      -30.9,
+      -23.6,
+      -20.1,
+      -18.7
+     ]
+    ]
+   },
+   "source": "yfinance SSIA.JK vs ^JKSE monthly closes, rebased"
+  }
+ },
+ "thesis": [
+  {
+   "headline": "Titik balik dikonfirmasi kuartalan",
+   "detail": "Rugi FY25 Rp-89 M berbalik: 1Q26 +Rp89 M, 2Q26 +Rp174 M (+95,0% qoq). Revenue 1H26 Rp3,35 T = 76% FY25 penuh.",
+   "source": "yfinance quarterly"
+  },
+  {
+   "headline": "Kelipatan trailing menipu di trough",
+   "detail": "P/E 41,5x (atas laba terdepresi) dan P/BV 1,47x bukan jangkar. Jangkarnya forward EPS ~Rp112.",
+   "source": "yfinance + model"
+  },
+  {
+   "headline": "Upside habis di harga kini",
+   "detail": "Rp1.810 = 16,2x forward EPS — di atas fair 15x (Rp1.675). Tunggu kuartal atau koreksi sebelum BUY.",
+   "source": "model"
+  }
+ ],
+ "analysis": [
+  "FY25 adalah tahun trough SSIA: revenue anjlok 29,8% yoy (Rp6,31 T → Rp4,43 T) dan laba bersih negatif Rp89 miliar — pertama dalam tiga tahun. Bisnis konstruksi dan hospitality yang siklikal menekan bersamaan dengan jeda penjualan lahan. Pada titik seperti ini, P/E trailing 41,5x bukan sinyal mahal-murah; ia sinyal bahwa denominatornya rusak.",
+  "Pembalikan 1H26 tajam dan berurutan: revenue 2Q26 Rp1,91 T (+32,0% qoq dari Rp1,45 T) dengan laba Rp174 M (+95,0% qoq dari Rp89 M). Laba semester Rp263 M menganualisasi EPS ~Rp112 — di atas EPS FY24 (Rp49,8) dua kali lipat. Jika run-rate bertahan, ini tahun rekor; pasar merespons dengan menghargai 16,2x forward.",
+  "Framework Gate (trough earnings) me-route ke forward Relative sebagai primer: 15x atas EPS forward Rp112 → FV Rp1.675 (-7,5%, HOLD). Multiple 15x adalah asumsi disclosed untuk emiten kawasan industri + konstruksi di titik balik — bukan observasi peers; sensitif dan terbuka untuk di-challenge. Thesis BUY membutuhkan bukti 2Q26 berlanjut ke 3Q26 atau harga turun ke ≤Rp1.675."
+ ],
+ "financial_highlights": {
+  "years": [
+   "FY23A",
+   "FY24A",
+   "FY25A",
+   "1H26"
+  ],
+  "rows": [
+   [
+    "Revenue (Rp M)",
+    "4.538",
+    "6.311",
+    "4.427",
+    "3.354"
+   ],
+   [
+    "Laba Bersih (Rp M)",
+    "177",
+    "234",
+    "-89",
+    "263"
+   ],
+   [
+    "Laba growth (% yoy)",
+    "-",
+    "+32,6",
+    "n.m. (rugi)",
+    "-"
+   ],
+   [
+    "Op. margin (%)",
+    "-",
+    "-",
+    "19,8",
+    "-"
+   ],
+   [
+    "DPS (Rp)",
+    "-",
+    "12,0",
+    "5,0",
+    "-"
+   ]
+  ],
+  "source": "yfinance annuals/quarterly/dividends"
+ },
+ "earnings": {
+  "title": "1H26: Rebound Berurutan Dua Kuartal",
+  "narrative": "Revenue 2Q26 Rp1,91 T (+32,0% qoq) dengan laba Rp174 M (+95,0% qoq). Laba semester Rp263 M vs rugi FY25 Rp-89 M — titik balik terkonfirmasi secara kuartalan, bukan sekali.",
+  "table": {
+   "title": "SSIA Quarterly",
+   "headers": [
+    "Metrik (Rp M)",
+    "1Q26",
+    "2Q26",
+    "QoQ",
+    "Keterangan"
+   ],
+   "rows": [
+    [
+     "Revenue",
+     "1.446",
+     "1.908",
+     "+32,0%",
+     "yfinance"
+    ],
+    [
+     "Laba bersih",
+     "89",
+     "174",
+     "+95,0%",
+     "rebound"
+    ],
+    [
+     "Memo: DPS FY25 Rp 5,0",
+     "(annual)",
+     "-",
+     "-",
+     "yield 0,3%, bukan jangkar"
+    ]
+   ],
+   "source": "yfinance quarterly + dividends"
+  }
+ },
+ "key_ratios": {
+  "title": "Key Ratios (trailing vs forward)",
+  "headers": [
+   "Rasio",
+   "Trailing",
+   "Forward*"
+  ],
+  "rows": [
+   [
+    "P/E",
+    "41,5x (rusak)",
+    "16,2x"
+   ],
+   [
+    "P/BV",
+    "1,47x",
+    "-"
+   ],
+   [
+    "ROE",
+    "6,0% (TTM)",
+    "-"
+   ],
+   [
+    "Div. yield",
+    "0,3%",
+    "-"
+   ],
+   [
+    "EPS (Rp)",
+    "n.m.",
+    "~112"
+   ]
+  ],
+  "source": "yfinance 05-Sep-2026 (*annualisasi 1H26, model)"
+ },
+ "valuation": {
+  "narrative": "Trough earnings → forward Relative primer (Gate). EPS forward = annualisasi laba 1H26 (Rp263 M x 2 / 4.705 bn ≈ Rp112). Fair 15x = asumsi disclosed kawasan industri di titik balik.",
+  "methods": [
+   {
+    "method": "P/E",
+    "title": "Forward P/E (primer)",
+    "fv": 1675,
+    "source": "model: EPS fwd ~112 (263M x 2 / 4,705bn), fair 15x asumsi",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "Laba 1H26",
+       "Rp 263 M",
+       "89 + 174 (yfinance)"
+      ],
+      [
+       "EPS forward",
+       "~Rp 112",
+       "263 x 2 / 4.705"
+      ],
+      [
+       "Fair multiple",
+       "15x",
+       "asumsi disclosed, titik balik"
+      ],
+      [
+       "Spot vs fair",
+       "16,2x vs 15x",
+       "pasar membayar penuh"
+      ],
+      [
+       "Fair Value",
+       "Rp 1.675",
+       "~111,8 x 15 ≈ Rp1.675 (-7,5%)"
+      ]
+     ]
+    }
+   },
+   {
+    "method": "P/BV",
+    "title": "Cross-check P/BV",
+    "fv": null,
+    "source": "tidak bermakna di trough (ROE terdepresi)",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "P/BV spot",
+       "1,47x",
+       "BVPS Rp1.229"
+      ],
+      [
+       "ROE TTM",
+       "6,0%",
+       "terdepresi trough"
+      ],
+      [
+       "Status",
+       "non-jangkar",
+       "tunggu normalisasi"
+      ]
+     ]
+    }
+   }
+  ],
+  "blended": {
+   "fair_value": 1675,
+   "weights": "Forward P/E primer penuh (P/BV non-jangkar)"
+  },
+  "conclusion": "FV Rp1.675 (15x atas EPS forward ~Rp112) vs Rp1.810 (-7,5%, HOLD). Rebound-nya nyata, tetapi harganya mendahului — disiplin: tunggu bukti 3Q26 atau titik masuk lebih murah.",
+  "bands": {
+   "pbv_3y": {
+    "std-2": 0.09,
+    "std-1": 0.38,
+    "avg": 0.67,
+    "std+1": 0.96,
+    "std+2": 1.25,
+    "current": 1.47,
+    "label": "SSIA P/BV band (monthly close / BVPS year-end, yfinance)"
+   }
+  },
+  "heading": "Forward Relative"
+ },
+ "outlook": [
+  "2Q26→3Q26 adalah kuartal pembuktian: run-rate Rp174 M/kuartal harus bertahan.",
+  "Penjualan lahan Subang Smartpolitan = variabel ayun terbesar H2.",
+  "Risiko: konstruksi melambat, hospitality musiman melemah di H2."
+ ],
+ "risks": [
+  {
+   "bucket": "Run-rate tidak bertahan",
+   "detail": "2Q26 Rp174 M bisa sesaat (proyek termin); normalisasi memangkas EPS forward.",
+   "source": "model"
+  },
+  {
+   "bucket": "Multiple asumsi",
+   "detail": "Fair 15x adalah asumsi, bukan observasi peers — tiap 1x menggeser FV Rp112.",
+   "source": "model"
+  },
+  {
+   "bucket": "Siklus properti",
+   "detail": "Kawasan industri sensitif pada FDI dan manufaktur; jeda investasi menekan penjualan lahan.",
+   "source": "model"
+  },
+  {
+   "bucket": "Likuiditas",
+   "detail": "Small-mid cap Rp8,5 T — likuiditas harian Rp34,9 M/hari, volatilitas harga lebih tinggi.",
+   "source": "yfinance"
+  }
+ ],
+ "kpis": [],
+ "kpis_src": "-",
+ "segments": [],
+ "catalysts": [],
+ "esg": {
+  "found": false
+ },
+ "sentiment": null,
+ "strategy": null,
+ "exhibits": [],
+ "pbv_caption": "SSIA di P/BV 1,47 vs rata-rata 4 tahun 0,67 (±1σ 0,38–0,96): di atas mean meski trough."
+}
