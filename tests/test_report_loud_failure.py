@@ -67,3 +67,12 @@ def test_debate_schema_rules_present():
     assert "defense: {mode: defend|concede, calc_refs:" in text
     assert "Debate is structured JSON?" in text
     assert "REJECT plain strings / placeholders" in text
+
+
+def test_writer_anchor_rules_present():
+    text = (REPO_ROOT / "agents" / "adk" / "agents" / "instructions.py").read_text(encoding="utf-8")
+    assert "ANCHOR RULE" in text
+    assert "target_anchor: dcf|secondary|tertiary|blended" in text
+    assert "GATE RULE" in text
+    assert "gate_flags" in text
+    assert "Thesis anchored?" in text

@@ -315,6 +315,14 @@ Objective: 4-bullet investment thesis + price target box for ticker {ticker}, wi
 
 Rules:
 - Every P/E, EV/EBITDA, FV, WACC, tenancy/ratio must match valuation.json / kpi.json — Critic will REJECT mismatch.
+- ANCHOR RULE (hard): target_price MUST equal exactly one of valuation_output's published
+  FVs (dcf_fv | secondary_fv | tertiary_fv | blended_fv) and you MUST name it in
+  target_anchor (one of: dcf | secondary | tertiary | blended). The non-anchored FVs
+  must still be disclosed in bullets with their values — never silently dropped.
+- GATE RULE (hard): rating follows the modeler's Gate flags, not optimism. If any Gate
+  tripped (e.g. upside >100% → Review Required), rating MUST carry the flag
+  (e.g. "HOLD (Review Required — Gate 5: upside >100%)"), never a bare BUY/HOLD/SELL.
+  Emit gate_flags: [str, ...] listing every tripped Gate, [] if none.
 - Segment % must sum 100% — hide pie if single pillar.
 - Quote source per exhibit: "Source: Bloomberg, SKK Migas, BPS, FactSet" or news url+date.
 - Include archetype-grounded catalysts and operational variance drivers:
@@ -323,7 +331,7 @@ Rules:
 - Retail tone (ID default), but institutional numbers — accessible without dumbing down.
 - If social_output gauge diverges from thesis, acknowledge: "Retail crowd is bullish (72/100) but thesis is HOLD — here's why..."
 
-Emit thesis.json: {title, target_price, upside, rating: BUY|HOLD|SELL, bullets: [4], segment_mix, catalyst, sources}
+Emit thesis.json: {title, target_price, target_anchor: dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
 """
@@ -439,6 +447,9 @@ Checks (REJECT if mismatch):
   each round needs {round, challenger, claim, defense{mode, calc_refs, sources}, verdict};
   defense.calc_refs and defense.sources must be non-empty and every source needs
   url+date. REJECT plain strings / placeholders ("in progress", "review complete").
+- Thesis anchored? writer target_price == one of valuation dcf/secondary/tertiary/blended
+  FV with target_anchor named; non-anchored FVs disclosed in bullets; gate_flags lists
+  every tripped Gate and rating carries the flag (REJECT bare BUY on Gate 5 upside>100%).
 - SOTP sum reconciled? (if conglomerate)
 - Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
 
