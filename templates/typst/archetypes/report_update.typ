@@ -38,8 +38,9 @@
   text(size: 5.5pt, fill: MUT)[Bukan rekomendasi jual/beli (kepatuhan OJK). Lihat pengungkapan penting di akhir laporan.]
 }
 #let wrap(ticker, pg, body) = {
-  set page(paper: "a4", margin: (top: 10mm, bottom: 8mm, x: 10mm), header: banner(), footer: foot(ticker, pg), numbering: none)
+  set page(paper: "a4", margin: (top: 8mm, bottom: 8mm, x: 10mm), footer: foot(ticker, pg), numbering: none)
   set text(font: SANS, size: 8pt, fill: INK)
+  banner()
   body
 }
 #let h-main(t) = text(size: 10.5pt, weight: "bold", fill: NAVY_D)[#t]
