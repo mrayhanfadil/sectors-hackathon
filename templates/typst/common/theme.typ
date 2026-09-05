@@ -136,8 +136,8 @@
 }
 
 // ------ Financial table (with header band, alternating rows, tab nums) ------
-#let fin-table(headers, rows, footers: (), columns: none, palette: DEFAULT_PALETTE) = {
-  set text(font: FONT_MONO, size: 7.5pt, features: ("tnum",))
+#let fin-table(headers, rows, footers: (), columns: none, palette: DEFAULT_PALETTE, font: auto) = {
+  set text(font: if font == auto { FONT_MONO } else { font }, size: 7.5pt, features: ("tnum",))
   set table(
     stroke: 0.5pt + palette.line,
     fill: (col, row) => if row == 0 { palette.brand_dark } else if calc.odd(row) { palette.band } else { palette.paper },
