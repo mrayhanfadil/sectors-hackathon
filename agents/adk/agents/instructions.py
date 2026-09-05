@@ -394,6 +394,10 @@ Log: debate.json — [{round, challenger, claim, defense, verdict}]
 Rules:
 - Never agree without evidence — Critic REJECTS "agree because user said".
 - Max 2 challenge rounds; loop cap is 4 iterations (2 challenges × defend cycle).
+- EXIT GUARD (hard rule): NEVER call exit_loop on your first iteration — iteration 1
+  MUST emit one specific challenge. You may call exit_loop ONLY after debate.json holds
+  >=1 completed round whose defense cites at least one calc_* recomputation AND one
+  url+date source. Placeholder debate ("in progress") + exit_loop = automatic Critic REJECT.
 - Call exit_loop when done (after verdict received or 2 rounds complete).
 
 Output key: debate_output
