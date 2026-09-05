@@ -122,44 +122,46 @@
    "FY22A",
    "FY23A",
    "FY24A",
-   "FY25A",
-   "1H26"
+   "FY25A"
   ],
   "rows": [
    [
-    "Net Interest Income (Rp miliar)",
-    115487,
-    125612,
-    129671,
-    136846,
-    "-"
+    "Net Interest Income (Rp M)",
+    "115.487",
+    "125.612",
+    "129.671",
+    "136.846"
    ],
    [
-    "Laba Bersih (Rp miliar)",
-    51170,
-    60100,
-    59945,
-    56652,
-    30800
+    "Laba Bersih (Rp M)",
+    "51.170",
+    "60.100",
+    "59.945",
+    "56.652"
    ],
    [
-    "ROE (%)",
+    "Laba growth (% yoy)",
     "-",
-    "-",
-    "-",
-    19.0,
-    "-"
+    "+17,5",
+    "-0,3",
+    "-5,5"
    ],
    [
-    "DPS (Rp)",
-    "-",
-    "-",
-    343.4,
-    346.0,
-    "-"
+    "ROE (%)*",
+    "16,9",
+    "19,0",
+    "18,5",
+    "17,1"
+   ],
+   [
+    "DPS (Rp)**",
+    "288,2",
+    "319,0",
+    "343,4",
+    "346,0"
    ]
   ],
-  "source": "yfinance annuals + Lotus 2Q26 (1H26 = 15,5 + 15,3 T)"
+  "source": "yfinance annuals (*atas ekuitas akhir tahun; **total dividen per tahun kalender)"
  },
  "earnings": {
   "title": "2Q26 Results: Beat on PPOP, Provisions Up",
@@ -170,50 +172,58 @@
     "Metrik",
     "1Q26",
     "2Q26",
+    "QoQ / YoY",
     "Keterangan"
    ],
    "rows": [
     [
-     "Laba bersih (Rp triliun)",
+     "Laba bersih (Rp T)",
      "15,5",
      "15,3",
+     "-",
      "yfinance + Lotus"
     ],
     [
-     "Kredit (Rp triliun)",
+     "PPOP",
+     "-",
+     "-",
+     "+4% / +18%",
+     "Lotus"
+    ],
+    [
+     "Provisi",
+     "-",
+     "-",
+     "+11% / +22%",
+     "coverage BUMN"
+    ],
+    [
+     "Kredit (Rp T)",
      "-",
      "1.645",
-     "+5% qoq/+16% yoy"
+     "+5% / +16%",
+     "korporasi +47% yoy"
     ],
     [
-     "DPK (Rp triliun)",
+     "DPK (Rp T)",
      "-",
      "1.581",
-     "+2% qoq/+7% yoy"
-    ],
-    [
-     "CASA (%)",
-     "-",
-     "67,6",
-     "terjaga"
-    ],
-    [
-     "LDR (%)",
-     "-",
-     "90,8",
-     "+358bps yoy"
-    ],
-    [
-     "NPL (%)",
-     "-",
-     "2,9",
-     "-11bps qoq"
+     "+2% / +7%",
+     "CASA 67,6%"
     ],
     [
      "NIM (%)",
      "-",
      "7,5",
-     "EA yield 10,3%"
+     "EA yield 10,3%",
+     "guidance unchanged"
+    ],
+    [
+     "NPL (%)",
+     "-",
+     "2,9",
+     "-11bps qoq",
+     "LDR 90,8%"
     ]
    ],
    "source": "Lotus/BRIDS 01-Sep-2026 + yfinance"
@@ -363,7 +373,18 @@
    "fair_value": 4105,
    "weights": "DDM primer (bank); P/BV silang"
   },
-  "conclusion": "FV Rp4.105 (DDM Gordon: DPS 346, g 5%, CoE 13,85%) vs Rp3.390 (+21,09%, BUY). P/BV justified 1,58x vs spot 1,60x — pasar menghargai wajar secara relatif; thesis BUY datang dari arus dividen (yield 10,2%), bukan ekspansi multiple."
+  "conclusion": "FV Rp4.105 (DDM Gordon: DPS 346, g 5%, CoE 13,85%) vs Rp3.390 (+21,09%, BUY). P/BV justified 1,58x vs spot 1,60x — pasar menghargai wajar secara relatif; thesis BUY datang dari arus dividen (yield 10,2%), bukan ekspansi multiple.",
+  "bands": {
+   "pbv_3y": {
+    "std-2": 1.23,
+    "std-1": 1.48,
+    "avg": 1.73,
+    "std+1": 1.98,
+    "std+2": 2.24,
+    "current": 1.6,
+    "label": "BBRI P/BV 4Y band (monthly close / BVPS year-end, yfinance)"
+   }
+  }
  },
  "outlook": [
   "Guidance loan growth dinaikkan; korporasi (+47% yoy) memimpin, UMKM menyusul.",
@@ -401,5 +422,11 @@
  },
  "sentiment": null,
  "strategy": null,
- "exhibits": []
+ "exhibits": [],
+ "analysis": [
+  "Laba 2Q26 Rp15,3 triliun mengalahkan ekspektasi pasar: PPOP tumbuh 4% qoq dan 18% yoy ditopang pertumbuhan kredit yang solid di semua segmen, sementara opex turun. Kenaikan provisi 11% qoq/22% yoy sepenuhnya berasal dari peningkatan coverage debitur BUMN — dengan cost of credit membaik ke 3% — sehingga kualitas laba justru menguat, bukan melemah.",
+  "Pertumbuhan kredit Rp1.645 triliun (+5% qoq/+16% yoy) bersifat broad-based namun dipimpin segmen korporasi (+47% yoy), termasuk disbursement semester I sekitar Rp22,8 triliun ke Pertamina Patra Niaga. DPK Rp1.581 triliun (+2% qoq/+7% yoy) dengan CASA bertahan di 67,6% menjaga NIM 7,5% meski EA yield turun ke 10,3%. NPL membaik 11bps ke 2,9% dengan LDR 90,8%.",
+  "Manajemen menaikkan guidance pertumbuhan kredit setahun penuh dan menegaskan guidance NIM, CIR, dan CoC tidak berubah — sinyal keyakinan pada disiplin pricing DPK di tengah LDR yang mengetat. Dengan payout 85% dan yield 10,2%, thesis BUY bertumpu pada arus dividen yang terukur, bukan ekspansi multiple."
+ ],
+ "pbv_caption": "Exhibit 2 — BBRI diperdagangkan di P/BV 1.60 vs rata-rata 4 tahun 1.73 (±1σ 1.48–1.98)."
 }
