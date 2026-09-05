@@ -181,3 +181,70 @@ def test_research_instructions_have_peer_protocol():
         assert "needed_fields" in instr, f"{name}_instruction must mention needed_fields"
         assert "peer_requests sudah 3" in instr or "peer_requests" in instr, f"{name}_instruction must mention 3-strike rule"
 
+
+def test_critic_instruction_audits_peer_requests():
+    from agents.adk.agents.instructions import critic_instruction
+
+    assert "Peer requests justified" in critic_instruction
+    assert "peer_requests" in critic_instruction
+    assert "justification" in critic_instruction.lower()
+
+
+def test_audit_peer_requests_valid():
+    from agents.adk.tools.peer_tools import audit_peer_requests
+
+    state = {
+        "peer_requests": [
+            {
+                "from": "analyst",
+                "to": "collector",
+                "fields": ["segments"],
+                "reason": "Need segment breakdown for business model ops",
+            },
+            {
+                "from": "risk",
+                "to": "collector",
+                "fields": ["debt_details"],
+                "reason": "Need debt schedule for liquidity stress testing",
+            },
+        ]
+    }
+    is_valid, violations = audit_peer_requests(state)
+    assert is_valid is True
+    assert len(violations) == 0
+
+
+def test_audit_peer_requests_catches_lazy_unjustified_request():
+    from agents.adk.tools.peer_tools import audit_peer_requests
+
+    lazy_state = {
+        "peer_requests": [
+            {
+                "from": "analyst",
+                "to": "collector",
+                "fields": ["segments"],
+                "reason": "",  # Lazy: empty justification!
+            }
+        ]
+    }
+    is_valid, violations = audit_peer_requests(lazy_state)
+    assert is_valid is False
+    assert any("missing justification" in v.lower() for v in violations)
+
+
+def test_audit_peer_requests_catches_limit_exceeded():
+    from agents.adk.tools.peer_tools import audit_peer_requests
+
+    over_limit_state = {
+        "peer_requests": [
+            {"from": "a", "to": "b", "fields": ["f1"], "reason": "r1"},
+            {"from": "a", "to": "b", "fields": ["f2"], "reason": "r2"},
+            {"from": "a", "to": "b", "fields": ["f3"], "reason": "r3"},
+            {"from": "a", "to": "b", "fields": ["f4"], "reason": "r4"},
+        ]
+    }
+    is_valid, violations = audit_peer_requests(over_limit_state)
+    assert is_valid is False
+    assert any("limit exceeded" in v.lower() for v in violations)
+
+
