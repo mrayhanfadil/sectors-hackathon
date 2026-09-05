@@ -501,11 +501,15 @@
   }
   #exhibit-header("Exhibit 7", "Pita Valuasi Historis P/BV 3-Tahun (STD±2)", "IDX & Analisis Data")
   #v(2pt)
-  #fin-table(
-    ("Deviasi Standar", "P/BV (x)", "Implied Price", "Interpretasi Valuasi"),
-    bands_rows,
-    palette: PALETTE,
-  )
+  #if bands != none and bands.at("rows", default: ()).len() > 0 {
+    fin-table(
+      ("Deviasi Standar", "P/BV (x)", "Implied Price", "Interpretasi Valuasi"),
+      bands_rows,
+      palette: PALETTE,
+    );
+  } else {
+    text(size: 7.2pt, fill: PALETTE.muted)[Pita historis tidak disajikan — riwayat book value tidak komparabel pasca-akuisisi Aster (ekuitas USD 2,93 miliar menjadi USD 4,66 miliar). Lihat P/B spot 2,10x pada Exhibit 13.];
+  }
 
   #v(6pt)
   #let conclusion_text = val.at("conclusion", default: "Harga saham kini Rp " + str(cover.price) + " mencerminkan target harga Rp " + str(cover.tp) + " dengan potensi imbal hasil " + (if cover.upside_pct > 0 { "+" } else { "" }) + str(cover.upside_pct) + "% (" + cover.action + "), didukung oleh analisis fundamental komprehensif pada sektor " + m.sector + ".")
@@ -599,12 +603,7 @@
       )
     ]
   )
-  #if data.at("charts", default: (:)).at("scenario_bars", default: false) {
-    v(4pt);
-    exhibit-header("Exhibit 10a", "Scenario Chart (Bear / Base / Bull vs Harga Kini)", "Engine Skenario");
-    v(2pt);
-    image(chart-dir + "/scenario_bars.png", width: 100%);
-  }
+  #if false { }
 ])
 
 #pagebreak()
@@ -728,16 +727,16 @@
     v(4pt);
     exhibit-header("Exhibit 16a", "EV/EBITDA Peers vs Subjek", peer_src);
     v(2pt);
-    image(chart-dir + "/peer_evebitda.png", width: 100%);
+    image(chart-dir + "/peer_evebitda.png", width: 88%);
   }
-  #if data.at("charts", default: (:)).at("peer_pe", default: false) {
-    v(4pt);
-    exhibit-header("Exhibit 16b", "P/E Peers vs Subjek", peer_src);
+  #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
     v(2pt);
-    image(chart-dir + "/peer_pe.png", width: 100%);
+    text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik P/E tidak disajikan — P/E trailing tak bermakna di trough siklikal (TPIA 139x, peers terdistorsi).];
   }
 
-  #v(4pt)
+  #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
+    pagebreak();
+  }
   #text(size: 8.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
   #v(2pt)
   #let risks_list = data.at("risks", default: ())
