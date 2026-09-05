@@ -25,9 +25,11 @@ history (including prior function_call/function_call_output items) each
 turn, so no server-side state (`previous_response_id`) is needed.
 
 Env:
-  OPENCODE_GO_API_KEY — preferred (same key Hermes gateway uses)
-  fallback: ~/.hermes/.env OPENCODE_GO_API_KEY, then
-            ~/.local/share/opencode/auth.json ["opencode-go"]["key"]
+  OPENCODE_GO_API_KEY — required (same key Hermes gateway uses).
+  Resolution order: explicit arg → env → ~/.hermes/.env.
+  NOTE: ~/.local/share/opencode/auth.json is deliberately NOT read —
+  that CLI key 401s on inference (only good for /v1/models, probed
+  2026-09-05). Fail fast instead of silently using a dead key.
   OPENCODE_GO_BASE_URL — default https://opencode.ai/zen/go/v1
   SPARK13_MODEL / SPARK13_MAX_TOKENS / SPARK13_TIMEOUT
 """
@@ -69,15 +71,6 @@ def _opencode_go_key(explicit: str | None = None) -> str | None:
                 key = m.group(1).strip().strip('"').strip("'")
                 if key:
                     return key
-        except Exception:
-            pass
-    p = pathlib.Path.home() / ".local" / "share" / "opencode" / "auth.json"
-    if p.exists():
-        try:
-            d = json.loads(p.read_text())
-            key = (d.get("opencode-go") or {}).get("key", "")
-            if key:
-                return key.strip()
         except Exception:
             pass
     return None
@@ -173,7 +166,7 @@ class OpenGoResponsesLlm(BaseLlm):
     api_base: str = _OPENCODE_GO_DEFAULT_BASE
     max_output_tokens: int = _SPARK13_DEFAULT_MAX_TOKENS
     timeout: int = 120
-    session_id: str = "sectors-adk"
+    max_retries: int = 2
 
     @property
     def capabilities(self):  # type: ignore[override]
@@ -234,23 +227,37 @@ class OpenGoResponsesLlm(BaseLlm):
     async def generate_content_async(
         self, llm_request: LlmRequest, stream: bool = False
     ) -> AsyncGenerator[LlmResponse, None]:
+        import asyncio
+
         import httpx
 
+        self._maybe_append_user_content(llm_request)
         url = self.api_base.rstrip("/") + "/responses"
+        # Verified live 2026-09-05: plain Bearer + JSON is all this
+        # endpoint needs. No extra headers (Referer/X-Title/session are
+        # OpenRouter-isms — unneeded here, so not sent).
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
-            "x-opencode-session": self.session_id,
         }
-        try:
-            async with httpx.AsyncClient(timeout=self.timeout) as client:
-                resp = await client.post(url, headers=headers, json=self._payload(llm_request))
-        except Exception as e:
-            raise RuntimeError(f"opencode-go responses request failed: {type(e).__name__}: {str(e)[:300]}")
-        if resp.status_code != 200:
-            raise RuntimeError(
-                f"opencode-go responses HTTP {resp.status_code}: {resp.text[:500]}"
-            )
+        payload = self._payload(llm_request)
+        last_err: str = ""
+        for attempt in range(self.max_retries + 1):
+            try:
+                async with httpx.AsyncClient(timeout=self.timeout) as client:
+                    resp = await client.post(url, headers=headers, json=payload)
+            except Exception as e:
+                last_err = f"request failed: {type(e).__name__}: {str(e)[:300]}"
+            else:
+                if resp.status_code == 200:
+                    break
+                last_err = f"HTTP {resp.status_code}: {resp.text[:500]}"
+                if resp.status_code not in (429, 500, 502, 503, 504):
+                    raise RuntimeError(f"opencode-go responses {last_err}")
+            if attempt < self.max_retries:
+                await asyncio.sleep(2**attempt)
+        else:
+            raise RuntimeError(f"opencode-go responses {last_err}")
         try:
             data = resp.json()
         except Exception:
@@ -271,8 +278,8 @@ def spark13_model(
     key = _opencode_go_key(api_key)
     if not key:
         raise ValueError(
-            "No OpenCode Go key — set OPENCODE_GO_API_KEY (same key Hermes gateway uses, "
-            "see ~/.hermes/.env) or check ~/.local/share/opencode/auth.json"
+            "No OpenCode Go key — set OPENCODE_GO_API_KEY in env, "
+            "project .env, or ~/.hermes/.env (same key Hermes gateway uses)"
         )
     return OpenGoResponsesLlm(
         model=model or os.getenv("SPARK13_MODEL") or _SPARK13_DEFAULT_MODEL,
