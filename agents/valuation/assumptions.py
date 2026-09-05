@@ -23,11 +23,8 @@ from typing import Any, Dict, List, Optional, Union
 
 
 def _clean_ticker(ticker: str) -> str:
-    """Normalize ticker string: strip .IJ / .JK suffix to bare uppercase ticker."""
+    """Normalize ticker string: strip .JK suffix to bare uppercase ticker."""
     t = str(ticker).upper().strip()
-    ref_suffix = ".I" + "J"
-    if t.endswith(ref_suffix):
-        t = t[:-len(ref_suffix)]
     if t.endswith(".JK"):
         t = t[:-3]
     return t
@@ -174,6 +171,7 @@ def adjust_assumptions(
     base_assumptions: dict,
     news: Any = None,
     sentiment: Any = None,
+    ledger: Any = None,
 ) -> dict:
     """Modulate forward-looking assumptions using news and retail sentiment signals.
 
@@ -255,5 +253,28 @@ def adjust_assumptions(
         pct = (capex_multiplier - 1.0) * 100
         notes.append(f"High news volume ({news_count_last_30d} items, avg sentiment {avg_news_sentiment:+.2f}) boosted capex by +{pct:.1f}%")
     out["notes"] = notes
+
+    # 5. News/sentiment -> forward-driver overlays (assumption ledger).
+    # Extend-only: numeric keys stay plain floats; provenance travels in
+    # {key}_overlay detail objects + news_overlays block. No cited driver =
+    # no overlay (never silent defaults); conflicts resolve conservative.
+    try:
+        from .news_ledger import apply_ledger_overlays, extract_drivers
+
+        resolved = ledger
+        if resolved is None and (news is not None or sentiment is not None):
+            resolved = extract_drivers(news, sentiment, ticker=clean_tkr)
+        if isinstance(resolved, dict) and (resolved.get("drivers") or news is not None or sentiment is not None):
+            overlaid = apply_ledger_overlays(out, resolved)
+            # Preserve multiplier-path keys (extend, don't clobber).
+            for k in ("multipliers", "revenue_growth_multiplier", "capex_multiplier",
+                      "news_count_last_30d", "avg_news_sentiment", "sentiment_score", "notes"):
+                overlaid[k] = out[k]
+            out = overlaid
+            n_applied = out.get("news_overlays", {}).get("overlays_applied", [])
+            if n_applied:
+                out["notes"] = notes + [f"News-ledger overlay applied: {', '.join(n_applied)} (cited; see news_overlays)"]
+    except Exception:
+        pass
 
     return out
