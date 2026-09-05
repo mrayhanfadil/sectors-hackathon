@@ -362,5 +362,52 @@
  "sentiment": null,
  "strategy": null,
  "exhibits": [],
- "pbv_caption": "SSIA di P/BV 1,47 vs rata-rata 4 tahun 0,67 (±1σ 0,38–0,96): di atas mean meski trough."
+ "pbv_caption": "SSIA di P/BV 1,47 vs rata-rata 4 tahun 0,67 (±1σ 0,38–0,96): di atas mean meski trough.",
+ "statements": {
+  "title": "Financial Statements (yfinance)",
+  "years": [
+   "2025",
+   "2024",
+   "2023"
+  ],
+  "income": [
+   [
+    "Revenue",
+    "4.427",
+    "6.311",
+    "4.538"
+   ],
+   [
+    "Laba Bersih",
+    "-89",
+    "234",
+    "177"
+   ]
+  ],
+  "unit": "Rp miliar",
+  "source": "yfinance annuals"
+ },
+ "market_hist": {
+  "high52": "2.312",
+  "low52": "1.071",
+  "divs": [
+   [
+    "2020-05-20",
+    "5,0"
+   ],
+   [
+    "2024-07-02",
+    "12,0"
+   ],
+   [
+    "2025-06-24",
+    "15,0"
+   ],
+   [
+    "2026-06-30",
+    "5,0"
+   ]
+  ],
+  "source": "yfinance"
+ }
 }
