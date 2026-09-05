@@ -90,6 +90,11 @@ MAX_ADVERSARIAL_ITERATIONS = 4
 
 def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None = None):
     """Main LLM: minimax-m3-free preferred, then Spark, then DeepSeek, then Gemini."""
+    # 0a. Explicit opencode-go (Muse Spark 1.3 via Responses API, Hermes-style)
+    if os.getenv("ADK_PROVIDER", "").lower() in ("opencode-go", "opencode", "opengo", "spark-1.3", "spark13"):
+        from .providers import spark13_model
+
+        return spark13_model()
     # 0. Prefer minimax/minimax-m3-free via CommandCode (free tier, requested)
     if os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free"):
         try:
