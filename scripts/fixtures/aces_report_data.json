@@ -91,38 +91,41 @@
      "datasets": [
       {
        "data": [
-        6760,
-        7620,
         8580,
         8640,
-        8910
+        8830,
+        9024,
+        9223,
+        9426
        ],
        "label": "Pendapatan (Rp bn)"
       },
       {
        "data": [
-        664,
-        770,
         892,
         669,
-        766
+        689,
+        710,
+        731,
+        753
        ],
        "label": "Laba bersih (Rp bn)"
       }
      ],
      "labels": [
-      "FY22A",
-      "FY23A",
       "FY24A",
       "FY25A",
-      "TTM"
+      "FY26F",
+      "FY27F",
+      "FY28F",
+      "FY29F"
      ]
     },
     "height": 190,
     "type": "bar"
    },
    "id": "Exhibit 4",
-   "source": "Yahoo Finance / StockAnalysis via collector_output (run aces-b4612aa9)",
+   "source": "Yahoo Finance / StockAnalysis via collector_output (run aces-b4612aa9); 2A+4F: FY24A-FY25A aktual terverifikasi yfinance, FY26F-FY29F = FY25A x (1+g)^t (agents/valuation/forecast.py) — pendapatan g=+2,2% (SSSG H1-2026, Kontan 2026-07-21), laba bersih g=+3,0% (terminal g DCF, calc_dcf run aces-b4612aa9)",
    "title": "Tren Pendapatan & Laba Bersih"
   }
  ],
@@ -130,35 +133,39 @@
   "rows": [
    [
     "Pendapatan (Rp bn)",
-    6760,
-    7620,
     8580,
     8640,
-    8910
+    8830,
+    9024,
+    9223,
+    9426
    ],
    [
     "Laba Bersih (Rp bn)",
-    664,
-    770,
     892,
     669,
-    766
+    689,
+    710,
+    731,
+    753
    ],
    [
     "Gross margin (%)",
-    48.4,
-    48.7,
     48.7,
     47.7,
-    47.6
+    47.7,
+    47.7,
+    47.7,
+    47.7
    ],
    [
     "Net margin (%)",
-    9.8,
-    10.1,
     10.4,
     7.7,
-    8.6
+    7.8,
+    7.9,
+    7.9,
+    8.0
    ],
    [
     "ROE (%)",
@@ -166,63 +173,70 @@
     null,
     null,
     null,
-    12.12
+    null,
+    null
    ]
   ],
-  "source": "Yahoo Finance / StockAnalysis TTM + collector 5Y (run aces-b4612aa9)",
+  "source": "Yahoo Finance / StockAnalysis + collector (run aces-b4612aa9); 2A+4F: FY24A-FY25A aktual terverifikasi yfinance (marjin aktual = laba/pendapatan), FY26F-FY29F = FY25A x (1+g)^t (agents/valuation/forecast.py) — pendapatan g=+2,2% (SSSG H1-2026, Kontan 2026-07-21), laba bersih g=+3,0% (terminal g DCF, calc_dcf run aces-b4612aa9); marjin F = laba F/pendapatan F; ROE F null (tanpa proyeksi ekuitas — lihat ROE TTM 12,12% di Rasio Kunci)",
   "years": [
-   "FY22A",
-   "FY23A",
    "FY24A",
    "FY25A",
-   "TTM"
+   "FY26F",
+   "FY27F",
+   "FY28F",
+   "FY29F"
   ]
  },
  "financials": [
   {
    "headers": [
     "Rp bn",
-    "FY22A",
-    "FY23A",
     "FY24A",
     "FY25A",
-    "TTM"
+    "FY26F",
+    "FY27F",
+    "FY28F",
+    "FY29F"
    ],
    "rows": [
     [
      "Pendapatan",
-     6760,
-     7620,
      8580,
      8640,
-     8910
+     8830,
+     9024,
+     9223,
+     9426
     ],
     [
      "Laba kotor",
-     3270,
-     3710,
      4180,
      4120,
-     4240
+     4211,
+     4303,
+     4398,
+     4495
     ],
     [
      "Laba operasi",
-     746,
-     869,
      1020,
      624,
-     641
+     643,
+     662,
+     682,
+     702
     ],
     [
      "Laba bersih",
-     664,
-     770,
      892,
      669,
-     766
+     689,
+     710,
+     731,
+     753
     ]
    ],
-   "source": "Yahoo Finance / StockAnalysis",
+   "source": "Yahoo Finance / StockAnalysis; 2A+4F: FY24A-FY25A aktual terverifikasi yfinance, FY26F-FY29F = FY25A x (1+g)^t (agents/valuation/forecast.py) — pendapatan & laba kotor g=+2,2% (SSSG H1-2026, Kontan 2026-07-21), laba operasi & bersih g=+3,0% (terminal g DCF, calc_dcf run aces-b4612aa9)",
    "title": "Laba Rugi Ringkas"
   },
   {
@@ -374,39 +388,90 @@
   "tables": [
    {
     "headers": [
-     "Item",
-     "ACES",
-     "Keterangan"
+     "Ticker",
+     "Market Cap",
+     "P/E (x)",
+     "EV/EBITDA",
+     "P/BV (x)",
+     "ROE (%)",
+     "Gearing"
     ],
-    "pillar": "Street vs model",
+    "pillar": "Ritel Konsumen & Gaya Hidup",
     "rows": [
      [
-      "Macquarie TP",
-      470,
-      "Buy 06-Feb-2026"
+      "ACES",
+      "Rp 6,13 T",
+      "8,0x",
+      "5,0x",
+      "0,96x",
+      "12,1%",
+      "Net Cash"
      ],
      [
-      "Nomura TP",
-      630,
-      "Buy 30-Jan-2026"
+      "MAPI",
+      "Rp 23,7 T",
+      "9,6x",
+      "5,4x",
+      "1,55x",
+      "17,6%",
+      "0,48x"
      ],
      [
-      "CLSA TP",
-      540,
-      "Buy"
+      "LPPF",
+      "Rp 1,88 T",
+      "4,6x",
+      "4,3x",
+      "11,9x",
+      "229,2%",
+      "8,29x"
+     ],
+     [
+      "RALS",
+      "Rp 2,36 T",
+      "9,6x",
+      "1,6x",
+      "0,68x",
+      "6,9%",
+      "Net Cash"
+     ],
+     [
+      "HERO",
+      "Rp 1,39 T",
+      "111,0x",
+      "8,6x",
+      "0,81x",
+      "0,6%",
+      "0,77x"
+     ],
+     [
+      "Rata-rata Peers (Average)",
+      "Rp 7,32 T",
+      "33,7x",
+      "5,0x",
+      "3,74x",
+      "63,6%",
+      "2,39x"
+     ],
+     [
+      "Median Peers",
+      "Rp 2,12 T",
+      "9,6x",
+      "4,85x",
+      "1,18x",
+      "12,3%",
+      "0,63x"
      ],
      [
       "Model blended",
       606.52,
-      "run aces-b4612aa9"
-     ],
-     [
-      "Harga spot",
-      358,
-      "close 04-Sep-2026"
+      "FV 60% DCF + 40% Mult",
+      "Target Blended",
+      "TP Rp 606,52",
+      "+69,4%",
+      "BUY"
      ]
     ],
-    "source": "Investing.com analyst ratings + valuation_output"
+    "source": "IDX & yfinance (05-Sep-2026)"
    }
   ]
  },
@@ -734,94 +799,87 @@
  },
  "financial_statements": {
   "income": {
-   "title": "Laporan Laba Rugi Aktual (Rp Miliar)",
-   "source": "Yahoo Finance / StockAnalysis (aktual, tanpa proyeksi)",
+   "title": "Laporan Laba Rugi 2A+4F (Rp Miliar)",
+   "source": "Yahoo Finance / StockAnalysis (FY24A-FY25A aktual terverifikasi yfinance); FY26F-FY29F = FY25A x (1+g)^t (agents/valuation/forecast.py) — pendapatan & laba kotor g=+2,2% (SSSG H1-2026, Kontan 2026-07-21), laba operasi & bersih g=+3,0% (terminal g DCF, calc_dcf run aces-b4612aa9)",
    "headers": [
     "Akun Laba Rugi",
-    "FY22A",
-    "FY23A",
     "FY24A",
     "FY25A",
-    "TTM"
+    "FY26F",
+    "FY27F",
+    "FY28F",
+    "FY29F"
    ],
    "rows": [
     [
      "Pendapatan",
-     "6.760",
-     "7.620",
      "8.580",
      "8.640",
-     "8.910"
+     "8.830",
+     "9.024",
+     "9.223",
+     "9.426"
     ],
     [
      "Laba Kotor",
-     "3.270",
-     "3.710",
      "4.180",
      "4.120",
-     "4.240"
+     "4.211",
+     "4.303",
+     "4.398",
+     "4.495"
     ],
     [
      "Laba Operasi",
-     "746",
-     "869",
      "1.020",
      "624",
-     "641"
+     "643",
+     "662",
+     "682",
+     "702"
     ],
     [
      "Laba Bersih",
-     "664",
-     "770",
      "892",
      "669",
-     "766"
+     "689",
+     "710",
+     "731",
+     "753"
     ]
    ]
   },
   "balance": {
    "title": "Neraca Ringkas Aktual (Rp Miliar)",
-   "source": "yfinance ACES.JK balance_sheet tahunan",
+   "source": "yfinance ACES.JK balance_sheet tahunan; 2A: FY24A-FY25A aktual saja, tanpa proyeksi (tanpa model neraca — proyeksi hanya untuk laba rugi, lihat income)",
    "headers": [
     "Pos Neraca",
-    "FY22A",
-    "FY23A",
     "FY24A",
     "FY25A"
    ],
    "rows": [
     [
      "Kas & Setara Kas",
-     "2.190",
-     "2.319",
      "1.875",
      "2.308"
     ],
     [
      "Persediaan",
-     "2.826",
-     "2.671",
      "3.396",
      "3.172"
     ],
     [
      "Total Aset",
-     "7.329",
-     "7.794",
      "8.191",
      "8.522"
     ],
     [
      "Total Liabilitas",
-     "1.312",
-     "1.570",
      "1.679",
      "1.924"
     ],
     [
      "Total Ekuitas",
-     "6.017",
-     "6.224",
      "6.512",
      "6.598"
     ]
