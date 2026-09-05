@@ -382,8 +382,8 @@ def test_bridge_components(aces_fixture: Dict[str, Any]):
         ("cover.rating_box.key_takeaways[1]", "Yield 8,99% (DPS Rp32,01) ditopang net-cash Rp1,02T"),
         ("cover.summary", "Inisiasi liputan ACES... yield 8,99% ditopang..."),
         ("thesis[2].detail", "Ekspansi ex-Jawa... DPS Rp32,01 yield 8,99%"),
-        ("kpis[3].value", 8.99),
-        ("kpis[3].row[1]", 8.99),
+        ("kpis[1].value", 8.99),
+        ("kpis[1].row[1]", 8.99),
         ("financials[1].rows[7][1]", 8.99),
         ("valuation.conclusion", "Blended FV... DPS Rp32,01 (yield 8,99%)."),
         ("financial_statements.ratios.rows[7][1]", "8,99%"),
@@ -401,10 +401,10 @@ def test_pre_fix_yield_mutations_rejected(aces_fixture: Dict[str, Any], mutation
         mutated["cover"]["summary"] = bad_value
     elif mutation_path == "thesis[2].detail":
         mutated["thesis"][2]["detail"] = bad_value
-    elif mutation_path == "kpis[3].value":
-        mutated["kpis"][3]["value"] = bad_value
-    elif mutation_path == "kpis[3].row[1]":
-        mutated["kpis"][3]["row"][1] = bad_value
+    elif mutation_path == "kpis[1].value":
+        mutated["kpis"][1]["value"] = bad_value
+    elif mutation_path == "kpis[1].row[1]":
+        mutated["kpis"][1]["row"][1] = bad_value
     elif mutation_path == "financials[1].rows[7][1]":
         mutated["financials"][1]["rows"][7][1] = bad_value
     elif mutation_path == "valuation.conclusion":
