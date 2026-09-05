@@ -30,7 +30,7 @@ import { StatePreview } from "@/components/agent/StatePreview"
 import { FunctionCallCard } from "@/components/agent/FunctionCallCard"
 import { FunctionResponseCard } from "@/components/agent/FunctionResponseCard"
 import { type TraceEvent } from "@/components/agent/AGENT_FRIENDLY_META"
-import { SUPPORTED_TICKERS, normalizeTicker } from "@/components/agent/tickers"
+import { SUPPORTED_TICKERS, normalizeTicker, fetchUniverse, optionLabel, type UniverseTicker } from "@/components/agent/tickers"
 
 interface AgentSearchParams {
   ticker?: string
@@ -91,6 +91,11 @@ function AgentTrace() {
   const search = Route.useSearch() as AgentSearchParams
   const initialTicker = normalizeTicker(search?.ticker)
   const [ticker, setTicker] = useState<string>(initialTicker)
+  const [universe, setUniverse] = useState<UniverseTicker[]>([])
+  const knownTickers = useMemo(
+    () => (universe.length > 0 ? universe.map((u) => u.kode) : [...SUPPORTED_TICKERS]),
+    [universe],
+  )
   const [events, setEvents] = useState<TraceEvent[]>([])
   const [running, setRunning] = useState(false)
   const [pollCount, setPollCount] = useState(0)
@@ -149,10 +154,29 @@ function AgentTrace() {
   // Sync search param ticker with state if URL changes
   useEffect(() => {
     if (search?.ticker) {
-      const t = normalizeTicker(search.ticker)
+      const t = normalizeTicker(search.ticker, knownTickers)
       setTicker((prev) => (prev !== t ? t : prev))
     }
   }, [search?.ticker])
+
+  // Load IDX universe once (datalist suggestions + run validation)
+  useEffect(() => {
+    let active = true
+    fetchUniverse(apiBase).then((u) => {
+      if (active) setUniverse(u)
+    })
+    return () => {
+      active = false
+    }
+  }, [apiBase])
+
+  // Re-validate current ticker once universe arrives (?ticker= asing -> BBCA)
+  useEffect(() => {
+    if (universe.length > 0) {
+      const known = universe.map((u) => u.kode)
+      setTicker((prev) => normalizeTicker(prev, known))
+    }
+  }, [universe])
 
   // Auto-load latest persisted run from SQLite on mount / ticker change
   useEffect(() => {
@@ -378,7 +402,7 @@ function AgentTrace() {
           if (j) {
             const normalizedEvents = normalizeEvents(j.events || [])
             setEvents(normalizedEvents)
-            const runTicker = normalizeTicker(j.ticker || ticker)
+            const runTicker = normalizeTicker(j.ticker || ticker, knownTickers)
             if (runTicker !== ticker) {
               setTicker(runTicker)
             }
@@ -454,6 +478,11 @@ function AgentTrace() {
       setRunning(true)
       startRef.current = Date.now()
       const t = ticker.trim().toUpperCase() || "BBCA"
+      if (!knownTickers.includes(t)) {
+        setError(`Kode ${t || "(kosong)"} tidak ada di universe IDX (${knownTickers.length} emiten) — pilih dari daftar saran.`)
+        setRunning(false)
+        return
+      }
 
       if (mode === "blocking") {
         try {
@@ -606,7 +635,7 @@ function AgentTrace() {
         setRunning(false)
       }
     },
-    [ticker, apiBase, stopPolling, startPolling]
+    [ticker, apiBase, stopPolling, startPolling, knownTickers]
   )
 
   const handleStop = useCallback(() => {
@@ -713,7 +742,7 @@ function AgentTrace() {
               <label htmlFor="ticker-input" className="text-xs font-medium text-slate-700">
                 Kode Saham:
               </label>
-              <select
+              <input
                 id="ticker-input"
                 value={ticker}
                 onChange={(e) => {
@@ -721,16 +750,22 @@ function AgentTrace() {
                   setRunning(false)
                   setSelectedRunId(null)
                   selectedRunIdRef.current = null
-                  setTicker(normalizeTicker(e.target.value))
+                  setTicker(e.target.value.toUpperCase().trim())
                 }}
-                className="h-9 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-              >
-                {SUPPORTED_TICKERS.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
+                placeholder="BBCA"
+                list="ticker-universe"
+                autoComplete="off"
+                spellCheck={false}
+                className="h-9 w-52 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                maxLength={10}
+              />
+              <datalist id="ticker-universe">
+                {universe.map((u) => (
+                  <option key={u.kode} value={u.kode}>
+                    {optionLabel(u)}
                   </option>
                 ))}
-              </select>
+              </datalist>
             </div>
 
             {running ? (

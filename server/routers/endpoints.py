@@ -21,6 +21,7 @@ router_outlook = APIRouter()
 router_news = APIRouter()
 router_sentiment = APIRouter()
 router_challenge = APIRouter()
+router_universe = APIRouter()
 
 _started = time.time()
 
@@ -481,6 +482,46 @@ async def health():
         "env": settings.env,
         "sectors_gate": "P2 (disabled)" if not settings.sectors_api_key else "enabled",
     }
+
+
+# ---------- tickers (IDX universe from Morning Brief DB) ----------
+_UNIVERSE_CACHE: dict[str, Any] = {"at": 0.0, "rows": []}
+_UNIVERSE_TTL_S = 86400
+
+
+async def _fetch_universe() -> list[dict[str, Any]]:
+    """Read active tickers from stockdata.tickers (IDX Morning Brief DB)."""
+    import asyncpg
+
+    dsn = os.getenv("STOCKDATA_PG_URL", "postgresql://postgres:password@localhost:15437/stockdata")
+    con = await asyncpg.connect(dsn, timeout=8)
+    try:
+        rows = await con.fetch(
+            "SELECT kode_saham, nama_saham, sector FROM tickers "
+            "WHERE is_active IS NOT FALSE ORDER BY kode_saham"
+        )
+        return [
+            {"kode": r["kode_saham"], "nama": r["nama_saham"], "sector": r["sector"]}
+            for r in rows
+            if r["kode_saham"]
+        ]
+    finally:
+        await con.close()
+
+
+@router_universe.get("/api/tickers", summary="IDX ticker universe (Morning Brief DB)")
+async def tickers():
+    now = time.time()
+    rows = _UNIVERSE_CACHE["rows"]
+    if not rows or (now - _UNIVERSE_CACHE["at"]) > _UNIVERSE_TTL_S:
+        try:
+            rows = await _fetch_universe()
+        except Exception as e:
+            if rows:
+                return {"count": len(rows), "tickers": rows, "source": "stockdata.tickers", "stale": True}
+            raise HTTPException(status_code=503, detail=f"ticker universe unavailable: {type(e).__name__}")
+        _UNIVERSE_CACHE.update(at=now, rows=rows)
+    return {"count": len(rows), "tickers": rows, "source": "stockdata.tickers"}
 
 
 # ---------- report/{ticker} ----------
