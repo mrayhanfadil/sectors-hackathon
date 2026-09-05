@@ -47,7 +47,7 @@
   "price_chart": {
    "title": "BBRI relative to JCI Index",
    "label": "BBRI vs IHSG (12M, rebased)",
-   "caption": "Sumber: yfinance BBRI.JK vs ^JKSE monthly closes"
+   "caption": "yfinance BBRI.JK vs ^JKSE monthly closes"
   },
   "summary": "Update liputan BBRI pasca 2Q26 dengan rekomendasi BUY dan target harga Rp4.105 (+21,09%). Framework Gate (bank) me-route ke DDM sebagai primer: DPS FY25 Rp346, payout 85%, CoE 13,85% (beta 1,0 assumed), g 5%. P/BV 1,60x vs justified 1,58x (ROE 19%) — silang konsisten.",
   "vs_jci": {
@@ -428,5 +428,5 @@
   "Pertumbuhan kredit Rp1.645 triliun (+5% qoq/+16% yoy) bersifat broad-based namun dipimpin segmen korporasi (+47% yoy), termasuk disbursement semester I sekitar Rp22,8 triliun ke Pertamina Patra Niaga. DPK Rp1.581 triliun (+2% qoq/+7% yoy) dengan CASA bertahan di 67,6% menjaga NIM 7,5% meski EA yield turun ke 10,3%. NPL membaik 11bps ke 2,9% dengan LDR 90,8%.",
   "Manajemen menaikkan guidance pertumbuhan kredit setahun penuh dan menegaskan guidance NIM, CIR, dan CoC tidak berubah — sinyal keyakinan pada disiplin pricing DPK di tengah LDR yang mengetat. Dengan payout 85% dan yield 10,2%, thesis BUY bertumpu pada arus dividen yang terukur, bukan ekspansi multiple."
  ],
- "pbv_caption": "Exhibit 2 — BBRI diperdagangkan di P/BV 1.60 vs rata-rata 4 tahun 1.73 (±1σ 1.48–1.98)."
+ "pbv_caption": "BBRI diperdagangkan di P/BV 1.60 vs rata-rata 4 tahun 1.73 (±1σ 1.48–1.98)."
 }

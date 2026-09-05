@@ -1,0 +1,363 @@
+{
+ "meta": {
+  "ticker": "PGEO",
+  "company_name": "Pertamina Geothermal Energy",
+  "sector": "Energi — Panas Bumi (BUMN)",
+  "template": "update",
+  "report_type": "Company Update",
+  "date": "5 Sep 2026",
+  "language": "id",
+  "prepared_by": "RESEARCH — Sectors Hackathon 2026"
+ },
+ "cover": {
+  "headline": "1H26 Soft on Net Profit; Dividend Math Caps Upside at Current Price",
+  "rating_box": {
+   "action": "SELL",
+   "tp": 720,
+   "price": 1035,
+   "upside_pct": -30.4,
+   "prev_tp": null,
+   "key_takeaways": [
+    "DDM dua tahap (g 12% 5 thn, 4% abadi; CoE 13,85%) → FV Rp720 (-30.4%)",
+    "DPS FY25 Rp49,44 (-6,9% yoy), payout 93% — ruang tumbuh dividen tipis",
+    "Katalis: ekspansi kapasitas 672MW → 1GW (eksekusi, bukan valuasi)"
+   ]
+  },
+  "shares": {
+   "outstanding": 41.91,
+   "unit": "miliar lembar",
+   "free_float_pct": 22.9
+  },
+  "shareholders": [
+   [
+    "Pertamina Power",
+    "69,8%"
+   ],
+   [
+    "Pertamina Pedeve",
+    "5,0%"
+   ],
+   [
+    "Publik + lainnya",
+    "25,2%"
+   ]
+  ],
+  "shareholders_src": "prospektus/IDX (publik+l.other 25,2% incl. free float 22,9%)",
+  "market": {
+   "market_cap": "Rp 43,4 T",
+   "index_class": "IDX",
+   "avg_value_3m": "Rp 20.7 M/hari"
+  },
+  "price_chart": {
+   "title": "PGEO relative to JCI Index",
+   "label": "PGEO vs IHSG (12M, rebased)",
+   "caption": "yfinance PGEO.JK vs ^JKSE monthly closes"
+  },
+  "summary": "Update PGEO dengan rekomendasi SELL dan target harga Rp720 (-30.4%%). Framework Gate (utilitas terkontrak) me-route ke DDM sebagai primer: DPS Rp49,44 pada payout 93% tidak memberi ruang tumbuh dividen tanpa ekspansi kapasitas yang masih dalam eksekusi.",
+  "vs_jci": {
+   "chart": {
+    "labels": [
+     "Oct-25",
+     "Nov-25",
+     "Dec-25",
+     "Jan-26",
+     "Feb-26",
+     "Mar-26",
+     "Apr-26",
+     "May-26",
+     "Jun-26",
+     "Jul-26",
+     "Aug-26",
+     "Sep-26"
+    ],
+    "series": [
+     [
+      0.0,
+      -11.1,
+      -13.8,
+      -14.6,
+      -16.9,
+      -21.8,
+      -21.1,
+      -27.9,
+      -27.5,
+      -18.7,
+      -16.6,
+      -16.6
+     ],
+     [
+      0.0,
+      4.2,
+      5.9,
+      2.0,
+      0.9,
+      -13.7,
+      -14.8,
+      -24.9,
+      -30.9,
+      -23.6,
+      -20.1,
+      -18.7
+     ]
+    ]
+   },
+   "source": "yfinance PGEO.JK vs ^JKSE monthly closes, rebased"
+  }
+ },
+ "thesis": [
+  {
+   "headline": "Dividen turun, payout mentok",
+   "detail": "DPS FY25 Rp49,44 (-6,9% yoy) dengan payout 93% dari laba FY25 yang turun ke US$137,7 juta. Yield 4,8% tidak menutup risiko durasi ekspansi.",
+   "source": "yfinance dividends + annuals"
+  },
+  {
+   "headline": "1H26: revenue naik, laba turun",
+   "detail": "Revenue 1H26 US$235,1 juta (+di atas run-rate FY25) tapi laba 1H26 US$79,6 juta — margin tertekan biaya operasi/pengembangan.",
+   "source": "yfinance quarterly"
+  },
+  {
+   "headline": "Ekspansi bagus, harga duluan",
+   "detail": "Target 672MW → 1GW adalah katalis fundamental, tapi DDM dua tahap (g 12% 5 tahun lalu 4%) hanya menopang Rp720. Pasar membayar duluan.",
+   "source": "model + company guidance"
+  }
+ ],
+ "analysis": [
+  "Laba FY25 US$137,7 juta (-14,2% yoy) dari revenue US$432,7 juta (+6,3% yoy) menunjukkan kompresi margin: operating margin 44,2% tidak cukup menahan kenaikan beban. DPS Rp49,44 yang turun 6,9% yoy dengan payout 93% adalah sinyal bahwa mesin dividen berjalan pada batas — setiap rupiah ekspansi harus datang dari utang atau ekuitas, bukan kas internal.",
+  "Kuartalan 1H26 memperkuat bacaan ini: revenue 2Q26 US$118,5 juta (+1,6% qoq) tumbuh, tetapi laba bersih 2Q26 US$35,7 juta (-18,7% qoq dari US$43,9 juta di 1Q26). Divergensi revenue-laba dua kuartal beruntun adalah pola yang harus dibayar dengan pertumbuhan kapasitas nyata, bukan ekspektasi.",
+  "Valuasi DDM dua tahap — pertumbuhan dividen 12% per tahun selama 5 tahun (memodelkan ramp-up kapasitas) lalu 4% abadi, didiskon pada CoE 13,85% (beta 1,0 assumed; spot -0,77 tidak bermakna) — menghasilkan FV Rp720. Downside -30,4% pada harga Rp1.035 menempatkan rating SELL secara mekanis. Thesis berubah jika dan hanya jika utilisasi kapasitas baru melampaui asumsi 12%."
+ ],
+ "financial_highlights": {
+  "years": [
+   "FY23A",
+   "FY24A",
+   "FY25A",
+   "1H26"
+  ],
+  "rows": [
+   [
+    "Revenue (US$ juta)",
+    "406,3",
+    "407,1",
+    "432,7",
+    "235,1"
+   ],
+   [
+    "Laba Bersih (US$ juta)",
+    "163,6",
+    "160,5",
+    "137,7",
+    "79,6"
+   ],
+   [
+    "Laba growth (% yoy)",
+    "-",
+    "-1,9",
+    "-14,2",
+    "-"
+   ],
+   [
+    "Op. margin (%)",
+    "-",
+    "-",
+    "44,2",
+    "-"
+   ],
+   [
+    "DPS (Rp)",
+    "47,77",
+    "53,09",
+    "49,44",
+    "-"
+   ]
+  ],
+  "source": "yfinance annuals/quarterly/dividends (angka USD perseroan)"
+ },
+ "earnings": {
+  "title": "1H26 Results: Revenue Up, Net Down",
+  "narrative": "Revenue 1H26 US$235,1 juta tumbuh di atas run-rate FY25, tetapi laba bersih 1H26 US$79,6 juta dengan 2Q26 (US$35,7 juta) turun 18,7% qoq dari 1Q26 (US$43,9 juta). Pola divergensi revenue-laba menuntut bukti ramp-up kapasitas.",
+  "table": {
+   "title": "PGEO Quarterly",
+   "headers": [
+    "Metrik (US$ juta)",
+    "1Q26",
+    "2Q26",
+    "QoQ",
+    "Keterangan"
+   ],
+   "rows": [
+    [
+     "Revenue",
+     "116,6",
+     "118,5",
+     "+1,6%",
+     "yfinance"
+    ],
+    [
+     "Laba bersih",
+     "43,9",
+     "35,7",
+     "-18,7%",
+     "margin tertekan"
+    ],
+    [
+     "DPS FY25 (Rp, ref)",
+     "-",
+     "49,44",
+     "-6,9% yoy",
+     "payout 93%"
+    ]
+   ],
+   "source": "yfinance quarterly + dividends"
+  }
+ },
+ "key_ratios": {
+  "title": "Key Ratios",
+  "headers": [
+   "Rasio",
+   "Nilai",
+   "Keterangan"
+  ],
+  "rows": [
+   [
+    "P/E trailing",
+    "16,7x",
+    "yfinance"
+   ],
+   [
+    "Div. yield",
+    "4,8%",
+    "49,44 @1.035"
+   ],
+   [
+    "Payout",
+    "93%",
+    "atas EPS ~Rp53"
+   ],
+   [
+    "Op. margin",
+    "44,2%",
+    "FY25"
+   ],
+   [
+    "ROE",
+    "7,5%",
+    "TTM yfinance"
+   ],
+   [
+    "Free float",
+    "22,9%",
+    "IDX"
+   ]
+  ],
+  "source": "yfinance 05-Sep-2026"
+ },
+ "valuation": {
+  "narrative": "Pembangkit panas bumi berpendapatan kontrak (PPA) dinilai via DDM dua tahap: fase ramp-up 12% selama 5 tahun (ekspansi 672MW → 1GW), lalu 4% abadi. CoE 13,85% (Rf 6,96%, beta 1,0 assumed karena spot -0,77 tidak bermakna, ERP 6,89%).",
+  "methods": [
+   {
+    "method": "DDM",
+    "title": "Dividend Discount Model (dua tahap)",
+    "fv": 720,
+    "source": "model: DPS 49,44; g1 12% 5 thn; g2 4%; CoE 13,85%",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "DPS basis FY25",
+       "Rp 49,44",
+       "dibayar Apr-2026 (yfinance)"
+      ],
+      [
+       "Fase 1 (5 thn)",
+       "g 12%",
+       "ramp-up kapasitas"
+      ],
+      [
+       "Fase 2 (abadi)",
+       "g 4%",
+       "konservatif"
+      ],
+      [
+       "Cost of Equity",
+       "13,85%",
+       "beta 1,0 assumed"
+      ],
+      [
+       "PV dividen 5 thn",
+       "~Rp 235",
+       "terdiskon CoE"
+      ],
+      [
+       "PV terminal",
+       "~Rp 481",
+       "terminal g 4%"
+      ],
+      [
+       "Fair Value DDM",
+       "Rp 720",
+       "downside -30,4%"
+      ]
+     ]
+    }
+   }
+  ],
+  "blended": {
+   "fair_value": 720,
+   "weights": "DDM primer (kontrak utilitas)"
+  },
+  "conclusion": "FV Rp720 (DDM dua tahap) vs Rp1.035 (-30,4%, SELL). Pasar menghargai kapasitas masa depan yang belum berproduksi; disiplin framework menuntut bukti utilisasi sebelum rating berubah.",
+  "bands": {
+   "pbv_3y": {
+    "std-2": 0.81,
+    "std-1": 1.06,
+    "avg": 1.32,
+    "std+1": 1.57,
+    "std+2": 1.82,
+    "current": 1.31,
+    "label": "PGEO P/BV band (monthly close / BVPS year-end x Rp16.200, yfinance)"
+   }
+  }
+ },
+ "outlook": [
+  "Eksekusi 672MW → 1GW adalah satu-satunya variabel yang dapat membalik thesis.",
+  "Awasi margin kuartalan: divergensi revenue-laba harus berhenti dalam 2 kuartal.",
+  "Ruang dividen tipis (payout 93%) — setiap rights issue menekan thesis lebih dalam."
+ ],
+ "risks": [
+  {
+   "bucket": "Eksekusi kapasitas",
+   "detail": "Keterlambatan COD atau utilisasi di bawah 12% memangkas FV di bawah Rp700.",
+   "source": "model"
+  },
+  {
+   "bucket": "Kompresi margin",
+   "detail": "Laba 2Q26 -18,7% qoq; tren berlanjut menggerus basis dividen.",
+   "source": "yfinance quarterly"
+  },
+  {
+   "bucket": "Harga sudah duluan",
+   "detail": "Setiap kabar ekspansi cenderung priced-in; upside surprise kecil.",
+   "source": "model"
+  },
+  {
+   "bucket": "Sensitivitas CoE",
+   "detail": "Tiap 100bps CoE menggeser FV ~Rp90.",
+   "source": "model"
+  }
+ ],
+ "kpis": [],
+ "kpis_src": "-",
+ "segments": [],
+ "catalysts": [],
+ "esg": {
+  "found": false
+ },
+ "sentiment": null,
+ "strategy": null,
+ "exhibits": [],
+ "pbv_caption": "PGEO di P/BV 1.31 vs rata-rata 1.32 (±1σ 1.06–1.57): pasar membayar premi atas BVPS."
+}

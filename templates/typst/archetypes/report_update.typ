@@ -82,7 +82,7 @@
       #text(size: 7.5pt, weight: "bold", fill: NAVY)[#cover.at("price_chart", default: (:)).at("title", default: "Price Performance")]
       #v(1pt)
       #image(chart-dir + "/vs_jci.png", width: 100%)
-      #src("yfinance BBRI.JK vs ^JKSE, monthly")
+      #src(cover.at("price_chart", default: (:)).at("caption", default: "yfinance monthly closes"))
       #v(3pt)
     ]
     #text(size: 7pt, weight: "bold", fill: NAVY)[Analyst]
@@ -182,6 +182,7 @@
       #text(size: 7.5pt, weight: "bold", fill: PAL2.neg)[#r.at("bucket", default: "-")]
       #v(1pt)
       #text(size: 7pt)[#r.at("detail", default: "")]
+      #if r.at("source", default: none) != none [#v(1pt) #text(size: 6pt, style: "italic", fill: rgb("#667085"))[#r.at("source")]]
     ]))
   #v(4pt)
   #h-sec("Investment Rating Definition")
