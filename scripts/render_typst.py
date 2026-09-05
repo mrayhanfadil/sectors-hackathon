@@ -127,7 +127,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
             for k, v in row_map.items():
                 if "revenue" in k or "pendapatan" in k:
                     rev_row = v
-                elif "ebitda" in k and "margin" in k:
+                elif "ebitda" in k and ("margin" in k or "marjin" in k):
                     ebitda_row = v
                 elif "npm" in k or "net margin" in k or "net profit margin" in k:
                     net_row = v

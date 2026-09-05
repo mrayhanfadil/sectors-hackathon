@@ -136,7 +136,13 @@
       } else {
         "Performa Relatif YTD: " + (if vj.at("ytd_rel", default: none) != none { (if vj.ytd_rel > 0 { "Outperform +" } else { "Underperform " }) + str(vj.ytd_rel) + "%" } else { "-" }) + " · Sumber: " + pc_src
       })
-      #chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE)
+      #if data.at("charts", default: (:)).at("vs_jci", default: false) {
+        image(chart-dir + "/vs_jci.png", width: 100%);
+        v(2pt);
+        text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[#pc_label · Sumber: #pc_src];
+      } else {
+        chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE);
+      }
     ],
     [
       #rating-box(
@@ -306,6 +312,13 @@
     fh_rows,
     palette: PALETTE,
   )
+
+  #if data.at("charts", default: (:)).at("margin_trajectory", default: false) {
+    v(4pt);
+    exhibit-header("Exhibit 5a", "Lintasan Pendapatan & Marjin", fh_src);
+    v(2pt);
+    image(chart-dir + "/margin_trajectory.png", width: 100%);
+  }
 
   #v(8pt)
   #let thesis_list = data.at("thesis", default: ())
@@ -537,7 +550,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 9", "Sensitivity Analysis — WACC vs Terminal Growth (g)", "Engine Sensitivitas 5x5")
+  #exhibit-header("Exhibit 9", ddd.at("sensitivity", default: (:)).at("title", default: "Sensitivity Analysis — WACC vs Terminal Growth (g)"), "Engine Sensitivitas 5x5")
   #v(2pt)
   #let sens = ddd.at("sensitivity", default: (:))
   #fin-table(
@@ -586,6 +599,12 @@
       )
     ]
   )
+  #if data.at("charts", default: (:)).at("scenario_bars", default: false) {
+    v(4pt);
+    exhibit-header("Exhibit 10a", "Scenario Chart (Bear / Base / Bull vs Harga Kini)", "Engine Skenario");
+    v(2pt);
+    image(chart-dir + "/scenario_bars.png", width: 100%);
+  }
 ])
 
 #pagebreak()
@@ -703,6 +722,18 @@
   #image(chart-dir + "/relval_bars.png", width: 100%)
   #v(2pt)
   #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif · Sumber: #relval_src]
+  #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
+    v(4pt);
+    exhibit-header("Exhibit 16a", "EV/EBITDA Peers vs Subjek", peer_src);
+    v(2pt);
+    image(chart-dir + "/peer_evebitda.png", width: 100%);
+  }
+  #if data.at("charts", default: (:)).at("peer_pe", default: false) {
+    v(4pt);
+    exhibit-header("Exhibit 16b", "P/E Peers vs Subjek", peer_src);
+    v(2pt);
+    image(chart-dir + "/peer_pe.png", width: 100%);
+  }
 
   #v(4pt)
   #text(size: 8.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
