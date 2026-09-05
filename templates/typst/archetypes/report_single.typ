@@ -124,7 +124,7 @@
       #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
       #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
       #let pc_src = vj.at("source", default: "IDX & yfinance (" + m.ticker + ".JK vs ^JKSE)")
-      #exhibit-header("Exhibit 2", "Kinerja Harga vs IHSG (YTD)", pc_src)
+      #exhibit-header("Exhibit 2", pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
       #v(2pt)
       #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
         "Kinerja Harga " + m.ticker + " (+18,4% YTD) vs IHSG (+12,2% YTD)"
@@ -473,8 +473,8 @@
       #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Valuasi Blended (#blended_weights)]
       #v(2pt)
       #let blended_rows = (
-        ("DCF (WACC " + str(dcf_wacc) + "%, g " + str(dcf_g) + "%)", "comparison", if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }),
-        ("EV/EBITDA (" + str(mult_multiple) + "x)", "primary", "Rp " + str(mult_fv)),
+        ("DCF (WACC " + str(dcf_wacc) + "%, g " + str(dcf_g) + "%)", "pembanding", if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }),
+        ("EV/EBITDA (" + str(mult_multiple) + "x)", "primer", "Rp " + str(mult_fv)),
         ("Target Price (TP 12M)", "100%", "Rp " + str(blended_fv)),
       )
       #fin-table(
@@ -522,16 +522,16 @@
 // PAGE 5 — COMPREHENSIVE DCF DEEP DIVE
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 5, PALETTE, [
-  #section-header(4, "Analisis DCF Komprehensif", PALETTE, sub: "Menjawab: Bagaimana kalkulasi biaya modal (WACC), sensitivitas pertumbuhan, dan skenario nilai intrinsik?")
+  #let ddd = data.at("dcf_deep_dive", default: (:))
+  #section-header(4, "Analisis DCF Komprehensif", PALETTE, sub: ddd.at("section_sub", default: "Menjawab: Bagaimana kalkulasi biaya modal (WACC), sensitivitas pertumbuhan, dan skenario nilai intrinsik?"))
   
   #text(size: 7.2pt, fill: PALETTE.muted)[
-    Discounted Cash Flow (DCF) Model — Model deterministik multi-periode mengevaluasi nilai intrinsik ekuitas melalui proyeksi arus kas bebas eksplisit (FCFF) dan nilai terminal, dilengkapi Cost of Capital Build, Sensitivity Analysis 5x5, dan Scenario Analysis (Bear / Base / Bull).
+    #ddd.at("intro", default: "Discounted Cash Flow (DCF) Model — Model deterministik multi-periode mengevaluasi nilai intrinsik ekuitas melalui proyeksi arus kas bebas eksplisit (FCFF) dan nilai terminal, dilengkapi Cost of Capital Build, Sensitivity Analysis 5x5, dan Scenario Analysis (Bear / Base / Bull).")
   ]
   #v(6pt)
 
   #exhibit-header("Exhibit 8", "Cost of Capital Build", "Model CAPM & SBN 10Y")
   #v(2pt)
-  #let ddd = data.at("dcf_deep_dive", default: (:))
   #let wb = ddd.at("wacc_build", default: (:))
   #fin-table(
     wb.at("headers", default: ("Komponen WACC", "Nilai", "Metodologi / Sumber")),
@@ -613,9 +613,9 @@
 // PAGE 6 — FINANCIAL STATEMENTS 6Y (INCOME, BALANCE & CASHFLOW)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 6, PALETTE, [
-  #section-header(5, "Laporan Keuangan & Rasio Finansial 6 Tahun", PALETTE, sub: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 6 tahun?")
-
   #let fs = data.at("financial_statements", default: (:))
+  #section-header(5, fs.at("section_title", default: "Laporan Keuangan & Rasio Finansial 6 Tahun"), PALETTE, sub: fs.at("section_sub", default: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 6 tahun?"))
+
   #let inc = fs.at("income", default: (:))
   #exhibit-header("Exhibit 12", inc.at("title", default: "Laporan Laba Rugi Komprehensif (Rp Miliar)"), inc.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
   #v(2pt)
@@ -717,11 +717,13 @@
   #v(4pt)
   #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
   #let relval_src = "IDX & yfinance"
-  #exhibit-header("Exhibit 16", relval_title, relval_src)
-  #v(2pt)
-  #image(chart-dir + "/relval_bars.png", width: 100%)
-  #v(2pt)
-  #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif · Sumber: #relval_src]
+  #if not data.at("charts", default: (:)).at("peer_evebitda", default: false) {
+    exhibit-header("Exhibit 16", relval_title, relval_src);
+    v(2pt);
+    image(chart-dir + "/relval_bars.png", width: 100%);
+    v(2pt);
+    text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif · Sumber: #relval_src];
+  }
   #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
     v(4pt);
     exhibit-header("Exhibit 16a", "EV/EBITDA Peers vs Subjek", peer_src);

@@ -155,6 +155,22 @@ def _get_ticker_gate_params(ticker: str, data: dict) -> dict[str, Any]:
             "upside_pct": -60.0,  # < -50%: triggers Review Required
         }
 
+    if t == "TPIA":
+        return {
+            "domain": DOMAIN_SINGLE_BUSINESS,
+            "filing_history_years": 8,
+            "ebit_positive_count": 1,  # trough FY23-24 EBIT negatif
+            "d_de_ratio": 1.65,  # FY25A Liab/Ek pasca-Aster
+            "net_debt_to_ebitda": 1.67,  # 2.67/1.6 ternormalisasi
+            "interest_coverage": 1.2,  # leverage breach -> relative cross-check
+            "shareholders_equity": 8.2e13,  # USD 4.657M x 17633
+            "nci_pct": 5.0,
+            "revenue_drivers": ["volume_manufacturing"],
+            "has_steady_state_3y": False,  # Aster ramping -> Gate 3 Relative primary
+            "life_cycle_stage": "mature",
+            "upside_pct": upside_pct,
+        }
+
     # Generic defaults
     domain = DOMAIN_SINGLE_BUSINESS
     drivers = ["volume_consumer"]
