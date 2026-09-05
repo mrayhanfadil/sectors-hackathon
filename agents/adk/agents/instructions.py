@@ -149,6 +149,9 @@ Archetype calibration benchmarks (for reference only — read exact inputs from 
 
 Pre-flight gate runner (Valuation Method Selection Framework, 6 gates 0–5):
 - ASSERTION: agents.valuation.gates.evaluate() is strictly the FIRST upstream filter the orchestrator calls, BEFORE any valuation math or assumption adjustments.
+- Method-order pre-filter (UPFRONT, before the full pipeline): immediately after evaluate(), call agents.valuation.method_gate.run_method_gate(ticker, <same gate inputs> + payout_ratio, dps_history_years, ebitda, revenue, net_income, earnings_stable, has_peers, segments_count, fcf_available). It emits the ordered method list with skip reasons.
+- Run ONLY gated methods: DCF is the anchor and always runs (sole exception: financials — DDM anchors, DCF is skipped because EV is undefined); DDM requires payout>0 AND DPS history; EV/EBITDA requires positive EBITDA; P/E requires stable positive earnings + peers; SOTP requires >1 segment.
+- Emit method_gate {ordered, skipped} inside valuation.json. Writer/blended may use ONLY gated FVs; Critic REJECTS any FV from a non-gated method (agents.valuation.method_gate.check_fv_gated raises).
 - Before computing valuation, call `agents.valuation.gates.evaluate(ticker, ...)` to determine primary/secondary method. Pass the verdict to the next agent.
 - Inputs to gather first: domain (bank/reit/mining/etc), filing_history_years, ebit_positive_count (of last 3y), d_de_ratio, net_debt_to_ebitda, interest_coverage, shareholders_equity, nci_pct, revenue_drivers, has_steady_state_3y, life_cycle_stage.
 - Gate verdict drives which archetype + which math: primary ∈ {DCF, DCF (shortened), DDM/Excess Return, NAV/Reserve, SOTP, EV/Sales, P/BV, Relative}.
@@ -333,6 +336,11 @@ Rules:
   tripped (e.g. upside >100% → Review Required), rating MUST carry the flag
   (e.g. "HOLD (Review Required — Gate 5: upside >100%)"), never a bare BUY/HOLD/SELL.
   Emit gate_flags: [str, ...] listing every tripped Gate, [] if none.
+- METHOD-GATE RULE (hard): every FV you anchor or blend MUST come from
+  valuation_output's method_gate.ordered list. Blend only via
+  agents.valuation.method_gate.blended_from_gated (non-gated components raise —
+  never silently average in a skipped method; see method_gate.skipped for why
+  each excluded method was dropped).
 - Segment % must sum 100% — hide pie if single pillar.
 - Quote source per exhibit: "Source: Bloomberg, SKK Migas, BPS, FactSet" or news url+date.
 - Include archetype-grounded catalysts and operational variance drivers:
@@ -460,6 +468,10 @@ Checks (REJECT if mismatch):
 - Thesis anchored? writer target_price == one of valuation dcf/secondary/tertiary/blended
   FV with target_anchor named; non-anchored FVs disclosed in bullets; gate_flags lists
   every tripped Gate and rating carries the flag (REJECT bare BUY on Gate 5 upside>100%).
+- Method-gate honored? every FV in valuation.json comes from method_gate.ordered —
+  run agents.valuation.method_gate.audit_valuation_fvs and REJECT on any violation
+  (FV from a skipped method, e.g. DDM on a zero-payout ticker); blended components
+  must be a gated subset with weights summing 100% (REJECT otherwise).
 - SOTP sum reconciled? (if conglomerate)
 - Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
 
