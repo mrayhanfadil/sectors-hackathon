@@ -14,6 +14,7 @@ import {
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { AgentRail } from "./AgentRail"
+import { SUPPORTED_TICKERS, normalizeTicker } from "./tickers"
 import {
   useAgentProgress,
   type TraceEvent,
@@ -203,13 +204,17 @@ export const ProgressHeader = memo(function ProgressHeader({
         <div className="flex flex-wrap items-center gap-2">
           <label className="flex items-center gap-2 text-xs font-medium text-slate-700">
             <span>Ticker</span>
-            <input
+            <select
               value={ticker}
-              onChange={(e) => onTickerChange(e.target.value.toUpperCase())}
-              placeholder="BBCA"
-              className="h-8 w-24 rounded-md border border-slate-300 bg-white px-2.5 text-sm font-mono font-semibold uppercase text-slate-900 shadow-2xs focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
-              maxLength={10}
-            />
+              onChange={(e) => onTickerChange(normalizeTicker(e.target.value))}
+              className="h-8 rounded-md border border-slate-300 bg-white px-2.5 text-sm font-mono font-semibold uppercase text-slate-900 shadow-2xs focus:border-slate-800 focus:outline-none focus:ring-1 focus:ring-slate-800"
+            >
+              {SUPPORTED_TICKERS.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
           </label>
 
           <Button
