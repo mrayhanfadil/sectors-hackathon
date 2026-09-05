@@ -112,17 +112,17 @@ def _get_ticker_gate_params(ticker: str, data: dict) -> dict[str, Any]:
     if t == "CDIA":
         return {
             "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 2,  # < 4 years: thin data
+            "filing_history_years": 2,  # < 4 years: thin data (IPO Jul-2025)
             "ebit_positive_count": 2,
-            "d_de_ratio": 0.4,
-            "net_debt_to_ebitda": 2.0,
-            "interest_coverage": 3.0,
-            "shareholders_equity": 1e10,
+            "d_de_ratio": 0.0,  # net cash 340 (pra-capex)
+            "net_debt_to_ebitda": 0.0,  # net cash
+            "interest_coverage": 9.9,  # op profit 22 / est interest
+            "shareholders_equity": 1.9e13,  # USD 1.073M x 17633
             "nci_pct": 5.0,
-            "revenue_drivers": ["volume_consumer"],
-            "has_steady_state_3y": True,
+            "revenue_drivers": ["volume_manufacturing"],
+            "has_steady_state_3y": False,  # fleet 9->15 + CA-EDC 2027 ramping -> Gate 3 Relative
             "life_cycle_stage": "growth",
-            "upside_pct": 4.5,
+            "upside_pct": upside_pct,
         }
     if t == "MTEL":
         return {
@@ -352,6 +352,13 @@ def _build_gate_verdict_dict(ticker: str, verdict: GateVerdict, params: dict, ra
 def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
     """Load fixture or build structured report data dict."""
     t = ticker.upper().strip()
+    # Verified JSON fixtures win over python builders (builders go stale silently).
+    fix_json_first = SCRIPTS_DIR / "fixtures" / f"{t.lower()}_report_data.json"
+    if fix_json_first.exists():
+        try:
+            return json.loads(fix_json_first.read_text(encoding="utf-8"))
+        except Exception:
+            pass
     try:
         from report_fixtures import ALL
         if t in ALL:
