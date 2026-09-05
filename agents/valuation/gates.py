@@ -234,11 +234,16 @@ def _gate4_life_cycle(stage: str) -> tuple[list[str], list[str], list[str], Meth
 def _gate5_output_sanity(
     upside_pct: float | None,
     terminal_value_pct_of_ev: float | None,
+    implied_exit_ev_ebitda: float | None = None,
+    peer_exit_low: float | None = None,
+    peer_exit_high: float | None = None,
 ) -> tuple[list[str], list[str], list[str], Optional[str]]:
     """Returns (passed, failed, reasons, rating_override).
 
     User decision: upside > 100% or downside < -50% → auto-override rating to "Review Required".
     TV > 80% of EV → flag but do NOT override rating.
+    Implied exit EV/EBITDA outside the peer/historical range → flag for EV/EBITDA
+    cross-check (PDF Gate 5 row 3: WACC/g out of sync with market pricing), no override.
     """
     passed: list[str] = []
     failed: list[str] = []
@@ -271,6 +276,21 @@ def _gate5_output_sanity(
         if "5_upside_band" in passed or not failed:
             passed.append("5_tv_share")
 
+    if (
+        implied_exit_ev_ebitda is not None
+        and peer_exit_low is not None
+        and peer_exit_high is not None
+    ):
+        if not (peer_exit_low <= implied_exit_ev_ebitda <= peer_exit_high):
+            failed.append("5_exit_multiple_out_of_range")
+            reasons.append(
+                f"5 implied exit EV/EBITDA {implied_exit_ev_ebitda:.1f}x outside peer range "
+                f"{peer_exit_low:.1f}-{peer_exit_high:.1f}x → WACC/g out of sync with market "
+                "pricing, cross-check vs EV/EBITDA relative valuation"
+            )
+        else:
+            passed.append("5_exit_multiple_in_range")
+
     return passed, failed, reasons, rating_override
 
 
@@ -290,6 +310,9 @@ def evaluate(
     life_cycle_stage: str,
     upside_pct: float | None = None,
     terminal_value_pct_of_ev: float | None = None,
+    implied_exit_ev_ebitda: float | None = None,
+    peer_exit_low: float | None = None,
+    peer_exit_high: float | None = None,
 ) -> GateVerdict:
     """Run gates 0–5 in order and return a single GateVerdict.
 
@@ -317,7 +340,8 @@ def evaluate(
         if domain in {DOMAIN_BANK, DOMAIN_INSURANCE, DOMAIN_MULTIFINANCE, DOMAIN_SECURITIES}:
             # Apply Gate 5 only — financial valuation doesn't fit Gates 1-4
             g5_passed, g5_failed, g5_reasons, g5_override = _gate5_output_sanity(
-                upside_pct, terminal_value_pct_of_ev
+                upside_pct, terminal_value_pct_of_ev,
+                implied_exit_ev_ebitda, peer_exit_low, peer_exit_high,
             )
             all_passed.extend(g5_passed)
             all_failed.extend(g5_failed)
@@ -385,7 +409,8 @@ def evaluate(
     # Only apply if DCF is the primary; for NAV/SOTP/DDM it's less meaningful but
     # still applies for the upside band logic.
     g5_passed, g5_failed, g5_reasons, g5_override = _gate5_output_sanity(
-        upside_pct, terminal_value_pct_of_ev
+        upside_pct, terminal_value_pct_of_ev,
+        implied_exit_ev_ebitda, peer_exit_low, peer_exit_high,
     )
     all_passed.extend(g5_passed)
     all_failed.extend(g5_failed)
