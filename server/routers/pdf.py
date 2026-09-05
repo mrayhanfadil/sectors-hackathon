@@ -103,6 +103,14 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     from server.engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
 
     t = ticker.upper().strip()
+    # Loud failure: no silent generic numbers. A ticker without a fixture or
+    # assumptions file must 422, mirroring endpoints.py:583-592.
+    _repo = Path(__file__).resolve().parents[2]
+    _has_fixture = (_repo / "scripts" / "fixtures" / f"{t}_report_data.json").exists()
+    _has_assump = (_repo / "data" / "assumptions" / f"{t}.json").exists()
+    if not _has_fixture and not _has_assump:
+        raise HTTPException(
+            422, f"no fixture or assumptions for {t} — refusing generic fallback")
     # reuse _assumptions_for logic (duplicate to avoid circular import)
     import json, os
 

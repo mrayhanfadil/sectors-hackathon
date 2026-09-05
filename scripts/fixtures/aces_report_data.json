@@ -6,7 +6,7 @@
    "key_takeaways": [
     "Blended FV Rp606,52 vs Rp358 (+69,42%) — jangkar blended 60/40",
     "Yield 8,94% (DPS Rp32,01 @358) ditopang net-cash Rp1,02T",
-    "SSSG H1-2026 +2,2% YoY, ekspansi ex-Jawa 12 toko"
+    "SSSG H1-2026 +2,2% YoY; valuasi spot di bawah mean band"
    ],
    "prev_tp": null,
    "price": 358,
@@ -23,18 +23,18 @@
   "vs_jci": {
    "chart": {
     "labels": [
-     "Oct",
-     "Nov",
-     "Dec",
-     "Jan",
-     "Feb",
-     "Mar",
-     "Apr",
-     "May",
-     "Jun",
-     "Jul",
-     "Aug",
-     "Sep"
+     "Oct-25",
+     "Nov-25",
+     "Dec-25",
+     "Jan-26",
+     "Feb-26",
+     "Mar-26",
+     "Apr-26",
+     "May-26",
+     "Jun-26",
+     "Jul-26",
+     "Aug-26",
+     "Sep-26"
     ],
     "series": [
      [
@@ -67,18 +67,18 @@
      ]
     ]
    },
-   "source": "yfinance ACES.JK vs ^JKSE, rebased 12M",
-   "ytd_abs": -18.7,
-   "ytd_rel": -7.1
+   "source": "yfinance ACES.JK vs ^JKSE monthly closes, rebased",
+   "ytd_abs": -11.6,
+   "ytd_rel": 7.1
   },
-  "summary": "Inisiasi liputan ACES (AZKO) dengan rekomendasi BUY dan target harga Rp606,52 (+69,42% upside, blended 60/40). Laba pulih pasca rebrand (net TTM Rp766M vs FY25 Rp669M), SSSG H1-2026 +2,2% YoY, 242 toko, dan dividen rekor DPS Rp32,01 (yield 8,94%) ditopang neraca net-cash Rp1,02T.",
+  "summary": "Inisiasi liputan ACES (AZKO) dengan rekomendasi BUY dan target harga Rp606,52 (+69,42% upside, blended 60/40). Laba pulih pasca rebrand (net TTM Rp766M vs FY25 Rp669M), SSSG H1-2026 +2,2% YoY, dan dividen rekor DPS Rp32,01 (yield 8,94%) ditopang neraca net-cash Rp1,02T.",
   "market": {
    "market_cap": "Rp 6,13 T",
    "index_class": "IDX"
   },
   "price_chart": {
-   "label": "Kinerja Harga ACES vs IHSG (12M, rebased Okt-25)",
-   "caption": "ACES -18,7% vs IHSG -11,6% · Sumber: yfinance ACES.JK vs ^JKSE"
+   "label": "Kinerja Harga ACES (-11.6%) vs IHSG (-18.7%) — 12M rebased",
+   "caption": "12M Oct-25→Sep-26: ACES -11.6% vs IHSG -18.7% · Sumber: yfinance monthly closes"
   }
  },
  "esg": {
@@ -150,7 +150,7 @@
     48.7,
     48.7,
     47.7,
-    44.19
+    47.6
    ],
    [
     "Net margin (%)",
@@ -279,43 +279,8 @@
  ],
  "kpis": [
   {
-   "formula": "jaringan ritel nasional",
-   "name": "Total toko",
-   "prev": null,
-   "row": [
-    "Total toko",
-    242,
-    null,
-    null,
-    "toko",
-    "228x AZKO + 14x Toys Kingdom",
-    "collector"
-   ],
-   "source": "collector_output",
-   "unit": "toko",
-   "value": 242
-  },
-  {
-   "formula": "sales/total space",
-   "name": "Sales per sqm",
-   "prev": null,
-   "row": [
-    "Sales per sqm",
-    17.4,
-    null,
-    null,
-    "Rp jt",
-    "revenue TTM / 512rb sqm",
-    "kpi"
-   ],
-   "source": "kpi_output",
-   "unit": "Rp jt",
-   "value": 17.4
-  },
-  {
    "formula": "same-store sales YoY",
    "name": "SSSG H1-2026",
-   "prev": null,
    "row": [
     "SSSG H1-2026",
     2.2,
@@ -332,7 +297,6 @@
   {
    "formula": "DPS/price",
    "name": "Dividend yield",
-   "prev": null,
    "row": [
     "Dividend yield",
     8.94,
@@ -345,6 +309,38 @@
    "source": "IDNFinancials 2026-06-11",
    "unit": "%",
    "value": 8.94
+  },
+  {
+   "formula": "net/TTM revenue",
+   "name": "Net margin TTM",
+   "row": [
+    "Net margin TTM",
+    8.6,
+    null,
+    null,
+    "%",
+    "766/8910 Rp bn",
+    "calc"
+   ],
+   "source": "calc (run aces-b4612aa9)",
+   "unit": "%",
+   "value": 8.6
+  },
+  {
+   "formula": "net/equity",
+   "name": "ROE TTM",
+   "row": [
+    "ROE TTM",
+    12.12,
+    null,
+    null,
+    "%",
+    "TTM Jun-26",
+    "yfinance"
+   ],
+   "source": "yfinance ACES.JK",
+   "unit": "%",
+   "value": 12.12
   }
  ],
  "kpis_src": "collector + Kontan + IDNFinancials (run aces-b4612aa9)",
@@ -417,7 +413,7 @@
  "risks": [
   {
    "bucket": "Siklus permintaan / SSSG",
-   "detail": "Ritel diskresioner sensitif daya beli: SSSG H1-2026 +2,2% YoY, Jawa lembek diimbangi ex-Jawa. Net TTM Rp766M masih di bawah FY24 Rp892M.",
+   "detail": "Ritel diskresioner sensitif daya beli: SSSG H1-2026 +2,2% YoY ditopang Jakarta +4,4%, sementara ex-Jawa +0,3% justru tertinggal (Kontan 2026-07-21). Net TTM Rp766M masih di bawah FY24 Rp892M.",
    "source": "Kontan 2026-07-21"
   },
   {
@@ -446,12 +442,12 @@
    "source": "valuation.json + calc_* (run aces-b4612aa9)"
   },
   {
-   "detail": "Revenue 2024 Rp8.580M -> 2025 Rp8.640M (+0,7%) tapi net Rp892,04M -> Rp668,73M (-25%) karena opex rebrand; TTM Jun-26 pulih (revenue Rp8.910M, net Rp766,16M). 242 toko, SSSG +2,2%.",
+   "detail": "Revenue 2024 Rp8.580M -> 2025 Rp8.640M (+0,7%) tapi net Rp892,04M -> Rp668,73M (-25%) karena opex rebrand; TTM Jun-26 pulih (revenue Rp8.910M, net Rp766,16M). Portofolio ritel: AZKO, Toys Kingdom, ATARU, Pendopo, NEKA (ahi.id). SSSG +2,2%.",
    "headline": "Bottom-line pulih pasca rebrand",
    "source": "Kontan 2026-07-21 + Yahoo/StockAnalysis TTM"
   },
   {
-   "detail": "Ekspansi ex-Jawa 12 toko (~Rp441,6M), Toys Kingdom 4 toko, private-label +70bps. Dividen rekor Rp548M/DPS Rp32,01 yield 8,94%, ex-div 22-Jun-2026. Street: Macquarie 470, Nomura 630, CLSA 540.",
+   "detail": "Dividen rekor Rp548M/DPS Rp32,01 yield 8,94%, ex-div 22-Jun-2026. Street: Macquarie 470, Nomura 630, CLSA 540 (Investing.com consensus). Harga -10,8% 12M vs IHSG -15,7% (outperform relatif).",
    "headline": "Katalis terukur + dividen",
    "source": "IDNFinancials 2026-06-11 + Investing.com"
   },
@@ -537,12 +533,12 @@
   "conclusion": "Blended FV Rp606,52 (60% DCF Rp647,12 pada WACC 11,01% + 40% EV/EBITDA 8,0x Rp545,63) vs harga Rp358 (+69,42%, BUY). DDM Rp380,97 menjadi lantai valuasi yield. Net-cash Rp1,02T menopang DPS Rp32,01 (yield 8,94%)."
  },
  "kpi_hero": {
-  "paragraph": "Kinerja operasional Aspirasi Hidup Indonesia (ACES) didorong oleh jaringan 242 toko (228x AZKO + 14x Toys Kingdom) seluas 512rb sqm, SSSG H1-2026 +2,2% YoY, dan ekspansi ex-Jawa 12 toko. Sales per sqm Rp17,4 jt dengan marjin EBITDA 11,67%."
+  "paragraph": "Kinerja operasional Aspirasi Hidup Indonesia (ACES) didorong oleh portofolio ritel home-improvement & lifestyle (AZKO, Toys Kingdom, ATARU, Pendopo, NEKA), SSSG H1-2026 +2,2% YoY, dan neraca net-cash yang mendanai dividen rekor."
  },
  "ops_tables": {
   "exhibit_4": {
-   "title": "Jaringan Ritel & Pendorong Pertumbuhan",
-   "source": "collector_output + Kontan + IDNFinancials (run aces-b4612aa9)",
+   "title": "Portofolio Ritel & Pendorong Terverifikasi",
+   "source": "ahi.id + Kontan + IDNFinancials + Investing.com",
    "headers": [
     "Komponen",
     "Skala / Nilai",
@@ -550,39 +546,34 @@
    ],
    "rows": [
     [
-     "Gerai AZKO",
-     "228 toko",
-     "Jaringan home-improvement nasional"
+     "Brand portofolio",
+     "AZKO, Toys Kingdom, ATARU, Pendopo, NEKA",
+     "ahi.id resmi + ruparupa (asosiasi)"
     ],
     [
-     "Toys Kingdom",
-     "14 toko",
-     "Segmen lifestyle anak"
-    ],
-    [
-     "Luas total",
-     "512rb sqm",
-     "Sales Rp17,4 jt/sqm"
-    ],
-    [
-     "Ekspansi ex-Jawa",
-     "12 toko (~Rp441,6M)",
-     "Motor pertumbuhan baru"
-    ],
-    [
-     "Private label",
-     "+70 bps",
-     "Penopang marjin"
+     "SSSG H1-2026",
+     "+2,2% YoY",
+     "Kontan 21-Jul-2026; Jakarta +4,4% motor"
     ],
     [
      "Dividen 2025",
      "Rp548M / DPS Rp32,01",
-     "Ex-div 22-Jun-2026"
+     "Ex-div 22-Jun-2026, payout rekor"
+    ],
+    [
+     "Neraca",
+     "Net-cash Rp1,02T, D/E 0,15x",
+     "Dana ekspansi + dividen"
+    ],
+    [
+     "Liputan analis",
+     "16 Buy / 1 Hold",
+     "Konsensus Investing.com"
     ]
    ]
   }
  },
- "moat": "ACES (AZKO) memiliki parit ekonomi dari skala 242 toko dan brand ritel yang mapan, neraca net-cash Rp1,02T (D/E 0,15, ICR 12,26x), serta bauran private-label yang menopang marjin. Posisi ini memberi ruang ekspansi ex-Jawa dan dividen jumbo tanpa tekanan leverage.",
+ "moat": "ACES (AZKO) memiliki parit ekonomi dari portofolio brand ritel yang mapan (AZKO, Toys Kingdom, ATARU, Pendopo, NEKA), neraca net-cash Rp1,02T (D/E 0,15, ICR 12,26x), serta marjin bersih TTM 8,6% yang pulih pasca rebrand. Posisi ini mendanai dividen jumbo tanpa tekanan leverage.",
  "dcf_deep_dive": {
   "wacc_build": {
    "headers": [
