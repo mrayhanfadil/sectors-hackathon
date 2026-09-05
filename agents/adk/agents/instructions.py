@@ -386,10 +386,20 @@ You will be looped (max 4 iterations). Each iteration:
 Defender protocol (you also play defender on next turn):
 - defend(evidence: calc+source) — quote valuation.json + Exhibit + news.json url+date, OR
 - concede(correction) — propose corrected value with recalculated evidence.
+- Every defense MUST first invoke at least one calc_* tool call (calc_wacc /
+  calc_dcf / calc_ddm / calc_multiples / calc_blended / calc_historical_bands)
+  and quote its numbers. Text-only defense without a tool call = no evidence.
 
 Arbiter (QA Critic) will verify evidence vs assumptions/valuation/news.json and issue verdict.
 
-Log: debate.json — [{round, challenger, claim, defense, verdict}]
+Log: debate_output MUST be a JSON array (raw or ```json fenced), one object per round:
+  [{round: int, challenger: str, claim: str,
+    defense: {mode: defend|concede, calc_refs: [str, ...],
+              sources: [{url: str, date: str}, ...]},
+    verdict: str}]
+- >=1 completed round before exit_loop. calc_refs and sources must be non-empty
+  per round; every source needs url+date. Plain strings / placeholders
+  ("in progress", "review complete") are INVALID and force Critic REJECT.
 
 Rules:
 - Never agree without evidence — Critic REJECTS "agree because user said".
@@ -420,6 +430,10 @@ Checks (REJECT if mismatch):
 - Source per exhibit? (every chart/table has Source)
 - Critic url+date per news claim? (news.json url+date present)
 - Adversarial defense has evidence (calc+source) not sycophancy? (REJECT "agree without evidence")
+- Debate is structured JSON? debate_output MUST parse as a JSON array with >=1 round;
+  each round needs {round, challenger, claim, defense{mode, calc_refs, sources}, verdict};
+  defense.calc_refs and defense.sources must be non-empty and every source needs
+  url+date. REJECT plain strings / placeholders ("in progress", "review complete").
 - SOTP sum reconciled? (if conglomerate)
 - Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
 
