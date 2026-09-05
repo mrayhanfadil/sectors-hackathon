@@ -170,7 +170,7 @@ function AgentTrace() {
     }
   }, [apiBase])
 
-  // Re-validate current ticker once universe arrives (?ticker= asing -> BBCA)
+  // Re-validate current ticker once universe arrives (?ticker= asing -> kosong)
   useEffect(() => {
     if (universe.length > 0) {
       const known = universe.map((u) => u.kode)
@@ -181,8 +181,9 @@ function AgentTrace() {
   // Auto-load latest persisted run from SQLite on mount / ticker change
   useEffect(() => {
     let active = true
-    const t = ticker.trim().toUpperCase() || "BBCA"
+    const t = ticker.trim().toUpperCase()
 
+    if (!t) return // belum ada pilihan — tidak fetch apa-apa
     if (running) return
 
     // If user explicitly selected a run and it's already loaded for this ticker, don't overwrite with latest
@@ -477,9 +478,14 @@ function AgentTrace() {
       setPollCount(0)
       setRunning(true)
       startRef.current = Date.now()
-      const t = ticker.trim().toUpperCase() || "BBCA"
+      const t = ticker.trim().toUpperCase()
+      if (!t) {
+        setError("Pilih emiten dulu dari daftar saran — tidak ada emiten default.")
+        setRunning(false)
+        return
+      }
       if (!knownTickers.includes(t)) {
-        setError(`Kode ${t || "(kosong)"} tidak ada di universe IDX (${knownTickers.length} emiten) — pilih dari daftar saran.`)
+        setError(`Kode ${t} tidak ada di universe IDX (${knownTickers.length} emiten) — pilih dari daftar saran.`)
         setRunning(false)
         return
       }
@@ -752,7 +758,7 @@ function AgentTrace() {
                   selectedRunIdRef.current = null
                   setTicker(e.target.value.toUpperCase().trim())
                 }}
-                placeholder="BBCA"
+                placeholder="Pilih emiten…"
                 list="ticker-universe"
                 autoComplete="off"
                 spellCheck={false}

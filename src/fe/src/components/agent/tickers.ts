@@ -14,8 +14,6 @@ export const ENGINE_TICKERS = ["ADRO", "BBCA", "CDIA", "MTEL", "POWR", "RATU"] a
 // Kompat: dropdown 6-only sebelum universe datang.
 export const SUPPORTED_TICKERS = ENGINE_TICKERS
 
-export const DEFAULT_TICKER = "BBCA"
-
 let _cache: UniverseTicker[] | null = null
 let _inflight: Promise<UniverseTicker[]> | null = null
 
@@ -54,5 +52,6 @@ export function normalizeTicker(raw: unknown, known?: readonly string[]): string
     .toUpperCase()
     .trim()
   const list = known ?? ENGINE_TICKERS
-  return (list as readonly string[]).includes(t) ? t : DEFAULT_TICKER
+  // TIDAK ada fallback: ticker asing = string kosong = tidak bisa jalan.
+  return (list as readonly string[]).includes(t) ? t : ""
 }
