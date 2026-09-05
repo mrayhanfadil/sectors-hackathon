@@ -262,3 +262,66 @@ def test_sectors_mcp_uses_bearer_and_streamable(monkeypatch):
     assert isinstance(cp, sess_mod.StreamableHTTPConnectionParams)
     assert cp.url == "https://sectors-mcp.supertype.ai/mcp"
     assert cp.headers["Authorization"] == "Bearer sk-sectors-fake"
+
+
+def test_build_graph_parallel_under_opencode_go(monkeypatch):
+    """Under ADK_PROVIDER=opencode-go, intake_parallel and research_parallel must be ParallelAgent."""
+    monkeypatch.setenv("ADK_PROVIDER", "opencode-go")
+    monkeypatch.delenv("ADK_PARALLEL", raising=False)
+    monkeypatch.setenv("OPENCODE_GO_API_KEY", "dummy-key")
+    from unittest.mock import patch
+
+    import google.adk.tools.mcp_tool.mcp_toolset as mcp_mod
+
+    def fake_init(self, *a, **kw):
+        self._fake = True
+        self.connection_params = kw.get("connection_params")
+        self.tool_filter = kw.get("tool_filter")
+        self._tool_list_cache_ttl_seconds = kw.get("tool_list_cache_ttl_seconds", 60)
+        self._closed = False
+        self.name = "sectors_mcp"
+        self._tools = []
+
+    with patch.object(mcp_mod.McpToolset, "__init__", fake_init):
+        from agents.adk.app import build_graph
+
+        root = build_graph(ticker="BBCA")
+
+    intake = root.sub_agents[0]
+    research = root.sub_agents[2]
+    assert type(intake).__name__ == "ParallelAgent"
+    assert intake.name == "intake_parallel"
+    assert type(research).__name__ == "ParallelAgent"
+    assert research.name == "research_parallel"
+
+
+def test_build_graph_sequential_under_minimax(monkeypatch):
+    """Under ADK_PROVIDER=minimax and unset ADK_PARALLEL, free_tier sequential throttling applies."""
+    monkeypatch.setenv("ADK_PROVIDER", "minimax")
+    monkeypatch.delenv("ADK_PARALLEL", raising=False)
+    monkeypatch.setenv("COMMANDCODE_API_KEY", "dummy-key")
+    from unittest.mock import patch
+
+    import google.adk.tools.mcp_tool.mcp_toolset as mcp_mod
+
+    def fake_init(self, *a, **kw):
+        self._fake = True
+        self.connection_params = kw.get("connection_params")
+        self.tool_filter = kw.get("tool_filter")
+        self._tool_list_cache_ttl_seconds = kw.get("tool_list_cache_ttl_seconds", 60)
+        self._closed = False
+        self.name = "sectors_mcp"
+        self._tools = []
+
+    with patch.object(mcp_mod.McpToolset, "__init__", fake_init):
+        from agents.adk.app import build_graph
+
+        root = build_graph(ticker="BBCA")
+
+    intake = root.sub_agents[0]
+    research = root.sub_agents[2]
+    assert type(intake).__name__ == "SequentialAgent"
+    assert intake.name == "intake_parallel"
+    assert type(research).__name__ == "SequentialAgent"
+    assert research.name == "research_parallel"
+
