@@ -46,7 +46,7 @@
   "market": {
    "market_cap": "Rp 43,4 T",
    "index_class": "IDX",
-   "avg_value_3m": "Rp 20.7 M/hari"
+   "avg_value_3m": "Rp 20,7 M/hari"
   },
   "price_chart": {
    "title": "PGEO relative to JCI Index",
@@ -359,5 +359,5 @@
  "sentiment": null,
  "strategy": null,
  "exhibits": [],
- "pbv_caption": "PGEO di P/BV 1.31 vs rata-rata 1.32 (±1σ 1.06–1.57): pasar membayar premi atas BVPS."
+ "pbv_caption": "PGEO di P/BV 1,31 vs rata-rata 1,32 (±1σ 1,06–1,57): pasar membayar premi atas BVPS."
 }

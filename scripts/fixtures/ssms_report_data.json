@@ -1,0 +1,375 @@
+{
+ "meta": {
+  "ticker": "SSMS",
+  "company_name": "Sawit Sumbermas Sarana",
+  "sector": "Agribisnis — Kelapa Sawit",
+  "template": "update",
+  "report_type": "Company Update",
+  "date": "5 Sep 2026",
+  "language": "id",
+  "prepared_by": "RESEARCH — Sectors Hackathon 2026"
+ },
+ "cover": {
+  "headline": "Peak-Cycle Earnings Priced as Mid-Cycle; Normalized Math Says SELL",
+  "rating_box": {
+   "action": "SELL",
+   "tp": 650,
+   "price": 1185,
+   "upside_pct": -45.1,
+   "prev_tp": null,
+   "key_takeaways": [
+    "DDM mid-cycle (DPS norm Rp60, g 4%, CoE 13,85%) → FV Rp635",
+    "Silang P/BV mid-cycle (ROE 30%, justified 2,64x) → Rp673; blend Rp650 (-45,1%)",
+    "Spot P/E 9,7x menipu: 13,6x atas laba mid-cycle; yield 7,1% adalah dividen puncak"
+   ]
+  },
+  "shares": {
+   "outstanding": 9.525,
+   "unit": "miliar lembar",
+   "free_float_pct": null
+  },
+  "shareholders": [],
+  "shareholders_src": "lihat keterbukaan IDX (tidak ditampilkan — hindari kutip tanpa sumber)",
+  "market": {
+   "market_cap": "Rp 11,3 T",
+   "index_class": "IDX",
+   "avg_value_3m": "Rp 10,9 M/hari"
+  },
+  "price_chart": {
+   "title": "SSMS relative to JCI Index",
+   "label": "SSMS vs IHSG (12M, rebased)",
+   "caption": "yfinance SSMS.JK vs ^JKSE monthly closes"
+  },
+  "summary": "Update SSMS dengan rekomendasi SELL dan target harga Rp650 (-45,1%). Laba FY25 Rp1,16 triliun (+41,6% yoy) adalah puncak siklus CPO, bukan basis. DDM atas dividen mid-cycle Rp60 dan silang P/BV mid-cycle konvergen di Rp635-673; harga Rp1.185 membayar 13,6x laba mid-cycle.",
+  "vs_jci": {
+   "chart": {
+    "labels": [
+     "Oct-25",
+     "Nov-25",
+     "Dec-25",
+     "Jan-26",
+     "Feb-26",
+     "Mar-26",
+     "Apr-26",
+     "May-26",
+     "Jun-26",
+     "Jul-26",
+     "Aug-26",
+     "Sep-26"
+    ],
+    "series": [
+     [
+      0.0,
+      -0.9,
+      -4.7,
+      4.0,
+      -2.5,
+      -9.3,
+      -14.3,
+      -53.8,
+      -52.2,
+      -34.0,
+      -39.0,
+      -21.8
+     ],
+     [
+      0.0,
+      4.2,
+      5.9,
+      2.0,
+      0.9,
+      -13.7,
+      -14.8,
+      -24.9,
+      -30.9,
+      -23.6,
+      -20.1,
+      -18.7
+     ]
+    ]
+   },
+   "source": "yfinance SSMS.JK vs ^JKSE monthly closes, rebased"
+  }
+ },
+ "thesis": [
+  {
+   "headline": "Laba puncak, bukan basis",
+   "detail": "Net FY25 Rp1,16 T (+41,6% yoy) mengikuti lonjakan revenue +42,9% (harga CPO). Rata-rata laba FY23-25 hanya Rp831 M — 28% di bawah FY25.",
+   "source": "yfinance annuals"
+  },
+  {
+   "headline": "Dividen puncak dibaca sebagai permanen",
+   "detail": "DPS Rp83,99 (yield 7,1%, payout 69%) adalah dividen tahun puncak. DPS mid-cycle ~Rp60 pada payout sama — yield ternormalisasi 5,1%.",
+   "source": "yfinance dividends + model"
+  },
+  {
+   "headline": "Kelipatan menipu di puncak",
+   "detail": "P/E 9,7x spot (FY25) = 13,6x laba mid-cycle. P/BV 4,65x vs justified mid-cycle 2,64x (ROE 30%) — premi 76% atas nilai ternormalisasi.",
+   "source": "model + yfinance"
+  }
+ ],
+ "analysis": [
+  "Siklus CPO 2024-2025 mengangkat revenue SSMS dari Rp10,37 triliun (FY24) ke Rp14,81 triliun (FY25) — tetapi seluruh kenaikan hampir diteruskan ke laba (Rp820 miliar → Rp1,16 triliun) karena struktur biaya kebun yang semi-tetap. Operating leverage seperti ini bekerja dua arah: saat harga CPO normalisasi, laba jatuh lebih cepat dari revenue. Itulah yang dimaksud valuasi mid-cycle.",
+  "Kuartalan memperkuat kehati-hatian: laba 1Q26 Rp318 miliar hampir dua kali lipat 4Q25 (Rp159 miliar) sementara revenue justru turun 7,3% qoq (Rp3,80 T → Rp3,52 T). Margin yang melebar saat revenue menyusut adalah pola akhir-siklus yang klasik — realisasi harga/efisiensi sesaat, bukan volume.",
+  "DDM atas DPS ternormalisasi Rp60 (rata-rata laba FY23-25 Rp831 M pada payout 69%) dengan g 4% dan CoE 13,85% (beta n.a. → 1,0 assumed) menghasilkan FV Rp635. Silang P/BV mid-cycle (ROE 30%, justified 2,64x atas BVPS Rp255) memberi Rp673. Blend 60/40 → TP Rp650, downside -45,1%, SELL mekanis. Thesis gugur jika harga CPO bertahan di atas level puncak lebih dari 4 kuartal."
+ ],
+ "financial_highlights": {
+  "years": [
+   "FY23A",
+   "FY24A",
+   "FY25A",
+   "1Q26"
+  ],
+  "rows": [
+   [
+    "Revenue (Rp M)",
+    "10.703",
+    "10.367",
+    "14.813",
+    "3.519"
+   ],
+   [
+    "Laba Bersih (Rp M)",
+    "512",
+    "820",
+    "1.161",
+    "318"
+   ],
+   [
+    "Laba growth (% yoy)",
+    "-",
+    "+60,2",
+    "+41,6",
+    "-"
+   ],
+   [
+    "Op. margin (%)",
+    "-",
+    "-",
+    "17,3",
+    "-"
+   ],
+   [
+    "DPS (Rp)",
+    "74,64",
+    "47,24",
+    "83,99",
+    "-"
+   ]
+  ],
+  "source": "yfinance annuals/quarterly/dividends"
+ },
+ "earnings": {
+  "title": "1Q26: Margin Melebar Saat Revenue Menyusut",
+  "narrative": "Laba 1Q26 Rp318 miliar (+99,6% qoq dari Rp159 miliar di 4Q25) sementara revenue turun 7,3% qoq — pola akhir-siklus: margin melebar dari realisasi sesaat, bukan volume.",
+  "table": {
+   "title": "SSMS Quarterly",
+   "headers": [
+    "Metrik (Rp M)",
+    "4Q25",
+    "1Q26",
+    "QoQ",
+    "Keterangan"
+   ],
+   "rows": [
+    [
+     "Revenue",
+     "3.796",
+     "3.519",
+     "-7,3%",
+     "yfinance"
+    ],
+    [
+     "Laba bersih",
+     "159",
+     "318",
+     "+99,6%",
+     "margin sesaat"
+    ],
+    [
+     "Memo: DPS FY25",
+     "Rp 83,99",
+     "-",
+     "yield 7,1%",
+     "dividen puncak"
+    ]
+   ],
+   "source": "yfinance quarterly + dividends"
+  }
+ },
+ "key_ratios": {
+  "title": "Key Ratios (spot vs mid-cycle)",
+  "headers": [
+   "Rasio",
+   "Spot",
+   "Mid-cycle"
+  ],
+  "rows": [
+   [
+    "P/E",
+    "9,7x",
+    "13,6x"
+   ],
+   [
+    "P/BV",
+    "4,65x",
+    "2,64x (justified)"
+   ],
+   [
+    "ROE",
+    "49,6% (TTM)",
+    "~30% (norm)"
+   ],
+   [
+    "Div. yield",
+    "7,1%",
+    "~5,1% (norm)"
+   ],
+   [
+    "Payout",
+    "69%",
+    "69% (asumsi)"
+   ],
+   [
+    "Op. margin",
+    "17,3%",
+    "-"
+   ]
+  ],
+  "source": "yfinance 05-Sep-2026 + model"
+ },
+ "valuation": {
+  "narrative": "Komoditas siklikal dinilai atas laba ternormalisasi, bukan puncak. DPS norm Rp60 = rata-rata laba FY23-25 (Rp831 M) pada payout 69%. CoE 13,85% (beta n.a. → 1,0 assumed).",
+  "methods": [
+   {
+    "method": "DDM",
+    "title": "DDM Mid-Cycle (primer)",
+    "fv": 635,
+    "source": "model: DPS norm 60 (831M x 69% / 9,525bn), g 4%, CoE 13,85%",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "Laba mid-cycle",
+       "Rp 831 M",
+       "rata-rata FY23-25"
+      ],
+      [
+       "DPS ternormalisasi",
+       "Rp 60",
+       "payout 69%"
+      ],
+      [
+       "Growth abadi",
+       "4%",
+       "konservatif"
+      ],
+      [
+       "Cost of Equity",
+       "13,85%",
+       "beta 1,0 assumed"
+      ],
+      [
+       "Fair Value DDM",
+       "Rp 635",
+       "60,20 x 1,04 / 9,85% = Rp 635"
+      ]
+     ]
+    }
+   },
+   {
+    "method": "P/BV",
+    "title": "Cross-check P/BV Mid-Cycle",
+    "fv": 673,
+    "source": "model: (ROE30%-g4%)/(CoE-g) x BVPS 255",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "ROE ternormalisasi",
+       "~30%",
+       "vs spot 49,6%"
+      ],
+      [
+       "Justified P/BV",
+       "2,64x",
+       "(30%-4%)/(13,85%-4%)"
+      ],
+      [
+       "BVPS",
+       "Rp 255",
+       "yfinance"
+      ],
+      [
+       "Implied price",
+       "Rp 673",
+       "blend 40%"
+      ]
+     ]
+    }
+   }
+  ],
+  "blended": {
+   "fair_value": 650,
+   "weights": "DDM 60% + P/BV 40% = 650"
+  },
+  "conclusion": "FV Rp650 (blend DDM-mid Rp635 + P/BV-mid Rp673) vs Rp1.185 (-45,1%, SELL). Pasar menghargai laba puncak sebagai permanen; normalisasi CPO memangkas separuh thesis.",
+  "bands": {
+   "pbv_3y": {
+    "std-2": 2.11,
+    "std-1": 3.32,
+    "avg": 4.54,
+    "std+1": 5.75,
+    "std+2": 6.96,
+    "current": 4.65,
+    "label": "SSMS P/BV band (monthly close / BVPS year-end, yfinance)"
+   }
+  }
+ },
+ "outlook": [
+  "Satu-satunya pembatal thesis: CPO bertahan di atas level puncak >4 kuartal.",
+  "Awasi 2Q26: jika margin menyusut mengikuti revenue, normalisasi terkonfirmasi.",
+  "Dividen FY26 berisiko dipangkas mengikuti laba — yield 7,1% tidak berulang."
+ ],
+ "risks": [
+  {
+   "bucket": "CPO bertahan tinggi",
+   "detail": "Gangguan pasok global memperpanjang puncak; FV mid-cycle tidak relevan sementara.",
+   "source": "model"
+  },
+  {
+   "bucket": "Volume vs harga",
+   "detail": "Kenaikan produksi TBS sendiri dapat menutup sebagian normalisasi harga.",
+   "source": "model"
+  },
+  {
+   "bucket": "Dividen dipangkas",
+   "detail": "Risiko penurunan DPS FY26 mengikuti laba — katalis negatif harga.",
+   "source": "yfinance dividends"
+  },
+  {
+   "bucket": "Sensitivitas CoE",
+   "detail": "Tiap 100bps CoE menggeser FV ~Rp65.",
+   "source": "model"
+  }
+ ],
+ "kpis": [],
+ "kpis_src": "-",
+ "segments": [],
+ "catalysts": [],
+ "esg": {
+  "found": false
+ },
+ "sentiment": null,
+ "strategy": null,
+ "exhibits": [],
+ "pbv_caption": "SSMS di P/BV 4,65 vs rata-rata 4 tahun 4,54 (±1σ 3,32–5,75): premi puncak-siklus."
+}

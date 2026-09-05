@@ -70,7 +70,7 @@
       ("Last Price (Rp)", str(rb.at("price", default: "-"))),
       ("Target Price (Rp)", str(rb.at("tp", default: "-"))),
       ("Previous TP (Rp)", { let p = rb.at("prev_tp", default: none); if p == none { "n/a" } else { str(p) } }),
-      ("Upside/Downside", { let u = rb.at("upside_pct", default: none); if u != none { (if u > 0 { "+" } else { "" }) + str(u) + "%" } else { "-" } }),
+      ("Upside/Downside", { let u = rb.at("upside_pct", default: none); if u != none { (if u > 0 { "+" } else { "" }) + str(u).replace(".", ",") + "%" } else { "-" } }),
       ("No. of Shares", str(sh.at("outstanding", default: "-")) + " " + sh.at("unit", default: "")),
       ("Mkt Cap", mkt.at("market_cap", default: "-")),
       ("Avg Daily T/O", mkt.at("avg_value_3m", default: "-")),
