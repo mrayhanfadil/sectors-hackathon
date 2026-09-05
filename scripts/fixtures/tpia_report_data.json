@@ -24,20 +24,32 @@
   },
   "shares": {
    "outstanding": 86.46,
-   "unit": "bn",
-   "free_float_pct": null
+   "unit": "miliar lembar",
+   "free_float_pct": 25.54
   },
-  "shareholders": [],
-  "shareholders_src": "yfinance: insiders 74,46% (Barito Group), float 25,43 miliar",
+  "shareholders": [
+   {
+    "name": "Barito Pacific Group (pengendali)",
+    "pct": 74.46,
+    "status": "Pengendali"
+   },
+   {
+    "name": "Publik (free float)",
+    "pct": 25.54,
+    "status": "Non-Warkat"
+   }
+  ],
+  "shareholders_src": "yfinance (insiders 74,46%); rincian nominee tidak dirinci di sini",
   "market": {
    "market_cap": "Rp 172,5 T",
    "index_class": "IDX"
   },
   "price_chart": {
    "label": "TPIA -71,2% vs IHSG -18,7% (12M Okt-25→Sep-26, rebased)",
-   "caption": "Drawdown dari peak 8500 (Okt-25) ke 1995; IHSG -18,7% · Sumber: yfinance monthly closes"
+   "caption": "Drawdown dari peak 8500 (Okt-25) ke 1995; IHSG -18,7% · Sumber: yfinance monthly closes",
+   "title": "Kinerja Harga vs IHSG (12M)"
   },
-  "summary": "Inisiasi liputan TPIA (Chandra Asri Pacific, petrokimia terintegrasi) dengan rekomendasi HOLD dan target harga Rp2.285 (+14,54%). Framework Gate me-route ke forward relative valuation sebagai primary: EBITDA ternormalisasi USD 1,6M (H1-2026 disetahunkan) pada median multiple regional 8,7x, dikurangi net debt USD 2,67M. DCF trough (ala sectors -Rp2.432) gagal Gate 5 dan dinyatakan Review Required, bukan kesimpulan.",
+  "summary": "Inisiasi liputan TPIA (Chandra Asri Pacific, petrokimia terintegrasi) dengan rekomendasi HOLD dan target harga Rp2.285 (+14,54%). Framework Gate me-route ke forward relative valuation sebagai primer: EBITDA ternormalisasi USD 1.606 juta (H1-2026 disetahunkan) pada median multiple regional 8,7x, dikurangi net debt USD 2.670 juta. DCF trough (ala sectors -Rp2.432) gagal Gate 5 dan dinyatakan Review Required, bukan kesimpulan.",
   "vs_jci": {
    "chart": {
     "labels": [
@@ -92,32 +104,32 @@
   {
    "name": "EBITDA ternormalisasi",
    "value": 1606,
-   "unit": "USD M",
-   "formula": "H1-2026 disetahunkan",
+   "unit": "USD juta",
+   "formula": "H1-2026 disetahunkan (803 x 2)",
    "source": "H1-2026 results",
    "row": [
     "EBITDA ternormalisasi",
     1606,
     null,
     null,
-    "USD M",
+    "USD juta",
     "H1-2026 803 x 2",
     "Quartr/H1-26"
    ]
   },
   {
    "name": "Net debt",
-   "value": 2.67,
-   "unit": "USD M",
-   "formula": "debt-cash FY25A",
+   "value": 2670,
+   "unit": "USD juta",
+   "formula": "utang 5.410 - kas 2.740 (FY25A)",
    "source": "FY25A audited",
    "row": [
     "Net debt",
-    2.67,
+    2670,
     null,
     null,
-    "USD M",
-    "5,41 - 2,74",
+    "USD juta",
+    "5.410 - 2.740",
     "chandra-asri.com"
    ]
   },
@@ -156,7 +168,7 @@
  ],
  "kpis_src": "H1-2026 + FY25A audited + yfinance (lihat per baris)",
  "kpi_hero": {
-  "paragraph": "Kinerja operasional Chandra Asri Pacific (TPIA) didorong oleh kompleks petrokimia terintegrasi (cracker naphtha + downstream) yang diperbesar 2x lipat oleh akuisisi Aster/Shell Singapore 2025 (aset 5,66 menjadi 12,32M USD). H1-2026 menandai titik balik: EBITDA USD 803 juta dan laba bersih USD 371 juta vs rugi USD 146 juta H1-2025, dengan CA-EDC USD 800 juta 72% selesai menuju operasi 2027."
+  "paragraph": "Kinerja operasional Chandra Asri Pacific (TPIA) didorong oleh kompleks petrokimia terintegrasi (cracker naphtha + downstream) yang diperbesar 2x lipat oleh akuisisi Aster/Shell Singapore 2025 (aset USD 5,66 miliar menjadi USD 12,32 miliar). H1-2026 menandai titik balik: EBITDA USD 803 juta dan laba bersih USD 371 juta vs rugi USD 146 juta H1-2025, dengan CA-EDC USD 800 juta 72% selesai menuju operasi 2027."
  },
  "ops_tables": {
   "exhibit_4": {
@@ -170,28 +182,69 @@
    "rows": [
     [
      "Aset total",
-     "12,32M USD (dari 5,66M)",
+     "USD 12,32 miliar (dari 5,66)",
      "Aster/Shell Singapore 2025"
     ],
     [
      "H1-2026 EBITDA",
-     "803M USD",
-     "vs rugi H1-2025; run-rate 1,6M"
+     "USD 803 juta",
+     "vs rugi H1-2025; run-rate 1.606"
     ],
     [
      "H1-2026 laba bersih",
-     "371M USD",
-     "owners 283M ex-one-off"
+     "USD 371 juta",
+     "pemilik 283 ex-one-off"
     ],
     [
      "CA-EDC",
-     "USD 800M, 72%",
+     "USD 800 juta, 72%",
      "Operasi 2027"
     ],
     [
      "Insiders",
      "74,46% (Barito)",
-     "Float 25,43M (yfinance)"
+     "Float 25,43 miliar (yfinance)"
+    ]
+   ]
+  },
+  "exhibit_3": {
+   "title": "Indikator Kunci — Operasional & Pasar",
+   "source": "H1-2026 + FY25A audited + yfinance",
+   "headers": [
+    "Indikator",
+    "Nilai",
+    "Satuan",
+    "Basis",
+    "Sumber"
+   ],
+   "rows": [
+    [
+     "EBITDA ternormalisasi",
+     "1.606",
+     "USD juta",
+     "H1-2026 803 x 2",
+     "Quartr/H1-26"
+    ],
+    [
+     "Net debt",
+     "2.670",
+     "USD juta",
+     "5.410 - 2.740 FY25A",
+     "chandra-asri.com"
+    ],
+    [
+     "Upside ke TP",
+     "+14,54%",
+     "persen",
+     "HOLD (<15%)",
+     "model"
+    ],
+    [
+     "Dividend yield",
+     "0,30%",
+     "persen",
+     "DPS 6,07 @1995",
+     "yfinance"
     ]
    ]
   }
@@ -208,7 +261,7 @@
   ],
   "rows": [
    [
-    "Pendapatan (USD M)",
+    "Pendapatan (USD juta)",
     2160,
     1785,
     7020,
@@ -217,7 +270,7 @@
     11000
    ],
    [
-    "EBITDA (USD M)",
+    "EBITDA (USD juta)",
     130,
     76,
     1658,
@@ -226,7 +279,7 @@
     1700
    ],
    [
-    "Laba Bersih pemilik (USD M)",
+    "Laba Bersih pemilik (USD juta)",
     -34,
     -69,
     1090,
@@ -259,7 +312,7 @@
   {
    "title": "Laba Rugi Ringkas",
    "headers": [
-    "USD M",
+    "USD juta",
     "FY24A",
     "FY25A",
     "FY26F"
@@ -290,7 +343,7 @@
  "financial_statements": {
   "income": {
    "title": "Laba Rugi 2A+3F (USD Juta)",
-   "source": "FY24A-25A chandra-asri.com (USD Juta, audited; FY25 termasuk kontribusi Aster + one-off akuisisi); FY26F-28F skenario ternormalisasi g_rev=5%/thn dari basis FY25 ex-one-off, marjin EBITDA 15-15,5% (H1-26 aktual 15,0%)",
+   "source": "FY24A-25A chandra-asri.com (USD Juta, audited; FY25 termasuk kontribusi Aster + one-off akuisisi); FY26F-28F skenario ternormalisasi g_rev=5%/thn dari basis FY25 ex-one-off, marjin EBITDA 15-15,5% (H1-26 aktual 15,0%). Baris gain akuisisi = estimasi analis (selisih EBITDA vs laba operasi inti), bukan angka audited — menjelaskan rugi kotor -42 vs laba bersih +1.090.",
    "headers": [
     "Akun Laba Rugi",
     "FY24A",
@@ -315,6 +368,14 @@
      "900",
      "990",
      "1.080"
+    ],
+    [
+     "Gain akuisisi Aster (one-off, estimasi)",
+     "—",
+     "~1.700",
+     "—",
+     "—",
+     "—"
     ],
     [
      "EBITDA",
@@ -387,7 +448,7 @@
     [
      "P/B spot",
      "2,10x",
-     "1995 / BVPS Rp950 (ekuitas 4,657M USD x 17633 / 86,46M saham)"
+     "1995 / BVPS Rp950 (ekuitas USD 4.657 juta x 17.633 / 86,46 miliar saham)"
     ],
     [
      "P/S TTM",
@@ -410,17 +471,19 @@
      "Barito Group via yfinance"
     ]
    ]
-  }
+  },
+  "section_title": "Laporan Keuangan & Rasio Finansial (2A+3F)",
+  "section_sub": "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, dan profitabilitas 2 tahun aktual + 3 tahun forecast?"
  },
  "thesis": [
   {
    "headline": "Primary forward relative, bukan DCF trough",
-   "detail": "Gate me-route ke forward EV/EBITDA sebagai primary (aset ramping pasca-Aster, histori tak representatif): EBITDA ternormalisasi USD 1,6M (H1-2026 disetahunkan, mendekati FY25 1,658M) pada median regional 8,7x menjadi EV 13,87M, ekuitas 11,20M, Rp2.285 (+14,54%, HOLD). P/E 139x di-skip eksplisit.",
+   "detail": "Gate me-route ke forward EV/EBITDA sebagai primer (aset ramping pasca-Aster, histori tak representatif): EBITDA ternormalisasi USD 1.606 juta (H1-2026 disetahunkan, mendekati FY25 USD 1.658 juta) pada median regional 8,7x menjadi EV USD 13.870 juta, ekuitas USD 11.200 juta, Rp2.285 (+14,54%, HOLD). P/E 139x di-skip eksplisit.",
    "source": "method_gate + yfinance peers 05-Sep-2026"
   },
   {
    "headline": "Skala 2x lipat + titik balik H1-2026",
-   "detail": "Pendapatan 1,79 menjadi 7,02M USD dan aset 5,66 menjadi 12,32M USD pasca akuisisi Shell Singapore (Aster) 2025. H1-2026 titik balik: EBITDA 803M, net 371M vs rugi 146M H1-2025. CA-EDC 72% menuju 2027.",
+   "detail": "Pendapatan USD 1.785 juta menjadi USD 7.020 juta dan aset USD 5,66 miliar menjadi USD 12,32 miliar pasca akuisisi Shell Singapore (Aster) 2025. H1-2026 titik balik: EBITDA USD 803 juta, net USD 371 juta vs rugi USD 146 juta H1-2025. CA-EDC 72% menuju 2027.",
    "source": "chandra-asri.com investor + Quartr H1-26"
   },
   {
@@ -430,16 +493,16 @@
   },
   {
    "headline": "Leverage tinggi, cross-check wajib",
-   "detail": "L/E 1,7x, coverage sekitar 1,2x: DCF sensitif + ekuitas residual tidak stabil — relative cross-check mandatory. Net debt 2,67M atas EV 13,87M (19%).",
+   "detail": "L/E 1,7x, coverage sekitar 1,2x: DCF sensitif + ekuitas residual tidak stabil — relative cross-check mandatory. Net debt USD 2.670 juta atas EV USD 13.870 juta (19%).",
    "source": "FY25A audited + Gate 1c"
   }
  ],
  "valuation": {
   "blended": {
    "fair_value": 2285,
-   "weights": "relative-primary (DCF trough excluded per Gate 3)"
+   "weights": "primer relatif (DCF trough dieksklusi per Gate 3+5)"
   },
-  "conclusion": "FV Rp2.285 (forward EV/EBITDA 8,7x median atas EBITDA ternormalisasi USD 1,6M, dikurangi net debt 2,67M, kurs 17.633) vs Rp1.995 (+14,54%, HOLD — di bawah threshold BUY 15%). DCF trough negatif ditolak Gate 5. Rata-rata peers 9,17x mengimplikasikan Rp2.447 (+22,7%, skenario bull multiple).",
+  "conclusion": "FV Rp2.285 (forward EV/EBITDA 8,7x median atas EBITDA ternormalisasi USD 1.606 juta, dikurangi net debt USD 2.670 juta, kurs 17.633) vs Rp1.995 (+14,54%, HOLD — di bawah threshold BUY 15%). DCF trough negatif ditolak Gate 5. Rata-rata peers 9,17x mengimplikasikan Rp2.447 (+22,7%, skenario bull multiple).",
   "dcf_grid": {
    "ev": "-",
    "net_cash": "-2.670 (net debt)",
@@ -456,16 +519,88 @@
      "net_debt_B": 2.67,
      "usdidr": 17633
     },
-    "source": "forward relative primary (Gate 3+4): 1,6x8,67=13,87 EV; -2,67 = 11,20 ekuitas; /86,46M x 17633"
+    "source": "forward relative primer (Gate 3+4): 1.606x8,67=13.870 EV; -2.670 = 11.200 ekuitas (USD juta); /86,46 miliar x 17.633",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Satuan"
+     ],
+     "rows": [
+      [
+       "Target EV/EBITDA",
+       "8,67",
+       "x (median regional)"
+      ],
+      [
+       "EBITDA ternormalisasi",
+       "1.606",
+       "USD juta"
+      ],
+      [
+       "Implied EV",
+       "13.870",
+       "USD juta"
+      ],
+      [
+       "Dikurangi net debt",
+       "2.670",
+       "USD juta"
+      ],
+      [
+       "Ekuitas",
+       "11.200",
+       "USD juta"
+      ],
+      [
+       "Fair Value (x 17.633 / 86,46 miliar)",
+       "2.285",
+       "Rp/saham"
+      ]
+     ]
+    }
    },
    {
     "method": "DCF",
     "fv": null,
     "assumptions": {
-     "fcf": "trough negatif (-648M TTM)",
+     "wacc": 11.22,
+     "g": 3.0,
+     "beta": 1.05,
+     "rf": 6.96,
+     "erp": 6.89,
      "status": "EXCLUDED"
     },
-    "source": "Gate 3+5: trough-FCF DCF tak bermakna (ala sectors -2432) menjadi Review Required"
+    "source": "Gate 3+5: trough-FCF DCF tak bermakna (ala sectors -2432) menjadi Review Required",
+    "table": {
+     "headers": [
+      "Pos DCF",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "FCF TTM aktual (trough)",
+       "-648 USD juta",
+       "capex cycle + integrasi Aster"
+      ],
+      [
+       "WACC TPIA",
+       "11,22%",
+       "Ke 14,19 / Kd 7,50 / bobot 64-36"
+      ],
+      [
+       "Hasil DCF trough",
+       "negatif / tak bermakna",
+       "ala sectors -Rp2.432"
+      ],
+      [
+       "Status Gate 3+5",
+       "Dieksklusi — Review Required",
+       "bukan kesimpulan valuasi"
+      ]
+     ]
+    }
    }
   ]
  },
@@ -476,7 +611,6 @@
      "Emiten",
      "EV/EBITDA",
      "P/E",
-     "P/B",
      "Keterangan"
     ],
     "pillar": "Regional petrokimia — forward ternormalisasi",
@@ -485,60 +619,52 @@
       "TPIA (implisit kini)",
       "7,8x",
       "nm (trough)",
-      "2,10x",
-      "EV 12,45M USD / EBITDA norm 1,6M"
+      "EV 12,45 miliar USD / EBITDA norm 1.606"
      ],
      [
       "PTTGC (TH)",
       "6,49x",
       "52,0x",
-      "-",
-      "yfinance live"
+      "yfinance live — petrokimia olefin"
      ],
      [
       "IRPC (TH)",
       "4,0x",
       "5,4x",
-      "-",
-      "yfinance live"
+      "yfinance live — kilang terintegrasi, multiple struktural rendah"
      ],
      [
       "Wanhua (CN)",
       "8,67x",
       "14,8x",
-      "-",
-      "yfinance live"
+      "yfinance live — MDI/poliuretan skala raksasa"
      ],
      [
       "PetChem (MY)",
       "10,46x",
       "20,1x",
-      "-",
-      "yfinance live"
+      "yfinance live — olefin/pupuk"
      ],
      [
       "Lotte Chem (KR)",
       "16,22x",
       "nm",
-      "-",
       "yfinance live — trough-distorted, outlier"
      ],
      [
       "Rata-rata",
       "9,17x",
       "-",
-      "-",
-      "5 peers"
+      "5 peers trailing"
      ],
      [
       "Median (dipakai)",
       "8,67x",
       "-",
-      "-",
       "robust vs outlier Lotte"
      ]
     ],
-    "source": "yfinance live 05-Sep-2026 + hitung analis"
+    "source": "yfinance live 05-Sep-2026 (multiple TRAILING, terdistorsi trough) + hitung analis. Keterbatasan metodologi: multiple peers trailing dibandingkan ke EBITDA TPIA ternormalisasi — bias konservatif jika peers pulih. Kolom P/B dihapus (data regional tak komparabel)."
    }
   ]
  },
@@ -550,17 +676,17 @@
   },
   {
    "bucket": "Leverage pasca-Aster",
-   "detail": "Utang 2,0 menjadi 5,4M USD, L/E 1,7x, coverage sekitar 1,2x: WACC sensitif, ekuitas residual tidak stabil. Relative cross-check mandatory (Gate 1c breach).",
+   "detail": "Utang USD 2,0 miliar menjadi USD 5,4 miliar, L/E 1,7x, coverage sekitar 1,2x: WACC sensitif, ekuitas residual tidak stabil. Relative cross-check mandatory (Gate 1c breach).",
    "source": "FY25A audited"
   },
   {
    "bucket": "Eksekusi CA-EDC + integrasi Aster",
-   "detail": "Capex USD 800M (72% selesai, operasi 2027); FCF trough negatif (-648M TTM). Keterlambatan menekan FCF 2 tahun.",
+   "detail": "Capex USD 800 juta (72% selesai, operasi 2027); FCF trough negatif (-648 juta TTM). Keterlambatan menekan FCF 2 tahun.",
    "source": "H1-2026 + yfinance FCF"
   },
   {
    "bucket": "FX (USD/IDR 17.633)",
-   "detail": "Laporan USD, harga IDR: tiap 1.000 pelemahan rupiah menggeser TP sekitar Rp130. Sensitivitas kurs di bawah.",
+   "detail": "Laporan USD, harga IDR: tiap 1.000 pelemahan rupiah menggeser TP sekitar Rp130. Lihat grid sensitivitas multiple-vs-kurs pada Exhibit 9 (halaman DCF deep-dive).",
    "source": "asumsi kurs"
   }
  ],
@@ -691,7 +817,7 @@
     [
      "Bobot Ekuitas / Utang",
      "64,4% / 35,6%",
-     "Mcap 9,78M / utang 5,41M USD"
+     "Mcap USD 9,78 miliar / utang USD 5,41 miliar"
     ],
     [
      "WACC Final",
@@ -757,7 +883,7 @@
    "headers": [
     "Scenario",
     "Nilai Wajar",
-    "Investment Recommendation"
+    "Rekomendasi"
    ],
    "rows": [
     [
@@ -785,7 +911,7 @@
    ],
    "rows": [
     [
-     "EV (8,67x atas EBITDA 1,6M)",
+     "EV (8,67x atas EBITDA 1.606 juta)",
      "13,87",
      "USD Miliar"
     ],
@@ -805,11 +931,12 @@
      "USD Miliar"
     ],
     [
-     "Per saham (x 17.633 / 86,46M)",
+     "Per saham (x 17.633 / 86,46 miliar)",
      "Rp 2.285",
      "Target Price"
     ]
    ]
-  }
+  },
+  "intro": "Halaman ini BUKAN rekomendasi DCF — DCF trough TPIA dieksklusi (Gate 3+5). Yang disajikan: Cost of Capital Build (WACC 11,22%), sensitivitas target harga terhadap multiple & kurs, skenario multiple Bear/Base/Bull, dan jembatan EV ke ekuitas dalam USD."
  }
 }
