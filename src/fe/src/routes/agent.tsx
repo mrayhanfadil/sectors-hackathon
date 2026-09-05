@@ -30,6 +30,7 @@ import { StatePreview } from "@/components/agent/StatePreview"
 import { FunctionCallCard } from "@/components/agent/FunctionCallCard"
 import { FunctionResponseCard } from "@/components/agent/FunctionResponseCard"
 import { type TraceEvent } from "@/components/agent/AGENT_FRIENDLY_META"
+import { SUPPORTED_TICKERS, normalizeTicker } from "@/components/agent/tickers"
 
 interface AgentSearchParams {
   ticker?: string
@@ -88,8 +89,8 @@ function formatRelativeTime(ts: number | undefined | null): string {
 
 function AgentTrace() {
   const search = Route.useSearch() as AgentSearchParams
-  const initialTicker = (search?.ticker || "BBCA").toUpperCase().trim()
-  const [ticker, setTicker] = useState(initialTicker)
+  const initialTicker = normalizeTicker(search?.ticker)
+  const [ticker, setTicker] = useState<string>(initialTicker)
   const [events, setEvents] = useState<TraceEvent[]>([])
   const [running, setRunning] = useState(false)
   const [pollCount, setPollCount] = useState(0)
@@ -148,7 +149,7 @@ function AgentTrace() {
   // Sync search param ticker with state if URL changes
   useEffect(() => {
     if (search?.ticker) {
-      const t = search.ticker.toUpperCase().trim()
+      const t = normalizeTicker(search.ticker)
       setTicker((prev) => (prev !== t ? t : prev))
     }
   }, [search?.ticker])
@@ -377,7 +378,7 @@ function AgentTrace() {
           if (j) {
             const normalizedEvents = normalizeEvents(j.events || [])
             setEvents(normalizedEvents)
-            const runTicker = (j.ticker || ticker).toUpperCase().trim()
+            const runTicker = normalizeTicker(j.ticker || ticker)
             if (runTicker !== ticker) {
               setTicker(runTicker)
             }
@@ -712,7 +713,7 @@ function AgentTrace() {
               <label htmlFor="ticker-input" className="text-xs font-medium text-slate-700">
                 Kode Saham:
               </label>
-              <input
+              <select
                 id="ticker-input"
                 value={ticker}
                 onChange={(e) => {
@@ -720,12 +721,16 @@ function AgentTrace() {
                   setRunning(false)
                   setSelectedRunId(null)
                   selectedRunIdRef.current = null
-                  setTicker(e.target.value.toUpperCase())
+                  setTicker(normalizeTicker(e.target.value))
                 }}
-                placeholder="BBCA"
-                className="h-9 w-24 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
-                maxLength={10}
-              />
+                className="h-9 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+              >
+                {SUPPORTED_TICKERS.map((t) => (
+                  <option key={t} value={t}>
+                    {t}
+                  </option>
+                ))}
+              </select>
             </div>
 
             {running ? (
