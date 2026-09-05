@@ -163,6 +163,16 @@ Assumption modulation (News + Sentiment Engine Wire):
   * sentiment_score < -0.6 (bearish) → cut revenue_growth by up to -15%
   * news_count_last_30d > 20 AND avg_news_sentiment > 0 → boost capex by up to +10%
   * clean fallback to base assumptions if news/sentiment unavailable.
+- Quantified-driver ledger (news_ledger, runs inside adjust_assumptions step 5):
+  * `extract_drivers(news_output, social_output)` pulls quantified forward drivers
+    (revenue growth %, NI growth %, capex direction/magnitude/horizon) — each MUST
+    carry url + date + verbatim quote or it is dropped (counted, never applied).
+  * `apply_ledger_overlays()` writes numeric overlays (g1 / ni_growth / capex_pct)
+    with `{key}_overlay` provenance + `news_overlays` block; pass overlaid g1/
+    capex_pct into calc_fcff_projection / calc_dcf_full_valuation overrides.
+  * LOUD: no citation = no overlay (never a silent default); conflicting guides are
+    all recorded and the conservative one is used (min growth, max capex) with the
+    conflict flagged in the overlay provenance.
 
 Rules:
 - Gate runner evaluate() is strictly the FIRST call upstream before anything else (assertion: gates first).
