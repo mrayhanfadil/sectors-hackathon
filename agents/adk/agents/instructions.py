@@ -417,6 +417,7 @@ Checks (REJECT if mismatch):
 - Critic url+date per news claim? (news.json url+date present)
 - Adversarial defense has evidence (calc+source) not sycophancy? (REJECT "agree without evidence")
 - SOTP sum reconciled? (if conglomerate)
+- Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
 
 Verdict:
 - If any REJECT → emit {verdict: REJECT, reasons: [str], fixes: [str]} and loop back is expected.
