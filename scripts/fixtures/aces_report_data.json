@@ -5,7 +5,7 @@
    "action": "BUY",
    "key_takeaways": [
     "Blended FV Rp606,52 vs Rp358 (+69,42%) — jangkar blended 60/40",
-    "Yield 8,99% (DPS Rp32,01) ditopang net-cash Rp1,02T",
+    "Yield 8,94% (DPS Rp32,01 @358) ditopang net-cash Rp1,02T",
     "SSSG H1-2026 +2,2% YoY, ekspansi ex-Jawa 12 toko"
    ],
    "prev_tp": null,
@@ -71,7 +71,7 @@
    "ytd_abs": -18.7,
    "ytd_rel": -7.1
   },
-  "summary": "Inisiasi liputan ACES (AZKO) dengan rekomendasi BUY dan target harga Rp606,52 (+69,42% upside, blended 60/40). Laba pulih pasca rebrand (net TTM Rp766M vs FY25 Rp669M), SSSG H1-2026 +2,2% YoY, 242 toko, dan dividen rekor DPS Rp32,01 (yield 8,99%) ditopang neraca net-cash Rp1,02T.",
+  "summary": "Inisiasi liputan ACES (AZKO) dengan rekomendasi BUY dan target harga Rp606,52 (+69,42% upside, blended 60/40). Laba pulih pasca rebrand (net TTM Rp766M vs FY25 Rp669M), SSSG H1-2026 +2,2% YoY, 242 toko, dan dividen rekor DPS Rp32,01 (yield 8,94%) ditopang neraca net-cash Rp1,02T.",
   "market": {
    "market_cap": "Rp 6,13 T",
    "index_class": "IDX"
@@ -269,7 +269,7 @@
     ],
     [
      "Dividend yield (%)",
-     8.99,
+     8.94,
      "DPS 32,01 @358"
     ]
    ],
@@ -335,7 +335,7 @@
    "prev": null,
    "row": [
     "Dividend yield",
-    8.99,
+    8.94,
     null,
     null,
     "%",
@@ -344,7 +344,7 @@
    ],
    "source": "IDNFinancials 2026-06-11",
    "unit": "%",
-   "value": 8.99
+   "value": 8.94
   }
  ],
  "kpis_src": "collector + Kontan + IDNFinancials (run aces-b4612aa9)",
@@ -451,7 +451,7 @@
    "source": "Kontan 2026-07-21 + Yahoo/StockAnalysis TTM"
   },
   {
-   "detail": "Ekspansi ex-Jawa 12 toko (~Rp441,6M), Toys Kingdom 4 toko, private-label +70bps. Dividen rekor Rp548M/DPS Rp32,01 yield 8,99%, ex-div 22-Jun-2026. Street: Macquarie 470, Nomura 630, CLSA 540.",
+   "detail": "Ekspansi ex-Jawa 12 toko (~Rp441,6M), Toys Kingdom 4 toko, private-label +70bps. Dividen rekor Rp548M/DPS Rp32,01 yield 8,94%, ex-div 22-Jun-2026. Street: Macquarie 470, Nomura 630, CLSA 540.",
    "headline": "Katalis terukur + dividen",
    "source": "IDNFinancials 2026-06-11 + Investing.com"
   },
@@ -534,7 +534,7 @@
    "ev": "10.058",
    "net_cash": "+1.021"
   },
-  "conclusion": "Blended FV Rp606,52 (60% DCF Rp647,12 pada WACC 11,01% + 40% EV/EBITDA 8,0x Rp545,63) vs harga Rp358 (+69,42%, BUY). DDM Rp380,97 menjadi lantai valuasi yield. Net-cash Rp1,02T menopang DPS Rp32,01 (yield 8,99%)."
+  "conclusion": "Blended FV Rp606,52 (60% DCF Rp647,12 pada WACC 11,01% + 40% EV/EBITDA 8,0x Rp545,63) vs harga Rp358 (+69,42%, BUY). DDM Rp380,97 menjadi lantai valuasi yield. Net-cash Rp1,02T menopang DPS Rp32,01 (yield 8,94%)."
  },
  "kpi_hero": {
   "paragraph": "Kinerja operasional Aspirasi Hidup Indonesia (ACES) didorong oleh jaringan 242 toko (228x AZKO + 14x Toys Kingdom) seluas 512rb sqm, SSSG H1-2026 +2,2% YoY, dan ekspansi ex-Jawa 12 toko. Sales per sqm Rp17,4 jt dengan marjin EBITDA 11,67%."
@@ -882,7 +882,7 @@
     ],
     [
      "Dividend yield",
-     "8,99%",
+     "8,94%",
      "DPS 32,01 @358"
     ]
    ]
