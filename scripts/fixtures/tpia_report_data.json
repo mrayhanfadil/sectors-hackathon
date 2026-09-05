@@ -628,5 +628,188 @@
     }
    }
   }
- ]
+ ],
+ "cDcf": {
+  "valuation": {
+   "market_price": 1995
+  },
+  "scenarios": {
+   "BEAR": {
+    "fair_value_per_share": 1576,
+    "rating": "SELL"
+   },
+   "BASE": {
+    "fair_value_per_share": 2285,
+    "rating": "HOLD"
+   },
+   "BULL": {
+    "fair_value_per_share": 2869,
+    "rating": "BUY"
+   }
+  },
+  "scenarios_src": "multiple 6,5x (trough, PTTGC) / 8,67x (median) / 10,46x (PetChem) atas EBITDA 1,6M, net debt 2,67M, kurs 17633"
+ },
+ "dcf_deep_dive": {
+  "section_sub": "DCF trough gagal Gate 3+5 (Review Required, bukan kesimpulan); halaman ini memuat Cost of Capital, sensitivitas TP terhadap multiple & kurs, dan skenario multiple.",
+  "wacc_build": {
+   "headers": [
+    "Komponen WACC",
+    "Nilai",
+    "Metodologi / Sumber"
+   ],
+   "rows": [
+    [
+     "Risk-Free Rate (Rf)",
+     "6,96%",
+     "SBN 10Y (asumsi)"
+    ],
+    [
+     "Equity Risk Premium (ERP)",
+     "6,89%",
+     "Damodaran Indonesia"
+    ],
+    [
+     "Beta (assumed, spot -0,14 n.m.)",
+     "1,05",
+     "Siklikal large-cap, disclosed"
+    ],
+    [
+     "Biaya Ekuitas (Ke)",
+     "14,19%",
+     "Ke = Rf + Beta x ERP"
+    ],
+    [
+     "Biaya Utang (Kd)",
+     "7,50%",
+     "Asumsi pasca-Aster"
+    ],
+    [
+     "Tarif Pajak",
+     "22,00%",
+     "UU HPP"
+    ],
+    [
+     "Bobot Ekuitas / Utang",
+     "64,4% / 35,6%",
+     "Mcap 9,78M / utang 5,41M USD"
+    ],
+    [
+     "WACC Final",
+     "11,22%",
+     "We x Ke + Wd x Kd x (1-tax)"
+    ]
+   ]
+  },
+  "sensitivity": {
+   "title": "Sensitivitas TP — Multiple EV/EBITDA vs Kurs USD/IDR",
+   "headers": [
+    "EV/EBITDA \\ kurs",
+    "16.633",
+    "17.133",
+    "17.633 (base)",
+    "18.133",
+    "18.633"
+   ],
+   "rows": [
+    [
+     "7.0x",
+     "Rp 1.641 (-17,7%)",
+     "Rp 1.690 (-15,3%)",
+     "Rp 1.740 (-12,8%)",
+     "Rp 1.789 (-10,3%)",
+     "Rp 1.838 (-7,9%)"
+    ],
+    [
+     "8.0x",
+     "Rp 1.949 (-2,3%)",
+     "Rp 2.007 (+0,6%)",
+     "Rp 2.066 (+3,6%)",
+     "Rp 2.125 (+6,5%)",
+     "Rp 2.183 (+9,4%)"
+    ],
+    [
+     "8.67x",
+     "Rp 2.155 (+8,0%)",
+     "Rp 2.220 (+11,3%)",
+     "Rp 2.285 (+14,5%)",
+     "Rp 2.349 (+17,7%)",
+     "Rp 2.414 (+21,0%)"
+    ],
+    [
+     "9.5x",
+     "Rp 2.410 (+20,8%)",
+     "Rp 2.483 (+24,5%)",
+     "Rp 2.555 (+28,1%)",
+     "Rp 2.628 (+31,7%)",
+     "Rp 2.700 (+35,3%)"
+    ],
+    [
+     "10.46x",
+     "Rp 2.706 (+35,6%)",
+     "Rp 2.787 (+39,7%)",
+     "Rp 2.869 (+43,8%)",
+     "Rp 2.950 (+47,9%)",
+     "Rp 3.031 (+51,9%)"
+    ]
+   ]
+  },
+  "scenarios": {
+   "headers": [
+    "Scenario",
+    "Nilai Wajar",
+    "Investment Recommendation"
+   ],
+   "rows": [
+    [
+     "BEAR (6,5x ala PTTGC trough)",
+     "Rp 1.576",
+     "SELL (-21,0%)"
+    ],
+    [
+     "BASE (8,67x median)",
+     "Rp 2.285",
+     "HOLD (+14,5%)"
+    ],
+    [
+     "BULL (10,46x ala PetChem)",
+     "Rp 2.869",
+     "BUY (+43,8%)"
+    ]
+   ]
+  },
+  "bridge": {
+   "headers": [
+    "Komponen Jembatan",
+    "Nilai",
+    "Keterangan"
+   ],
+   "rows": [
+    [
+     "EV (8,67x atas EBITDA 1,6M)",
+     "13,87",
+     "USD Miliar"
+    ],
+    [
+     "(+) Kas & Setara Kas",
+     "+2,74",
+     "FY25A"
+    ],
+    [
+     "(-) Total Utang Berbunga",
+     "-5,41",
+     "FY25A"
+    ],
+    [
+     "Ekuitas (Equity Value)",
+     "11,20",
+     "USD Miliar"
+    ],
+    [
+     "Per saham (x 17.633 / 86,46M)",
+     "Rp 2.285",
+     "Target Price"
+    ]
+   ]
+  }
+ }
 }
