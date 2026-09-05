@@ -60,3 +60,10 @@ def test_adversarial_exit_guard_present():
     assert "EXIT GUARD" in text, "adversarial_instruction lost its EXIT GUARD"
     assert "NEVER call exit_loop on your first iteration" in text
     assert "calc_* recomputation" in text
+
+
+def test_debate_schema_rules_present():
+    text = (REPO_ROOT / "agents" / "adk" / "agents" / "instructions.py").read_text(encoding="utf-8")
+    assert "defense: {mode: defend|concede, calc_refs:" in text
+    assert "Debate is structured JSON?" in text
+    assert "REJECT plain strings / placeholders" in text

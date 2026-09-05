@@ -395,7 +395,20 @@ def build_graph(
         model=main_model,
         description="Red Team — challenges one claim per iteration, defender must evidence or concede.",
         instruction=_fmt(adversarial_instruction),
-        tools=[FunctionTool(exit_loop)],
+        tools=[FunctionTool(exit_loop)]
+        + [
+            FunctionTool(calc)
+            for calc in DETERMINISTIC_TOOLS
+            if calc.__name__
+            in (
+                "calc_wacc",
+                "calc_dcf",
+                "calc_ddm",
+                "calc_multiples",
+                "calc_blended",
+                "calc_historical_bands",
+            )
+        ],
         output_key="debate_output",
     )
 
