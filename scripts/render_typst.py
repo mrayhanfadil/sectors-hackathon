@@ -25,7 +25,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                                    chart_pbv_bands, chart_wacc_breakdown, chart_sensitivity_heatmap,
                                    chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend,
                                    chart_margin_trajectory,
-                                   peer_pe_bar, peer_evebitda_bar, peer_pb_scatter)
+                                   peer_pe_bar, peer_evebitda_bar, peer_pb_scatter, relval_bars)
     except ImportError:
         print(f"[warn] report_charts not importable, skipping charts for {ticker}")
         cache = CACHE_ROOT / f"render_{ticker.lower()}" / "charts"
@@ -179,6 +179,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                 peer_pe_bar(peer_list, ticker, palette, cache / "peer_pe.png")
                 peer_evebitda_bar(peer_list, ticker, palette, cache / "peer_evebitda.png")
                 peer_pb_scatter(peer_list, ticker, palette, cache / "peer_pb.png")
+                relval_bars(peer_list, cache / "relval_bars.png", ticker=ticker, palette=palette)
         except Exception as e:
             print(f"[warn] peer charts: {e}")
     if CACHE_ROOT != Path("/tmp"):
@@ -195,7 +196,13 @@ def compile_typst(input_typ: Path, output_pdf: Path, font_path: Path = FONTS, ti
     """Compile via Python `typst` lib or fallback to CLI binary."""
     try:
         import typst as _t
-        _t.compile(str(input_typ), output=str(output_pdf))
+        font_paths = [str(font_path)] if font_path.exists() else []
+        sys_inputs = {}
+        if ticker:
+            sys_inputs["ticker"] = ticker
+        if data_path:
+            sys_inputs["data_path"] = str(data_path)
+        _t.compile(str(input_typ), output=str(output_pdf), root=Path("/"), font_paths=font_paths, sys_inputs=sys_inputs)
         return True
     except (ImportError, Exception) as e:
         print(f"[info] python typst lib unavailable ({e}), falling back to CLI")

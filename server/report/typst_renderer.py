@@ -497,7 +497,8 @@ def _generate_charts(ticker: str, data: dict, palette: dict) -> Path:
     chart_names = [
         "vs_jci.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
         "wacc_breakdown.png", "sensitivity_heatmap.png", "scenario_bars.png",
-        "ev_equity_waterfall.png", "margin_trajectory.png", "index_trend.png"
+        "ev_equity_waterfall.png", "margin_trajectory.png", "index_trend.png",
+        "relval_bars.png"
     ]
     try:
         from PIL import Image

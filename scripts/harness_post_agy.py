@@ -270,7 +270,7 @@ def check_naming() -> tuple[bool, str, list[str]]:
 
     # 1. No .IJ suffix
     ij_regex = re.compile(r"\.IJ\b")
-    search_dirs = ["templates", "server/routers", "docs", "references", "src"]
+    search_dirs = ["agents", "data", "docs", "references", "scripts", "server", "src", "templates", "tests"]
     ij_matches: list[str] = []
 
     for d in search_dirs:
@@ -279,13 +279,20 @@ def check_naming() -> tuple[bool, str, list[str]]:
             continue
         files = [p] if p.is_file() else [f for f in p.rglob("*") if f.is_file()]
         for f in files:
-            if "__pycache__" in f.parts or f.suffix in {
-                ".png",
-                ".jpg",
-                ".ttf",
-                ".pdf",
-                ".pyc",
-            }:
+            if (
+                "__pycache__" in f.parts
+                or f.name in {"harness_post_agy.py", "test_naming.py"}
+                or f.suffix in {
+                    ".png",
+                    ".jpg",
+                    ".ttf",
+                    ".pdf",
+                    ".pyc",
+                    ".ico",
+                    ".woff",
+                    ".woff2",
+                }
+            ):
                 continue
             try:
                 content = f.read_text(encoding="utf-8", errors="ignore")

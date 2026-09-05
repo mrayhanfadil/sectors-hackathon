@@ -91,7 +91,7 @@ def ratu_single() -> dict:
     return {
         "meta": {
             "template": "single", "reason": "segments=0, subsector=oil-pure-play -> single",
-            "ticker": "RATU", "company_name": "Ratu Prabu Energi",
+            "ticker": "RATU", "company_name": "Raharja Energi Cepu",
             "sector": "Energi — Pure-Play Holding", "report_type": "Initiation",
             "date": "31 Agt 2026", "prepared_by": "RESEARCH — Sectors Hackathon 2026", "language": "id",
         },
