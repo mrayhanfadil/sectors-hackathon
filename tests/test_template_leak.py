@@ -39,6 +39,8 @@ FORBIDDEN_LEAK_STRINGS = [
     "Minas",
     "Tuban",
     "Ratu Prabu",
+    "Raharja",
+    "Raharja Energi Cepu",
     "RETJ",
     "PJUC",
 ]
@@ -370,7 +372,7 @@ def test_ratu_regression(tmp_path):
 
 def test_generic_fallback_no_ratu_defaults():
     """Grep template source: every default literal containing RATU/Banyu/Cepu/MEDC must sit inside m.ticker == 'RATU' branch."""
-    keywords = ["RATU", "Banyu", "Cepu", "MEDC", "Ratu Prabu", "Banyu Urip", "7.880", "7880", "RETJ", "PJUC"]
+    keywords = ["RATU", "Banyu", "Cepu", "MEDC", "Ratu Prabu", "Raharja", "Banyu Urip", "7.880", "7880", "RETJ", "PJUC"]
 
     violations = []
 

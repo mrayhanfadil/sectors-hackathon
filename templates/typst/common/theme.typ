@@ -2,7 +2,7 @@
 // common/theme.typ — Institutional equity research design tokens
 // =====================================================================
 // Universal theme applicable to all 4 archetypes (single / sotp / infra / strategy).
-// Fonts: Source Serif 4 (serif body), Inter (headings/UI), JetBrains Mono (numerics)
+// Fonts: Liberation Serif (serif body), Liberation Sans (headings/UI), Liberation Mono (numerics)
 // Palette: institutional charcoal/slate base + archetype-specific brand color
 // =====================================================================
 
@@ -33,8 +33,8 @@
 )
 
 // ------ Font fallback chains ------
-#let FONT_SERIF = ("Source Serif 4", "Liberation Serif", "DejaVu Serif")
-#let FONT_SANS = ("Inter", "Liberation Sans", "DejaVu Sans")
+#let FONT_SERIF = ("Source Serif 4", "Liberation Serif", "Caladea", "DejaVu Serif")
+#let FONT_SANS = ("Inter", "Liberation Sans", "Carlito", "DejaVu Sans")
 #let FONT_MONO = ("JetBrains Mono", "Liberation Mono", "DejaVu Sans Mono")
 
 // ------ Typography scale ------
@@ -49,7 +49,7 @@
 
 // ------ Set page geometry + fonts ------
 #let set-page-defaults(doc) = {
-  set document(keywords: ("Font: Source Serif 4, Inter, JetBrains Mono",))
+  set document(keywords: ("Font: Liberation Serif, Liberation Sans, Liberation Mono, Source Serif 4, Inter",))
   set page(
     paper: "a4",
     margin: (left: MARGIN_LR, right: MARGIN_LR, top: MARGIN_TB, bottom: MARGIN_TB),
@@ -94,7 +94,7 @@
 }
 
 // ------ Section header ------
-#let section-header(no, title, palette) = {
+#let section-header(no, title, palette, sub: none) = {
   block(width: 100%)[
     #set text(font: FONT_SANS, size: T_H2, weight: "bold", fill: palette.brand_dark)
     #grid(
@@ -111,9 +111,13 @@
       ],
       [#h(8pt) #title],
     )
+    #if sub != none [
+      #v(1pt)
+      #text(font: FONT_SERIF, size: 7pt, style: "italic", fill: palette.muted)[#sub]
+    ]
     #v(2pt)
     #line(length: 100%, stroke: 1pt + palette.brand)
-    #v(6pt)
+    #v(5pt)
   ]
 }
 

@@ -58,7 +58,7 @@
       ]
       #v(4pt)
       #text(size: T_COVER_TITLE, weight: "bold", fill: PALETTE.brand_dark)[
-        #m.at("company_name", default: if m.ticker == "RATU" { "Ratu Prabu Energi" } else { "—" })
+        #m.at("company_name", default: if m.ticker == "RATU" { "Raharja Energi Cepu" } else { "—" })
       ]
       #v(2pt)
       #text(size: 13pt, weight: "bold", fill: PALETTE.muted)[
@@ -182,7 +182,7 @@
 // PAGE 2 — KPI HERO (OPERATIONAL METRICS)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 2, PALETTE, [
-  #section-header(1, "Metrik Operasional Kunci (KPI Hero)", PALETTE)
+  #section-header(1, "Metrik Operasional Kunci (KPI Hero)", PALETTE, sub: "Menjawab: Bagaimana trajektori operasional, efisiensi unit biaya, dan keunggulan kompetitif (moat) emiten?")
   
   #let kpi_hero = data.at("kpi_hero", default: (:))
   #let kpi_p = kpi_hero.at("paragraph", default: "Kinerja operasional " + m.company_name + " (" + m.ticker + ") didorong oleh keunggulan posisi fundamental pada sektor " + m.sector + ", efisiensi biaya, dan eksekusi strategi pertumbuhan yang disiplin.")
@@ -278,7 +278,7 @@
 // PAGE 3 — FINANCIAL HIGHLIGHTS & INVESTMENT THESIS
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 3, PALETTE, [
-  #section-header(2, "Sorotan Keuangan & Tesis Investasi", PALETTE)
+  #section-header(2, "Sorotan Keuangan & Tesis Investasi", PALETTE, sub: "Menjawab: Dari mana pertumbuhan historis berasal dan apa pilar tesis katalis ekspansi ke depan?")
 
   #let fh = data.at("financial_highlights", default: (:))
   #let fh_years = fh.at("years", default: ("FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"))
@@ -366,7 +366,7 @@
 // PAGE 4 — VALUATION (DCF, MULTIPLES, BLENDED & BANDS)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 4, PALETTE, [
-  #section-header(3, "Valuation Methodology & Hasil Valuasi", PALETTE)
+  #section-header(3, "Valuation Methodology & Hasil Valuasi", PALETTE, sub: "Menjawab: Berapa estimasi nilai wajar saham berdasarkan metode DCF dan perbandingan multiple pasar?")
 
   #let val = data.at("valuation", default: (:))
   #let methods = val.at("methods", default: ())
@@ -509,7 +509,7 @@
 // PAGE 5 — COMPREHENSIVE DCF DEEP DIVE
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 5, PALETTE, [
-  #section-header(4, "Analisis DCF Komprehensif", PALETTE)
+  #section-header(4, "Analisis DCF Komprehensif", PALETTE, sub: "Menjawab: Bagaimana kalkulasi biaya modal (WACC), sensitivitas pertumbuhan, dan skenario nilai intrinsik?")
   
   #text(size: 7.2pt, fill: PALETTE.muted)[
     Discounted Cash Flow (DCF) Model — Model deterministik multi-periode mengevaluasi nilai intrinsik ekuitas melalui proyeksi arus kas bebas eksplisit (FCFF) dan nilai terminal, dilengkapi Cost of Capital Build, Sensitivity Analysis 5x5, dan Scenario Analysis (Bear / Base / Bull).
@@ -594,7 +594,7 @@
 // PAGE 6 — FINANCIAL STATEMENTS 6Y (INCOME, BALANCE & CASHFLOW)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 6, PALETTE, [
-  #section-header(5, "Laporan Keuangan & Rasio Finansial 6 Tahun", PALETTE)
+  #section-header(5, "Laporan Keuangan & Rasio Finansial 6 Tahun", PALETTE, sub: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 6 tahun?")
 
   #let fs = data.at("financial_statements", default: (:))
   #let inc = fs.at("income", default: (:))
@@ -663,7 +663,7 @@
 // PAGE 7 — PEERS, RISKS, RATING GUIDE & DISCLAIMER
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 7, PALETTE, [
-  #section-header(6, "Peer Comparison & Investment Risks", PALETTE)
+  #section-header(6, "Peer Comparison & Investment Risks", PALETTE, sub: "Menjawab: Bagaimana posisi valuasi relatif terhadap kompetitor sejenis dan apa risiko investasi utama?")
 
   #let peer_data = data.at("peers", default: (:))
   #let peer_tables = peer_data.at("tables", default: ())
@@ -695,60 +695,69 @@
     palette: PALETTE,
   )
 
-  #v(6pt)
-  #text(size: 9pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
-  #v(3pt)
+  #v(4pt)
+  #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
+  #let relval_src = "IDX & yfinance"
+  #exhibit-header("Exhibit 16", relval_title, relval_src)
+  #v(2pt)
+  #image(chart-dir + "/relval_bars.png", width: 100%)
+  #v(2pt)
+  #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif · Sumber: #relval_src]
+
+  #v(4pt)
+  #text(size: 8.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
+  #v(2pt)
   #let risks_list = data.at("risks", default: ())
   #if risks_list.len() > 0 {
     grid(
       columns: (1fr, 1fr),
-      gutter: 6pt,
+      gutter: 5pt,
       ..risks_list.enumerate().map(((i, r)) => card(PALETTE)[
         #text(weight: "bold", fill: PALETTE.neg)[#(str(i + 1) + ". " + r.bucket)]
         #v(1pt)
-        #text(size: 6.8pt)[#r.detail]
+        #text(size: 6.5pt)[#r.detail]
       ])
     )
   } else {
     grid(
       columns: (1fr, 1fr),
-      gutter: 6pt,
+      gutter: 5pt,
       card(PALETTE)[
         #text(weight: "bold", fill: PALETTE.neg)[1. Fluktuasi Harga Komoditas & Pasar]
         #v(1pt)
-        #text(size: 6.8pt)[
+        #text(size: 6.5pt)[
           Volatilitas harga komoditas global dan daya beli konsumen berpotensi mempengaruhi realisasi pertumbuhan pendapatan.
         ]
       ],
       card(PALETTE)[
         #text(weight: "bold", fill: PALETTE.neg)[2. Ketergantungan Rantai Pasok & Mitra]
         #v(1pt)
-        #text(size: 6.8pt)[
+        #text(size: 6.5pt)[
           Kelancaran operasional bergantung pada keandalan rantai pasok dan hubungan strategis dengan mitra bisnis utama.
         ]
       ],
       card(PALETTE)[
         #text(weight: "bold", fill: PALETTE.neg)[3. Perubahan Regulasi & Kebijakan]
         #v(1pt)
-        #text(size: 6.8pt)[
+        #text(size: 6.5pt)[
           Penyesuaian regulasi perpajakan, tarif impor, atau ketentuan industri dapat mempengaruhi struktur biaya dan marjin laba.
         ]
       ],
       card(PALETTE)[
         #text(weight: "bold", fill: PALETTE.neg)[4. Risiko Eksekusi & Kompetisi]
         #v(1pt)
-        #text(size: 6.8pt)[
+        #text(size: 6.5pt)[
           Persaingan industri dan tantangan ekspansi operasional menuntut eksekusi strategi bisnis yang terukur dan adaptif.
         ]
       ],
     )
   }
 
-  #v(6pt)
+  #v(4pt)
   #card(PALETTE)[
-    #text(size: 7pt, weight: "bold", fill: PALETTE.brand_dark)[PANDUAN RATING REKOMENDASI (INVESTMENT RECOMMENDATION)]
-    #v(2pt)
-    #text(size: 6.5pt)[
+    #text(size: 6.5pt, weight: "bold", fill: PALETTE.brand_dark)[PANDUAN RATING REKOMENDASI (INVESTMENT RECOMMENDATION)]
+    #v(1.5pt)
+    #text(size: 6pt)[
       - *BUY*: Ekspektasi total return > +15% dalam 12 bulan (eks-dividen).
       - *HOLD*: Ekspektasi total return -10% s/d +15% dalam 12 bulan.
       - *SELL*: Ekspektasi total return \< -15% dalam 12 bulan.
@@ -756,17 +765,17 @@
     ]
   ]
 
-  #v(6pt)
+  #v(4pt)
   #card(PALETTE)[
-    #text(size: 7pt, weight: "bold", fill: PALETTE.ink)[INFORMASI, BUKAN SARAN INVESTASI (OJK COMPLIANCE)]
-    #v(2pt)
-    #text(size: 6.2pt, fill: PALETTE.muted)[
+    #text(size: 6.5pt, weight: "bold", fill: PALETTE.ink)[INFORMASI, BUKAN SARAN INVESTASI (OJK COMPLIANCE)]
+    #v(1.5pt)
+    #text(size: 5.8pt, fill: PALETTE.muted)[
       Laporan ini diproduksi untuk tujuan riset dan edukasi pasar modal semata. Seluruh angka dan analisis didasarkan pada data publik laporan keuangan emiten, keterbukaan informasi IDX, dan sumber resmi terkait. Laporan ini bukan merupakan penawaran atau rekomendasi untuk membeli atau menjual efek tertentu. Keputusan investasi sepenuhnya tanggung jawab investor. Kinerja historis bukan indikasi masa depan.
     ]
   ]
 
-  #v(4pt)
-  #text(size: 6pt, fill: PALETTE.muted, style: "italic")[
+  #v(3pt)
+  #text(size: 5.8pt, fill: PALETTE.muted, style: "italic")[
     Disiapkan oleh #m.at("prepared_by", default: "RESEARCH — Sectors Hackathon 2026") · Tanggal #m.date · Ticker: #(m.ticker + ".JK") · Bahasa: #upper(m.at("language", default: "id"))
   ]
 ])

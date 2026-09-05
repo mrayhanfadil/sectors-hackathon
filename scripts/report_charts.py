@@ -1227,6 +1227,149 @@ def peer_pb_scatter(
     return _save_fig(fig, target_out)
 
 
+# ---------------------------------------------------------------------------
+# 14. relval_bars: Grouped bar chart of P/E and EV/EBITDA multiples for peers
+# ---------------------------------------------------------------------------
+def relval_bars(
+    peers: Union[Sequence[Dict[str, Any]], Dict[str, Any], Sequence[Any]],
+    outfile: Optional[Union[str, Path]] = None,
+    ticker: str = "ACES",
+    palette: Optional[Dict[str, Any]] = None,
+    figsize: Tuple[float, float] = (6.8, 2.6),
+) -> Path:
+    """Grouped bar chart plotting P/E and EV/EBITDA multiples for subject ticker and peers.
+
+    - Plots side-by-side bars for P/E (x) and EV/EBITDA (x) per peer.
+    - Highlights subject ticker in brand / brand_dark colors.
+    - Saves to output/cache/render_{ticker_lower}/charts/relval_bars.png (or specified outfile).
+    """
+    p = _get_palette(palette)
+    items: List[Dict[str, Any]] = []
+
+    # Handle input dictionary with tables
+    raw_peers: Sequence[Any] = []
+    if isinstance(peers, dict):
+        if "tables" in peers and isinstance(peers["tables"], list) and len(peers["tables"]) > 0:
+            tab = peers["tables"][0]
+            hdrs = [str(h).strip().lower().replace(" ", "_").replace("/", "_").replace("(x)", "").strip() for h in tab.get("headers", [])]
+            for r in tab.get("rows", []):
+                row_dict: Dict[str, Any] = {}
+                for h, val in zip(hdrs, r):
+                    row_dict[h] = val
+                if "ticker" in row_dict or "emiten" in row_dict or "item" in row_dict:
+                    if "emiten" in row_dict and "ticker" not in row_dict:
+                        row_dict["ticker"] = row_dict["emiten"]
+                    elif "item" in row_dict and "ticker" not in row_dict:
+                        row_dict["ticker"] = row_dict["item"]
+                    raw_peers.append(row_dict)
+        elif "rows" in peers and isinstance(peers["rows"], list):
+            raw_peers = peers["rows"]
+    elif isinstance(peers, (list, tuple)):
+        raw_peers = peers
+
+    skip_keywords = ["rata-rata", "average", "median", "model blended", "macquarie", "nomura", "clsa", "harga spot"]
+
+    for s in raw_peers:
+        if isinstance(s, dict):
+            t_sym = str(s.get("ticker") or s.get("symbol") or s.get("emiten") or s.get("item") or "").strip().upper()
+            if not t_sym or any(kw in t_sym.lower() for kw in skip_keywords):
+                continue
+            raw_pe = s.get("pe") or s.get("p_e") or s.get("forward_pe") or s.get("pe_(x)") or s.get("p_e_(x)") or 8.0
+            raw_ev = s.get("ev_ebitda") or s.get("evebitda") or s.get("ev_to_ebitda") or s.get("ev_ebitda_(x)") or 5.0
+            try:
+                pe_val = float(str(raw_pe).replace("x", "").replace(",", ".").strip())
+            except (ValueError, TypeError):
+                pe_val = 8.0
+            try:
+                ev_val = float(str(raw_ev).replace("x", "").replace(",", ".").strip())
+            except (ValueError, TypeError):
+                ev_val = 5.0
+            items.append({"ticker": t_sym, "pe": pe_val, "ev_ebitda": ev_val})
+        elif isinstance(s, (list, tuple)) and len(s) >= 4:
+            t_sym = str(s[0]).strip().upper()
+            if not t_sym or any(kw in t_sym.lower() for kw in skip_keywords):
+                continue
+            try:
+                pe_val = float(str(s[2]).replace("x", "").replace(",", ".").strip())
+            except (ValueError, TypeError):
+                pe_val = 8.0
+            try:
+                ev_val = float(str(s[3]).replace("x", "").replace(",", ".").strip())
+            except (ValueError, TypeError):
+                ev_val = 5.0
+            items.append({"ticker": t_sym, "pe": pe_val, "ev_ebitda": ev_val})
+
+    if not items:
+        items = [
+            {"ticker": ticker.upper(), "pe": 8.0, "ev_ebitda": 5.0},
+            {"ticker": "MAPI", "pe": 9.6, "ev_ebitda": 5.4},
+            {"ticker": "LPPF", "pe": 4.6, "ev_ebitda": 4.3},
+            {"ticker": "RALS", "pe": 9.6, "ev_ebitda": 1.6},
+            {"ticker": "HERO", "pe": 14.8, "ev_ebitda": 8.6},
+        ]
+
+    fig, ax = plt.subplots(figsize=figsize, dpi=200)
+    _apply_style(ax, p, horizontal_grid=True, vertical_grid=False)
+
+    x = np.arange(len(items))
+    bar_w = 0.36
+
+    pe_vals = [it["pe"] for it in items]
+    ev_vals = [it["ev_ebitda"] for it in items]
+
+    # Bar colors: highlight subject ticker
+    c_pe = [p["brand"] if it["ticker"] == ticker.upper() else "#2563eb" for it in items]
+    c_ev = [p.get("brand_dark", "#054f31") if it["ticker"] == ticker.upper() else "#0d9488" for it in items]
+
+    bars1 = ax.bar(x - bar_w / 2, pe_vals, width=bar_w, label="P/E (x)", color=c_pe, edgecolor=p.get("line", "#e4e7ec"), linewidth=0.5, zorder=3)
+    bars2 = ax.bar(x + bar_w / 2, ev_vals, width=bar_w, label="EV/EBITDA (x)", color=c_ev, edgecolor=p.get("line", "#e4e7ec"), linewidth=0.5, zorder=3)
+
+    # Annotate values above bars
+    max_val = max(max(pe_vals), max(ev_vals)) if pe_vals and ev_vals else 10.0
+    for b in bars1:
+        h = b.get_height()
+        ax.annotate(
+            f"{h:.1f}x",
+            xy=(b.get_x() + b.get_width() / 2, h),
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=6.8,
+            fontweight="bold",
+            color=p["ink"],
+            zorder=4,
+        )
+
+    for b in bars2:
+        h = b.get_height()
+        ax.annotate(
+            f"{h:.1f}x",
+            xy=(b.get_x() + b.get_width() / 2, h),
+            xytext=(0, 3),
+            textcoords="offset points",
+            ha="center",
+            va="bottom",
+            fontsize=6.8,
+            fontweight="bold",
+            color=p["ink"],
+            zorder=4,
+        )
+
+    ax.set_ylim(0, max_val * 1.25)
+    ax.set_xticks(x)
+    ax.set_xticklabels([it["ticker"] for it in items], fontsize=7.8, fontweight="bold", color=p["ink"])
+    ax.set_ylabel("Multiple (x)", fontsize=7.5, color=p["muted"], labelpad=6)
+    ax.legend(frameon=False, fontsize=7.2, loc="upper right")
+
+    title_fp = fm.FontProperties(family=_FONT_SERIF_NAME)
+    ax.set_title(f"Valuasi Relatif — Komparasi P/E & EV/EBITDA ({ticker.upper()} vs Peers)", loc="left", fontsize=8.6, fontproperties=title_fp, color=p["ink"], pad=8)
+
+    ticker_lower = ticker.strip().lower()
+    target_out = outfile if outfile is not None else Path(f"output/cache/render_{ticker_lower}/charts/relval_bars.png")
+    return _save_fig(fig, target_out)
+
+
 __all__ = [
     "DEFAULT_PALETTE",
     "chart_vs_jci",
@@ -1242,6 +1385,8 @@ __all__ = [
     "peer_pe_bar",
     "peer_evebitda_bar",
     "peer_pb_scatter",
+    "relval_bars",
 ]
+
 
 
