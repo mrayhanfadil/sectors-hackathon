@@ -210,6 +210,22 @@ class StreamLifecycleManager:
         self._closed = True
         if final_state and isinstance(final_state, dict):
             self.accumulated_state.update(final_state)
+        # Deterministic debate backfill: the adversarial agent narrates its final
+        # message (which lands in state.debate_output) instead of pasting the JSON
+        # it got ok:true for. Lift the last accepted submit_debate payload from the
+        # event trail so debate_output is always structured, auditable JSON.
+        try:
+            from agents.adk.debate import extract_accepted_debate
+
+            accepted = extract_accepted_debate(self.store.get_events(self.run_id))
+            if accepted is not None:
+                self.accumulated_state["debate_output"] = {
+                    "debate": accepted,
+                    "n_rounds": len(accepted),
+                    "source": "submit_debate tool (backfilled on_complete)",
+                }
+        except Exception:
+            log.exception("debate backfill failed for %s", self.run_id)
         self.flush()
 
         try:
