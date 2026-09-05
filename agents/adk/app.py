@@ -54,6 +54,17 @@ from google.adk.agents.sequential_agent import SequentialAgent
 from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools.exit_loop_tool import exit_loop
 from google.adk.tools.function_tool import FunctionTool
+from .tools.peer_tools import request_peer_data
+
+# Bounded peer comms (plan Task 4): research agents may pull missing fields
+# from a peer's output_key, max 3 requests/run enforced inside the tool.
+PEER_PROTOCOL = (
+    "\n\nPEER REQUEST PROTOCOL:\n"
+    "Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil "
+    "request_peer_data SEKALI per field-set dengan alasan + from_agent=<namamu>, "
+    "(3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis "
+    "provenance gap. DILARANG request tanpa needed_fields."
+)
 from google.adk.tools.google_search_tool import GoogleSearchTool
 
 from .agents.instructions import (
@@ -234,6 +245,7 @@ def build_graph(
 
     main_model = _deepseek_or_gemini(api_key=deepseek_api_key, gemini_api_key=gemini_api_key)
     ft = _function_tools()
+    peer_tool = FunctionTool(request_peer_data)
 
     # Free-tier throttling: minimax-m3-free 503s on concurrency. When
     # ADK_PROVIDER indicates minimax and ADK_PARALLEL is unset/"0", run intake
@@ -321,8 +333,8 @@ def build_graph(
         name="industry",
         model=main_model,
         description="Macro/industry thematics with url+date citations via Tavily + readability.",
-        instruction=_fmt(industry_instruction),
-        tools=composite_web_tools,
+        instruction=_fmt(industry_instruction) + PEER_PROTOCOL,
+        tools=[*composite_web_tools, peer_tool],
         output_key="industry_output",
     )
 
@@ -330,7 +342,8 @@ def build_graph(
         name="analyst",
         model=main_model,
         description="Company business + ops specs with source per exhibit.",
-        instruction=_fmt(analyst_instruction),
+        instruction=_fmt(analyst_instruction) + PEER_PROTOCOL,
+        tools=[peer_tool],
         output_key="analyst_output",
     )
 
@@ -338,7 +351,8 @@ def build_graph(
         name="risk",
         model=main_model,
         description="4-7 pillar-specific risk buckets with impact/mitigant.",
-        instruction=_fmt(risk_instruction),
+        instruction=_fmt(risk_instruction) + PEER_PROTOCOL,
+        tools=[peer_tool],
         output_key="risk_output",
     )
 
@@ -346,8 +360,8 @@ def build_graph(
         name="kpi",
         model=main_model,
         description="Operational KPIs per subsector (tenancy, fiber km, BOPD, MW, etc.).",
-        instruction=_fmt(kpi_instruction),
-        tools=[FunctionTool(exit_loop)] if False else [],  # no extra tools needed
+        instruction=_fmt(kpi_instruction) + PEER_PROTOCOL,
+        tools=[peer_tool],
         output_key="kpi_output",
     )
 

@@ -35,6 +35,7 @@ from .stockdata import get_stockdata
 from .logging_config import setup_logging, ProductionHardeningMiddleware
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf, router_universe
 from .routers.agent import router_agent
+from .routers.memory import router_memory
 from .routers.mock_sectors import router_mock_sectors, get_mock_sectors_status
 from .startup import startup_hook, router_diagnostic
 
@@ -135,6 +136,7 @@ def create_app() -> FastAPI:
         app.include_router(router_pdf, tags=["pdf"])
     app.include_router(router_dcf, tags=["dcf"])
     app.include_router(router_universe, tags=["universe"])
+    app.include_router(router_memory, tags=["memory"])
 
     @app.get("/", include_in_schema=False)
     async def root():
