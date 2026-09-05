@@ -1,6 +1,6 @@
 // report_single.typ — Institutional equity research report (single ticker archetype)
-#import "../common/theme.typ": *
-#import "../common/cover.typ": *
+#import "theme.typ": *
+#import "cover.typ": *
 
 #show: set-page-defaults
 
