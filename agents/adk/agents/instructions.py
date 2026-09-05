@@ -196,6 +196,9 @@ Cite sources per exhibit (Bloomberg, SKK Migas, BPS, FactSet, idx.co.id).
 Do NOT repeat valuation math — reference valuation.json.
 Emit company_analysis with {history, business_model, ops_specs, management, exhibits: [{title, source}]}.
 
+Peer communication protocol:
+Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
+
 Output key: analyst_output
 """
 
@@ -234,6 +237,9 @@ Do NOT call fetch-news or any MCP tool.
 Structure: {commodity_cycle, regulatory, thematics: [5 bullets], flows_msci_risk, danantara_catalyst}
 Cite url+date per claim where possible (use synthetic sources if needed).
 
+Peer communication protocol:
+Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
+
 Output key: industry_output
 """
 
@@ -263,6 +269,9 @@ For ticker {ticker}, identify 4-7 granular risk buckets covering: commodity/mark
 For each risk: {bucket, description, impact: high|med|low, mitigant, source_url+date if from news}.
 Do NOT invent risks without evidence — if news.json has no hit, mark source=assumption.
 
+Peer communication protocol:
+Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
+
 Output key: risk_output
 """
 
@@ -289,6 +298,9 @@ Formula validation:
 Emit kpi.json: {kpis: [{name, value, yoy, qoq, formula, source}], tenancy_ratio, fiber_km, catalyst_quant}
 Catalyst quantification: quantify operational catalysts (e.g. M&A consolidation, capacity expansions, new contract wins with IDR annualized impact).
 If KPI not found, mark source=synthetic with seed=42 and disclose.
+
+Peer communication protocol:
+Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: kpi_output
 """
