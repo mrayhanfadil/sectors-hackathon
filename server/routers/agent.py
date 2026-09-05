@@ -140,6 +140,59 @@ class AgentRunRequest(BaseModel):
 async def agent_health():
     """Check if ADK graph can be built with minimax (preferred) or Spark bridge."""
     started = time.time()
+    # 0. Explicit opencode-go (Muse Spark 1.3 via Responses API) — honors
+    # ADK_PROVIDER first so health reports the ACTIVE provider, not minimax.
+    if os.getenv("ADK_PROVIDER", "").lower() in ("opencode-go", "opencode", "opengo", "spark-1.3", "spark13"):
+        from agents.adk.providers import spark13_model
+        from agents.adk.providers.opencode_responses import _opencode_go_key
+
+        key = _opencode_go_key()
+        info: dict[str, Any] = {
+            "ok": False,
+            "provider": "opencode-go",
+            "model": os.getenv("SPARK13_MODEL") or "muse-spark-1.3-contributor",
+            "api_base": os.getenv("OPENCODE_GO_BASE_URL") or "https://opencode.ai/zen/go/v1",
+        }
+        try:
+            from google.adk.models.llm_request import LlmRequest
+            from google.genai import types as _gt
+
+            info["bridge_key_present"] = bool(key)
+            info["bridge_key_prefix"] = (key[:10] + "…") if key else None
+            model = spark13_model()
+            req = LlmRequest(
+                contents=[_gt.Content(role="user", parts=[_gt.Part.from_text(text="PONG")])]
+            )
+            out = [x async for x in model.generate_content_async(req)]
+            content = getattr(out[0], "content", None)
+            txt = "".join(p.text or "" for p in (getattr(content, "parts", None) or []) if getattr(p, "text", None))
+            info["bridge_ping"] = txt.strip()[:50]
+            info["bridge_ok"] = bool("PONG" in txt.upper() or "PING" in txt.upper())
+            info["bridge_error"] = None
+        except Exception as e:
+            info["bridge_error"] = str(e)[:600]
+            info["bridge_ok"] = False
+        try:
+            from agents.adk.app import build_graph
+
+            g = build_graph(ticker="BBCA")
+            info["graph"] = {
+                "name": getattr(g, "name", ""),
+                "n_subagents": len(getattr(g, "sub_agents", []) or []),
+                "subagents": [getattr(a, "name", str(a)) for a in (getattr(g, "sub_agents", []) or [])],
+            }
+            info["ok"] = bool(info.get("bridge_ok") and info["graph"].get("n_subagents"))
+        except Exception as e:
+            info["graph_error"] = str(e)[:800]
+            info["ok"] = False
+        info["elapsed_ms"] = round((time.time() - started) * 1000)
+        try:
+            from .mock_sectors import get_mock_sectors_status
+
+            info["mock_sectors"] = get_mock_sectors_status()
+        except Exception:
+            pass
+        return info
     from agents.adk.providers import _minimax_api_key
 
     direct_minimax_key = _minimax_api_key()
