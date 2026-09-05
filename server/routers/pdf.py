@@ -247,6 +247,36 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "catalysts": [{"name": "Ekspansi jaringan", "effect": "Tambahan tenant", "quantified": {"tenants": "+1.000", "revenue_idr_bn": "+100", "by": "FY27"}, "source": "Company disclosure"}] if is_infra else [],
         "exhibits": [],
     }
+    # 2A+4F forecast expansion — projection math lives in agents/valuation/forecast.py.
+    # Actuals = last 2 years of the inline placeholder trend; FY26F..FY29F =
+    # last-actual x (1+g)^t with g from assumptions (revenue_growth > g > 1.5% default).
+    try:
+        from agents.valuation.forecast import build_trend_forecast as _build_fc
+        if "revenue_growth" in assum:
+            _g_live, _g_key = float(assum["revenue_growth"]), "revenue_growth"
+        elif "g" in assum and assum["g"] is not None:
+            _g_live, _g_key = float(assum["g"]), "g"
+        else:
+            _g_live, _g_key = 0.015, "default 1,5%"
+        _g_pct = f"{_g_live * 100:.1f}%".replace(".", ",")
+        _g_src = f"proyeksi FY26F-FY29F = FY25A x (1+g)^t, g={_g_pct} ({_g_key}, agents/valuation/forecast.py)"
+        _fc = _build_fc(
+            {"revenue": [1000.0, 1100.0], "ebitda": [500.0, 550.0], "net": [200.0, 220.0]},
+            {"revenue": _g_live, "ebitda": _g_live, "net": _g_live},
+            {"revenue": _g_src, "ebitda": _g_src, "net": _g_src},
+        )
+        _rev, _eb, _nt = _fc["series"]["revenue"], _fc["series"]["ebitda"], _fc["series"]["net"]
+        payload["financial_highlights"] = {
+            "source": f"Laporan keuangan (IDX), data diolah; {_g_src}",
+            "years": _fc["years"],
+            "rows": [["Pendapatan (Rp bn)", *_rev], ["EBITDA (Rp bn)", *_eb], ["Laba bersih (Rp bn)", *_nt]],
+        }
+        payload["financials"] = [
+            {"title": "Laba Rugi Ringkas", "headers": ["Rp bn", *_fc["years"]],
+             "rows": [["Pendapatan", *_rev], ["EBITDA", *_eb]], "source": f"Laporan keuangan IDX; {_g_src}"},
+        ]
+    except Exception:
+        pass
     return payload
 
 
