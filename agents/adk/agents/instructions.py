@@ -188,13 +188,15 @@ Rules:
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
 - DDM PAYOUT CAP (AGY audit 2026-09-05): the projected DPS path must keep implied payout (DPS_t / EPS) ≤ 100% in EVERY year. If DPS growth implies payout >100% in any year, cap DPS growth that year so payout ≤ 95% and disclose the cap. Never publish a DPS path that contradicts a "stable payout" claim.
-- MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS; extended SSIA property): for commodity/cyclical tickers (incl. property/construction/hospitality with lumpy land sales), the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS (t_1) starts from the normalized payout (e.g. dps_mid / normalized DPS from assumptions), never by extrapolating the latest peak dividend. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
+- MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS; extended SSIA property): for commodity/cyclical tickers (incl. property/construction/hospitality with lumpy land sales), the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS is the D0 normalized payout (e.g. dps_mid from assumptions = last normalized actual DPS, never the latest peak dividend); year-1 dividend follows the DDM-TIMING LOCK below. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
 - DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
 - Emit valuation.json with {wacc, primary_fv (gate-primary method FV, top-level — never nested-only), dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
 - SOTP-NET CARRY (Spark audit 2026-09-06, SSIA R2): any SOTP-derived FV you publish (secondary leg, cross-checks) MUST be the NET-equity figure; GROSS EV/share only as a labeled pair, never the sole headline number.
 - WACC SENSITIVITY DISCLOSURE (Spark audit 2026-09-06, SSIA R2): if weight_equity is NOT in the assumptions file (modeler-selected), disclose the DCF range under both your selected weights AND spot-gearing weights from latest D/E — never publish a single DCF point from an unsourced weight.
 - SINGLE-TP FRAMING (Spark audit 2026-09-06, SSIA R2): exactly ONE headline TP = the anchor. All other FVs are labeled cross-checks with their own upsides — never headline a second "TP" in any section.
+- DDM-TIMING LOCK (Spark audit 2026-09-06, SSMS R3): every `dps_*` field in data/assumptions/*.json is D0 (last normalized ACTUAL DPS, ex-growth). The dividends list passed to calc_ddm MUST start at D1 = D0×(1+g_path) — never pass the raw assumption as year-1 (that silently understates FV by exactly 1+g; SSMS 633→609 flip). Disclose the D0→D1 step explicitly in valuation.
+- MID-EBITDA PROVENANCE (Spark audit 2026-09-06, SSMS R3): any mid-cycle EBITDA used in a multiples leg MUST cite its 3 constituent annual figures (FYxx/yy/zz) in valuation_output — a bare average with no components is REJECT-grade.
 
 Output key: valuation_output
 """
@@ -482,6 +484,7 @@ Checks (REJECT if mismatch):
 - Blended weight sum 100%? (0.6+0.4)
 - Segment % sum 100%? (or hide if single)
 - DDM payout math? (payout × EPS == DPS)
+- DDM timing? (dividends[0] passed to calc_ddm == dps_assumption × (1+g_path) per DDM-TIMING LOCK — REJECT if the raw D0 was passed as year-1)
 - KPI tenancy = tenant/tower? (tenancy_ratio formula if infra)
 - Source per exhibit? (every chart/table has Source)
 - Critic url+date per news claim? (news.json url+date present)
