@@ -72,7 +72,7 @@ def test_debate_schema_rules_present():
 def test_writer_anchor_rules_present():
     text = (REPO_ROOT / "agents" / "adk" / "agents" / "instructions.py").read_text(encoding="utf-8")
     assert "ANCHOR RULE" in text
-    assert "target_anchor: dcf|secondary|tertiary|blended" in text
+    assert "target_anchor: primary|dcf|secondary|tertiary|blended" in text
     assert "GATE RULE" in text
     assert "gate_flags" in text
     assert "Thesis anchored?" in text
