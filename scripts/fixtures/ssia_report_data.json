@@ -13,14 +13,14 @@
   "headline": "1H26 Rebound Priced In; Forward Earnings Leave No Room",
   "rating_box": {
    "action": "HOLD",
-   "tp": 1675,
+   "tp": 1680,
    "price": 1810,
-   "upside_pct": -7.5,
+   "upside_pct": -7.2,
    "prev_tp": null,
    "key_takeaways": [
     "1H26 net Rp263 M (+rebound dari rugi FY25) → EPS forward ~Rp112",
-    "Forward P/E 15x → FV Rp1.675 (-7,5%) — pasar di 16,2x sudah membayar penuh",
-    "Trailing P/E 41,5x & P/BV 1,47x tidak bermakna di titik balik"
+    "Forward P/E 15x → FV Rp1.680 (-7,2%) — pasar di 16,2x sudah membayar penuh",
+    "SOTP-net Rp2.033 (+12,3%) & DCF Rp1.185 (-34,6%) cross-check; blended Rp1.524 — TP tunggal Rp1.680"
    ]
   },
   "shares": {
@@ -40,7 +40,7 @@
    "label": "SSIA vs IHSG (12M, rebased)",
    "caption": "yfinance SSIA.JK vs ^JKSE monthly closes"
   },
-  "summary": "Update SSIA dengan rekomendasi HOLD dan target harga Rp1.675 (-7,5%). Rugi FY25 (Rp-89 M) membuat kelipatan trailing tak bermakna; laba 1H26 Rp263 M menganualisasi EPS ~Rp112 yang pada 15x fair menghasilkan Rp1.675 — pasar di Rp1.810 (16,2x forward) sudah membayar rebound penuh.",
+  "summary": "Update SSIA dengan rekomendasi HOLD dan target harga Rp1.680 (-7,2%). Rugi FY25 (Rp-89 M) membuat kelipatan trailing tak bermakna; laba 1H26 Rp263 M menganualisasi EPS ~Rp112 yang pada 15x fair menghasilkan Rp1.680 — pasar di Rp1.810 (16,2x forward) sudah membayar rebound penuh. Cross-check: SOTP-net Rp2.033 (+12,3%), DCF Rp1.185 (-34,6%), blended Rp1.524.",
   "vs_jci": {
    "chart": {
     "labels": [
@@ -104,14 +104,14 @@
   },
   {
    "headline": "Upside habis di harga kini",
-   "detail": "Rp1.810 = 16,2x forward EPS — di atas fair 15x (Rp1.675). Tunggu kuartal atau koreksi sebelum BUY.",
+   "detail": "Rp1.810 = 16,2x forward EPS — di atas fair 15x (Rp1.680). SOTP-net Rp2.033 (+12,3%) dan DCF Rp1.185 (-34,6%) hanya cross-check; TP tunggal Rp1.680. Tunggu kuartal atau koreksi sebelum BUY.",
    "source": "model"
   }
  ],
  "analysis": [
   "FY25 adalah tahun trough SSIA: revenue anjlok 29,8% yoy (Rp6,31 T → Rp4,43 T) dan laba bersih negatif Rp89 miliar — pertama dalam tiga tahun. Bisnis konstruksi dan hospitality yang siklikal menekan bersamaan dengan jeda penjualan lahan. Pada titik seperti ini, P/E trailing 41,5x bukan sinyal mahal-murah; ia sinyal bahwa denominatornya rusak.",
   "Pembalikan 1H26 tajam dan berurutan: revenue 2Q26 Rp1,91 T (+32,0% qoq dari Rp1,45 T) dengan laba Rp174 M (+95,0% qoq dari Rp89 M). Laba semester Rp263 M menganualisasi EPS ~Rp112 — di atas EPS FY24 (Rp49,8) dua kali lipat. Jika run-rate bertahan, ini tahun rekor; pasar merespons dengan menghargai 16,2x forward.",
-  "Framework Gate (trough earnings) me-route ke forward Relative sebagai primer: 15x atas EPS forward Rp112 → FV Rp1.675 (-7,5%, HOLD). Multiple 15x adalah asumsi disclosed untuk emiten kawasan industri + konstruksi di titik balik — bukan observasi peers; sensitif dan terbuka untuk di-challenge. Thesis BUY membutuhkan bukti 2Q26 berlanjut ke 3Q26 atau harga turun ke ≤Rp1.675."
+  "Framework Gate (trough earnings) me-route ke forward Relative sebagai primer: 15x atas EPS forward Rp112 → FV Rp1.680 (-7,2%, HOLD). Cross-check berlabel: SOTP-net Rp2.033 (+12,3% vs Rp1.810; gross Rp2.317 sebelum net debt Rp1,33 T), DCF Rp1.185 (-34,6%; WACC 10,63%, g 3%, FCF Rp380–620 M), blended Rp1.524 (60% DCF + 40% SOTP-net, bukan TP kedua). Multiple 15x adalah asumsi disclosed untuk emiten kawasan industri + konstruksi di titik balik — bukan observasi peers; sensitif dan terbuka untuk di-challenge. Thesis BUY membutuhkan bukti 2Q26 berlanjut ke 3Q26 atau harga turun ke ≤Rp1.680."
  ],
  "financial_highlights": {
   "years": [
@@ -234,13 +234,13 @@
   "source": "yfinance 05-Sep-2026 (*annualisasi 1H26, model)"
  },
  "valuation": {
-  "narrative": "Trough earnings → forward Relative primer (Gate). EPS forward = annualisasi laba 1H26 (Rp263 M x 2 / 4.705 bn ≈ Rp112). Fair 15x = asumsi disclosed kawasan industri di titik balik.",
+  "narrative": "Trough earnings → forward Relative primer (Gate). EPS forward = annualisasi laba 1H26 (Rp263 M x 2 / 4.705 bn ≈ Rp112). Fair 15x = asumsi disclosed kawasan industri di titik balik. TP tunggal Rp1.680 (-7,2% vs Rp1.810); SOTP-net Rp2.033, DCF Rp1.185, blended Rp1.524 hanya cross-check berlabel.",
   "methods": [
    {
     "method": "P/E",
     "title": "Forward P/E (primer)",
-    "fv": 1675,
-    "source": "model: EPS fwd ~112 (263M x 2 / 4,705bn), fair 15x asumsi",
+    "fv": 1680,
+    "source": "model: EPS fwd ~112 (263M x 2 / 4,705bn), fair 15x asumsi → 112 x 15 = Rp1.680",
     "table": {
      "headers": [
       "Parameter",
@@ -269,9 +269,9 @@
        "pasar membayar penuh"
       ],
       [
-       "Fair Value",
-       "Rp 1.675",
-       "~111,8 x 15 ≈ Rp1.675 (-7,5%)"
+       "Fair Value (TP)",
+       "Rp 1.680",
+       "112 x 15 = Rp1.680 (-7,2% vs Rp1.810)"
       ]
      ]
     }
@@ -305,13 +305,93 @@
       ]
      ]
     }
+   },
+   {
+    "method": "SOTP-NET",
+    "title": "Cross-check SOTP-net",
+    "fv": 2033.13,
+    "source": "model: calc_sotp + calc_multiples proof (Properti Rp6,5T + Konstruksi Rp1,7T + Hospitality Rp2,7T = gross Rp10,9T - net debt Rp1,33362T = Rp9,56638T / 4.705.249.440)",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "Gross EV",
+       "Rp 10,9 T",
+       "6,5T + 1,7T + 2,7T"
+      ],
+      [
+       "Net debt",
+       "Rp 1,33362 T",
+       "total debt Rp2,47T - kas Rp1,14T"
+      ],
+      [
+       "Net equity",
+       "Rp 9,56638 T",
+       "gross - net debt"
+      ],
+      [
+       "SOTP-net /shr",
+       "Rp 2.033,13",
+       "+12,3% vs Rp1.810 (cross-check)"
+      ],
+      [
+       "Gross /shr",
+       "Rp 2.316,56",
+       "pasangan berlabel, bukan headline"
+      ]
+     ]
+    }
+   },
+   {
+    "method": "DCF",
+    "title": "Cross-check DCF",
+    "fv": 1184.51,
+    "source": "model: calc_dcf (WACC selected 10,63% vs spot-gearing 11,14%; FCF 380B-450B-520B-580B-620B; g 3%; net debt Rp1,33362T; saham 4.705.249.440; EV Rp6,907T)",
+    "table": {
+     "headers": [
+      "Parameter",
+      "Nilai",
+      "Keterangan"
+     ],
+     "rows": [
+      [
+       "WACC",
+       "10,63%",
+       "selected 70/30 (spot-gearing 11,14%)"
+      ],
+      [
+       "FCF 5 thn",
+       "Rp 380-620 M",
+       "pasca maintenance; capex ekspansi Rp3,6T menekan"
+      ],
+      [
+       "Terminal g",
+       "3,0%",
+       "asumsi disclosed"
+      ],
+      [
+       "DCF /shr",
+       "Rp 1.184,51",
+       "-34,6% vs Rp1.810 (cross-check)"
+      ],
+      [
+       "Sensitivitas spot",
+       "Rp 1.088,29",
+       "pada WACC 11,14%"
+      ]
+     ]
+    }
    }
   ],
   "blended": {
-   "fair_value": 1675,
-   "weights": "Forward P/E primer penuh (P/BV non-jangkar)"
+   "fair_value": 1523.96,
+   "weights": "Cross-check 60% DCF (Rp1.184,51) + 40% SOTP-net (Rp2.033,13) via gated only — BUKAN TP kedua; TP tunggal Rp1.680"
   },
-  "conclusion": "FV Rp1.675 (15x atas EPS forward ~Rp112) vs Rp1.810 (-7,5%, HOLD). Rebound-nya nyata, tetapi harganya mendahului — disiplin: tunggu bukti 3Q26 atau titik masuk lebih murah.",
+  "conclusion": "TP tunggal Rp1.680 (15x atas EPS forward ~Rp112) vs Rp1.810 (-7,2%, HOLD). Cross-check berlabel: SOTP-net Rp2.033 (+12,3%), DCF Rp1.185 (-34,6%), blended Rp1.524 (-15,8%). Rebound-nya nyata, tetapi harganya mendahului — disiplin: tunggu bukti 3Q26 atau titik masuk lebih murah.",
   "bands": {
    "pbv_3y": {
     "std-2": 0.09,
