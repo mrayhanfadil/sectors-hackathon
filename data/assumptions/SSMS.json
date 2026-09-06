@@ -1,1 +1,2 @@
-{"archetype": "update", "beta": 1.0, "beta_note": "spot n.a.; assumed", "bvps": 255.011, "dps_mid": 60.0, "erp": 0.0689, "g": 0.04, "gate_primary": "DDM-mid-cycle", "last_price": 1185, "payout": 0.69, "rf": 0.0696, "roe_mid": 0.3, "shares_out": 9.525e9, "source": "assumptions/SSMS.json"}
+{"archetype": "update", "beta": 1.0, "beta_note": "spot n.a.; assumed", "bvps": 255.011, "dps_mid": 60.0,
+ "dps_mid_note": "D0 per DDM-TIMING LOCK = last normalized ACTUAL DPS ex-growth; D1 = 60*1.04 = 62.4", "erp": 0.0689, "g": 0.04, "gate_primary": "DDM-mid-cycle", "last_price": 1185, "payout": 0.69, "rf": 0.0696, "roe_mid": 0.3, "shares_out": 9.525e9, "source": "assumptions/SSMS.json"}
