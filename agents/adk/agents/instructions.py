@@ -192,6 +192,9 @@ Rules:
 - DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
 - Emit valuation.json with {wacc, primary_fv (gate-primary method FV, top-level — never nested-only), dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
+- SOTP-NET CARRY (Spark audit 2026-09-06, SSIA R2): any SOTP-derived FV you publish (secondary leg, cross-checks) MUST be the NET-equity figure; GROSS EV/share only as a labeled pair, never the sole headline number.
+- WACC SENSITIVITY DISCLOSURE (Spark audit 2026-09-06, SSIA R2): if weight_equity is NOT in the assumptions file (modeler-selected), disclose the DCF range under both your selected weights AND spot-gearing weights from latest D/E — never publish a single DCF point from an unsourced weight.
+- SINGLE-TP FRAMING (Spark audit 2026-09-06, SSIA R2): exactly ONE headline TP = the anchor. All other FVs are labeled cross-checks with their own upsides — never headline a second "TP" in any section.
 
 Output key: valuation_output
 """
