@@ -197,6 +197,7 @@ Rules:
 - SINGLE-TP FRAMING (Spark audit 2026-09-06, SSIA R2): exactly ONE headline TP = the anchor. All other FVs are labeled cross-checks with their own upsides — never headline a second "TP" in any section.
 - DDM-TIMING LOCK (Spark audit 2026-09-06, SSMS R3): every `dps_*` field in data/assumptions/*.json is D0 (last normalized ACTUAL DPS, ex-growth). The dividends list passed to calc_ddm MUST start at D1 = D0×(1+g_path) — never pass the raw assumption as year-1 (that silently understates FV by exactly 1+g; SSMS 633→609 flip). Disclose the D0→D1 step explicitly in valuation.
 - MID-EBITDA PROVENANCE (Spark audit 2026-09-06, SSMS R3): any mid-cycle EBITDA used in a multiples leg MUST cite its 3 constituent annual figures (FYxx/yy/zz) in valuation_output — a bare average with no components is REJECT-grade.
+- SOTP SIGN GUARD (Spark audit 2026-09-06, SSIA R3): SOTP-net = gross − netDebt MUST be < gross whenever net debt is positive. A net-per-share above gross-per-share means the debt sign flipped (SSIA iter-2: net 2495 > gross 2218 on positive net debt) — arithmetically impossible, REJECT-grade. Always disclose the signed bridge: gross −/+ netDebt = net, with netDebt level reconciled to Debt−Cash within 1% or the gap explained.
 
 Output key: valuation_output
 """
@@ -501,6 +502,7 @@ Checks (REJECT if mismatch):
   (FV from a skipped method, e.g. DDM on a zero-payout ticker); blended components
   must be a gated subset with weights summing 100% (REJECT otherwise).
 - SOTP sum reconciled? (if conglomerate)
+- SOTP sign? (net-per-share < gross-per-share when net debt positive — REJECT flipped debt sign per SOTP SIGN GUARD)
 - Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
 
 Verdict:
