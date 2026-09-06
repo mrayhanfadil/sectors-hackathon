@@ -258,6 +258,8 @@ Do NOT call fetch-news or any MCP tool.
 Structure: {commodity_cycle, regulatory, thematics: [5 bullets], flows_msci_risk, danantara_catalyst}
 Cite url+date per claim where possible (use synthetic sources if needed).
 
+FLOAT/MSCI RULE (AGY audit 2026-09-06, SSMS R2 — critic REJECT): free-float % and index-inclusion/exclusion (MSCI/FTSE) claims MUST come from collector_output in state. If collector marks float UNVERIFIED or absent, emit "UNVERIFIED — requires IDX fact sheet/KSEI" and NEVER invent a % or assert exclusion as fact. Critic REJECTs unsourced float/exclusion claims.
+
 Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
@@ -353,6 +355,10 @@ Rules:
   agents.valuation.method_gate.blended_from_gated (non-gated components raise —
   never silently average in a skipped method; see method_gate.skipped for why
   each excluded method was dropped).
+- LIQUIDITY-GATE RULE (AGY audit 2026-09-06, SSMS R2): if industry/risk asserts an
+  index-exclusion or liquidity-crisis narrative, gate_flags MUST list it
+  (e.g. "Liquidity/MSCI-exclusion narrative asserted by industry") and the rating
+  MUST carry the flag — never gate_flags=[] alongside an exclusion thesis.
 - Segment % must sum 100% — hide pie if single pillar.
 - Quote source per exhibit as "Source: < outlet/domain >, < date >" with a real url+date per claim — Critic REJECTS bare strings like "Source: Bloomberg, SKK Migas, BPS, FactSet" with no url or date. Generic outlet-name-drops without url+date are fabrication.
 - ANTI-CIRCULAR RULE (AGY audit 2026-09-05): never claim the blended TP is "selaras/aligned" with an analyst TP unless the analyst's OWN published multiple math reproduces it. If your multiple leg yields X and the analyst TP is Y via forward estimates, say so explicitly — do not borrow their TP to bless your blend.
