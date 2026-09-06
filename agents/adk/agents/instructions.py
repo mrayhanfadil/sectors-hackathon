@@ -172,7 +172,7 @@ Assumption modulation (News + Sentiment Engine Wire):
     (revenue growth %, NI growth %, capex direction/magnitude/horizon) — each MUST
     carry url + date + verbatim quote or it is dropped (counted, never applied).
   * `apply_ledger_overlays()` writes numeric overlays (g1 / ni_growth / capex_pct)
-    with `{key}_overlay` provenance + `news_overlays` block; pass overlaid g1/
+    with per-key overlay provenance (each overlaid key gains a "<key>_overlay" detail object) + `news_overlays` block; pass overlaid g1/
     capex_pct into calc_fcff_projection / calc_dcf_full_valuation overrides.
   * LOUD: no citation = no overlay (never a silent default); conflicting guides are
     all recorded and the conservative one is used (min growth, max capex) with the
