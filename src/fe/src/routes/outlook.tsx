@@ -1,16 +1,16 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { ArrowLeft } from "lucide-react"
+import { ArrowLeft, Compass, TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { fetchOutlook } from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/outlook")({ component: Outlook })
 
 function Outlook() {
   const { data, isLoading } = useQuery({ queryKey: ["outlook"], queryFn: fetchOutlook })
-  if (isLoading) return <div className="text-sm text-slate-500">Loading outlook...</div>
-  if (!data) return <div className="text-sm text-red-600">Failed to load.</div>
+  if (isLoading) return <div className="text-sm text-slate-500">Memuat outlook pasar...</div>
+  if (!data) return <div className="text-sm text-red-600">Gagal memuat. Coba muat ulang halaman.</div>
   const d = data as {
     jci: { base: number; bull: number; bear: number; pe: number; epsGrowth: string }
     sectors: { name: string; call: string }[]
@@ -27,20 +27,93 @@ function Outlook() {
 
   return (
     <div className="space-y-6">
-      <a href="/agent" className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900"><ArrowLeft className="h-3.5 w-3.5" /> Back to ADK Live</a>
+      <Link to="/" className="inline-flex items-center gap-1 text-xs text-slate-500 hover:text-slate-900">
+        <ArrowLeft className="h-3.5 w-3.5" /> Kembali ke Beranda
+      </Link>
+
       <div>
-        <h1 className="text-xl font-semibold">Market Outlook — JCI 9100 base</h1>
-        <p className="text-xs text-slate-500">JPM Indonesia 2026 Outlook · EPS +{d.jci?.epsGrowth ?? "8%"} × {d.jci?.pe ?? 15}x · {d.source ?? "JPM + plan §5"}</p>
+        <Badge className="mb-2">Outlook pasar 2026</Badge>
+        <h1 className="text-xl font-bold tracking-tight sm:text-2xl">
+          Ke mana arah pasar saham Indonesia?
+        </h1>
+        <p className="mt-1 max-w-3xl text-sm leading-relaxed text-slate-600">
+          IHSG (indeks harga semua saham di BEI) ditargetkan di{" "}
+          <span className="font-semibold text-slate-900">
+            {d.jci.base.toLocaleString("id-ID")}
+          </span>{" "}
+          pada skenario normal. Artinya: kalau skenario ini terjadi, nilai gabungan pasar saham
+          diperkirakan naik menuju level itu — bukan janji, tapi perkiraan berdasarkan laba
+          perusahaan.
+        </p>
+        <p className="mt-1 text-xs text-slate-500">
+          Sumber: {d.source ?? "JPM Indonesia 2026 Outlook"} · Laba perusahaan +{d.jci?.epsGrowth ?? "8%"} · Valuasi {d.jci?.pe ?? 15}x
+        </p>
       </div>
 
+      {/* Scenarios in plain language */}
       <div className="grid gap-4 sm:grid-cols-3">
-        <Card><CardHeader><CardTitle className="text-sm">Bear {d.jci.bear.toLocaleString("id-ID")}</CardTitle><CardDescription className="text-xs">Downside · EPS × Multiple stress + outflow asing</CardDescription></CardHeader><CardContent className="text-xs text-slate-600">Slowdown + foreign UW persisten. Skenario penulis — bukan JPM tunggal.</CardContent></Card>
-        <Card className="border-slate-900"><CardHeader><CardTitle className="text-sm">Base {d.jci.base.toLocaleString("id-ID")} · {d.jci.pe}x · {d.jci.epsGrowth} EPS</CardTitle><CardDescription className="text-xs">JPM 2026 base · Priced assumption</CardDescription></CardHeader><CardContent className="text-xs text-slate-600">Index target = EPS growth × target multiple × basis kini. JPM method.</CardContent></Card>
-        <Card><CardHeader><CardTitle className="text-sm">Bull {d.jci.bull.toLocaleString("id-ID")}</CardTitle><CardDescription className="text-xs">Upside · Danantara Value-Up + foreign re-rating</CardDescription></CardHeader><CardContent className="text-xs text-slate-600">Re-rating penuh + flows kembali + policy reform (PP 28/2025).</CardContent></Card>
+        <Card className="border-red-200">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <TrendingDown className="h-4 w-4 text-red-600" />
+              <CardTitle className="text-sm">Kalau jelek: {d.jci.bear.toLocaleString("id-ID")}</CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              Skenario pesimis — ekonomi melambat dan investor asing terus keluar.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs leading-relaxed text-slate-600">
+            Pasar turun dari posisi sekarang. Saat seperti ini biasanya waktu untuk hati-hati dan
+            pegang saham yang keuangannya paling kuat.
+          </CardContent>
+        </Card>
+        <Card className="border-slate-900">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <Minus className="h-4 w-4 text-slate-700" />
+              <CardTitle className="text-sm">Skenario normal: {d.jci.base.toLocaleString("id-ID")}</CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              Skenario dasar — laba perusahaan tumbuh {d.jci.epsGrowth}, valuasi {d.jci.pe}x.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs leading-relaxed text-slate-600">
+            Kondisi berjalan seperti perkiraan: perusahaan untung lebih besar, harga saham ikut
+            naik. Target ini dihitung dari pertumbuhan laba × harga wajar saham.
+          </CardContent>
+        </Card>
+        <Card className="border-emerald-200">
+          <CardHeader>
+            <div className="flex items-center gap-2">
+              <TrendingUp className="h-4 w-4 text-emerald-700" />
+              <CardTitle className="text-sm">Kalau bagus: {d.jci.bull.toLocaleString("id-ID")}</CardTitle>
+            </div>
+            <CardDescription className="text-xs">
+              Skenario optimis — reformasi jalan dan investor asing kembali masuk.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs leading-relaxed text-slate-600">
+            Pasar naik lebih tinggi dari perkiraan karena kepercayaan investor pulih dan ada
+            sentimen positif dari kebijakan pemerintah.
+          </CardContent>
+        </Card>
       </div>
 
+      {/* Sector calls, explained */}
       <Card>
-        <CardHeader><CardTitle className="text-sm">Sector OW / N / UW</CardTitle><CardDescription className="text-xs">OW: Industrials · Materials · Consumer Staples/Discretionary · Property — per JPM p9</CardDescription></CardHeader>
+        <CardHeader>
+          <div className="flex items-center gap-2">
+            <Compass className="h-4 w-4 text-slate-700" />
+            <CardTitle className="text-sm">Sektor mana yang diunggulkan?</CardTitle>
+          </div>
+          <CardDescription className="text-xs leading-relaxed">
+            Setiap sektor diberi label: <span className="font-semibold">OW</span> artinya
+            diunggulkan (porsinya disarankan lebih besar dari pasar) ·{" "}
+            <span className="font-semibold">N</span> artinya netral (porsinya mengikuti pasar) ·{" "}
+            <span className="font-semibold">UW</span> artinya kurang diunggulkan (porsinya lebih
+            kecil dari pasar).
+          </CardDescription>
+        </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
           {d.sectors.map((s) => (
             <Badge key={s.name} variant={s.call === "OW" ? "success" : s.call === "UW" ? "destructive" : "secondary"}>{s.name} — {s.call}</Badge>
@@ -50,7 +123,12 @@ function Outlook() {
 
       {thematics.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">JPM 5 Thematics 2026</CardTitle><CardDescription className="text-xs">Konsumsi · TSR · Dana asing · Fiskal · Danantara (swing factor)</CardDescription></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">5 tema besar yang menggerakkan pasar 2026</CardTitle>
+            <CardDescription className="text-xs">
+              Faktor-faktor yang menurut riset paling menentukan naik-turunnya pasar tahun ini.
+            </CardDescription>
+          </CardHeader>
           <CardContent className="space-y-3">
             {thematics.map((t) => (
               <div key={t.name} className="rounded-lg border bg-white p-3">
@@ -65,7 +143,10 @@ function Outlook() {
 
       {flows && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Flows & MSCI + Positioning</CardTitle><CardDescription className="text-xs">{flows.source ?? "IDX, Bloomberg — data historis"}</CardDescription></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Uang investor: siapa beli, siapa jual?</CardTitle>
+            <CardDescription className="text-xs">{flows.source ?? "IDX, Bloomberg — data historis"}</CardDescription>
+          </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm leading-relaxed text-slate-600">{flows.narrative}</p>
             {flows.table && (
@@ -76,14 +157,20 @@ function Outlook() {
                 </table>
               </div>
             )}
-            <p className="text-xs text-slate-500">Retail 58% ADTV Rp 14.5tn · Asing -US$2.2bn YTD / -2.6bn 2Y · MSCI Adjusted Free Float Mei 2026 (event risiko) — JPM Fig. p23-27.</p>
+            <p className="text-xs leading-relaxed text-slate-500">
+              Intinya: investor lokal (ritel) kini mendominasi transaksi harian, sementara investor
+              asing masih jual bersih. Kalau asing kembali beli, biasanya pasar naik lebih kencang.
+            </p>
           </CardContent>
         </Card>
       )}
 
       {danantara && (
         <Card className="border-amber-200">
-          <CardHeader><CardTitle className="text-sm">Danantara & Policy Catalyst — Value-Up Indonesia</CardTitle><CardDescription className="text-xs">{danantara.source ?? "Danantara — rilis publik"}</CardDescription></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Danantara: faktor penentu tahun ini</CardTitle>
+            <CardDescription className="text-xs">{danantara.source ?? "Danantara — rilis publik"}</CardDescription>
+          </CardHeader>
           <CardContent className="space-y-3">
             <p className="text-sm leading-relaxed text-slate-600">{danantara.narrative}</p>
             {danantara.table && (
@@ -94,18 +181,24 @@ function Outlook() {
                 </table>
               </div>
             )}
-            <div className="text-xs text-slate-500 space-y-1">
-              <div>Struktur: BPI Danantara (Holding) + DAM + DIM — segregasi PSO vs profitability (JPM p1).</div>
-              <div>9 sektor prioritas (Vale-GEM HPAL, Chandra Asri chemical) · Financing &gt;US$14bn SWF · SOE ex-bank +25% YTD vs MXID (Fig.55).</div>
-              <div>Execution risk: 2025 likuiditas parkir di SBN/neraca; 2026 deployment = swing factor re-rating (0.8% PDB).</div>
-            </div>
+            <p className="text-xs leading-relaxed text-slate-500">
+              Singkatnya: Danantara adalah badan pengelola investasi negara. Kalau dananya benar-benar
+              masuk ke proyek nyata tahun ini, itu kabar baik buat pasar. Kalau macet, pasar bisa
+              kecewa — makanya disebut faktor penentu.
+            </p>
           </CardContent>
         </Card>
       )}
 
       {picks.length > 0 && (
         <Card>
-          <CardHeader><CardTitle className="text-sm">Top Picks (JPM + domestic)</CardTitle></CardHeader>
+          <CardHeader>
+            <CardTitle className="text-sm">Saham pilihan untuk 2026</CardTitle>
+            <CardDescription className="text-xs">
+              Daftar saham yang menurut gabungan riset layak dipelajari lebih lanjut — bukan daftar
+              belanja.
+            </CardDescription>
+          </CardHeader>
           <CardContent>
             <div className="grid gap-2 sm:grid-cols-2">
               {picks.map((p, i) => (
@@ -119,9 +212,13 @@ function Outlook() {
         </Card>
       )}
 
-      <p className="text-xs text-slate-500">Data pasar dari JPM Indonesia 2026 Outlook (52 halaman, publik) — proyeksi penulis bukan saran investasi. Source: JPM Indonesia 2026 Outlook (JCI 9100 base) + plan §5 · Cache 4h · Thematics/flows/Danantara dari BE strategy overlay bila ada, else fixtures references/global/jpm-indonesia-2026-outlook.md.</p>
-      <p className="mt-4 text-xs text-slate-500 text-center">
-        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
+      <p className="text-xs leading-relaxed text-slate-500">
+        Data pasar dari JPM Indonesia 2026 Outlook (publik). Angka target adalah perkiraan analis,
+        bukan jaminan hasil.
+      </p>
+      <p className="mt-4 text-center text-xs text-slate-500">
+        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi
+        sepenuhnya menjadi tanggung jawab pengguna.
       </p>
     </div>
   )

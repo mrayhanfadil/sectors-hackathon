@@ -676,6 +676,14 @@ function AgentTrace() {
 
   return (
     <div className="space-y-5">
+      {/* Panduan pemula: apa itu halaman ini */}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
+        <span className="font-semibold">Baru pertama kali buka halaman ini? </span>
+        Di sini kamu bisa lihat cara kerja tim AI yang nyusun laporan saham — tiap agen (mis. pencari
+        data, penghitung valuasi, pemeriksa risiko) jalan bareng dan progresnya kelihatan live. Pilih
+        kode saham, tekan jalan, terus pantau hasilnya di bawah. Kalau backend lagi mati, datanya
+        memang belum bisa dimuat — coba lagi nanti ya.
+      </div>
       {/* Row 1: Top Bar (Full Width) */}
       <header className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">

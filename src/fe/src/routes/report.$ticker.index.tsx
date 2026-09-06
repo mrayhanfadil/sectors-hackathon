@@ -76,6 +76,9 @@ function ReportPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
+        <p className="text-center text-xs text-slate-500">
+          Lagi nyiapin laporan {tk}... datanya diambil langsung dari backend, tunggu sebentar ya.
+        </p>
         <div className="h-20 animate-pulse rounded-xl border border-slate-200 bg-white p-4" />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-4">
@@ -262,6 +265,14 @@ function ReportPage() {
         pdfMsg={pdfMsg}
       />
 
+      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
+        <span className="font-semibold">Baru mulai baca laporan saham? </span>
+        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
+        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar (target) — makin besar
+        prosentasenya, makin besar potensi cuannya, tapi risikonya tetap perlu dicek di bagian bawah.
+      </div>
+
       {/* 2. Responsive 2-Column Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         {/* Main Content Area (Center / Scrollable) */}
@@ -308,10 +319,11 @@ function ReportPage() {
           <section id="sensitivity-analysis" className="space-y-4 scroll-mt-28">
             <div>
               <h2 className="text-lg font-bold tracking-tight text-slate-900">
-                3. Analisis Sensitivitas & Model DCF (Friend-style)
+                3. Coba Ubah Asumsinya Sendiri (Model DCF Interaktif)
               </h2>
               <p className="text-xs text-slate-500">
-                Porting deterministik WACC x Pertumbuhan Terminal dan matriks skenario Bear / Base / Bull
+                Geser-geser asumsi (mis. biaya modal & pertumbuhan) lalu lihat harga wajarnya berubah
+                — termasuk skenario jelek (Bear), wajar (Base), dan bagus (Bull)
               </p>
             </div>
             <DcfFriend ticker={tk} />

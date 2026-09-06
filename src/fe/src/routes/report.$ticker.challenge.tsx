@@ -238,13 +238,22 @@ function ChallengePage() {
         source={reportData?.source}
       />
 
+      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
+        <span className="font-semibold">Baru mulai baca analisanya? </span>
+        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
+        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar — di halaman ini kamu
+        bisa nanya atau nantang asumsi di balik angka-angka itu, AI-nya bakal jawab pakai data.
+      </div>
+
       {/* Intro Description */}
       <div className="space-y-1">
         <h2 className="text-base font-bold tracking-tight text-slate-900">
-          Uji Tesis & Adversarial Defense Agent ({tk})
+          Tantang Asumsi Laporan ({tk})
         </h2>
         <p className="text-xs leading-relaxed text-slate-600 max-w-3xl">
-          Sarana bagi analis dan investor untuk mendebat asumsi sensitif model (WACC, margin operasi, capex, beta). Agent penilai menerapkan prinsip anti-sycophancy: tidak akan sepakat tanpa pembuktian data faktual IDX.
+          Punya keraguan sama angka di laporan (mis. asumsi pertumbuhan atau biaya modal)? Tulis
+          pertanyaanmu di sini — AI-nya bakal bela atau koreksi jawabannya pakai data, bukan asal setuju.
         </p>
       </div>
 
@@ -274,7 +283,7 @@ function ChallengePage() {
       {logData ? (
         <div className="space-y-2 pt-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-            Status Eksekusi Agent & Jejak ADK ({tk})
+            Riwayat Analisis AI Agent ({tk})
           </h3>
           <AdkRunCard
             ticker={tk}

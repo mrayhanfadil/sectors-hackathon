@@ -1,197 +1,263 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
+import { useQuery } from "@tanstack/react-query"
 import {
-  Database,
-  Layers,
-  ArrowRight,
-  CheckCircle2,
-  Calendar,
-  TrendingUp,
-  Newspaper,
+  MousePointerClick,
   FileText,
-  ShieldCheck,
+  Target,
+  ArrowRight,
+  TrendingUp,
+  ShieldAlert,
+  ThumbsUp,
+  Minus,
+  ThumbsDown,
+  Loader2,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { fetchReport, type Report } from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/")({ component: Home })
 
-const DATA_SOURCES = [
+const QUINTET = ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"] as const
+
+const STEPS = [
   {
-    endpoint: "GET /api/mock/corporate-actions",
-    title: "Corporate Actions & Dividends",
-    source: "Yahoo Finance (.JK) + IDX Keterbukaan Informasi",
-    coverage: "Historical cash dividends, stock split ratios, and RUPS / AGM announcements.",
-    icon: Calendar,
-    color: "text-emerald-700",
-    bg: "bg-emerald-50 border-emerald-200",
-    snippet: `{\n  "dividend": [\n    {\n      "ex_date": "2024-03-22",\n      "amount_per_share": 270.0,\n      "currency": "IDR",\n      "type": "cash"\n    }\n  ],\n  "stock_split": [],\n  "agm": []\n}`,
+    icon: MousePointerClick,
+    title: "1. Pilih saham",
+    desc: "Klik salah satu dari 5 saham di bawah — semuanya perusahaan besar Indonesia.",
   },
   {
-    endpoint: "GET /api/mock/quarterly-financials",
-    title: "Quarterly Financial Statements",
-    source: "Yahoo Finance (.JK) Statement Engine",
-    coverage: "Multi-quarter revenue, net income, operating cash flow, balance sheet items, and EBITDA.",
-    icon: TrendingUp,
-    color: "text-blue-700",
-    bg: "bg-blue-50 border-blue-200",
-    snippet: `{\n  "pagination": { "limit": 8, "total": 8 },\n  "data": [\n    {\n      "date": "2024-12-31",\n      "revenue": 27800000000000,\n      "earnings": 14200000000000,\n      "operating_cash_flow": 12000000000000\n    }\n  ]\n}`,
-  },
-  {
-    endpoint: "GET /api/mock/news",
-    title: "Sentiment-Tagged News Feed",
-    source: "Tavily Search API + Curated Media Harvester",
-    coverage: "Real-time news articles with automated keyword-based bullish/bearish/neutral sentiment classification.",
-    icon: Newspaper,
-    color: "text-amber-700",
-    bg: "bg-amber-50 border-amber-200",
-    snippet: `{\n  "pagination": { "limit": 30, "total": 5 },\n  "data": [\n    {\n      "title": "BBCA Raih Kinerja Positif FY25",\n      "dimension": {\n        "sentiment": "bullish",\n        "relevance": 0.88\n      }\n    }\n  ]\n}`,
-  },
-  {
-    endpoint: "GET /api/mock/filings",
-    title: "IDX Insider & Regulatory Filings",
-    source: "IDX Keterbukaan Informasi Scraper",
-    coverage: "Director and commissioner insider share transactions, institutional filings, and ownership changes.",
     icon: FileText,
-    color: "text-slate-700",
-    bg: "bg-slate-50 border-slate-200",
-    snippet: `{\n  "pagination": { "limit": 30, "total": 12 },\n  "data": [\n    {\n      "title": "Laporan Perubahan Kepemilikan Saham",\n      "transaction_type": "buy",\n      "holder_type": "insider",\n      "symbol": "BBCA"\n    }\n  ]\n}`,
+    title: "2. Baca ringkasan",
+    desc: "Setiap laporan dibuka dengan kesimpulan 1 menit: layak dilirik atau tidak, dan kenapa.",
+  },
+  {
+    icon: Target,
+    title: "3. Cek target & risiko",
+    desc: "Lihat harga wajar menurut riset, lalu baca risikonya sebelum memutuskan apa pun.",
   },
 ]
 
-function Home() {
+function ratingBadgeVariant(rating: string | null) {
+  if (rating === "BUY") return "success" as const
+  if (rating === "SELL") return "destructive" as const
+  return "secondary" as const
+}
+
+function formatIDR(n: number | null) {
+  if (n === null || n === undefined) return "—"
+  return `Rp ${n.toLocaleString("id-ID")}`
+}
+
+function QuintetCard({ ticker }: { ticker: string }) {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["report", ticker],
+    queryFn: () => fetchReport(ticker),
+  })
+
+  const report = data as Report | undefined
+
   return (
-    <div className="space-y-8">
-      {/* Hero Section */}
-      <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight text-slate-900 sm:text-3xl">
-              Institutional-Grade Equity Report - untuk Retail
-            </h1>
-            <p className="mt-2 max-w-3xl text-sm leading-relaxed text-slate-600">
-              Deep 1 product kredibel (bukan 31 demo shallow). Benchmark RATU + CDIA + MTEL + JPM 2026 Outlook + 4 local. Multi-agent + deterministic math (DCF/DDM/SOTP/Blended/Bands/GGM). Frontend CSR Vite -&gt; Pages.dev (bukan Next SSR).
-            </p>
+    <Link
+      to="/report/$ticker"
+      params={{ ticker }}
+      className="group block rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <div>
+          <div className="text-lg font-bold tracking-tight text-slate-900">{ticker}</div>
+          <div className="mt-0.5 line-clamp-1 text-xs text-slate-500">
+            {isLoading ? "Memuat..." : (report?.name ?? ticker)}
           </div>
         </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          <Badge>T03 - Frontend</Badge>
-          <Badge variant="outline">React Vite + TS + TanStack Query/Router</Badge>
-          <Badge variant="secondary">CSR - vite build -&gt; dist</Badge>
-          <Badge variant="outline" className="border-emerald-300 text-emerald-800 bg-emerald-50">
-            Sectors v2 Mock Layer Active
-          </Badge>
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3 pt-4 border-t border-slate-100">
-          <Link
-            to="/mock-sectors/$ticker"
-            params={{ ticker: "BBCA" }}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-4 py-2 text-xs font-medium text-white transition-colors hover:bg-slate-800"
-          >
-            <Database className="h-4 w-4" />
-            Explore Mock Data Hub
-            <ArrowRight className="h-3.5 w-3.5" />
-          </Link>
-          <Link
-            to="/agent"
-            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition-colors hover:bg-slate-50"
-          >
-            <Layers className="h-4 w-4" />
-            ADK Live Stream
-          </Link>
-        </div>
+        {isLoading ? (
+          <Loader2 className="h-4 w-4 animate-spin text-slate-400" />
+        ) : report?.rating ? (
+          <Badge variant={ratingBadgeVariant(report.rating)}>{report.rating}</Badge>
+        ) : null}
       </div>
 
-      {/* Locked Tech 6 Card */}
-      <Card className="border-slate-200 shadow-sm">
-        <CardHeader className="pb-3">
-          <CardTitle className="text-sm font-semibold text-slate-900">
-            Locked Tech 6
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-sm leading-relaxed text-slate-600">
-          Frontend React+Vite+TS+TanStack Query/Router CSR only (no SSR).{" "}
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">
-            vite build -&gt; dist
-          </code>{" "}
-          static -&gt; Cloudflare Pages{" "}
-          <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-xs text-slate-800">
-            *.pages.dev
-          </code>
-          . Overkill Next.js dihindari: no SSR, bundle kecil, dev cepat.
-        </CardContent>
-      </Card>
-
-      {/* Data Sources Section */}
-      <section className="space-y-4 pt-2">
-        <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-          <div>
-            <div className="flex items-center gap-2">
-              <Database className="h-4 w-4 text-slate-700" />
-              <h2 className="text-base font-semibold tracking-tight text-slate-900">
-                Upstream Data Sources & API Mirrors
-              </h2>
+      <div className="mt-4">
+        {isLoading ? (
+          <div className="space-y-2">
+            <div className="h-4 w-2/3 animate-pulse rounded bg-slate-100" />
+            <div className="h-4 w-1/2 animate-pulse rounded bg-slate-100" />
+          </div>
+        ) : isError || !report ? (
+          <p className="text-xs text-slate-500">Klik untuk membuka laporannya.</p>
+        ) : (
+          <dl className="space-y-1.5 text-xs">
+            <div className="flex justify-between">
+              <dt className="text-slate-500">Harga sekarang</dt>
+              <dd className="font-semibold text-slate-900">{formatIDR(report.price)}</dd>
             </div>
-            <p className="text-xs text-slate-500">
-              Mirroring /api/health upstream sources and Sectors v2 endpoints.
-            </p>
-          </div>
+            <div className="flex justify-between">
+              <dt className="text-slate-500">Harga wajar riset</dt>
+              <dd className="font-semibold text-slate-900">{formatIDR(report.target)}</dd>
+            </div>
+            <div className="flex justify-between">
+              <dt className="text-slate-500">Potensi naik</dt>
+              <dd className="flex items-center gap-1 font-semibold text-emerald-700">
+                <TrendingUp className="h-3.5 w-3.5" />
+                {report.upside ?? "—"}
+              </dd>
+            </div>
+          </dl>
+        )}
+      </div>
 
-          <div className="flex items-center gap-1.5 self-start sm:self-auto rounded-full bg-emerald-50 border border-emerald-200 px-3 py-1 text-[11px] font-medium text-emerald-800">
-            <ShieldCheck className="h-3.5 w-3.5" />
-            Free public sources, no Sectors API credits consumed
-          </div>
-        </div>
+      <div className="mt-4 flex items-center gap-1 border-t border-slate-100 pt-3 text-xs font-medium text-slate-700 transition-colors group-hover:text-slate-900">
+        Baca laporan
+        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+      </div>
+    </Link>
+  )
+}
 
-        {/* 4 Cards Grid */}
-        <div className="grid gap-4 sm:grid-cols-2">
-          {DATA_SOURCES.map((ds, idx) => {
-            const Icon = ds.icon
+function Home() {
+  return (
+    <div className="space-y-10">
+      {/* Hero */}
+      <section className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm sm:p-10">
+        <Badge className="mb-4">Riset saham · Bahasa sederhana</Badge>
+        <h1 className="max-w-3xl text-2xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+          Sektoral.id menerjemahkan riset saham Indonesia yang rumit menjadi ringkasan yang bisa
+          dipahami pemula.
+        </h1>
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-3">
+          {STEPS.map((s) => {
+            const Icon = s.icon
             return (
-              <Card key={idx} className="overflow-hidden border-slate-200 shadow-xs flex flex-col justify-between">
-                <CardHeader className="bg-slate-50/50 pb-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-[11px] font-semibold text-slate-700">
-                      {ds.endpoint}
-                    </span>
-                    <div className={`p-1.5 rounded-md border ${ds.bg}`}>
-                      <Icon className={`h-4 w-4 ${ds.color}`} />
-                    </div>
-                  </div>
-                  <CardTitle className="text-sm font-semibold text-slate-900 mt-1">
-                    {ds.title}
-                  </CardTitle>
-                  <CardDescription className="text-xs text-slate-600 font-medium">
-                    Upstream: {ds.source}
-                  </CardDescription>
-                </CardHeader>
-
-                <CardContent className="p-4 space-y-3 flex-1 flex flex-col justify-between">
-                  <p className="text-xs leading-relaxed text-slate-600">
-                    {ds.coverage}
-                  </p>
-
-                  <div className="space-y-1">
-                    <span className="text-[10px] font-mono font-medium uppercase tracking-wider text-slate-400">
-                      Response Sample
-                    </span>
-                    <pre className="overflow-x-auto rounded-md bg-slate-900 p-2.5 font-mono text-[10px] leading-relaxed text-slate-200">
-                      <code>{ds.snippet}</code>
-                    </pre>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={s.title} className="rounded-lg border border-slate-200 bg-slate-50/60 p-4">
+                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-900 text-white">
+                  <Icon className="h-4.5 w-4.5" />
+                </div>
+                <div className="mt-3 text-sm font-semibold text-slate-900">{s.title}</div>
+                <p className="mt-1 text-xs leading-relaxed text-slate-600">{s.desc}</p>
+              </div>
             )
           })}
         </div>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <a
+            href="#saham"
+            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+          >
+            Mulai dari 5 saham di bawah
+            <ArrowRight className="h-4 w-4" />
+          </a>
+          <Link
+            to="/outlook"
+            className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
+          >
+            Lihat arah pasar 2026
+          </Link>
+        </div>
       </section>
 
-      {/* Disclaimer Footer */}
-      <p className="text-center text-xs text-slate-500 pt-4">
-        Disclaimer: Produk ini adalah informasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
-      </p>
+      {/* Quintet */}
+      <section id="saham" className="scroll-mt-20 space-y-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+            5 saham yang kami ulas tuntas
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+            Angka di kartu diambil langsung dari laporan terbaru — bukan angka contoh. Klik kartu
+            mana pun untuk membaca analisis lengkapnya.
+          </p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {QUINTET.map((t) => (
+            <QuintetCard key={t} ticker={t} />
+          ))}
+        </div>
+      </section>
+
+      {/* Cara baca */}
+      <section className="space-y-4">
+        <div>
+          <h2 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
+            Cara membaca laporan (2 menit)
+          </h2>
+          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-slate-600">
+            Setiap laporan memakai tiga istilah yang sama. Kalau paham tiga ini, kamu sudah bisa
+            membaca semua laporan di sini.
+          </p>
+        </div>
+
+        <div className="grid gap-4 sm:grid-cols-3">
+          <Card className="border-emerald-200 bg-emerald-50/50">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <ThumbsUp className="h-4 w-4 text-emerald-700" />
+                <CardTitle className="text-sm">BUY = layak dilirik</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-xs leading-relaxed text-slate-600">
+              Riset menilai harga sekarang masih murah dibanding nilai wajarnya. Bukan perintah
+              beli — tetap cek apakah cocok dengan uang dan tujuanmu.
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <Minus className="h-4 w-4 text-slate-500" />
+                <CardTitle className="text-sm">HOLD = tunggu dulu</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-xs leading-relaxed text-slate-600">
+              Harganya sudah wajar — tidak murah, tidak mahal. Kalau sudah punya, tidak perlu
+              buru-buru jual; kalau belum punya, sabar menunggu harga lebih baik.
+            </CardContent>
+          </Card>
+          <Card className="border-red-200 bg-red-50/50">
+            <CardHeader className="pb-2">
+              <div className="flex items-center gap-2">
+                <ThumbsDown className="h-4 w-4 text-red-600" />
+                <CardTitle className="text-sm">SELL = hati-hati</CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="text-xs leading-relaxed text-slate-600">
+              Riset menilai harga sekarang sudah kemahalan dibanding nilainya. Bukan perintah
+              jual — tapi pahami alasannya sebelum menambah.
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="grid gap-4 p-5 text-xs leading-relaxed text-slate-600 sm:grid-cols-2">
+            <div>
+              <CardTitle className="mb-1 text-sm">Potensi naik (upside) itu apa?</CardTitle>
+              <CardDescription className="text-xs leading-relaxed">
+                Selisih antara harga sekarang dan harga wajar menurut riset. Contoh: harga Rp 1.000,
+                harga wajar Rp 1.200 — potensinya 20%. Makin besar belum tentu makin bagus: cek juga
+                risikonya.
+              </CardDescription>
+            </div>
+            <div>
+              <CardTitle className="mb-1 text-sm">Harga wajar (target) itu apa?</CardTitle>
+              <CardDescription className="text-xs leading-relaxed">
+                Perkiraan analis tentang nilai pantas saham ini setahun ke depan, dihitung dari
+                keuntungan perusahaan. Ini perkiraan, bukan janji — harga asli bisa di atas atau di
+                bawahnya.
+              </CardDescription>
+            </div>
+          </CardContent>
+        </Card>
+      </section>
+
+      {/* Disclaimer */}
+      <div className="flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
+        <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-amber-700" />
+        <p className="text-xs leading-relaxed text-amber-900">
+          <span className="font-semibold">Penting:</span> semua isi Sektoral.id adalah informasi
+          dan edukasi, <span className="font-semibold">bukan saran investasi</span>. Investasi
+          saham bisa untung dan bisa rugi. Jangan pakai uang kebutuhan harian, dan keputusan
+          sepenuhnya tanggung jawabmu.
+        </p>
+      </div>
     </div>
   )
 }

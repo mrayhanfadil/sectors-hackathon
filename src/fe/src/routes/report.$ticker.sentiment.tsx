@@ -153,10 +153,18 @@ function SentimentPage() {
         source={reportData?.source}
       />
 
+      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
+      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
+        <span className="font-semibold">Baru mulai baca sentimen saham? </span>
+        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
+        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar — halaman ini nunjukkin
+        apakah omongan pasar (berita & medsos) sejalan atau malah beda arah sama penilaian analis.
+      </div>
+
       {/* Intro Description */}
       <div className="space-y-1">
         <h2 className="text-base font-bold tracking-tight text-slate-900">
-          Pelacak Sentimen & Narasi Komunitas Ritel ({tk})
+          Kata Orang Tentang Saham Ini ({tk})
         </h2>
         <p className="text-xs leading-relaxed text-slate-600 max-w-3xl">
           Pemantauan opini ritel publik secara real-time yang memetakan optimisme vs pesimisme pasar di media sosial (Stockbit, X) dan pemberitaan pers IDX. Berguna untuk mengidentifikasi potensi divergensi antara valuasi fundamental institusional dan ekspektasi harga ritel.
@@ -190,7 +198,7 @@ function SentimentPage() {
       {logData ? (
         <div className="space-y-2 pt-2">
           <h3 className="text-xs font-semibold uppercase tracking-wider text-slate-600">
-            Status Eksekusi Agent & Jejak ADK ({tk})
+            Riwayat Analisis AI Agent ({tk})
           </h3>
           <AdkRunCard
             ticker={tk}
