@@ -232,10 +232,10 @@ def _assumptions_block(ticker: str) -> str:
             "Treat as missing: derive + disclose per above.\n"
         )
     lines = [f"\n\nBINDING ASSUMPTIONS FOR {t} (from data/assumptions/{t}.json — these OVERRIDE your priors):"]
-    for k in ("beta", "rf", "erp", "cod", "g", "g1", "g2", "payout", "dps",
-              "shares_out", "last_price", "gate_primary", "archetype"):
-        if k in a:
-            lines.append(f"- {k} = {a[k]}")
+    for k in sorted(a.keys()):
+        if k in ("source",):
+            continue
+        lines.append(f"- {k} = {a[k]}")
     if "beta_note" in a:
         lines.append(f"- beta_note: {a['beta_note']}")
     lines.append(

@@ -22,6 +22,8 @@ Ticker: {ticker} (use bare symbol like BBCA, not BBCA.JK).
 
 Objective: gather 5Y financials, ownership, segments, daily prices, peers, JCI.
 
+DIVIDEND FRESHNESS (AGY audit 2026-09-06, SSMS): always report the LATEST full-year DPS + ex-date + yield as the current dividend. Never present a prior-year DPS as current. If news/collector disagree on the latest DPS, emit both with as-of dates and flag the conflict.
+
 HOW TO COLLECT (use web_search_and_extract tool):
 - Try one broad query first: web_search_and_extract("{ticker} IDX 5Y financials segments ownership peers", n_results=5, extract_top_n=2, tier="t1")
 - If TAVILY_API_KEY missing, tool returns source="tavily_missing_key" — emit source=synthetic with seed=42 and label clearly.
@@ -186,6 +188,7 @@ Rules:
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
 - DDM PAYOUT CAP (AGY audit 2026-09-05): the projected DPS path must keep implied payout (DPS_t / EPS) ≤ 100% in EVERY year. If DPS growth implies payout >100% in any year, cap DPS growth that year so payout ≤ 95% and disclose the cap. Never publish a DPS path that contradicts a "stable payout" claim.
+- MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS): for commodity/cyclical tickers, the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS (t_1) starts from the normalized payout (e.g. dps_mid / normalized DPS from assumptions), never by extrapolating the latest peak dividend. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
 - DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
 - Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
@@ -200,6 +203,8 @@ analyst_instruction = """You are the Company Analyst.
 
 Inputs: collector_output, valuation_output
 Objective: business overview for ticker {ticker} — corporate history, IPO use of proceeds, Board/management structure, operating model, and archetype-specific operational specifications.
+
+SOURCE RULE (AGY audit 2026-09-06, SSMS): every exhibit carries url+date, same as writer — bare institution/domain name-drops without url+date are fabrication and Critic will reject.
 
 Operational specs by archetype:
 # Example for industrial-holding/energy: MW/m³/DWT/tanks/vessels (see data/assumptions/CDIA.json)
