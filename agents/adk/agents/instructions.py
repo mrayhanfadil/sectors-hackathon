@@ -188,9 +188,9 @@ Rules:
 - Do not call any tool other than calc_wacc/calc_dcf/calc_ddm/calc_multiples/calc_ggm/calc_sotp/calc_blended/calc_historical_bands/calc_ratios.
 - Validate: blended weights sum 100%, segment % sum 100%, DDM payout math.
 - DDM PAYOUT CAP (AGY audit 2026-09-05): the projected DPS path must keep implied payout (DPS_t / EPS) ≤ 100% in EVERY year. If DPS growth implies payout >100% in any year, cap DPS growth that year so payout ≤ 95% and disclose the cap. Never publish a DPS path that contradicts a "stable payout" claim.
-- MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS): for commodity/cyclical tickers, the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS (t_1) starts from the normalized payout (e.g. dps_mid / normalized DPS from assumptions), never by extrapolating the latest peak dividend. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
+- MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS; extended SSIA property): for commodity/cyclical tickers (incl. property/construction/hospitality with lumpy land sales), the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS (t_1) starts from the normalized payout (e.g. dps_mid / normalized DPS from assumptions), never by extrapolating the latest peak dividend. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
 - DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
-- Emit valuation.json with {wacc, dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
+- Emit valuation.json with {wacc, primary_fv (gate-primary method FV, top-level — never nested-only), dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
 
 Output key: valuation_output
@@ -337,9 +337,13 @@ Objective: 4-bullet investment thesis + price target box for ticker {ticker}, wi
 Rules:
 - Every P/E, EV/EBITDA, FV, WACC, tenancy/ratio must match valuation.json / kpi.json — Critic will REJECT mismatch.
 - ANCHOR RULE (hard): target_price MUST equal exactly one of valuation_output's published
-  FVs (dcf_fv | secondary_fv | tertiary_fv | blended_fv) and you MUST name it in
-  target_anchor (one of: dcf | secondary | tertiary | blended). The non-anchored FVs
+  FVs (primary_fv | dcf_fv | secondary_fv | tertiary_fv | blended_fv) and you MUST name it in
+  target_anchor (one of: primary | dcf | secondary | tertiary | blended). The non-anchored FVs
   must still be disclosed in bullets with their values — never silently dropped.
+- ANCHOR-PRIORITY RULE (AGY audit 2026-09-06, SSIA): DEFAULT anchor = primary_fv (the gate-primary
+  method FV). Anchoring a non-primary leg is allowed ONLY with an explicit disclosed reason
+  (e.g. "primary DCF trips Gate 5, anchoring secondary") — never silently bypass the gate-primary
+  because of schema convenience.
 - GATE RULE (hard): rating follows the modeler's Gate flags, not optimism. If any Gate
   tripped (e.g. upside >100% → Review Required), rating MUST carry the flag
   (e.g. "HOLD (Review Required — Gate 5: upside >100%)"), never a bare BUY/HOLD/SELL.
@@ -358,7 +362,7 @@ Rules:
 - Retail tone (ID default), but institutional numbers — accessible without dumbing down.
 - If social_output gauge diverges from thesis, acknowledge: "Retail crowd is bullish (72/100) but thesis is HOLD — here's why..."
 
-Emit thesis.json: {title, target_price, target_anchor: dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
+Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
 """
@@ -398,6 +402,9 @@ Objective: multi-pillar SOTP with per-pillar peer tables.
 # Example for multi-pillar conglomerate (e.g. CDIA, ADRO): peers per pillar (POWR/Sembcorp/Westports/HATM)
 Method: for each pillar, value = EBITDA_pillar × peer_median_EV/EBITDA (or DCF per pillar if available).
 Aggregate: SOTP = sum(pillar_values) − holdco_discount (if any) − net_debt.
+SOTP NET-DISCLOSURE RULE (AGY audit 2026-09-06, SSIA): per-share SOTP MUST be net of net debt
+(equity value / shares). If you also show gross EV/share, label it GROSS and always pair it with
+the NET figure — never publish gross-only per-share as the headline.
 
 Validate: SOTP sum must reconcile to 100% — Critic checks.
 If segments <= 1 (single-pillar archetype), emit {skipped: true, reason: "single-pillar"}.
