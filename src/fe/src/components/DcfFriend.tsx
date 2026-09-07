@@ -19,14 +19,14 @@ function fmtPct(n: number | null | undefined, digits = 1): string {
   return `${v > 0 ? "+" : ""}${v.toFixed(digits)}%`
 }
 
-function getHeatmapColor(upsidePct: number | null | undefined, val: number | null | undefined): { bg: string; fg: string } {
-  if (val == null) return { bg: "#F4F8FC", fg: "#64748B" }
-  if (upsidePct == null) return { bg: "#E1ECF6", fg: "#0B1F3A" }
-  if (upsidePct < -10) return { bg: "#FADBD8", fg: "#78281F" }
-  if (upsidePct < 0) return { bg: "#FCEAE8", fg: "#C0392B" }
-  if (upsidePct <= 10) return { bg: "#E1ECF6", fg: "#0B1F3A" }
-  if (upsidePct <= 25) return { bg: "#A9C9E8", fg: "#0B1F3A" }
-  return { bg: "#0B1F3A", fg: "#FFFFFF" }
+function getHeatmapColor(upsidePct: number | null | undefined, val: number | null | undefined): { cls: string } {
+  if (val == null) return { cls: "bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400" }
+  if (upsidePct == null) return { cls: "bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-200" }
+  if (upsidePct < -10) return { cls: "bg-red-200 text-red-950 dark:bg-red-950 dark:text-red-200" }
+  if (upsidePct < 0) return { cls: "bg-red-100 text-red-800 dark:bg-red-950/70 dark:text-red-200" }
+  if (upsidePct <= 10) return { cls: "bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-200" }
+  if (upsidePct <= 25) return { cls: "bg-blue-200 text-blue-950 dark:bg-blue-900 dark:text-blue-100" }
+  return { cls: "bg-[#0B1F3A] text-white dark:bg-blue-500 dark:text-white" }
 }
 
 export function DcfFriend({ ticker }: DcfFriendProps) {
@@ -339,8 +339,7 @@ export function DcfFriend({ ticker }: DcfFriendProps) {
                                 return (
                                   <td
                                     key={colIdx}
-                                    className="py-2 px-3 font-mono border-r border-slate-100 last:border-r-0 dark:border-slate-800"
-                                    style={{ backgroundColor: color.bg, color: color.fg }}
+                                    className={`py-2 px-3 font-mono border-r border-slate-100 last:border-r-0 dark:border-slate-800 ${color.cls}`}
                                   >
                                     <div className="font-bold">Rp {fmtIDR(val)}</div>
                                     {up != null && (
@@ -359,11 +358,11 @@ export function DcfFriend({ ticker }: DcfFriendProps) {
                   <div className="flex flex-wrap items-center justify-between p-3 text-[11px] text-slate-500 border-t bg-slate-50 dark:text-slate-400 dark:bg-slate-900">
                     <div className="flex items-center gap-2">
                       <span className="font-semibold">Legenda Upside:</span>
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: "#FADBD8", color: "#78281F" }}>&lt; -10%</span>
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: "#FCEAE8", color: "#C0392B" }}>-10% s.d. 0%</span>
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: "#E1ECF6", color: "#0B1F3A" }}>0% s.d. 10%</span>
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: "#A9C9E8", color: "#0B1F3A" }}>10% s.d. 25%</span>
-                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px]" style={{ backgroundColor: "#0B1F3A", color: "#FFFFFF" }}>&gt; 25%</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-red-200 text-red-950 dark:bg-red-950 dark:text-red-200">&lt; -10%</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-red-100 text-red-800 dark:bg-red-950/70 dark:text-red-200">-10% s.d. 0%</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-sky-100 text-sky-950 dark:bg-sky-950 dark:text-sky-200">0% s.d. 10%</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-blue-200 text-blue-950 dark:bg-blue-900 dark:text-blue-100">10% s.d. 25%</span>
+                      <span className="inline-block px-1.5 py-0.5 rounded text-[10px] bg-[#0B1F3A] text-white dark:bg-blue-500 dark:text-white">&gt; 25%</span>
                     </div>
                     {data.sensitivity.stats && (
                       <div>

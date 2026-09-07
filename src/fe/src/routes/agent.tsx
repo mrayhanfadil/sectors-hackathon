@@ -718,7 +718,7 @@ function AgentTrace() {
                     <span className="font-semibold">{activeCount} dari {totalCount} agen aktif</span>
                     <span className="text-neutral-300">·</span>
                     <span className="flex items-center gap-1 font-mono text-neutral-700 dark:text-neutral-300">
-                      <Activity className="h-3 w-3 text-neutral-500" />
+                      <Activity className="h-3 w-3 text-neutral-500 dark:text-neutral-400" />
                       {events.length > 0 ? events.length : (loadedFromDb?.n_events ?? 0)} aktivitas
                     </span>
                   </>
@@ -815,7 +815,7 @@ function AgentTrace() {
                 variant="outline"
                 className="h-9 gap-1.5 text-xs font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-50 dark:border-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-800"
               >
-                <Zap className="h-3.5 w-3.5 text-neutral-500" />
+                <Zap className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
                 <span>Mode Cepat</span>
               </Button>
             )}
@@ -908,7 +908,7 @@ function AgentTrace() {
             <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden dark:border-neutral-800 dark:bg-[#111111]">
               <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-900">
                 <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-neutral-600" />
+                  <Database className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
                   <span>State Preview ({stateKeys.length} keys)</span>
                 </div>
                 <ChevronDown className="h-4 w-4 text-neutral-400 group-open:rotate-180 transition-transform" />
@@ -953,7 +953,7 @@ function AgentTrace() {
               {loadedFromDb && (
                 <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50/90 px-3.5 py-2 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Database className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+                    <Database className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400 dark:text-neutral-400 shrink-0" />
                     <span className="font-medium text-neutral-800 dark:text-neutral-100">
                       {expertMode
                         ? `Loaded from SQLite · ${loadedFromDb.n_events} aktivitas · ${formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}`
@@ -1042,7 +1042,7 @@ function AgentTrace() {
               <details className="group rounded-md border border-neutral-200 bg-white p-4 text-xs text-neutral-600 shadow-2xs dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
                 <summary className="flex cursor-pointer items-center justify-between font-medium text-neutral-800 select-none dark:text-neutral-200">
                   <div className="flex items-center gap-2">
-                    <HelpCircle className="h-4 w-4 text-neutral-500" />
+                    <HelpCircle className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                     <span className="text-sm font-semibold">Bagaimana Tim AI Bekerja?</span>
                   </div>
                   <span className="text-xs text-neutral-400 group-open:hidden">Klik untuk melihat penjelasan alur</span>
@@ -1085,7 +1085,7 @@ function AgentTrace() {
               >
                 <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-neutral-700 select-none dark:text-neutral-300">
                   <div className="flex items-center gap-2">
-                    <Code2 className="h-4 w-4 text-neutral-500" />
+                    <Code2 className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
                     <span className="font-semibold">Lihat data teknis mentah (untuk developer)</span>
                     <Badge variant="outline" className="font-mono text-[10px] text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
                       {events.length} frame JSON
@@ -1118,7 +1118,7 @@ function AgentTrace() {
                     <div className="font-semibold text-neutral-800 dark:text-neutral-100">Log Frame Event Aktivitas (JSON):</div>
                     <div className="max-h-80 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-900 p-3 font-mono text-[11px] text-neutral-300 dark:border-neutral-800 dark:bg-black">
                       {events.length === 0 ? (
-                        <div className="text-neutral-500 italic">Belum ada frame event yang diterima.</div>
+                        <div className="text-neutral-500 dark:text-neutral-400 italic">Belum ada frame event yang diterima.</div>
                       ) : (
                         events.map((ev) => (
                           <div key={ev.seq} className="border-b border-neutral-800 py-2">
@@ -1162,7 +1162,7 @@ function AgentTrace() {
             <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden dark:border-neutral-800 dark:bg-[#111111]">
               <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50 dark:text-neutral-200 dark:hover:bg-neutral-900">
                 <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-neutral-600" />
+                  <Database className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
                   <span>State Preview ({stateKeys.length} keys)</span>
                 </div>
                 <ChevronDown className="h-4 w-4 text-neutral-400 group-open:rotate-180 transition-transform" />
