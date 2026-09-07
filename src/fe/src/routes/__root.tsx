@@ -20,7 +20,7 @@ function RootComponent() {
       isActive ? "font-medium text-black" : "text-[#666] hover:text-black"
     }`
 
-  const maxWidthClass = isAgentActive ? "max-w-[1440px]" : "max-w-5xl"
+  const maxWidthClass = "max-w-5xl"
 
   const closeMenu = () => setMenuOpen(false)
 
