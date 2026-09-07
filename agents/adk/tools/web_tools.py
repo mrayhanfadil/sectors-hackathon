@@ -8,22 +8,22 @@
 
 """Web tools — FunctionTool wrappers for search + extract.
 
-Ported from Hermes Agent's 80/15/5 pattern:
-  80% → web_search + web_extract (parallel) → this module's web_search_and_extract
+Sectors-only search (legacy removed, Lane E):
+  80% → web_search (Sectors v2 news) + web_extract (parallel) → web_search_and_extract
   15% → browser_exec (not ported here — too stateful for stateless FunctionTool)
    5% → terminal + Camoufox (use agents.tools.terminal instead)
 
-Backends (Opsi C — hybrid pragmatic):
-  web_search    → Tavily (free 1,000/mo, IDX-friendly via include_domains)
+Backends:
+  web_search    → Sectors v2 news (single gateway, extension=idx)
   web_extract   → httpx + readability-lxml + markdownify (local, no third-party)
 
 Env:
-  TAVILY_API_KEY  — required for live search; missing key returns honest empty result
+  SECTORS_API_KEY — required for live search; missing key returns honest empty result
 
 Honest provenance:
-  Every result row carries (source, tier, fetched_at). If TAVILY_API_KEY is missing
-  the tool returns {results: [], source: "tavily_missing_key"} rather than fabricating.
-  The Critic agent checks source == "tavily" before accepting claims (agents/critic.py).
+  Every result row carries (source, tier, fetched_at). Without SECTORS_API_KEY
+  the tool returns {results: [], source: "sectors_missing_key"} rather than fabricating.
+  The Critic agent checks source == "sectors" before accepting claims (agents/critic.py).
 
 FunctionTool wrapping:
   google.adk.tools.function_tool.FunctionTool(func) is applied at import time
@@ -39,7 +39,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import os
-import time
 from typing import Any, Annotated
 from datetime import datetime, timezone
 
@@ -101,239 +100,133 @@ def _domain_tier(url: str) -> str:
 
 
 # ----------------------------------------------------------------------------
-# Tavily API Key Pool (Round-Robin with Cooldown)
+# Gateway stats (legacy removed: Sectors single key, no third-party pool).
+# Kept as _pool_stats for the key-pool diagnostic + health callers.
 # ----------------------------------------------------------------------------
-_KEY_POOL: list[str] = []
-_KEY_STATE: dict[str, dict[str, Any]] = {}  # key -> {healthy: bool, cooldown_until: float, last_error: str}
-_LAST_ROTATION: int = 0  # round-robin index
-_COOLDOWN_SECONDS = 60
-
-
-def _load_key_pool() -> list[str]:
-    """Load from TAVILY_API_KEYS (comma-sep) or fallback TAVILY_API_KEY."""
-    multi = os.getenv("TAVILY_API_KEYS", "").strip()
-    if multi:
-        keys = [k.strip() for k in multi.split(",") if k.strip()]
-        if keys:
-            return keys
-    single = os.getenv("TAVILY_API_KEY", "").strip()
-    return [single] if single else []
-
-
-def _init_pool() -> None:
-    global _KEY_POOL, _KEY_STATE
-    keys = _load_key_pool()
-    if keys != _KEY_POOL:
-        _KEY_POOL = keys
-        _KEY_STATE = {
-            k: _KEY_STATE.get(k, {"healthy": True, "cooldown_until": 0.0, "last_error": ""})
-            for k in _KEY_POOL
-        }
-
-
-def _pick_key() -> str | None:
-    """Round-robin pick first healthy key (cooldown expired)."""
-    _init_pool()
-    global _LAST_ROTATION
-    if not _KEY_POOL:
-        return None
-    now = time.time()
-    n = len(_KEY_POOL)
-    for i in range(n):
-        idx = (_LAST_ROTATION + i) % n
-        key = _KEY_POOL[idx]
-        st = _KEY_STATE[key]
-        if not st["healthy"] and st["cooldown_until"] < now:
-            st["healthy"] = True
-        if st["healthy"] and st["cooldown_until"] < now:
-            _LAST_ROTATION = (idx + 1) % n  # next call rotates to the following key
-            return key
-    return None  # all keys in cooldown
-
-
-def _mark_unhealthy(key: str, reason: str, cooldown_s: int = _COOLDOWN_SECONDS) -> None:
-    _KEY_STATE[key] = {"healthy": False, "cooldown_until": time.time() + cooldown_s, "last_error": reason}
-
-
-def _mark_healthy(key: str) -> None:
-    _KEY_STATE[key] = {"healthy": True, "cooldown_until": 0.0, "last_error": ""}
-
-
 def _pool_stats() -> dict[str, Any]:
-    """Return pool state for /api/health or debugging."""
-    _init_pool()
-    now = time.time()
-    for k in _KEY_POOL:
-        if not _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] < now:
-            _KEY_STATE[k]["healthy"] = True
+    """Return gateway state for /api/health or debugging (no secrets)."""
+    key = os.environ.get("SECTORS_API_KEY", "").strip()
+    if key:
+        return {
+            "total": 1,
+            "healthy": 1,
+            "in_cooldown": 0,
+            "gateway": "sectors",
+            "keys": [
+                {
+                    "prefix": key[:10] + "...",
+                    "healthy": True,
+                    "cooldown_remaining_s": 0,
+                    "last_error": "",
+                }
+            ],
+        }
     return {
-        "total": len(_KEY_POOL),
-        "healthy": sum(1 for k in _KEY_POOL if _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] < now),
-        "in_cooldown": sum(1 for k in _KEY_POOL if not _KEY_STATE[k]["healthy"] and _KEY_STATE[k]["cooldown_until"] > now),
-        "keys": [
-            {
-                "prefix": k[:10] + "...",
-                "healthy": _KEY_STATE[k]["healthy"],
-                "cooldown_remaining_s": max(0, int(_KEY_STATE[k]["cooldown_until"] - now)),
-                "last_error": _KEY_STATE[k]["last_error"],
-            }
-            for k in _KEY_POOL
-        ],
+        "total": 0,
+        "healthy": 0,
+        "in_cooldown": 0,
+        "gateway": "sectors",
+        "keys": [],
     }
 
 
 # ----------------------------------------------------------------------------
-# Tool 1: web_search — Tavily REST wrapper
+# Tool 1: web_search — Sectors v2 news wrapper (single gateway)
 # ----------------------------------------------------------------------------
 async def web_search(
     query: Annotated[str, "Search query. Include ticker + topic for best IDX results, e.g. 'BBCA IDX earnings target price 2026'."],
     n_results: Annotated[int, "Max results (default 5, max 20)."] = 5,
     tier: Annotated[str, "Source tier: 't1' (idx.co.id/kontan/bisnis), 't2' (reuters/bloomberg), 't3' (retail), or 'all' (no filter)."] = "all",
-    days: Annotated[int, "Recency window in days. Tavily default 'advanced' depth. 0 = no recency filter."] = 0,
+    days: Annotated[int, "Recency window in days. 0 = no recency filter."] = 0,
 ) -> dict[str, Any]:
-    """Search the web for fresh IDX equity data via Tavily.
+    """Search IDX equity news via Sectors v2 (single gateway).
 
     Returns:
         {
           "query": str,
           "tier": str,
-          "source": "tavily" | "tavily_missing_key" | "tavily_error",
+          "source": "sectors" | "sectors_missing_key" | "sectors_error",
           "fetched_at": ISO timestamp,
           "results": [
             {"url": str, "title": str, "content": str, "score": float, "tier": "t1"|"t2"|"t3"|""}
           ],
         }
 
-    Honest behavior: if TAVILY_API_KEY is missing, returns empty results with
-    source='tavily_missing_key' so the Critic can flag the provenance.
+    Honest behavior: without SECTORS_API_KEY returns empty results with
+    source='sectors_missing_key' (legacy removed — no third-party search).
     """
-    _init_pool()
+    from server.sectors import SectorsNotConfigured as _SNC
+    from server.sectors import news as _sectors_news
+
     fetched_at = datetime.now(timezone.utc).isoformat()
 
-    # Sectors-first (swap 3 scaffold): ticker-scoped news when key present.
     # Ticker guess = first ALL-CAPS token >= 4 chars (IDX convention).
-    if os.environ.get("SECTORS_API_KEY"):
-        try:
-            import asyncio as _aio
-            from server.sectors import news as _sectors_news
+    try:
+        import asyncio as _aio
+        from datetime import date as _date
+        from datetime import timedelta as _td
 
-            syms = [w.strip(".,") for w in query.upper().split()]
-            syms = [w for w in syms if w.isalpha() and len(w) >= 4][:3]
-            if syms:
-                raw = await _aio.to_thread(_sectors_news, ",".join(syms))
-                items = (raw or {}).get("data") or (raw or {}).get("results") or []
-                out = []
-                for it in items[: min(max(1, n_results), 20)]:
-                    if not isinstance(it, dict):
-                        continue
-                    url = it.get("url") or it.get("link") or ""
-                    out.append({
-                        "url": url,
-                        "title": it.get("title", ""),
-                        "content": str(it.get("summary") or it.get("content") or "")[:800],
-                        "score": 0.0,
-                        "tier": _domain_tier(url),
-                    })
-                return {
-                    "query": query,
-                    "tier": tier,
-                    "source": "sectors",
-                    "fetched_at": fetched_at,
-                    "results": out,
-                }
-        except Exception as e:
-            logger.warning("Sectors news failed, Tavily legacy: %s", e)
-
-    if not _KEY_POOL:
-        return {
-            "query": query,
-            "tier": tier,
-            "source": "tavily_missing_key",
-            "fetched_at": fetched_at,
-            "results": [],
-        }
-
-    payload: dict[str, Any] = {
-        "query": query,
-        "max_results": min(max(1, n_results), 20),
-        "search_depth": "advanced",
-        "include_answer": False,
-        "include_raw_content": False,
-    }
-    if tier and tier != "all" and tier in TIER_DOMAINS:
-        payload["include_domains"] = TIER_DOMAINS[tier]
-    if days > 0:
-        payload["days"] = min(days, 365)
-
-    attempts = 0
-    last_error = ""
-    data: dict[str, Any] | None = None
-
-    while attempts < len(_KEY_POOL):
-        api_key = _pick_key()
-        if not api_key:
-            break
-        attempts += 1
-        try:
-            async with httpx.AsyncClient(timeout=20.0) as cli:
-                r = await cli.post("https://api.tavily.com/search", json={**payload, "api_key": api_key})
-                r.raise_for_status()
-                data = r.json()
-                _mark_healthy(api_key)
-                break
-        except httpx.HTTPStatusError as e:
-            code = e.response.status_code if e.response is not None else 0
-            # Auth/quota/rate-limit → unhealthy + try next
-            if code in (401, 403, 429, 500, 502, 503, 504):
-                _mark_unhealthy(api_key, f"HTTP {code}", _COOLDOWN_SECONDS)
-                last_error = f"HTTP {code}"
-                continue
-            # Other 4xx → don't mark unhealthy, just fail
-            logger.warning("Tavily search failed (key %s...): %s", api_key[:10], e)
+        syms = [w.strip(".,") for w in query.upper().split()]
+        syms = [w for w in syms if w.isalpha() and len(w) >= 4][:3]
+        if not syms:
             return {
                 "query": query,
                 "tier": tier,
-                "source": "tavily_error",
+                "source": "sectors",
                 "fetched_at": fetched_at,
                 "results": [],
-                "error": str(e),
+                "note": "no IDX ticker detected in query",
             }
-        except httpx.HTTPError as e:
-            _mark_unhealthy(api_key, str(e), _COOLDOWN_SECONDS)
-            last_error = str(e)
-            continue
-
-    if data is None:
-        # All keys exhausted
+        kwargs: dict[str, str] = {}
+        if days > 0:
+            _end = _date.today()
+            kwargs = {
+                "start": (_end - _td(days=min(days, 365))).isoformat(),
+                "end": _end.isoformat(),
+            }
+        raw = await _aio.to_thread(_sectors_news, ",".join(syms), **kwargs)
+        items = (raw or {}).get("data") or (raw or {}).get("results") or []
+        out = []
+        for it in items[: min(max(1, n_results), 20)]:
+            if not isinstance(it, dict):
+                continue
+            url = it.get("url") or it.get("link") or ""
+            out.append({
+                "url": url,
+                "title": it.get("title", ""),
+                "content": str(it.get("summary") or it.get("content") or "")[:800],
+                "score": 0.0,
+                "tier": _domain_tier(url),
+            })
+        # Tier filter is advisory — applied post-hoc, never fabricates.
+        if tier and tier != "all" and tier in TIER_DOMAINS:
+            _tf = [r for r in out if r.get("tier") == tier]
+            out = _tf or out
         return {
             "query": query,
             "tier": tier,
-            "source": "tavily_error",
+            "source": "sectors",
+            "fetched_at": fetched_at,
+            "results": out,
+        }
+    except _SNC:
+        return {
+            "query": query,
+            "tier": tier,
+            "source": "sectors_missing_key",
             "fetched_at": fetched_at,
             "results": [],
-            "error": last_error or "all_keys_exhausted",
-            "all_keys_exhausted": True,
         }
-
-    raw_results = data.get("results", []) or []
-    out_results = []
-    for it in raw_results:
-        url = it.get("url", "")
-        out_results.append({
-            "url": url,
-            "title": it.get("title", ""),
-            "content": it.get("content", "")[:800],  # cap to 800 chars
-            "score": float(it.get("score", 0.0)),
-            "tier": _domain_tier(url),
-        })
-
-    return {
-        "query": query,
-        "tier": tier,
-        "source": "tavily",
-        "fetched_at": fetched_at,
-        "results": out_results,
-    }
+    except Exception as e:
+        logger.warning("Sectors news failed: %s", e)
+        return {
+            "query": query,
+            "tier": tier,
+            "source": "sectors_error",
+            "fetched_at": fetched_at,
+            "results": [],
+            "error": str(e)[:300],
+        }
 
 
 # ----------------------------------------------------------------------------
@@ -467,7 +360,7 @@ async def web_search_and_extract(
         {
           "search": <web_search result>,
           "extract": <web_extract result, may be empty if extract_top_n=0 or search returned 0>,
-          "composite_source": "tavily+readability_local" | "tavily_missing_key+readability_local" | ...,
+          "composite_source": "sectors+readability_local" | "sectors_missing_key+readability_local" | ...,
         }
 
     Concurrency: search and extract are run with asyncio.gather once search
@@ -508,12 +401,12 @@ if __name__ == "__main__":
     import json
     import sys
 
-    if not _load_key_pool():
-        print("TAVILY_API_KEY / TAVILY_API_KEYS not set — running extract-only smoke test")
+    if not os.environ.get("SECTORS_API_KEY"):
+        print("SECTORS_API_KEY not set — running extract-only smoke test")
         out = asyncio.run(web_extract(["https://www.idx.co.id/"]))
         print(json.dumps(out, indent=2)[:1500])
         sys.exit(0)
 
-    print("Running composite smoke test with Tavily key pool present...")
+    print("Running composite smoke test with Sectors key present...")
     out = asyncio.run(web_search_and_extract("BBCA IDX earnings 2026", n_results=3, extract_top_n=2))
     print(json.dumps(out, indent=2, default=str)[:3000])

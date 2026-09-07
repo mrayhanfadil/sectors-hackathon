@@ -163,7 +163,12 @@ def test_corporate_actions_bca_returns_schema():
 
 
 def test_quarterly_bca_returns_schema():
-    """Hit /api/mock/quarterly-financials?symbol=BBCA, assert each item has all 29 required fields."""
+    """Hit /api/mock/quarterly-financials?symbol=BBCA.
+
+    Keyed Sectors -> items validated against the 29-field schema.
+    Keyless -> honest empty with source=sectors_missing_key note
+    (legacy removed, Lane E — no yfinance).
+    """
     resp = client.get("/api/mock/quarterly-financials?symbol=BBCA&n_quarters=8")
     assert resp.status_code == 200
     assert resp.headers.get("cache-control") == "no-store"
@@ -171,7 +176,12 @@ def test_quarterly_bca_returns_schema():
     assert "pagination" in data
     assert "data" in data
     assert isinstance(data["data"], list)
-    assert len(data["data"]) > 0, "BBCA quarterly financials should not be empty"
+
+    if not data["data"]:
+        # Keyless honest-empty (CI without SECTORS_API_KEY)
+        assert "note" in data
+        assert "sectors_missing_key" in data["note"]
+        return
 
     for item in data["data"]:
         missing = QUARTERLY_REQUIRED_FIELDS - set(item.keys())
@@ -184,11 +194,12 @@ def test_quarterly_bca_returns_schema():
 def test_unknown_ticker_returns_empty_data(monkeypatch):
     """Unknown ticker symbol=ZZZZZZ returns 200 OK with empty data + honest note.
 
-    Force Tavily off so the endpoint falls back to curated source only — curated
-    has no ZZZZZZ ticker, so result is genuinely empty. This avoids live network
-    noise polluting the unknown-ticker contract.
+    Runs keyless (no SECTORS_API_KEY) so Sectors-backed endpoints return honest
+    empty; curated has no ZZZZZZ ticker, so the result is genuinely empty. This
+    avoids live network noise polluting the unknown-ticker contract.
     """
     monkeypatch.delenv("TAVILY_API_KEY", raising=False)
+    monkeypatch.delenv("TAVILY_API_KEYS", raising=False)
     monkeypatch.delenv("SECTORS_API_KEY", raising=False)
 
     # 1. Filings
@@ -291,10 +302,10 @@ def test_health_endpoint_reports_mock_sectors():
         assert ep in registered, f"Missing registered endpoint in /api/health: {ep}"
 
     sources = data.get("upstream_sources", {})
-    assert sources.get("filings") == "idx.co.id via Camoufox"
-    assert sources.get("news") == "scripts/news.py + Tavily"
-    assert sources.get("corporate_actions") == "yfinance + IDX"
-    assert sources.get("quarterly_financials") == "yfinance .JK quarterly"
+    assert sources.get("filings") == "sectors filings + idx.co.id via Camoufox"
+    assert sources.get("news") == "sectors news + scripts/news.py curated"
+    assert sources.get("corporate_actions") == "sectors corporate-actions + IDX"
+    assert sources.get("quarterly_financials") == "sectors quarterly-financials"
 
     last_call = data.get("last_successful_call", {})
     assert isinstance(last_call, dict)

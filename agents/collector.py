@@ -1,11 +1,10 @@
 """
-Collector — IDX + yfinance + synthetic fallback (P0-P1, 0 Sectors credit)
-Branch: wt/t06-agents | Owner: agents/collector.py
+Collector — Sectors-first + deterministic synthetic fallback (legacy removed, Lane E).
 
-Locked §11: Primary P0-P1 is IDX data (user-owned) + yfinance (.JK, 5Y, cache 4h),
-Sectors API v2 deferred to P2 gate. Collector reads data/idx/* first, falls back
-to yfinance, then deterministic synthetic (seed=42). Output feeds Modeler (blocking)
-and downstream analysts. Every exhibit must disclose source per plan §4.
+Sectors API v2 is the single gateway (overview, quarterly, daily prices,
+corporate actions). Keyless or mis-shaped responses fall back to deterministic
+synthetic (seed=42) with honest `source` labels. Output feeds Modeler
+(blocking) and downstream analysts. Every exhibit must disclose source.
 
 ADK wrapper: exposes collector_as_tool() for google-adk LlmAgent + plain
 collect(ticker) for scripts/server. Cache 4h file-based at data/output/.
@@ -127,147 +126,74 @@ def _try_idx(ticker: str) -> Optional[Dict[str, Any]]:
     return None
 
 
-def _try_idx_db(ticker: str) -> Optional[Dict[str, Any]]:
-    """Live query against the IDX Morning Brief Postgres `stockdata:15437`.
+# ── Sectors v2 (single gateway, legacy removed) ────────────────────────────
 
-    Returns today's snapshot for the ticker (close, prev, volume, value, sector,
-    pct_change, turnover) so the collector can disclose an *official IDX* source
-    even when the local `data/idx/` cache is empty. Designed as a supplementary
-    layer on top of yfinance — does NOT replace prices (yfinance still owns the
-    5Y series). Source: idx-morning-brief cron (ported 2026-09-01).
+def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
+    """Sectors v2: overview + quarterly + daily prices + corporate actions.
+
+    Keyless or mis-shaped -> None (honest; caller falls back to labeled
+    synthetic). Never a silent legacy vendor fallback.
     """
-    try:
-        # Import lazily so server stays usable without IDX deps installed
-        import asyncio
-        import sys
-        from pathlib import Path as _P
-        _here = _P(__file__).resolve().parent.parent / "scripts"
-        if str(_here) not in sys.path:
-            sys.path.insert(0, str(_here))
-        from idx.idx_db_brief import get_latest_idx_data  # type: ignore
-        df = asyncio.run(get_latest_idx_data())
-        t = _ticker_norm(ticker)
-        sub = df.filter(df["kode"].str.to_uppercase() == t)
-        if sub.height == 0:
-            return None
-        row = sub.row(0, named=True)
-        return {
-            "source": "idx_db",
-            "raw": {
-                "overview": {"sector": row.get("sector"), "kode": t},
-                "today": {
-                    "close": float(row["close"]) if row.get("close") is not None else None,
-                    "prev": float(row["prev"]) if row.get("prev") is not None else None,
-                    "volume": float(row["vol"]) if row.get("vol") is not None else None,
-                    "value_idr": float(row["val"]) if row.get("val") is not None else None,
-                    "pct_change": float(row["pct_change"]) if row.get("pct_change") is not None else None,
-                    "turnover_idr": float(row["turnover"]) if row.get("turnover") is not None else None,
-                    "as_of": _now_iso(),
-                },
-            },
-            "path": "postgresql://localhost:15437/stockdata",
-        }
-    except Exception as e:
-        logger.info("IDX DB lookup skipped for %s: %s", ticker, e)
-        return None
-
-
-# ── yfinance ───────────────────────────────────────────────────────────────
-
-def _try_yfinance(ticker: str) -> Optional[Dict[str, Any]]:
-    """yfinance with .JK suffix, 5Y prices + financials. Rate-limit aware."""
-    try:
-        import yfinance as yf  # type: ignore
-    except ImportError:
-        logger.info("yfinance not installed — skip")
-        return None
-
     t = _ticker_norm(ticker)
-    ysym = f"{t}.JK"
     try:
-        tk = yf.Ticker(ysym)
-        # history 5y — lightweight, one call
-        hist = tk.history(period="5y", auto_adjust=False)
-        if hist is None or len(hist) == 0:
-            logger.info("yfinance empty history for %s", ysym)
-            return None
-
-        # financials — may be thin for small caps (plan §4 gap)
-        financials = None
-        balance = None
-        cashflow = None
-        try:
-            financials = tk.financials  # DataFrame
-            balance = tk.balance_sheet
-            cashflow = tk.cashflow
-        except Exception:
-            pass
-
-        quarterly_financials = None
-        quarterly_balance = None
-        quarterly_cashflow = None
-        try:
-            quarterly_financials = tk.quarterly_income_stmt
-            quarterly_balance = tk.quarterly_balance_sheet
-            quarterly_cashflow = tk.quarterly_cashflow
-        except Exception:
-            pass
-
-        dividends = None
-        try:
-            dividends = tk.dividends
-        except Exception:
-            pass
-
-        # info may be rate-limited — guard
-        info: Dict[str, Any] = {}
-        try:
-            info = tk.info or {}
-        except Exception as e:
-            logger.info("yfinance info throttled for %s: %s", ysym, e)
-            info = {}
-
-        # Convert hist to serializable
-        prices = []
-        for idx, row in hist.tail(260).iterrows():  # last ~1Y daily for JCI overlay
-            prices.append({
-                "date": str(idx.date()) if hasattr(idx, "date") else str(idx),
-                "close": float(row["Close"]) if "Close" in row else None,
-                "volume": int(row["Volume"]) if "Volume" in row else None,
-            })
-
-        # financials DataFrames → dicts (transpose so year is key)
-        def df_to_dict(df):
-            if df is None or getattr(df, "empty", True):
-                return None
-            try:
-                # yfinance columns are Timestamps, rows are line items
-                out: Dict[str, Any] = {}
-                for col in df.columns:
-                    k = str(col.date()) if hasattr(col, "date") else str(col)
-                    out[k] = {str(idx): (None if str(v) == "nan" else float(v) if isinstance(v, (int, float)) else str(v))
-                              for idx, v in df[col].items()}
-                return out
-            except Exception:
-                return None
-
-        return {
-            "source": "yfinance",
-            "symbol": ysym,
-            "info": {k: info[k] for k in ("longName","sector","industry","marketCap","sharesOutstanding","trailingPE","priceToBook","dividendYield") if k in info},
-            "prices": prices,
-            "financials": df_to_dict(financials),
-            "balance": df_to_dict(balance),
-            "cashflow": df_to_dict(cashflow),
-            "quarterly_financials": df_to_dict(quarterly_financials),
-            "quarterly_balance": df_to_dict(quarterly_balance),
-            "quarterly_cashflow": df_to_dict(quarterly_cashflow),
-            "dividends": {str(k.date()) if hasattr(k, "date") else str(k): float(v) for k, v in dividends.items()} if dividends is not None and len(dividends) else {},
-            "history_rows": len(hist),
-        }
+        from server.sectors import (
+            company_report as _rep,
+            corporate_actions as _acts,
+            daily as _daily,
+            quarterly as _quart,
+        )
     except Exception as e:
-        logger.warning("yfinance failed %s: %s", ysym, e)
+        logger.info("sectors client unavailable: %s", e)
         return None
+
+    try:
+        rep = _rep(t, "overview,financials,dividend") or {}
+        fin = _quart(t, 8) or {}
+        end = datetime.now(timezone.utc).date().isoformat()
+        start = (datetime.now(timezone.utc).date() - timedelta(days=90)).isoformat()
+        bars = _daily(t, start, end) or {}
+        acts = _acts(t) or {}
+    except Exception as e:
+        logger.info("sectors miss for %s: %s", t, e)
+        return None
+
+    if not rep and not fin and not bars:
+        return None
+
+    fin_items = (fin or {}).get("data") or (fin or {}).get("results") or []
+    bar_items = (bars or {}).get("data") or (bars or {}).get("results") or []
+    prices = []
+    for b in bar_items[-260:]:
+        if not isinstance(b, dict):
+            continue
+        prices.append({
+            "date": str(b.get("date") or b.get("time") or "")[:10],
+            "close": b.get("close") if b.get("close") is not None else b.get("closing_price"),
+            "volume": b.get("volume"),
+        })
+    overview = rep.get("overview") if isinstance(rep.get("overview"), dict) else rep
+    divs = (acts or {}).get("dividend") or (acts or {}).get("dividends") or []
+    dividends = {}
+    for d in divs:
+        if isinstance(d, dict) and d.get("ex_date"):
+            try:
+                dividends[str(d["ex_date"])[:10]] = float(
+                    d.get("amount_per_share") or d.get("amount") or 0
+                )
+            except (TypeError, ValueError):
+                continue
+    return {
+        "source": "sectors",
+        "symbol": t,
+        "info": overview if isinstance(overview, dict) else {"symbol": t},
+        "prices": prices,
+        "financials": {"quarterly": fin_items} if fin_items else None,
+        "balance": None,
+        "cashflow": None,
+        "quarterly_financials": fin_items,
+        "dividends": dividends,
+        "history_rows": len(bar_items),
+    }
 
 
 # ── Synthetic fallback (seed=42, deterministic per ticker) ─────────────────
@@ -411,7 +337,7 @@ def _peers_for(ticker: str) -> Dict[str, Any]:
 
 def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) -> Dict[str, Any]:
     """
-    Collect all data for a ticker — IDX → yfinance → synthetic.
+    Collect all data for a ticker — local IDX dumps → Sectors v2 → synthetic.
 
     Returns dict with keys:
       ticker, as_of, source, company, financials, segments, peers, jci,
@@ -460,46 +386,35 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         _save_cache(t, payload)
         return payload
 
-    # 2) yfinance
-    yf_hit = _try_yfinance(t)
-    if yf_hit is not None:
-        # yfinance financials are sparse for small caps — supplement
+    # 2) Sectors v2 (single gateway)
+    sec_hit = _try_sectors(t)
+    if sec_hit is not None:
+        # Sectors quarterly is authoritative; supplement display-only fields
         synth = _synthetic(t)
         payload = {
             "ticker": t,
             "as_of": _now_iso(),
-            "source": "yfinance",
-            "symbol": yf_hit.get("symbol"),
-            "company": yf_hit.get("info") or {"symbol": t},
-            "financials": yf_hit.get("financials") or synth["financials"],
-            "balance": yf_hit.get("balance"),
-            "cashflow": yf_hit.get("cashflow"),
-            "prices": yf_hit.get("prices") or synth["prices"],
-            "dividends": yf_hit.get("dividends") or {},
+            "source": "sectors",
+            "symbol": sec_hit.get("symbol"),
+            "company": sec_hit.get("info") or {"symbol": t},
+            "financials": sec_hit.get("financials") or synth["financials"],
+            "balance": sec_hit.get("balance"),
+            "cashflow": sec_hit.get("cashflow"),
+            "prices": sec_hit.get("prices") or synth["prices"],
+            "dividends": sec_hit.get("dividends") or {},
             "segments": synth["segments"],
             "peers": _peers_for(t),
             "jci": synth["jci"],
             "holders": synth["holders"],
             "ratios": synth["ratios"],
             "kpi": synth["kpi"],
-            "esg": {"found": False, "note": "try search ESG rating — hide if not found"},
-            "yfinance_history_rows": yf_hit.get("history_rows"),
+            "esg": {"found": False, "note": "Sectors tidak provide ESG — hide if not found"},
+            "sectors_history_rows": sec_hit.get("history_rows"),
             "_cache_hit": False,
         }
         # Mark synthetic-supplemented fields
-        if yf_hit.get("financials") is None:
+        if sec_hit.get("financials") is None:
             payload["financials_source"] = "synthetic_supplement"
-        # 2b) IDX DB supplementary layer (official IDX today snapshot + sector)
-        idx_db_hit = _try_idx_db(t)
-        if idx_db_hit is not None:
-            idx_today = idx_db_hit["raw"]["today"]
-            payload["today_idx"] = idx_today
-            payload["today_idx_source"] = "idx_db:postgresql://localhost:15437/stockdata"
-            # Prefer IDX-official sector over yfinance guess
-            if idx_db_hit["raw"]["overview"].get("sector"):
-                payload["company"]["sector"] = idx_db_hit["raw"]["overview"]["sector"]
-                payload["sector_source"] = "idx_db"
-            payload["sources"] = list({payload.get("source"), "idx_db", "synthetic_supplement"} - {None})
         _save_cache(t, payload)
         return payload
 
@@ -567,7 +482,7 @@ def collector_as_tool():
                 continue
             # google-adk FunctionTool wraps a python callable
             def _collect_tool(ticker: str) -> dict:
-                """Collect IDX/yfinance/synthetic data for a ticker (0 Sectors credit)."""
+                """Collect Sectors/synthetic data for a ticker (Sectors-first, honest source)."""
                 return collect(ticker)
 
             tool = FT(func=_collect_tool)
@@ -593,11 +508,11 @@ def build_collector_agent(model=None):
         agent = LlmAgent(
             name="collector",
             model=model,
-            description="Data Collector — IDX + yfinance 5Y + peers + JCI + KPI (0 credit, cache 4h)",
+            description="Data Collector — Sectors v2 + peers + JCI + KPI (cache 4h)",
             instruction=(
                 "You are the Data Collector. Given a ticker, call collect(ticker) "
-                "and return the JSON. Prefer data/idx local, then yfinance .JK, "
-                "then synthetic seed=42. Always disclose source per exhibit. "
+                "and return the JSON. Sectors v2 is the single gateway, then "
+                "synthetic seed=42. Always disclose source per exhibit. "
                 "Cache 4h. Never hallucinate prices — call the tool."
             ),
             tools=[tool] if tool is not None else [],

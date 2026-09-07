@@ -1,5 +1,5 @@
 """Routers — one per endpoint family. All handlers import engines via server.engines.
-Data path: stockdata (T01) -> fallback yfinance .JK -> synthetic (never fabricate without label).
+Data path: Sectors snapshot -> assumptions file -> deterministic engines (legacy removed).
 Cache key: f"{prefix}:{ticker}" with TTL 4h.
 """
 from fastapi import APIRouter, HTTPException, Query
@@ -406,16 +406,24 @@ def _ggm_for(archetype: str, assum: dict, coe: float) -> Optional[dict]:
 
 
 def _live_price(tkr: str, base_fallback: float) -> tuple[float, str]:
-    """Try yfinance -> assumptions file -> base fixture. Returns (price, source_label)."""
-    # 1) yfinance (live)
+    """Try Sectors daily -> assumptions file -> base fixture. Returns (price, source_label)."""
+    # 1) Sectors daily (live, last 14d window)
     try:
-        import yfinance as _yf
+        from datetime import date as _date, timedelta as _td
 
-        h = _yf.Ticker(f"{tkr}.JK").history(period="5d")
-        if h is not None and not h.empty and "Close" in h.columns:
-            price = float(h["Close"].dropna().iloc[-1])
-            if price > 0:
-                return round(price, 2), "yfinance"
+        from ..sectors import daily as _sectors_daily
+
+        _end = _date.today().isoformat()
+        _start = (_date.today() - _td(days=14)).isoformat()
+        rows = _sectors_daily(tkr, _start, _end) or {}
+        items = rows.get("data") or rows.get("results") or []
+        if isinstance(items, list) and items:
+            last = items[-1] or {}
+            for _k in ("close", "closing_price", "price"):
+                if last.get(_k) is not None:
+                    _px = float(last[_k])
+                    if _px > 0:
+                        return round(_px, 2), "sectors"
     except Exception:
         pass
     # 2) assumptions file (dated snapshot)
@@ -429,7 +437,7 @@ def _live_price(tkr: str, base_fallback: float) -> tuple[float, str]:
     except Exception:
         pass
     # 3) base fixture (last resort, honest label)
-    return base_fallback, "fixture (outdated)"
+    return base_fallback, "sectors_missing_key"
 
 
 def _assumptions_for(ticker: str) -> dict:
@@ -591,7 +599,8 @@ async def report_ticker(
     price = None
     source = "synthetic"
 
-    # try Sectors first (swaps 2+4); keyless/unknown-shape -> legacy below
+    # Sectors-only (single gateway). Keyless -> honest sectors_missing_key below,
+    # never a silent legacy fallback (legacy removed, Lane E).
     try:
         snap = await _sectors_snapshot(t)
         if snap.get("overview") or snap.get("financials") or snap.get("price") is not None:
@@ -602,36 +611,8 @@ async def report_ticker(
     except Exception:
         pass
 
-    # try stockdata then yfinance fallback (no LLM math) — LEGACY, deprecated
     if source == "synthetic":
-        try:
-            from ..stockdata import get_stockdata
-
-            sd = get_stockdata()
-            overview = await sd.get_overview(t)
-            financials = await sd.get_financials(t)
-            segments = await sd.get_segments(t)
-            if overview or financials:
-                source = "stockdata:15437"
-        except Exception:
-            pass
-
-    if not overview and source == "synthetic":
-        # yfinance fallback
-        try:
-            import yfinance as yf
-
-            yf_ticker = f"{t}.JK"
-            tk = yf.Ticker(yf_ticker)
-            hist = tk.history(period="5d")
-            if not hist.empty:
-                price = float(hist["Close"].iloc[-1])
-                source = "yfinance"
-            # keep source label honest
-            if source == "synthetic":
-                source = "yfinance|estimated"
-        except Exception:
-            pass
+        source = "sectors_missing_key"
 
     # load assumptions file if present, else LOUD failure (no fabricated valuations)
     assum = _assumptions_for(t)
@@ -676,10 +657,10 @@ async def report_ticker(
         blended_res = None
         fv = None
 
-    # Prefer assum last_price for known archetype tickers where yfinance thin (RATU/ADRO/CDIA smallcap gap)
+    # Prefer assum last_price for known archetype tickers (live Sectors price when keyed)
     if has_assump_file and assum.get("last_price") and archetype in ("infra", "sotp", "bank", "single", "coal"):
         last_price = assum.get("last_price") or price or 1000
-        price_source = assum.get("price_source") or "assum (IDX+yfinance gap disclosed)"
+        price_source = assum.get("price_source") or "assumptions (Sectors keyless disclosed)"
     else:
         last_price = price or assum.get("last_price") or 1000
         price_source = source
