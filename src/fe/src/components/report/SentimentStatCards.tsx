@@ -44,7 +44,7 @@ export function SentimentStatCards({
     return {
       statusLabel: sentiment?.label || "Netral / Terkonsolidasi",
       badgeVariant: "secondary" as const,
-      colorClass: "text-slate-700",
+      colorClass: "text-neutral-700",
     }
   }, [gaugeVal, sentiment?.label])
 
@@ -91,15 +91,15 @@ export function SentimentStatCards({
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {/* Card 1: Gauge Index */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-slate-700">
+            <CardTitle className="text-xs font-semibold text-neutral-700">
               Indeks Sentimen Ritel
             </CardTitle>
-            <Activity className="h-4 w-4 text-slate-400" />
+            <Activity className="h-4 w-4 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-slate-500">
+          <CardDescription className="text-[11px] text-neutral-500">
             Skor agregat 0 (Bear) s/d 100 (Bull)
           </CardDescription>
         </CardHeader>
@@ -108,21 +108,21 @@ export function SentimentStatCards({
             <span className={`text-3xl font-bold tracking-tight ${colorClass}`}>
               {sentiment?.gauge != null ? sentiment.gauge : "-"}
             </span>
-            <span className="text-xs font-normal text-slate-400">/ 100</span>
+            <span className="text-xs font-normal text-neutral-400">/ 100</span>
             <Badge variant={badgeVariant} className="ml-auto text-[10px]">
               {statusLabel}
             </Badge>
           </div>
           {/* Visual Gauge Bar */}
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
             <div
               className={`h-full transition-all duration-500 ${
-                gaugeVal >= 60 ? "bg-emerald-600" : gaugeVal <= 40 ? "bg-rose-600" : "bg-slate-700"
+                gaugeVal >= 60 ? "bg-emerald-600" : gaugeVal <= 40 ? "bg-rose-600" : "bg-neutral-700"
               }`}
               style={{ width: `${Math.max(5, Math.min(100, gaugeVal))}%` }}
             />
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-neutral-500">
             {gaugeVal >= 60
               ? "Dominan akumulasi positif di kanal diskusi publik."
               : gaugeVal <= 40
@@ -133,15 +133,15 @@ export function SentimentStatCards({
       </Card>
 
       {/* Card 2: Ratio Distribution */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-slate-700">
+            <CardTitle className="text-xs font-semibold text-neutral-700">
               Distribusi Polarisasi
             </CardTitle>
-            <BarChart2 className="h-4 w-4 text-slate-400" />
+            <BarChart2 className="h-4 w-4 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-slate-500">
+          <CardDescription className="text-[11px] text-neutral-500">
             Komposisi postingan & berita terkini
           </CardDescription>
         </CardHeader>
@@ -155,11 +155,11 @@ export function SentimentStatCards({
                 {distribution.bullishPct}%
               </div>
             </div>
-            <div className="rounded border border-slate-200 bg-slate-50 p-1">
-              <div className="flex items-center justify-center gap-0.5 text-[10px] font-medium text-slate-600">
+            <div className="rounded border border-neutral-200 bg-neutral-50 p-1">
+              <div className="flex items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-600">
                 <MinusCircle className="h-3 w-3" /> Netral
               </div>
-              <div className="font-mono text-xs font-bold text-slate-800">
+              <div className="font-mono text-xs font-bold text-neutral-800">
                 {distribution.neutralPct}%
               </div>
             </div>
@@ -173,14 +173,14 @@ export function SentimentStatCards({
             </div>
           </div>
 
-          <div className="flex h-2 overflow-hidden rounded-full border border-slate-200">
+          <div className="flex h-2 overflow-hidden rounded-full border border-neutral-200">
             <div
               className="bg-emerald-600 transition-all"
               style={{ width: `${distribution.bullishPct}%` }}
               title={`Positif: ${distribution.bullishPct}%`}
             />
             <div
-              className="bg-slate-400 transition-all"
+              className="bg-neutral-400 transition-all"
               style={{ width: `${distribution.neutralPct}%` }}
               title={`Netral: ${distribution.neutralPct}%`}
             />
@@ -190,78 +190,78 @@ export function SentimentStatCards({
               title={`Negatif: ${distribution.bearishPct}%`}
             />
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-neutral-500">
             Diolah dari data publik tanpa manipulasi bobot.
           </p>
         </CardContent>
       </Card>
 
       {/* Card 3: Confidence Score */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-slate-700">
+            <CardTitle className="text-xs font-semibold text-neutral-700">
               Tingkat Keyakinan
             </CardTitle>
-            <ShieldCheck className="h-4 w-4 text-slate-400" />
+            <ShieldCheck className="h-4 w-4 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-slate-500">
+          <CardDescription className="text-[11px] text-neutral-500">
             Validitas sampel & kepadatan bukti
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-1 space-y-2">
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono tracking-tight text-slate-900">
+            <span className="text-2xl font-bold font-mono tracking-tight text-neutral-900">
               {confidencePct}%
             </span>
-            <Badge variant="outline" className="text-[10px] font-medium text-slate-700">
+            <Badge variant="outline" className="text-[10px] font-medium text-neutral-700">
               {confidencePct >= 70 ? "Kerapatan Tinggi" : confidencePct >= 50 ? "Sampel Cukup" : "Sampel Awal"}
             </Badge>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+          <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100">
             <div
-              className="h-full bg-slate-800 transition-all"
+              className="h-full bg-neutral-800 transition-all"
               style={{ width: `${confidencePct}%` }}
             />
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-neutral-500">
             Pelacakan algoritma NLP berbasis kata kunci kontekstual IDX.
           </p>
         </CardContent>
       </Card>
 
       {/* Card 4: Indexed Sources & Channels */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-slate-700">
+            <CardTitle className="text-xs font-semibold text-neutral-700">
               Cakupan Kanal & Sumber
             </CardTitle>
-            <Globe2 className="h-4 w-4 text-slate-400" />
+            <Globe2 className="h-4 w-4 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-slate-500">
+          <CardDescription className="text-[11px] text-neutral-500">
             Stockbit, X, Reddit, Media Publik
           </CardDescription>
         </CardHeader>
         <CardContent className="p-4 pt-1 space-y-2">
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono tracking-tight text-slate-900">
+            <span className="text-2xl font-bold font-mono tracking-tight text-neutral-900">
               {totalSources > 0 ? totalSources : "Siaga"}
             </span>
-            <span className="text-xs text-slate-500">entri terdeteksi</span>
+            <span className="text-xs text-neutral-500">entri terdeteksi</span>
           </div>
           <div className="flex flex-wrap gap-1">
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
+            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
               Stockbit
             </span>
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
+            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
               X / Twitter
             </span>
-            <span className="rounded bg-slate-100 px-1.5 py-0.5 text-[10px] font-medium text-slate-700">
+            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
               Media Berita
             </span>
           </div>
-          <p className="text-[11px] text-slate-500">
+          <p className="text-[11px] text-neutral-500">
             Data diperbarui berkala via News & Social Harvester.
           </p>
         </CardContent>

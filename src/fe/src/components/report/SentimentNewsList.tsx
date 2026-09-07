@@ -143,20 +143,20 @@ export function SentimentNewsList({
   }, [combinedEntries, filter])
 
   return (
-    <Card className="border-slate-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Newspaper className="h-4 w-4 text-slate-700" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <Newspaper className="h-4 w-4 text-neutral-700" />
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Arus Berita & Diskusi Ritel Terverifikasi
               </CardTitle>
-              <Badge variant="outline" className="font-mono text-[11px] text-slate-700">
+              <Badge variant="outline" className="font-mono text-[11px] text-neutral-700">
                 {tk}
               </Badge>
             </div>
-            <CardDescription className="text-xs text-slate-500">
+            <CardDescription className="text-xs text-neutral-500">
               Kompilasi artikel media finansial dan diskusi media sosial publik
             </CardDescription>
           </div>
@@ -168,8 +168,8 @@ export function SentimentNewsList({
               onClick={() => setFilter("all")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "all"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
               }`}
             >
               Semua ({sentimentCounts.all})
@@ -206,8 +206,8 @@ export function SentimentNewsList({
               onClick={() => setFilter("neutral")}
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "neutral"
-                  ? "bg-slate-700 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-neutral-700 text-white"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
               }`}
             >
               <MinusCircle className="h-3 w-3" />
@@ -219,21 +219,21 @@ export function SentimentNewsList({
 
       <CardContent className="p-4 sm:p-6">
         {isLoading ? (
-          <div className="flex h-44 items-center justify-center space-x-2 text-slate-400">
+          <div className="flex h-44 items-center justify-center space-x-2 text-neutral-400">
             <span className="text-xs">Memuat daftar berita dan diskusi {tk}...</span>
           </div>
         ) : combinedEntries.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
-            <Inbox className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-sm font-medium text-slate-800">
+          <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 p-8 text-center">
+            <Inbox className="mx-auto h-8 w-8 text-neutral-400" />
+            <p className="mt-2 text-sm font-medium text-neutral-800">
               Belum ada artikel atau diskusi terindeks untuk {tk}
             </p>
-            <p className="mt-1 text-xs text-slate-500 max-w-md mx-auto">
+            <p className="mt-1 text-xs text-neutral-500 max-w-md mx-auto">
               Data sentimen ritel (Stockbit, X, media berita) dikumpulkan secara dinamis saat News Harvester dan Social Sentiment agents dijalankan.
             </p>
           </div>
         ) : filteredEntries.length === 0 ? (
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-6 text-center text-xs text-slate-500">
+          <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6 text-center text-xs text-neutral-500">
             Tidak ada entri yang cocok dengan filter sentimen ({filter}).
           </div>
         ) : (
@@ -245,7 +245,7 @@ export function SentimentNewsList({
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-2xs"
+                  className="rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-2xs"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1.5 flex-1 pr-2">
@@ -264,39 +264,39 @@ export function SentimentNewsList({
                           </span>
                         )}
                         {item.sentiment === "neutral" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700">
                             <MinusCircle className="h-3 w-3" />
                             Netral
                           </span>
                         )}
 
-                        <span className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600">
+                        <span className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600">
                           {item.type === "news" ? "Media Finansial" : "Diskusi Komunitas"}
                         </span>
 
                         {item.relevance != null && (
-                          <span className="text-[11px] font-mono text-slate-400">
+                          <span className="text-[11px] font-mono text-neutral-400">
                             rel: {(item.relevance * 100).toFixed(0)}%
                           </span>
                         )}
 
                         {item.author && (
-                          <span className="text-[11px] text-slate-500">
+                          <span className="text-[11px] text-neutral-500">
                             oleh @{item.author}
                           </span>
                         )}
                       </div>
 
                       {/* Title */}
-                      <h4 className="text-sm font-semibold leading-snug text-slate-900">
+                      <h4 className="text-sm font-semibold leading-snug text-neutral-900">
                         {item.title}
                       </h4>
                     </div>
 
                     {/* Source & Date info */}
-                    <div className="flex shrink-0 items-center gap-3 text-xs text-slate-500 sm:flex-col sm:items-end sm:gap-1">
+                    <div className="flex shrink-0 items-center gap-3 text-xs text-neutral-500 sm:flex-col sm:items-end sm:gap-1">
                       <div className="flex items-center gap-1 font-mono text-[11px]">
-                        <Clock className="h-3 w-3 text-slate-400" />
+                        <Clock className="h-3 w-3 text-neutral-400" />
                         {formatTimestamp(item.timestamp)}
                       </div>
 
@@ -305,13 +305,13 @@ export function SentimentNewsList({
                           href={item.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 underline decoration-slate-300 underline-offset-2"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline underline-offset-2"
                         >
                           <span>{item.platform}</span>
-                          <ExternalLink className="h-3 w-3 text-slate-400" />
+                          <ExternalLink className="h-3 w-3 text-neutral-400" />
                         </a>
                       ) : (
-                        <span className="text-[11px] text-slate-500">
+                        <span className="text-[11px] text-neutral-500">
                           {item.platform}
                         </span>
                       )}
@@ -320,9 +320,9 @@ export function SentimentNewsList({
 
                   {/* Body text & Expand */}
                   {hasBody && (
-                    <div className="mt-2.5 pt-2.5 border-t border-slate-100">
+                    <div className="mt-2.5 pt-2.5 border-t border-neutral-100">
                       <p
-                        className={`text-xs leading-relaxed text-slate-700 ${
+                        className={`text-xs leading-relaxed text-neutral-700 ${
                           isExpanded ? "whitespace-pre-line" : "line-clamp-2"
                         }`}
                       >
@@ -333,7 +333,7 @@ export function SentimentNewsList({
                         <button
                           type="button"
                           onClick={() => toggleExpand(item.id)}
-                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 cursor-pointer"
+                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline cursor-pointer"
                         >
                           {isExpanded ? (
                             <>
@@ -357,7 +357,7 @@ export function SentimentNewsList({
                       {item.tags.map((tag, tIdx) => (
                         <span
                           key={tIdx}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600"
+                          className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600"
                         >
                           #{tag}
                         </span>
