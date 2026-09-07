@@ -14,7 +14,7 @@ Assumptions and archetype configurations are loaded dynamically per ticker.
 """
 
 # ---------------------------------------------------------------------------
-# Collector — Sectors API v2 only (full-ditch: no IDX scraper, no yfinance)
+# Collector — Sectors API v2 only (full-ditch: no third-party market-data fetch)
 # ---------------------------------------------------------------------------
 collector_instruction = """You are the Data Collector for IDX equity research.
 
@@ -65,17 +65,18 @@ Cache 1h. Critic will verify url+date per claim.
 Output key: news_output
 """
 
-news_search_sub_instruction = """You are a research specialist with Google Search grounding.
+news_search_sub_instruction = """You are a research specialist grounded in Sectors data.
 
-Task: Search for IDX equity news for ticker {ticker}. Run 3-5 diverse queries,
-return [{url, title, key_fact, date}, ...] with citable sources.
+Task: Surface IDX equity news for ticker {ticker}. Use fetch-news(symbols="{ticker}", extension="idx") as the ONLY source (max 8 items, 30-day window),
+return [{url, title, key_fact, date}, ...] with citable urls+dates from the feed.
+If source is "sectors_missing_key" → emit source=sectors_missing_key with an empty list and STOP. Never invent items.
 
 Prefer T1 sources (idx.co.id, kontan, bisnis, idxchannel) over T2 (reuters, bloomberg).
 Always include url and date.
 """
 
 # ---------------------------------------------------------------------------
-# Social Sentiment — X + Reddit + Stockbit (parallel lane 1)
+# Social Sentiment — Sectors crowd proxy (parallel lane 1)
 # ---------------------------------------------------------------------------
 social_sentiment_instruction = """You are the Social Sentiment analyst for IDX retail narrative.
 
@@ -99,11 +100,13 @@ Disclaimer: sentiment ≠ advice.
 Output key: social_output
 """
 
-social_search_sub_instruction = """You are a social research specialist with Google Search.
+social_search_sub_instruction = """You are a sentiment research specialist grounded in Sectors data.
 
-Task: Search retail sentiment for ticker {ticker} on X, Reddit, Stockbit.
-Run site:x.com, site:reddit.com, site:stockbit.com queries.
-Return [{platform, url, date, text, sentiment}, ...] with url+date for every item.
+Task: Gauge retail crowd sentiment for ticker {ticker} from Sectors ONLY — no social scraping, no synthetic.
+Use fetch-news(symbols="{ticker}", extension="idx") sentiment dimension as the crowd proxy
+and fetch-filings(symbol="{ticker}") holder activity as the positioning proxy.
+Return [{source, url, date, text, sentiment}, ...] with url+date for every item.
+If source is "sectors_missing_key" → emit source=sectors_missing_key with gauge=null and STOP.
 """
 
 # ---------------------------------------------------------------------------
@@ -265,12 +268,14 @@ Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer
 Output key: industry_output
 """
 
-industry_search_sub_instruction = """You are a macro research specialist with Google Search.
+industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
-Task: Search macro/industry context for IDX ticker {ticker}.
-Queries: Sector growth forecast, regulator policy, Danantara catalyst,
+Task: Surface macro/industry context for IDX ticker {ticker} from Sectors ONLY.
+Use fetch-subsector-report (valuation/growth/companies) for sector forecast plus
+fetch-news(symbols="{ticker}", extension="idx") for regulator policy, Danantara catalyst,
 JCI foreign flows, MSCI free float.
 Return [{url, title, key_fact, date}, ...] with url+date.
+If source is "sectors_missing_key" → emit source=sectors_missing_key with an empty list and STOP.
 """
 
 # ---------------------------------------------------------------------------

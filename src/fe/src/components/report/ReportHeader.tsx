@@ -7,7 +7,6 @@ import {
   Swords,
   Download,
   Bot,
-  Database,
   Loader2,
   TrendingUp,
 } from "lucide-react"
@@ -169,14 +168,6 @@ export function ReportHeader({
               <span>Trace ADK</span>
             </Link>
 
-            <Link
-              to="/mock-sectors/$ticker"
-              params={{ ticker: tk }}
-              className="inline-flex h-8 items-center gap-1.5 rounded-md border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 hover:bg-slate-50 hover:text-slate-900 transition-colors"
-            >
-              <Database className="h-3.5 w-3.5 text-slate-500" />
-              <span className="hidden sm:inline">Mock Data</span>
-            </Link>
           </div>
         </div>
 

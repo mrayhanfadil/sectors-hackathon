@@ -60,7 +60,7 @@ async def lifespan(app: FastAPI):
     try:
         await sd.startup()
     except Exception as e:
-        log.warning(f"stockdata startup failed (will fallback yfinance): {e}")
+        log.warning(f"stockdata startup failed (Sectors-only, no fallback): {e}")
     log.info(f"server up — cache ttl {settings.cache_ttl}s, stockdata {settings.stockdata_url}")
     yield
     log.info("server received shutdown signal (SIGTERM/SIGINT) — initiating graceful shutdown")
@@ -78,7 +78,7 @@ def create_app() -> FastAPI:
         version="t04-0.1.0",
         description=(
             "Backend solid for Institutional-Grade Equity Report (T03 Market Intelligence). "
-            "Proxies stockdata:15437 (T01 collector), yfinance .JK fallback, Sectors v2 gated P2. "
+            "Sectors v2 is the single market-data gateway (keyless -> honest 503 sectors_missing_key, no fallback). "
             "Engines deterministic Python (DCF/DDM/SOTP/blended/bands/GGM). Cache KV 4h."
         ),
         lifespan=lifespan,

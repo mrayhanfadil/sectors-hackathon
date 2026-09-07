@@ -3,8 +3,8 @@
 
 Loads environment variables from ~/.config/sectors-be/env and local .env files
 during lifespan startup to ensure the worker process has all required API keys.
-Also provides a diagnostic endpoint for inspecting the Tavily key pool without
-exposing secret values.
+Also provides a diagnostic endpoint for inspecting Sectors v2 gateway status
+without exposing secret values (Sectors-only: no third-party pools).
 """
 
 from __future__ import annotations
@@ -50,11 +50,19 @@ async def startup_hook() -> None:
     log.info("Startup hook completed: environment loaded")
 
 
-@router_diagnostic.get("/tavily-pool", summary="Tavily key pool statistics")
-def get_tavily_pool_stats() -> dict[str, Any]:
-    """Diagnostic endpoint exposing Tavily pool size and health without leaking secrets."""
+@router_diagnostic.get("/sectors", summary="Sectors v2 gateway status")
+def get_sectors_status() -> dict[str, Any]:
+    """Diagnostic endpoint exposing Sectors gateway readiness without leaking secrets.
+
+    Sectors-only: keyless -> {"ok": False, "error": "sectors_missing_key"} (honest,
+    never a silent third-party fallback).
+    """
     try:
-        from agents.adk.tools.web_tools import _pool_stats
-        return {"ok": True, "pool": _pool_stats()}
+        from server.sectors import SectorsNotConfigured
+        from server.config import get_settings
+        s = get_settings()
+        if not s.sectors_api_key:
+            raise SectorsNotConfigured("SECTORS_API_KEY missing")
+        return {"ok": True, "base": s.sectors_base}
     except Exception as e:
-        return {"ok": False, "error": str(e)}
+        return {"ok": False, "error": "sectors_missing_key" if "SectorsNotConfigured" in type(e).__name__ or "SECTORS_API_KEY" in str(e) else str(e)}

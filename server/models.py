@@ -19,7 +19,7 @@ class ValuationAssumptions(BaseModel):
     cod: float = Field(examples=[0.035])
     g: float = Field(examples=[0.05])
     payout: float = Field(default=0.4)
-    source: str = "idx|yfinance|assumptions/{ticker}.json"
+    source: str = "sectors|assumptions/{ticker}.json"
 
 
 class ValuationResult(BaseModel):

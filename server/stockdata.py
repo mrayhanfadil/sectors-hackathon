@@ -1,6 +1,7 @@
-"""StockData pool — reuses T01 collector via import boundary.
+"""StockData pool — legacy T01 collector proxy.
 Base: STOCKDATA_URL (default stockdata:15437).
-Fallback: yfinance .JK (P0-P1 primary is IDX+yfinance, Sectors P2 gated).
+Sectors v2 (server/sectors.py) is the single market-data gateway; keyless ->
+honest sectors_missing_key, never a silent third-party fallback.
 """
 import httpx
 import logging

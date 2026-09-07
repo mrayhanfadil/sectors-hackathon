@@ -208,7 +208,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         },
         "cover": {
             "rating_box": {"action": rating, "tp": round(fv or last_price), "prev_tp": None, "price": last_price, "upside_pct": upside or 0, "key_takeaways": ["Valuasi DCF deterministik", "Asumsi WACC eksplisit", "Bukan saran investasi"] if is_infra else []},
-            "vs_jci": {"ytd_abs": 0, "ytd_rel": 0, "source": "IDX, yfinance", "chart": {"labels": MONTHS, "series": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]]}},
+            "vs_jci": {"ytd_abs": 0, "ytd_rel": 0, "source": "Sectors", "chart": {"labels": MONTHS, "series": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]]}},
             "shares": {"outstanding": round(assum.get("shares_out", 10e9) / 1e9, 1), "unit": "bn", "free_float_pct": 30.0},
             "shareholders": [{"name": "Publik", "pct": 30.0}, {"name": "Pengendali", "pct": 70.0}],
             "shareholders_src": "IDX",
@@ -244,7 +244,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             {"title": "Laba Rugi Ringkas", "headers": ["Rp bn", "FY24A", "FY25A", "FY26F"], "rows": [["Pendapatan", 1000, 1100, 1200], ["EBITDA", 500, 550, 600]], "source": "Laporan keuangan IDX"},
         ],
         "risks": [{"bucket": "Risiko Pasar", "detail": "Volatilitas harga & permintaan.", "source": None}],
-        "peers": {"tables": [{"pillar": "Peers", "headers": ["Ticker", "P/E", "EV/EBITDA"], "rows": [[t, 10.0, 6.0]], "source": "IDX, yfinance"}]},
+        "peers": {"tables": [{"pillar": "Peers", "headers": ["Ticker", "P/E", "EV/EBITDA"], "rows": [[t, 10.0, 6.0]], "source": "Sectors"}]},
         "news": [],
         "sentiment": None,
         "strategy": None,

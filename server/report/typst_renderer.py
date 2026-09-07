@@ -415,7 +415,7 @@ def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
                 "vs_jci": {
                     "ytd_abs": 15.2,
                     "ytd_rel": 3.0,
-                    "source": "IDX, yfinance",
+                    "source": "Sectors",
                     "chart": {"labels": months, "series": [[0, 2, 4, 6, 8, 10, 12, 13, 14, 15, 15, 15], [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]},
                 },
                 "shares": {"outstanding": 123.2, "unit": "bn", "free_float_pct": 45.0},
@@ -460,7 +460,7 @@ def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
                 "vs_jci": {
                     "ytd_abs": 8.5,
                     "ytd_rel": -3.5,
-                    "source": "IDX, yfinance",
+                    "source": "Sectors",
                     "chart": {"labels": months, "series": [[0, 1, 3, 5, 6, 7, 8, 8, 8, 8, 8, 8], [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]},
                 },
                 "shares": {"outstanding": 28.8, "unit": "bn", "free_float_pct": 35.0},

@@ -169,12 +169,12 @@ def _clean_ticker(ticker: str) -> str:
 
 
 def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
-    """Infer archetype dynamically from assumptions, peers, sector keywords, or yfinance.
+    """Infer archetype dynamically from assumptions, peers, or Sectors sector data.
 
     Priority:
     1. Direct archetype in assumptions file (raw_json["archetype"])
     2. Inferred from peers metadata (sotp_pillars -> sotp, tower/fiber kpis -> infra, coal peers -> coal)
-    3. Inferred from sector string (assumptions provenance.sector -> peers.json sector -> yfinance.info.sector):
+    3. Inferred from sector string (assumptions provenance.sector -> peers.json sector -> Sectors overview.sector):
        - telecom / tower / telecommunication -> infra
        - financials / banks / banking -> bank
        - energy / oil-gas / oil / gas -> single
@@ -221,7 +221,7 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
     if not sector_cand and raw_json and isinstance(raw_json, dict):
         sector_cand = raw_json.get("provenance", {}).get("sector") or raw_json.get("sector")
 
-    # 4. Sectors company report (overview section) — replaces yfinance sector.
+    # 4. Sectors company report (overview section) — the single sector source.
     # Keyless -> skip honestly; sector stays None -> "unknown" (never fabricated).
     if not sector_cand:
         try:

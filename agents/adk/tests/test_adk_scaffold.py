@@ -191,15 +191,16 @@ def test_build_graph_structure(monkeypatch):
     collector = intake.sub_agents[0]
     assert not any(isinstance(t, GoogleSearchTool) for t in (collector.tools or [])), "collector must not own GoogleSearch directly"
 
-    # News/social/industry route via web_tools (FunctionTool wrappers around Tavily + readability)
-    # — the legacy AgentTool wrapping was replaced by the Tavily web_tools refactor (commit b5aad41+).
+    # News/social/industry route via Sectors web_tools (FunctionTool wrappers around
+    # Sectors v2 news + readability extract) — the legacy AgentTool wrapping was
+    # replaced by the Sectors web_tools refactor (commit b5aad41+).
     from google.adk.tools.function_tool import FunctionTool
     news = intake.sub_agents[1]
     social = intake.sub_agents[2]
     industry = research.sub_agents[1]
     for label, agent in (("news", news), ("social", social), ("industry", industry)):
         assert any(isinstance(t, FunctionTool) for t in (agent.tools or [])), (
-            f"{label} agent must have at least one FunctionTool (Tavily web_tools), got: "
+            f"{label} agent must have at least one FunctionTool (Sectors web_tools), got: "
             f"{[type(t).__name__ for t in (agent.tools or [])]}"
         )
 
