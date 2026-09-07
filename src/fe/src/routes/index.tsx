@@ -148,12 +148,12 @@ function Home() {
             Mulai dari 5 saham di bawah
             <ArrowRight className="h-4 w-4" />
           </a>
-          <Link
-            to="/outlook"
+          <a
+            href="#cara-baca"
             className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-5 py-2.5 text-sm font-medium text-slate-700 transition-colors hover:bg-slate-50"
           >
-            Lihat arah pasar 2026
-          </Link>
+            Cara baca laporan
+          </a>
         </div>
       </section>
 
@@ -176,7 +176,7 @@ function Home() {
       </section>
 
       {/* Cara baca */}
-      <section className="space-y-4">
+      <section id="cara-baca" className="scroll-mt-20 space-y-4">
         <div>
           <h2 className="text-lg font-bold tracking-tight text-slate-900 sm:text-xl">
             Cara membaca laporan (2 menit)

@@ -11,7 +11,6 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AgentRouteImport } from './routes/agent'
-import { Route as OutlookRouteImport } from './routes/outlook'
 import { Route as MockSectorsTickerRouteImport } from './routes/mock-sectors.$ticker'
 import { Route as ReportTickerIndexRouteImport } from './routes/report.$ticker.index'
 import { Route as ReportTickerChallengeRouteImport } from './routes/report.$ticker.challenge'
@@ -25,11 +24,6 @@ const IndexRoute = IndexRouteImport.update({
 const AgentRoute = AgentRouteImport.update({
   id: '/agent',
   path: '/agent',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const OutlookRoute = OutlookRouteImport.update({
-  id: '/outlook',
-  path: '/outlook',
   getParentRoute: () => rootRouteImport,
 } as any)
 const MockSectorsTickerRoute = MockSectorsTickerRouteImport.update({
@@ -56,7 +50,6 @@ const ReportTickerSentimentRoute = ReportTickerSentimentRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
-  '/outlook': typeof OutlookRoute
   '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
@@ -65,7 +58,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
-  '/outlook': typeof OutlookRoute
   '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
@@ -75,7 +67,6 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/agent': typeof AgentRoute
-  '/outlook': typeof OutlookRoute
   '/mock-sectors/$ticker': typeof MockSectorsTickerRoute
   '/report/$ticker/challenge': typeof ReportTickerChallengeRoute
   '/report/$ticker/sentiment': typeof ReportTickerSentimentRoute
@@ -86,7 +77,6 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/agent'
-    | '/outlook'
     | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
@@ -95,7 +85,6 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/agent'
-    | '/outlook'
     | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
@@ -104,7 +93,6 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/agent'
-    | '/outlook'
     | '/mock-sectors/$ticker'
     | '/report/$ticker/challenge'
     | '/report/$ticker/sentiment'
@@ -114,7 +102,6 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AgentRoute: typeof AgentRoute
-  OutlookRoute: typeof OutlookRoute
   MockSectorsTickerRoute: typeof MockSectorsTickerRoute
   ReportTickerChallengeRoute: typeof ReportTickerChallengeRoute
   ReportTickerSentimentRoute: typeof ReportTickerSentimentRoute
@@ -135,13 +122,6 @@ declare module '@tanstack/react-router' {
       path: '/agent'
       fullPath: '/agent'
       preLoaderRoute: typeof AgentRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/outlook': {
-      id: '/outlook'
-      path: '/outlook'
-      fullPath: '/outlook'
-      preLoaderRoute: typeof OutlookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/mock-sectors/$ticker': {
@@ -178,7 +158,6 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AgentRoute: AgentRoute,
-  OutlookRoute: OutlookRoute,
   MockSectorsTickerRoute: MockSectorsTickerRoute,
   ReportTickerChallengeRoute: ReportTickerChallengeRoute,
   ReportTickerSentimentRoute: ReportTickerSentimentRoute,

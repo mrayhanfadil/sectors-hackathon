@@ -13,7 +13,6 @@ function RootComponent() {
 
   const isHomeActive = pathname === "/"
   const isReportActive = pathname.startsWith("/report")
-  const isOutlookActive = pathname.startsWith("/outlook")
   const isAgentActive = pathname.startsWith("/agent")
 
   const getNavClass = (isActive: boolean) =>
@@ -49,9 +48,6 @@ function RootComponent() {
             >
               Laporan
             </a>
-            <Link to="/outlook" className={getNavClass(isOutlookActive)}>
-              Outlook
-            </Link>
             <Link to="/agent" className={getNavClass(isAgentActive)}>
               Live Analisis
             </Link>
@@ -78,9 +74,6 @@ function RootComponent() {
               <a href="/#saham" className={getNavClass(isReportActive)} onClick={closeMenu}>
                 Laporan
               </a>
-              <Link to="/outlook" className={getNavClass(isOutlookActive)} onClick={closeMenu}>
-                Outlook
-              </Link>
               <Link to="/agent" className={getNavClass(isAgentActive)} onClick={closeMenu}>
                 Live Analisis
               </Link>
