@@ -61,7 +61,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
     Boolean(event.transfer_to)
 
   return (
-    <div className="group border-b border-slate-100 p-3.5 transition-colors hover:bg-slate-50/80">
+    <div className="group border-b border-neutral-100 p-3.5 transition-colors hover:bg-neutral-50/80">
       <div className="flex items-start justify-between gap-3">
         {/* Agent badge + sequence */}
         <div className="flex flex-wrap items-center gap-2">
@@ -77,12 +77,12 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
             <span>{agent.shortLabel}</span>
           </div>
 
-          <span className="font-mono text-[11px] text-slate-400">
+          <span className="font-mono text-[11px] text-neutral-400">
             #{event.seq}
           </span>
 
           {event.event_type && event.event_type !== "text" && (
-            <span className="rounded bg-slate-100 px-1.5 py-0.2 font-mono text-[10px] text-slate-500">
+            <span className="rounded bg-neutral-100 px-1.5 py-0.2 font-mono text-[10px] text-neutral-500">
               {event.event_type}
             </span>
           )}
@@ -91,12 +91,12 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
         {/* Timestamp + latency */}
         <div className="flex shrink-0 items-center gap-2 text-right">
           {latencyMs !== null && latencyMs > 0 && (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-slate-500">
-              <Clock className="h-3 w-3 text-slate-400" />
+            <span className="flex items-center gap-1 text-[11px] font-medium text-neutral-500">
+              <Clock className="h-3 w-3 text-neutral-400" />
               {formatDurationMs(latencyMs)}
             </span>
           )}
-          <span className="font-mono text-[11px] text-slate-400">
+          <span className="font-mono text-[11px] text-neutral-400">
             {formatTimestamp(event.ts)}
           </span>
         </div>
@@ -104,13 +104,13 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
 
       {/* Main plain Indonesian 1-line action description */}
       <div className="mt-2">
-        <p className="text-sm font-medium leading-normal text-slate-900">
+        <p className="text-sm font-medium leading-normal text-neutral-900">
           {actionText}
         </p>
 
         {/* Narrative text snippet if available */}
         {event.text && event.text.trim().length > 0 && (
-          <div className="mt-2 rounded-lg border border-slate-200 bg-white p-2.5 text-xs leading-relaxed text-slate-700 shadow-2xs">
+          <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-xs leading-relaxed text-neutral-700 shadow-2xs">
             <div className="font-sans whitespace-pre-wrap break-words">
               {event.text.length > 350
                 ? `${event.text.slice(0, 350)}...`
@@ -126,9 +126,9 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-[11px] font-medium text-slate-500 transition-colors hover:text-slate-900"
+            className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 transition-colors hover:text-neutral-900"
           >
-            <Code2 className="h-3 w-3 text-slate-400" />
+            <Code2 className="h-3 w-3 text-neutral-400" />
             <span>{expanded ? "Tutup detail teknis" : "Lihat detail teknis"}</span>
             {expanded ? (
               <ChevronUp className="h-3 w-3" />
@@ -138,7 +138,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
           </button>
 
           {expanded && (
-            <div className="mt-2 space-y-2 rounded-lg border border-slate-200 bg-slate-900 p-3 text-white shadow-xs">
+            <div className="mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-900 p-3 text-white shadow-none">
               {/* Function Calls */}
               {event.function_calls && event.function_calls.length > 0 && (
                 <div className="space-y-1.5">
@@ -148,12 +148,12 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
                   {event.function_calls.map((fc, i) => (
                     <div
                       key={fc.id || `${fc.name}-${i}`}
-                      className="rounded bg-slate-800 p-2 font-mono text-[11px]"
+                      className="rounded bg-neutral-800 p-2 font-mono text-[11px]"
                     >
                       <div className="font-semibold text-emerald-400">
                         {fc.name}()
                       </div>
-                      <pre className="mt-1 overflow-x-auto text-[10px] text-slate-300">
+                      <pre className="mt-1 overflow-x-auto text-[10px] text-neutral-300">
                         {JSON.stringify(fc.args, null, 2)}
                       </pre>
                     </div>
@@ -170,12 +170,12 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
                   {event.function_responses.map((fr, i) => (
                     <div
                       key={fr.id || `${fr.name}-${i}`}
-                      className="rounded bg-slate-800 p-2 font-mono text-[11px]"
+                      className="rounded bg-neutral-800 p-2 font-mono text-[11px]"
                     >
                       <div className="font-semibold text-sky-400">
                         {fr.name} - hasil:
                       </div>
-                      <pre className="mt-1 max-h-40 overflow-auto text-[10px] text-slate-300">
+                      <pre className="mt-1 max-h-40 overflow-auto text-[10px] text-neutral-300">
                         {typeof fr.response === "object"
                           ? JSON.stringify(fr.response, null, 2)
                           : String(fr.response)}
@@ -195,7 +195,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
                     {event.state_delta_keys.map((k) => (
                       <span
                         key={k}
-                        className="rounded bg-slate-800 px-1.5 py-0.5 font-mono text-[10px] text-slate-300 border border-slate-700"
+                        className="rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-[10px] text-neutral-300 border border-neutral-700"
                       >
                         {k}
                       </span>
@@ -205,7 +205,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               )}
 
               {/* Node / Branch Info */}
-              <div className="flex flex-wrap gap-3 pt-1 border-t border-slate-800 text-[10px] font-mono text-slate-400">
+              <div className="flex flex-wrap gap-3 pt-1 border-t border-neutral-800 text-[10px] font-mono text-neutral-400">
                 {event.node && <span>node: {event.node}</span>}
                 {event.branch && <span>branch: {event.branch}</span>}
                 {event.transfer_to && <span>transfer_to: {event.transfer_to}</span>}
@@ -270,18 +270,18 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
   }, [events])
 
   return (
-    <Card className={cn("overflow-hidden border-slate-200 shadow-sm", className)}>
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 py-3.5">
+    <Card className={cn("overflow-hidden border-neutral-200 shadow-none", className)}>
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 py-3.5">
         <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs">
               <Activity className="h-4 w-4" />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Aktivitas Langsung Tim AI
               </CardTitle>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-[11px] text-neutral-500">
                 Transkrip langkah demi langkah dalam bahasa yang mudah dipahami
               </p>
             </div>
@@ -294,7 +294,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
                 <span>Sedang Memproses...</span>
               </span>
             )}
-            <Badge variant="outline" className="font-mono text-xs text-slate-600">
+            <Badge variant="outline" className="font-mono text-xs text-neutral-600">
               {filteredEvents.length} aktivitas
             </Badge>
           </div>
@@ -302,8 +302,8 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
 
         {/* Quick Filter Bar */}
         {events.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-slate-100">
-            <div className="flex items-center gap-1 text-[11px] font-medium text-slate-500 mr-1">
+          <div className="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-neutral-100">
+            <div className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 mr-1">
               <Filter className="h-3 w-3" />
               <span>Filter:</span>
             </div>
@@ -363,18 +363,18 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
       <CardContent className="p-0">
         <div
           ref={listRef}
-          className="max-h-[64vh] min-h-[320px] overflow-y-auto divide-y divide-slate-100"
+          className="max-h-[64vh] min-h-[320px] overflow-y-auto divide-y divide-neutral-100"
         >
           {filteredEvents.length === 0 ? (
             <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-slate-400">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-neutral-400">
                 <Sparkles className="h-6 w-6" />
               </div>
-              <h3 className="mt-3 text-sm font-semibold text-slate-900">
+              <h3 className="mt-3 text-sm font-semibold text-neutral-900">
                 Belum ada aktivitas
               </h3>
-              <p className="mt-1 max-w-sm text-xs leading-relaxed text-slate-500">
-                Klik <span className="font-semibold text-slate-800">Jalankan Analisis</span> di atas untuk memulai penyelidikan saham {ticker} secara otomatis.
+              <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-500">
+                Klik <span className="font-semibold text-neutral-800">Jalankan Analisis</span> di atas untuk memulai penyelidikan saham {ticker} secara otomatis.
               </p>
             </div>
           ) : (

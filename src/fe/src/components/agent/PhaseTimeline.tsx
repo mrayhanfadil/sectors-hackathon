@@ -87,13 +87,13 @@ export const PhaseTimeline = memo(function PhaseTimeline({
   return (
     <div className={cn("w-full space-y-2.5", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
-        <div className="flex items-center gap-1.5 font-medium text-slate-700">
-          <Sparkles className="h-3.5 w-3.5 text-slate-500" />
+        <div className="flex items-center gap-1.5 font-medium text-neutral-700">
+          <Sparkles className="h-3.5 w-3.5 text-neutral-500" />
           <span>Alur Pipeline 5 Tahap AI</span>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+        <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-500">
           <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-slate-300" />
+            <span className="h-2 w-2 rounded-full bg-neutral-300" />
             <span>Menunggu</span>
           </span>
           <span className="flex items-center gap-1.5">
@@ -123,16 +123,16 @@ export const PhaseTimeline = memo(function PhaseTimeline({
             const StageIcon = stage.icon
             const isLast = idx === PIPELINE_STAGES.length - 1
 
-            let containerStyle = "border-slate-200 bg-slate-50/70 text-slate-600"
-            let badgeStyle = "bg-slate-100 text-slate-600 border-slate-200"
+            let containerStyle = "border-neutral-200 bg-neutral-50/70 text-neutral-600"
+            let badgeStyle = "bg-neutral-100 text-neutral-600 border-neutral-200"
             let statusText = "Menunggu"
 
             if (status === "running") {
-              containerStyle = "border-amber-300 bg-amber-50/40 text-slate-900 ring-1 ring-amber-300"
+              containerStyle = "border-amber-300 bg-amber-50/40 text-neutral-900 ring-1 ring-amber-300"
               badgeStyle = "bg-amber-100 text-amber-900 border-amber-300 animate-pulse"
               statusText = "Berjalan"
             } else if (status === "finished") {
-              containerStyle = "border-emerald-200 bg-emerald-50/30 text-slate-900"
+              containerStyle = "border-emerald-200 bg-emerald-50/30 text-neutral-900"
               badgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-300"
               statusText = "Selesai"
             } else if (status === "error") {
@@ -145,7 +145,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
               <div key={stage.id} className="flex flex-1 items-center gap-2">
                 <div
                   className={cn(
-                    "flex flex-1 flex-col justify-between rounded-xl border p-3 shadow-2xs transition-all",
+                    "flex flex-1 flex-col justify-between rounded-md border p-3 shadow-2xs transition-all",
                     containerStyle
                   )}
                 >
@@ -162,16 +162,16 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                               ? "border-emerald-300 bg-emerald-100 text-emerald-800"
                               : status === "error"
                               ? "border-rose-300 bg-rose-100 text-rose-800"
-                              : "border-slate-200 bg-white text-slate-500"
+                              : "border-neutral-200 bg-white text-neutral-500"
                           )}
                         >
                           <StageIcon className="h-3.5 w-3.5" />
                         </div>
                         <div>
-                          <div className="text-[10px] font-mono font-medium uppercase tracking-wider text-slate-400">
+                          <div className="text-[10px] font-mono font-medium uppercase tracking-wider text-neutral-400">
                             Tahap {stage.stageNumber}
                           </div>
-                          <div className="text-xs font-semibold text-slate-900">
+                          <div className="text-xs font-semibold text-neutral-900">
                             {stage.title}
                           </div>
                         </div>
@@ -188,13 +188,13 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                     </div>
 
                     {/* Stage Subtitle / Agents list */}
-                    <div className="mt-2 text-[11px] leading-tight text-slate-500">
+                    <div className="mt-2 text-[11px] leading-tight text-neutral-500">
                       {stage.agentSubtitle}
                     </div>
                   </div>
 
                   {/* Sub-agents Indicator Badges */}
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-slate-200/60">
+                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-neutral-200/60">
                     {stage.primaryAgents.map((aKey) => {
                       const aMeta = getFriendlyAgent(aKey)
                       const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
@@ -208,12 +208,12 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                           className={cn(
                             "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] transition-all",
                             isSelected
-                              ? "border-slate-800 bg-slate-900 text-white shadow-xs"
+                              ? "border-neutral-800 bg-neutral-900 text-white shadow-none"
                               : aStatus === "running"
                               ? "border-amber-300 bg-white text-amber-900 font-medium"
                               : aStatus === "finished"
                               ? "border-emerald-200 bg-white text-emerald-800"
-                              : "border-slate-200 bg-white/80 text-slate-600 hover:bg-white"
+                              : "border-neutral-200 bg-white/80 text-neutral-600 hover:bg-white"
                           )}
                           title={`${aMeta.title} - Klik untuk memfilter aktivitas`}
                         >
@@ -224,7 +224,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                           ) : aStatus === "error" ? (
                             <AlertCircle className="h-2.5 w-2.5 text-rose-600" />
                           ) : (
-                            <span className="h-1.5 w-1.5 rounded-full bg-slate-300" />
+                            <span className="h-1.5 w-1.5 rounded-full bg-neutral-300" />
                           )}
                           <span>{aMeta.shortLabel}</span>
                         </button>
@@ -234,7 +234,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                 </div>
 
                 {!isLast && (
-                  <ChevronRight className="h-4 w-4 shrink-0 text-slate-300" />
+                  <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300" />
                 )}
               </div>
             )

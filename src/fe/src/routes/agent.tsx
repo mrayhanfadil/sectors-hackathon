@@ -677,7 +677,7 @@ function AgentTrace() {
   return (
     <div className="space-y-5">
       {/* Panduan pemula: apa itu halaman ini */}
-      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
+      <div className="rounded-md border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
         <span className="font-semibold">Baru pertama kali buka halaman ini? </span>
         Di sini kamu bisa lihat cara kerja tim AI yang nyusun laporan saham — tiap agen (mis. pencari
         data, penghitung valuasi, pemeriksa risiko) jalan bareng dan progresnya kelihatan live. Pilih
@@ -685,18 +685,18 @@ function AgentTrace() {
         memang belum bisa dimuat — coba lagi nanti ya.
       </div>
       {/* Row 1: Top Bar (Full Width) */}
-      <header className="rounded-2xl border border-slate-200 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
+      <header className="rounded-lg border border-neutral-200 bg-white p-4 sm:p-5 shadow-none space-y-3.5">
         <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-1">
             <div className="flex items-center gap-2.5">
-              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-900 text-white shadow-xs">
+              <div className="flex h-8 w-8 items-center justify-center rounded-md bg-neutral-900 text-white shadow-none">
                 <Bot className="h-5 w-5" />
               </div>
-              <h1 className="text-xl font-bold tracking-tight text-slate-900 font-sans">
+              <h1 className="text-xl font-bold tracking-tight text-neutral-900 font-sans">
                 Pusat Analisis Saham Multi-Agen AI
               </h1>
             </div>
-            <p className="text-xs sm:text-sm text-slate-600 max-w-2xl leading-relaxed">
+            <p className="text-xs sm:text-sm text-neutral-600 max-w-2xl leading-relaxed">
               Pantau 11 agen AI independen yang bekerja sama mencari data IDX, valuasi finansial, risiko, dan riset institusional.
             </p>
           </div>
@@ -704,45 +704,45 @@ function AgentTrace() {
           {/* Status badge pill */}
           <div className="flex flex-wrap items-center gap-2">
             {running ? (
-              <div className="flex items-center gap-2 rounded-xl border border-amber-300 bg-amber-50/80 px-3.5 py-1.5 text-xs text-amber-900 shadow-2xs">
+              <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/80 px-3.5 py-1.5 text-xs text-amber-900 shadow-2xs">
                 <span className="relative flex h-2.5 w-2.5">
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
                 </span>
                 <span className="font-semibold">{activeCount} dari {totalCount} agen aktif</span>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1 font-mono text-slate-700">
-                  <Activity className="h-3 w-3 text-slate-500" />
+                <span className="text-neutral-300">·</span>
+                <span className="flex items-center gap-1 font-mono text-neutral-700">
+                  <Activity className="h-3 w-3 text-neutral-500" />
                   {events.length > 0 ? events.length : (loadedFromDb?.n_events ?? 0)} aktivitas
                 </span>
-                <span className="text-slate-300">·</span>
-                <span className="flex items-center gap-1 font-mono text-slate-600" title={`Polling aktif (#${pollCount})`}>
-                  <RefreshCw className="h-3 w-3 animate-spin text-slate-500" />
+                <span className="text-neutral-300">·</span>
+                <span className="flex items-center gap-1 font-mono text-neutral-600" title={`Polling aktif (#${pollCount})`}>
+                  <RefreshCw className="h-3 w-3 animate-spin text-neutral-500" />
                   <span>polling 2 dtk</span>
                 </span>
-                <span className="text-slate-300">·</span>
+                <span className="text-neutral-300">·</span>
                 <span className="flex items-center gap-1 font-mono font-semibold text-amber-800">
                   <Clock className="h-3 w-3 text-amber-600" />
                   ETA {etaText}
                 </span>
               </div>
             ) : done ? (
-              <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 shadow-2xs">
+              <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 shadow-2xs">
                 <Sparkles className="h-4 w-4 text-emerald-600" />
                 <span>Analisis Selesai</span>
-                <span className="text-slate-300">·</span>
-                <span className="font-mono text-slate-700">{done.n_events} aktivitas</span>
-                <span className="text-slate-300">·</span>
-                <span className="font-mono text-slate-600">{(done.ms / 1000).toFixed(1)}s</span>
+                <span className="text-neutral-300">·</span>
+                <span className="font-mono text-neutral-700">{done.n_events} aktivitas</span>
+                <span className="text-neutral-300">·</span>
+                <span className="font-mono text-neutral-600">{(done.ms / 1000).toFixed(1)}s</span>
               </div>
             ) : isInterrupted ? (
-              <div className="flex items-center gap-2 rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-medium text-amber-900">
+              <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-medium text-amber-900">
                 <AlertCircle className="h-4 w-4 text-amber-600" />
                 <span>Analisis terhenti sementara</span>
               </div>
             ) : (
-              <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-1.5 text-xs font-medium text-slate-600">
-                <span className="h-2 w-2 rounded-full bg-slate-400" />
+              <div className="flex items-center gap-2 rounded-md border border-neutral-200 bg-neutral-50 px-3.5 py-1.5 text-xs font-medium text-neutral-600">
+                <span className="h-2 w-2 rounded-full bg-neutral-400" />
                 <span>Sistem Siap Dijalankan</span>
               </div>
             )}
@@ -750,10 +750,10 @@ function AgentTrace() {
         </div>
 
         {/* Input form & buttons */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-100">
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-neutral-100">
           <div className="flex flex-wrap items-center gap-2.5">
             <div className="flex items-center gap-2">
-              <label htmlFor="ticker-input" className="text-xs font-medium text-slate-700">
+              <label htmlFor="ticker-input" className="text-xs font-medium text-neutral-700">
                 Kode Saham:
               </label>
               <input
@@ -770,7 +770,7 @@ function AgentTrace() {
                 list="ticker-universe"
                 autoComplete="off"
                 spellCheck={false}
-                className="h-9 w-52 rounded-lg border border-slate-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-slate-900 shadow-2xs focus:border-slate-900 focus:outline-none focus:ring-1 focus:ring-slate-900"
+                className="h-9 w-52 rounded-lg border border-neutral-300 bg-white px-2.5 text-sm font-mono font-bold uppercase text-neutral-900 shadow-2xs focus:border-neutral-900 focus:outline-none focus:ring-1 focus:ring-neutral-900"
                 maxLength={10}
               />
               <datalist id="ticker-universe">
@@ -794,7 +794,7 @@ function AgentTrace() {
             ) : (
               <Button
                 onClick={() => run("detached")}
-                className="h-9 gap-1.5 bg-slate-900 px-4 text-xs font-medium text-white hover:bg-slate-800 shadow-xs"
+                className="h-9 gap-1.5 bg-neutral-900 px-4 text-xs font-medium text-white hover:bg-neutral-800 shadow-none"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 <span>Jalankan Analisis</span>
@@ -805,16 +805,16 @@ function AgentTrace() {
               onClick={() => run("blocking")}
               disabled={running}
               variant="outline"
-              className="h-9 gap-1.5 text-xs font-medium text-slate-700 border-slate-300 hover:bg-slate-50"
+              className="h-9 gap-1.5 text-xs font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-50"
             >
-              <Zap className="h-3.5 w-3.5 text-slate-500" />
+              <Zap className="h-3.5 w-3.5 text-neutral-500" />
               <span>Mode Cepat</span>
             </Button>
 
             <Button
               onClick={handleClear}
               variant="ghost"
-              className="h-9 gap-1 text-xs text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              className="h-9 gap-1 text-xs text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
               disabled={running}
             >
               <RotateCcw className="h-3.5 w-3.5" />
@@ -827,21 +827,21 @@ function AgentTrace() {
             <div className="flex items-center gap-2 text-xs">
               <Badge
                 variant="outline"
-                className="flex items-center gap-1 font-mono text-[11px] text-slate-600 bg-slate-50 border-slate-200"
+                className="flex items-center gap-1 font-mono text-[11px] text-neutral-600 bg-neutral-50 border-neutral-200"
               >
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
                     health.ok ? "bg-emerald-500" : "bg-amber-500"
                   }`}
                 />
-                <Cpu className="h-3 w-3 text-slate-400" />
+                <Cpu className="h-3 w-3 text-neutral-400" />
                 <span>{health.model || "muse-spark-1.2"}</span>
               </Badge>
 
               <button
                 type="button"
                 onClick={fetchHealth}
-                className="text-slate-400 hover:text-slate-700 p-1"
+                className="text-neutral-400 hover:text-neutral-700 p-1"
                 title="Perbarui status server"
               >
                 <RefreshCw className="h-3 w-3" />
@@ -867,15 +867,15 @@ function AgentTrace() {
         <main className="flex-1 min-w-0 w-full space-y-5">
           {/* On md: Collapsible drawer for State Preview at top of center column */}
           <div className="hidden md:block lg:hidden">
-            <details className="group rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-              <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-slate-800 select-none hover:bg-slate-50">
+            <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden">
+              <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50">
                 <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-slate-600" />
+                  <Database className="h-4 w-4 text-neutral-600" />
                   <span>State Preview ({stateKeys.length} keys)</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-slate-400 group-open:rotate-180 transition-transform" />
+                <ChevronDown className="h-4 w-4 text-neutral-400 group-open:rotate-180 transition-transform" />
               </summary>
-              <div className="border-t border-slate-100 p-2">
+              <div className="border-t border-neutral-100 p-2">
                 <StatePreview events={events} />
               </div>
             </details>
@@ -883,15 +883,15 @@ function AgentTrace() {
 
           {/* If no run selected & no events: Show empty state */}
           {isEmptyState ? (
-            <div className="rounded-2xl border border-dashed border-slate-300 bg-white p-8 sm:p-12 text-center space-y-4 shadow-2xs">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 text-slate-600 border border-slate-200 shadow-2xs">
+            <div className="rounded-lg border border-dashed border-neutral-300 bg-white p-8 sm:p-12 text-center space-y-4 shadow-2xs">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-neutral-100 text-neutral-600 border border-neutral-200 shadow-2xs">
                 <Bot className="h-6 w-6" />
               </div>
               <div className="space-y-1.5 max-w-md mx-auto">
-                <h3 className="text-base font-bold text-slate-900 font-sans">
+                <h3 className="text-base font-bold text-neutral-900 font-sans">
                   Pilih run di sidebar atau mulai baru
                 </h3>
-                <p className="text-xs leading-relaxed text-slate-500">
+                <p className="text-xs leading-relaxed text-neutral-500">
                   Pilih salah satu riwayat analisis saham di sidebar kiri untuk memuat jejak sebelumnya, atau masukkan kode saham di bilah atas lalu klik <strong>Jalankan Analisis</strong>.
                 </p>
               </div>
@@ -900,7 +900,7 @@ function AgentTrace() {
                   onClick={() => run("detached")}
                   disabled={running}
                   size="sm"
-                  className="bg-slate-900 text-xs font-medium text-white hover:bg-slate-800 shadow-xs"
+                  className="bg-neutral-900 text-xs font-medium text-white hover:bg-neutral-800 shadow-none"
                 >
                   <Play className="mr-1.5 h-3.5 w-3.5 fill-current" />
                   Mulai Analisis Saham {ticker || "BBCA"}
@@ -911,10 +911,10 @@ function AgentTrace() {
             <>
               {/* ProgressHeader / SQLite Status Banner */}
               {loadedFromDb && (
-                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-slate-200 bg-slate-50/90 px-3.5 py-2 text-xs text-slate-700">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-neutral-200 bg-neutral-50/90 px-3.5 py-2 text-xs text-neutral-700">
                   <div className="flex flex-wrap items-center gap-2">
-                    <Database className="h-3.5 w-3.5 text-slate-500 shrink-0" />
-                    <span className="font-medium text-slate-800">
+                    <Database className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
+                    <span className="font-medium text-neutral-800">
                       Loaded from SQLite · {loadedFromDb.n_events} aktivitas · {formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}
                     </span>
                     {loadedFromDb.status !== "completed" && (
@@ -942,7 +942,7 @@ function AgentTrace() {
                       disabled={running}
                       size="sm"
                       variant="outline"
-                      className="h-7 gap-1 text-xs font-medium text-slate-800 border-slate-300 bg-white hover:bg-slate-100"
+                      className="h-7 gap-1 text-xs font-medium text-neutral-800 border-neutral-300 bg-white hover:bg-neutral-100"
                     >
                       <Play className="h-3 w-3 fill-current" />
                       <span>Lanjutkan Analisis?</span>
@@ -953,7 +953,7 @@ function AgentTrace() {
 
               {/* Error Alert */}
               {error && (
-                <div className="flex items-start gap-2.5 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
+                <div className="flex items-start gap-2.5 rounded-md border border-rose-200 bg-rose-50 p-3 text-xs text-rose-800">
                   <AlertCircle className="h-4 w-4 shrink-0 text-rose-600 mt-0.5" />
                   <div className="space-y-1">
                     <span className="font-semibold">Terjadi kendala saat menjalankan pipeline:</span>
@@ -984,37 +984,37 @@ function AgentTrace() {
               />
 
               {/* Collapsible Explainer Guide */}
-              <details className="group rounded-xl border border-slate-200 bg-white p-4 text-xs text-slate-600 shadow-2xs">
-                <summary className="flex cursor-pointer items-center justify-between font-medium text-slate-800 select-none">
+              <details className="group rounded-md border border-neutral-200 bg-white p-4 text-xs text-neutral-600 shadow-2xs">
+                <summary className="flex cursor-pointer items-center justify-between font-medium text-neutral-800 select-none">
                   <div className="flex items-center gap-2">
-                    <HelpCircle className="h-4 w-4 text-slate-500" />
+                    <HelpCircle className="h-4 w-4 text-neutral-500" />
                     <span className="text-sm font-semibold">Bagaimana Tim AI Bekerja?</span>
                   </div>
-                  <span className="text-xs text-slate-400 group-open:hidden">Klik untuk melihat penjelasan alur</span>
+                  <span className="text-xs text-neutral-400 group-open:hidden">Klik untuk melihat penjelasan alur</span>
                 </summary>
-                <div className="mt-3 space-y-2 border-t border-slate-100 pt-3 text-xs leading-relaxed text-slate-600">
+                <div className="mt-3 space-y-2 border-t border-neutral-100 pt-3 text-xs leading-relaxed text-neutral-600">
                   <p>
                     Analisis ini dibuat oleh 11 agen AI yang bekerja sama: mereka mencari data dari IDX dan media, menghitung valuasi secara matematis tanpa rekayasa teks, menulis laporan riset terstruktur, dan saling menguji asumsi (Red Team) sebelum disetujui. Hasilnya ditujukan untuk informasi dan bukan saran investasi resmi.
                   </p>
                   <div className="grid gap-2 pt-1 sm:grid-cols-5 text-[11px]">
-                    <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
-                      <div className="font-semibold text-slate-800">1. Data</div>
+                    <div className="rounded-lg bg-neutral-50 p-2 border border-neutral-200/60">
+                      <div className="font-semibold text-neutral-800">1. Data</div>
                       <div>Koleksi laporan IDX, berita, dan sentimen.</div>
                     </div>
-                    <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
-                      <div className="font-semibold text-slate-800">2. Valuasi</div>
+                    <div className="rounded-lg bg-neutral-50 p-2 border border-neutral-200/60">
+                      <div className="font-semibold text-neutral-800">2. Valuasi</div>
                       <div>Kalkulasi matematis DCF, DDM, dan PE/PBV.</div>
                     </div>
-                    <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
-                      <div className="font-semibold text-slate-800">3. Riset</div>
+                    <div className="rounded-lg bg-neutral-50 p-2 border border-neutral-200/60">
+                      <div className="font-semibold text-neutral-800">3. Riset</div>
                       <div>Kajian fundamental, risiko, dan KPI industri.</div>
                     </div>
-                    <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
-                      <div className="font-semibold text-slate-800">4. Penulisan</div>
+                    <div className="rounded-lg bg-neutral-50 p-2 border border-neutral-200/60">
+                      <div className="font-semibold text-neutral-800">4. Penulisan</div>
                       <div>Penyusunan narasi tesis dan grafik visual.</div>
                     </div>
-                    <div className="rounded-lg bg-slate-50 p-2 border border-slate-200/60">
-                      <div className="font-semibold text-slate-800">5. Uji Kualitas</div>
+                    <div className="rounded-lg bg-neutral-50 p-2 border border-neutral-200/60">
+                      <div className="font-semibold text-neutral-800">5. Uji Kualitas</div>
                       <div>Debat Red Team dan verifikasi QA akhir.</div>
                     </div>
                   </div>
@@ -1025,29 +1025,29 @@ function AgentTrace() {
               <details
                 open={rawDebugOpen}
                 onToggle={(e) => setRawDebugOpen((e.currentTarget as HTMLDetailsElement).open)}
-                className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs"
+                className="rounded-md border border-neutral-200 bg-white p-4 shadow-2xs"
               >
-                <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-slate-700 select-none">
+                <summary className="flex cursor-pointer items-center justify-between text-xs font-medium text-neutral-700 select-none">
                   <div className="flex items-center gap-2">
-                    <Code2 className="h-4 w-4 text-slate-500" />
+                    <Code2 className="h-4 w-4 text-neutral-500" />
                     <span className="font-semibold">Lihat data teknis mentah (untuk developer)</span>
-                    <Badge variant="outline" className="font-mono text-[10px] text-slate-500">
+                    <Badge variant="outline" className="font-mono text-[10px] text-neutral-500">
                       {events.length} frame JSON
                     </Badge>
                   </div>
                   {rawDebugOpen ? (
-                    <ChevronUp className="h-4 w-4 text-slate-400" />
+                    <ChevronUp className="h-4 w-4 text-neutral-400" />
                   ) : (
-                    <ChevronDown className="h-4 w-4 text-slate-400" />
+                    <ChevronDown className="h-4 w-4 text-neutral-400" />
                   )}
                 </summary>
 
-                <div className="mt-4 space-y-4 border-t border-slate-100 pt-4 text-xs">
+                <div className="mt-4 space-y-4 border-t border-neutral-100 pt-4 text-xs">
                   <div className="space-y-2">
-                    <div className="font-semibold text-slate-800">Kunci Memori Pipeline (State Keys):</div>
+                    <div className="font-semibold text-neutral-800">Kunci Memori Pipeline (State Keys):</div>
                     <div className="flex flex-wrap gap-1.5">
                       {stateKeys.length === 0 ? (
-                        <span className="text-slate-400 italic">Belum ada kunci memori tersimpan</span>
+                        <span className="text-neutral-400 italic">Belum ada kunci memori tersimpan</span>
                       ) : (
                         stateKeys.map((k) => (
                           <Badge key={k} variant="secondary" className="font-mono text-[11px]">
@@ -1059,21 +1059,21 @@ function AgentTrace() {
                   </div>
 
                   <div className="space-y-2">
-                    <div className="font-semibold text-slate-800">Log Frame Event Aktivitas (JSON):</div>
-                    <div className="max-h-80 overflow-y-auto rounded-lg border border-slate-200 bg-slate-900 p-3 font-mono text-[11px] text-slate-300">
+                    <div className="font-semibold text-neutral-800">Log Frame Event Aktivitas (JSON):</div>
+                    <div className="max-h-80 overflow-y-auto rounded-lg border border-neutral-200 bg-neutral-900 p-3 font-mono text-[11px] text-neutral-300">
                       {events.length === 0 ? (
-                        <div className="text-slate-500 italic">Belum ada frame event yang diterima.</div>
+                        <div className="text-neutral-500 italic">Belum ada frame event yang diterima.</div>
                       ) : (
                         events.map((ev) => (
-                          <div key={ev.seq} className="border-b border-slate-800 py-2">
-                            <div className="flex items-center gap-2 text-slate-400">
+                          <div key={ev.seq} className="border-b border-neutral-800 py-2">
+                            <div className="flex items-center gap-2 text-neutral-400">
                               <span className="text-sky-400">#{ev.seq}</span>
                               <span className="font-bold text-amber-300">{ev.author}</span>
                               <span className="text-emerald-400">[{ev.event_type}]</span>
                               <span>node: {ev.node}</span>
                             </div>
                             {ev.text && (
-                              <div className="mt-1 text-slate-300 whitespace-pre-wrap">{ev.text}</div>
+                              <div className="mt-1 text-neutral-300 whitespace-pre-wrap">{ev.text}</div>
                             )}
                             {ev.function_calls?.length > 0 && (
                               <div className="mt-1.5 space-y-1">
@@ -1101,22 +1101,22 @@ function AgentTrace() {
 
           {/* On sm: Collapsible State Preview at the bottom of center */}
           <div className="block lg:hidden md:hidden">
-            <details className="group rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
-              <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-slate-800 select-none hover:bg-slate-50">
+            <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden">
+              <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50">
                 <div className="flex items-center gap-2">
-                  <Database className="h-4 w-4 text-slate-600" />
+                  <Database className="h-4 w-4 text-neutral-600" />
                   <span>State Preview ({stateKeys.length} keys)</span>
                 </div>
-                <ChevronDown className="h-4 w-4 text-slate-400 group-open:rotate-180 transition-transform" />
+                <ChevronDown className="h-4 w-4 text-neutral-400 group-open:rotate-180 transition-transform" />
               </summary>
-              <div className="border-t border-slate-100 p-2">
+              <div className="border-t border-neutral-100 p-2">
                 <StatePreview events={events} />
               </div>
             </details>
           </div>
 
           {/* Disclaimer Footer */}
-          <p className="text-center text-xs text-slate-500 pt-2">
+          <p className="text-center text-xs text-neutral-500 pt-2">
             Disclaimer: Produk ini adalah informasi dan sarana edukasi, bukan saran investasi. Keputusan investasi sepenuhnya menjadi tanggung jawab pengguna.
           </p>
         </main>
