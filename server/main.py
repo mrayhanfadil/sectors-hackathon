@@ -36,7 +36,7 @@ from .logging_config import setup_logging, ProductionHardeningMiddleware
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf, router_universe
 from .routers.agent import router_agent
 from .routers.memory import router_memory
-from .routers.mock_sectors import router_mock_sectors, get_mock_sectors_status
+from .routers.mock_sectors import get_mock_sectors_status
 from .startup import startup_hook, router_diagnostic
 
 try:
@@ -122,7 +122,7 @@ def create_app() -> FastAPI:
             "mock_sectors": mock_status,
         }
 
-    # routers — 6 endpoints per T04 spec + ADK agent stream + mock sectors layer
+    # routers — 6 endpoints per T04 spec + ADK agent stream
     app.include_router(router_health, tags=["health"])
     app.include_router(router_report, tags=["report"])
     app.include_router(router_outlook, tags=["outlook"])
@@ -130,7 +130,6 @@ def create_app() -> FastAPI:
     app.include_router(router_sentiment, tags=["sentiment"])
     app.include_router(router_challenge, tags=["challenge"])
     app.include_router(router_agent, tags=["agent"])
-    app.include_router(router_mock_sectors, prefix="/api/mock", tags=["mock-sectors"])
     app.include_router(router_diagnostic)
     if router_pdf is not None:
         app.include_router(router_pdf, tags=["pdf"])

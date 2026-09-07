@@ -62,3 +62,15 @@ NEVER `except: fallback_to_yfinance()`. Explicit failure is the rule.
 2. One cheap probe: `company_report("BBCA","dividend")` → 200 + shape assert
 3. Quintet sweep × 5 tickers, count calls, confirm < 40 total (budget check)
 4. `pytest tests/ -q` full green, then FE rebuild + Pages deploy
+
+## Audit verdict — 3-lane gap-fix (2026-09-08, Lane C append — do not rewrite above)
+
+- Lane A (cache): READY + poisoning-risk — 4h `cached_endpoint` layer wired, but stale/error entries must never be cached (404 bills 1 credit; empty-200 also bills). Cache only 200s with shape assert.
+- Lane B (agents): CONDITIONALLY READY — `agents/adk/tools/web_tools.py` is Sectors-or-honest-`source` (`sectors` | `sectors_missing_key` | `sectors_error`); Critic accepts claims only on `source == "sectors"`. Live probe (`agents/adk/tests/test_sectors_live_probe.py`) still needs a keyed run before wiring claims.
+- Lane C (data): GAPS — harvest plan exists (`scripts/sectors_harvest.py --dry-run` = 97 credits) but lake is unpopulated keyless; synthetic `seed_synthetic.py` (seed-42) remains the offline fallback and must stay disclosed as synthetic.
+
+Corrected filenames (audit fix — prior doc drafts cited files that do not exist): real files are `scripts/report_fixtures.py` (61KB), `server/routers/mock_sectors.py`, `scripts/seed_synthetic.py` (seed=42, 49-ticker UNIVERSE). `scripts/sectors_api.py` and `export_demo_data.py` DO NOT EXIST — do not reference them.
+
+97-credit harvest math (`scripts/sectors_harvest.py --dry-run`): per-ticker ~17 (report 5 sections + daily + dates/quarterly + segments + shareholders + news + filings + actions + flow + brokertop + suspensions + listing) × 5 quintet (RATU/CDIA/MTEL/BBCA/ADRO) = 85, shared ~12 (universe + idx-mcap + jci + 4 subsectors×2 + screener) → 85 + 12 = 97. Daily refresh ≈ 11. Budget 1,000 — full harvest <10%.
+
+Roster-lock warning: do NOT claim API credits before the roster is final — claim = roster lock. Registration deadline 22 Sep 2026 23:59 WIB (see team-roster.md banner).

@@ -1,5 +1,9 @@
 """KV cache 4h — in-memory TTL + Cloudflare KV placeholder (P2)
 and TTLCache (5m) for /api/mock/* endpoints with X-Cache HIT/MISS headers.
+
+Cache versioning: gateway keys go through cache_key(), which prefixes
+CACHE_VERSION — bump the version to instantly invalidate stale (e.g. pre-key)
+entries. Flush procedure: restart the worker (in-memory store, nothing to purge).
 """
 from __future__ import annotations
 
@@ -10,6 +14,17 @@ import json
 import time
 from typing import Any, Callable, Optional
 from fastapi import Response
+
+
+# ── Cache versioning (stale-cache poisoning guard) ───────────────────────────
+# Bump to instantly invalidate all gateway keys cached under an older version
+# (e.g. payloads cached before SECTORS_API_KEY was configured).
+CACHE_VERSION = "v2-sectors"
+
+
+def cache_key(base: str) -> str:
+    """Prefix a raw gateway cache key with CACHE_VERSION."""
+    return f"{CACHE_VERSION}:{base}"
 
 
 # ── Legacy KV Cache (for report / stockdata) ─────────────────────────────────

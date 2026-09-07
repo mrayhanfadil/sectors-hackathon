@@ -11,7 +11,7 @@ import os
 import copy
 from pathlib import Path
 
-from ..cache import get_cache
+from ..cache import cache_key, get_cache
 from ..models import NewsResponse, NewsItem, SentimentResponse, SentimentItem
 from ..config import get_settings
 
@@ -587,7 +587,7 @@ async def report_ticker(
     t = _clean_ticker(ticker)
     if not t or len(t) > 10:
         raise HTTPException(400, "invalid ticker")
-    ckey = f"report:{t}:{template or 'auto'}"
+    ckey = cache_key(f"report:{t}:{template or 'auto'}")
     cached = await cache.get(ckey)
     if cached:
         cached["cached"] = True
@@ -871,7 +871,7 @@ def report_ticker_log(ticker: str):
 async def outlook():
     settings = get_settings()
     cache = get_cache(settings.cache_ttl)
-    ckey = "outlook:jci"
+    ckey = cache_key("outlook:jci")
     hit = await cache.get(ckey)
     if hit:
         hit["cached"] = True
@@ -925,7 +925,7 @@ async def news(
     settings = get_settings()
     cache = get_cache(3600)  # 1h per plan
     clean_ticker = _clean_ticker(ticker) if ticker else None
-    key = f"news:{(clean_ticker or 'general')}:{limit}"
+    key = cache_key(f"news:{(clean_ticker or 'general')}:{limit}")
     hit = await cache.get(key)
     if hit:
         hit["cached"] = True
@@ -973,7 +973,7 @@ async def sentiment(
     settings = get_settings()
     cache = get_cache(3600)
     t = _clean_ticker(ticker)
-    key = f"sentiment:{t}:{days}"
+    key = cache_key(f"sentiment:{t}:{days}")
     hit = await cache.get(key)
     if hit:
         hit["cached"] = True

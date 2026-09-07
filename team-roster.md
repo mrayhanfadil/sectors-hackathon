@@ -1,3 +1,5 @@
+> ⚠️ ROSTER LOCK WARNING — do NOT claim API credits before the roster is final. Claim = roster lock. Registration deadline 22 Sep 2026 23:59 WIB. Finalize members first, then claim.
+
 # Team roster
 
 > Single source of truth for who's on the team, their roles, and onboarding status. **Update this file whenever the roster changes.** The hackathon portal team page is the official record; this file is our internal tracker.

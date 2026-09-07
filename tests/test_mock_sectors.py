@@ -9,10 +9,18 @@ Validates the 4 mock routes mirroring Sectors v2 endpoints:
 """
 from pathlib import Path
 import pytest
+from fastapi import FastAPI
 from fastapi.testclient import TestClient
 from server.main import app
+from server.routers.mock_sectors import router_mock_sectors
 
 client = TestClient(app)
+
+# Mock router deregistered from prod (gap-fix Lane B) — schema tests run it
+# on an isolated test-only app with the same prefix.
+mock_app = FastAPI()
+mock_app.include_router(router_mock_sectors, prefix="/api/mock")
+mock_client = TestClient(mock_app)
 
 FILINGS_REQUIRED_FIELDS = {
     "title",
@@ -96,7 +104,7 @@ QUARTERLY_REQUIRED_FIELDS = {
 
 def test_filings_bcca_returns_schema():
     """Hit /api/mock/filings?symbol=BBCA, assert each item has all required fields per IdxFilingsItem."""
-    resp = client.get("/api/mock/filings?symbol=BBCA")
+    resp = mock_client.get("/api/mock/filings?symbol=BBCA")
     assert resp.status_code == 200
     assert resp.headers.get("cache-control") == "no-store"
     data = resp.json()
@@ -116,7 +124,7 @@ def test_filings_bcca_returns_schema():
 
 def test_news_bca_returns_schema():
     """Hit /api/mock/news?symbols=BBCA, assert shape and required fields."""
-    resp = client.get("/api/mock/news?symbols=BBCA")
+    resp = mock_client.get("/api/mock/news?symbols=BBCA")
     assert resp.status_code == 200
     assert resp.headers.get("cache-control") == "no-store"
     data = resp.json()
@@ -137,7 +145,7 @@ def test_news_bca_returns_schema():
 
 def test_corporate_actions_bca_returns_schema():
     """Hit /api/mock/corporate-actions?symbol=BBCA, assert all 7 keys present."""
-    resp = client.get("/api/mock/corporate-actions?symbol=BBCA")
+    resp = mock_client.get("/api/mock/corporate-actions?symbol=BBCA")
     assert resp.status_code == 200
     assert resp.headers.get("cache-control") == "no-store"
     data = resp.json()
@@ -169,7 +177,7 @@ def test_quarterly_bca_returns_schema():
     Keyless -> honest empty with source=sectors_missing_key note
     (legacy removed, Lane E — no yfinance).
     """
-    resp = client.get("/api/mock/quarterly-financials?symbol=BBCA&n_quarters=8")
+    resp = mock_client.get("/api/mock/quarterly-financials?symbol=BBCA&n_quarters=8")
     assert resp.status_code == 200
     assert resp.headers.get("cache-control") == "no-store"
     data = resp.json()
@@ -203,21 +211,21 @@ def test_unknown_ticker_returns_empty_data(monkeypatch):
     monkeypatch.delenv("SECTORS_API_KEY", raising=False)
 
     # 1. Filings
-    r1 = client.get("/api/mock/filings?symbol=ZZZZZZ")
+    r1 = mock_client.get("/api/mock/filings?symbol=ZZZZZZ")
     assert r1.status_code == 200
     d1 = r1.json()
     assert d1.get("data") == []
     assert "note" in d1
 
     # 2. News
-    r2 = client.get("/api/mock/news?symbols=ZZZZZZ")
+    r2 = mock_client.get("/api/mock/news?symbols=ZZZZZZ")
     assert r2.status_code == 200
     d2 = r2.json()
     assert d2.get("data") == []
     assert "note" in d2
 
     # 3. Corporate actions
-    r3 = client.get("/api/mock/corporate-actions?symbol=ZZZZZZ")
+    r3 = mock_client.get("/api/mock/corporate-actions?symbol=ZZZZZZ")
     assert r3.status_code == 200
     d3 = r3.json()
     assert d3.get("dividend") == []
@@ -225,7 +233,7 @@ def test_unknown_ticker_returns_empty_data(monkeypatch):
     assert "note" in d3
 
     # 4. Quarterly financials
-    r4 = client.get("/api/mock/quarterly-financials?symbol=ZZZZZZ")
+    r4 = mock_client.get("/api/mock/quarterly-financials?symbol=ZZZZZZ")
     assert r4.status_code == 200
     d4 = r4.json()
     assert d4.get("data") == []
@@ -269,13 +277,13 @@ def test_cache_hit_and_miss_behavior():
     asyncio.run(cache.clear())
 
     # Call 1: should be cache MISS
-    resp1 = client.get("/api/mock/corporate-actions?symbol=BBCA")
+    resp1 = mock_client.get("/api/mock/corporate-actions?symbol=BBCA")
     assert resp1.status_code == 200
     assert resp1.headers.get("x-cache") == "MISS"
     assert resp1.headers.get("cache-control") == "no-store"
 
     # Call 2: should be cache HIT with identical payload
-    resp2 = client.get("/api/mock/corporate-actions?symbol=BBCA")
+    resp2 = mock_client.get("/api/mock/corporate-actions?symbol=BBCA")
     assert resp2.status_code == 200
     assert resp2.headers.get("x-cache") == "HIT"
     assert resp2.headers.get("cache-control") == "no-store"
@@ -339,4 +347,19 @@ def test_rate_limiter_429_behavior():
 
     # Reset again after test
     asyncio.run(rate_limiter.reset())
+
+
+def test_prod_mock_routes_deregistered():
+    """Prod app must NOT serve /api/mock/* (gap-fix Lane B deregistration lock).
+
+    The mock router lives on only for isolated schema tests (mock_client).
+    If this fails with 200, someone re-registered the router on prod.
+    """
+    for path in (
+        "/api/mock/filings?symbol=BBCA",
+        "/api/mock/news?symbols=BBCA",
+        "/api/mock/corporate-actions?symbol=BBCA",
+        "/api/mock/quarterly-financials?symbol=BBCA",
+    ):
+        assert client.get(path).status_code == 404, f'prod serves deregistered {path}'
 
