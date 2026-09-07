@@ -1,5 +1,15 @@
 # Sectors swap list — mechanical wiring once SECTORS_API_KEY lands
 
+> Qualifying rule, verbatim (rules.md §06): "Projects must use **Sectors MCP
+> or the Sectors REST API as a core data source**, not as a single decorative
+> call. The product should **lose its core functionality if Sectors data is
+> removed**." No all-Sectors mandate, no external ban — externals allowed as
+> long as core verdicts are Sectors-grounded. We exceed it: every data path
+> is Sectors-or-503, so the kill-Sectors test passes trivially. Other hard
+> gates: all members onboarded (§03), repo public ≥90d post-winners, ZERO
+> commits after freeze/submit (even bugfixes), strip API keys pre-submit,
+> deadline 30 Sep 2026 23:59 WIB.
+
 Client: `server/sectors.py` (raw-key auth, bare tickers, loud 503 when keyless).
 Tests: `tests/test_sectors_client.py` (3 passed, keyless).
 Cache rule: every new call goes behind the existing 4h `cached_endpoint` layer.
