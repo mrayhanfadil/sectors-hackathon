@@ -31,7 +31,7 @@ export const AGENT_META_MAP: Record<string, { label: string; phase: string; colo
   news_search_sub: { label: "News Search Sub", phase: "Intake Search", color: "bg-amber-50 text-amber-800 border-amber-200" },
   social_search_sub: { label: "Social Search Sub", phase: "Intake Search", color: "bg-violet-50 text-violet-800 border-violet-200" },
   modeler: { label: "Modeler", phase: "Valuation", color: "bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold" },
-  analyst: { label: "Analyst", phase: "Research", color: "bg-slate-100 text-slate-800 border-slate-300" },
+  analyst: { label: "Analyst", phase: "Research", color: "bg-neutral-100 text-neutral-800 border-neutral-300" },
   industry: { label: "Industry", phase: "Research", color: "bg-teal-100 text-teal-800 border-teal-300" },
   industry_search_sub: { label: "Industry Search Sub", phase: "Research Search", color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
   risk: { label: "Risk", phase: "Research", color: "bg-red-100 text-red-800 border-red-300" },
@@ -40,7 +40,7 @@ export const AGENT_META_MAP: Record<string, { label: string; phase: string; colo
   visualizer: { label: "Visualizer", phase: "Charts", color: "bg-pink-100 text-pink-800 border-pink-300" },
   sotp: { label: "SOTP", phase: "Aggregation", color: "bg-orange-100 text-orange-800 border-orange-300" },
   adversarial: { label: "Adversarial", phase: "Red Team", color: "bg-rose-100 text-rose-800 border-rose-300" },
-  critic: { label: "Critic", phase: "QA", color: "bg-slate-900 text-white border-slate-900" },
+  critic: { label: "Critic", phase: "QA", color: "bg-neutral-900 text-white border-neutral-900" },
 }
 
 export const KNOWN_AGENTS: AgentMeta[] = Object.entries(AGENT_META_MAP).map(([key, meta]) => ({
