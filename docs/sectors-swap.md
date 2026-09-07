@@ -11,7 +11,16 @@
 > deadline 30 Sep 2026 23:59 WIB.
 
 Client: `server/sectors.py` (raw-key auth, bare tickers, loud 503 when keyless).
-Tests: `tests/test_sectors_client.py` (3 passed, keyless).
+23 helpers: 8 base (daily/universe/quarterly/report/actions/news/filings/flow)
++ 15 ranked (peers/future/valuation/ownership/management/broker-top/
+suspensions/subsector/listing/screener/index-daily/idx-mcap/mining).
+Tests: `tests/test_sectors_client.py` (keyless-loud over all 23).
+
+## Pricing (discovered from docs, was unknown)
+1 credit/section on reports; most endpoints 1; structured screener 1, NL ?q= 3
+(NEVER ?q=); 404 bills 1 (validate tickers first); 400/401/429/5xx free;
+empty-200 STILL bills (check quarterly-financial-dates before pulling).
+Quintet Tier 1+2 probe budget ≈ <60 credits of the 1,000.
 Cache rule: every new call goes behind the existing 4h `cached_endpoint` layer.
 Credit rule: universe feeds > per-symbol loops, minimal `sections=`, quintet only.
 

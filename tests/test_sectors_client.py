@@ -24,6 +24,19 @@ def test_no_key_raises_loud():
         (sectors.company_report, ("BBCA", "dividend")),
         (sectors.universe_close, ("2026-09-01",)),
         (sectors.foreign_flow, ("BBCA", "2026-01-01", "2026-01-02")),
+        (sectors.peers, ("BBCA",)),
+        (sectors.future, ("BBCA",)),
+        (sectors.valuation_section, ("BBCA",)),
+        (sectors.ownership, ("BBCA",)),
+        (sectors.management, ("BBCA",)),
+        (sectors.broker_top, ("BBCA", "2026-01-01", "2026-01-02")),
+        (sectors.suspensions, ("BBCA",)),
+        (sectors.subsector_report, ("banks", "valuation,growth")),
+        (sectors.listing_performance, ("CDIA",)),
+        (sectors.screener, ("market_cap > 1000000000000",)),
+        (sectors.index_daily, ("JKSE", "2026-01-01", "2026-01-02")),
+        (sectors.idx_market_cap, ("2026-01-01", "2026-01-02")),
+        (sectors.mining_company_financials, ("adaro",)),
     ]:
         try:
             fn(*args)
