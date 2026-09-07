@@ -351,7 +351,7 @@ function ReportPage() {
             <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 font-mono px-1">
               <div className="flex items-center gap-1.5">
                 <Database className="h-3.5 w-3.5" />
-                <span>Sumber: Laporan Keuangan IDX, yfinance, SKK Migas, Sustainalytics</span>
+                <span>Sumber: Laporan Keuangan IDX via Sectors API, SKK Migas, Sustainalytics</span>
               </div>
               <div>TanStack Query · Cache 4h · Template {tpl}</div>
             </div>

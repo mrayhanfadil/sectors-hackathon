@@ -177,7 +177,7 @@ export function ExecutiveSummary({
                 </div>
               </div>
               <CardDescription className="text-[11px] text-slate-400">
-                {vsJci.source ?? "IDX, yfinance"}
+                {vsJci.source ?? "Sectors API"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">

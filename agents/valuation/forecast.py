@@ -133,7 +133,7 @@ def build_trend_forecast(
             if i < N_ACTUAL:
                 cells.append({"metric": metric, "year": yr, "kind": "A", "value": v,
                               "base": None, "g": None, "t": 0,
-                              "formula": "actual (yfinance-verified)",
+                              "formula": "actual (sectors-verified)",
                               "source": "actual"})
             else:
                 t = i - N_ACTUAL + 1

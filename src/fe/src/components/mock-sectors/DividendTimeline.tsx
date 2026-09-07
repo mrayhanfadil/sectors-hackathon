@@ -112,7 +112,7 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
               </Badge>
             </div>
             <CardDescription className="mt-1 text-xs text-slate-500">
-              Historical cash dividend distributions from free public yfinance upstream data
+              Historical cash dividend distributions from Sectors corporate-actions data
             </CardDescription>
           </div>
 
@@ -320,7 +320,7 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                       </Badge>
                     </div>
                     <p className="text-[11px] text-slate-500">
-                      Currency: {activeDividend.currency || "IDR"} · Source: yfinance dividend history
+                      Currency: {activeDividend.currency || "IDR"} · Source: Sectors corporate actions
                     </p>
                   </div>
                 </div>
