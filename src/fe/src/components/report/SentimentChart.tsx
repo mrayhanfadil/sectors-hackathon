@@ -56,17 +56,17 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
   const needleY = centerY + needleLength * Math.sin(angleRad)
 
   return (
-    <Card className="border-slate-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Compass className="h-4 w-4 text-slate-700" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <Compass className="h-4 w-4 text-neutral-700" />
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Visualisasi Dial Sentimen & Narasi Pasar - {tk}
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-slate-500">
+            <CardDescription className="text-xs text-neutral-500">
               Kalkulasi posisi sentimen ritel dan tematik narasi dominan
             </CardDescription>
           </div>
@@ -77,8 +77,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
               onClick={() => setActiveView("gauge")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeView === "gauge"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
               }`}
             >
               Dial & Narasi
@@ -88,8 +88,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
               onClick={() => setActiveView("timeline")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeView === "timeline"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-neutral-900 text-white"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
               }`}
             >
               Kronologi Timeline
@@ -100,13 +100,13 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
 
       <CardContent className="p-4 sm:p-6">
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center text-xs text-slate-400">
+          <div className="flex h-48 items-center justify-center text-xs text-neutral-400">
             <span>Memuat visualisasi sentimen {tk}...</span>
           </div>
         ) : activeView === "gauge" ? (
           <div className="grid gap-6 md:grid-cols-12 items-center">
             {/* Left Col: SVG Speedometer Gauge */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center p-2 rounded-xl bg-slate-50/60 border border-slate-100">
+            <div className="md:col-span-5 flex flex-col items-center justify-center p-2 rounded-xl bg-neutral-50/60 border border-neutral-100">
               <svg
                 viewBox="0 0 240 130"
                 className="w-full max-w-[240px] select-none"
@@ -167,8 +167,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
               </svg>
 
               <div className="mt-1 text-center">
-                <div className="text-xl font-bold font-mono text-slate-900">
-                  {gauge} <span className="text-xs font-normal text-slate-500">/ 100</span>
+                <div className="text-xl font-bold font-mono text-neutral-900">
+                  {gauge} <span className="text-xs font-normal text-neutral-500">/ 100</span>
                 </div>
                 <Badge
                   variant={gauge >= 60 ? "success" : gauge <= 40 ? "destructive" : "secondary"}
@@ -182,23 +182,23 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
             {/* Right Col: Top Narratives List */}
             <div className="md:col-span-7 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-slate-700">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-700">
                   Narasi Utama Pasar ({narratives.length})
                 </h4>
-                <span className="text-[11px] text-slate-400">Peringkat Relevansi</span>
+                <span className="text-[11px] text-neutral-400">Peringkat Relevansi</span>
               </div>
 
               <div className="space-y-2">
                 {narratives.map((n, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-2.5 rounded-lg border border-slate-200/80 bg-white p-3 text-xs leading-relaxed text-slate-700 shadow-2xs hover:border-slate-300 transition-colors"
+                    className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 text-xs leading-relaxed text-neutral-700 shadow-2xs hover:border-neutral-300 transition-colors"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-slate-900 text-[10px] font-bold text-white">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-900 text-[10px] font-bold text-white">
                       #{i + 1}
                     </span>
                     <div className="space-y-1">
-                      <p className="font-medium text-slate-800">{n}</p>
+                      <p className="font-medium text-neutral-800">{n}</p>
                     </div>
                   </div>
                 ))}
@@ -206,17 +206,17 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
 
               {sources.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 pt-1">
-                  <span className="text-[11px] text-slate-400">Rujukan Kanal:</span>
+                  <span className="text-[11px] text-neutral-400">Rujukan Kanal:</span>
                   {sources.map((src, idx) => (
                     <a
                       key={idx}
                       href={src.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 hover:bg-slate-200 transition-colors"
+                      className="inline-flex items-center gap-1 rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-200 transition-colors"
                     >
                       <span>{src.platform}</span>
-                      <ExternalLink className="h-2.5 w-2.5 text-slate-400" />
+                      <ExternalLink className="h-2.5 w-2.5 text-neutral-400" />
                     </a>
                   ))}
                 </div>
@@ -226,20 +226,20 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
         ) : (
           /* Timeline View */
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-slate-700">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-700">
               <Calendar className="h-3.5 w-3.5" />
               <span>Kronologi Pergeseran Narasi & Sentimen</span>
             </div>
 
-            <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
+            <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-neutral-200">
               {timeline.map((t, idx) => (
                 <div key={idx} className="relative">
-                  <div className="absolute -left-6 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-slate-900 shadow-xs" />
-                  <div className="rounded-lg border border-slate-200 bg-white p-3 shadow-2xs">
-                    <span className="font-mono text-[11px] font-semibold text-slate-900">
+                  <div className="absolute -left-6 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-neutral-900 shadow-xs" />
+                  <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-2xs">
+                    <span className="font-mono text-[11px] font-semibold text-neutral-900">
                       {t.date}
                     </span>
-                    <p className="mt-1 text-xs text-slate-600 leading-relaxed">
+                    <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
                       {t.note}
                     </p>
                   </div>
@@ -249,7 +249,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400">
+        <div className="mt-4 pt-3 border-t border-neutral-100 text-[11px] text-neutral-400">
           Penafian: Data sentimen ritel merupakan agregasi opini publik pihak ketiga dan bukan merupakan rekomendasi transaksi efek.
         </div>
       </CardContent>

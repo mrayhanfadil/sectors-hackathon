@@ -92,25 +92,25 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
 
   if (!hasRun || !log) {
     return (
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs">
               <Bot className="h-4 w-4" />
             </div>
-            <CardTitle className="text-sm font-semibold text-slate-900">
+            <CardTitle className="text-sm font-semibold text-neutral-900">
               Log ADK untuk {t}
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-4 pt-2 space-y-3">
-          <div className="flex items-center gap-2 text-xs text-slate-500">
-            <Inbox className="h-4 w-4 text-slate-400" />
+          <div className="flex items-center gap-2 text-xs text-neutral-500">
+            <Inbox className="h-4 w-4 text-neutral-400" />
             <span>Belum ada log ADK untuk {t}</span>
           </div>
           <div>
             <Link to="/agent" search={{ ticker: t } as any}>
-              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs text-slate-700">
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs text-neutral-700">
                 <span>Mulai Run →</span>
               </Button>
             </Link>
@@ -128,19 +128,19 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     : "-"
 
   return (
-    <Card className="border-slate-200 bg-white shadow-2xs">
+    <Card className="border-neutral-200 bg-white shadow-2xs">
       <CardHeader className="p-4 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-slate-900 text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs">
               <Bot className="h-4 w-4" />
             </div>
-            <CardTitle className="text-sm font-semibold text-slate-900">
+            <CardTitle className="text-sm font-semibold text-neutral-900">
               Log ADK untuk {t}
             </CardTitle>
           </div>
           <Link to="/agent" search={{ ticker: t } as any}>
-            <Button size="sm" variant="default" className="h-8 gap-1.5 text-xs bg-slate-900 text-white hover:bg-slate-800">
+            <Button size="sm" variant="default" className="h-8 gap-1.5 text-xs bg-neutral-900 text-white hover:bg-neutral-800">
               <span>Lihat Trace Lengkap →</span>
             </Button>
           </Link>
@@ -151,57 +151,57 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
         {/* Row 1: Status Badge + relative time + n_events */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {renderStatusBadge(log.status)}
-          <span className="text-slate-500">{formatRelativeTime(log.started_at)}</span>
-          <span className="text-slate-300">·</span>
-          <span className="font-mono text-slate-600">{log.n_events} aktivitas</span>
+          <span className="text-neutral-500">{formatRelativeTime(log.started_at)}</span>
+          <span className="text-neutral-300">·</span>
+          <span className="font-mono text-neutral-600">{log.n_events} aktivitas</span>
         </div>
 
         {/* Row 2: small caption "{provider}/{model} · {duration_s ? formatDuration(duration_s) : '-'}" */}
-        <div className="text-xs text-slate-500 font-mono">
+        <div className="text-xs text-neutral-500 font-mono">
           <span>{log.provider}/{log.model}</span>
-          <span className="mx-1.5 text-slate-300">·</span>
+          <span className="mx-1.5 text-neutral-300">·</span>
           <span>{log.duration_s != null ? formatDuration(log.duration_s) : "-"}</span>
         </div>
 
         {/* Row 3: "Last activity: {last_text_preview}" truncated to 80 chars with ellipsis */}
-        <div className="text-xs text-slate-600 leading-relaxed">
-          <span className="font-medium text-slate-700">Last activity: </span>
-          <span className="font-mono text-[11px] text-slate-600">{lastTextPreview}</span>
+        <div className="text-xs text-neutral-600 leading-relaxed">
+          <span className="font-medium text-neutral-700">Last activity: </span>
+          <span className="font-mono text-[11px] text-neutral-600">{lastTextPreview}</span>
         </div>
 
         {/* Collapsible history: "Riwayat run sebelumnya" (max 5 rows) */}
         {history && history.length > 0 && (
-          <div className="border-t border-slate-100 pt-2 text-xs">
+          <div className="border-t border-neutral-100 pt-2 text-xs">
             <button
               type="button"
               onClick={() => setHistoryOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between text-left text-slate-600 hover:text-slate-900 py-1 select-none"
+              className="flex w-full items-center justify-between text-left text-neutral-600 hover:text-neutral-900 py-1 select-none"
             >
               <div className="flex items-center gap-1.5 font-medium">
-                <History className="h-3.5 w-3.5 text-slate-400" />
+                <History className="h-3.5 w-3.5 text-neutral-400" />
                 <span>Riwayat run sebelumnya ({Math.min(history.length, 5)})</span>
               </div>
               {historyOpen ? (
-                <ChevronUp className="h-3.5 w-3.5 text-slate-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-slate-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
               )}
             </button>
 
             {historyOpen && (
-              <div className="mt-2 space-y-1.5 rounded-lg bg-slate-50 p-2.5">
+              <div className="mt-2 space-y-1.5 rounded-lg bg-neutral-50 p-2.5">
                 {history.slice(0, 5).map((h) => (
                   <div
                     key={h.run_id}
-                    className="flex flex-wrap items-center justify-between gap-1 py-1 text-[11px] border-b border-slate-200/50 last:border-0"
+                    className="flex flex-wrap items-center justify-between gap-1 py-1 text-[11px] border-b border-neutral-200/50 last:border-0"
                   >
                     <div className="flex items-center gap-2">
                       {renderStatusBadge(h.status)}
-                      <span className="text-slate-500">{formatRelativeTime(h.started_at)}</span>
+                      <span className="text-neutral-500">{formatRelativeTime(h.started_at)}</span>
                     </div>
-                    <div className="flex items-center gap-2 font-mono text-slate-500">
+                    <div className="flex items-center gap-2 font-mono text-neutral-500">
                       <span>{h.n_events} aktivitas</span>
-                      <span className="text-slate-300">·</span>
+                      <span className="text-neutral-300">·</span>
                       <span>{h.duration_s != null ? formatDuration(h.duration_s) : "-"}</span>
                     </div>
                   </div>

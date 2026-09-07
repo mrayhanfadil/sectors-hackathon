@@ -76,16 +76,16 @@ function ReportPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <p className="text-center text-xs text-slate-500">
+        <p className="text-center text-xs text-neutral-500">
           Lagi nyiapin laporan {tk}... datanya diambil langsung dari backend, tunggu sebentar ya.
         </p>
-        <div className="h-20 animate-pulse rounded-xl border border-slate-200 bg-white p-4" />
+        <div className="h-20 animate-pulse rounded-xl border border-neutral-200 bg-white p-4" />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-4">
-            <div className="h-64 animate-pulse rounded-xl border border-slate-200 bg-white" />
-            <div className="h-80 animate-pulse rounded-xl border border-slate-200 bg-white" />
+            <div className="h-64 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+            <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-white" />
           </div>
-          <div className="h-96 animate-pulse rounded-xl border border-slate-200 bg-white" />
+          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white" />
         </div>
       </div>
     )
@@ -266,8 +266,8 @@ function ReportPage() {
       />
 
       {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-xl border border-sky-200 bg-sky-50 p-4 text-xs leading-relaxed text-sky-900">
-        <span className="font-semibold">Baru mulai baca laporan saham? </span>
+      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600">
+        <span className="font-semibold text-[#0a0a0a]">Baru mulai baca laporan saham? </span>
         BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
         sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar (target) — makin besar
         prosentasenya, makin besar potensi cuannya, tapi risikonya tetap perlu dicek di bagian bawah.
@@ -276,7 +276,7 @@ function ReportPage() {
       {/* 2. Responsive 2-Column Grid Layout */}
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
         {/* Main Content Area (Center / Scrollable) */}
-        <div className="space-y-8 min-w-0">
+        <div className="space-y-6 min-w-0">
           {/* Section 1: Ringkasan Eksekutif */}
           <ExecutiveSummary
             ticker={tk}
@@ -318,10 +318,10 @@ function ReportPage() {
           {/* Section 3: Analisis Sensitivitas & Model DCF Interaktif */}
           <section id="sensitivity-analysis" className="space-y-4 scroll-mt-28">
             <div>
-              <h2 className="text-lg font-bold tracking-tight text-slate-900">
+              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a]">
                 3. Coba Ubah Asumsinya Sendiri (Model DCF Interaktif)
               </h2>
-              <p className="text-xs text-slate-500">
+              <p className="text-xs text-neutral-500">
                 Geser-geser asumsi (mis. biaya modal & pertumbuhan) lalu lihat harga wajarnya berubah
                 — termasuk skenario jelek (Bear), wajar (Base), dan bagus (Bull)
               </p>
@@ -337,18 +337,18 @@ function ReportPage() {
           />
 
           {/* Section 5: Sumber Data, Kepatuhan & Disclaimer */}
-          <section id="sources-disclaimer" className="space-y-3 scroll-mt-28 border-t border-slate-200 pt-6">
-            <div className="rounded-xl border border-slate-200 bg-white p-4 shadow-2xs space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-slate-800">
-                <FileText className="h-4 w-4 text-slate-600" />
+          <section id="sources-disclaimer" className="space-y-3 scroll-mt-28 border-t border-neutral-200 pt-6">
+            <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-800">
+                <FileText className="h-4 w-4 text-neutral-600" />
                 <span>INFORMASI RISET - BUKAN SARAN INVESTASI</span>
               </div>
-              <p className="text-xs leading-relaxed text-slate-600">
+              <p className="text-xs leading-relaxed text-neutral-600">
                 Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi resmi (kepatuhan regulasi OJK). Seluruh estimasi dan nilai wajar dihitung secara deterministik berdasarkan data historis dan asumsi yang diungkapkan secara transparan.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-400 font-mono px-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-neutral-400 font-mono px-1">
               <div className="flex items-center gap-1.5">
                 <Database className="h-3.5 w-3.5" />
                 <span>Sumber: Laporan Keuangan IDX via Sectors API, SKK Migas, Sustainalytics</span>

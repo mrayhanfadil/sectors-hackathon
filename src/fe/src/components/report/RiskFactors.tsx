@@ -36,25 +36,25 @@ export function RiskFactors({
   return (
     <section id="risk-factors" className="space-y-4 scroll-mt-28">
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-slate-900">
+        <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a]">
           4. Faktor Risiko & Analisis Solvabilitas
         </h2>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-neutral-500">
           Evaluasi sensitivitas utang, risiko pasar, dan potensi hambatan terhadap tesis investasi
         </p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2">
         {/* Card 1: Lintasan Solvabilitas & Struktur Utang */}
-        <Card className="border-slate-200 bg-white shadow-2xs">
+        <Card className="border-neutral-200 bg-white shadow-2xs">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center gap-2">
-              <Scale className="h-4 w-4 text-slate-700" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <Scale className="h-4 w-4 text-neutral-700" />
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Struktur Utang & Lintasan Solvabilitas
               </CardTitle>
             </div>
-            <CardDescription className="text-[11px] text-slate-400">
+            <CardDescription className="text-[11px] text-neutral-400">
               Evaluasi risiko rasio utang dan ketahanan kas
             </CardDescription>
           </CardHeader>
@@ -64,24 +64,24 @@ export function RiskFactors({
                 {leverageTrajectoryNote}
               </div>
             ) : (
-              <p className="text-xs text-slate-600 leading-relaxed">
+              <p className="text-xs text-neutral-600 leading-relaxed">
                 Struktur utang dievaluasi berkala berdasarkan rasio liabilitas berbunga terhadap ekuitas dan kemampuan pembayaran bunga (ICR).
               </p>
             )}
 
             {ratios && Object.keys(ratios).length > 0 && (
-              <div className="space-y-1.5 border-t border-slate-100 pt-2.5">
-                <div className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="space-y-1.5 border-t border-neutral-100 pt-2.5">
+                <div className="text-[11px] font-semibold text-neutral-500 uppercase tracking-wider">
                   Metrik Profil Risiko:
                 </div>
                 <div className="flex flex-wrap gap-2">
                   {Object.entries(ratios).slice(0, 4).map(([k, v]) => (
                     <span
                       key={k}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 bg-slate-50 px-2 py-1 text-xs text-slate-700 font-mono"
+                      className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-neutral-50 px-2 py-1 text-xs text-neutral-700 font-mono"
                     >
-                      <span className="text-slate-500 font-sans">{k}:</span>
-                      <span className="font-semibold text-slate-900">{String(v)}</span>
+                      <span className="text-neutral-500 font-sans">{k}:</span>
+                      <span className="font-semibold text-neutral-900">{String(v)}</span>
                     </span>
                   ))}
                 </div>
@@ -91,35 +91,35 @@ export function RiskFactors({
         </Card>
 
         {/* Card 2: Risiko Makroekonomi & Regulasi */}
-        <Card className="border-slate-200 bg-white shadow-2xs">
+        <Card className="border-neutral-200 bg-white shadow-2xs">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-amber-600" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Risiko Makro & Regulasi Industri
               </CardTitle>
             </div>
-            <CardDescription className="text-[11px] text-slate-400">
+            <CardDescription className="text-[11px] text-neutral-400">
               Faktor eksternal yang dapat mempengaruhi proyeksi laba
             </CardDescription>
           </CardHeader>
-          <CardContent className="p-4 pt-2 space-y-2.5 text-xs text-slate-700">
+          <CardContent className="p-4 pt-2 space-y-2.5 text-xs text-neutral-700">
             <div className="flex items-start gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+              <span className="h-1.5 w-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
               <span>
-                <strong className="text-slate-900">Volatilitas Suku Bunga & Biaya Dana:</strong> Kenaikan yield obligasi pemerintah dapat meningkatkan Cost of Capital (WACC) dan menekan valuasi diskonto.
+                <strong className="text-neutral-900">Volatilitas Suku Bunga & Biaya Dana:</strong> Kenaikan yield obligasi pemerintah dapat meningkatkan Cost of Capital (WACC) dan menekan valuasi diskonto.
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+              <span className="h-1.5 w-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
               <span>
-                <strong className="text-slate-900">Kepatuhan Regulasi & Kebijakan Fiskal:</strong> Perubahan ketentuan tarif, kepemilikan asing, atau kebijakan dividen BUMN / swasta.
+                <strong className="text-neutral-900">Kepatuhan Regulasi & Kebijakan Fiskal:</strong> Perubahan ketentuan tarif, kepemilikan asing, atau kebijakan dividen BUMN / swasta.
               </span>
             </div>
             <div className="flex items-start gap-2">
-              <span className="h-1.5 w-1.5 rounded-full bg-slate-400 mt-1.5 shrink-0" />
+              <span className="h-1.5 w-1.5 rounded-full bg-neutral-400 mt-1.5 shrink-0" />
               <span>
-                <strong className="text-slate-900">Dinamika Kompetisi & Belanja Modal:</strong> Penurunan tarif layanan atau intensitas capex ekspansi yang melampaui estimasi awal.
+                <strong className="text-neutral-900">Dinamika Kompetisi & Belanja Modal:</strong> Penurunan tarif layanan atau intensitas capex ekspansi yang melampaui estimasi awal.
               </span>
             </div>
           </CardContent>
@@ -127,7 +127,7 @@ export function RiskFactors({
       </div>
 
       {/* Card 3: Uji Tesis / Challenge Box */}
-      <Card className="border-slate-300 bg-slate-900 text-white shadow-2xs">
+      <Card className="border-neutral-300 bg-neutral-900 text-white shadow-2xs">
         <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
@@ -136,14 +136,14 @@ export function RiskFactors({
                 Pusat Uji Tesis & Verifikasi Adversarial (Challenge Mode)
               </h3>
             </div>
-            <p className="text-xs text-slate-300 max-w-xl leading-relaxed">
+            <p className="text-xs text-neutral-300 max-w-xl leading-relaxed">
               Memiliki pandangan berbeda terhadap asumsi WACC, margin operasional, atau pertumbuhan terminal? Ajukan kritik untuk memverifikasi ketahanan model riset.
             </p>
           </div>
           <Link
             to="/report/$ticker/challenge"
             params={{ ticker: tk }}
-            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-xs font-semibold text-slate-900 hover:bg-slate-100 transition-colors shrink-0 shadow-xs"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-white px-4 py-2 text-xs font-semibold text-neutral-900 hover:bg-neutral-100 transition-colors shrink-0 shadow-xs"
           >
             <span>Uji Asumsi Sekarang</span>
             <ArrowRight className="h-3.5 w-3.5" />

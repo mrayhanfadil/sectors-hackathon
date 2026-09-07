@@ -66,12 +66,12 @@ export function ChallengeHistoryList({
   }
 
   return (
-    <Card className="border-slate-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-slate-700" />
-            <CardTitle className="text-sm font-semibold text-slate-900">
+            <History className="h-4 w-4 text-neutral-700" />
+            <CardTitle className="text-sm font-semibold text-neutral-900">
               Riwayat Debat & Pembelaan Tesis ({log.length})
             </CardTitle>
           </div>
@@ -79,26 +79,26 @@ export function ChallengeHistoryList({
             <button
               type="button"
               onClick={onClear}
-              className="inline-flex items-center gap-1 text-[11px] text-slate-500 hover:text-slate-900 transition-colors cursor-pointer"
+              className="inline-flex items-center gap-1 text-[11px] text-neutral-500 hover:text-neutral-900 transition-colors cursor-pointer"
             >
               <Trash2 className="h-3 w-3" />
               <span>Bersihkan Riwayat</span>
             </button>
           )}
         </div>
-        <CardDescription className="text-xs text-slate-500">
+        <CardDescription className="text-xs text-neutral-500">
           Transkrip verifikasi argumen berhadapan dengan agent penilai independen
         </CardDescription>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-6">
         {log.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
-            <MessageSquareQuote className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-sm font-medium text-slate-800">
+          <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 p-8 text-center">
+            <MessageSquareQuote className="mx-auto h-8 w-8 text-neutral-400" />
+            <p className="mt-2 text-sm font-medium text-neutral-800">
               Belum ada tantangan tesis yang diajukan untuk {tk}
             </p>
-            <p className="mt-1 text-xs text-slate-500 max-w-sm mx-auto">
+            <p className="mt-1 text-xs text-neutral-500 max-w-sm mx-auto">
               Gunakan formulir di sebelah kiri untuk menguji asumsi WACC, margin operasi, atau proyeksi pertumbuhan emiten.
             </p>
           </div>
@@ -107,15 +107,15 @@ export function ChallengeHistoryList({
             {log.map((entry, index) => (
               <div
                 key={index}
-                className="rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-2xs"
+                className="rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-2xs"
               >
                 {/* Header: Question & Verdict */}
-                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b border-slate-100 pb-2.5">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between border-b border-neutral-100 pb-2.5">
                   <div className="space-y-1">
-                    <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-slate-400">
+                    <span className="text-[10px] font-bold font-mono uppercase tracking-wider text-neutral-400">
                       Tantangan #{log.length - index}
                     </span>
-                    <h4 className="text-xs font-semibold text-slate-900 leading-snug">
+                    <h4 className="text-xs font-semibold text-neutral-900 leading-snug">
                       "{entry.q}"
                     </h4>
                   </div>
@@ -124,12 +124,12 @@ export function ChallengeHistoryList({
 
                 {/* Evidence Content */}
                 {entry.evidence && (
-                  <div className="mt-3 space-y-1 text-xs leading-relaxed text-slate-700">
-                    <div className="font-semibold text-slate-900 flex items-center gap-1.5">
-                      <ShieldAlert className="h-3.5 w-3.5 text-slate-600" />
+                  <div className="mt-3 space-y-1 text-xs leading-relaxed text-neutral-700">
+                    <div className="font-semibold text-neutral-900 flex items-center gap-1.5">
+                      <ShieldAlert className="h-3.5 w-3.5 text-neutral-600" />
                       <span>Argumen Pembelaan / Penjelasan Model:</span>
                     </div>
-                    <p className="rounded-lg bg-slate-50 p-3 text-slate-700 font-sans border border-slate-100">
+                    <p className="rounded-lg bg-neutral-50 p-3 text-neutral-700 font-sans border border-neutral-100">
                       {entry.evidence}
                     </p>
                   </div>
@@ -144,18 +144,18 @@ export function ChallengeHistoryList({
                 )}
 
                 {/* Exhibit Reference & Metadata */}
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500">
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-neutral-100 text-[11px] text-neutral-500">
                   {entry.exhibit_ref ? (
-                    <div className="flex items-center gap-1 font-mono text-slate-600">
-                      <FileSearch className="h-3 w-3 text-slate-400" />
+                    <div className="flex items-center gap-1 font-mono text-neutral-600">
+                      <FileSearch className="h-3 w-3 text-neutral-400" />
                       <span>Ref: {entry.exhibit_ref}</span>
                     </div>
                   ) : (
-                    <span className="text-slate-400">Rujukan: Laporan Keuangan Audited IDX</span>
+                    <span className="text-neutral-400">Rujukan: Laporan Keuangan Audited IDX</span>
                   )}
 
                   {entry.debate_id && (
-                    <span className="font-mono text-[10px] text-slate-400">
+                    <span className="font-mono text-[10px] text-neutral-400">
                       ID: {entry.debate_id}
                     </span>
                   )}

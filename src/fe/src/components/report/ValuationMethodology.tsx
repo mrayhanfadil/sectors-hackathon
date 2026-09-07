@@ -173,7 +173,7 @@ function SegmentPie({
   if (!segments || segments.length === 0) {
     if (rawSegments && typeof rawSegments === "object" && Object.keys(rawSegments).length > 0) {
       return (
-        <ul className="space-y-1 text-xs text-slate-700">
+        <ul className="space-y-1 text-xs text-neutral-700">
           {Object.entries(rawSegments as Record<string, unknown>).map(([seg, val]) => (
             <li key={seg}>
               <span className="font-medium">{seg}</span>: {typeof val === "object" && val !== null ? JSON.stringify(val) : String(val)}
@@ -183,19 +183,19 @@ function SegmentPie({
       )
     }
     return (
-      <div className="rounded-lg border border-dashed border-slate-200 px-4 py-5 text-center text-xs text-slate-500">
+      <div className="rounded-lg border border-dashed border-neutral-200 px-4 py-5 text-center text-xs text-neutral-500">
         Segmentasi tunggal / pengungkapan segmen gabungan sesuai laporan keuangan IDX.
       </div>
     )
   }
 
   const total = segments.reduce((s, x) => s + Number(x.share_pct ?? 0), 0)
-  const colors = ["bg-slate-900", "bg-slate-600", "bg-slate-400", "bg-slate-300", "bg-amber-500", "bg-emerald-600"]
+  const colors = ["bg-neutral-900", "bg-neutral-600", "bg-neutral-400", "bg-neutral-300", "bg-amber-500", "bg-emerald-600"]
 
   return (
     <div className="space-y-3">
       {/* Visual Stacked Bar */}
-      <div className="flex h-3 overflow-hidden rounded-full border border-slate-200">
+      <div className="flex h-3 overflow-hidden rounded-full border border-neutral-200">
         {segments.map((s, i) => (
           <div
             key={s.name}
@@ -209,20 +209,20 @@ function SegmentPie({
       {/* Breakdown Items */}
       <div className="grid gap-2 sm:grid-cols-2">
         {segments.map((s, i) => (
-          <div key={s.name} className="flex items-center justify-between rounded-lg border border-slate-200/80 bg-white p-2.5 text-xs">
-            <span className="flex items-center gap-2 font-medium text-slate-800">
+          <div key={s.name} className="flex items-center justify-between rounded-lg border border-neutral-200/80 bg-white p-2.5 text-xs">
+            <span className="flex items-center gap-2 font-medium text-neutral-800">
               <span className={`h-2.5 w-2.5 rounded-full ${colors[i % colors.length]}`} />
               {s.name}
             </span>
             <div className="flex items-center gap-2 font-mono">
-              <span className="font-semibold text-slate-900">
+              <span className="font-semibold text-neutral-900">
                 {s.share_pct != null ? `${s.share_pct}%` : "-"}
               </span>
               {s.revenue != null && (
-                <span className="text-slate-500 text-[11px]">Rp {fmtIDR(Number(s.revenue))} bn</span>
+                <span className="text-neutral-500 text-[11px]">Rp {fmtIDR(Number(s.revenue))} bn</span>
               )}
               {s.yoy_pct != null && (
-                <span className="rounded bg-slate-50 px-1.5 py-0.5 text-[10px] text-slate-600">
+                <span className="rounded bg-neutral-50 px-1.5 py-0.5 text-[10px] text-neutral-600">
                   YoY {String(s.yoy_pct)}
                 </span>
               )}
@@ -241,7 +241,7 @@ function SegmentPie({
           Penyesuaian One-off: {segments.find((s) => s.one_off)?.one_off}
         </p>
       )}
-      {source && <p className="text-[11px] text-slate-400">Sumber: {source}</p>}
+      {source && <p className="text-[11px] text-neutral-400">Sumber: {source}</p>}
     </div>
   )
 }
@@ -272,25 +272,25 @@ export function ValuationMethodology({
   return (
     <section id="valuation-methodology" className="space-y-4 scroll-mt-28">
       <div>
-        <h2 className="text-lg font-bold tracking-tight text-slate-900">
+        <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a]">
           2. Metodologi Valuasi & Profil Finansial
         </h2>
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-neutral-500">
           Model DCF, kelipatan laba, bobot blended, data operasional, dan dekomposisi segmen
         </p>
       </div>
 
       {/* Row 1: Valuation Summary Table */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-slate-700" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <Calculator className="h-4 w-4 text-neutral-700" />
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Ringkasan Model Valuasi
               </CardTitle>
             </div>
-            <span className="text-[11px] text-slate-400 font-mono">
+            <span className="text-[11px] text-neutral-400 font-mono">
               {vd?.provenance ?? "DCF / DDM / SOTP / GGM deterministik"}
             </span>
           </div>
@@ -300,37 +300,37 @@ export function ValuationMethodology({
             {valuation.map((v) => (
               <div
                 key={v.method}
-                className="flex items-center justify-between rounded-lg border border-slate-200 bg-slate-50/50 p-3"
+                className="flex items-center justify-between rounded-lg border border-neutral-200 bg-neutral-50/50 p-3"
               >
                 <div>
-                  <div className="text-xs font-semibold text-slate-900">{v.method}</div>
-                  <div className="text-[11px] text-slate-500">
+                  <div className="text-xs font-semibold text-neutral-900">{v.method}</div>
+                  <div className="text-[11px] text-neutral-500">
                     {v.weight ? `Bobot: ${v.weight}%` : "Model Standalone"}
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm font-bold font-mono text-slate-900">
+                  <div className="text-sm font-bold font-mono text-neutral-900">
                     Rp {fmtIDR(v.value)}
                   </div>
-                  <div className="text-[10px] text-slate-400">Nilai Wajar</div>
+                  <div className="text-[10px] text-neutral-400">Nilai Wajar</div>
                 </div>
               </div>
             ))}
           </div>
 
           {vd?.methods && vd.methods.length > 0 && (
-            <div className="space-y-1.5 border-t border-slate-100 pt-3">
-              <div className="text-xs font-semibold text-slate-600">Rincian Komponen Mesin Valuasi:</div>
+            <div className="space-y-1.5 border-t border-neutral-100 pt-3">
+              <div className="text-xs font-semibold text-neutral-600">Rincian Komponen Mesin Valuasi:</div>
               <div className="grid gap-2 sm:grid-cols-2">
                 {vd.methods.map((m) => (
                   <div
                     key={m.method}
-                    className="flex items-center justify-between rounded-md border border-slate-100 bg-white p-2 text-xs"
+                    className="flex items-center justify-between rounded-md border border-neutral-100 bg-white p-2 text-xs"
                   >
-                    <span className="text-slate-700">
-                      {m.method} <span className="text-[11px] text-slate-400">({m.source ?? "engine"})</span>
+                    <span className="text-neutral-700">
+                      {m.method} <span className="text-[11px] text-neutral-400">({m.source ?? "engine"})</span>
                     </span>
-                    <span className="font-mono font-semibold text-slate-900">
+                    <span className="font-mono font-semibold text-neutral-900">
                       Rp {fmtIDR(m.fv)}
                     </span>
                   </div>
@@ -345,12 +345,12 @@ export function ValuationMethodology({
       <div className="grid gap-4 lg:grid-cols-2">
         {/* Blended Valuation (if present) */}
         {vd?.blended ? (
-          <Card className="border-slate-200 bg-white shadow-2xs">
+          <Card className="border-neutral-200 bg-white shadow-2xs">
             <CardHeader className="p-4 pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-slate-700" />
-                  <CardTitle className="text-sm font-semibold text-slate-900">
+                  <Layers className="h-4 w-4 text-neutral-700" />
+                  <CardTitle className="text-sm font-semibold text-neutral-900">
                     Blended Valuation {isInfra ? "(Bobot 60/40)" : ""}
                   </CardTitle>
                 </div>
@@ -358,15 +358,15 @@ export function ValuationMethodology({
                   MoS {vd.blended.margin_of_safety_pct ?? 15}%
                 </Badge>
               </div>
-              <CardDescription className="text-[11px] text-slate-400">
+              <CardDescription className="text-[11px] text-neutral-400">
                 {vd.blended.source ?? "scripts/blended.py"}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">
-              <div className="overflow-x-auto rounded-lg border border-slate-200">
+              <div className="overflow-x-auto rounded-lg border border-neutral-200">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b bg-slate-50 text-left text-slate-600 font-semibold">
+                    <tr className="border-b bg-neutral-50 text-left text-neutral-600 font-semibold">
                       <th className="py-2 px-3">Metode</th>
                       <th className="py-2 px-3">Bobot</th>
                       <th className="py-2 px-3 text-right">Nilai Wajar</th>
@@ -380,14 +380,14 @@ export function ValuationMethodology({
                       ]
                     ).map((row, i) => (
                       <tr key={i} className="border-b last:border-0">
-                        <td className="py-1.5 px-3 font-medium text-slate-800">{String(row[0])}</td>
-                        <td className="py-1.5 px-3 font-mono text-slate-600">{String(row[1])}</td>
-                        <td className="py-1.5 px-3 text-right font-mono font-semibold text-slate-900">
+                        <td className="py-1.5 px-3 font-medium text-neutral-800">{String(row[0])}</td>
+                        <td className="py-1.5 px-3 font-mono text-neutral-600">{String(row[1])}</td>
+                        <td className="py-1.5 px-3 text-right font-mono font-semibold text-neutral-900">
                           Rp {fmtIDR(Number(row[2]))}
                         </td>
                       </tr>
                     ))}
-                    <tr className="bg-slate-900 text-white font-bold">
+                    <tr className="bg-[#0a0a0a] text-white font-bold">
                       <td className="py-2 px-3">Blended Target Price</td>
                       <td className="py-2 px-3 font-mono">100%</td>
                       <td className="py-2 px-3 text-right font-mono">
@@ -397,7 +397,7 @@ export function ValuationMethodology({
                   </tbody>
                 </table>
               </div>
-              <div className="flex items-center gap-1.5 text-[11px] text-slate-500">
+              <div className="flex items-center gap-1.5 text-[11px] text-neutral-500">
                 <CheckCircle className="h-3.5 w-3.5 text-emerald-600" />
                 <span>
                   Audit bobot total:{" "}
@@ -411,12 +411,12 @@ export function ValuationMethodology({
 
         {/* GGM Box (if present, e.g. BBCA) */}
         {vd?.ggm ? (
-          <Card className="border-slate-200 bg-white shadow-2xs">
+          <Card className="border-neutral-200 bg-white shadow-2xs">
             <CardHeader className="p-4 pb-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BarChart2 className="h-4 w-4 text-emerald-600" />
-                  <CardTitle className="text-sm font-semibold text-slate-900">
+                  <CardTitle className="text-sm font-semibold text-neutral-900">
                     Gordon Growth Model (GGM P/BV)
                   </CardTitle>
                 </div>
@@ -424,21 +424,21 @@ export function ValuationMethodology({
                   {vd.ggm.pbv_implied}x P/BV
                 </Badge>
               </div>
-              <CardDescription className="text-[11px] text-slate-400 font-mono">
+              <CardDescription className="text-[11px] text-neutral-400 font-mono">
                 {vd.ggm.formula}
               </CardDescription>
             </CardHeader>
             <CardContent className="p-4 pt-2 space-y-3">
               <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                  <div className="text-slate-500 text-[11px]">P/BV Implied</div>
-                  <div className="font-bold font-mono text-slate-900 text-sm mt-0.5">
+                <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-2.5">
+                  <div className="text-neutral-500 text-[11px]">P/BV Implied</div>
+                  <div className="font-bold font-mono text-neutral-900 text-sm mt-0.5">
                     {vd.ggm.pbv_implied}x
                   </div>
                 </div>
-                <div className="rounded-lg border border-slate-100 bg-slate-50 p-2.5">
-                  <div className="text-slate-500 text-[11px]">BVPS Proyeksi</div>
-                  <div className="font-bold font-mono text-slate-900 text-sm mt-0.5">
+                <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-2.5">
+                  <div className="text-neutral-500 text-[11px]">BVPS Proyeksi</div>
+                  <div className="font-bold font-mono text-neutral-900 text-sm mt-0.5">
                     Rp {fmtIDR(Number((vd.ggm.assumptions as Record<string, unknown>)?.["bvps"] ?? 4200))}
                   </div>
                 </div>
@@ -450,8 +450,8 @@ export function ValuationMethodology({
                 </div>
               </div>
 
-              <div className="rounded-md border border-slate-100 bg-slate-50/50 p-2.5 text-xs text-slate-600 space-y-1">
-                <div className="font-semibold text-slate-700 text-[11px] uppercase tracking-wider">
+              <div className="rounded-md border border-neutral-100 bg-neutral-50/50 p-2.5 text-xs text-neutral-600 space-y-1">
+                <div className="font-semibold text-neutral-700 text-[11px] uppercase tracking-wider">
                   Asumsi Parameter GGM:
                 </div>
                 <div className="grid grid-cols-3 gap-1 font-mono text-[11px]">
@@ -472,12 +472,12 @@ export function ValuationMethodology({
 
         {/* Historical Bands STD+-2 */}
         {bandsData ? (
-          <Card className="border-slate-200 bg-white shadow-2xs lg:col-span-2">
+          <Card className="border-neutral-200 bg-white shadow-2xs lg:col-span-2">
             <CardHeader className="p-4 pb-2">
               <div className="flex flex-wrap items-center justify-between gap-2">
                 <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-slate-700" />
-                  <CardTitle className="text-sm font-semibold text-slate-900">
+                  <TrendingUp className="h-4 w-4 text-neutral-700" />
+                  <CardTitle className="text-sm font-semibold text-neutral-900">
                     Valuasi Historis 3 Tahun (P/BV Bands STD ± 2)
                   </CardTitle>
                 </div>
@@ -485,7 +485,7 @@ export function ValuationMethodology({
                   {String(bandsData.label ?? "STD BAND")}
                 </Badge>
               </div>
-              <CardDescription className="text-[11px] text-slate-400">
+              <CardDescription className="text-[11px] text-neutral-400">
                 {vd?.bands?.source ?? "IDX, data diolah"} · Mean Reversion Analysis
               </CardDescription>
             </CardHeader>
@@ -504,10 +504,10 @@ export function ValuationMethodology({
                     key={c.k}
                     className={`rounded-lg border p-2 ${
                       c.k === "Kini"
-                        ? "border-slate-900 bg-slate-900 text-white font-bold"
+                        ? "border-neutral-900 bg-neutral-900 text-white font-bold"
                         : c.k === "Posisi"
                         ? "bg-amber-50 border-amber-200 text-amber-900 font-medium"
-                        : "bg-white border-slate-200 text-slate-800"
+                        : "bg-white border-neutral-200 text-neutral-800"
                     }`}
                   >
                     <div className="text-[10px] opacity-75 font-mono">{c.k}</div>
@@ -526,16 +526,16 @@ export function ValuationMethodology({
 
       {/* Row 3: KPI Operasional (Operational KPIs) */}
       {kpis && kpis.length > 0 && (
-        <Card className="border-slate-200 bg-white shadow-2xs">
+        <Card className="border-neutral-200 bg-white shadow-2xs">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-slate-700" />
-                <CardTitle className="text-sm font-semibold text-slate-900">
+                <BarChart2 className="h-4 w-4 text-neutral-700" />
+                <CardTitle className="text-sm font-semibold text-neutral-900">
                   KPI Operasional Utama {isInfra ? "(Infrastruktur Menara / Fiber)" : isSotp ? "(Konglomerasi)" : "(Operasional)"}
                 </CardTitle>
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] text-neutral-400 font-mono">
                 Laporan Resmi Perusahaan / SKK Migas
               </span>
             </div>
@@ -549,11 +549,11 @@ export function ValuationMethodology({
                   : null
 
                 return (
-                  <div key={k.name} className="rounded-lg border border-slate-200 bg-slate-50/60 p-3 space-y-1">
-                    <div className="text-xs font-medium text-slate-600 truncate">{k.name}</div>
-                    <div className="text-base font-bold font-mono text-slate-900">
+                  <div key={k.name} className="rounded-lg border border-neutral-200 bg-neutral-50/60 p-3 space-y-1">
+                    <div className="text-xs font-medium text-neutral-600 truncate">{k.name}</div>
+                    <div className="text-base font-bold font-mono text-neutral-900">
                       {typeof k.value === "number" ? fmtIDR(k.value) : String(k.value)}{" "}
-                      <span className="text-xs font-normal text-slate-500 font-sans">{k.unit ?? ""}</span>
+                      <span className="text-xs font-normal text-neutral-500 font-sans">{k.unit ?? ""}</span>
                     </div>
                     {k.prev != null && (
                       <div
@@ -565,7 +565,7 @@ export function ValuationMethodology({
                         {deltaPct != null ? `(${deltaPct}%)` : ""} · prev {fmtIDR(Number(k.prev))}
                       </div>
                     )}
-                    {k.formula && <div className="text-[10px] text-slate-400 truncate">{k.formula}</div>}
+                    {k.formula && <div className="text-[10px] text-neutral-400 truncate">{k.formula}</div>}
                   </div>
                 )
               })}
@@ -575,17 +575,17 @@ export function ValuationMethodology({
       )}
 
       {/* Row 4: Segment Mix */}
-      <Card className="border-slate-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <PieChart className="h-4 w-4 text-slate-700" />
-              <CardTitle className="text-sm font-semibold text-slate-900">
+              <PieChart className="h-4 w-4 text-neutral-700" />
+              <CardTitle className="text-sm font-semibold text-neutral-900">
                 Segment Mix & Komposisi Pendapatan
               </CardTitle>
             </div>
           </div>
-          <CardDescription className="text-[11px] text-slate-400">
+          <CardDescription className="text-[11px] text-neutral-400">
             Pendapatan per segmen usaha · YoY, QoQ, dan porsi kontribusi
           </CardDescription>
         </CardHeader>
@@ -600,16 +600,16 @@ export function ValuationMethodology({
 
       {/* Row 5: Rasio Keuangan Kunci (Financial Ratios) */}
       {ratios && Object.keys(ratios).length > 0 && (
-        <Card className="border-slate-200 bg-white shadow-2xs">
+        <Card className="border-neutral-200 bg-white shadow-2xs">
           <CardHeader className="p-4 pb-2">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Table className="h-4 w-4 text-slate-700" />
-                <CardTitle className="text-sm font-semibold text-slate-900">
+                <Table className="h-4 w-4 text-neutral-700" />
+                <CardTitle className="text-sm font-semibold text-neutral-900">
                   Rasio Finansial Kunci & Solvabilitas
                 </CardTitle>
               </div>
-              <span className="text-[11px] text-slate-400 font-mono">
+              <span className="text-[11px] text-neutral-400 font-mono">
                 Laporan Keuangan IDX
               </span>
             </div>
@@ -617,9 +617,9 @@ export function ValuationMethodology({
           <CardContent className="p-4 pt-2 space-y-2">
             <div className="grid gap-2 grid-cols-2 sm:grid-cols-3 lg:grid-cols-6">
               {Object.entries(ratios).map(([k, v]) => (
-                <div key={k} className="rounded-lg border border-slate-200 bg-white p-2.5 text-center">
-                  <div className="text-[11px] text-slate-500 font-medium truncate">{k}</div>
-                  <div className="text-sm font-bold font-mono text-slate-900 mt-0.5">{String(v)}</div>
+                <div key={k} className="rounded-lg border border-neutral-200 bg-white p-2.5 text-center">
+                  <div className="text-[11px] text-neutral-500 font-medium truncate">{k}</div>
+                  <div className="text-sm font-bold font-mono text-neutral-900 mt-0.5">{String(v)}</div>
                 </div>
               ))}
             </div>

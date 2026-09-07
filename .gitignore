@@ -65,3 +65,7 @@ node_modules/
 # Typst fonts (downloaded once)
 assets/fonts/*.ttf
 output/cache/
+
+# Generated report PDFs (regenerable build artifacts)
+output/*.pdf
+scripts/fixtures/*.pdf
