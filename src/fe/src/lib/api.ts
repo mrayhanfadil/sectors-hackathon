@@ -369,7 +369,7 @@ export async function fetchReportLog(ticker: string): Promise<ReportLogResponse>
 }
 
 // ---------------------------------------------------------------------------
-// Free Public Upstream Data (Yahoo Finance .JK + IDX Keterbukaan)
+// Sectors API v2 — single data gateway (see server/sectors.py)
 // ---------------------------------------------------------------------------
 
 export type DividendItem = {

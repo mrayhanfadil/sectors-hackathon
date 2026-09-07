@@ -223,7 +223,7 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
               </Badge>
             </div>
             <CardDescription className="mt-1 text-xs text-slate-500">
-              Multi-quarter income statement & cash flow trend lines from free public yfinance data
+              Multi-quarter income statement & cash flow trend lines from Sectors quarterly financials
             </CardDescription>
           </div>
 
