@@ -213,7 +213,7 @@ export const SummaryCard = memo(function SummaryCard({
             </div>
 
             <div className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-800" />
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-800 dark:text-neutral-200" />
               <div className="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
                 <span className="font-semibold text-neutral-900 dark:text-neutral-100">Uji Kritis Red Team: </span>
                 Argumen telah diuji silang dan divalidasi oleh QA Arbiter sebelum ditampilkan.
@@ -226,7 +226,7 @@ export const SummaryCard = memo(function SummaryCard({
         <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-neutral-200/60 text-xs text-neutral-500 dark:border-neutral-700/60 dark:text-neutral-400">
           <div className="flex flex-wrap items-center gap-4">
             <span className="flex items-center gap-1 font-medium text-neutral-700 dark:text-neutral-300">
-              <Clock className="h-3.5 w-3.5 text-neutral-500" />
+              <Clock className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
               <span>Selesai dalam {data.elapsedSeconds} detik</span>
             </span>
 

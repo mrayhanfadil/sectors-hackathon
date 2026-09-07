@@ -88,7 +88,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
     <div className={cn("w-full space-y-2.5", className)}>
       <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
         <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-          <Sparkles className="h-3.5 w-3.5 text-neutral-500" />
+          <Sparkles className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
           <span>Alur Pipeline 5 Tahap AI</span>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-500 dark:text-neutral-400">

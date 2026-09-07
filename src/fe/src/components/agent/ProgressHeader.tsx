@@ -146,7 +146,7 @@ export const ProgressHeader = memo(function ProgressHeader({
                 </span>
                 <span className="text-neutral-400">·</span>
                 <span className="flex items-center gap-1 font-mono text-neutral-700 dark:text-neutral-300">
-                  <Activity className="h-3 w-3 text-neutral-500" />
+                  <Activity className="h-3 w-3 text-neutral-500 dark:text-neutral-400" />
                   {events.length} events
                 </span>
                 <span className="text-neutral-400">·</span>
