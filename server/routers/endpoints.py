@@ -528,6 +528,47 @@ async def tickers():
 
 
 # ---------- report/{ticker} ----------
+async def _sectors_snapshot(t: str) -> dict:
+    """Sectors-first market snapshot (swaps 2+4 scaffold).
+
+    Returns {overview, financials, segments, price, source} with defensive
+    extraction — unknown shapes yield empty (honest, never fabricated).
+    Raises SectorsNotConfigured when keyless so callers fall through to the
+    legacy path (deprecated, delete after env lands).
+    """
+    import asyncio
+    from datetime import date, timedelta
+    from server.sectors import (
+        company_report, corporate_actions, daily, quarterly,
+    )
+
+    end = date.today().isoformat()
+    start = (date.today() - timedelta(days=14)).isoformat()
+    rows = await asyncio.to_thread(daily, t, start, end)
+    items = (rows or {}).get("data") or (rows or {}).get("results") or []
+    price = None
+    if isinstance(items, list) and items:
+        last = items[-1] or {}
+        for k in ("close", "closing_price", "price"):
+            if last.get(k) is not None:
+                price = float(last[k])
+                break
+    rep = await asyncio.to_thread(company_report, t, "overview,financials,dividend")
+    rep = rep or {}
+    fin = await asyncio.to_thread(quarterly, t, 4)
+    fin = fin or {}
+    acts = await asyncio.to_thread(corporate_actions, t)
+    acts = acts or {}
+    return {
+        "overview": rep.get("overview") or rep or None,
+        "financials": fin.get("data") or fin.get("results") or fin or None,
+        "segments": None,
+        "price": price,
+        "source": "sectors",
+        "dividends": (acts.get("dividend") or acts.get("dividends") or []),
+    }
+
+
 @router_report.get("/api/report/{ticker}", summary="Full equity report payload")
 async def report_ticker(
     ticker: str,
@@ -544,25 +585,38 @@ async def report_ticker(
         cached["cached"] = True
         return cached
 
-    # try stockdata then yfinance fallback (no LLM math)
     overview = None
     financials = None
     segments = None
     price = None
     source = "synthetic"
-    try:
-        from ..stockdata import get_stockdata
 
-        sd = get_stockdata()
-        overview = await sd.get_overview(t)
-        financials = await sd.get_financials(t)
-        segments = await sd.get_segments(t)
-        if overview or financials:
-            source = "stockdata:15437"
+    # try Sectors first (swaps 2+4); keyless/unknown-shape -> legacy below
+    try:
+        snap = await _sectors_snapshot(t)
+        if snap.get("overview") or snap.get("financials") or snap.get("price") is not None:
+            overview = snap.get("overview")
+            financials = snap.get("financials")
+            price = snap.get("price")
+            source = "sectors"
     except Exception:
         pass
 
-    if not overview:
+    # try stockdata then yfinance fallback (no LLM math) — LEGACY, deprecated
+    if source == "synthetic":
+        try:
+            from ..stockdata import get_stockdata
+
+            sd = get_stockdata()
+            overview = await sd.get_overview(t)
+            financials = await sd.get_financials(t)
+            segments = await sd.get_segments(t)
+            if overview or financials:
+                source = "stockdata:15437"
+        except Exception:
+            pass
+
+    if not overview and source == "synthetic":
         # yfinance fallback
         try:
             import yfinance as yf

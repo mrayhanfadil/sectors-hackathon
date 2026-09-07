@@ -210,6 +210,40 @@ async def web_search(
     _init_pool()
     fetched_at = datetime.now(timezone.utc).isoformat()
 
+    # Sectors-first (swap 3 scaffold): ticker-scoped news when key present.
+    # Ticker guess = first ALL-CAPS token >= 4 chars (IDX convention).
+    if os.environ.get("SECTORS_API_KEY"):
+        try:
+            import asyncio as _aio
+            from server.sectors import news as _sectors_news
+
+            syms = [w.strip(".,") for w in query.upper().split()]
+            syms = [w for w in syms if w.isalpha() and len(w) >= 4][:3]
+            if syms:
+                raw = await _aio.to_thread(_sectors_news, ",".join(syms))
+                items = (raw or {}).get("data") or (raw or {}).get("results") or []
+                out = []
+                for it in items[: min(max(1, n_results), 20)]:
+                    if not isinstance(it, dict):
+                        continue
+                    url = it.get("url") or it.get("link") or ""
+                    out.append({
+                        "url": url,
+                        "title": it.get("title", ""),
+                        "content": str(it.get("summary") or it.get("content") or "")[:800],
+                        "score": 0.0,
+                        "tier": _domain_tier(url),
+                    })
+                return {
+                    "query": query,
+                    "tier": tier,
+                    "source": "sectors",
+                    "fetched_at": fetched_at,
+                    "results": out,
+                }
+        except Exception as e:
+            logger.warning("Sectors news failed, Tavily legacy: %s", e)
+
     if not _KEY_POOL:
         return {
             "query": query,
