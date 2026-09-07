@@ -40,7 +40,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
         try:
             chart_vs_jci(palette, ticker, ch["labels"], ch["series"][0],
                          ch["series"][1] if len(ch["series"]) > 1 else [],
-                         vs_jci.get("source", "IDX, yfinance"), cache / "vs_jci.png")
+                         vs_jci.get("source", "Sectors"), cache / "vs_jci.png")
         except Exception as e:
             print(f"[warn] vs_jci: {e}")
     if data.get("segments"):
@@ -113,7 +113,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
         try:
             sc = strategy["price_chart"]
             chart_index_trend(palette, sc["labels"], sc["series"][0],
-                              sc.get("source", "IDX, yfinance"), cache / "index_trend.png")
+                              sc.get("source", "Sectors"), cache / "index_trend.png")
         except Exception as e:
             print(f"[warn] idx_trend: {e}")
     if data.get("financial_highlights"):

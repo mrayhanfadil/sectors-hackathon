@@ -1,5 +1,4 @@
-// Universe emiten IDX untuk /agent — sumber: GET /api/tickers (stockdata.tickers,
-// database IDX Morning Brief). Fallback = 6 emiten ber-engine penuh
+// Universe emiten IDX untuk /agent — sumber: GET /api/tickers (Sectors universe feed).
 // (data/assumptions/*.json) kalau endpoint belum kebaca.
 
 export interface UniverseTicker {

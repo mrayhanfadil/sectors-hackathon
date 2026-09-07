@@ -190,7 +190,7 @@ def _build_search_subagent(
                 logger.info("ADK_ENABLE_GOOGLE_SEARCH=true but no GOOGLE_API_KEY for %s — degrading", name)
         logger.info("Search sub-agent %s: using Spark (no GoogleSearchTool) — 0-credit mode", name)
         model = _deepseek_or_gemini()
-        suffix = "\n\nNote: Google Search grounding is disabled in this run (no valid GOOGLE_API_KEY). Produce best-effort synthetic results via your knowledge and label source=synthetic.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
+        suffix = "\n\nNote: External web grounding is disabled in this run (Sectors-only mode). Do NOT invent results: emit source=sectors_missing_key with an empty list and STOP.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
         return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
     else:
         has_google_search = True
@@ -247,14 +247,14 @@ def _assumptions_block(ticker: str) -> str:
 
 
 def _web_composite_tools() -> list[Any]:
-    """Composite web toolset — replaces Gemini+GoogleSearch search sub-agents.
+    """Composite web toolset — Sectors-backed search + local extract.
 
     Provides web_search, web_extract, and web_search_and_extract as FunctionTools
     directly to parent agents. Avoids the GoogleSearch + functiontool conflict by
-    not using GoogleSearchTool at all (Tavily + httpx+readability cover the same
-    surface for our IDX-equity use case at $0/mo up to 1k searches).
+    not using GoogleSearchTool at all (Sectors v2 news + httpx+readability cover
+    the same surface for our IDX-equity use case through the single gateway).
 
-    Honest provenance: each tool returns {source: 'tavily'|'tavily_missing_key'|...}
+    Honest provenance: each tool returns {source: 'sectors'|'sectors_missing_key'|...}
     so the Critic agent can verify before accepting claims.
     """
     return [
@@ -300,20 +300,20 @@ def build_graph(
     _adk_parallel_val = os.getenv("ADK_PARALLEL", "")
     free_tier = bool(is_minimax and (_adk_parallel_val == "" or _adk_parallel_val == "0"))
 
-    # -- Search sub-agents (Gemini + GoogleSearch, isolated) -----------------
+    # -- Search sub-agents (Sectors-grounded, isolated) -----------------
     news_search_sub = _build_search_subagent(
         name="news_search_sub",
-        description="Researches IDX news via Google Search grounding.",
+        description="Researches IDX news via Sectors feed.",
         instruction=_fmt(news_search_sub_instruction),
     )
     social_search_sub = _build_search_subagent(
         name="social_search_sub",
-        description="Researches retail sentiment on X/Reddit/Stockbit via Google Search.",
+        description="Researches retail crowd sentiment via Sectors feed proxies.",
         instruction=_fmt(social_search_sub_instruction),
     )
     industry_search_sub = _build_search_subagent(
         name="industry_search_sub",
-        description="Researches macro/industry context via Google Search grounding.",
+        description="Researches macro/industry context via Sectors feed.",
         instruction=_fmt(industry_search_sub_instruction),
     )
 
@@ -325,11 +325,11 @@ def build_graph(
         logger.info("Sectors MCP skipped (no SECTORS_API_KEY)")
 
     # -- Leaf LlmAgents -------------------------------------------------------
-    # Composite web tools (Tavily search + readability extract) attached to any
+    # Composite web tools (Sectors search + readability extract) attached to any
     # agent that needs fresh IDX data without Sectors MCP. Generated once and reused.
     composite_web_tools = _web_composite_tools()
 
-    # Collector: Sectors MCP if present, else Tavily+readability as honest fallback.
+    # Collector: Sectors MCP if present, else Sectors web_search_and_extract backup.
     # (Previously empty tools caused LLM hallucination of web_search_and_extract.)
     collector_tools: list[Any] = []
     if sectors_toolset is not None:
@@ -340,7 +340,7 @@ def build_graph(
     collector = LlmAgent(
         name="collector",
         model=main_model,
-        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP if available, else Tavily search + readability extract.",
+        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP if available, else Sectors search + readability extract.",
         instruction=_fmt(collector_instruction),
         tools=collector_tools,
         output_key="collector_output",
@@ -349,7 +349,7 @@ def build_graph(
     news_harvester = LlmAgent(
         name="news_harvester",
         model=main_model,
-        description="Harvests last 30d IDX news (max 8, tier-filtered) via Tavily search + readability extract.",
+        description="Harvests last 30d IDX news (max 8, tier-filtered) via Sectors search + readability extract.",
         instruction=_fmt(news_harvester_instruction),
         tools=composite_web_tools,
         output_key="news_output",
@@ -357,7 +357,7 @@ def build_graph(
     social_sentiment = LlmAgent(
         name="social_sentiment",
         model=main_model,
-        description="Gauges retail crowd sentiment 0-100 from X/Reddit/Stockbit via Tavily + readability.",
+        description="Gauges retail crowd sentiment 0-100 from Sectors news + filings proxies.",
         instruction=_fmt(social_sentiment_instruction),
         tools=composite_web_tools,
         output_key="social_output",
@@ -375,7 +375,7 @@ def build_graph(
     industry = LlmAgent(
         name="industry",
         model=main_model,
-        description="Macro/industry thematics with url+date citations via Tavily + readability.",
+        description="Macro/industry thematics with url+date citations via Sectors + readability.",
         instruction=_fmt(industry_instruction) + PEER_PROTOCOL,
         tools=[*composite_web_tools, peer_tool],
         output_key="industry_output",

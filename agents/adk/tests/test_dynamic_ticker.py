@@ -81,8 +81,8 @@ except ImportError:
 def test_dynamic_ticker_bmri():
     """BMRI (bank, not in quintet) must produce a valid report skeleton."""
     assum = load_assumptions("BMRI")
-    # Keyless: no Sectors lookup -> honest 'unknown' (was 'bank' via yfinance,
-    # removed in full-ditch). With SECTORS_API_KEY set this resolves to 'bank'.
+    # Keyless: no Sectors lookup -> honest 'unknown' (was 'bank' via third-party
+    # lookup, removed in full-ditch). With SECTORS_API_KEY set this resolves to 'bank'.
     assert assum["archetype"] in ("bank", "unknown")
 
 

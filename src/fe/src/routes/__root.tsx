@@ -94,9 +94,6 @@ function RootComponent() {
           <p>
             Semua keputusan investasi sepenuhnya tanggung jawab pengguna. Pelajari dulu, baru putuskan.
           </p>
-          <p className="text-slate-400">
-            Catatan: halaman Mock Data lama sudah tidak dipakai — buka halaman Laporan untuk data terbaru.
-          </p>
         </div>
       </footer>
     </div>

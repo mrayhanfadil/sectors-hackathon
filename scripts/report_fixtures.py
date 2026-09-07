@@ -99,7 +99,7 @@ def ratu_single() -> dict:
             "rating_box": {"action": "BUY", "tp": 7880, "prev_tp": None, "price": 6200,
                            "upside_pct": 27.1, "key_takeaways": []},
             "vs_jci": {"ytd_abs": 18.4, "ytd_rel": 6.2,
-                        "source": "IDX, yfinance (RATU.JK vs ^JKSE)",
+                        "source": "Sectors (RATU.JK vs ^JKSE)",
                         "chart": {"labels": MONTHS,
                                    "series": [[0, 4, 9, 12, 15, 18, 21, 19, 22, 24, 26, 27],
                                               [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]}},
@@ -192,7 +192,7 @@ def ratu_single() -> dict:
                       ["RATU", 42.7, 22.6, 30.0],
                       ["Rata-rata", 21.3, 10.6, 22.3],
                       ["Median", 12.4, 5.1, 22.0]],
-             "source": "IDX, yfinance — data historis"},
+             "source": "Sectors — data historis"},
         ]},
         "news": [],
         "sentiment": None,
@@ -227,7 +227,7 @@ def cdia_sotp() -> dict:
             "rating_box": {"action": "HOLD", "tp": 815, "prev_tp": None, "price": 780,
                            "upside_pct": 4.5, "key_takeaways": []},
             "vs_jci": {"ytd_abs": -62.9, "ytd_rel": -30.9,
-                        "source": "IDX, yfinance (CDIA.JK vs ^JKSE)",
+                        "source": "Sectors (CDIA.JK vs ^JKSE)",
                         "chart": {"labels": MONTHS,
                                    "series": [[0, -12, -28, -41, -50, -55, -60, -58, -61, -62, -63, -63],
                                               [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]}},
@@ -308,13 +308,13 @@ def cdia_sotp() -> dict:
         ],
         "peers": {"tables": [
             {"pillar": "Pilar Energi", "headers": ["Ticker", "EV/EBITDA", "ROE"],
-             "rows": [["POWR", 8.1, 14.0], ["Sembcorp", 9.3, 11.0], ["Rata-rata", 8.7, 12.5], ["Median", 8.7, 12.5]], "source": "IDX, yfinance"},
+             "rows": [["POWR", 8.1, 14.0], ["Sembcorp", 9.3, 11.0], ["Rata-rata", 8.7, 12.5], ["Median", 8.7, 12.5]], "source": "Sectors"},
             {"pillar": "Pilar Air", "headers": ["Ticker", "P/E", "ROE"],
-             "rows": [["TOWR", 13.2, 18.0], ["Aqua-like", 15.0, 20.0], ["Rata-rata", 14.1, 19.0], ["Median", 14.1, 19.0]], "source": "IDX, yfinance"},
+             "rows": [["TOWR", 13.2, 18.0], ["Aqua-like", 15.0, 20.0], ["Rata-rata", 14.1, 19.0], ["Median", 14.1, 19.0]], "source": "Sectors"},
             {"pillar": "Pilar Pelabuhan", "headers": ["Ticker", "EV/EBITDA", "ROE"],
-             "rows": [["Westports", 11.5, 12.0], ["IPBB", 10.8, 9.0], ["Rata-rata", 11.2, 10.5], ["Median", 11.2, 10.5]], "source": "IDX, yfinance"},
+             "rows": [["Westports", 11.5, 12.0], ["IPBB", 10.8, 9.0], ["Rata-rata", 11.2, 10.5], ["Median", 11.2, 10.5]], "source": "Sectors"},
             {"pillar": "Pilar Logistik", "headers": ["Ticker", "EV/EBITDA", "ROE"],
-             "rows": [["HATM", 7.4, 8.0], ["SMDR", 6.9, 10.0], ["Rata-rata", 7.2, 9.0], ["Median", 7.2, 9.0]], "source": "IDX, yfinance"},
+             "rows": [["HATM", 7.4, 8.0], ["SMDR", 6.9, 10.0], ["Rata-rata", 7.2, 9.0], ["Median", 7.2, 9.0]], "source": "Sectors"},
         ]},
         "news": [],
         "sentiment": None,
@@ -363,7 +363,7 @@ def mtel_infra() -> dict:
                                "harga IDR 460 (26 Agt 2026).",
                            ]},
             "vs_jci": {"ytd_abs": 12.1, "ytd_rel": -2.9,
-                        "source": "IDX, yfinance (MTEL.JK vs ^JKSE)",
+                        "source": "Sectors (MTEL.JK vs ^JKSE)",
                         "chart": {"labels": MONTHS,
                                    "series": [[0, 3, 6, 8, 10, 12, 14, 13, 12, 12, 12, 12],
                                               [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]}},
@@ -492,7 +492,7 @@ def mtel_infra() -> dict:
              "source": "Company data 1H26"},
             {"headline": "Merger operator menaikkan utilisasi tower",
              "detail": "Efektif 1 Jul 2026, PST & UMT merger menaikkan tenancy ke arah >1.6x.",
-             "source": "Disclosure IDX, kontan"},
+             "source": "Sectors (IDX disclosure)"},
             {"headline": "Spectrum auction = tenant tambahan terkuantifikasi",
              "detail": "Alokasi 700MHz/2.6GHz ke operator mendorong perluasan jaringan — +3.000-3.500 tenant.",
              "source": "Regulator (Kominfo/Komdigi), press release operator"},
@@ -526,7 +526,7 @@ def mtel_infra() -> dict:
                 "fv_str": "635",
             },
             "bands": {
-                "source": "IDX, yfinance — 3Y band, data diolah",
+                "source": "Sectors — 3Y band, data diolah",
                 "pbv_3y": {"std+2": 2.9, "std+1": 2.5, "avg": 2.1, "std-1": 1.7, "std-2": 1.3,
                             "current": 1.47, "label": "BELOW AVG"},
             },
@@ -652,14 +652,14 @@ def mtel_infra() -> dict:
         ]},
         "news": [
             {"title": "Merger PST-UMT efektif berlaku", "url": "https://example.com/merger-pst-umt",
-             "date": "2026-07-01", "source": "Kontan", "tier": 1},
+             "date": "2026-07-01", "source": "Sectors", "tier": 1},
         ],
         "sentiment": None,
         "strategy": None,
         "catalysts": [
             {"name": "PST & UMT Merger (eff 1 Jul 2026)", "effect": "Efisiensi opex/capex, tenancy >1.6x, FWA/fiberization/IoT/power",
              "quantified": {"tenants": "—", "revenue_idr_bn": "—", "by": "FY27-29"},
-             "source": "Disclosure IDX, Kontan"},
+             "source": "Sectors (IDX disclosure)"},
             {"name": "Spectrum 700MHz & 2.6GHz", "effect": "TLKM 20/80 MHz, ISAT 20/60, EXCL 30/50 — perluasan jaringan",
              "quantified": {"tenants": "+3.000-3.500", "revenue_idr_bn": "+360-420", "by": "FY27-29"},
              "source": "Komdigi, press release operator"},
@@ -699,7 +699,7 @@ def jpm_strategy() -> dict:
             "title": "Kembalinya Animal Spirit — Indonesia 2026 Outlook",
             "subtitle": "Sudut pandang strategi pasar atas (top-down) untuk pasar ekuitas Indonesia.",
             "index_target": {
-                "source": "IDX, yfinance — data historis; skenario penulis",
+                "source": "Sectors — data historis; skenario penulis",
                 "scenarios": [
                     {"name": "Bull", "value": 10000, "note": "Re-rating penuh + flows kembali"},
                     {"name": "Base", "value": 9100, "note": "EPS +8% × 15x P/E flat"},
@@ -709,12 +709,12 @@ def jpm_strategy() -> dict:
                                "Sama dengan pendekatan JPM 2026 Outlook (8% EPS × 15x).",
                 "math": {"eps_growth_pct": 8, "multiple": 15, "current": 8450},
             },
-            "price_chart": {"source": "IDX, yfinance (^JKSE 3Y)",
+            "price_chart": {"source": "Sectors (^JKSE 3Y)",
                              "labels": ["T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"],
                              "series": [[6800, 7050, 6900, 7200, 7450, 7300, 7600, 7900, 7750, 8100, 8300, 8450]]},
             "summary": [
                 {"headline": "JCI menuju 9.100 skenario dasar",
-                 "detail": "Kombinasi EPS +8% dan multiple 15x flat masih memberi ruang kenaikan.", "source": "IDX, yfinance"},
+                 "detail": "Kombinasi EPS +8% dan multiple 15x flat masih memberi ruang kenaikan.", "source": "Sectors"},
                 {"headline": "Rotasi ke sektor domestik berlanjut",
                  "detail": "Industrials, Materials, konsumen, dan properti memimpin.", "source": "IDX"},
             ],
@@ -742,7 +742,7 @@ def jpm_strategy() -> dict:
                 {"ticker": "ISAT", "cap": "SMID", "rationale": "Tower monetization & deleveraging."},
                 {"ticker": "JSMR", "cap": "SMID", "rationale": "Volume lalu lintas naik + tarif baru."},
             ],
-            "picks_src": "IDX, yfinance — fundamental historis",
+            "picks_src": "Sectors — fundamental historis",
             "flows": {
                 "narrative": "Retail mendominasi 58% ADTV Rp 14.5 tn (puncak COVID). Asing -US$2.2bn YTD / -2.6bn 2Y; "
                              "44% kepemilikan asing UW sejak 2003. MSCI Adjusted Free Float Mei 2026 = event risiko. "
@@ -768,7 +768,7 @@ def powr_infra() -> dict:
     """POWR archetype — energy/power generation (infra archetype).
 
     Wraps mtel_infra() then deep-overrides ticker, company, segments, KPIs, valuation
-    to PT Cikarang Listrindo specifics. Live data captured via Tavily round-robin
+    to PT Cikarang Listrindo specifics. Live data captured via Sectors v2
     (run powr-6b6a9966, 2026-09-03): 4 segments, 2520 industrial customers,
     1384 MW capacity. Numbers are POWR 1H26 disclosures.
     """
@@ -823,7 +823,7 @@ def powr_infra() -> dict:
     }
     base["cover"]["vs_jci"] = {
         "ytd_abs": 18.4, "ytd_rel": 16.0,
-        "source": "IDX, yfinance (POWR.JK vs ^JKSE)",
+        "source": "Sectors (POWR.JK vs ^JKSE)",
         "chart": {"labels": MONTHS,
                   "series": [[0, 2, 5, 7, 9, 11, 13, 15, 17, 18, 18, 18],
                             [0, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14, 15]]},
@@ -934,7 +934,7 @@ def powr_infra() -> dict:
             "fv_str": "614",
         },
         "bands": {
-            "source": "IDX, yfinance — 3Y band, data diolah",
+            "source": "Sectors — 3Y band, data diolah",
             "pbv_3y": {"std+2": 2.6, "std+1": 2.2, "avg": 1.8, "std-1": 1.4, "std-2": 1.0,
                         "current": 1.95, "label": "ABOVE AVG"},
         },

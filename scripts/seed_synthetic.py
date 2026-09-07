@@ -2,7 +2,7 @@ import sqlite3, json, random, hashlib
 from pathlib import Path
 from datetime import datetime, timedelta, timezone
 
-# Synthetic fallback for P0-P1 when Postgres or yfinance is unavailable.
+# Synthetic fallback for P0-P1 when the Sectors key is unavailable (offline dev only).
 # Seed=42 deterministic. Covers peers, JCI, segments, KPI synthetic.
 # Per plan §4: SQLite sectors.db + peers.json dual + assumptions/{ticker}.json
 
@@ -90,7 +90,7 @@ def gen():
         "generated_at": datetime.now(JKT).isoformat(),
         "seed": SEED,
         "source": "synthetic",
-        "note": "P0-P1 synthetic fallback seed=42; P2 will swap to IDX+yfinance+Sectors",
+        "note": "P0-P1 synthetic fallback seed=42; Sectors v2 is the single live gateway",
         "universe": UNIVERSE,
         "by_ticker": {
             "RATU": {"peers": ["MEDC","AKRA","PGAS"], "sector":"Energy"},
