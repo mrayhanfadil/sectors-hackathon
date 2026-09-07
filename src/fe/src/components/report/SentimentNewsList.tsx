@@ -143,20 +143,20 @@ export function SentimentNewsList({
   }, [combinedEntries, filter])
 
   return (
-    <Card className="border-neutral-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Newspaper className="h-4 w-4 text-neutral-700" />
-              <CardTitle className="text-sm font-semibold text-neutral-900">
+              <Newspaper className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
+              <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 Arus Berita & Diskusi Ritel Terverifikasi
               </CardTitle>
-              <Badge variant="outline" className="font-mono text-[11px] text-neutral-700">
+              <Badge variant="outline" className="font-mono text-[11px] text-neutral-700 dark:text-neutral-300">
                 {tk}
               </Badge>
             </div>
-            <CardDescription className="text-xs text-neutral-500">
+            <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400">
               Kompilasi artikel media finansial dan diskusi media sosial publik
             </CardDescription>
           </div>
@@ -168,8 +168,8 @@ export function SentimentNewsList({
               onClick={() => setFilter("all")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "all"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
+                  ? "bg-neutral-900 text-white dark:bg-neutral-800"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50 dark:bg-[#111111] dark:text-neutral-400 dark:border-neutral-800 dark:hover:bg-neutral-900"
               }`}
             >
               Semua ({sentimentCounts.all})
@@ -181,7 +181,7 @@ export function SentimentNewsList({
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "bullish"
                   ? "bg-emerald-700 text-white"
-                  : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+                  : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 dark:bg-[#111111] dark:text-emerald-200 dark:border-emerald-800 dark:hover:bg-emerald-950"
               }`}
             >
               <TrendingUp className="h-3 w-3" />
@@ -194,7 +194,7 @@ export function SentimentNewsList({
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "bearish"
                   ? "bg-rose-700 text-white"
-                  : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50"
+                  : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 dark:bg-[#111111] dark:text-rose-200 dark:border-rose-800 dark:hover:bg-rose-950"
               }`}
             >
               <TrendingDown className="h-3 w-3" />
@@ -207,7 +207,7 @@ export function SentimentNewsList({
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
                 filter === "neutral"
                   ? "bg-neutral-700 text-white"
-                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50 dark:bg-[#111111] dark:text-neutral-400 dark:border-neutral-800 dark:hover:bg-neutral-900"
               }`}
             >
               <MinusCircle className="h-3 w-3" />
@@ -223,17 +223,17 @@ export function SentimentNewsList({
             <span className="text-xs">Memuat daftar berita dan diskusi {tk}...</span>
           </div>
         ) : combinedEntries.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-neutral-200 bg-neutral-50/50 p-8 text-center dark:border-neutral-800 dark:bg-neutral-900/50">
             <Inbox className="mx-auto h-8 w-8 text-neutral-400" />
-            <p className="mt-2 text-sm font-medium text-neutral-800">
+            <p className="mt-2 text-sm font-medium text-neutral-800 dark:text-neutral-200">
               Belum ada artikel atau diskusi terindeks untuk {tk}
             </p>
-            <p className="mt-1 text-xs text-neutral-500 max-w-md mx-auto">
+            <p className="mt-1 text-xs text-neutral-500 max-w-md mx-auto dark:text-neutral-400">
               Data sentimen ritel (Stockbit, X, media berita) dikumpulkan secara dinamis saat News Harvester dan Social Sentiment agents dijalankan.
             </p>
           </div>
         ) : filteredEntries.length === 0 ? (
-          <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6 text-center text-xs text-neutral-500">
+          <div className="rounded-xl border border-neutral-100 bg-neutral-50 p-6 text-center text-xs text-neutral-500 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
             Tidak ada entri yang cocok dengan filter sentimen ({filter}).
           </div>
         ) : (
@@ -245,32 +245,32 @@ export function SentimentNewsList({
               return (
                 <div
                   key={item.id}
-                  className="rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-2xs"
+                  className="rounded-xl border border-neutral-200 bg-white p-4 transition-all hover:border-neutral-300 hover:shadow-2xs dark:border-neutral-800 dark:bg-[#111111] dark:hover:border-neutral-700"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1.5 flex-1 pr-2">
                       {/* Top badge row */}
                       <div className="flex flex-wrap items-center gap-1.5">
                         {item.sentiment === "bullish" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                             <TrendingUp className="h-3 w-3" />
                             Positif / Bullish
                           </span>
                         )}
                         {item.sentiment === "bearish" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
                             <TrendingDown className="h-3 w-3" />
                             Negatif / Bearish
                           </span>
                         )}
                         {item.sentiment === "neutral" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 dark:border-neutral-800 dark:bg-neutral-800 dark:text-neutral-300">
                             <MinusCircle className="h-3 w-3" />
                             Netral
                           </span>
                         )}
 
-                        <span className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600">
+                        <span className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400">
                           {item.type === "news" ? "Media Finansial" : "Diskusi Komunitas"}
                         </span>
 
@@ -281,20 +281,20 @@ export function SentimentNewsList({
                         )}
 
                         {item.author && (
-                          <span className="text-[11px] text-neutral-500">
+                          <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                             oleh @{item.author}
                           </span>
                         )}
                       </div>
 
                       {/* Title */}
-                      <h4 className="text-sm font-semibold leading-snug text-neutral-900">
+                      <h4 className="text-sm font-semibold leading-snug text-neutral-900 dark:text-neutral-100">
                         {item.title}
                       </h4>
                     </div>
 
                     {/* Source & Date info */}
-                    <div className="flex shrink-0 items-center gap-3 text-xs text-neutral-500 sm:flex-col sm:items-end sm:gap-1">
+                    <div className="flex shrink-0 items-center gap-3 text-xs text-neutral-500 sm:flex-col sm:items-end sm:gap-1 dark:text-neutral-400">
                       <div className="flex items-center gap-1 font-mono text-[11px]">
                         <Clock className="h-3 w-3 text-neutral-400" />
                         {formatTimestamp(item.timestamp)}
@@ -305,13 +305,13 @@ export function SentimentNewsList({
                           href={item.url}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline underline-offset-2"
+                          className="inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline underline-offset-2 dark:text-[#3291ff]"
                         >
                           <span>{item.platform}</span>
                           <ExternalLink className="h-3 w-3 text-neutral-400" />
                         </a>
                       ) : (
-                        <span className="text-[11px] text-neutral-500">
+                        <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
                           {item.platform}
                         </span>
                       )}
@@ -320,11 +320,11 @@ export function SentimentNewsList({
 
                   {/* Body text & Expand */}
                   {hasBody && (
-                    <div className="mt-2.5 pt-2.5 border-t border-neutral-100">
+                    <div className="mt-2.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800">
                       <p
                         className={`text-xs leading-relaxed text-neutral-700 ${
                           isExpanded ? "whitespace-pre-line" : "line-clamp-2"
-                        }`}
+                        } dark:text-neutral-300`}
                       >
                         {item.body}
                       </p>
@@ -333,7 +333,7 @@ export function SentimentNewsList({
                         <button
                           type="button"
                           onClick={() => toggleExpand(item.id)}
-                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline cursor-pointer"
+                          className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-[#0070f3] hover:underline cursor-pointer dark:text-[#3291ff]"
                         >
                           {isExpanded ? (
                             <>
@@ -357,7 +357,7 @@ export function SentimentNewsList({
                       {item.tags.map((tag, tIdx) => (
                         <span
                           key={tIdx}
-                          className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600"
+                          className="rounded bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] text-neutral-600 dark:bg-neutral-800 dark:text-neutral-400"
                         >
                           #{tag}
                         </span>

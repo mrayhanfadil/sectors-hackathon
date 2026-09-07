@@ -54,14 +54,14 @@ function upsideTone(upside: string | null | undefined): string {
   if (!upside) return ""
   const v = parseFloat(upside.replace(/\./g, "").replace(",", ".").replace(/[^0-9.\-]/g, ""))
   if (Number.isNaN(v)) return ""
-  if (v > 0) return "text-[#007f56]"
-  if (v < 0) return "text-[#e00]"
-  return "text-[#666]"
+  if (v > 0) return "text-[#007f56] dark:text-emerald-400"
+  if (v < 0) return "text-[#e00] dark:text-red-400"
+  return "text-[#666] dark:text-[#a1a1a1]"
 }
 
 function LogoChip({ ticker }: { ticker: string }) {
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#eaeaea] bg-[#fafafa] text-[12px] font-bold text-black">
+    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#eaeaea] bg-[#fafafa] text-[12px] font-bold text-black dark:border-[#262626] dark:bg-[#111111] dark:text-white">
       {ticker.charAt(0)}
     </span>
   )
@@ -77,17 +77,17 @@ function MarketStrip() {
   const allFailed = queries.every((q) => q.isError || !q.data)
 
   return (
-    <section aria-label="Ringkasan pasar" className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white">
-      <div className="flex items-center justify-between border-b border-[#eaeaea] px-4 py-2">
-        <span className="text-[12px] font-medium text-[#666]">Ringkasan pasar · data live</span>
-        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#999]" />}
+    <section aria-label="Ringkasan pasar" className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white dark:border-[#262626] dark:bg-[#111111]">
+      <div className="flex items-center justify-between border-b border-[#eaeaea] px-4 py-2 dark:border-[#262626]">
+        <span className="text-[12px] font-medium text-[#666] dark:text-[#a1a1a1]">Ringkasan pasar · data live</span>
+        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#999] dark:text-neutral-500" />}
       </div>
       {allFailed && !loading ? (
-        <p className="px-4 py-3 text-[12px] text-[#666]">
+        <p className="px-4 py-3 text-[12px] text-[#666] dark:text-[#a1a1a1]">
           Data pasar belum tersedia — periksa koneksi lalu muat ulang.
         </p>
       ) : (
-        <div className="grid grid-cols-2 divide-[#eaeaea] max-sm:divide-y sm:grid-cols-5 sm:divide-x">
+        <div className="grid grid-cols-2 divide-[#eaeaea] max-sm:divide-y sm:grid-cols-5 sm:divide-x dark:divide-[#262626]">
           {QUINTET.map((t, i) => {
             const q = queries[i]
             const r = q.data as Report | undefined
@@ -96,19 +96,19 @@ function MarketStrip() {
                 key={t}
                 to="/report/$ticker"
                 params={{ ticker: t }}
-                className="block px-4 py-2.5 transition-colors hover:bg-[#fafafa]"
+                className="block px-4 py-2.5 transition-colors hover:bg-[#fafafa] dark:hover:bg-neutral-800"
               >
-                <div className="text-[12px] font-bold tracking-tight text-black">{t}</div>
+                <div className="text-[12px] font-bold tracking-tight text-black dark:text-white">{t}</div>
                 {q.isLoading ? (
                   <div className="mt-1.5 space-y-1">
-                    <div className="h-3 w-16 animate-pulse rounded bg-[#eaeaea]" />
-                    <div className="h-3 w-12 animate-pulse rounded bg-[#eaeaea]" />
+                    <div className="h-3 w-16 animate-pulse rounded bg-[#eaeaea] dark:bg-neutral-800" />
+                    <div className="h-3 w-12 animate-pulse rounded bg-[#eaeaea] dark:bg-neutral-800" />
                   </div>
                 ) : !r ? (
-                  <div className="tnum mt-1 text-[12px] text-[#999]">—</div>
+                  <div className="tnum mt-1 text-[12px] text-[#999] dark:text-neutral-500">—</div>
                 ) : (
                   <div className="tnum mt-1 flex items-baseline gap-2 text-[12px]">
-                    <span className="font-medium text-black">{formatIDR(r.price)}</span>
+                    <span className="font-medium text-black dark:text-white">{formatIDR(r.price)}</span>
                     {r.upside && <span className={`font-medium ${upsideTone(r.upside)}`}>{r.upside}</span>}
                   </div>
                 )}
@@ -133,33 +133,33 @@ function QuintetRow({ ticker }: { ticker: string }) {
     <Link
       to="/report/$ticker"
       params={{ ticker }}
-      className="group grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#fafafa] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-4"
+      className="group grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#fafafa] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-4 dark:hover:bg-neutral-800"
     >
       <div className="flex min-w-0 items-center gap-3">
         <LogoChip ticker={ticker} />
         <div className="min-w-0">
-          <div className="text-[13px] font-bold tracking-tight text-black">{ticker}</div>
-          <div className="truncate text-[12px] text-[#666]">
+          <div className="text-[13px] font-bold tracking-tight text-black dark:text-white">{ticker}</div>
+          <div className="truncate text-[12px] text-[#666] dark:text-[#a1a1a1]">
             {isLoading ? "Memuat..." : (report?.name ?? ticker)}
           </div>
         </div>
       </div>
 
       {isLoading ? (
-        <div className="col-span-1 h-4 w-20 animate-pulse rounded bg-[#eaeaea] sm:col-span-3" />
+        <div className="col-span-1 h-4 w-20 animate-pulse rounded bg-[#eaeaea] sm:col-span-3 dark:bg-neutral-800" />
       ) : isError || !report ? (
-        <div className="tnum text-[12px] text-[#999] sm:col-span-3">
+        <div className="tnum text-[12px] text-[#999] sm:col-span-3 dark:text-neutral-500">
           Klik untuk membuka laporannya.
         </div>
       ) : (
         <>
-          <div className="tnum hidden text-[13px] text-black sm:block">{formatIDR(report.price)}</div>
-          <div className="tnum hidden text-[13px] text-black sm:block">{formatIDR(report.target)}</div>
+          <div className="tnum hidden text-[13px] text-black sm:block dark:text-white">{formatIDR(report.price)}</div>
+          <div className="tnum hidden text-[13px] text-black sm:block dark:text-white">{formatIDR(report.target)}</div>
           <div className={`tnum text-right text-[13px] font-medium sm:text-left ${upsideTone(report.upside)}`}>
             {report.upside ?? "—"}
           </div>
           {/* mobile: price under upside */}
-          <div className="tnum text-[12px] text-[#666] sm:hidden">{formatIDR(report.price)}</div>
+          <div className="tnum text-[12px] text-[#666] sm:hidden dark:text-[#a1a1a1]">{formatIDR(report.price)}</div>
         </>
       )}
 
@@ -169,9 +169,9 @@ function QuintetRow({ ticker }: { ticker: string }) {
         ) : (
           <span className="w-10" />
         )}
-        <ChevronRight className="h-4 w-4 text-[#999] transition-transform group-hover:translate-x-0.5 group-hover:text-black" />
+        <ChevronRight className="h-4 w-4 text-[#999] transition-transform group-hover:translate-x-0.5 group-hover:text-black dark:text-neutral-500 dark:group-hover:text-white" />
       </div>
-      <ChevronRight className="h-4 w-4 justify-self-end text-[#999] sm:hidden" />
+      <ChevronRight className="h-4 w-4 justify-self-end text-[#999] sm:hidden dark:text-neutral-500" />
     </Link>
   )
 }
@@ -184,10 +184,10 @@ function Home() {
       {/* Hero */}
       <section className="py-2">
         <Badge className="mb-3">Riset saham · Bahasa sederhana</Badge>
-        <h1 className="max-w-2xl text-[24px] font-bold leading-tight tracking-tight text-black sm:text-[32px]">
+        <h1 className="max-w-2xl text-[24px] font-bold leading-tight tracking-tight text-black sm:text-[32px] dark:text-white">
           Riset saham Indonesia yang rumit, diterjemahkan untuk pemula.
         </h1>
-        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[#666]">
+        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
           Sektoral.id merangkum laporan analis menjadi kesimpulan 1 menit: layak dilirik atau
           tidak, dan kenapa — tanpa jargon.
         </p>
@@ -196,10 +196,10 @@ function Home() {
           {STEPS.map((s) => {
             const Icon = s.icon
             return (
-              <div key={s.title} className="rounded-lg border border-[#eaeaea] bg-white p-4">
-                <Icon className="h-4 w-4 text-black" />
-                <div className="mt-2.5 text-[13px] font-semibold text-black">{s.title}</div>
-                <p className="mt-1 text-[12px] leading-relaxed text-[#666]">{s.desc}</p>
+              <div key={s.title} className="rounded-lg border border-[#eaeaea] bg-white p-4 dark:border-[#262626] dark:bg-[#111111]">
+                <Icon className="h-4 w-4 text-black dark:text-white" />
+                <div className="mt-2.5 text-[13px] font-semibold text-black dark:text-white">{s.title}</div>
+                <p className="mt-1 text-[12px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">{s.desc}</p>
               </div>
             )
           })}
@@ -208,14 +208,14 @@ function Home() {
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <a
             href="#saham"
-            className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#333]"
+            className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#333] dark:bg-white dark:text-black dark:hover:bg-neutral-200"
           >
             Mulai dari 5 saham di bawah
             <ArrowRight className="h-4 w-4" />
           </a>
           <a
             href="#cara-baca"
-            className="inline-flex items-center gap-2 rounded-md border border-[#eaeaea] bg-white px-4 py-2 text-[13px] font-medium text-black transition-colors hover:bg-[#fafafa]"
+            className="inline-flex items-center gap-2 rounded-md border border-[#eaeaea] bg-white px-4 py-2 text-[13px] font-medium text-black transition-colors hover:bg-[#fafafa] dark:border-[#262626] dark:bg-[#111111] dark:text-white dark:hover:bg-neutral-800"
           >
             Cara baca laporan
           </a>
@@ -225,23 +225,23 @@ function Home() {
       {/* Quintet — dense ticker rows */}
       <section id="saham" className="scroll-mt-20 space-y-3">
         <div>
-          <h2 className="text-[16px] font-bold tracking-tight text-black">
+          <h2 className="text-[16px] font-bold tracking-tight text-black dark:text-white">
             5 saham yang kami ulas tuntas
           </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666]">
+          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
             Angka di daftar diambil langsung dari laporan terbaru — bukan angka contoh. Klik baris
             mana pun untuk membaca analisis lengkapnya.
           </p>
         </div>
-        <div className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white">
-          <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-[#eaeaea] bg-[#fafafa] px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-[#666] sm:grid">
+        <div className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white dark:border-[#262626] dark:bg-[#111111]">
+          <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-[#eaeaea] bg-[#fafafa] px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-[#666] sm:grid dark:border-[#262626] dark:bg-[#111111] dark:text-[#a1a1a1]">
             <span>Saham</span>
             <span>Harga</span>
             <span>Target</span>
             <span>Upside</span>
             <span className="w-16" />
           </div>
-          <div className="divide-y divide-[#eaeaea]">
+          <div className="divide-y divide-[#eaeaea] dark:divide-[#262626]">
             {QUINTET.map((t) => (
               <QuintetRow key={t} ticker={t} />
             ))}
@@ -252,10 +252,10 @@ function Home() {
       {/* Cara baca */}
       <section id="cara-baca" className="scroll-mt-20 space-y-3">
         <div>
-          <h2 className="text-[16px] font-bold tracking-tight text-black">
+          <h2 className="text-[16px] font-bold tracking-tight text-black dark:text-white">
             Cara membaca laporan (2 menit)
           </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666]">
+          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
             Setiap laporan memakai tiga istilah yang sama. Kalau paham tiga ini, kamu sudah bisa
             membaca semua laporan di sini.
           </p>
@@ -265,11 +265,11 @@ function Home() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <ThumbsUp className="h-4 w-4 text-[#007f56]" />
+                <ThumbsUp className="h-4 w-4 text-[#007f56] dark:text-emerald-400" />
                 <CardTitle className="text-sm">BUY = layak dilirik</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666]">
+            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
               Riset menilai harga sekarang masih murah dibanding nilai wajarnya. Bukan perintah
               beli — tetap cek apakah cocok dengan uang dan tujuanmu.
             </CardContent>
@@ -277,11 +277,11 @@ function Home() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <Minus className="h-4 w-4 text-[#666]" />
+                <Minus className="h-4 w-4 text-[#666] dark:text-[#a1a1a1]" />
                 <CardTitle className="text-sm">HOLD = tunggu dulu</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666]">
+            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
               Harganya sudah wajar — tidak murah, tidak mahal. Kalau sudah punya, tidak perlu
               buru-buru jual; kalau belum punya, sabar menunggu harga lebih baik.
             </CardContent>
@@ -289,11 +289,11 @@ function Home() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center gap-2">
-                <ThumbsDown className="h-4 w-4 text-[#e00]" />
+                <ThumbsDown className="h-4 w-4 text-[#e00] dark:text-red-400" />
                 <CardTitle className="text-sm">SELL = hati-hati</CardTitle>
               </div>
             </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666]">
+            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
               Riset menilai harga sekarang sudah kemahalan dibanding nilainya. Bukan perintah
               jual — tapi pahami alasannya sebelum menambah.
             </CardContent>
@@ -301,7 +301,7 @@ function Home() {
         </div>
 
         <Card>
-          <CardContent className="grid gap-4 p-5 text-xs leading-relaxed text-[#666] sm:grid-cols-2">
+          <CardContent className="grid gap-4 p-5 text-xs leading-relaxed text-[#666] sm:grid-cols-2 dark:text-[#a1a1a1]">
             <div>
               <CardTitle className="mb-1 text-sm">Potensi naik (upside) itu apa?</CardTitle>
               <CardDescription className="text-xs leading-relaxed">
@@ -323,11 +323,11 @@ function Home() {
       </section>
 
       {/* Disclaimer */}
-      <div className="flex items-start gap-3 rounded-lg border border-[#eaeaea] border-l-2 border-l-[#f5a623] bg-[#fffdf5] p-4">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#8a6d00]" />
-        <p className="text-xs leading-relaxed text-[#666]">
-          <span className="font-semibold text-black">Penting:</span> semua isi Sektoral.id adalah informasi
-          dan edukasi, <span className="font-semibold text-black">bukan saran investasi</span>. Investasi
+      <div className="flex items-start gap-3 rounded-lg border border-[#eaeaea] border-l-2 border-l-[#f5a623] bg-[#fffdf5] p-4 dark:border-[#262626] dark:bg-amber-950">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#8a6d00] dark:text-amber-400" />
+        <p className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
+          <span className="font-semibold text-black dark:text-white">Penting:</span> semua isi Sektoral.id adalah informasi
+          dan edukasi, <span className="font-semibold text-black dark:text-white">bukan saran investasi</span>. Investasi
           saham bisa untung dan bisa rugi. Jangan pakai uang kebutuhan harian, dan keputusan
           sepenuhnya tanggung jawabmu.
         </p>

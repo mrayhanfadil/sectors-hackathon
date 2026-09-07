@@ -181,13 +181,13 @@ function ChallengePage() {
     return (
       <div className="space-y-6">
         <ReportHeader ticker={tk} activeTab="challenge" />
-        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-2xs">
+        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
           <div className="flex flex-col items-center justify-center space-y-3">
-            <Loader2 className="h-6 w-6 animate-spin text-neutral-700" />
-            <p className="text-sm font-medium text-neutral-800">
+            <Loader2 className="h-6 w-6 animate-spin text-neutral-700 dark:text-neutral-300" />
+            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
               Menyiapkan modul tantangan tesis & debat untuk {tk}...
             </p>
-            <p className="text-xs text-neutral-500">
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
               Menginisialisasi agent adversarial dan matriks bukti audit.
             </p>
           </div>
@@ -206,9 +206,9 @@ function ChallengePage() {
           companyName={reportData.name}
           updatedAt={reportData.updatedAt}
         />
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-2xs">
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-2xs dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
           <div className="font-semibold mb-1">Peringatan: Backend Offline</div>
-          <p className="text-xs leading-relaxed text-amber-800">
+          <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">
             {reportData.summary}
           </p>
           <Button
@@ -239,8 +239,8 @@ function ChallengePage() {
       />
 
       {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600">
-        <span className="font-semibold text-[#0a0a0a]">Baru mulai baca analisanya? </span>
+      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
+        <span className="font-semibold text-[#0a0a0a] dark:text-white">Baru mulai baca analisanya? </span>
         BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
         sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar — di halaman ini kamu
         bisa nanya atau nantang asumsi di balik angka-angka itu, AI-nya bakal jawab pakai data.
@@ -248,10 +248,10 @@ function ChallengePage() {
 
       {/* Intro Description */}
       <div className="space-y-1">
-        <h2 className="text-base font-bold tracking-tight text-neutral-900">
+        <h2 className="text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
           Tantang Asumsi Laporan ({tk})
         </h2>
-        <p className="text-xs leading-relaxed text-neutral-600 max-w-3xl">
+        <p className="text-xs leading-relaxed text-neutral-600 max-w-3xl dark:text-neutral-400">
           Punya keraguan sama angka di laporan (mis. asumsi pertumbuhan atau biaya modal)? Tulis
           pertanyaanmu di sini — AI-nya bakal bela atau koreksi jawabannya pakai data, bukan asal setuju.
         </p>
@@ -282,7 +282,7 @@ function ChallengePage() {
       {/* ADK Run Card - Accessible directly from challenge sub-route */}
       {logData ? (
         <div className="space-y-2 pt-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
             Riwayat Analisis AI Agent ({tk})
           </h3>
           <AdkRunCard
@@ -295,11 +295,11 @@ function ChallengePage() {
       ) : null}
 
       {/* Shared Footer Disclaimer */}
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-500 shadow-2xs">
-        <div className="font-semibold uppercase tracking-wider text-neutral-700">
+      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-500 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+        <div className="font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
           INFORMASI, BUKAN SARAN INVESTASI
         </div>
-        <p className="mt-1 leading-relaxed text-[11px] text-neutral-600">
+        <p className="mt-1 leading-relaxed text-[11px] text-neutral-600 dark:text-neutral-400">
           Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional (kepatuhan regulasi OJK). Argumen pembelaan dihasilkan oleh sistem multi-agent berbasis data publik emiten.
         </p>
       </div>

@@ -99,19 +99,19 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
       : stats?.latest ?? null
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+    <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-semibold text-slate-900">
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Dividend Timeline & Corporate Actions
               </CardTitle>
-              <Badge variant="outline" className="font-mono text-[11px] text-slate-700">
+              <Badge variant="outline" className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
                 {ticker}
               </Badge>
             </div>
-            <CardDescription className="mt-1 text-xs text-slate-500">
+            <CardDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Historical cash dividend distributions from Sectors corporate-actions data
             </CardDescription>
           </div>
@@ -122,8 +122,8 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
               onClick={() => setActiveTab("chart")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeTab === "chart"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-slate-900 text-white dark:bg-slate-800"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
               }`}
             >
               Visual Chart
@@ -133,8 +133,8 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
               onClick={() => setActiveTab("table")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeTab === "table"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-slate-900 text-white dark:bg-slate-800"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
               }`}
             >
               Payout Table ({dividends.length})
@@ -145,27 +145,27 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
         {/* Quick Stats Banner */}
         {stats && (
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Total Dividends</span>
-              <div className="mt-0.5 text-sm font-semibold text-slate-900">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Total Dividends</span>
+              <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {stats.count} distributions
               </div>
             </div>
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Latest Payout</span>
-              <div className="mt-0.5 text-sm font-semibold text-emerald-700">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Latest Payout</span>
+              <div className="mt-0.5 text-sm font-semibold text-emerald-700 dark:text-emerald-200">
                 {formatIDR(stats.latest.amount_per_share)}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Historical Peak</span>
-              <div className="mt-0.5 text-sm font-semibold text-slate-900">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Historical Peak</span>
+              <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {formatIDR(stats.max)}
               </div>
             </div>
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Avg Distribution</span>
-              <div className="mt-0.5 text-sm font-semibold text-slate-900">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Avg Distribution</span>
+              <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {formatIDR(stats.avg)}
               </div>
             </div>
@@ -180,19 +180,19 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
             <span className="text-sm font-medium">Loading corporate actions for {ticker}...</span>
           </div>
         ) : dividends.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center dark:border-slate-800 dark:bg-slate-900/50">
             <AlertCircle className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-sm font-medium text-slate-800">
+            <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
               No dividends found for {ticker}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {data?.note || `No historical cash dividend payouts recorded for ${ticker} via free public sources.`}
             </p>
           </div>
         ) : activeTab === "chart" ? (
           <div className="space-y-4">
             {/* SVG Timeline */}
-            <div className="w-full overflow-x-auto rounded-xl border border-slate-100 bg-white p-3 shadow-inner">
+            <div className="w-full overflow-x-auto rounded-xl border border-slate-100 bg-white p-3 shadow-inner dark:border-slate-800 dark:bg-[#111111]">
               <svg
                 viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                 className="w-full min-w-[620px] select-none text-xs"
@@ -205,16 +205,16 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                       y1={t.y}
                       x2={chartWidth - padRight}
                       y2={t.y}
-                      stroke="#e2e8f0"
                       strokeWidth={1}
                       strokeDasharray={idx === yTicks.length - 1 ? "none" : "3,3"}
+                      className="stroke-[#e2e8f0] dark:stroke-[#262626]"
                     />
                     <text
                       x={padLeft - 10}
                       y={t.y + 4}
                       textAnchor="end"
                       fill="#64748b"
-                      className="text-[10px] font-mono"
+                      className="text-[10px] font-mono dark:fill-[#a1a1a1]"
                     >
                       {t.label}
                     </text>
@@ -227,8 +227,8 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                   y1={chartHeight - padBottom}
                   x2={chartWidth - padRight}
                   y2={chartHeight - padBottom}
-                  stroke="#94a3b8"
                   strokeWidth={1.5}
+                  className="stroke-[#94a3b8] dark:stroke-neutral-600"
                 />
 
                 {/* Connecting Trend Line */}
@@ -260,9 +260,9 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                         y1={p.y}
                         x2={p.x}
                         y2={chartHeight - padBottom}
-                        stroke={isHovered ? "#059669" : "#e2e8f0"}
                         strokeWidth={isHovered ? 1.5 : 1}
                         strokeDasharray="2,2"
+                        className={isHovered ? "stroke-emerald-600" : "stroke-slate-200 dark:stroke-neutral-800"}
                       />
 
                       {/* Outer pulse when hovered */}
@@ -282,8 +282,8 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                         cy={p.y}
                         r={isHovered ? 5.5 : 4}
                         fill={isHovered ? "#059669" : "#0f172a"}
-                        stroke="#ffffff"
                         strokeWidth={1.5}
+                        className={`stroke-white dark:stroke-black ${isHovered ? "" : "dark:fill-white"}`}
                       />
 
                       {/* Date label along X axis */}
@@ -292,7 +292,7 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                         y={chartHeight - padBottom + 16}
                         textAnchor="middle"
                         fill={isHovered ? "#0f172a" : "#64748b"}
-                        className={`text-[9px] font-mono ${isHovered ? "font-semibold fill-emerald-800" : ""}`}
+                        className={`text-[9px] font-mono ${isHovered ? "font-semibold fill-emerald-800 dark:fill-emerald-300" : "dark:fill-[#a1a1a1]"}`}
                         transform={`rotate(-25, ${p.x}, ${chartHeight - padBottom + 16})`}
                       >
                         {p.ex_date}
@@ -305,36 +305,36 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
 
             {/* Selected / Hovered Detail Card */}
             {activeDividend && (
-              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-slate-50/70 p-3.5 sm:flex-row sm:items-center sm:justify-between dark:border-slate-800 dark:bg-slate-900/70">
                 <div className="flex items-center gap-3">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">
                     <DollarSign className="h-5 w-5" />
                   </div>
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="text-xs font-semibold text-slate-900">
+                      <span className="text-xs font-semibold text-slate-900 dark:text-slate-100">
                         {formatIDR(activeDividend.amount_per_share)} / share
                       </span>
                       <Badge variant="outline" className="text-[10px] uppercase">
                         {activeDividend.type || "cash"}
                       </Badge>
                     </div>
-                    <p className="text-[11px] text-slate-500">
+                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
                       Currency: {activeDividend.currency || "IDR"} · Source: Sectors corporate actions
                     </p>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-4 text-xs">
-                  <div className="flex items-center gap-1.5 text-slate-600">
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="text-[11px] text-slate-500">Ex-Date:</span>
-                    <span className="font-mono font-medium text-slate-800">{activeDividend.ex_date}</span>
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Ex-Date:</span>
+                    <span className="font-mono font-medium text-slate-800 dark:text-slate-200">{activeDividend.ex_date}</span>
                   </div>
-                  <div className="flex items-center gap-1.5 text-slate-600">
+                  <div className="flex items-center gap-1.5 text-slate-600 dark:text-slate-400">
                     <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                    <span className="text-[11px] text-slate-500">Payment:</span>
-                    <span className="font-mono font-medium text-slate-800">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Payment:</span>
+                    <span className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {activeDividend.payment_date || activeDividend.ex_date}
                     </span>
                   </div>
@@ -344,9 +344,9 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
           </div>
         ) : (
           /* Table View */
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800">
                 <tr>
                   <th className="px-4 py-2.5 font-medium">Ex-Date</th>
                   <th className="px-4 py-2.5 font-medium">Payment Date</th>
@@ -355,16 +355,16 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
                   <th className="px-4 py-2.5 font-medium">Type</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {dividends.map((d, i) => (
-                  <tr key={i} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="px-4 py-2 font-mono text-slate-900">{d.ex_date}</td>
-                    <td className="px-4 py-2 font-mono text-slate-600">{d.payment_date || "-"}</td>
-                    <td className="px-4 py-2 font-mono font-semibold text-emerald-700 text-right">
+                  <tr key={i} className="hover:bg-slate-50/75 transition-colors dark:hover:bg-slate-900/75">
+                    <td className="px-4 py-2 font-mono text-slate-900 dark:text-slate-100">{d.ex_date}</td>
+                    <td className="px-4 py-2 font-mono text-slate-600 dark:text-slate-400">{d.payment_date || "-"}</td>
+                    <td className="px-4 py-2 font-mono font-semibold text-emerald-700 text-right dark:text-emerald-200">
                       {formatIDR(d.amount_per_share)}
                     </td>
-                    <td className="px-4 py-2 text-slate-600 uppercase">{d.currency || "IDR"}</td>
-                    <td className="px-4 py-2 text-slate-600 capitalize">{d.type || "cash"}</td>
+                    <td className="px-4 py-2 text-slate-600 uppercase dark:text-slate-400">{d.currency || "IDR"}</td>
+                    <td className="px-4 py-2 text-slate-600 capitalize dark:text-slate-400">{d.type || "cash"}</td>
                   </tr>
                 ))}
               </tbody>
@@ -374,8 +374,8 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
 
         {/* Additional Corporate Actions Section: Splits & AGMs */}
         {(splits.length > 0 || agms.length > 0) && (
-          <div className="mt-5 pt-4 border-t border-slate-200 space-y-3">
-            <span className="text-xs font-semibold text-slate-800">
+          <div className="mt-5 pt-4 border-t border-slate-200 space-y-3 dark:border-slate-800">
+            <span className="text-xs font-semibold text-slate-800 dark:text-slate-200">
               Other Corporate Actions Recorded
             </span>
 
@@ -383,15 +383,15 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
               {splits.map((s, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs"
+                  className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <Layers className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
+                  <Layers className="h-4 w-4 text-slate-600 shrink-0 mt-0.5 dark:text-slate-400" />
                   <div>
-                    <div className="font-semibold text-slate-900">
+                    <div className="font-semibold text-slate-900 dark:text-slate-100">
                       Stock Split Ratio 1:{s.ratio}
                     </div>
-                    <div className="text-[11px] text-slate-500">
-                      Effective Date: <span className="font-mono text-slate-700">{s.date}</span>
+                    <div className="text-[11px] text-slate-500 dark:text-slate-400">
+                      Effective Date: <span className="font-mono text-slate-700 dark:text-slate-300">{s.date}</span>
                     </div>
                   </div>
                 </div>
@@ -400,17 +400,17 @@ export function DividendTimeline({ ticker, data, isLoading }: DividendTimelinePr
               {agms.map((a, idx) => (
                 <div
                   key={idx}
-                  className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs"
+                  className="flex items-start gap-2.5 rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-xs dark:border-slate-800 dark:bg-slate-900"
                 >
-                  <Info className="h-4 w-4 text-slate-600 shrink-0 mt-0.5" />
+                  <Info className="h-4 w-4 text-slate-600 shrink-0 mt-0.5 dark:text-slate-400" />
                   <div>
                     <div className="flex items-center gap-1.5">
                       <Badge variant="secondary" className="text-[10px]">
                         {a.type || "AGM"}
                       </Badge>
-                      <span className="font-mono text-[11px] text-slate-500">{a.date}</span>
+                      <span className="font-mono text-[11px] text-slate-500 dark:text-slate-400">{a.date}</span>
                     </div>
-                    <p className="mt-1 text-[11px] text-slate-700 line-clamp-2">{a.agenda}</p>
+                    <p className="mt-1 text-[11px] text-slate-700 line-clamp-2 dark:text-slate-300">{a.agenda}</p>
                   </div>
                 </div>
               ))}

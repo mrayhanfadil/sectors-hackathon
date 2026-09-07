@@ -56,17 +56,17 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
   const needleY = centerY + needleLength * Math.sin(angleRad)
 
   return (
-    <Card className="border-neutral-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Compass className="h-4 w-4 text-neutral-700" />
-              <CardTitle className="text-sm font-semibold text-neutral-900">
+              <Compass className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
+              <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                 Visualisasi Dial Sentimen & Narasi Pasar - {tk}
               </CardTitle>
             </div>
-            <CardDescription className="text-xs text-neutral-500">
+            <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400">
               Kalkulasi posisi sentimen ritel dan tematik narasi dominan
             </CardDescription>
           </div>
@@ -77,8 +77,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
               onClick={() => setActiveView("gauge")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeView === "gauge"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
+                  ? "bg-neutral-900 text-white dark:bg-neutral-800"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50 dark:bg-[#111111] dark:text-neutral-400 dark:border-neutral-800 dark:hover:bg-neutral-900"
               }`}
             >
               Dial & Narasi
@@ -88,8 +88,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
               onClick={() => setActiveView("timeline")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 activeView === "timeline"
-                  ? "bg-neutral-900 text-white"
-                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50"
+                  ? "bg-neutral-900 text-white dark:bg-neutral-800"
+                  : "bg-white text-neutral-600 border border-neutral-200 hover:bg-neutral-50 dark:bg-[#111111] dark:text-neutral-400 dark:border-neutral-800 dark:hover:bg-neutral-900"
               }`}
             >
               Kronologi Timeline
@@ -106,7 +106,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
         ) : activeView === "gauge" ? (
           <div className="grid gap-6 md:grid-cols-12 items-center">
             {/* Left Col: SVG Speedometer Gauge */}
-            <div className="md:col-span-5 flex flex-col items-center justify-center p-2 rounded-xl bg-neutral-50/60 border border-neutral-100">
+            <div className="md:col-span-5 flex flex-col items-center justify-center p-2 rounded-xl bg-neutral-50/60 border border-neutral-100 dark:bg-neutral-900/60 dark:border-neutral-800">
               <svg
                 viewBox="0 0 240 130"
                 className="w-full max-w-[240px] select-none"
@@ -137,8 +137,8 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
                 />
 
                 {/* Center Pivot */}
-                <circle cx={centerX} cy={centerY} r="7" fill="#0f172a" />
-                <circle cx={centerX} cy={centerY} r="3" fill="#ffffff" />
+                <circle cx={centerX} cy={centerY} r="7" className="fill-slate-900 dark:fill-white" />
+                <circle cx={centerX} cy={centerY} r="3" className="fill-white dark:fill-slate-900" />
 
                 {/* Needle Line */}
                 <line
@@ -146,29 +146,29 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
                   y1={centerY}
                   x2={needleX}
                   y2={needleY}
-                  stroke="#0f172a"
                   strokeWidth="3"
                   strokeLinecap="round"
+                  className="stroke-slate-900 dark:stroke-white"
                 />
 
                 {/* Needle Point Marker */}
-                <circle cx={needleX} cy={needleY} r="3" fill="#0f172a" />
+                <circle cx={needleX} cy={needleY} r="3" className="fill-slate-900 dark:fill-white" />
 
                 {/* Labels */}
-                <text x="35" y="120" textAnchor="middle" fill="#e11d48" className="text-[10px] font-semibold font-mono">
+                <text x="35" y="120" textAnchor="middle" fill="#e11d48" className="text-[10px] font-semibold font-mono dark:fill-rose-400">
                   0 Bear
                 </text>
-                <text x="120" y="20" textAnchor="middle" fill="#64748b" className="text-[10px] font-medium font-mono">
+                <text x="120" y="20" textAnchor="middle" fill="#64748b" className="text-[10px] font-medium font-mono dark:fill-slate-400">
                   50 Netral
                 </text>
-                <text x="205" y="120" textAnchor="middle" fill="#059669" className="text-[10px] font-semibold font-mono">
+                <text x="205" y="120" textAnchor="middle" fill="#059669" className="text-[10px] font-semibold font-mono dark:fill-emerald-400">
                   100 Bull
                 </text>
               </svg>
 
               <div className="mt-1 text-center">
-                <div className="text-xl font-bold font-mono text-neutral-900">
-                  {gauge} <span className="text-xs font-normal text-neutral-500">/ 100</span>
+                <div className="text-xl font-bold font-mono text-neutral-900 dark:text-neutral-100">
+                  {gauge} <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">/ 100</span>
                 </div>
                 <Badge
                   variant={gauge >= 60 ? "success" : gauge <= 40 ? "destructive" : "secondary"}
@@ -182,7 +182,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
             {/* Right Col: Top Narratives List */}
             <div className="md:col-span-7 space-y-3">
               <div className="flex items-center justify-between">
-                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-700">
+                <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
                   Narasi Utama Pasar ({narratives.length})
                 </h4>
                 <span className="text-[11px] text-neutral-400">Peringkat Relevansi</span>
@@ -192,13 +192,13 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
                 {narratives.map((n, i) => (
                   <div
                     key={i}
-                    className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 text-xs leading-relaxed text-neutral-700 shadow-2xs hover:border-neutral-300 transition-colors"
+                    className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 text-xs leading-relaxed text-neutral-700 shadow-2xs hover:border-neutral-300 transition-colors dark:border-neutral-800/80 dark:bg-[#111111] dark:text-neutral-300 dark:hover:border-neutral-700"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-900 text-[10px] font-bold text-white">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded bg-neutral-900 text-[10px] font-bold text-white dark:bg-neutral-800">
                       #{i + 1}
                     </span>
                     <div className="space-y-1">
-                      <p className="font-medium text-neutral-800">{n}</p>
+                      <p className="font-medium text-neutral-800 dark:text-neutral-200">{n}</p>
                     </div>
                   </div>
                 ))}
@@ -213,7 +213,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
                       href={src.url}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-1 rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-200 transition-colors"
+                      className="inline-flex items-center gap-1 rounded bg-neutral-100 px-2 py-0.5 text-[11px] font-medium text-neutral-700 hover:bg-neutral-200 transition-colors dark:bg-neutral-800 dark:text-neutral-300 dark:hover:bg-neutral-700"
                     >
                       <span>{src.platform}</span>
                       <ExternalLink className="h-2.5 w-2.5 text-neutral-400" />
@@ -226,20 +226,20 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
         ) : (
           /* Timeline View */
           <div className="space-y-3">
-            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-700">
+            <div className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
               <Calendar className="h-3.5 w-3.5" />
               <span>Kronologi Pergeseran Narasi & Sentimen</span>
             </div>
 
-            <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-neutral-200">
+            <div className="relative pl-6 space-y-4 before:absolute before:left-2 before:top-2 before:bottom-2 before:w-0.5 before:bg-neutral-200 dark:before:bg-neutral-700">
               {timeline.map((t, idx) => (
                 <div key={idx} className="relative">
-                  <div className="absolute -left-6 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-neutral-900 shadow-xs" />
-                  <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-2xs">
-                    <span className="font-mono text-[11px] font-semibold text-neutral-900">
+                  <div className="absolute -left-6 top-1.5 h-2.5 w-2.5 rounded-full border-2 border-white bg-neutral-900 shadow-xs dark:border-black dark:bg-neutral-800" />
+                  <div className="rounded-lg border border-neutral-200 bg-white p-3 shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
+                    <span className="font-mono text-[11px] font-semibold text-neutral-900 dark:text-neutral-100">
                       {t.date}
                     </span>
-                    <p className="mt-1 text-xs text-neutral-600 leading-relaxed">
+                    <p className="mt-1 text-xs text-neutral-600 leading-relaxed dark:text-neutral-400">
                       {t.note}
                     </p>
                   </div>
@@ -249,7 +249,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
           </div>
         )}
 
-        <div className="mt-4 pt-3 border-t border-neutral-100 text-[11px] text-neutral-400">
+        <div className="mt-4 pt-3 border-t border-neutral-100 text-[11px] text-neutral-400 dark:border-neutral-800">
           Penafian: Data sentimen ritel merupakan agregasi opini publik pihak ketiga dan bukan merupakan rekomendasi transaksi efek.
         </div>
       </CardContent>

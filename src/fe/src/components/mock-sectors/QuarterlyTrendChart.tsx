@@ -210,26 +210,26 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
   }, [quarters])
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+    <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-semibold text-slate-900">
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Quarterly Financial Trend
               </CardTitle>
-              <Badge variant="outline" className="font-mono text-[11px] text-slate-700">
+              <Badge variant="outline" className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
                 {ticker}
               </Badge>
             </div>
-            <CardDescription className="mt-1 text-xs text-slate-500">
+            <CardDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Multi-quarter income statement & cash flow trend lines from Sectors quarterly financials
             </CardDescription>
           </div>
 
           <div className="flex flex-wrap items-center gap-2">
             {/* Metric Toggles */}
-            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1">
+            <div className="flex items-center gap-1 rounded-lg border border-slate-200 bg-white p-1 dark:border-slate-800 dark:bg-[#111111]">
               {METRIC_DEFS.map((m) => {
                 const active = visibleMetrics[m.key]
                 return (
@@ -239,8 +239,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                     onClick={() => toggleMetric(m.key)}
                     className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] font-medium transition-all ${
                       active
-                        ? "bg-slate-900 text-white shadow-xs"
-                        : "bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-800"
+                        ? "bg-slate-900 text-white shadow-xs dark:bg-slate-800"
+                        : "bg-transparent text-slate-500 hover:bg-slate-100 hover:text-slate-800 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-slate-200"
                     }`}
                   >
                     <span
@@ -260,8 +260,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                 onClick={() => setViewMode("chart")}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   viewMode === "chart"
-                    ? "bg-slate-900 text-white"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                    ? "bg-slate-900 text-white dark:bg-slate-800"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
                 }`}
               >
                 Chart
@@ -271,8 +271,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                 onClick={() => setViewMode("table")}
                 className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                   viewMode === "table"
-                    ? "bg-slate-900 text-white"
-                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                    ? "bg-slate-900 text-white dark:bg-slate-800"
+                    : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
                 }`}
               >
                 Table
@@ -284,46 +284,46 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
         {/* Quick Highlights Strip */}
         {quarters.length > 0 && (
           <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Coverage Span</span>
-              <div className="mt-0.5 text-sm font-semibold text-slate-900">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Coverage Span</span>
+              <div className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">
                 {quarters.length} Quarters ({formatQuarterLabel(quarters[0]?.date)} : {formatQuarterLabel(quarters[quarters.length - 1]?.date)})
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Latest Revenue</span>
-              <div className="mt-0.5 text-sm font-semibold text-emerald-700">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Latest Revenue</span>
+              <div className="mt-0.5 text-sm font-semibold text-emerald-700 dark:text-emerald-200">
                 {formatCompactIDR(quarters[quarters.length - 1]?.revenue)}
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Latest Earnings</span>
-              <div className="mt-0.5 text-sm font-semibold text-blue-700">
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Latest Earnings</span>
+              <div className="mt-0.5 text-sm font-semibold text-blue-700 dark:text-blue-200">
                 {formatCompactIDR(quarters[quarters.length - 1]?.earnings)}
               </div>
             </div>
 
-            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5">
-              <span className="text-[11px] font-medium text-slate-500">Revenue QoQ</span>
+            <div className="rounded-lg border border-slate-200/80 bg-white p-2.5 dark:border-slate-800/80 dark:bg-[#111111]">
+              <span className="text-[11px] font-medium text-slate-500 dark:text-slate-400">Revenue QoQ</span>
               <div className="mt-0.5 flex items-center gap-1 text-sm font-semibold">
                 {summaryGrowth?.revenueQoQ != null ? (
                   <>
                     {summaryGrowth.revenueQoQ >= 0 ? (
-                      <span className="text-emerald-700 inline-flex items-center gap-0.5">
+                      <span className="text-emerald-700 inline-flex items-center gap-0.5 dark:text-emerald-200">
                         <TrendingUp className="h-3.5 w-3.5" />
                         +{summaryGrowth.revenueQoQ.toFixed(1)}%
                       </span>
                     ) : (
-                      <span className="text-rose-700 inline-flex items-center gap-0.5">
+                      <span className="text-rose-700 inline-flex items-center gap-0.5 dark:text-rose-200">
                         <TrendingDown className="h-3.5 w-3.5" />
                         {summaryGrowth.revenueQoQ.toFixed(1)}%
                       </span>
                     )}
                   </>
                 ) : (
-                  <span className="text-slate-500">N/A</span>
+                  <span className="text-slate-500 dark:text-slate-400">N/A</span>
                 )}
               </div>
             </div>
@@ -338,19 +338,19 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
             <span className="text-sm font-medium">Loading quarterly statements for {ticker}...</span>
           </div>
         ) : quarters.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center dark:border-slate-800 dark:bg-slate-900/50">
             <AlertCircle className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-sm font-medium text-slate-800">
+            <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
               No quarterly financials available for {ticker}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {data?.note || `No quarterly statements extracted for ${ticker} from free public sources.`}
             </p>
           </div>
         ) : viewMode === "chart" ? (
           <div className="space-y-4">
             {/* SVG Trend Chart */}
-            <div className="w-full overflow-x-auto rounded-xl border border-slate-100 bg-white p-3 shadow-inner">
+            <div className="w-full overflow-x-auto rounded-xl border border-slate-100 bg-white p-3 shadow-inner dark:border-slate-800 dark:bg-[#111111]">
               <svg
                 viewBox={`0 0 ${chartWidth} ${chartHeight}`}
                 className="w-full min-w-[620px] select-none text-xs"
@@ -363,16 +363,16 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                       y1={t.y}
                       x2={chartWidth - padRight}
                       y2={t.y}
-                      stroke="#f1f5f9"
                       strokeWidth={1}
                       strokeDasharray={idx === yTicks.length - 1 ? "none" : "3,3"}
+                      className="stroke-[#f1f5f9] dark:stroke-[#262626]"
                     />
                     <text
                       x={padLeft - 10}
                       y={t.y + 4}
                       textAnchor="end"
                       fill="#64748b"
-                      className="text-[10px] font-mono"
+                      className="text-[10px] font-mono dark:fill-[#a1a1a1]"
                     >
                       {formatCompactIDR(t.val)}
                     </text>
@@ -385,8 +385,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                   y1={chartHeight - padBottom}
                   x2={chartWidth - padRight}
                   y2={chartHeight - padBottom}
-                  stroke="#cbd5e1"
                   strokeWidth={1.5}
+                  className="stroke-[#cbd5e1] dark:stroke-neutral-700"
                 />
 
                 {/* Vertical column highlight when hovering */}
@@ -397,16 +397,16 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                       y1={padTop}
                       x2={chartData[hoveredQuarterIndex].x}
                       y2={chartHeight - padBottom}
-                      stroke="#0f172a"
                       strokeWidth={1.5}
                       strokeDasharray="3,3"
                       opacity={0.4}
+                      className="stroke-slate-900 dark:stroke-white"
                     />
                     <circle
                       cx={chartData[hoveredQuarterIndex].x}
                       cy={chartHeight - padBottom}
                       r={3}
-                      fill="#0f172a"
+                      className="fill-slate-900 dark:fill-white"
                     />
                   </g>
                 )}
@@ -490,8 +490,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                           cy={p.yRevenue}
                           r={isHovered ? 5.5 : 3.5}
                           fill="#059669"
-                          stroke="#ffffff"
                           strokeWidth={1.5}
+                          className="stroke-white dark:stroke-black"
                         />
                       )}
 
@@ -502,8 +502,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                           cy={p.yEarnings}
                           r={isHovered ? 5.5 : 3.5}
                           fill="#2563eb"
-                          stroke="#ffffff"
                           strokeWidth={1.5}
+                          className="stroke-white dark:stroke-black"
                         />
                       )}
 
@@ -514,8 +514,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                           cy={p.yOcf}
                           r={isHovered ? 5 : 3}
                           fill="#d97706"
-                          stroke="#ffffff"
                           strokeWidth={1.5}
+                          className="stroke-white dark:stroke-black"
                         />
                       )}
 
@@ -525,7 +525,7 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                         y={chartHeight - padBottom + 16}
                         textAnchor="middle"
                         fill={isHovered ? "#0f172a" : "#64748b"}
-                        className={`text-[10px] font-mono ${isHovered ? "font-bold fill-slate-900" : ""}`}
+                        className={`text-[10px] font-mono ${isHovered ? "font-bold fill-slate-900 dark:fill-white" : "dark:fill-[#a1a1a1]"}`}
                       >
                         {p.label}
                       </text>
@@ -536,7 +536,7 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                         y={chartHeight - padBottom + 28}
                         textAnchor="middle"
                         fill="#94a3b8"
-                        className="text-[9px] font-mono"
+                        className="text-[9px] font-mono dark:fill-neutral-500"
                       >
                         {p.date.slice(5)}
                       </text>
@@ -548,10 +548,10 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
 
             {/* Selected Quarter Inspection Strip */}
             {activeQuarter && (
-              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4">
+              <div className="rounded-lg border border-slate-200 bg-slate-50/70 p-4 dark:border-slate-800 dark:bg-slate-900/70">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="flex items-center gap-2">
-                    <span className="font-mono text-sm font-semibold text-slate-900">
+                    <span className="font-mono text-sm font-semibold text-slate-900 dark:text-slate-100">
                       {formatQuarterLabel(activeQuarter.date)} ({activeQuarter.date})
                     </span>
                     <Badge variant="outline" className="text-[10px]">
@@ -563,8 +563,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                     {visibleMetrics.revenue && (
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-emerald-600" />
-                        <span className="text-[11px] text-slate-500">Revenue:</span>
-                        <span className="font-mono font-semibold text-slate-900">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">Revenue:</span>
+                        <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                           {formatCompactIDR(activeQuarter.revenue)}
                         </span>
                       </div>
@@ -573,8 +573,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                     {visibleMetrics.earnings && (
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-blue-600" />
-                        <span className="text-[11px] text-slate-500">Net Earnings:</span>
-                        <span className="font-mono font-semibold text-slate-900">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">Net Earnings:</span>
+                        <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                           {formatCompactIDR(activeQuarter.earnings)}
                         </span>
                       </div>
@@ -583,8 +583,8 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                     {visibleMetrics.operating_cash_flow && (
                       <div className="flex items-center gap-1.5">
                         <span className="h-2.5 w-2.5 rounded-full bg-amber-600" />
-                        <span className="text-[11px] text-slate-500">Op. Cash Flow:</span>
-                        <span className="font-mono font-semibold text-slate-900">
+                        <span className="text-[11px] text-slate-500 dark:text-slate-400">Op. Cash Flow:</span>
+                        <span className="font-mono font-semibold text-slate-900 dark:text-slate-100">
                           {formatCompactIDR(activeQuarter.operating_cash_flow)}
                         </span>
                       </div>
@@ -593,28 +593,28 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
                 </div>
 
                 {/* Additional Financial Metrics Row */}
-                <div className="mt-3 pt-3 border-t border-slate-200/70 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
+                <div className="mt-3 pt-3 border-t border-slate-200/70 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4 dark:border-slate-800/70">
                   <div>
-                    <span className="text-[11px] text-slate-500">Total Assets:</span>
-                    <div className="font-mono font-medium text-slate-800">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Assets:</span>
+                    <div className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {formatCompactIDR(activeQuarter.total_assets)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-500">Total Equity:</span>
-                    <div className="font-mono font-medium text-slate-800">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Total Equity:</span>
+                    <div className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {formatCompactIDR(activeQuarter.total_equity)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-500">EBITDA:</span>
-                    <div className="font-mono font-medium text-slate-800">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">EBITDA:</span>
+                    <div className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {formatCompactIDR(activeQuarter.ebitda)}
                     </div>
                   </div>
                   <div>
-                    <span className="text-[11px] text-slate-500">Operating Margin:</span>
-                    <div className="font-mono font-medium text-slate-800">
+                    <span className="text-[11px] text-slate-500 dark:text-slate-400">Operating Margin:</span>
+                    <div className="font-mono font-medium text-slate-800 dark:text-slate-200">
                       {typeof activeQuarter.operating_pnl === "number" &&
                       typeof activeQuarter.revenue === "number" &&
                       activeQuarter.revenue > 0
@@ -628,39 +628,39 @@ export function QuarterlyTrendChart({ ticker, data, isLoading }: QuarterlyTrendC
           </div>
         ) : (
           /* Table View */
-          <div className="overflow-x-auto rounded-lg border border-slate-200">
+          <div className="overflow-x-auto rounded-lg border border-slate-200 dark:border-slate-800">
             <table className="w-full text-left text-xs">
-              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200">
+              <thead className="bg-slate-50 text-slate-600 border-b border-slate-200 dark:bg-slate-900 dark:text-slate-400 dark:border-slate-800">
                 <tr>
                   <th className="px-3.5 py-2.5 font-medium">Quarter</th>
                   <th className="px-3.5 py-2.5 font-medium">Date</th>
-                  <th className="px-3.5 py-2.5 font-medium text-right text-emerald-700">Revenue</th>
-                  <th className="px-3.5 py-2.5 font-medium text-right text-blue-700">Net Earnings</th>
-                  <th className="px-3.5 py-2.5 font-medium text-right text-amber-700">Op. Cash Flow</th>
+                  <th className="px-3.5 py-2.5 font-medium text-right text-emerald-700 dark:text-emerald-200">Revenue</th>
+                  <th className="px-3.5 py-2.5 font-medium text-right text-blue-700 dark:text-blue-200">Net Earnings</th>
+                  <th className="px-3.5 py-2.5 font-medium text-right text-amber-700 dark:text-amber-200">Op. Cash Flow</th>
                   <th className="px-3.5 py-2.5 font-medium text-right">Total Assets</th>
                   <th className="px-3.5 py-2.5 font-medium text-right">Total Equity</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-100">
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {quarters.map((q, i) => (
-                  <tr key={i} className="hover:bg-slate-50/75 transition-colors">
-                    <td className="px-3.5 py-2 font-mono font-semibold text-slate-900">
+                  <tr key={i} className="hover:bg-slate-50/75 transition-colors dark:hover:bg-slate-900/75">
+                    <td className="px-3.5 py-2 font-mono font-semibold text-slate-900 dark:text-slate-100">
                       {formatQuarterLabel(q.date)}
                     </td>
-                    <td className="px-3.5 py-2 font-mono text-slate-600">{q.date}</td>
-                    <td className="px-3.5 py-2 font-mono text-right font-medium text-emerald-700">
+                    <td className="px-3.5 py-2 font-mono text-slate-600 dark:text-slate-400">{q.date}</td>
+                    <td className="px-3.5 py-2 font-mono text-right font-medium text-emerald-700 dark:text-emerald-200">
                       {formatCompactIDR(q.revenue)}
                     </td>
-                    <td className="px-3.5 py-2 font-mono text-right font-medium text-blue-700">
+                    <td className="px-3.5 py-2 font-mono text-right font-medium text-blue-700 dark:text-blue-200">
                       {formatCompactIDR(q.earnings)}
                     </td>
-                    <td className="px-3.5 py-2 font-mono text-right font-medium text-amber-700">
+                    <td className="px-3.5 py-2 font-mono text-right font-medium text-amber-700 dark:text-amber-200">
                       {formatCompactIDR(q.operating_cash_flow)}
                     </td>
-                    <td className="px-3.5 py-2 font-mono text-right text-slate-600">
+                    <td className="px-3.5 py-2 font-mono text-right text-slate-600 dark:text-slate-400">
                       {formatCompactIDR(q.total_assets)}
                     </td>
-                    <td className="px-3.5 py-2 font-mono text-right text-slate-600">
+                    <td className="px-3.5 py-2 font-mono text-right text-slate-600 dark:text-slate-400">
                       {formatCompactIDR(q.total_equity)}
                     </td>
                   </tr>

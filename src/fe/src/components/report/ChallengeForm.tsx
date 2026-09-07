@@ -84,24 +84,24 @@ export function ChallengeForm({
   }
 
   return (
-    <Card className="border-neutral-200 bg-white shadow-2xs">
-      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3">
+    <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
+      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 p-4 pb-3 dark:border-neutral-800 dark:bg-neutral-900/50">
         <div className="flex items-center gap-2">
-          <Swords className="h-4 w-4 text-neutral-700" />
-          <CardTitle className="text-sm font-semibold text-neutral-900">
+          <Swords className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
+          <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
             Uji & Tantang Tesis Valuasi ({tk})
           </CardTitle>
         </div>
-        <CardDescription className="text-xs text-neutral-500">
+        <CardDescription className="text-xs text-neutral-500 dark:text-neutral-400">
           Uji ketahanan model dengan kritik tajam - agent wajib mempertahankan tesis berbasis bukti
         </CardDescription>
       </CardHeader>
 
       <CardContent className="p-4 sm:p-6 space-y-4">
         {/* Anti-Sycophancy Principle Banner */}
-        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs leading-relaxed text-neutral-600">
-          <div className="flex items-center gap-1.5 font-semibold text-neutral-800">
-            <ShieldCheck className="h-4 w-4 text-neutral-700" />
+        <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
+          <div className="flex items-center gap-1.5 font-semibold text-neutral-800 dark:text-neutral-200">
+            <ShieldCheck className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
             <span>Protokol Verifikasi Berimbang (Anti-Sycophancy)</span>
           </div>
           <p className="mt-1">
@@ -111,8 +111,8 @@ export function ChallengeForm({
 
         {/* Suggestion Chips */}
         <div className="space-y-1.5">
-          <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-700">
-            <Sparkles className="h-3.5 w-3.5 text-amber-600" />
+          <div className="flex items-center gap-1.5 text-xs font-medium text-neutral-700 dark:text-neutral-300">
+            <Sparkles className="h-3.5 w-3.5 text-amber-600 dark:text-amber-400" />
             <span>Pilihan Contoh Kritik Tesis:</span>
           </div>
           <div className="flex flex-col gap-1.5">
@@ -122,7 +122,7 @@ export function ChallengeForm({
                 type="button"
                 onClick={() => handleSelectSuggestion(sug)}
                 disabled={loading}
-                className="text-left rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-50 cursor-pointer"
+                className="text-left rounded-md border border-neutral-200 bg-white px-3 py-2 text-xs text-neutral-700 hover:border-neutral-300 hover:bg-neutral-50 transition-colors disabled:opacity-50 cursor-pointer dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-300 dark:hover:border-neutral-700 dark:hover:bg-neutral-900"
               >
                 {sug}
               </button>
@@ -133,7 +133,7 @@ export function ChallengeForm({
         {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-3 pt-2">
           <div className="space-y-1">
-            <label className="text-xs font-semibold text-neutral-700">
+            <label className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Kritik atau Pertanyaan Pengguna
             </label>
             <textarea
@@ -145,20 +145,20 @@ export function ChallengeForm({
               }}
               placeholder={`Contoh: WACC 8.4% terlalu rendah dibanding emiten sejenis, bagaimana sensitivitas fair value jika dinaikkan ke 10%?`}
               disabled={loading}
-              className="w-full rounded-md border border-neutral-200 bg-white p-3 text-xs leading-relaxed text-neutral-900 outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 disabled:opacity-50 resize-none font-sans"
+              className="w-full rounded-md border border-neutral-200 bg-white p-3 text-xs leading-relaxed text-neutral-900 outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900 disabled:opacity-50 resize-none font-sans dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-100 dark:focus:border-neutral-700 dark:focus:ring-neutral-100"
             />
           </div>
 
           {validationError && (
-            <div className="flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800">
-              <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0" />
+            <div className="flex items-center gap-1.5 rounded-md border border-amber-200 bg-amber-50 p-2 text-xs text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
+              <AlertCircle className="h-3.5 w-3.5 text-amber-600 shrink-0 dark:text-amber-400" />
               <span>{validationError}</span>
             </div>
           )}
 
           {error && (
-            <div className="flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800">
-              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0" />
+            <div className="flex items-center gap-1.5 rounded-md border border-rose-200 bg-rose-50 p-2.5 text-xs text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
+              <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 dark:text-rose-400" />
               <div>
                 <span className="font-semibold">Gagal memproses tantangan: </span>
                 <span>{error}</span>
@@ -169,7 +169,7 @@ export function ChallengeForm({
           <Button
             type="submit"
             disabled={loading || !question.trim()}
-            className="w-full h-9 gap-2 bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium cursor-pointer"
+            className="w-full h-9 gap-2 bg-neutral-900 text-white hover:bg-neutral-800 text-xs font-medium cursor-pointer dark:bg-neutral-800"
           >
             {loading ? (
               <>
