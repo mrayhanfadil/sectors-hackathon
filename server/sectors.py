@@ -176,6 +176,27 @@ def listing_performance(symbol: str) -> Any:
     return _get(f"/ipo/listing-performance/{bare_ticker(symbol)}/")
 
 
+def segments(symbol: str, financial_year: str = "") -> Any:
+    """Sankey-ready revenue+cost segments — SOTP pillar input. Not all have it."""
+    from datetime import date as _d
+
+    fy = financial_year or str(_d.today().year - 1)
+    return _get(f"/company/segments/{bare_ticker(symbol)}/{fy}/")
+
+
+def shareholders_composition(symbol: str, year: str = "") -> Any:
+    """Local vs foreign monthly composition — ownership detail."""
+    from datetime import date as _d
+
+    y = year or str(_d.today().year)
+    return _get(f"/company/shareholders-composition/{bare_ticker(symbol)}/{y}/")
+
+
+def quarterly_dates(symbol: str) -> Any:
+    """Available quarterly report dates — call BEFORE quarterly to avoid billed-empty."""
+    return _get(f"/company/quarterly-financial-dates/{bare_ticker(symbol)}/")
+
+
 # --- Tier 3: breadth, cheap ---
 
 def screener(where: str = "", order_by: str = "", limit: int = 50) -> Any:

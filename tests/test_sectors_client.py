@@ -37,6 +37,9 @@ def test_no_key_raises_loud():
         (sectors.index_daily, ("JKSE", "2026-01-01", "2026-01-02")),
         (sectors.idx_market_cap, ("2026-01-01", "2026-01-02")),
         (sectors.mining_company_financials, ("adaro",)),
+        (sectors.segments, ("BBCA",)),
+        (sectors.shareholders_composition, ("BBCA",)),
+        (sectors.quarterly_dates, ("BBCA",)),
     ]:
         try:
             fn(*args)
