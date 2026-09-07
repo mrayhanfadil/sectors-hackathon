@@ -1,7 +1,6 @@
 """
-verify_e2e.py — T01 P0-P1 verification for quintet RATU/CDIA/MTEL/BBCA/ADRO
-- Proves IDX Postgres is primary (stockdata:15437)
-- yfinance fallback with cache 4h + disclosed source (no Sectors hit)
+verify_e2e.py — Sectors-gateway verification for quintet RATU/CDIA/MTEL/BBCA/ADRO (Lane E)
+- Proves Sectors v2 is the single gateway (keyless -> honest sectors_missing_key)
 - Writes data/assumptions/{ticker}.json with provenance
 Prints markdown table for README + Kanban handoff.
 
@@ -55,14 +54,14 @@ async def main():
             "corp_actions": len(ca),
         })
 
-    # yfinance gap probe (no hard fail — network may be blocked)
+    # Sectors probe (single gateway; keyless -> honest sectors_missing_key, no hard fail)
     yf_results = {}
     try:
-        from scripts.yfinance_fallback import get_yfinance_prices, gap_summary
+        from scripts.sectors_backfill import get_sectors_prices, gap_summary
         yf_gap = gap_summary()
         for kode in QUINTET:
             try:
-                r = get_yfinance_prices(kode, period="5d")
+                r = get_sectors_prices(kode, days=5)
                 yf_results[kode] = {"rows": r.get("row_count", len(r.get("rows",[]))), "error": r.get("error"), "cache_hit": r.get("cache_hit", False)}
             except Exception as e:
                 yf_results[kode] = {"rows": 0, "error": str(e)}
@@ -79,7 +78,7 @@ async def main():
         print(f"| {r['kode']} | {r['sector']} | {r['close']} | {r['volume']:.0f} | {r['nilai']:.0f} | {fb} | {r['listed_shares']:.0f} | {r['count_5y']} | {r['count_5d']} | {r['latest_time']} |")
 
     print()
-    print("yfinance gap (fallback only, IDX is primary):")
+    print("sectors probe (single gateway; keyless -> sectors_missing_key):")
     for k, v in yf_results.items():
         print(f"  {k}: {v}")
     if 'yf_gap' in locals():
@@ -92,7 +91,7 @@ async def main():
         kode = r["kode"]
         yf = yf_results.get(kode, {})
         has_yf = yf.get("rows", 0) > 0 and not yf.get("error")
-        source = "yfinance" if (has_yf and kode == "BBCA") else "idx"  # BBCA large-cap yfinance complete; small caps idx primary
+        source = "sectors" if has_yf else "idx"  # keyed Sectors wins; else IDX primary
         # RATU/CDIA/MTEL/ADRO -> idx primary per plan gap table
         if kode in ("RATU","CDIA","MTEL","ADRO"):
             source = "idx"
@@ -100,8 +99,8 @@ async def main():
             "ticker": kode,
             "generated_at": datetime.now(JKT).isoformat(),
             "source": source,
-            "source_detail": "stockdata:15437 primary; yfinance .JK fallback cache 4h disclosed per exhibit" if source=="idx" else "yfinance .JK (large-cap complete) + IDX foreign flow",
-            "fallback_policy": "yfinance gap for small caps → IDX + label estimated; BBCA yfinance ok as fallback",
+            "source_detail": "Sectors v2 single gateway; IDX primary when keyless" if source=="sectors" else "IDX primary (Sectors keyless disclosed per exhibit)",
+            "fallback_policy": "Sectors-only; keyless runs label source honestly, never silent vendor fallback",
             "provenance": {
                 "db_url_env": "DATABASE_URL or DB_URL (default postgresql://postgres:password@localhost:15437/stockdata)",
                 "latest_time": r["latest_time"],
@@ -110,11 +109,11 @@ async def main():
                 "foreign_flow": {"buy": r["foreign_buy"], "sell": r["foreign_sell"]},
                 "rows_5y": r["count_5y"],
                 "rows_5d": r["count_5d"],
-                "yfinance_probe": yf,
-                "yfinance_gap_note": yf_gap.get("note","") if isinstance(yf_gap, dict) else "",
+                "sectors_probe": yf,
+                "sectors_coverage_note": yf_gap.get("note","") if isinstance(yf_gap, dict) else "",
             },
             "cache_ttl_seconds": 14400,
-            "no_sectors_hit": True,
+            "sectors_gateway": True,
         }
         (out_dir / f"{kode}.json").write_text(json.dumps(payload, indent=2, ensure_ascii=False))
         print(f"wrote {out_dir / f'{kode}.json'} source={source} rows5y={r['count_5y']}")

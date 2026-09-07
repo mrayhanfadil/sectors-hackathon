@@ -12,7 +12,6 @@ from __future__ import annotations
 import asyncio
 import json
 import logging
-import os
 import re
 import time
 from datetime import datetime, timezone
@@ -28,12 +27,12 @@ logger = logging.getLogger(__name__)
 
 router_mock_sectors = APIRouter()
 
-# Upstream data sources provenance
+# Upstream data sources provenance (Sectors-only; legacy removed, Lane E)
 UPSTREAM_SOURCES: dict[str, str] = {
-    "filings": "idx.co.id via Camoufox",
-    "news": "scripts/news.py + Tavily",
-    "corporate_actions": "yfinance + IDX",
-    "quarterly_financials": "yfinance .JK quarterly",
+    "filings": "sectors filings + idx.co.id via Camoufox",
+    "news": "sectors news + scripts/news.py curated",
+    "corporate_actions": "sectors corporate-actions + IDX",
+    "quarterly_financials": "sectors quarterly-financials",
 }
 
 REGISTERED_ENDPOINTS: list[str] = [
@@ -104,7 +103,7 @@ def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
 
     1. Tries data/assumptions/<SYM>.json -> reads provenance.sector + archetype
     2. Falls back to data/peers.json by_ticker.<SYM>.sector
-    3. Falls back to yfinance .info.sector (+ industry) if available
+    3. Falls back to Sectors company report overview sector (keyless -> skip honestly)
     4. Returns ("unknown", "unknown") honestly — no fabrication
     """
     sym = symbol.upper().strip().replace(".JK", "")
@@ -146,13 +145,13 @@ def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
         except Exception:
             pass
 
-    # 3. Falls back to yfinance .info.sector if network available
+    # 3. Sectors company report overview sector (keyless -> skip honestly)
     try:
-        import yfinance as yf
-        tk = yf.Ticker(f"{sym}.JK")
-        info = tk.info or {}
-        sec = info.get("sector")
-        ind = info.get("industry")
+        from ..sectors import company_report as _sectors_report
+
+        rep = _sectors_report(sym, "overview") or {}
+        sec = rep.get("sector") or rep.get("industry") or (rep.get("overview") or {}).get("sector")
+        ind = rep.get("industry") or (rep.get("overview") or {}).get("industry")
         if sec:
             sec_slug = _slugify(sec)
             sub_slug = _slugify(ind) if ind else sec_slug
@@ -330,153 +329,61 @@ async def _scrape_idx_agm_announcements(symbol: str) -> list[dict[str, Any]]:
     return agm_items
 
 
-def _derive_yfinance_dividends(symbol: str) -> list[dict[str, Any]]:
-    """Extract historic cash dividends from yfinance .JK."""
+def _derive_sectors_dividends(symbol: str) -> list[dict[str, Any]]:
+    """Historic cash dividends via Sectors corporate-actions. Keyless -> [] honest."""
     sym = symbol.upper().strip().replace(".JK", "")
     try:
-        import yfinance as yf
+        from ..sectors import corporate_actions as _sectors_acts
 
-        tk = yf.Ticker(f"{sym}.JK")
-        divs = tk.dividends
-        if divs is None or len(divs) == 0:
-            return []
-
+        acts = _sectors_acts(sym) or {}
+        divs = acts.get("dividend") or acts.get("dividends") or []
         out: list[dict[str, Any]] = []
-        for dt, val in divs.items():
-            dt_str = str(dt.date()) if hasattr(dt, "date") else str(dt)[:10]
+        for d in divs:
+            if not isinstance(d, dict):
+                continue
+            dt_str = str(d.get("ex_date") or d.get("exDate") or d.get("date") or "")[:10]
+            pay_str = str(d.get("payment_date") or d.get("paymentDate") or dt_str)[:10]
+            amt = d.get("amount_per_share") or d.get("amount") or d.get("dividend_per_share")
+            try:
+                amt_f = float(amt) if amt is not None else 0.0
+            except (TypeError, ValueError):
+                continue
             out.append({
                 "ex_date": dt_str,
-                "payment_date": dt_str,
-                "amount_per_share": float(val),
-                "currency": "IDR",
-                "type": "cash",
+                "payment_date": pay_str,
+                "amount_per_share": amt_f,
+                "currency": d.get("currency", "IDR"),
+                "type": d.get("type", "cash"),
             })
 
         out.sort(key=lambda x: str(x.get("ex_date", "")), reverse=True)
         return out
     except Exception as e:
-        logger.info("yfinance dividends skipped for %s: %s", sym, e)
+        logger.info("sectors dividends skipped for %s: %s", sym, e)
         return []
 
 
-def _extract_df_val(df: Any, col: Any, row_names: list[str]) -> float | None:
-    """Helper to safely extract float from yfinance DataFrame."""
-    if df is None or getattr(df, "empty", True) or col not in df.columns:
-        return None
-    import pandas as pd
+def _sectors_quarterly(symbol: str, n_quarters: int = 8) -> list[dict[str, Any]]:
+    """Quarterly financial statements via Sectors (schema already mirrors v2 item).
 
-    for name in row_names:
-        if name in df.index:
-            v = df.loc[name, col]
-            if pd.notna(v) and str(v).lower() != "nan":
-                return float(v)
-    return None
-
-
-def _yfinance_quarterly(symbol: str, n_quarters: int = 8) -> list[dict[str, Any]]:
-    """Extract quarterly financial statements from yfinance .JK and map to Sectors schema."""
+    Keyless/mis-shaped -> [] honest (caller adds a sectors_missing_key note).
+    """
     sym = symbol.upper().strip().replace(".JK", "")
     try:
-        import yfinance as yf
+        from ..sectors import quarterly as _sectors_quarterly_fn
 
-        tk = yf.Ticker(f"{sym}.JK")
-        inc = tk.quarterly_income_stmt
-        bal = tk.quarterly_balance_sheet
-        cf = tk.quarterly_cashflow
-
-        col_set: set[Any] = set()
-        for df in (inc, bal, cf):
-            if df is not None and not getattr(df, "empty", True):
-                col_set.update(df.columns)
-
-        if not col_set:
-            return []
-
-        sorted_cols = sorted(col_set, reverse=True)[:n_quarters]
+        raw = _sectors_quarterly_fn(sym, n_quarters) or {}
+        items = raw.get("data") or raw.get("results") or []
         out: list[dict[str, Any]] = []
-
-        for col in sorted_cols:
-            date_str = str(col.date()) if hasattr(col, "date") else str(col)[:10]
-
-            tot_rev = _extract_df_val(inc, col, ["Total Revenue", "Operating Revenue"])
-            earnings = _extract_df_val(
-                inc, col, ["Net Income", "Net Income Common Stockholders", "Net Income Continuous Operations"]
-            )
-            tot_assets = _extract_df_val(bal, col, ["Total Assets"])
-            tot_equity = _extract_df_val(
-                bal, col, ["Total Equity Gross Minority Interest", "Stockholders Equity", "Common Stock Equity"]
-            )
-            op_cf = _extract_df_val(cf, col, ["Operating Cash Flow"])
-            non_int_inc = _extract_df_val(inc, col, ["Non Interest Income", "Other Non Operating Income Expenses"])
-            op_exp = _extract_df_val(inc, col, ["Operating Expense", "Total Expenses"])
-            op_pnl = _extract_df_val(inc, col, ["Operating Income", "Total Operating Income As Reported"])
-            ebt = _extract_df_val(inc, col, ["Pretax Income"])
-            tax_val = _extract_df_val(inc, col, ["Tax Provision"])
-            gross_prof = _extract_df_val(inc, col, ["Gross Profit"])
-            ebit_val = _extract_df_val(inc, col, ["EBIT"])
-            ebitda_val = _extract_df_val(inc, col, ["EBITDA", "Normalized EBITDA"])
-            cor = _extract_df_val(inc, col, ["Cost Of Revenue", "Reconciled Cost Of Revenue"])
-
-            tot_liab = _extract_df_val(bal, col, ["Total Liabilities Net Minority Interest", "Total Liabilities"])
-            tot_debt = _extract_df_val(bal, col, ["Total Debt"])
-            non_int_liab = None
-            if tot_liab is not None and tot_debt is not None:
-                non_int_liab = max(0.0, tot_liab - tot_debt)
-
-            cash_only = _extract_df_val(bal, col, ["Cash And Cash Equivalents", "Cash Financial"])
-            stk_eq = _extract_df_val(bal, col, ["Stockholders Equity", "Common Stock Equity"])
-            non_curr_assets = _extract_df_val(bal, col, ["Total Non Current Assets"])
-            curr_liab = _extract_df_val(bal, col, ["Current Liabilities"])
-            cash_st_inv = _extract_df_val(
-                bal, col, ["Cash Cash Equivalents And Short Term Investments", "Cash And Cash Equivalents"]
-            )
-            tot_curr_assets = _extract_df_val(bal, col, ["Current Assets", "Total Current Assets"])
-            non_curr_liab = _extract_df_val(
-                bal, col, ["Total Non Current Liabilities Net Minority Interest", "Total Non Current Liabilities"]
-            )
-
-            fin_cf = _extract_df_val(cf, col, ["Financing Cash Flow"])
-            inv_cf = _extract_df_val(cf, col, ["Investing Cash Flow"])
-            net_cf = _extract_df_val(cf, col, ["Changes In Cash"])
-            if net_cf is None and (op_cf is not None or inv_cf is not None or fin_cf is not None):
-                net_cf = (op_cf or 0.0) + (inv_cf or 0.0) + (fin_cf or 0.0)
-
-            item: dict[str, Any] = {
-                "symbol": sym,
-                "date": date_str,
-                "revenue": tot_rev,
-                "earnings": earnings,
-                "total_assets": tot_assets,
-                "total_equity": tot_equity,
-                "operating_cash_flow": op_cf,
-                "non_interest_income": non_int_inc,
-                "operating_expense": op_exp,
-                "operating_pnl": op_pnl,
-                "earnings_before_tax": ebt,
-                "tax": tax_val,
-                "gross_profit": gross_prof,
-                "ebit": ebit_val,
-                "ebitda": ebitda_val,
-                "cost_of_revenue": cor,
-                "non_interest_bearing_liabilities": non_int_liab,
-                "cash_only": cash_only,
-                "total_liabilities": tot_liab,
-                "total_debt": tot_debt,
-                "stockholders_equity": stk_eq,
-                "total_non_current_assets": non_curr_assets,
-                "current_liabilities": curr_liab,
-                "cash_and_short_term_investments": cash_st_inv,
-                "total_current_asset": tot_curr_assets,
-                "total_non_current_liabilities": non_curr_liab,
-                "financing_cash_flow": fin_cf,
-                "investing_cash_flow": inv_cf,
-                "net_cash_flow": net_cf,
-            }
-            out.append(item)
-
+        for it in items[:n_quarters]:
+            if not isinstance(it, dict):
+                continue
+            row = dict(it)
+            row.setdefault("symbol", sym)
+            out.append(row)
         return out
     except Exception as e:
-        logger.info("yfinance quarterly failed for %s: %s", sym, e)
+        logger.info("sectors quarterly skipped for %s: %s", sym, e)
         return []
 
 
@@ -524,17 +431,69 @@ async def get_filings(
     transaction_type: str | None = Query(None, description="buy | sell | others"),
     holder_type: str | None = Query(None, description="insider | institution | others"),
 ) -> dict[str, Any]:
-    """Fetch IDX disclosures and insider transactions mirroring Sectors v2 IdxFilingsItem."""
+    """Fetch IDX disclosures and insider transactions mirroring Sectors v2 IdxFilingsItem.
+
+    Sectors-first when keyed; keyless falls back to the IDX scraper honestly.
+    """
     response.headers["Cache-Control"] = "no-store"
     sym = symbol.upper().strip().replace(".JK", "")
 
+    # Sectors-first (single gateway); keyless/mis-shaped -> IDX scraper, honest.
+    items: list[dict[str, Any]] = []
     try:
-        items = await _scrape_idx_disclosures(sym, transaction_type=transaction_type)
-    except HTTPException:
-        raise
+        from ..sectors import filings as _sectors_filings
+
+        _raw = await asyncio.to_thread(_sectors_filings, sym)
+        _rows = (_raw or {}).get("data") or (_raw or {}).get("results") or []
+        if isinstance(_rows, list):
+            sec_s, sub_s = _get_sector_and_subsector(sym)
+            for _r in _rows:
+                if not isinstance(_r, dict):
+                    continue
+                _title = str(_r.get("title") or _r.get("headline") or "")
+                _body = str(_r.get("body") or _r.get("description") or _r.get("summary") or "")[:500]
+                _tx = str(_r.get("transaction_type") or _r.get("transactionType") or "others").lower()
+                if _tx not in ("buy", "sell"):
+                    _tx = "others"
+                _holder = str(_r.get("holder_type") or _r.get("holderType") or "others").lower()
+                if _holder not in ("insider", "institution"):
+                    _holder = "others"
+                items.append({
+                    "title": _title,
+                    "body": _body,
+                    "source": _r.get("source") or _r.get("url") or "sectors",
+                    "timestamp": str(_r.get("timestamp") or _r.get("date") or datetime.now(timezone.utc).astimezone().isoformat()),
+                    "sector": sec_s,
+                    "sub_sector": sub_s,
+                    "tags": _r.get("tags") or ["filings", sym.lower()],
+                    "symbol": sym,
+                    "transaction_type": _tx,
+                    "holder_type": _holder,
+                    "holder_name": _r.get("holder_name"),
+                    "holding_before": _r.get("holding_before"),
+                    "holding_after": _r.get("holding_after"),
+                    "amount_transaction": _r.get("amount_transaction"),
+                    "price": _r.get("price"),
+                    "transaction_value": _r.get("transaction_value"),
+                    "share_percentage_before": _r.get("share_percentage_before"),
+                    "share_percentage_after": _r.get("share_percentage_after"),
+                    "share_percentage_transaction": _r.get("share_percentage_transaction"),
+                    "idx_investor_slug": _r.get("idx_investor_slug"),
+                    "idx_conglomerates_group_slug": _r.get("idx_conglomerates_group_slug"),
+                })
     except Exception as e:
-        logger.error("Error fetching filings for %s: %s", sym, e)
-        raise HTTPException(status_code=503, detail=f"Upstream IDX scraper unavailable: {e}")
+        logger.info("sectors filings skipped for %s: %s", sym, e)
+
+    if not items:
+        try:
+            items = await _scrape_idx_disclosures(sym, transaction_type=transaction_type)
+        except HTTPException:
+            raise
+        except Exception as e:
+            logger.error("Error fetching filings for %s: %s", sym, e)
+            raise HTTPException(status_code=503, detail=f"Upstream filings source unavailable: {e}")
+    elif transaction_type:
+        items = [it for it in items if it.get("transaction_type") == transaction_type]
 
     # Optional filter by holder_type
     if holder_type:
@@ -588,18 +547,19 @@ async def get_news(
     raw_articles: list[dict[str, Any]] = []
 
     try:
-        # 1. Check Tavily if key configured
-        tavily_key = os.getenv("TAVILY_API_KEY", "").strip()
-        if tavily_key:
-            try:
-                from agents.adk.tools.web_tools import web_search_and_extract
+        # 1. Sectors news when keyed (single gateway); keyless -> curated only, honest
+        try:
+            from ..sectors import news as _sectors_news
 
-                query_str = f"IDX {' '.join(target_symbols)} {keyword or 'saham kinerja'}"
-                search_res = await web_search_and_extract(query_str, n_results=min(limit, 10), extract_top_n=3)
-                for ex in search_res.get("extract", {}).get("results", []):
-                    t = ex.get("title", "")
-                    b = ex.get("content", "")[:500]
-                    u = ex.get("url", "")
+            if target_symbols:
+                _raw = await asyncio.to_thread(_sectors_news, ",".join(target_symbols))
+                _rows = (_raw or {}).get("data") or (_raw or {}).get("results") or []
+                for _it in _rows[: min(max(1, limit), 10)]:
+                    if not isinstance(_it, dict):
+                        continue
+                    t = _it.get("title", "")
+                    b = str(_it.get("summary") or _it.get("content") or _it.get("body") or "")[:500]
+                    u = _it.get("url") or _it.get("link") or ""
                     if t:
                         primary_sym = target_symbols[0] if target_symbols else "IDX"
                         sec_s, sub_s = _get_sector_and_subsector(primary_sym)
@@ -608,16 +568,16 @@ async def get_news(
                             "title": t,
                             "body": b,
                             "source": u,
-                            "timestamp": datetime.now(timezone.utc).astimezone().isoformat(),
+                            "timestamp": str(_it.get("timestamp") or _it.get("date") or datetime.now(timezone.utc).astimezone().isoformat()),
                             "sector": sec_s,
                             "sub_sector": [sub_s],
-                            "tags": ["news", dim.get("sentiment", "neutral")],
+                            "tags": [t for t in (_it.get("tags") or ["news", dim.get("sentiment", "neutral")]) if t],
                             "symbols": [primary_sym],
-                            "thumbnail": None,
+                            "thumbnail": _it.get("thumbnail"),
                             "dimension": dim,
                         })
-            except Exception as e:
-                logger.info("Tavily search skipped: %s", e)
+        except Exception as e:
+            logger.info("sectors news skipped: %s", e)
 
         # 2. Check Curated news from scripts/news.py
         try:
@@ -699,20 +659,25 @@ async def get_corporate_actions(
     sym = symbol.upper().strip().replace(".JK", "")
 
     try:
-        # Dividends from yfinance
-        div_list = _derive_yfinance_dividends(sym)
+        # Dividends from Sectors corporate-actions (legacy removed)
+        div_list = _derive_sectors_dividends(sym)
 
-        # Splits from yfinance
+        # Splits from Sectors corporate-actions (legacy removed)
         splits_list: list[dict[str, Any]] = []
         try:
-            import yfinance as yf
+            from ..sectors import corporate_actions as _sectors_acts_fn
 
-            tk = yf.Ticker(f"{sym}.JK")
-            splits = tk.splits
-            if splits is not None and len(splits) > 0:
-                for s_dt, s_val in splits.items():
-                    s_date = str(s_dt.date()) if hasattr(s_dt, "date") else str(s_dt)[:10]
-                    splits_list.append({"date": s_date, "ratio": float(s_val)})
+            _acts = _sectors_acts_fn(sym) or {}
+            for s in _acts.get("stock_split") or _acts.get("splits") or []:
+                if not isinstance(s, dict):
+                    continue
+                s_date = str(s.get("date") or s.get("split_date") or "")[:10]
+                try:
+                    ratio = float(s.get("ratio") or s.get("split_ratio") or 0)
+                except (TypeError, ValueError):
+                    continue
+                if s_date and ratio:
+                    splits_list.append({"date": s_date, "ratio": ratio})
         except Exception:
             pass
 
@@ -760,7 +725,7 @@ async def get_quarterly_financials(
     sym = symbol.upper().strip().replace(".JK", "")
 
     try:
-        items = _yfinance_quarterly(sym, n_quarters=n_quarters)
+        items = _sectors_quarterly(sym, n_quarters=n_quarters)
 
         if report_date:
             items = [it for it in items if it.get("date") == report_date]
@@ -777,7 +742,7 @@ async def get_quarterly_financials(
             "data": paginated,
         }
         if total == 0:
-            res["note"] = "no quarterly financials available for symbol"
+            res["note"] = "no quarterly financials available for symbol (source=sectors_missing_key)"
         return res
     except HTTPException:
         raise

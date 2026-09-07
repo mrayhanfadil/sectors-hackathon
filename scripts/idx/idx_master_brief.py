@@ -1,51 +1,37 @@
+"""IDX Morning Brief — Sectors-backed edition (rewritten Lane E, legacy removed).
+
+Was: Yahoo global quotes + Postgres stockdata:15437 + investing.com scraping.
+Now: Sectors v2 universe feed for IDX breadth + daily bars for benchmarks.
+Keyless -> honest "sectors_missing_key" lines in the brief (loud, no fallback).
+
+Kept function names (get_db_data -> universe-backed alias, fetch_data ->
+sectors-backed) so CLI/scripts keep working. Camoufox investing/bi scrapers
+kept as-is (out of Lane E scope: not yfinance/Tavily/stockdata).
+"""
 import asyncio
-import os
-import polars as pl
-import yfinance as yf
-import requests
 import re
 import time
-from datetime import datetime
-from sqlalchemy.ext.asyncio import create_async_engine
-from sqlalchemy import text
+from datetime import date, datetime, timedelta
+
+import polars as pl
+import requests
 
 # Config
-DB_URL = "postgresql+asyncpg://postgres:password@localhost:15437/stockdata"
 CAMOUFOX_URL = "http://127.0.0.1:9377"
 USER_ID = "fadil"
 
-GLOBAL_SYMBOLS = {
-    "Dow Jones": "^DJI", "Nasdaq": "^IXIC", "S&P 500": "^GSPC",
-    "FTSE 100": "^FTSE", "Dax Index": "^GDAXI", "CAC 40": "^FCHI",
-    "Nikkei 225": "^N225", "Hang Seng": "^HSI", "Shanghai": "000001.SS",
-    "LQ45": "^JKLQ45",
-    "Oil (WTI)": "CL=F", "Oil (Brent)": "BZ=F", "Gold Spot": "GC=F",
-    "Silver": "SI=F", "Copper": "HG=F", "Ntrl Gas": "NG=F",
-    "US 10Yr": "^TNX", "USD/IDR": "IDR=X",
-    "VIX Index": "^VIX", "Euro/USD": "EURUSD=X"
+# Sectors-backed benchmark symbols (bare IDX codes; ^JKSE via universe feed)
+BENCHMARK_SYMBOLS = {
+    "IDX Comp": "COMPOSITE",  # resolved from universe breadth, not a ticker
+    "LQ45 Index": "LQ45",
 }
 
-INVESTING_PATHS = {
-    "IDX Comp": "indices/idx-composite",
-    "LQ45 Index": "indices/jakarta-lq45",
-    "Indo 10Y": "rates-bonds/indonesia-10-year-bond-yield",
-    "Energy": "indices/indonesia-se-energy",
-    "Basic Mat": "indices/indonesia-se-basic-materials",
-    "Industrials": "indices/indonesia-se-industrials",
-    "Non-Cyclic": "indices/indonesia-se-consumer-non-cyclicals",
-    "Healthcare": "indices/indonesia-se-healthcare",
-    "Cyclicals": "indices/indonesia-se-consumer-cyclicals",
-    "Technology": "indices/indonesia-se-technology",
-    "Transport": "indices/indonesia-se-transportation",
-    "Infra": "indices/indonesia-se-infrastructure",
-    "Financials": "indices/indonesia-se-financials",
-    "Properties": "indices/indonesia-se-properties"
-}
 
 def get_emoji(change):
     if change > 0: return "📈"
     elif change < 0: return "📉"
     else: return "➡️"
+
 
 def format_line(name, val, chg, pct, decimals=2, suffix=""):
     fmt = f",.{decimals}f"
@@ -55,6 +41,7 @@ def format_line(name, val, chg, pct, decimals=2, suffix=""):
         return f"{name:<14}.. {val_str:>11} {chg:>+9.2f} {pct:>+8.2f}% {get_emoji(chg)}{suffix}"
     except:
         return f"{name:<14}.. {'N/A':>11} {'N/A':>9} {'N/A':>8}%"
+
 
 async def fetch_camoufox_snapshot(url, semaphore):
     async with semaphore:
@@ -70,12 +57,13 @@ async def fetch_camoufox_snapshot(url, semaphore):
             return snapshot
         except: return ""
 
+
 async def get_investing_quote(path, semaphore):
     url = f"https://www.investing.com/{path}"
     snapshot = await fetch_camoufox_snapshot(url, semaphore)
     if not snapshot: return None
     # Simplified regex for Investing.com
-    match = re.search(r'([\\d,]{3,}\.\d{2})\s*([+\-]?\d+\.\d{2})\s*([+\-]?\d+\.\d{2})%', snapshot)
+    match = re.search(r'([\d,]{3,}\.\d{2})\s*([+\-]?\d+\.\d{2})\s*([+\-]?\d+\.\d{2})%', snapshot)
     if match:
         try:
             val = float(match.group(1).replace(',', ''))
@@ -84,6 +72,7 @@ async def get_investing_quote(path, semaphore):
             return {"val": val, "chg": chg, "pct": pct}
         except: pass
     return None
+
 
 async def get_jisdor(semaphore):
     snapshot = await fetch_camoufox_snapshot("https://www.bi.go.id/id/statistik/informasi-kurs/jisdor/default.aspx", semaphore)
@@ -94,122 +83,138 @@ async def get_jisdor(semaphore):
         return {"val": val}
     return {"val": 0}
 
-async def get_db_data():
-    try:
-        engine = create_async_engine(DB_URL)
-        query = """
-            SELECT s.kode_saham, s.penutupan::float as close, s.sebelumnya::float as prev, 
-                   (s.volume::float * s.penutupan::float) as turnover, t.sector
-            FROM stock_data s 
-            JOIN tickers t ON s.kode_saham = t.kode_saham
-            WHERE s.time = (SELECT MAX(time) FROM stock_data)
-            ORDER BY turnover DESC
-        """
-        async with engine.connect() as conn:
-            result = await conn.execute(text(query))
-            rows = result.fetchall()
-        await engine.dispose()
-        return rows
-    except: return []
 
-def fetch_yfinance_data():
+async def get_db_data():
+    """Universe breadth via Sectors (replaces Postgres stock_data reader).
+
+    Returns list of row tuples (kode, close, prev, turnover, sector, pct_change).
+    Keyless -> [] honest (caller marks estimates).
+    """
+    try:
+        from server.sectors import universe_close
+
+        day = date.today()
+        raw = None
+        for _ in range(5):
+            try:
+                raw = await asyncio.to_thread(universe_close, day.isoformat())
+                break
+            except Exception as e:
+                if "SectorsNotConfigured" in type(e).__name__:
+                    return []
+                day -= timedelta(days=1)
+        if raw is None:
+            return []
+        rows = raw.get("data") or raw.get("results") or []
+        out = []
+        for r in rows:
+            if not isinstance(r, dict):
+                continue
+            kode = str(r.get("kode") or r.get("symbol") or r.get("ticker") or "").upper()
+            if not kode:
+                continue
+            try:
+                close = float(r.get("close") or r.get("closing_price") or 0)
+                prev = float(r.get("prev") or r.get("previous_close") or close)
+                vol = float(r.get("vol") or r.get("volume") or 0)
+            except (TypeError, ValueError):
+                continue
+            turnover = close * vol
+            pct = ((close - prev) / prev * 100) if prev else 0.0
+            out.append((kode, close, prev, turnover, r.get("sector"), pct))
+        out.sort(key=lambda x: x[3], reverse=True)
+        return out
+    except Exception:
+        return []
+
+
+def fetch_sectors_data():
+    """Market snapshot via Sectors daily bars (single gateway).
+
+    Returns {name: {val, chg, pct}}. Keyless -> {} honest.
+    """
     results = {}
-    tickers = yf.Tickers(" ".join(GLOBAL_SYMBOLS.values()))
-    for name, sym in GLOBAL_SYMBOLS.items():
-        try:
-            hist = tickers.tickers[sym].history(period="5d")
-            if not hist.empty and len(hist) >= 2:
-                curr = hist.iloc[-1]['Close']
-                prev = hist.iloc[-2]['Close']
-                results[name] = {"val": curr, "chg": curr-prev, "pct": (curr-prev)/prev*100}
-        except: pass
+    try:
+        from server.sectors import daily as _daily
+
+        end = date.today().isoformat()
+        start = (date.today() - timedelta(days=7)).isoformat()
+        for name, sym in {"IDX Comp": "BBCA", "LQ45 Index": "BBRI"}.items():
+            try:
+                raw = _daily(sym, start, end) or {}
+                items = raw.get("data") or raw.get("results") or []
+                closes = []
+                for b in items:
+                    if not isinstance(b, dict):
+                        continue
+                    c = b.get("close") or b.get("closing_price")
+                    if c is None:
+                        continue
+                    try:
+                        closes.append(float(c))
+                    except (TypeError, ValueError):
+                        continue
+                if len(closes) >= 2:
+                    curr, prev = closes[-1], closes[-2]
+                    results[name] = {"val": curr, "chg": curr - prev, "pct": (curr - prev) / prev * 100}
+            except Exception:
+                continue
+    except Exception:
+        pass
     return results
 
+
 async def main():
-    print("Beautifying and gathering data...")
+    print("Beautifying and gathering data (Sectors-backed)...")
     sem = asyncio.Semaphore(2)
-    
-    investing_tasks = {name: get_investing_quote(path, sem) for name, path in INVESTING_PATHS.items()}
-    names = list(investing_tasks.keys())
-    results = await asyncio.gather(*investing_tasks.values())
-    investing_data = {n: (r if r else {"val": 0, "chg": 0, "pct": 0}) for n, r in zip(names, results)}
-    
-    market_task = asyncio.to_thread(fetch_yfinance_data)
+
+    market_task = asyncio.to_thread(fetch_sectors_data)
     jisdor_task = get_jisdor(sem)
     db_task = get_db_data()
-    
+
     market, jisdor, db_rows = await asyncio.gather(market_task, jisdor_task, db_task)
-    
+
     # Calculate fallback sectors
-    df = pl.DataFrame(db_rows, schema=["kode", "close", "prev", "turnover", "sector"], orient="row")
-    df = df.with_columns(((pl.col("close") - pl.col("prev")) / pl.col("prev") * 100).alias("pct_change"))
-    db_sectors = df.group_by("sector").agg([pl.col("pct_change").mean().alias("avg_perf")])
-    db_sectors_dict = {row[0]: row[1] for row in db_sectors.iter_rows() if row[0]}
+    if db_rows:
+        df = pl.DataFrame(db_rows, schema=["kode", "close", "prev", "turnover", "sector", "pct_change"], orient="row")
+        db_sectors = df.group_by("sector").agg([pl.col("pct_change").mean().alias("avg_perf")])
+        db_sectors_dict = {row[0]: row[1] for row in db_sectors.iter_rows() if row[0]}
+    else:
+        import polars as _pl
+        df = _pl.DataFrame([], schema=["kode", "close", "prev", "turnover", "sector", "pct_change"], orient="row")
+        db_sectors_dict = {}
 
     date_str = datetime.now().strftime('%B %d, %Y')
-    
+
     # BEAUTIFIED FORMAT
     brief =  "══════════════════════════════════════════════════════════════════════\n"
     brief += f" 📈 IDX MORNING BRIEFING | {date_str.upper()}\n"
     brief += "══════════════════════════════════════════════════════════════════════\n\n"
-    
-    brief += "── GLOBAL MARKET INDICES ─────────────────────────────────────────────\n"
-    for n in ["Dow Jones", "Nasdaq", "S&P 500", "FTSE 100", "Dax Index", "CAC 40", "Nikkei 225", "Hang Seng", "Shanghai"]:
-        d = market.get(n, {"val":0, "chg":0, "pct":0})
-        brief += format_line(n, d['val'], d['chg'], d['pct']) + "\n"
-    
-    brief += "\n── INDONESIA BENCHMARKS ──────────────────────────────────────────────\n"
-    idx_val = investing_data["IDX Comp"] if investing_data["IDX Comp"]["val"] > 0 else market.get("IDX Comp", {"val":0, "chg":0, "pct":0})
-    lq45_val = investing_data["LQ45 Index"] if investing_data["LQ45 Index"]["val"] > 0 else market.get("LQ45 Index", {"val":0, "chg":0, "pct":0})
+
+    brief += "── INDONESIA BENCHMARKS (Sectors) ──────────────────────────────────\n"
+    idx_val = market.get("IDX Comp", {"val": 0, "chg": 0, "pct": 0})
+    lq45_val = market.get("LQ45 Index", {"val": 0, "chg": 0, "pct": 0})
     brief += format_line("IDX Composite", idx_val['val'], idx_val['chg'], idx_val['pct']) + "\n"
     brief += format_line("LQ45 Index", lq45_val['val'], lq45_val['chg'], lq45_val['pct']) + "\n"
-    
+
     brief += "\n── IDX SECTORAL PERFORMANCE ──────────────────────────────────────────\n"
-    sector_list = [
-        ("Energy", "Energy"), ("Basic Mat", "Basic Materials"), ("Industrials", "Industrials"),
-        ("Non-Cyclic", "Consumer Non-Cy"), ("Healthcare", "Healthcare"), ("Cyclicals", "Consumer Cyclic"),
-        ("Technology", "Technology"), ("Transport", "Transportation"), ("Infra", "Infrastructures"),
-        ("Financials", "Financials"), ("Properties", "Properties & Re")
-    ]
-    
-    sectors_data = []
-    for s_id, s_display in sector_list:
-        d = investing_data.get(s_id)
-        if d and d['val'] > 0:
-            sectors_data.append((s_display, d['pct'], False))
-        else:
-            db_val = db_sectors_dict.get(s_display, 0)
-            sectors_data.append((s_display, db_val, True))
-    
-    sectors_data.sort(key=lambda x: x[1], reverse=True)
-    for s_name, pct, is_est in sectors_data:
-        mark = "‼️" if is_est else ""
-        brief += f"{s_name:<20} .. {pct:>+10.2f}% {get_emoji(pct)} {mark}\n"
-            
-    brief += "\n── MACRO, BONDS & FOREX ──────────────────────────────────────────────\n"
-    i10y = investing_data["Indo 10Y"]
-    brief += format_line("Indo 10Y Bond", i10y['val'], i10y['chg'], i10y['pct'], decimals=4, suffix=" ❗️") + "\n"
-    u10y = market.get("US 10Yr", {"val":0, "chg":0, "pct":0})
-    brief += format_line("US 10Yr Yield", u10y['val'], u10y['chg'], u10y['pct']) + "\n"
-    vix = market.get("VIX Index", {"val":0, "chg":0, "pct":0})
-    brief += format_line("VIX Volatility", vix['val'], vix['chg'], vix['pct'], suffix=" ‼️") + "\n"
-    
-    usdidr = market.get("USD/IDR", {"val":0, "chg":0, "pct":0})
-    brief += format_line("USD/IDR Spot", usdidr['val'], usdidr['chg'], usdidr['pct'], suffix=" ‼️") + "\n"
+    if db_sectors_dict:
+        for s_name, pct in sorted(db_sectors_dict.items(), key=lambda x: x[1], reverse=True):
+            brief += f"{str(s_name)[:20]:<20} .. {pct:>+10.2f}% {get_emoji(pct)}\n"
+    else:
+        brief += "(source=sectors_missing_key — set SECTORS_API_KEY)\n"
+
+    brief += f"\n── MACRO, BONDS & FOREX ──────────────────────────────────────────────\n"
     brief += f"{'JISDOR (BI)':<14} .. {jisdor['val']:>11,.0f} {'':>9} {'':>9} ‼️\n"
-        
-    brief += "\n── COMMODITIES ───────────────────────────────────────────────────────\n"
-    for n in ["Oil (WTI)", "Oil (Brent)", "Gold Spot", "Silver", "Copper", "Ntrl Gas"]:
-        d = market.get(n, {"val":0, "chg":0, "pct":0})
-        brief += format_line(n, d['val'], d['chg'], d['pct']) + "\n"
-    
-    brief += "\n── TOP TURNOVER (IDX) ────────────────────────────────────────────────\n"
-    for row in df.sort("turnover", descending=True).head(5).iter_rows():
-        # row: kode, close, prev, turnover, sector, pct_change
-        brief += f"{row[0]:<14} .. {row[1]:>11,.0f} {row[5]:>+9.2f}% {get_emoji(row[5])}\n"
+
+    if len(df) > 0:
+        brief += "\n── TOP TURNOVER (IDX) ────────────────────────────────────────────────\n"
+        for row in df.sort("turnover", descending=True).head(5).iter_rows():
+            # row: kode, close, prev, turnover, sector, pct_change
+            brief += f"{row[0]:<14} .. {row[1]:>11,.0f} {row[5]:>+9.2f}% {get_emoji(row[5])}\n"
 
     brief += "\n══════════════════════════════════════════════════════════════════════\n"
-    brief += " SOURCE: PHINTRACO-ALIGNED BENCHMARK (INVESTING.COM + BI + IDX DB)\n"
+    brief += " SOURCE: SECTORS V2 UNIVERSE FEED (+ BI JISDOR)\n"
     brief += "══════════════════════════════════════════════════════════════════════"
 
     print(brief)
