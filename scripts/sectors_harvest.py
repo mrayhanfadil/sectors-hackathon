@@ -8,10 +8,11 @@ Lake layout (.cache/sectors/):
     suspensions.json, listing.json
 
 Credit math (see docs/sectors-swap.md Pricing):
-  per ticker ~14 (report 5 sections + daily + quarterly + news + filings +
-    actions + flow + brokertop + suspensions + listing)
+  per ticker ~17 (report 5 sections + daily + dates/quarterly + segments +
+    shareholders + news + filings + actions + flow + brokertop +
+    suspensions + listing)
   shared ~12 (universe + idx-mcap + jci + 4 subsectors x2 + screener)
-  full quintet harvest ~= 5*14 + 12 = 82 credits.
+  full quintet harvest ~= 5*17 + 12 = 97 credits.
   Daily refresh ~= 5*(daily+news) + universe = 11 credits.
 
 Usage:
@@ -45,7 +46,9 @@ PLAN_SHARED = [
 PLAN_PER_TICKER = [
     ("report:overview,financials,dividend,peers,future", 5, "weekly"),
     ("daily:90d", 1, "daily"),
-    ("quarterly:8", 1, "on-filing"),
+    ("quarterly_dates+quarterly:8", 2, "on-filing"),
+    ("segments", 1, "yearly"),
+    ("shareholders_composition", 1, "weekly"),
     ("news", 1, "daily"),
     ("filings", 1, "weekly"),
     ("corporate_actions", 1, "weekly"),
@@ -90,6 +93,8 @@ def execute(plan: dict) -> dict:
             ("report-opfvd.json", S.company_report, (t, "overview,peers,future,valuation,dividend")),
             ("daily-90d.json", S.daily, (t, start90, end)),
             ("quarterly-8.json", S.quarterly, (t, 8)),
+            ("segments.json", S.segments, (t,)),
+            ("shareholders.json", S.shareholders_composition, (t,)),
             ("news.json", S.news, (t,)),
             ("filings.json", S.filings, (t,)),
             ("actions.json", S.corporate_actions, (t,)),
