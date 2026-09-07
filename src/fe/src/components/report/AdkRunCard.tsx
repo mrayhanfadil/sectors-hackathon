@@ -68,7 +68,7 @@ function renderStatusBadge(status: string) {
       return <Badge variant="success">Selesai</Badge>
     case "interrupted":
       return (
-        <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800">
+        <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           Terinterupsi
         </Badge>
       )
@@ -76,7 +76,7 @@ function renderStatusBadge(status: string) {
       return <Badge variant="destructive">Gagal</Badge>
     case "running":
       return (
-        <Badge variant="outline" className="border-sky-300 bg-sky-50 text-sky-800 animate-pulse flex items-center gap-1">
+        <Badge variant="outline" className="border-sky-300 bg-sky-50 text-sky-800 animate-pulse flex items-center gap-1 dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200">
           <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
           Sedang Berjalan
         </Badge>
@@ -92,25 +92,25 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
 
   if (!hasRun || !log) {
     return (
-      <Card className="border-neutral-200 bg-white shadow-2xs">
+      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
         <CardHeader className="p-4 pb-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs dark:bg-neutral-800">
               <Bot className="h-4 w-4" />
             </div>
-            <CardTitle className="text-sm font-semibold text-neutral-900">
+            <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
               Log ADK untuk {t}
             </CardTitle>
           </div>
         </CardHeader>
         <CardContent className="p-4 pt-2 space-y-3">
-          <div className="flex items-center gap-2 text-xs text-neutral-500">
+          <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
             <Inbox className="h-4 w-4 text-neutral-400" />
             <span>Belum ada log ADK untuk {t}</span>
           </div>
           <div>
             <Link to="/agent" search={{ ticker: t } as any}>
-              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs text-neutral-700">
+              <Button size="sm" variant="outline" className="h-8 gap-1.5 text-xs text-neutral-700 dark:text-neutral-300">
                 <span>Mulai Run →</span>
               </Button>
             </Link>
@@ -128,19 +128,19 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     : "-"
 
   return (
-    <Card className="border-neutral-200 bg-white shadow-2xs">
+    <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
       <CardHeader className="p-4 pb-2">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs">
+            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs dark:bg-neutral-800">
               <Bot className="h-4 w-4" />
             </div>
-            <CardTitle className="text-sm font-semibold text-neutral-900">
+            <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
               Log ADK untuk {t}
             </CardTitle>
           </div>
           <Link to="/agent" search={{ ticker: t } as any}>
-            <Button size="sm" variant="default" className="h-8 gap-1.5 text-xs bg-neutral-900 text-white hover:bg-neutral-800">
+            <Button size="sm" variant="default" className="h-8 gap-1.5 text-xs bg-neutral-900 text-white hover:bg-neutral-800 dark:bg-neutral-800">
               <span>Lihat Trace Lengkap →</span>
             </Button>
           </Link>
@@ -151,31 +151,31 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
         {/* Row 1: Status Badge + relative time + n_events */}
         <div className="flex flex-wrap items-center gap-2 text-xs">
           {renderStatusBadge(log.status)}
-          <span className="text-neutral-500">{formatRelativeTime(log.started_at)}</span>
+          <span className="text-neutral-500 dark:text-neutral-400">{formatRelativeTime(log.started_at)}</span>
           <span className="text-neutral-300">·</span>
-          <span className="font-mono text-neutral-600">{log.n_events} aktivitas</span>
+          <span className="font-mono text-neutral-600 dark:text-neutral-400">{log.n_events} aktivitas</span>
         </div>
 
         {/* Row 2: small caption "{provider}/{model} · {duration_s ? formatDuration(duration_s) : '-'}" */}
-        <div className="text-xs text-neutral-500 font-mono">
+        <div className="text-xs text-neutral-500 font-mono dark:text-neutral-400">
           <span>{log.provider}/{log.model}</span>
           <span className="mx-1.5 text-neutral-300">·</span>
           <span>{log.duration_s != null ? formatDuration(log.duration_s) : "-"}</span>
         </div>
 
         {/* Row 3: "Last activity: {last_text_preview}" truncated to 80 chars with ellipsis */}
-        <div className="text-xs text-neutral-600 leading-relaxed">
-          <span className="font-medium text-neutral-700">Last activity: </span>
-          <span className="font-mono text-[11px] text-neutral-600">{lastTextPreview}</span>
+        <div className="text-xs text-neutral-600 leading-relaxed dark:text-neutral-400">
+          <span className="font-medium text-neutral-700 dark:text-neutral-300">Last activity: </span>
+          <span className="font-mono text-[11px] text-neutral-600 dark:text-neutral-400">{lastTextPreview}</span>
         </div>
 
         {/* Collapsible history: "Riwayat run sebelumnya" (max 5 rows) */}
         {history && history.length > 0 && (
-          <div className="border-t border-neutral-100 pt-2 text-xs">
+          <div className="border-t border-neutral-100 pt-2 text-xs dark:border-neutral-800">
             <button
               type="button"
               onClick={() => setHistoryOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between text-left text-neutral-600 hover:text-neutral-900 py-1 select-none"
+              className="flex w-full items-center justify-between text-left text-neutral-600 hover:text-neutral-900 py-1 select-none dark:text-neutral-400 dark:hover:text-neutral-100"
             >
               <div className="flex items-center gap-1.5 font-medium">
                 <History className="h-3.5 w-3.5 text-neutral-400" />
@@ -189,17 +189,17 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
             </button>
 
             {historyOpen && (
-              <div className="mt-2 space-y-1.5 rounded-lg bg-neutral-50 p-2.5">
+              <div className="mt-2 space-y-1.5 rounded-lg bg-neutral-50 p-2.5 dark:bg-neutral-900">
                 {history.slice(0, 5).map((h) => (
                   <div
                     key={h.run_id}
-                    className="flex flex-wrap items-center justify-between gap-1 py-1 text-[11px] border-b border-neutral-200/50 last:border-0"
+                    className="flex flex-wrap items-center justify-between gap-1 py-1 text-[11px] border-b border-neutral-200/50 last:border-0 dark:border-neutral-800/50"
                   >
                     <div className="flex items-center gap-2">
                       {renderStatusBadge(h.status)}
-                      <span className="text-neutral-500">{formatRelativeTime(h.started_at)}</span>
+                      <span className="text-neutral-500 dark:text-neutral-400">{formatRelativeTime(h.started_at)}</span>
                     </div>
-                    <div className="flex items-center gap-2 font-mono text-neutral-500">
+                    <div className="flex items-center gap-2 font-mono text-neutral-500 dark:text-neutral-400">
                       <span>{h.n_events} aktivitas</span>
                       <span className="text-neutral-300">·</span>
                       <span>{h.duration_s != null ? formatDuration(h.duration_s) : "-"}</span>

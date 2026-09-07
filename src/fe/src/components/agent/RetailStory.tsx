@@ -120,14 +120,14 @@ export const RetailStory = memo(function RetailStory({
   const activeStep = steps.findIndex((s) => s.status === "running")
 
   return (
-    <div className={cn("rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden", className)}>
-      <div className="border-b border-neutral-100 px-4 py-3.5 sm:px-5">
+    <div className={cn("rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden dark:border-neutral-800 dark:bg-[#111111]", className)}>
+      <div className="border-b border-neutral-100 px-4 py-3.5 sm:px-5 dark:border-neutral-800">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="text-sm font-bold text-neutral-900 sm:text-base">
+            <h2 className="text-sm font-bold text-neutral-900 sm:text-base dark:text-neutral-100">
               Cerita analisis {t} — 5 langkah
             </h2>
-            <p className="mt-0.5 text-xs leading-relaxed text-neutral-500">
+            <p className="mt-0.5 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
               {done
                 ? `Selesai. Hasil paling atas yang penting, sisanya cara sampainya.`
                 : running
@@ -137,13 +137,13 @@ export const RetailStory = memo(function RetailStory({
                   : `Belum jalan. Tekan Jalankan, terus baca dari atas ke bawah.`}
             </p>
           </div>
-          <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[11px] font-medium text-neutral-600">
+          <span className="rounded-full border border-neutral-200 bg-neutral-50 px-2.5 py-1 font-mono text-[11px] font-medium text-neutral-600 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
             {finishedCount}/5 selesai
           </span>
         </div>
       </div>
 
-      <ol className="divide-y divide-neutral-100">
+      <ol className="divide-y divide-neutral-100 dark:divide-neutral-800">
         {steps.map(({ stage, status, line }, idx) => {
           const StageIcon = stage.icon
           return (
@@ -152,9 +152,9 @@ export const RetailStory = memo(function RetailStory({
                 <div
                   className={cn(
                     "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border",
-                    status === "finished" && "border-emerald-300 bg-emerald-100 text-emerald-800",
-                    status === "running" && "border-amber-300 bg-amber-100 text-amber-900",
-                    status === "idle" && "border-neutral-200 bg-neutral-50 text-neutral-400",
+                    status === "finished" && "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200",
+                    status === "running" && "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200",
+                    status === "idle" && "border-neutral-200 bg-neutral-50 text-neutral-400 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-500",
                   )}
                 >
                   {status === "finished" ? (
@@ -165,31 +165,31 @@ export const RetailStory = memo(function RetailStory({
                     <Circle className="h-4 w-4" />
                   )}
                 </div>
-                {idx < steps.length - 1 && <div className="mt-1 w-px flex-1 bg-neutral-200" />}
+                {idx < steps.length - 1 && <div className="mt-1 w-px flex-1 bg-neutral-200 dark:bg-neutral-800" />}
               </div>
               <div className="min-w-0 flex-1 pb-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-neutral-400">
+                  <span className="font-mono text-[10px] font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
                     Langkah {stage.stageNumber}
                   </span>
-                  <span className="text-sm font-semibold text-neutral-900">{stage.title}</span>
+                  <span className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">{stage.title}</span>
                   {status === "running" && (
-                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900">
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[10px] font-semibold text-amber-900 dark:bg-amber-950 dark:text-amber-200">
                       Lagi jalan
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs text-neutral-500">{RETAIL_SUBTITLE[stage.id] || stage.description}</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-800">{line}</p>
+                <p className="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{RETAIL_SUBTITLE[stage.id] || stage.description}</p>
+                <p className="mt-1.5 text-[13px] leading-relaxed text-neutral-800 dark:text-neutral-200">{line}</p>
               </div>
             </li>
           )
         })}
       </ol>
 
-      <div className="border-t border-neutral-100 bg-neutral-50/70 px-4 py-3.5 sm:px-5">
-        <p className="text-xs font-semibold text-neutral-800">Apa artinya buat saya?</p>
-        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-xs leading-relaxed text-neutral-600">
+      <div className="border-t border-neutral-100 bg-neutral-50/70 px-4 py-3.5 sm:px-5 dark:border-neutral-800 dark:bg-neutral-900/70">
+        <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100">Apa artinya buat saya?</p>
+        <ul className="mt-1.5 list-disc space-y-1 pl-5 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
           <li>
             {done
               ? `Keputusan ada di kartu hijau paling atas + laporan lengkap. Cerita 5 langkah ini cuma jejak cara sampainya.`
@@ -200,14 +200,14 @@ export const RetailStory = memo(function RetailStory({
             <Link
               to="/report/$ticker"
               params={{ ticker: t }}
-              className="inline-flex items-center gap-0.5 font-semibold text-neutral-900 underline underline-offset-2"
+              className="inline-flex items-center gap-0.5 font-semibold text-neutral-900 underline underline-offset-2 dark:text-neutral-100"
             >
               laporan {t} <ArrowRight className="h-3 w-3" />
             </Link>
             .
           </li>
         </ul>
-        <p className="mt-2 text-[11px] italic leading-relaxed text-neutral-400">
+        <p className="mt-2 text-[11px] italic leading-relaxed text-neutral-400 dark:text-neutral-500">
           Ini info otomatis, bukan saran beli/jual. Keputusan tetap di kamu.
         </p>
       </div>

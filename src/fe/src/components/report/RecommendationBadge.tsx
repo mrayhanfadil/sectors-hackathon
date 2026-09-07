@@ -28,12 +28,12 @@ export function RecommendationBadge({
   const isHold = !isBuy && !isSell
 
   const ratingStyles = isBuy
-    ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+    ? "border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
     : isSell
-    ? "border-red-200 bg-red-50 text-red-700"
-    : "border-neutral-200 bg-neutral-50 text-neutral-700"
+    ? "border-red-200 bg-red-50 text-red-700 dark:border-red-800 dark:bg-red-950 dark:text-red-200"
+    : "border-neutral-200 bg-neutral-50 text-neutral-700 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-300"
 
-  const upsideColor = isBuy ? "text-emerald-600" : isSell ? "text-red-600" : "text-neutral-500"
+  const upsideColor = isBuy ? "text-emerald-600 dark:text-emerald-400" : isSell ? "text-red-600 dark:text-red-400" : "text-neutral-500 dark:text-neutral-400"
 
   const formattedUpside = (() => {
     if (upside == null) return null
@@ -64,7 +64,7 @@ export function RecommendationBadge({
 
       {showTarget && targetPrice != null && (
         <span
-          className={`inline-flex items-center rounded border border-neutral-200 bg-white font-mono font-medium tabular-nums text-[#0a0a0a] ${sizeClasses[size]}`}
+          className={`inline-flex items-center rounded border border-neutral-200 bg-white font-mono font-medium tabular-nums text-[#0a0a0a] ${sizeClasses[size]} dark:border-neutral-800 dark:bg-[#111111] dark:text-white`}
         >
           <span>TP Rp {fmtIDR(targetPrice)}</span>
           {formattedUpside && <span className={`ml-1 ${upsideColor}`}>({formattedUpside})</span>}

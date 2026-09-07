@@ -74,7 +74,7 @@ function truncateRunId(runId: string): string {
 function renderStatusBadge(status: string, isActive?: boolean) {
   if (isActive || status === "running") {
     return (
-      <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800">
+      <span className="inline-flex items-center gap-1 rounded-md border border-amber-300 bg-amber-50 px-1.5 py-0.5 text-[10px] font-semibold text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
@@ -87,28 +87,28 @@ function renderStatusBadge(status: string, isActive?: boolean) {
   switch (status) {
     case "completed":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800">
+        <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
           <CheckCircle2 className="h-3 w-3 text-emerald-600 shrink-0" />
           <span>Selesai</span>
         </span>
       )
     case "interrupted":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800">
+        <span className="inline-flex items-center gap-1 rounded-md border border-amber-200 bg-amber-50 px-1.5 py-0.5 text-[10px] font-medium text-amber-800 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
           <AlertCircle className="h-3 w-3 text-amber-600 shrink-0" />
           <span>Terhenti</span>
         </span>
       )
     case "failed":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-800">
+        <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-1.5 py-0.5 text-[10px] font-medium text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
           <AlertCircle className="h-3 w-3 text-rose-600 shrink-0" />
           <span>Gagal</span>
         </span>
       )
     default:
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700">
+        <span className="inline-flex items-center gap-1 rounded-md border border-neutral-200 bg-neutral-50 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">
           <span className="h-1.5 w-1.5 rounded-full bg-neutral-400" />
           <span>{status}</span>
         </span>
@@ -169,22 +169,22 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
 
   return (
     <div
-      className={`rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden flex flex-col ${className}`}
+      className={`rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden flex flex-col dark:border-neutral-800 dark:bg-[#111111] ${className}`}
     >
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-2 p-3.5 border-b border-neutral-100 bg-white">
+      <div className="flex items-center justify-between gap-2 p-3.5 border-b border-neutral-100 bg-white dark:border-neutral-800 dark:bg-[#111111]">
         <div className="flex items-center gap-2 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200 shadow-2xs shrink-0">
-            <History className="h-3.5 w-3.5 text-neutral-700" />
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-100 text-neutral-800 border border-neutral-200 shadow-2xs shrink-0 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200">
+            <History className="h-3.5 w-3.5 text-neutral-700 dark:text-neutral-300" />
           </div>
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
-              <h2 className="text-xs font-bold tracking-tight text-neutral-900 font-sans truncate">
+              <h2 className="text-xs font-bold tracking-tight text-neutral-900 font-sans truncate dark:text-neutral-100">
                 Riwayat Run
               </h2>
               <Badge
                 variant="secondary"
-                className="font-mono text-[10px] text-neutral-600 bg-neutral-100 border border-neutral-200/60 px-1.5 py-0 shrink-0"
+                className="font-mono text-[10px] text-neutral-600 bg-neutral-100 border border-neutral-200/60 px-1.5 py-0 shrink-0 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
               >
                 {runs.length}
               </Badge>
@@ -208,11 +208,11 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
             size="sm"
             onClick={() => fetchRuns(false)}
             disabled={isFetching}
-            className="h-7 w-7 p-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 shrink-0"
+            className="h-7 w-7 p-0 text-neutral-500 hover:text-neutral-900 hover:bg-neutral-100 shrink-0 dark:text-neutral-400 dark:hover:bg-neutral-800 dark:hover:text-neutral-100"
             title="Perbarui riwayat run"
           >
             <RefreshCw
-              className={`h-3 w-3 ${isFetching ? "animate-spin text-neutral-800" : ""}`}
+              className={`h-3 w-3 ${isFetching ? "animate-spin text-neutral-800 dark:text-neutral-200" : ""}`}
             />
           </Button>
 
@@ -220,7 +220,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
           <button
             type="button"
             onClick={() => setIsCollapsedMobile((prev) => !prev)}
-            className="sm:hidden p-1 text-neutral-500 hover:text-neutral-900"
+            className="sm:hidden p-1 text-neutral-500 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
             title="Toggle riwayat run"
           >
             {isCollapsedMobile ? (
@@ -233,34 +233,34 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
       </div>
 
       {/* Sub-header text */}
-      <div className="bg-neutral-50/80 px-3.5 py-1.5 text-[11px] text-neutral-500 border-b border-neutral-100 flex items-center justify-between">
+      <div className="bg-neutral-50/80 px-3.5 py-1.5 text-[11px] text-neutral-500 border-b border-neutral-100 flex items-center justify-between dark:border-neutral-800 dark:bg-neutral-900/80 dark:text-neutral-400">
         <span>Klik baris untuk memuat jejak</span>
         {currentTicker && (
-          <span className="font-mono font-bold text-neutral-700">{currentTicker}</span>
+          <span className="font-mono font-bold text-neutral-700 dark:text-neutral-300">{currentTicker}</span>
         )}
       </div>
 
       {/* Body List */}
       <div className={`${isCollapsedMobile ? "hidden sm:block" : "block"}`}>
         {loading ? (
-          <div className="flex items-center justify-center py-8 text-xs text-neutral-500">
+          <div className="flex items-center justify-center py-8 text-xs text-neutral-500 dark:text-neutral-400">
             <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin text-neutral-400" />
             <span>Memuat riwayat...</span>
           </div>
         ) : runs.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-8 px-4 text-center">
-            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-100 text-neutral-400 mb-2 border border-neutral-200">
+            <div className="flex h-9 w-9 items-center justify-center rounded-md bg-neutral-100 text-neutral-400 mb-2 border border-neutral-200 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-500">
               <Database className="h-4 w-4" />
             </div>
-            <p className="text-xs font-semibold text-neutral-800">
+            <p className="text-xs font-semibold text-neutral-800 dark:text-neutral-100">
               Belum ada riwayat run
             </p>
-            <p className="text-[11px] text-neutral-500 mt-0.5">
+            <p className="text-[11px] text-neutral-500 mt-0.5 dark:text-neutral-400">
               Klik "Jalankan Analisis" untuk memulai.
             </p>
           </div>
         ) : (
-          <div className="max-h-[calc(100vh-240px)] overflow-y-auto divide-y divide-neutral-100">
+          <div className="max-h-[calc(100vh-240px)] overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800">
             {runs.map((run) => {
               const isSelected = selectedRunId === run.run_id
               const isCurrentTicker =
@@ -273,24 +273,24 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                   onClick={() => onSelectRun(run.run_id)}
                   className={`w-full text-left p-3 transition-colors cursor-pointer block focus:outline-none ${
                     isSelected
-                      ? "bg-neutral-100/90 font-medium text-neutral-900 border-l-2 border-neutral-900"
-                      : "hover:bg-neutral-50/80 text-neutral-700"
+                      ? "bg-neutral-100/90 font-medium text-neutral-900 border-l-2 border-neutral-900 dark:border-neutral-100 dark:bg-neutral-800/90 dark:text-neutral-100"
+                      : "hover:bg-neutral-50/80 text-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-900/80"
                   }`}
                 >
                   {/* Line 1: Ticker & Status */}
                   <div className="flex items-center justify-between gap-1.5">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="font-mono font-bold text-neutral-900 text-xs">
+                      <span className="font-mono font-bold text-neutral-900 text-xs dark:text-neutral-100">
                         {run.ticker}
                       </span>
                       {isCurrentTicker && (
                         <span
-                          className="h-1.5 w-1.5 rounded-full bg-neutral-900 shrink-0"
+                          className="h-1.5 w-1.5 rounded-full bg-neutral-900 shrink-0 dark:bg-neutral-100"
                           title="Saham saat ini dipilih di input"
                         />
                       )}
                       {isSelected && (
-                        <Check className="h-3 w-3 text-neutral-900 shrink-0 ml-0.5" />
+                        <Check className="h-3 w-3 text-neutral-900 shrink-0 ml-0.5 dark:text-neutral-100" />
                       )}
                     </div>
                     <div className="shrink-0">
@@ -299,7 +299,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                   </div>
 
                   {/* Line 2: Events & Started time */}
-                  <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono mt-1.5">
+                  <div className="flex items-center justify-between text-[11px] text-neutral-500 font-mono mt-1.5 dark:text-neutral-400">
                     <span>{run.n_events} aktivitas</span>
                     <span
                       title={
@@ -313,7 +313,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                   </div>
 
                   {/* Line 3: Truncated ID & Duration */}
-                  <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono mt-1">
+                  <div className="flex items-center justify-between text-[10px] text-neutral-400 font-mono mt-1 dark:text-neutral-500">
                     <span title={run.run_id}>{truncateRunId(run.run_id)}</span>
                     <span>
                       {formatRunDuration(

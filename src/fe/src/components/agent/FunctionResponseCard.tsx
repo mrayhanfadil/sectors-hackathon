@@ -30,34 +30,34 @@ export function FunctionResponseCard({ fr }: FunctionResponseProps) {
   const displayedResp = isTruncated ? `${respStr.slice(0, 6000)}…` : respStr
 
   return (
-    <div className="rounded border border-emerald-200 bg-emerald-50 text-emerald-900 transition-colors">
+    <div className="rounded border border-emerald-200 bg-emerald-50 text-emerald-900 transition-colors dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between px-2.5 py-1.5 text-left font-mono text-[11px] hover:bg-emerald-100/60 rounded focus:outline-none"
+        className="flex w-full items-center justify-between px-2.5 py-1.5 text-left font-mono text-[11px] hover:bg-emerald-100/60 rounded focus:outline-none dark:hover:bg-emerald-900/40"
       >
         <div className="flex items-center gap-1.5 min-w-0">
           {isOpen ? (
-            <ChevronDown className="h-3 w-3 shrink-0 text-emerald-700" />
+            <ChevronDown className="h-3 w-3 shrink-0 text-emerald-700 dark:text-emerald-400" />
           ) : (
-            <ChevronRight className="h-3 w-3 shrink-0 text-emerald-700" />
+            <ChevronRight className="h-3 w-3 shrink-0 text-emerald-700 dark:text-emerald-400" />
           )}
-          <CornerDownLeft className="h-3 w-3 shrink-0 text-emerald-700" />
+          <CornerDownLeft className="h-3 w-3 shrink-0 text-emerald-700 dark:text-emerald-400" />
           <span className="font-semibold truncate">{fr.name}</span>
-          <span className="text-emerald-700/70 font-normal shrink-0">· {byteText}</span>
+          <span className="text-emerald-700/70 font-normal shrink-0 dark:text-emerald-400/70">· {byteText}</span>
         </div>
         {fr.id ? (
-          <span className="text-[10px] text-emerald-700/60 truncate ml-2 font-mono">{fr.id}</span>
+          <span className="text-[10px] text-emerald-700/60 truncate ml-2 font-mono dark:text-emerald-400/60">{fr.id}</span>
         ) : null}
       </button>
       {isOpen && (
-        <div className="border-t border-emerald-200/60 px-2.5 py-2">
+        <div className="border-t border-emerald-200/60 px-2.5 py-2 dark:border-emerald-800/60">
           {isTruncated && (
-            <div className="mb-1 text-[10px] text-emerald-800/70 font-mono">
+            <div className="mb-1 text-[10px] text-emerald-800/70 font-mono dark:text-emerald-300/70">
               (Response truncated at 6000 chars · total {byteText})
             </div>
           )}
-          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words text-[11px] text-emerald-950/90 font-mono leading-relaxed">
+          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words text-[11px] text-emerald-950/90 font-mono leading-relaxed dark:text-emerald-100/90">
             {displayedResp}
           </pre>
         </div>

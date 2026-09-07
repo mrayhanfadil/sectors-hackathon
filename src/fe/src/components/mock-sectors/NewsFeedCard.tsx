@@ -84,19 +84,19 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
   }, [articles, filter])
 
   return (
-    <Card className="overflow-hidden border-slate-200 shadow-sm">
-      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4">
+    <Card className="overflow-hidden border-slate-200 shadow-sm dark:border-slate-800">
+      <CardHeader className="border-b border-slate-100 bg-slate-50/50 pb-4 dark:border-slate-800 dark:bg-slate-900/50">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <CardTitle className="text-base font-semibold text-slate-900">
+              <CardTitle className="text-base font-semibold text-slate-900 dark:text-slate-100">
                 Sentiment-Tagged News Feed
               </CardTitle>
-              <Badge variant="outline" className="font-mono text-[11px] text-slate-700">
+              <Badge variant="outline" className="font-mono text-[11px] text-slate-700 dark:text-slate-300">
                 {ticker}
               </Badge>
             </div>
-            <CardDescription className="mt-1 text-xs text-slate-500">
+            <CardDescription className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Curated articles & public releases with automated keyword sentiment tagging
             </CardDescription>
           </div>
@@ -108,8 +108,8 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
               onClick={() => setFilter("all")}
               className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 filter === "all"
-                  ? "bg-slate-900 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  ? "bg-slate-900 text-white dark:bg-slate-800"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
               }`}
             >
               All ({sentimentCounts.all})
@@ -120,7 +120,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 filter === "bullish"
                   ? "bg-emerald-700 text-white"
-                  : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50"
+                  : "bg-white text-emerald-700 border border-emerald-200 hover:bg-emerald-50 dark:bg-[#111111] dark:text-emerald-200 dark:border-emerald-800 dark:hover:bg-emerald-950"
               }`}
             >
               <TrendingUp className="h-3 w-3" />
@@ -132,7 +132,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 filter === "bearish"
                   ? "bg-rose-700 text-white"
-                  : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50"
+                  : "bg-white text-rose-700 border border-rose-200 hover:bg-rose-50 dark:bg-[#111111] dark:text-rose-200 dark:border-rose-800 dark:hover:bg-rose-950"
               }`}
             >
               <TrendingDown className="h-3 w-3" />
@@ -144,7 +144,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
               className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                 filter === "neutral"
                   ? "bg-slate-700 text-white"
-                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  : "bg-white text-slate-600 border border-slate-200 hover:bg-slate-50 dark:bg-[#111111] dark:text-slate-400 dark:border-slate-800 dark:hover:bg-slate-900"
               }`}
             >
               <MinusCircle className="h-3 w-3" />
@@ -161,17 +161,17 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
             <span className="text-sm font-medium">Loading news feed for {ticker}...</span>
           </div>
         ) : articles.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center">
+          <div className="rounded-xl border border-dashed border-slate-200 bg-slate-50/50 p-8 text-center dark:border-slate-800 dark:bg-slate-900/50">
             <AlertCircle className="mx-auto h-8 w-8 text-slate-400" />
-            <p className="mt-2 text-sm font-medium text-slate-800">
+            <p className="mt-2 text-sm font-medium text-slate-800 dark:text-slate-200">
               No news available for {ticker}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               {data?.note || `No news articles indexed for ${ticker} from free public sources.`}
             </p>
           </div>
         ) : filteredArticles.length === 0 ? (
-          <div className="rounded-xl border border-slate-100 bg-slate-50 p-6 text-center text-xs text-slate-500">
+          <div className="rounded-xl border border-slate-100 bg-slate-50 p-6 text-center text-xs text-slate-500 dark:border-slate-800 dark:bg-slate-900 dark:text-slate-400">
             No articles match the selected sentiment filter ({filter}).
           </div>
         ) : (
@@ -189,52 +189,52 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
               return (
                 <div
                   key={idx}
-                  className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-xs"
+                  className="group rounded-xl border border-slate-200 bg-white p-4 transition-all hover:border-slate-300 hover:shadow-xs dark:border-slate-800 dark:bg-[#111111] dark:hover:border-slate-800"
                 >
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
                     <div className="space-y-1.5 flex-1 pr-2">
                       {/* Sentiment Badge & Metadata line */}
                       <div className="flex flex-wrap items-center gap-2">
                         {sentiment === "bullish" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200">
                             <TrendingUp className="h-3 w-3" />
                             Bullish
                           </span>
                         )}
                         {sentiment === "bearish" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-rose-200 bg-rose-50 px-2 py-0.5 text-[11px] font-semibold text-rose-700 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200">
                             <TrendingDown className="h-3 w-3" />
                             Bearish
                           </span>
                         )}
                         {sentiment === "neutral" && (
-                          <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                          <span className="inline-flex items-center gap-1 rounded-md border border-slate-200 bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-700 dark:border-slate-800 dark:bg-slate-800 dark:text-slate-300">
                             <MinusCircle className="h-3 w-3" />
                             Neutral
                           </span>
                         )}
 
                         {relevance != null && (
-                          <span className="text-[11px] font-mono text-slate-500">
+                          <span className="text-[11px] font-mono text-slate-500 dark:text-slate-400">
                             rel: {(relevance * 100).toFixed(0)}%
                           </span>
                         )}
 
                         {item.sector && (
-                          <span className="text-[11px] text-slate-500 capitalize">
+                          <span className="text-[11px] text-slate-500 capitalize dark:text-slate-400">
                             · {item.sector}
                           </span>
                         )}
                       </div>
 
                       {/* Title */}
-                      <h4 className="text-sm font-semibold leading-snug text-slate-900">
+                      <h4 className="text-sm font-semibold leading-snug text-slate-900 dark:text-slate-100">
                         {item.title}
                       </h4>
                     </div>
 
                     {/* Source & Date info */}
-                    <div className="flex shrink-0 items-center gap-3 text-xs text-slate-500 sm:flex-col sm:items-end sm:gap-1">
+                    <div className="flex shrink-0 items-center gap-3 text-xs text-slate-500 sm:flex-col sm:items-end sm:gap-1 dark:text-slate-400">
                       <div className="flex items-center gap-1 font-mono text-[11px]">
                         <Clock className="h-3 w-3 text-slate-400" />
                         {formatTimestamp(item.timestamp)}
@@ -245,7 +245,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
                           href={item.source}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 underline decoration-slate-300 underline-offset-2"
+                          className="inline-flex items-center gap-1 text-[11px] text-slate-600 hover:text-slate-900 underline decoration-slate-300 underline-offset-2 dark:text-slate-400 dark:hover:text-slate-100"
                         >
                           <span>{getHostFromUrl(item.source)}</span>
                           <ExternalLink className="h-3 w-3" />
@@ -260,13 +260,13 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
 
                   {/* Expandable Snippet / Body */}
                   {hasBody && (
-                    <div className="mt-2.5 pt-2.5 border-t border-slate-100">
+                    <div className="mt-2.5 pt-2.5 border-t border-slate-100 dark:border-slate-800">
                       {isExpanded ? (
-                        <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line">
+                        <p className="text-xs leading-relaxed text-slate-700 whitespace-pre-line dark:text-slate-300">
                           {item.body}
                         </p>
                       ) : (
-                        <p className="text-xs leading-relaxed text-slate-600 line-clamp-2">
+                        <p className="text-xs leading-relaxed text-slate-600 line-clamp-2 dark:text-slate-400">
                           {item.body}
                         </p>
                       )}
@@ -274,7 +274,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
                       <button
                         type="button"
                         onClick={() => toggleExpand(idx)}
-                        className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 cursor-pointer"
+                        className="mt-2 inline-flex items-center gap-1 text-[11px] font-medium text-slate-700 hover:text-slate-900 cursor-pointer dark:text-slate-300 dark:hover:text-slate-100"
                       >
                         {isExpanded ? (
                           <>
@@ -297,7 +297,7 @@ export function NewsFeedCard({ ticker, data, isLoading }: NewsFeedCardProps) {
                       {item.tags.map((tag, tIdx) => (
                         <span
                           key={tIdx}
-                          className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600"
+                          className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 dark:bg-slate-800 dark:text-slate-400"
                         >
                           #{tag}
                         </span>

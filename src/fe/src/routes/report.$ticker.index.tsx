@@ -76,16 +76,16 @@ function ReportPage() {
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <p className="text-center text-xs text-neutral-500">
+        <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
           Lagi nyiapin laporan {tk}... datanya diambil langsung dari backend, tunggu sebentar ya.
         </p>
-        <div className="h-20 animate-pulse rounded-xl border border-neutral-200 bg-white p-4" />
+        <div className="h-20 animate-pulse rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-[#111111]" />
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
           <div className="space-y-4">
-            <div className="h-64 animate-pulse rounded-xl border border-neutral-200 bg-white" />
-            <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+            <div className="h-64 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
+            <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
           </div>
-          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white" />
+          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
         </div>
       </div>
     )
@@ -94,21 +94,21 @@ function ReportPage() {
   // Error State
   if (error || !data) {
     return (
-      <Card className="border-red-200 bg-red-50/50 p-6">
+      <Card className="border-red-200 bg-red-50/50 p-6 dark:border-red-800 dark:bg-red-950/50">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5" />
+          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5 dark:text-red-400" />
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-red-900">
+            <h3 className="text-sm font-semibold text-red-900 dark:text-red-100">
               Gagal Memuat Laporan Riset {tk}
             </h3>
-            <p className="text-xs text-red-700 leading-relaxed">
+            <p className="text-xs text-red-700 leading-relaxed dark:text-red-200">
               Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif.
             </p>
             <Button
               onClick={() => refetch()}
               size="sm"
               variant="outline"
-              className="mt-2 h-8 gap-1.5 bg-white text-xs border-red-200 text-red-800 hover:bg-red-50"
+              className="mt-2 h-8 gap-1.5 bg-white text-xs border-red-200 text-red-800 hover:bg-red-50 dark:bg-[#111111] dark:border-red-800 dark:text-red-200 dark:hover:bg-red-950"
             >
               <RefreshCw className="h-3.5 w-3.5" />
               <span>Coba Lagi</span>
@@ -123,12 +123,12 @@ function ReportPage() {
   if (data.offline) {
     return (
       <div className="space-y-4">
-        <Card className="border-amber-200 bg-amber-50/80 p-6 text-sm text-amber-900 shadow-2xs">
+        <Card className="border-amber-200 bg-amber-50/80 p-6 text-sm text-amber-900 shadow-2xs dark:border-amber-800 dark:bg-amber-950/80 dark:text-amber-100">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0 mt-0.5" />
+            <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0 mt-0.5 dark:text-amber-200" />
             <div className="space-y-2">
-              <h3 className="font-semibold text-amber-950">Backend Tidak Tersedia (Mode Offline)</h3>
-              <p className="text-xs leading-relaxed text-amber-800">{data.summary}</p>
+              <h3 className="font-semibold text-amber-950 dark:text-amber-100">Backend Tidak Tersedia (Mode Offline)</h3>
+              <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{data.summary}</p>
               <Button
                 onClick={() => window.location.reload()}
                 size="sm"
@@ -266,8 +266,8 @@ function ReportPage() {
       />
 
       {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600">
-        <span className="font-semibold text-[#0a0a0a]">Baru mulai baca laporan saham? </span>
+      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
+        <span className="font-semibold text-[#0a0a0a] dark:text-white">Baru mulai baca laporan saham? </span>
         BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
         sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar (target) — makin besar
         prosentasenya, makin besar potensi cuannya, tapi risikonya tetap perlu dicek di bagian bawah.
@@ -318,10 +318,10 @@ function ReportPage() {
           {/* Section 3: Analisis Sensitivitas & Model DCF Interaktif */}
           <section id="sensitivity-analysis" className="space-y-4 scroll-mt-28">
             <div>
-              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a]">
+              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
                 3. Coba Ubah Asumsinya Sendiri (Model DCF Interaktif)
               </h2>
-              <p className="text-xs text-neutral-500">
+              <p className="text-xs text-neutral-500 dark:text-neutral-400">
                 Geser-geser asumsi (mis. biaya modal & pertumbuhan) lalu lihat harga wajarnya berubah
                 — termasuk skenario jelek (Bear), wajar (Base), dan bagus (Bull)
               </p>
@@ -337,13 +337,13 @@ function ReportPage() {
           />
 
           {/* Section 5: Sumber Data, Kepatuhan & Disclaimer */}
-          <section id="sources-disclaimer" className="space-y-3 scroll-mt-28 border-t border-neutral-200 pt-6">
-            <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs space-y-2">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-800">
-                <FileText className="h-4 w-4 text-neutral-600" />
+          <section id="sources-disclaimer" className="space-y-3 scroll-mt-28 border-t border-neutral-200 pt-6 dark:border-neutral-800">
+            <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs space-y-2 dark:border-neutral-800 dark:bg-[#111111]">
+              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                <FileText className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
                 <span>INFORMASI RISET - BUKAN SARAN INVESTASI</span>
               </div>
-              <p className="text-xs leading-relaxed text-neutral-600">
+              <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
                 Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi resmi (kepatuhan regulasi OJK). Seluruh estimasi dan nilai wajar dihitung secara deterministik berdasarkan data historis dan asumsi yang diungkapkan secara transparan.
               </p>
             </div>
