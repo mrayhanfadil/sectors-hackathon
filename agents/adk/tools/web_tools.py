@@ -100,6 +100,68 @@ def _domain_tier(url: str) -> str:
 
 
 # ----------------------------------------------------------------------------
+# IDX ticker allowlist — failed-closed extraction (Lane A).
+# The old heuristic (first ALL-CAPS token >= 4 chars) misfired on English
+# words (BUY, TARGET, EARNINGS...). Now: only known IDX codes extract;
+# unknown tokens yield NO ticker rather than a wrong ticker.
+# ----------------------------------------------------------------------------
+KNOWN_IDX_TICKERS: frozenset[str] = frozenset({
+    # Quintet (assumption-backed core coverage)
+    "BBCA", "ADRO", "RATU", "MTEL", "CDIA",
+    # Banks / digital banks
+    "BBRI", "BMRI", "BBNI", "BRIS", "ARTO",
+    # Infra / telco / towers
+    "TOWR", "TLKM", "ISAT", "EXCL",
+    # Conglomerates / heavy equipment
+    "ASII", "UNTR", "AMMN", "TPIA", "SSIA", "SSMS",
+    # Oil / gas / power
+    "MEDC", "ELSA", "PGAS", "PGEO", "POWR",
+    # Mining / coal
+    "PTBA", "ITMG", "BUMI",
+    # Other assumption-file issuers
+    "VKTR",
+})
+
+
+def _known_tickers() -> frozenset[str]:
+    """Static allowlist ∪ data/assumptions/<T>.json stems (best-effort)."""
+    try:
+        from pathlib import Path as _Path
+
+        stems = {p.stem.upper() for p in (_Path(__file__).resolve().parents[3] / "data" / "assumptions").glob("*.json")}
+        stems = {s for s in stems if 3 <= len(s) <= 4 and s.isalpha()}
+        return KNOWN_IDX_TICKERS | frozenset(stems)
+    except Exception:
+        return KNOWN_IDX_TICKERS
+
+
+def _extract_tickers(query: str, limit: int = 3) -> list[str]:
+    """Extract known IDX tickers from free text — failed-closed.
+
+    Accepts 3-4 char bare codes, comma/space-separated, case-insensitive,
+    with optional `.JK` suffix. Tokens not on the allowlist are ignored;
+    no allowlisted token -> [] (caller emits 'no IDX ticker detected').
+    """
+    known = _known_tickers()
+    out: list[str] = []
+    for raw in (query or "").upper().replace(",", " ").split():
+        w = raw.strip(".,;:!?()[]{}\"'")
+        if w.endswith(".JK"):
+            w = w[:-3]
+        if not (3 <= len(w) <= 4):
+            continue
+        if not w.isalpha():
+            continue
+        if w not in known:
+            continue
+        if w not in out:
+            out.append(w)
+        if len(out) >= limit:
+            break
+    return out
+
+
+# ----------------------------------------------------------------------------
 # Gateway stats (legacy removed: Sectors single key, no third-party pool).
 # Kept as _pool_stats for the key-pool diagnostic + health callers.
 # ----------------------------------------------------------------------------
@@ -160,14 +222,14 @@ async def web_search(
 
     fetched_at = datetime.now(timezone.utc).isoformat()
 
-    # Ticker guess = first ALL-CAPS token >= 4 chars (IDX convention).
+    # Ticker guess = allowlisted IDX codes only (failed-closed: English words
+    # like BUY/TARGET never extract; unknown -> 'no IDX ticker detected').
     try:
         import asyncio as _aio
         from datetime import date as _date
         from datetime import timedelta as _td
 
-        syms = [w.strip(".,") for w in query.upper().split()]
-        syms = [w for w in syms if w.isalpha() and len(w) >= 4][:3]
+        syms = _extract_tickers(query)
         if not syms:
             return {
                 "query": query,

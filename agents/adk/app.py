@@ -87,6 +87,7 @@ from .agents.instructions import (
 )
 from .providers import deepseek_model, gemini_model, spark_model
 from .tools.finance_tools import DETERMINISTIC_TOOLS
+from .tools.sectors_financial_tools import SECTORS_FINANCIAL_TOOLS
 from .debate import submit_debate
 from .tools.mcp_sectors import maybe_sectors_mcp_toolset
 from .tools.web_tools import (
@@ -329,18 +330,19 @@ def build_graph(
     # agent that needs fresh IDX data without Sectors MCP. Generated once and reused.
     composite_web_tools = _web_composite_tools()
 
-    # Collector: Sectors MCP if present, else Sectors web_search_and_extract backup.
+    # Collector: Sectors financial FunctionTools always (keyless-honest),
+    # plus Sectors MCP if present, else Sectors web_search_and_extract backup.
     # (Previously empty tools caused LLM hallucination of web_search_and_extract.)
-    collector_tools: list[Any] = []
+    collector_tools: list[Any] = [FunctionTool(fn) for fn in SECTORS_FINANCIAL_TOOLS]
     if sectors_toolset is not None:
         collector_tools.append(sectors_toolset)
-    if not collector_tools:
+    else:
         collector_tools.extend(composite_web_tools)
 
     collector = LlmAgent(
         name="collector",
         model=main_model,
-        description="Gathers IDX 5Y financials, segments, peers, JCI via Sectors MCP if available, else Sectors search + readability extract.",
+        description="Gathers IDX financials/segments/peers/filings via Sectors financial tools (+ MCP if keyed), else Sectors search + readability extract.",
         instruction=_fmt(collector_instruction),
         tools=collector_tools,
         output_key="collector_output",
