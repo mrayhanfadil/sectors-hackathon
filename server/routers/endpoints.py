@@ -221,13 +221,16 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
     if not sector_cand and raw_json and isinstance(raw_json, dict):
         sector_cand = raw_json.get("provenance", {}).get("sector") or raw_json.get("sector")
 
-    # 4. Fallback to yfinance sector if still None
+    # 4. Sectors company report (overview section) — replaces yfinance sector.
+    # Keyless -> skip honestly; sector stays None -> "unknown" (never fabricated).
     if not sector_cand:
         try:
-            import yfinance as yf
-            tk = yf.Ticker(f"{sym}.JK")
-            info = tk.info or {}
-            sector_cand = info.get("sector") or info.get("industry")
+            from server.sectors import company_report
+            rep = company_report(sym, "overview") or {}
+            sector_cand = (
+                rep.get("sector") or rep.get("industry")
+                or (rep.get("overview") or {}).get("sector")
+            )
         except Exception:
             pass
 
