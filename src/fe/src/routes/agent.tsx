@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useAgentProgress } from "@/components/agent/useAgentProgress"
 import { PhaseTimeline } from "@/components/agent/PhaseTimeline"
+import { RetailStory } from "@/components/agent/RetailStory"
 import { PlainEnglishPanel } from "@/components/agent/PlainEnglishPanel"
 import { SummaryCard } from "@/components/agent/SummaryCard"
 import { RunHistoryPanel } from "@/components/agent/RunHistoryPanel"
@@ -104,6 +105,7 @@ function AgentTrace() {
   const [health, setHealth] = useState<HealthInfo | null>(null)
   const [filterAuthor, setFilterAuthor] = useState<string>("all")
   const [rawDebugOpen, setRawDebugOpen] = useState(false)
+  const [expertMode, setExpertMode] = useState(false)
   const [loadedFromDb, setLoadedFromDb] = useState<{
     run_id: string
     ticker: string
@@ -701,7 +703,7 @@ function AgentTrace() {
             </p>
           </div>
 
-          {/* Status badge pill */}
+          {/* Status badge pill — retail copy default, tech detail only in expert */}
           <div className="flex flex-wrap items-center gap-2">
             {running ? (
               <div className="flex items-center gap-2 rounded-md border border-amber-300 bg-amber-50/80 px-3.5 py-1.5 text-xs text-amber-900 shadow-2xs">
@@ -709,17 +711,18 @@ function AgentTrace() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-amber-500" />
                 </span>
-                <span className="font-semibold">{activeCount} dari {totalCount} agen aktif</span>
-                <span className="text-neutral-300">·</span>
-                <span className="flex items-center gap-1 font-mono text-neutral-700">
-                  <Activity className="h-3 w-3 text-neutral-500" />
-                  {events.length > 0 ? events.length : (loadedFromDb?.n_events ?? 0)} aktivitas
-                </span>
-                <span className="text-neutral-300">·</span>
-                <span className="flex items-center gap-1 font-mono text-neutral-600" title={`Polling aktif (#${pollCount})`}>
-                  <RefreshCw className="h-3 w-3 animate-spin text-neutral-500" />
-                  <span>polling 2 dtk</span>
-                </span>
+                <span className="font-semibold">Lagi menganalisis…</span>
+                {expertMode && (
+                  <>
+                    <span className="text-neutral-300">·</span>
+                    <span className="font-semibold">{activeCount} dari {totalCount} agen aktif</span>
+                    <span className="text-neutral-300">·</span>
+                    <span className="flex items-center gap-1 font-mono text-neutral-700">
+                      <Activity className="h-3 w-3 text-neutral-500" />
+                      {events.length > 0 ? events.length : (loadedFromDb?.n_events ?? 0)} aktivitas
+                    </span>
+                  </>
+                )}
                 <span className="text-neutral-300">·</span>
                 <span className="flex items-center gap-1 font-mono font-semibold text-amber-800">
                   <Clock className="h-3 w-3 text-amber-600" />
@@ -730,10 +733,14 @@ function AgentTrace() {
               <div className="flex items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-xs font-semibold text-emerald-900 shadow-2xs">
                 <Sparkles className="h-4 w-4 text-emerald-600" />
                 <span>Analisis Selesai</span>
-                <span className="text-neutral-300">·</span>
-                <span className="font-mono text-neutral-700">{done.n_events} aktivitas</span>
-                <span className="text-neutral-300">·</span>
-                <span className="font-mono text-neutral-600">{(done.ms / 1000).toFixed(1)}s</span>
+                {expertMode && (
+                  <>
+                    <span className="text-neutral-300">·</span>
+                    <span className="font-mono text-neutral-700">{done.n_events} aktivitas</span>
+                    <span className="text-neutral-300">·</span>
+                    <span className="font-mono text-neutral-600">{(done.ms / 1000).toFixed(1)}s</span>
+                  </>
+                )}
               </div>
             ) : isInterrupted ? (
               <div className="flex items-center gap-2 rounded-md border border-amber-200 bg-amber-50 px-3.5 py-1.5 text-xs font-medium text-amber-900">
@@ -801,15 +808,17 @@ function AgentTrace() {
               </Button>
             )}
 
-            <Button
-              onClick={() => run("blocking")}
-              disabled={running}
-              variant="outline"
-              className="h-9 gap-1.5 text-xs font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-50"
-            >
-              <Zap className="h-3.5 w-3.5 text-neutral-500" />
-              <span>Mode Cepat</span>
-            </Button>
+            {expertMode && (
+              <Button
+                onClick={() => run("blocking")}
+                disabled={running}
+                variant="outline"
+                className="h-9 gap-1.5 text-xs font-medium text-neutral-700 border-neutral-300 hover:bg-neutral-50"
+              >
+                <Zap className="h-3.5 w-3.5 text-neutral-500" />
+                <span>Mode Cepat</span>
+              </Button>
+            )}
 
             <Button
               onClick={handleClear}
@@ -820,40 +829,67 @@ function AgentTrace() {
               <RotateCcw className="h-3.5 w-3.5" />
               <span>Bersihkan</span>
             </Button>
+            <button
+              type="button"
+              onClick={() => setExpertMode((v) => !v)}
+              className="h-9 rounded-lg border border-neutral-200 bg-neutral-50 px-2.5 text-xs font-medium text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900"
+              title={expertMode ? "Kembali ke tampilan simpel" : "Tampilkan detail teknis (riwayat run, state, JSON)"}
+            >
+              {expertMode ? "Mode Simpel" : "Mode Ahli"}
+            </button>
           </div>
 
-          {/* Model / Bridge Health Badge */}
+          {/* Server dot — detail hanya di expert */}
           {health && (
             <div className="flex items-center gap-2 text-xs">
-              <Badge
-                variant="outline"
-                className="flex items-center gap-1 font-mono text-[11px] text-neutral-600 bg-neutral-50 border-neutral-200"
-              >
-                <span
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    health.ok ? "bg-emerald-500" : "bg-amber-500"
-                  }`}
-                />
-                <Cpu className="h-3 w-3 text-neutral-400" />
-                <span>{health.model || "muse-spark-1.2"}</span>
-              </Badge>
+              {expertMode ? (
+                <>
+                  <Badge
+                    variant="outline"
+                    className="flex items-center gap-1 font-mono text-[11px] text-neutral-600 bg-neutral-50 border-neutral-200"
+                  >
+                    <span
+                      className={`h-1.5 w-1.5 rounded-full ${
+                        health.ok ? "bg-emerald-500" : "bg-amber-500"
+                      }`}
+                    />
+                    <Cpu className="h-3 w-3 text-neutral-400" />
+                    <span>{health.model || "muse-spark-1.2"}</span>
+                  </Badge>
 
-              <button
-                type="button"
-                onClick={fetchHealth}
-                className="text-neutral-400 hover:text-neutral-700 p-1"
-                title="Perbarui status server"
-              >
-                <RefreshCw className="h-3 w-3" />
-              </button>
+                  <button
+                    type="button"
+                    onClick={fetchHealth}
+                    className="text-neutral-400 hover:text-neutral-700 p-1"
+                    title="Perbarui status server"
+                  >
+                    <RefreshCw className="h-3 w-3" />
+                  </button>
+                </>
+              ) : (
+                <span
+                  className={`inline-flex items-center gap-1.5 text-[11px] ${
+                    health.ok ? "text-emerald-700" : "text-amber-700"
+                  }`}
+                  title={health.ok ? "Server siap" : "Server bermasalah — coba lagi nanti"}
+                >
+                  <span
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      health.ok ? "bg-emerald-500" : "bg-amber-500"
+                    }`}
+                  />
+                  {health.ok ? "Server siap" : "Server sibuk"}
+                </span>
+              )}
             </div>
           )}
         </div>
       </header>
 
-      {/* Row 2: 3-Column Layout (lg+), 2-Column (md), 1-Column (sm) */}
+      {/* Row 2: retail = 1 kolom; expert = 3 kolom */}
       <div className="flex flex-col lg:flex-row items-start gap-5">
-        {/* LEFT COLUMN: RunHistoryPanel (280px fixed on lg+, 240px on md, 100% on sm) */}
+        {/* LEFT: riwayat run — expert only */}
+        {expertMode && (
         <aside className="w-full lg:w-[280px] md:w-[240px] shrink-0 lg:sticky lg:top-20 md:sticky md:top-20 z-10">
           <RunHistoryPanel
             currentTicker={ticker}
@@ -862,10 +898,12 @@ function AgentTrace() {
             apiBase={apiBase}
           />
         </aside>
+        )}
 
         {/* CENTER COLUMN: Timeline Column (flex-1) */}
         <main className="flex-1 min-w-0 w-full space-y-5">
-          {/* On md: Collapsible drawer for State Preview at top of center column */}
+          {/* State Preview drawer — expert only */}
+          {expertMode && (
           <div className="hidden md:block lg:hidden">
             <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden">
               <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50">
@@ -880,6 +918,7 @@ function AgentTrace() {
               </div>
             </details>
           </div>
+          )}
 
           {/* If no run selected & no events: Show empty state */}
           {isEmptyState ? (
@@ -889,10 +928,11 @@ function AgentTrace() {
               </div>
               <div className="space-y-1.5 max-w-md mx-auto">
                 <h3 className="text-base font-bold text-neutral-900 font-sans">
-                  Pilih run di sidebar atau mulai baru
+                  Mulai analisis saham
                 </h3>
                 <p className="text-xs leading-relaxed text-neutral-500">
-                  Pilih salah satu riwayat analisis saham di sidebar kiri untuk memuat jejak sebelumnya, atau masukkan kode saham di bilah atas lalu klik <strong>Jalankan Analisis</strong>.
+                  Masukkan kode saham di atas lalu klik <strong>Jalankan Analisis</strong>. Hasilnya
+                  muncul di kartu hijau paling atas — ga perlu ngerti istilah teknis.
                 </p>
               </div>
               <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
@@ -915,7 +955,9 @@ function AgentTrace() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Database className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
                     <span className="font-medium text-neutral-800">
-                      Loaded from SQLite · {loadedFromDb.n_events} aktivitas · {formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}
+                      {expertMode
+                        ? `Loaded from SQLite · ${loadedFromDb.n_events} aktivitas · ${formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}`
+                        : `Hasil tersimpan · ${formatRelativeTime(loadedFromDb.finished_at || loadedFromDb.started_at)}`}
                     </span>
                     {loadedFromDb.status !== "completed" && (
                       <Badge
@@ -962,26 +1004,39 @@ function AgentTrace() {
                 </div>
               )}
 
-              {/* SummaryCard */}
+              {/* SummaryCard — jawaban selalu paling atas */}
               {done && <SummaryCard ticker={ticker} events={events} done={done} />}
 
-              {/* PhaseTimeline */}
-              <PhaseTimeline
-                agentStatuses={agentStatuses}
-                selectedAuthor={filterAuthor}
-                onFilterAuthor={setFilterAuthor}
-                running={running}
-                done={done}
-              />
+              {/* Retail: cerita 5 langkah. Expert: timeline + log per-event */}
+              {!expertMode ? (
+                <RetailStory
+                  events={events}
+                  running={running}
+                  done={done}
+                  ticker={ticker}
+                  agentStatuses={agentStatuses}
+                />
+              ) : (
+                <>
+                  {/* PhaseTimeline */}
+                  <PhaseTimeline
+                    agentStatuses={agentStatuses}
+                    selectedAuthor={filterAuthor}
+                    onFilterAuthor={setFilterAuthor}
+                    running={running}
+                    done={done}
+                  />
 
-              {/* PlainEnglishPanel */}
-              <PlainEnglishPanel
-                events={events}
-                running={running}
-                ticker={ticker}
-                selectedAuthor={filterAuthor}
-                onFilterAuthor={setFilterAuthor}
-              />
+                  {/* PlainEnglishPanel */}
+                  <PlainEnglishPanel
+                    events={events}
+                    running={running}
+                    ticker={ticker}
+                    selectedAuthor={filterAuthor}
+                    onFilterAuthor={setFilterAuthor}
+                  />
+                </>
+              )}
 
               {/* Collapsible Explainer Guide */}
               <details className="group rounded-md border border-neutral-200 bg-white p-4 text-xs text-neutral-600 shadow-2xs">
@@ -1021,7 +1076,8 @@ function AgentTrace() {
                 </div>
               </details>
 
-              {/* Collapsible Raw Technical Debug */}
+              {/* Collapsible Raw Technical Debug — expert only */}
+              {expertMode && (
               <details
                 open={rawDebugOpen}
                 onToggle={(e) => setRawDebugOpen((e.currentTarget as HTMLDetailsElement).open)}
@@ -1096,10 +1152,12 @@ function AgentTrace() {
                   </div>
                 </div>
               </details>
+              )}
             </>
           )}
 
-          {/* On sm: Collapsible State Preview at the bottom of center */}
+          {/* State Preview mobile — expert only */}
+          {expertMode && (
           <div className="block lg:hidden md:hidden">
             <details className="group rounded-lg border border-neutral-200 bg-white shadow-none overflow-hidden">
               <summary className="flex cursor-pointer items-center justify-between p-3.5 text-xs font-semibold text-neutral-800 select-none hover:bg-neutral-50">
@@ -1114,6 +1172,7 @@ function AgentTrace() {
               </div>
             </details>
           </div>
+          )}
 
           {/* Disclaimer Footer */}
           <p className="text-center text-xs text-neutral-500 pt-2">
@@ -1121,10 +1180,12 @@ function AgentTrace() {
           </p>
         </main>
 
-        {/* RIGHT COLUMN: StatePreview (360px fixed on lg+, sticky) */}
+        {/* RIGHT: StatePreview — expert only */}
+        {expertMode && (
         <aside className="hidden lg:block w-[360px] shrink-0 sticky top-20 z-10">
           <StatePreview events={events} />
         </aside>
+        )}
       </div>
     </div>
   )
