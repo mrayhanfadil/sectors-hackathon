@@ -75,7 +75,7 @@ export function ChallengeHistoryList({
           <div className="flex items-center gap-2">
             <History className="h-4 w-4 text-amber-600 dark:text-amber-400" />
             <CardTitle className="text-xs font-mono font-semibold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-              TRANSCRIPT :: ADVERSARIAL DEBATE LOG ({log.length})
+              CATATAN UJI SILANG ({log.length})
             </CardTitle>
           </div>
           {log.length > 0 && onClear && (
@@ -96,7 +96,7 @@ export function ChallengeHistoryList({
           <div className="border border-dashed border-neutral-300 bg-neutral-50/50 p-6 text-center font-mono text-xs dark:border-[#262930] dark:bg-[#15171c]">
             <MessageSquareQuote className="mx-auto h-6 w-6 text-neutral-400 mb-2" />
             <p className="font-semibold text-neutral-700 dark:text-neutral-300">
-              [NO DEBATE LOGS FOR {tk}]
+              [BELUM ADA UJI SILANG BUAT {tk}]
             </p>
             <p className="mt-1 text-[11px] text-neutral-500 max-w-sm mx-auto dark:text-neutral-400">
               Gunakan formulir di sebelah kiri untuk menguji asumsi WACC, margin operasi, atau proyeksi pertumbuhan emiten.
@@ -156,7 +156,7 @@ export function ChallengeHistoryList({
 
                   {entry.debate_id && (
                     <span className="text-neutral-400">
-                      DEBATE ID: {entry.debate_id}
+                      ID UJI: {entry.debate_id}
                     </span>
                   )}
                 </div>

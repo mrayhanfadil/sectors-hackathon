@@ -101,9 +101,9 @@ export const PhaseTimeline = memo(function PhaseTimeline({
           </div>
           <div>
             <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
-              <span>PIPELINE EXECUTION BLOTTER</span>
+              <span>ALUR KERJA MESIN</span>
               <span className="text-[10px] text-neutral-500 font-normal">
-                ({completedStages}/5 PHASES COMPLETE)
+                ({completedStages}/5 TAHAP SELESAI)
               </span>
             </h3>
           </div>
@@ -113,19 +113,19 @@ export const PhaseTimeline = memo(function PhaseTimeline({
         <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-neutral-400">
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-neutral-700" />
-            <span>QUEUED</span>
+            <span>ANTRI</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-            <span className="text-amber-300 font-bold">RUNNING</span>
+            <span className="text-amber-300 font-bold">JALAN</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-emerald-300">DONE</span>
+            <span className="text-emerald-300">SELESAI</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-rose-300">FAIL</span>
+            <span className="text-rose-300">GAGAL</span>
           </span>
         </div>
       </div>
@@ -143,20 +143,20 @@ export const PhaseTimeline = memo(function PhaseTimeline({
 
           let borderClass = "border-neutral-800 bg-neutral-900/40 text-neutral-400"
           let statusPill = "bg-neutral-900 border-neutral-700 text-neutral-500"
-          let statusLabel = "QUEUED"
+          let statusLabel = "ANTRI"
 
           if (status === "running") {
             borderClass = "border-amber-700/80 bg-amber-950/20 text-neutral-100 ring-1 ring-amber-500/50"
             statusPill = "bg-amber-950 border-amber-700 text-amber-300 font-bold"
-            statusLabel = "ACTIVE"
+            statusLabel = "AKTIF"
           } else if (status === "finished") {
             borderClass = "border-emerald-800/80 bg-emerald-950/20 text-neutral-200"
             statusPill = "bg-emerald-950 border-emerald-700 text-emerald-300"
-            statusLabel = "DONE"
+            statusLabel = "SELESAI"
           } else if (status === "error") {
             borderClass = "border-rose-800/80 bg-rose-950/30 text-rose-200"
             statusPill = "bg-rose-950 border-rose-700 text-rose-300 font-bold"
-            statusLabel = "FAIL"
+            statusLabel = "GAGAL"
           }
 
           return (

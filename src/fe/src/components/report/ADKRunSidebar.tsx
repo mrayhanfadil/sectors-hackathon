@@ -89,19 +89,19 @@ export function ADKRunSidebar({
           {/* Main Price & Target Box */}
           <div className="space-y-1.5 rounded border border-neutral-200 bg-neutral-50 p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-500 dark:text-neutral-400">PX LAST</span>
+              <span className="text-neutral-500 dark:text-neutral-400">HARGA TERAKHIR</span>
               <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                 {price != null ? `Rp ${fmtIDR(price)}` : "—"}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-500 dark:text-neutral-400">FAIR VALUE (TP)</span>
+              <span className="text-neutral-500 dark:text-neutral-400">NILAI WAJAR (TP)</span>
               <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                 {target != null ? `Rp ${fmtIDR(target)}` : "—"}
               </span>
             </div>
             <div className="flex items-center justify-between border-t border-neutral-200 pt-1.5 text-xs dark:border-[#262930]">
-              <span className="text-neutral-500 dark:text-neutral-400">RATING</span>
+              <span className="text-neutral-500 dark:text-neutral-400">REKOMENDASI</span>
               <RecommendationBadge rating={rating} upside={upside} size="sm" />
             </div>
           </div>

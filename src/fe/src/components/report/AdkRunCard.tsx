@@ -85,14 +85,14 @@ function renderStatusBadge(status: string) {
       return (
         <span className="inline-flex items-center gap-1 rounded border border-rose-500/40 bg-rose-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-rose-600 dark:border-rose-500/50 dark:text-rose-300">
           <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-          FAILED
+          GAGAL
         </span>
       )
     case "running":
       return (
         <span className="inline-flex items-center gap-1 rounded border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-sky-600 animate-pulse dark:border-sky-500/50 dark:text-sky-300">
           <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-          RUNNING
+          JALAN
         </span>
       )
     default:

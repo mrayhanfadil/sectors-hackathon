@@ -82,7 +82,7 @@ function renderStatusBadge(status: string, isActive?: boolean) {
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
         </span>
-        <span>LIVE</span>
+        <span>JALAN</span>
       </span>
     )
   }
@@ -92,21 +92,21 @@ function renderStatusBadge(status: string, isActive?: boolean) {
       return (
         <span className="inline-flex items-center gap-1 rounded bg-emerald-950/80 border border-emerald-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-emerald-300">
           <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400 shrink-0" />
-          <span>DONE</span>
+          <span>SELESAI</span>
         </span>
       )
     case "interrupted":
       return (
         <span className="inline-flex items-center gap-1 rounded bg-amber-950/60 border border-amber-800/80 px-1.5 py-0.5 text-[10px] font-mono font-medium text-amber-300">
           <AlertCircle className="h-2.5 w-2.5 text-amber-400 shrink-0" />
-          <span>INTR</span>
+          <span>TERHENTI</span>
         </span>
       )
     case "failed":
       return (
         <span className="inline-flex items-center gap-1 rounded bg-rose-950/80 border border-rose-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-rose-300">
           <AlertCircle className="h-2.5 w-2.5 text-rose-400 shrink-0" />
-          <span>FAIL</span>
+          <span>GAGAL</span>
         </span>
       )
     default:
@@ -206,7 +206,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
           <div className="min-w-0">
             <div className="flex items-center gap-1.5">
               <h2 className="text-xs font-mono font-bold uppercase tracking-wide text-neutral-100 truncate">
-                RUN BLOTTER
+                RIWAYAT PROSES
               </h2>
               <Badge
                 variant="secondary"
@@ -286,7 +286,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                     : "text-neutral-400 hover:text-neutral-200"
                 }`}
               >
-                {st}
+                {st === "ALL" ? "SEMUA" : st === "LIVE" ? "JALAN" : st === "DONE" ? "SELESAI" : "GAGAL"}
               </button>
             ))}
           </div>
@@ -302,7 +302,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
           </div>
         ) : filteredRuns.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-10 px-4 text-center font-mono text-xs">
-            <p className="text-neutral-400 font-semibold">NO RUNS IN BLOTTER</p>
+            <p className="text-neutral-400 font-semibold">BELUM ADA PROSES</p>
             <p className="text-[11px] text-neutral-600 mt-1">
               {filterText ? "No runs matching query." : "Execute a run to populate history."}
             </p>
@@ -381,7 +381,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
 
       {/* Footer Info */}
       <div className="p-2 border-t border-neutral-800 bg-neutral-900/60 text-[10px] font-mono text-neutral-500 flex items-center justify-between">
-        <span>SQLite Blotter</span>
+        <span>ARSIP TERSIMPAN</span>
         <span>5s auto-poll</span>
       </div>
     </div>

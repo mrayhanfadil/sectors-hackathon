@@ -41,7 +41,7 @@ function parseAnalysisFromEvents(
 ): ParsedAnalysis {
   // LOUD policy: no default BUY / passed-QA claims. Values below only when
   // real agent outputs (critic/writer/valuation) say so; else pending/empty.
-  let rating = "PENDING"
+  let rating = "MENUNGGU"
   let targetPrice: string | null = null
   let upside: string | null = null
   let verdict: string | null = null
@@ -134,7 +134,7 @@ export const SummaryCard = memo(function SummaryCard({
     ? "bg-emerald-950 border-emerald-700 text-emerald-300 font-bold"
     : isSell
     ? "bg-rose-950 border-rose-700 text-rose-300 font-bold"
-    : data.rating === "PENDING"
+    : data.rating === "MENUNGGU"
     ? "bg-neutral-900 border-neutral-700 text-neutral-400 font-medium"
     : "bg-amber-950 border-amber-700 text-amber-300 font-bold"
 

@@ -329,7 +329,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
             </div>
             <div>
               <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100">
-                TRANSCRIPT &amp; EVENT STREAM
+                CATATAN LANGKAH MESIN
               </CardTitle>
             </div>
           </div>
@@ -370,7 +370,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
                 {copiedTrace ? (
                   <>
                     <Check className="h-2.5 w-2.5 text-emerald-400" />
-                    <span>COPIED</span>
+                    <span>TERSALIN</span>
                   </>
                 ) : (
                   <>
@@ -474,7 +474,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
             <div className="flex flex-col items-center justify-center px-4 py-16 text-center font-mono text-xs">
               <Activity className="h-8 w-8 text-neutral-700 mb-2" />
               <h3 className="font-bold text-neutral-400">
-                {events.length === 0 ? "TRANSCRIPT IDLE" : "NO MATCHING EVENTS"}
+                {events.length === 0 ? "BELUM ADA CATATAN" : "TIDAK ADA YANG COCOK"}
               </h3>
               <p className="mt-1 max-w-sm text-[11px] text-neutral-600">
                 {events.length === 0

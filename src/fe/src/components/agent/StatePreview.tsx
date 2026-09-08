@@ -54,7 +54,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
             <Database className="h-3.5 w-3.5" />
           </div>
           <CardTitle className="text-xs font-bold uppercase tracking-wider text-neutral-100 font-mono">
-            STATE MEMORY BLOTTER
+            ISI MEMORI MESIN
           </CardTitle>
         </div>
         <Badge
@@ -171,12 +171,12 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                                 {copiedKey === item.key ? (
                                   <>
                                     <Check className="h-2.5 w-2.5 text-emerald-400" />
-                                    <span>COPIED</span>
+                                    <span>TERSALIN</span>
                                   </>
                                 ) : (
                                   <>
                                     <Copy className="h-2.5 w-2.5" />
-                                    <span>COPY</span>
+                                    <span>SALIN</span>
                                   </>
                                 )}
                               </button>

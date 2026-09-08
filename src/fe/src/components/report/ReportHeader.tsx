@@ -128,7 +128,7 @@ export function ReportHeader({
             </span>
             <span className="text-neutral-400 dark:text-neutral-600">::</span>
             <span className="text-neutral-700 dark:text-neutral-300">
-              {tk} IJ &lt;EQUITY&gt; GO
+              {tk} SAHAM ID
             </span>
           </div>
 
@@ -171,7 +171,7 @@ export function ReportHeader({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400 dark:bg-amber-400/10 dark:border dark:border-amber-400/30 dark:text-amber-400">
-                  {tk} IJ &lt;EQUITY&gt;
+                  {tk} SAHAM ID
                 </span>
                 <h1 className="truncate text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
                   {finalName || `${tk} Tbk`}
@@ -199,7 +199,7 @@ export function ReportHeader({
             <div className="flex items-baseline gap-3 rounded-md border border-neutral-200 bg-neutral-50/80 px-3 py-1.5 font-mono dark:border-[#262930] dark:bg-[#121316]">
               {/* Last Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">PX LAST</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">HARGA TERAKHIR</div>
                 <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                   {price != null ? `Rp ${fmtIDR(price)}` : "—"}
                 </div>
@@ -209,7 +209,7 @@ export function ReportHeader({
 
               {/* Target Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">TARGET (FV)</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">TARGET (NILAI WAJAR)</div>
                 <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                   {finalTarget != null ? `Rp ${fmtIDR(finalTarget)}` : "—"}
                 </div>
@@ -219,7 +219,7 @@ export function ReportHeader({
 
               {/* Upside / Downside */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">UPSIDE</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">POTENSI NAIK</div>
                 <div
                   className={`text-sm font-bold tabular-nums ${
                     upsidePositive

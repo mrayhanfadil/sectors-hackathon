@@ -57,7 +57,7 @@ export function RecommendationBadge({
     lg: "text-xs sm:text-sm px-2.5 py-1 font-bold tracking-wider",
   }
 
-  const displayRating = normRating || "PENDING"
+  const displayRating = normRating || "MENUNGGU"
 
   return (
     <div className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
