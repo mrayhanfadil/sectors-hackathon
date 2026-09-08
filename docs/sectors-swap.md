@@ -133,3 +133,13 @@ Sectors-native outlook + screener wiring, gate_inputs from real fundamentals.
 Orphaned-but-kept: seed_synthetic.py/seed_assumptions.py/report_fixtures.py +
 scripts/fixtures/*.json (demo generators, zero prod importers — delete only
 with explicit approval since render tests consume them explicitly).
+
+## H3 template-mirror + docs consistency pins (2026-09-08, tests/test_template_docs_consistency.py — 9 passed)
+- Mirror server/report/typst -> templates/typst/archetypes holds ONLY for
+  report_single (modulo ../common/ imports); sotp/infra/strategy diverge —
+  templates copies still carry baked Peer Median / Rata-rata / Median rows.
+- Pinned de-baked: single peer dashes + Sectors (pending); infra peers fully
+  data-driven; sotp 4x ilustratif-statis notes. Verified: no `jci_target` in
+  endpoints.py (outlook 503), no OutlookResponse in models.py.
+- Residual: strategy tables (9100 target, Top Picks) have source labels but no
+  ilustratif note; templates sotp/infra/strategy re-mirror still pending.

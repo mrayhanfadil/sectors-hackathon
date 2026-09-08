@@ -97,3 +97,62 @@ def load_demo_fixture(ticker: str) -> dict[str, Any] | None:
     except Exception:
         pass
     return None
+
+
+# --- H2 prod-vs-fixture isolation helpers (Sep 2026) -----------------------
+# LOUD policy: prod loaders must never serve static demo fixtures implicitly.
+# Fixtures are reachable in tests ONLY via load_demo_fixture() above. These
+# helpers let isolation tests name "fixture-shaped" payloads and their
+# provenance markers without re-implementing the checks per test module.
+
+#: Provenance prefix that must never appear on demo-shaped payloads served
+#: (or claimed) as live data. Live Sectors sourcing stamps structured
+#: `source` fields ("sectors", "sectors_missing_key", "assumptions/..."),
+#: never a free-text "Sectors (...)" string. The static builders in
+#: scripts/report_fixtures.py historically used "Sectors (IDX disclosure)".
+FIXTURE_PROVENANCE_PREFIX = "Sectors ("
+
+#: Tickers with declared demo payloads (scripts/fixtures/*.json or a
+#: scripts/report_fixtures.py builder). Prod loaders must 422 or return
+#: honest-empty data for these unless live inputs exist — never the demo.
+KNOWN_DEMO_TICKERS: tuple[str, ...] = ("RATU", "CDIA", "MTEL", "POWR", "JCI", "ACES")
+
+
+def payload_text(payload: dict[str, Any]) -> str:
+    """Serialize a report payload for provenance/shape assertions."""
+    import json as _json
+
+    return _json.dumps(payload, ensure_ascii=False, default=str)
+
+
+def contains_fixture_provenance(payload: dict[str, Any]) -> bool:
+    """True when a payload carries a free-text live-Sectors provenance marker."""
+    return FIXTURE_PROVENANCE_PREFIX in payload_text(payload)
+
+
+def assert_no_fixture_provenance(payload: dict[str, Any], where: str = "") -> None:
+    """Fail when a payload masquerades demo data as live Sectors output."""
+    if contains_fixture_provenance(payload):
+        raise AssertionError(
+            f"fixture provenance {FIXTURE_PROVENANCE_PREFIX!r} on payload"
+            f"{(' ' + where) if where else ''}"
+            " — demo data must never claim live Sectors sourcing"
+        )
+
+
+def is_fixture_shaped(payload: dict[str, Any]) -> bool:
+    """True when a payload carries demo numbers (vs honest-empty LOUD output).
+
+    Honest-empty prod payloads (BBCA/ADRO typst skeletons) have
+    rating_box.tp/price None, zero valuation methods and zero highlight rows.
+    """
+    if not isinstance(payload, dict):
+        return False
+    rb = ((payload.get("cover") or {}).get("rating_box") or {})
+    if rb.get("tp") is not None or rb.get("price") is not None:
+        return True
+    if (payload.get("valuation") or {}).get("methods"):
+        return True
+    if (payload.get("financial_highlights") or {}).get("rows"):
+        return True
+    return False
