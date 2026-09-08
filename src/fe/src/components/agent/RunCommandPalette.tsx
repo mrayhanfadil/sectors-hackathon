@@ -182,11 +182,11 @@ export function RunCommandPalette({
         <div className="flex items-center justify-between px-3.5 py-2.5 bg-neutral-900/90 border-b border-neutral-800 text-xs font-mono">
           <div className="flex items-center gap-2 text-neutral-300">
             <Terminal className="h-4 w-4 text-emerald-400" />
-            <span className="font-semibold text-neutral-200">QUANT RUN SELECTOR // COMMAND PALETTE</span>
+            <span className="font-semibold text-neutral-200">PILIH PROSES // CARI CEPAT</span>
           </div>
           <div className="flex items-center gap-1 text-[11px] text-neutral-400">
             <span className="rounded bg-neutral-800 px-1.5 py-0.5 border border-neutral-700">ESC</span>
-            <span>to close</span>
+            <span>tutup</span>
           </div>
         </div>
 
@@ -198,7 +198,7 @@ export function RunCommandPalette({
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Type ticker code (BBCA, CDIA...), run ID, or status..."
+            placeholder="Ketik kode saham (BBCA, CDIA...), ID proses, atau status..."
             className="w-full bg-transparent text-sm font-mono text-neutral-100 placeholder:text-neutral-500 focus:outline-none"
             spellCheck={false}
           />
@@ -304,7 +304,7 @@ export function RunCommandPalette({
               {filteredRuns.length > 0 && (
                 <div className="pt-2">
                   <div className="px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-500 flex items-center justify-between">
-                    <span>Persisted Run History (SQLite Blotter)</span>
+                    <span>Riwayat proses yang tersimpan</span>
                     <span>{filteredRuns.length} runs</span>
                   </div>
                   <div className="mt-1 space-y-0.5">
@@ -347,17 +347,17 @@ export function RunCommandPalette({
                             {isLive ? (
                               <span className="inline-flex items-center gap-1 rounded bg-amber-950 border border-amber-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-amber-300">
                                 <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-                                LIVE
+                                JALAN
                               </span>
                             ) : r.status === "completed" ? (
                               <span className="inline-flex items-center gap-1 rounded bg-emerald-950 border border-emerald-800 px-1.5 py-0.5 text-[10px] font-mono font-medium text-emerald-300">
                                 <CheckCircle2 className="h-2.5 w-2.5" />
-                                DONE
+                                SELESAI
                               </span>
                             ) : r.status === "failed" ? (
                               <span className="inline-flex items-center gap-1 rounded bg-rose-950 border border-rose-800 px-1.5 py-0.5 text-[10px] font-mono font-medium text-rose-300">
                                 <AlertCircle className="h-2.5 w-2.5" />
-                                FAIL
+                                GAGAL
                               </span>
                             ) : (
                               <span className="inline-flex items-center gap-1 rounded bg-neutral-900 border border-neutral-700 px-1.5 py-0.5 text-[10px] font-mono font-medium text-neutral-400">
@@ -387,11 +387,11 @@ export function RunCommandPalette({
             </span>
             <span className="flex items-center gap-1">
               <CornerDownLeft className="h-3 w-3 text-neutral-500" />
-              <span>Select Run/Ticker</span>
+              <span>Pilih proses/saham</span>
             </span>
           </div>
           <div className="text-neutral-500">
-            Real runs bound to SQLite database
+            Hanya proses asli yang tersimpan
           </div>
         </div>
       </div>

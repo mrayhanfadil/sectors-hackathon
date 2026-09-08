@@ -626,7 +626,7 @@ function AgentTrace() {
               </div>
               <div className="flex flex-wrap items-center gap-2">
                 <h1 className="text-sm sm:text-base font-bold uppercase tracking-wider text-neutral-100">
-                  QUANT-DESK OPS CONSOLE // ORCHESTRATOR
+                  RUANG PANTAU MESIN // ORKESTRATOR
                 </h1>
                 <span className="rounded bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 text-[10px] text-neutral-400">
                   {KNOWN_AGENTS.length} AGENTS
@@ -634,7 +634,7 @@ function AgentTrace() {
               </div>
             </div>
             <p className="text-xs text-neutral-400 max-w-3xl leading-relaxed">
-              Multi-agent execution monitor: financial valuation modeling (DCF/DDM/PE), IDX balance sheet ingestion, and Red Team adversarial cross-verification.
+              Layar pantau mesin analis: hitung nilai wajar (DCF/DDM/PE), baca laporan keuangan IDX, dan uji silang antar-mesin.
             </p>
           </div>
 
@@ -646,33 +646,33 @@ function AgentTrace() {
                   <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-amber-400 opacity-75" />
                   <span className="relative inline-flex h-2 w-2 rounded-full bg-amber-500" />
                 </span>
-                <span className="font-bold font-mono">RUNNING</span>
+                <span className="font-bold font-mono">JALAN</span>
                 <span className="text-neutral-600">·</span>
-                <span className="font-mono">{activeCount}/{totalCount} ACTIVE</span>
+                <span className="font-mono">{activeCount}/{totalCount} AKTIF</span>
                 <span className="text-neutral-600">·</span>
                 <span className="font-mono text-amber-300 flex items-center gap-1">
                   <Clock className="h-3 w-3" />
-                  ETA {etaText}
+                  SISA {etaText}
                 </span>
               </div>
             ) : done ? (
               <div className="flex items-center gap-2 rounded border border-emerald-800 bg-emerald-950/80 px-3 py-1.5 text-xs font-mono text-emerald-300">
                 <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="font-bold">COMPLETED</span>
+                <span className="font-bold">SELESAI</span>
                 <span className="text-neutral-600">·</span>
-                <span>{done.n_events} EVTS</span>
+                <span>{done.n_events} LANGKAH</span>
                 <span className="text-neutral-600">·</span>
                 <span>{(done.ms / 1000).toFixed(1)}s</span>
               </div>
             ) : isInterrupted ? (
               <div className="flex items-center gap-2 rounded border border-amber-800 bg-amber-950/60 px-3 py-1.5 text-xs font-mono text-amber-300">
                 <AlertCircle className="h-3.5 w-3.5 text-amber-400" />
-                <span className="font-bold">INTERRUPTED</span>
+                <span className="font-bold">TERHENTI</span>
               </div>
             ) : (
               <div className="flex items-center gap-2 rounded border border-neutral-800 bg-neutral-900 px-3 py-1.5 text-xs font-mono text-neutral-400">
                 <span className="h-1.5 w-1.5 rounded-full bg-neutral-500" />
-                <span>OPS CONSOLE IDLE</span>
+                <span>MESIN SIAGA</span>
               </div>
             )}
           </div>
@@ -684,7 +684,7 @@ function AgentTrace() {
             {/* Ticker Input */}
             <div className="flex items-center gap-2">
               <label htmlFor="ticker-input" className="text-xs font-mono text-neutral-400 uppercase">
-                TARGET:
+                SAHAM:
               </label>
               <input
                 id="ticker-input"
@@ -696,7 +696,7 @@ function AgentTrace() {
                   selectedRunIdRef.current = null
                   setTicker(e.target.value.toUpperCase().trim())
                 }}
-                placeholder="TICKER..."
+                placeholder="KODE SAHAM…"
                 list="ticker-universe"
                 autoComplete="off"
                 spellCheck={false}
@@ -718,10 +718,10 @@ function AgentTrace() {
               onClick={() => setIsPaletteOpen(true)}
               variant="outline"
               className="h-8 gap-1.5 border-neutral-700 bg-neutral-900 text-xs font-mono text-neutral-300 hover:bg-neutral-800 hover:text-white"
-              title="Open Command Palette (⌘K)"
+              title="Buka cari cepat (⌘K)"
             >
               <Command className="h-3.5 w-3.5 text-emerald-400" />
-              <span>COMMAND PALETTE</span>
+              <span>CARI CEPAT</span>
               <kbd className="hidden sm:inline rounded bg-neutral-800 px-1 py-0.5 text-[9px] border border-neutral-700">⌘K</kbd>
             </Button>
 
@@ -733,7 +733,7 @@ function AgentTrace() {
                 className="h-8 gap-1.5 text-xs font-mono font-bold border-rose-800 bg-rose-950 text-rose-200 hover:bg-rose-900"
               >
                 <Square className="h-3 w-3 fill-current" />
-                <span>HALT</span>
+                <span>BERHENTI</span>
               </Button>
             ) : (
               <Button
@@ -741,7 +741,7 @@ function AgentTrace() {
                 className="h-8 gap-1.5 bg-emerald-600 text-xs font-mono font-bold text-black hover:bg-emerald-500"
               >
                 <Play className="h-3 w-3 fill-current" />
-                <span>EXECUTE RUN</span>
+                <span>JALANKAN</span>
               </Button>
             )}
 
@@ -750,10 +750,10 @@ function AgentTrace() {
               disabled={running}
               variant="outline"
               className="h-8 gap-1 text-xs font-mono text-neutral-400 border-neutral-800 bg-neutral-900 hover:bg-neutral-800 hover:text-neutral-200"
-              title="Run in synchronous blocking mode"
+              title="Jalankan dan tunggu sampai selesai"
             >
               <Zap className="h-3 w-3 text-amber-400" />
-              <span>FAST POST</span>
+              <span>KILAT</span>
             </Button>
 
             <Button
@@ -763,7 +763,7 @@ function AgentTrace() {
               disabled={running}
             >
               <RotateCcw className="h-3 w-3" />
-              <span>RESET</span>
+              <span>BERSIHKAN</span>
             </Button>
           </div>
 
@@ -787,7 +787,7 @@ function AgentTrace() {
                 type="button"
                 onClick={fetchHealth}
                 className="text-neutral-500 hover:text-neutral-200 p-1"
-                title="Refresh backend bridge telemetry"
+                title="Muat ulang status mesin"
               >
                 <RefreshCw className="h-3 w-3" />
               </button>

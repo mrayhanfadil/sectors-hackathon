@@ -77,7 +77,7 @@ function ReportPage() {
     return (
       <div className="space-y-4 font-mono">
         <div className="rounded border border-neutral-300 bg-neutral-100 p-3 text-center text-xs text-neutral-600 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-400">
-          [TERMINAL LOADING] FETCHING EQUITY REPORT BUFFER FOR {tk} IJ &lt;EQUITY&gt;...
+          [MEMUAT] MENYIAPKAN LAPORAN SAHAM {tk}…...
         </div>
         <div className="h-16 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
@@ -99,7 +99,7 @@ function ReportPage() {
           <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
           <div className="space-y-2">
             <h3 className="text-xs font-bold uppercase text-rose-900 dark:text-rose-100">
-              [SYSTEM ERROR] FAILED TO RETRIEVE REPORT BUFFER ({tk})
+              [SISTEM GAGAL] LAPORAN {tk} TIDAK BISA DIAMBIL
             </h3>
             <p className="text-xs text-rose-700 leading-relaxed dark:text-rose-300">
               Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif dan ticker terdaftar.
@@ -128,7 +128,7 @@ function ReportPage() {
             <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="space-y-2">
               <h3 className="font-bold uppercase tracking-wider text-amber-950 dark:text-amber-100">
-                [OFFLINE MODE] BACKEND UNREACHABLE // {tk}
+                [MODE OFFLINE] SERVER BELUM NYAMBUNG // {tk}
               </h3>
               <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{data.summary}</p>
               <Button
@@ -137,7 +137,7 @@ function ReportPage() {
                 className="mt-1 h-7 bg-amber-900 font-mono text-xs text-white hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
               >
                 <RefreshCw className="mr-1 h-3 w-3" />
-                <span>&gt; RELOAD TERMINAL</span>
+                <span>&gt; MUAT ULANG</span>
               </Button>
             </div>
           </div>

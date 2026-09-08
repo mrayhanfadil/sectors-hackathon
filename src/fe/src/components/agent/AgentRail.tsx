@@ -50,13 +50,13 @@ function StatusDot({ status }: { status: AgentStatus }) {
 function getStatusBadge(status: AgentStatus): { text: string; className: string } {
   switch (status) {
     case "running":
-      return { text: "RUNNING", className: "bg-amber-950 border-amber-800 text-amber-300 font-bold" }
+      return { text: "JALAN", className: "bg-amber-950 border-amber-800 text-amber-300 font-bold" }
     case "finished":
-      return { text: "DONE", className: "bg-emerald-950 border-emerald-800 text-emerald-300" }
+      return { text: "SELESAI", className: "bg-emerald-950 border-emerald-800 text-emerald-300" }
     case "error":
-      return { text: "FAIL", className: "bg-rose-950 border-rose-800 text-rose-300 font-bold" }
+      return { text: "GAGAL", className: "bg-rose-950 border-rose-800 text-rose-300 font-bold" }
     default:
-      return { text: "QUEUED", className: "bg-neutral-900 border-neutral-800 text-neutral-500" }
+      return { text: "ANTRI", className: "bg-neutral-900 border-neutral-800 text-neutral-500" }
   }
 }
 
@@ -72,20 +72,20 @@ export const AgentRail = memo(function AgentRail({
       <div className="flex items-center justify-between px-1 text-[10px] text-neutral-400">
         <span className="font-bold tracking-wider uppercase text-neutral-300 flex items-center gap-1.5">
           <Cpu className="h-3 w-3 text-emerald-400" />
-          <span>AGENT MESH STATUS RAIL</span>
+          <span>STATUS SEMUA MESIN</span>
         </span>
         <div className="flex items-center gap-2.5 text-[9px]">
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-neutral-700" />
-            <span>QUEUED</span>
+            <span>ANTRI</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-            <span className="text-amber-300">RUNNING</span>
+            <span className="text-amber-300">JALAN</span>
           </span>
           <span className="flex items-center gap-1">
             <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
-            <span className="text-emerald-300">DONE</span>
+            <span className="text-emerald-300">SELESAI</span>
           </span>
         </div>
       </div>

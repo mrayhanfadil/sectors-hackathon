@@ -75,12 +75,12 @@ export function FunctionCallCard({ fc }: FunctionCallProps) {
               {copied ? (
                 <>
                   <Check className="h-2.5 w-2.5 text-emerald-400" />
-                  <span>COPIED</span>
+                  <span>TERSALIN</span>
                 </>
               ) : (
                 <>
                   <Copy className="h-2.5 w-2.5" />
-                  <span>COPY</span>
+                  <span>SALIN</span>
                 </>
               )}
             </button>

@@ -117,28 +117,28 @@ function RootComponent() {
       return
     }
 
-    if (raw === "EQUITY" || raw === "HUB" || raw === "HOME" || raw === "MONITOR" || raw === "F1") {
+    if (raw === "EQUITY" || raw === "SAHAM" || raw === "HUB" || raw === "HOME" || raw === "MONITOR" || raw === "F1") {
       navigate({ to: "/" as any })
       setCmdInput("")
       setMenuOpen(false)
       return
     }
 
-    if (raw === "AGENT" || raw === "TRACE" || raw === "F2") {
+    if (raw === "AGENT" || raw === "MESIN" || raw === "TRACE" || raw === "F2") {
       navigate({ to: "/agent" as any, search: { ticker: activeTicker } as any })
       setCmdInput("")
       setMenuOpen(false)
       return
     }
 
-    if (raw === "DEBATE" || raw === "CHALLENGE" || raw === "F3") {
+    if (raw === "DEBATE" || raw === "UJI" || raw === "CHALLENGE" || raw === "F3") {
       navigate({ to: `/report/${activeTicker}/challenge` as any })
       setCmdInput("")
       setMenuOpen(false)
       return
     }
 
-    if (raw === "SENTIMENT" || raw === "SENT" || raw === "NEWS") {
+    if (raw === "SENTIMENT" || raw === "SENTIMEN" || raw === "SENT" || raw === "NEWS" || raw === "BERITA") {
       navigate({ to: `/report/${activeTicker}/sentiment` as any })
       setCmdInput("")
       setMenuOpen(false)
@@ -182,7 +182,7 @@ function RootComponent() {
 
             <div className="hidden items-center gap-1.5 rounded border border-neutral-800 bg-[#121418] px-2 py-0.5 text-[10px] text-amber-300 lg:flex" title="Snapshot-based data feed — no streaming prices">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
-              <span className="font-semibold tracking-wide">FEED · SNAPSHOT</span>
+              <span className="font-semibold tracking-wide">DATA TERAKHIR</span>
             </div>
           </div>
 
@@ -197,7 +197,7 @@ function RootComponent() {
               }`}
             >
               <span className="text-amber-400 font-extrabold">[F1]</span>
-              <span>EQUITY</span>
+              <span>SAHAM</span>
             </Link>
 
             <Link
@@ -210,7 +210,7 @@ function RootComponent() {
               }`}
             >
               <span className="text-sky-400 font-extrabold">[F2]</span>
-              <span>AGENT</span>
+              <span>MESIN</span>
             </Link>
 
             <Link
@@ -222,14 +222,14 @@ function RootComponent() {
               }`}
             >
               <span className="text-rose-400 font-extrabold">[F3]</span>
-              <span>DEBATE</span>
+              <span>UJI SILANG</span>
             </Link>
           </nav>
 
           {/* Center-Right: Ticker Quick-Jump for Quintet Only */}
           <div className="hidden sm:flex items-center gap-2">
             <div className="flex items-center gap-1 bg-[#14171d] px-1.5 py-0.5 rounded border border-neutral-800">
-              <span className="text-[10px] text-neutral-500 font-semibold uppercase pr-1">JUMP:</span>
+              <span className="text-[10px] text-neutral-500 font-semibold uppercase pr-1">KE:</span>
               {QUINTET.map((tk) => {
                 const isActive =
                   pathname.startsWith(`/report/${tk}`) || (isAgentActive && searchParams.ticker === tk)
@@ -314,7 +314,7 @@ function RootComponent() {
                     : "bg-neutral-900 text-neutral-400 border-neutral-800"
                 }`}
               >
-                [F1] EQUITY
+                [F1] SAHAM
               </Link>
               <Link
                 to="/agent"
@@ -337,13 +337,13 @@ function RootComponent() {
                     : "bg-neutral-900 text-neutral-400 border-neutral-800"
                 }`}
               >
-                [F3] DEBATE
+                [F3] UJI
               </Link>
             </div>
 
             {/* Mobile Ticker Quick-Jump */}
             <div className="space-y-1">
-              <div className="text-[10px] font-bold uppercase text-neutral-500">QUINTET QUICK JUMP:</div>
+              <div className="text-[10px] font-bold uppercase text-neutral-500">PINTASAN EMITEN:</div>
               <div className="grid grid-cols-5 gap-1">
                 {QUINTET.map((tk) => (
                   <Link
@@ -395,7 +395,7 @@ function RootComponent() {
             </div>
             <div className="flex flex-wrap items-center gap-3 text-[11px]">
               <span className="text-emerald-600 dark:text-emerald-400 font-semibold">
-                ● LIVE ENDPOINTS: /api/report · /api/dcf · /api/news · /api/sentiment
+                ● JALUR DATA AKTIF: /api/report · /api/dcf · /api/news · /api/sentiment
               </span>
               <span className="text-neutral-400">|</span>
               <span className="text-neutral-500">KEYLESS 503: /api/outlook · /api/tickers (OFFLINE)</span>

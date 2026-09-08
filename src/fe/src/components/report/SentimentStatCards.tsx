@@ -233,7 +233,7 @@ export function SentimentStatCards({
               {confidencePct == null ? "—" : `${confidencePct}%`}
             </span>
             <span className="rounded-none border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-              {confidencePct == null ? "[PENDING]" : confidencePct >= 70 ? "[HIGH DENSITY]" : confidencePct >= 50 ? "[SUFFICIENT]" : "[PRELIMINARY]"}
+              {confidencePct == null ? "[MENUNGGU]" : confidencePct >= 70 ? "[HIGH DENSITY]" : confidencePct >= 50 ? "[SUFFICIENT]" : "[PRELIMINARY]"}
             </span>
           </div>
 

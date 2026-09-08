@@ -323,14 +323,14 @@ export function ValuationMethodology({
                 <div>
                   <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{v.method}</div>
                   <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                    {v.weight ? `WEIGHT: ${v.weight}%` : "STANDALONE MODEL"}
+                    {v.weight ? `BOBOT: ${v.weight}%` : "MODEL TUNGGAL"}
                   </div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                     Rp {fmtIDR(v.value)}
                   </div>
-                  <div className="text-[9px] uppercase text-neutral-400">FAIR VALUE</div>
+                  <div className="text-[9px] uppercase text-neutral-400">NILAI WAJAR</div>
                 </div>
               </div>
             ))}
@@ -387,9 +387,9 @@ export function ValuationMethodology({
                 <table className="w-full">
                   <thead>
                     <tr className="border-b bg-neutral-100/70 text-left text-[11px] font-bold text-neutral-600 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400">
-                      <th className="py-1.5 px-2.5">METHOD</th>
-                      <th className="py-1.5 px-2.5">WEIGHT</th>
-                      <th className="py-1.5 px-2.5 text-right">FAIR VALUE</th>
+                      <th className="py-1.5 px-2.5">METODE</th>
+                      <th className="py-1.5 px-2.5">BOBOT</th>
+                      <th className="py-1.5 px-2.5 text-right">NILAI WAJAR</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -464,7 +464,7 @@ export function ValuationMethodology({
                   </div>
                 </div>
                 <div className="rounded border border-emerald-300 bg-emerald-50/80 p-2 dark:border-emerald-800/60 dark:bg-emerald-950/60">
-                  <div className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300">TARGET PRICE</div>
+                  <div className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300">HARGA TARGET</div>
                   <div className="mt-0.5 text-sm font-bold text-emerald-900 tabular-nums dark:text-emerald-100">
                     Rp {fmtIDR(vd.ggm.fv_per_share)}
                   </div>
