@@ -32,7 +32,7 @@
 )
 
 // Helper: visual placeholder for chart rendering
-#let chart-placeholder(label, caption: "Engine Chart Renderer (Sectors pending)", height: 70pt, palette: PALETTE) = {
+#let chart-placeholder(label, caption: "Engine Chart Renderer (Sectors)", height: 70pt, palette: PALETTE) = {
   block(
     width: 100%,
     height: height,
@@ -171,7 +171,7 @@
 
       #v(6pt)
       #let vs-jci = data.cover.at("vs_jci", default: (:))
-      #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "IDX & yfinance"))
+      #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "Sectors"))
       #v(2pt)
       #if data.at("charts", default: (:)).at("vs_jci", default: false) {
       image(chart-dir + "/vs_jci.png", width: 100%)

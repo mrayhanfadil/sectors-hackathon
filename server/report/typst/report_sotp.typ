@@ -123,10 +123,10 @@
         )
 
         #v(5pt)
-        #exhibit-header("Exhibit 2", "Kinerja Saham vs IHSG (YTD 2026)", "IDX & yfinance (CDIA.JK vs ^JKSE)")
+        #exhibit-header("Exhibit 2", "Kinerja Saham vs IHSG (YTD 2026)", "Sectors (CDIA vs IHSG)")
         #v(1pt)
         #fin-table(
-          ("Periode", "CDIA Return", "IHSG (^JKSE)", "Alpha Relatif"),
+          ("Periode", "CDIA Return", "IHSG", "Alpha Relatif"),
           (
             ("1 Bulan (1M)", "-12,0%", "+2,0%", "-14,0%"),
             ("3 Bulan (3M)", "-28,0%", "+5,0%", "-33,0%"),

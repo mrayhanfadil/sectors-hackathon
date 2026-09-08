@@ -13,12 +13,10 @@ import asyncio
 import json
 import logging
 import re
-import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from bs4 import BeautifulSoup
 from fastapi import APIRouter, HTTPException, Query, Response
 
 from ..cache import cached_endpoint
@@ -29,9 +27,9 @@ router_mock_sectors = APIRouter()
 
 # Upstream data sources provenance (Sectors-only; legacy removed, Lane E)
 UPSTREAM_SOURCES: dict[str, str] = {
-    "filings": "sectors filings + idx.co.id via Camoufox",
-    "news": "sectors news (+ IDX scrape via Camoufox; curated killed Sep 2026)",
-    "corporate_actions": "sectors corporate-actions + IDX",
+    "filings": "sectors filings (scrapers killed Sep 2026)",
+    "news": "sectors news (scrapers+curated killed Sep 2026)",
+    "corporate_actions": "sectors corporate-actions (scrapers killed Sep 2026)",
     "quarterly_financials": "sectors quarterly-financials",
 }
 
@@ -76,24 +74,8 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DATA_ASSUMPTIONS_DIR = REPO_ROOT / "data" / "assumptions"
 DATA_PEERS_PATH = REPO_ROOT / "data" / "peers.json"
 
-# In-memory cache for scraped IDX disclosures (TTL: 300s)
-_DISCLOSURES_CACHE: dict[str, tuple[float, list[dict[str, Any]]]] = {}
-_CACHE_TTL = 300.0
+# (Sep 2026, Sectors-only rule): IDX-scrape cache killed with the scrapers.
 
-MONTH_ID_MAP = {
-    "januari": 1,
-    "februari": 2,
-    "maret": 3,
-    "april": 4,
-    "mei": 5,
-    "juni": 6,
-    "juli": 7,
-    "agustus": 8,
-    "september": 9,
-    "oktober": 10,
-    "november": 11,
-    "desember": 12,
-}
 
 
 # ── Metadata Helpers ────────────────────────────────────────────────────────
@@ -166,169 +148,12 @@ def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
 def _get_sector_and_subsector(symbol: str) -> tuple[str, str]:
     """Retrieve sector and sub_sector slug for a symbol (delegates to _resolve_taxonomy)."""
     return _resolve_taxonomy(symbol)
-
-
-def _parse_idx_timestamp(text: str) -> str:
-    """Parse Indonesian date string from IDX disclosure card into ISO-8601 with +07:00."""
-    try:
-        match = re.search(r"(\d{1,2})\s+([A-Za-z]+)\s+(\d{4})\s+(\d{2}):(\d{2}):(\d{2})", text)
-        if match:
-            day = int(match.group(1))
-            m_name = match.group(2).lower()
-            month = MONTH_ID_MAP.get(m_name, 1)
-            year = int(match.group(3))
-            hh = int(match.group(4))
-            mm = int(match.group(5))
-            ss = int(match.group(6))
-            return f"{year:04d}-{month:02d}-{day:02d}T{hh:02d}:{mm:02d}:{ss:02d}+07:00"
-    except Exception:
-        pass
-    return datetime.now(timezone.utc).astimezone().isoformat()
-
-
 # ── Required Top-Level Helpers ──────────────────────────────────────────────
 
-async def _scrape_idx_disclosures(
-    symbol: str, transaction_type: str | None = None
-) -> list[dict[str, Any]]:
-    """Scrape IDX Keterbukaan Informasi disclosures using Camoufox browser fingerprint."""
-    sym = symbol.upper().strip().replace(".JK", "")
-    now = time.time()
-
-    # In-memory TTL cache lookup
-    if sym in _DISCLOSURES_CACHE:
-        cached_time, cached_items = _DISCLOSURES_CACHE[sym]
-        if now - cached_time < _CACHE_TTL:
-            if transaction_type:
-                return [it for it in cached_items if it.get("transaction_type") == transaction_type]
-            return list(cached_items)
-
-    sec_slug, sub_slug = _get_sector_and_subsector(sym)
-    items: list[dict[str, Any]] = []
-
-    try:
-        from camoufox import AsyncCamoufox
-
-        async with AsyncCamoufox(headless=True) as browser:
-            page = await browser.new_page()
-            url = f"https://www.idx.co.id/id/perusahaan-tercatat/keterbukaan-informasi/?kodeEmiten={sym}"
-            await page.goto(url, wait_until="domcontentloaded", timeout=20000)
-            await page.wait_for_selector('input[placeholder="Cari Kode"]', timeout=10000)
-
-            code_input = await page.query_selector('input[placeholder="Cari Kode"]')
-            if code_input:
-                await code_input.click()
-                await code_input.fill(sym)
-                await page.wait_for_timeout(800)
-
-                dropdown_elements = await page.query_selector_all(
-                    "li, .v-list-item, .multiselect__element, .dropdown-menu a"
-                )
-                matched = False
-                for el in dropdown_elements:
-                    text = await el.inner_text()
-                    if sym.lower() in text.lower():
-                        await el.click()
-                        matched = True
-                        break
-
-                if not matched:
-                    _DISCLOSURES_CACHE[sym] = (now, [])
-                    return []
-
-                await page.wait_for_timeout(800)
-                buttons = await page.query_selector_all("button")
-                for b in buttons:
-                    btxt = await b.inner_text()
-                    if "terapkan" in btxt.lower() or "cari" in btxt.lower():
-                        await b.click()
-                        break
-
-                await page.wait_for_timeout(3500)
-                html = await page.content()
-                soup = BeautifulSoup(html, "html.parser")
-                cards = soup.find_all("div", class_="attach-card")
-
-                for card in cards:
-                    text_all = card.get_text(" ", strip=True)
-                    title_tag = card.find("h6")
-                    title = title_tag.get_text(" ", strip=True) if title_tag else ""
-                    ts = _parse_idx_timestamp(text_all)
-
-                    pdf_tag = card.find("a", href=lambda h: bool(h and ".pdf" in h.lower()))
-                    source_url = pdf_tag.get("href") if pdf_tag else "mock://placeholder"
-
-                    # Classify transaction type
-                    tx_type = "others"
-                    t_lower = title.lower()
-                    if any(k in t_lower for k in ["buy back", "pembelian", "beli", "akuisisi", "acquire"]):
-                        tx_type = "buy"
-                    elif any(k in t_lower for k in ["jual", "penjualan", "divestasi", "pengalihan"]):
-                        tx_type = "sell"
-
-                    # Classify holder type
-                    holder_type = (
-                        "insider"
-                        if any(k in t_lower for k in ["direksi", "komisaris", "pengendali", "insider", "afiliasi"])
-                        else "institution"
-                    )
-
-                    item: dict[str, Any] = {
-                        "title": title,
-                        "body": text_all[:500],
-                        "source": source_url,
-                        "timestamp": ts,
-                        "sector": sec_slug,
-                        "sub_sector": sub_slug,
-                        "tags": ["keterbukaan-informasi", "idx", sym.lower()],
-                        "symbol": sym,
-                        "transaction_type": tx_type,
-                        "holder_type": holder_type,
-                        "holder_name": None,
-                        "holding_before": None,
-                        "holding_after": None,
-                        "amount_transaction": None,
-                        "price": None,
-                        "transaction_value": None,
-                        "share_percentage_before": None,
-                        "share_percentage_after": None,
-                        "share_percentage_transaction": None,
-                        "idx_investor_slug": None,
-                        "idx_conglomerates_group_slug": None,
-                    }
-                    items.append(item)
-
-    except Exception as e:
-        logger.warning("IDX disclosure scrape failed for %s: %s", sym, e)
-
-    _DISCLOSURES_CACHE[sym] = (now, items)
-    if transaction_type:
-        return [it for it in items if it.get("transaction_type") == transaction_type]
-    return items
-
-
-async def _scrape_idx_agm_announcements(symbol: str) -> list[dict[str, Any]]:
-    """Scrape IDX Keterbukaan Informasi for AGM / RUPS announcements."""
-    disclosures = await _scrape_idx_disclosures(symbol)
-    agm_items: list[dict[str, Any]] = []
-
-    for d in disclosures:
-        title = d.get("title", "")
-        body = d.get("body", "")
-        combined = f"{title} {body}".lower()
-        if any(k in combined for k in ["rups", "agmslb", "rapat umum", "agm", "rupo"]):
-            agm_type = "AGMSLB" if ("luar biasa" in combined or "agmslb" in combined) else "AGMT"
-            ts = d.get("timestamp", "")
-            date_str = ts[:10] if len(ts) >= 10 else datetime.now().strftime("%Y-%m-%d")
-            agm_items.append({
-                "date": date_str,
-                "type": agm_type,
-                "agenda": title or "Rapat Umum Pemegang Saham",
-            })
-
-    return agm_items
-
-
+# KILLED (Sep 2026, Sectors-only rule): _scrape_idx_disclosures +
+# _scrape_idx_agm_announcements lived here (Camoufox scraping of idx.co.id —
+# external source, prohibited). Filings/AGMs come exclusively from the Sectors
+# API now; keyless endpoints return honest empty. Do not re-add scrapers.
 def _derive_sectors_dividends(symbol: str) -> list[dict[str, Any]]:
     """Historic cash dividends via Sectors corporate-actions. Keyless -> [] honest."""
     sym = symbol.upper().strip().replace(".JK", "")
@@ -438,7 +263,7 @@ async def get_filings(
     response.headers["Cache-Control"] = "no-store"
     sym = symbol.upper().strip().replace(".JK", "")
 
-    # Sectors-first (single gateway); keyless/mis-shaped -> IDX scraper, honest.
+    # Sectors-first (single gateway); keyless/mis-shaped -> honest empty.
     items: list[dict[str, Any]] = []
     try:
         from ..sectors import filings as _sectors_filings
@@ -485,13 +310,9 @@ async def get_filings(
         logger.info("sectors filings skipped for %s: %s", sym, e)
 
     if not items:
-        try:
-            items = await _scrape_idx_disclosures(sym, transaction_type=transaction_type)
-        except HTTPException:
-            raise
-        except Exception as e:
-            logger.error("Error fetching filings for %s: %s", sym, e)
-            raise HTTPException(status_code=503, detail=f"Upstream filings source unavailable: {e}")
+        # Sectors-only (Sep 2026): IDX Camoufox scraper killed (external
+        # source). Empty until the Sectors key lands — never scraped.
+        pass
     elif transaction_type:
         items = [it for it in items if it.get("transaction_type") == transaction_type]
 
@@ -517,7 +338,7 @@ async def get_filings(
         "data": paginated,
     }
     if total == 0:
-        res["note"] = "no insider filings found via IDX scraper"
+        res["note"] = "no insider filings (Sectors keyless: set the Sectors key)"
     return res
 
 
@@ -655,12 +476,9 @@ async def get_corporate_actions(
         except Exception:
             pass
 
-        # AGMs from IDX disclosures
+        # AGMs: Sectors-only (Sep 2026) — IDX disclosure scrape killed
+        # (external source). Empty until Sectors exposes meeting actions.
         agm_list: list[dict[str, Any]] = []
-        try:
-            agm_list = await _scrape_idx_agm_announcements(sym)
-        except Exception as e:
-            logger.info("AGM scrape error for %s: %s", sym, e)
 
         res: dict[str, Any] = {
             "dividend": div_list,

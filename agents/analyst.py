@@ -182,7 +182,7 @@ Rules:
 - JANGAN hitung. Panggil calc_*() untuk angka (free float, BOPD, proceeds).
 - Setiap klaim butuh source tier + url+date. Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel. Tier2: Reuters/Bloomberg/JP. Tier3: blog (flag).
 - History: tulis 2006→2023 timeline faktual. RATU: founded 2006, PSC Cepu, IPO 88% ke RETJ/PJUC — jangan ngarang untuk ticker lain.
-- BOD: sebut 6 anggota RATU kalau ticker RATU. Untuk ticker lain, search via web_search + web_extract, jangan hallucinate names.
+- BOD: sebut 6 anggota RATU kalau ticker RATU. Untuk ticker lain, ambil dari Sectors company_report/filings, jangan hallucinate names.
 - PSC: sebut block, operator, SKK Migas, DMO%, expiry. Kalau tidak ada PSC (e.g. MTEL infra, BBCA bank), isi psc=[] dan jelaskan why N/A.
 - Holders: urut desc %. MTEL TLKM 71.83% — sebut kalau MTEL. CDIA 60% — sebut kalau CDIA.
 - Segments: kalau single-pilar hide % (sotp/infra tampilkan). Sum 100% — Critic akan reject jika tidak.
@@ -202,7 +202,7 @@ News context (last 30d, max 8):
 {news_json}
 
 Task: Build CompanyProfile JSON for {ticker}. Fill history+IPO+BOD+PSC+holders+segments+specs.
-- Search web_search("{ticker} IDX IPO history BOD") if holder/BOD missing — cite url+date.
+- Search Sectors company_report/filings ("{ticker} IDX IPO history BOD") if holder/BOD missing — cite source+date.
 - Use calc_free_float_pct / calc_proceeds_allocation / calc_net_entitlement_bopd for math — do not compute mentally.
 - Return ONLY JSON (no prose wrapper). Critic will validate sum checks.
 """
