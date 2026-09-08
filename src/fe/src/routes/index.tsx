@@ -201,7 +201,7 @@ function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
       {/* 3. Valuation Engine Detail Strip */}
       <div className="space-y-2 p-3 text-xs">
         <div className="flex items-center justify-between text-[11px]">
-          <span className="text-neutral-500 dark:text-neutral-400">Primary Engine:</span>
+          <span className="text-neutral-500 dark:text-neutral-400">Mesin Utama:</span>
           <span className="font-semibold text-neutral-800 dark:text-neutral-200">{method}</span>
         </div>
 

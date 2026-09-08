@@ -264,7 +264,7 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
             type="text"
             value={filterText}
             onChange={(e) => setFilterText(e.target.value)}
-            placeholder="Filter runs (e.g. BBCA, failed)..."
+            placeholder="Saring proses (mis. BBCA, gagal)..."
             className="w-full rounded bg-neutral-900 border border-neutral-800 pl-7 pr-2 py-1 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
           />
         </div>
