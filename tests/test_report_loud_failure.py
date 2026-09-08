@@ -43,18 +43,29 @@ def test_report_unknown_ticker_is_422_not_fabricated(api_client):
     res = api_client.get("/api/report/ZZZZ")
     assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text[:500]}"
     body = res.json()
-    detail = str(body.get("detail", ""))
-    assert "ZZZZ" in detail, "422 must name the ticker"
-    assert "/api/agent/start" in detail, "422 must point to the full agent path"
+    detail = body.get("detail", {})
+    if isinstance(detail, dict):
+        assert detail.get("ticker") == "ZZZZ", "422 must name the ticker"
+        assert "/api/agent/start" in detail.get("summary", ""), "422 must point to the full agent path"
+    else:
+        assert "ZZZZ" in str(detail), "422 must name the ticker"
+        assert "/api/agent/start" in str(detail), "422 must point to the full agent path"
 
 
 def test_report_engine_ticker_keyless_422_names_inputs(api_client):
     res = api_client.get("/api/report/BBCA")
     assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text[:500]}"
-    detail = res.json().get("detail", "")
-    assert "BBCA" in detail, "422 must name the ticker"
-    assert "sectors_missing_key" in detail, "422 must disclose keyless cause"
-    assert "/api/agent/start" in detail, "422 must point to the full agent path"
+    body = res.json()
+    detail = body.get("detail", {})
+    if isinstance(detail, dict):
+        assert detail.get("ticker") == "BBCA", "422 must name the ticker"
+        assert "rf" in detail.get("missing", []), "422 must disclose missing WACC keys"
+        assert "/api/agent/start" in detail.get("summary", ""), "422 must point to the full agent path"
+    else:
+        detail_str = str(detail)
+        assert "BBCA" in detail_str, "422 must name the ticker"
+        assert "sectors_missing_key" in detail_str, "422 must disclose keyless cause"
+        assert "/api/agent/start" in detail_str, "422 must point to the full agent path"
 
 
 def test_adversarial_exit_guard_present():

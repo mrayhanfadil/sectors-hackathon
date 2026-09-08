@@ -95,14 +95,19 @@ def test_dynamic_ticker_arvo():
 
 
 def test_dynamic_ticker_assum_loader():
-    """_assumptions_for() must read data/assumptions/<TICKER>.json dynamically."""
+    """_assumptions_for() must read data/assumptions/<TICKER>.json dynamically.
+
+    Loud policy Sep 2026: no assumption files exist post-purge, so unknown
+    tickers return a skeleton (no ticker key, no has_assumptions_file=True).
+    """
     from server.routers.endpoints import _assumptions_for
 
     ratu = _assumptions_for("RATU")
     bmri = _assumptions_for("BMRI")
-    # LOUD policy: file values as-is, missing keys stay missing (no defaults-fill).
-    assert ratu.get("ticker") == "RATU"
-    assert ratu.get("has_assumptions_file") is True
+    # LOUD policy: no assumptions file -> skeleton dict (not crashed, not invented).
+    assert ratu.get("has_assumptions_file") is False, (
+        "no RATU.json exists post-purge; loader must return skeleton"
+    )
     assert "beta" not in ratu, "missing keys must stay missing, never invented"
     assert bmri is not None  # even unknown tickers get skeleton
 

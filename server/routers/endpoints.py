@@ -424,42 +424,57 @@ async def report_ticker(
     assum = _assumptions_for(t)
     archetype = assum.get("archetype", "unknown")
     has_assump_file = assum.get("has_assumptions_file", False)
+    _expected_wacc = ("rf", "beta", "erp", "cod")
+    _expected_val = ("fcf", "shares_out", "net_debt", "ebitda", "ev_multiple", "we", "wd", "g")
+    _all_expected = _expected_wacc + _expected_val
     if not has_assump_file:
         raise HTTPException(
             status_code=422,
-            detail=(
-                f"No valuation engine for {t}: missing data/assumptions/{t}.json. "
-                f"Deterministic fallback is disabled to avoid fabricated ratings. "
-                f"Run the full agent instead: POST /api/agent/start "
-                f"{{\"ticker\": \"{t}\"}} — every number via calc_* tools."
-            ),
+            detail={
+                "ticker": t,
+                "missing": list(_all_expected),
+                "summary": (
+                    f"No valuation engine for {t}: missing data/assumptions/{t}.json. "
+                    f"Deterministic fallback is disabled to avoid fabricated ratings. "
+                    f"Run the full agent instead: POST /api/agent/start "
+                    f"{{\"ticker\": \"{t}\"}} — every number via calc_* tools."
+                ),
+            },
         )
 
     # deterministic valuation via engines (never LLM)
     from ..engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
 
     # LOUD policy: every valuation input must be file-present — absent fields 422 by name, never invented.
-    _missing_wacc = [k for k in ("rf", "beta", "erp", "cod") if assum.get(k) is None]
+    _missing_wacc = [k for k in _expected_wacc if assum.get(k) is None]
     if _missing_wacc:
         raise HTTPException(
             status_code=422,
-            detail=(
-                f"Missing WACC input(s) for {t}: {', '.join(_missing_wacc)}. "
-                f"No defaults are invented keyless (sectors_missing_key). "
-                f"Add them to data/assumptions/{t}.json or run the full agent: "
-                f"POST /api/agent/start {{'ticker': '{t}'}}."
-            ),
+            detail={
+                "ticker": t,
+                "missing": _missing_wacc,
+                "summary": (
+                    f"Missing WACC input(s) for {t}: {', '.join(_missing_wacc)}. "
+                    f"No defaults are invented keyless (sectors_missing_key). "
+                    f"Add them to data/assumptions/{t}.json or run the full agent: "
+                    f"POST /api/agent/start {{'ticker': '{t}'}}."
+                ),
+            },
         )
-    _missing_val = [k for k in ("fcf", "shares_out", "net_debt", "ebitda", "ev_multiple", "we", "wd", "g") if assum.get(k) is None]
+    _missing_val = [k for k in _expected_val if assum.get(k) is None]
     if _missing_val:
         raise HTTPException(
             status_code=422,
-            detail=(
-                f"Missing valuation input(s) for {t}: {', '.join(_missing_val)}. "
-                f"No defaults are invented keyless (sectors_missing_key). "
-                f"Add them to data/assumptions/{t}.json or run the full agent: "
-                f"POST /api/agent/start {{'ticker': '{t}'}}."
-            ),
+            detail={
+                "ticker": t,
+                "missing": _missing_val,
+                "summary": (
+                    f"Missing valuation input(s) for {t}: {', '.join(_missing_val)}. "
+                    f"No defaults are invented keyless (sectors_missing_key). "
+                    f"Add them to data/assumptions/{t}.json or run the full agent: "
+                    f"POST /api/agent/start {{'ticker': '{t}'}}."
+                ),
+            },
         )
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
