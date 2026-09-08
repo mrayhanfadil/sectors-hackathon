@@ -311,7 +311,7 @@ def test_health_endpoint_reports_mock_sectors():
 
     sources = data.get("upstream_sources", {})
     assert sources.get("filings") == "sectors filings + idx.co.id via Camoufox"
-    assert sources.get("news") == "sectors news + scripts/news.py curated"
+    assert sources.get("news") == "sectors news (+ IDX scrape via Camoufox; curated killed Sep 2026)"
     assert sources.get("corporate_actions") == "sectors corporate-actions + IDX"
     assert sources.get("quarterly_financials") == "sectors quarterly-financials"
 

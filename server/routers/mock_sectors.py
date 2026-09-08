@@ -30,7 +30,7 @@ router_mock_sectors = APIRouter()
 # Upstream data sources provenance (Sectors-only; legacy removed, Lane E)
 UPSTREAM_SOURCES: dict[str, str] = {
     "filings": "sectors filings + idx.co.id via Camoufox",
-    "news": "sectors news + scripts/news.py curated",
+    "news": "sectors news (+ IDX scrape via Camoufox; curated killed Sep 2026)",
     "corporate_actions": "sectors corporate-actions + IDX",
     "quarterly_financials": "sectors quarterly-financials",
 }
@@ -579,38 +579,9 @@ async def get_news(
         except Exception as e:
             logger.info("sectors news skipped: %s", e)
 
-        # 2. Check Curated news from scripts/news.py
-        try:
-            from scripts.news import CURATED_NEWS
-
-            sym_list = target_symbols if target_symbols else list(CURATED_NEWS.keys())
-            for sym in sym_list:
-                curated_list = CURATED_NEWS.get(sym, [])
-                sec_s, sub_s = _get_sector_and_subsector(sym)
-                for it in curated_list:
-                    t = it.get("title", "")
-                    b = it.get("snippet", "")
-                    u = it.get("url", "")
-                    dt = it.get("date", datetime.now().strftime("%Y-%m-%d"))
-                    ts = f"{dt}T00:00:00+07:00"
-                    dim = _classify_sentiment(t, b)
-                    raw_articles.append({
-                        "title": t,
-                        "body": b[:500],
-                        "source": u,
-                        # LOUD (Sep 2026): hand-written CURATED_NEWS, unverified —
-                        # never present as live T1 reporting downstream.
-                        "provenance": "curated-unverified",
-                        "timestamp": ts,
-                        "sector": sec_s,
-                        "sub_sector": [sub_s],
-                        "tags": ["news", dim.get("sentiment", "neutral")],
-                        "symbols": [sym],
-                        "thumbnail": None,
-                        "dimension": dim,
-                    })
-        except Exception as e:
-            logger.info("Curated news read error: %s", e)
+        # (Sep 2026, no-fabrication sweep): curated block killed with
+        # scripts/news.py CURATED_NEWS — no hand-written news served here.
+        # News flows from Sectors (+ IDX scrape); empty until then, never invented.
 
         # Filtering
         filtered = raw_articles

@@ -158,7 +158,13 @@ def test_dcf_bbca_bare_422(api_client):
 
 
 def test_dcf_bbca_declared_overrides_200(api_client):
-    ov = json.dumps({"rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06})
+    # Explicit test inputs (Sep 2026, no prod seeds): every driver declared.
+    ov = json.dumps({
+        "rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06,
+        "revenue": 5000e9, "ebit_margin": 0.20, "g1": 0.08, "g": 0.03,
+        "tax": 0.22, "capex_pct": 0.06, "nwc_pct": 0.05,
+        "shares_out": 5e9, "last_price": 2000.0,
+    })
     res = api_client.get(f"/api/dcf/BBCA?overrides={ov}")
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     data = res.json()

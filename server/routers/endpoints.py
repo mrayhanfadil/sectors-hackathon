@@ -26,116 +26,13 @@ router_universe = APIRouter()
 _started = time.time()
 
 
-# ---------- Archetype & Taxonomy Defaults ----------
-ARCHETYPE_DEFAULTS: dict[str, dict[str, Any]] = {
-    "infra": {
-        "rf": 0.0696,
-        "beta": 0.65,
-        "erp": 0.0889,
-        "cod": 0.06,
-        "we": 0.608,
-        "wd": 0.392,
-        "wacc": 0.101,
-        "g": 0.015,
-        "payout": 0.35,
-        "fcf": [4988, 5200, 5400, 5600, 5800],
-        "shares_out": 81.5e9,
-        "net_debt": 21430e9,
-        "cash": 1643e9,
-        "ebitda": 7451e9,
-        "ev_multiple": 10.0,
-        "last_price": 460,
-        "tower": 40563,
-        "tenancy_ratio": 1.57,
-        "fiber_km": 59239,
-        "archetype": "infra",
-    },
-    "single": {
-        "rf": 0.07,
-        "beta": 0.70,
-        "erp": 0.069,
-        "cod": 0.035,
-        "g": 0.05,
-        "payout": 0.30,
-        "fcf": [456, 570, 684, 760, 836],  # calibrated -> fv ~7700 with g 0.05 wacc 8.26
-        "shares_out": 2.71e9,
-        "net_debt": 0,
-        "cash": 500e9,
-        "ebitda": 585e9,  # FY26F EBITDA 585bn *22.6 => 6960 cross-check
-        "ev_multiple": 22.6,
-        "last_price": 6200,
-        "archetype": "single",
-    },
-    "sotp": {
-        "rf": 0.0696,
-        "beta": 0.90,
-        "erp": 0.06,
-        "cod": 0.05,
-        "g": 0.03,
-        "payout": 0.40,
-        "fcf": [4800, 5400, 6000, 6600, 7200],  # 6x calibrated -> fv ~790 close to 815
-        "shares_out": 124.8e9,
-        "net_debt": 5000e9,
-        "cash": 1200e9,
-        "ebitda": 2500e9,
-        "ev_multiple": 12.0,
-        "last_price": 645,
-        "archetype": "sotp",
-    },
-    "bank": {
-        "rf": 0.0696,
-        "beta": 0.80,
-        "erp": 0.06,
-        "cod": 0.05,
-        "g": 0.04,
-        "roe": 0.197,
-        "bvps": 4200,  # 2950->4200 brings GGM 5968->9133 close to 9600
-        "payout": 0.50,
-        "fcf": [40000, 46000, 52000, 58000, 64000],  # 2x -> DCF ~9645
-        "shares_out": 123.2e9,
-        "net_debt": 0,
-        "cash": 50000e9,
-        "ebitda": 35000e9,
-        "ev_multiple": 16.9,
-        "last_price": 7890,
-        "archetype": "bank",
-    },
-    "coal": {
-        "rf": 0.0696,
-        "beta": 0.95,
-        "erp": 0.06,
-        "cod": 0.05,
-        "g": 0.02,
-        "payout": 0.45,
-        "fcf": [7500, 7800, 8100, 8400, 8700],  # 1.5x -> ~3875 close to SOTP 4100
-        "shares_out": 28.8e9,
-        "net_debt": 2000e9,
-        "cash": 3500e9,
-        "ebitda": 8000e9,
-        "ev_multiple": 6.5,
-        "last_price": 2080,
-        "archetype": "coal",
-    },
-    "unknown": {
-        "rf": 0.0696,
-        "beta": 0.85,
-        "erp": 0.06,
-        "cod": 0.06,
-        "g": 0.025,
-        "payout": 0.40,
-        "fcf": [1000, 1100, 1200, 1300, 1400],
-        "shares_out": 10e9,
-        "net_debt": 5000e9,
-        "cash": 1000e9,
-        "ebitda": 3000e9,
-        "ev_multiple": 12.0,
-        "last_price": 1000,
-        "archetype": "unknown",
-        "source": "fallback generic",
-    },
-}
-
-
+# ---------- Archetype names (KILLED values, Sep 2026) ----------
+# ARCHETYPE_DEFAULTS held per-ticker invented fundamentals (rf/beta/fcf/
+# shares_out/last_price tuned to target fair values — fabrication). Killed in
+# the no-fabrication sweep; only the valid archetype NAMES survive, used for
+# _infer_archetype validation. Valuation inputs come exclusively from
+# data/assumptions/{T}.json (LOUD 422 on gaps).
+VALID_ARCHETYPES = frozenset({"infra", "single", "sotp", "bank", "coal", "unknown"})
 # ---------- helpers ----------
 def _now_iso() -> str:
     import datetime
@@ -187,7 +84,7 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
     # 1. Direct from raw_json
     if raw_json and isinstance(raw_json, dict):
         arch = raw_json.get("archetype")
-        if arch and str(arch).lower() in ARCHETYPE_DEFAULTS:
+        if arch and str(arch).lower() in VALID_ARCHETYPES:
             return str(arch).lower()
 
     # 2. Check data/peers.json metadata
@@ -197,7 +94,7 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
         try:
             pdata = json.loads(peers_path.read_text(encoding="utf-8"))
             by_t = pdata.get("by_ticker", {}).get(sym, {})
-            if by_t.get("archetype") and str(by_t["archetype"]).lower() in ARCHETYPE_DEFAULTS:
+            if by_t.get("archetype") and str(by_t["archetype"]).lower() in VALID_ARCHETYPES:
                 return str(by_t["archetype"]).lower()
             if by_t.get("sotp_pillars"):
                 return "sotp"
@@ -399,9 +296,9 @@ def _assumptions_for(ticker: str) -> dict:
             pass
 
     archetype = _infer_archetype(t, raw_json)
-    # LOUD policy: missing keys stay missing — file values as-is, never silently
-    # filled from ARCHETYPE_DEFAULTS (the dict now only defines valid archetype
-    # names for _infer_archetype; every consumer must handle absence loudly).
+    # LOUD policy: missing keys stay missing — file values as-is, never
+    # silently filled (ARCHETYPE_DEFAULTS killed Sep 2026; every consumer
+    # must handle absence loudly).
     base: dict[str, Any] = {}
     base["archetype"] = archetype
     base["has_assumptions_file"] = has_assumptions_file
