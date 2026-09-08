@@ -103,9 +103,9 @@ export function ReportHeader({
   }
 
   const tabBase =
-    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-mono font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer"
+    "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer"
   const tabActive =
-    "border-amber-500 text-amber-500 bg-amber-500/10 font-bold dark:border-amber-400 dark:text-amber-300 dark:bg-amber-950/40"
+    "border-amber-500 text-amber-600 bg-amber-500/10 font-bold dark:border-amber-400 dark:text-amber-300 dark:bg-amber-950/40"
   const tabIdle =
     "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:border-neutral-700"
 
@@ -162,7 +162,7 @@ export function ReportHeader({
           <div className="flex min-w-0 items-start gap-3">
             <Link
               to="/"
-              className="mt-1 inline-flex items-center justify-center rounded border border-neutral-300 bg-neutral-100 p-1 text-neutral-600 hover:bg-neutral-200 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400 dark:hover:bg-[#22252c] dark:hover:text-neutral-200"
+              className="mt-1 inline-flex items-center justify-center rounded-md border border-neutral-300 bg-neutral-100 p-1.5 text-neutral-600 hover:bg-neutral-200 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400 dark:hover:bg-[#22252c] dark:hover:text-neutral-200"
               title="Kembali ke Beranda"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -171,9 +171,9 @@ export function ReportHeader({
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                 <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400 dark:bg-amber-400/10 dark:border dark:border-amber-400/30 dark:text-amber-400">
-                  {tk} SAHAM ID
+                  {tk}
                 </span>
-                <h1 className="truncate text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
+                <h1 className="truncate text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-sans">
                   {finalName || `${tk} Tbk`}
                 </h1>
                 <RecommendationBadge rating={rating} size="sm" />
@@ -182,12 +182,12 @@ export function ReportHeader({
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono">
                 {template && (
                   <span className="rounded border border-neutral-300 bg-neutral-100 px-1.5 py-px text-[10px] font-semibold uppercase text-neutral-700 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300">
-                    ARCHETYPE: {template}
+                    ARKETIPE: {template}
                   </span>
                 )}
                 {updatedAt && (
                   <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                    AUDITED: {updatedAt} {source ? `(${source})` : ""}
+                    DIAUDIT: {updatedAt} {source ? `(${source})` : ""}
                   </span>
                 )}
               </div>
@@ -196,10 +196,10 @@ export function ReportHeader({
 
           {/* Key Numerals Strip & Actions */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-baseline gap-3 rounded-md border border-neutral-200 bg-neutral-50/80 px-3 py-1.5 font-mono dark:border-[#262930] dark:bg-[#121316]">
+            <div className="flex items-baseline gap-3 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-1.5 font-mono dark:border-[#262930] dark:bg-[#121316]">
               {/* Last Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">HARGA TERAKHIR</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">HARGA PASAR</div>
                 <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                   {price != null ? `Rp ${fmtIDR(price)}` : "—"}
                 </div>
@@ -209,7 +209,7 @@ export function ReportHeader({
 
               {/* Target Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">TARGET (NILAI WAJAR)</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">NILAI WAJAR (TP)</div>
                 <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                   {finalTarget != null ? `Rp ${fmtIDR(finalTarget)}` : "—"}
                 </div>
@@ -219,7 +219,7 @@ export function ReportHeader({
 
               {/* Upside / Downside */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">POTENSI NAIK</div>
+                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">POTENSI RETURN</div>
                 <div
                   className={`text-sm font-bold tabular-nums ${
                     upsidePositive
@@ -242,35 +242,35 @@ export function ReportHeader({
                 size="sm"
                 onClick={handlePdfDownload}
                 disabled={isPdfBusy}
-                className="h-8 gap-1 border-neutral-300 font-mono text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
+                className="h-8 gap-1.5 rounded-md border-neutral-300 font-sans text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
               >
                 {isPdfBusy ? (
                   <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
                 ) : (
                   <Download className="h-3 w-3 text-neutral-500 dark:text-neutral-400" />
                 )}
-                <span>[F12] PDF</span>
+                <span>[F12] Unduh PDF</span>
               </Button>
 
               <Link
                 to="/agent"
                 search={{ ticker: tk } as any}
-                className="inline-flex h-8 items-center gap-1 rounded border border-neutral-300 bg-neutral-100 px-2.5 font-mono text-xs font-semibold text-[#0070f3] hover:bg-neutral-200 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#3291ff] dark:hover:bg-[#22252c]"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-300 bg-neutral-100 px-2.5 font-sans text-xs font-semibold text-[#0070f3] hover:bg-neutral-200 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#3291ff] dark:hover:bg-[#22252c]"
               >
                 <Bot className="h-3 w-3" />
-                <span>[F5] TRACE</span>
+                <span>[F5] Jejak Mesin</span>
               </Link>
             </div>
           </div>
         </div>
 
         {errorMsg && (
-          <div className="mt-2 rounded border border-amber-300 bg-amber-50 px-3 py-1 font-mono text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200">
-            [NOTICE] {errorMsg}
+          <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-1 font-mono text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200">
+            [PERINGATAN] {errorMsg}
           </div>
         )}
 
-        {/* 3. Terminal Dense Tab Navigation */}
+        {/* 3. Dense Tab Navigation */}
         <div className="mt-3 flex items-center gap-1 overflow-x-auto border-t border-neutral-200 pt-1 dark:border-[#1f2228]">
           <Link
             to="/report/$ticker"
@@ -278,7 +278,7 @@ export function ReportHeader({
             className={`${tabBase} ${isValuationActive ? tabActive : tabIdle}`}
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>[1] VALUATION // MODEL</span>
+            <span>[1] Model Valuasi</span>
           </Link>
 
           <Link
@@ -287,7 +287,7 @@ export function ReportHeader({
             className={`${tabBase} ${isSentimentActive ? tabActive : tabIdle}`}
           >
             <MessageSquare className="h-3.5 w-3.5" />
-            <span>[2] SENTIMENT // SOCIAL & NEWS</span>
+            <span>[2] Sentimen Pasar &amp; Berita</span>
           </Link>
 
           <Link
@@ -296,7 +296,7 @@ export function ReportHeader({
             className={`${tabBase} ${isChallengeActive ? tabActive : tabIdle}`}
           >
             <Swords className="h-3.5 w-3.5" />
-            <span>[3] RED TEAM // THESIS CHALLENGE</span>
+            <span>[3] Uji Tesis (Red Team)</span>
           </Link>
 
           <div className="ml-auto hidden pr-1 font-mono text-[10px] text-neutral-400 sm:block">
