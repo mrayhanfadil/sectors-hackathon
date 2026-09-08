@@ -59,7 +59,7 @@ async def run_report(
     Returns:
         Dict with session_id, events, state (collector_output etc.), last_text.
     """
-    prompt = prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
+    prompt = prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key — never synthetic disclosures."
 
     root = build_graph(ticker=ticker, **build_kw)
 

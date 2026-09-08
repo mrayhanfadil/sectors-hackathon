@@ -598,6 +598,9 @@ async def get_news(
                         "title": t,
                         "body": b[:500],
                         "source": u,
+                        # LOUD (Sep 2026): hand-written CURATED_NEWS, unverified —
+                        # never present as live T1 reporting downstream.
+                        "provenance": "curated-unverified",
                         "timestamp": ts,
                         "sector": sec_s,
                         "sub_sector": [sub_s],
