@@ -2,6 +2,13 @@
 News Harvester Engine — scripts/news.py
 Part of Multi-Agent Intake (plan.md §3, §4, §11). 0 Sectors credit.
 
+LOUD POLICY (Sep 2026): CURATED_NEWS below is HAND-WRITTEN and UNVERIFIED —
+it must NEVER be presented as live T1 reporting. Every item served carries
+provenance="curated-unverified" and unknown tickers return [] (no generated
+disclosure entries — generating idx.co.id URLs with today's date is
+fabrication). Downstream (mock_sectors / Critic) must surface the provenance
+label, never a bare outlet name.
+
 Filters and tiers news items:
 - Tier 1: idx.co.id, kontan.co.id, bisnis.com, idxchannel.com, cnbcindonesia.com, investor.id
 - Tier 2: reuters.com, bloomberg.com, thejakartapost.com
@@ -12,7 +19,6 @@ from __future__ import annotations
 
 import json
 import logging
-from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, List, Optional
 
@@ -105,21 +111,15 @@ CURATED_NEWS: Dict[str, List[Dict[str, Any]]] = {
 
 
 async def search_news(ticker: str, days: int = 30, limit: int = 8) -> List[Dict[str, Any]]:
-    """Fetches citable news items for ticker with verified provenance (0 credit)."""
+    """Fetches citable news items for ticker with verified provenance (0 credit).
+
+    LOUD policy: CURATED_NEWS items are hand-written/unverified — every item
+    returned carries provenance="curated-unverified". Unknown tickers return []
+    (never a generated idx.co.id disclosure entry — that is fabrication).
+    """
     t = ticker.upper().strip()
     items = CURATED_NEWS.get(t, [])
-    if not items and t:
-        # Generate citable disclosure entry for other tickers
-        items = [
-            {
-                "url": f"https://www.idx.co.id/news/disclosure/{t}-2026",
-                "date": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-                "title": f"Laporan Keterbukaan Informasi Berkala PT {t} Tbk.",
-                "source": "idx.co.id",
-                "snippet": f"Publikasi laporan keuangan dan keterbukaan informasi operasional {t} di Bursa Efek Indonesia.",
-                "tier": "T1",
-                "relevance": 0.85,
-            }
-        ]
-    return items[:limit]
+    if not items:
+        return []
+    return [{**it, "provenance": "curated-unverified"} for it in items[:limit]]
 

@@ -555,7 +555,7 @@ async def agent_stream(
         else:
             session_id = f"{t.lower()}-{os.urandom(4).hex()}"
 
-        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
+        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key — never synthetic disclosures."
 
         store = store_for_resume
         lifecycle = StreamLifecycleManager(

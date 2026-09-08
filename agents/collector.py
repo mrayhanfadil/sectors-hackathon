@@ -1,9 +1,9 @@
 """
-Collector — Sectors-first + deterministic synthetic fallback (legacy removed, Lane E).
+Collector — Sectors-first, LOUD on gaps (synthetic fallback RETIRED, Sep 2026).
 
 Sectors API v2 is the single gateway (overview, quarterly, daily prices,
-corporate actions). Keyless or mis-shaped responses fall back to deterministic
-synthetic (seed=42) with honest `source` labels. Output feeds Modeler
+corporate actions). Keyless or mis-shaped responses raise RuntimeError with
+sectors_missing_key — gaps stay missing, never invented. Output feeds Modeler
 (blocking) and downstream analysts. Every exhibit must disclose source.
 
 ADK wrapper: exposes collector_as_tool() for google-adk LlmAgent + plain
@@ -30,19 +30,13 @@ ASSUMPTIONS_DIR = REPO_ROOT / "data" / "assumptions"
 PEERS_PATH = REPO_ROOT / "data" / "peers.json"
 
 CACHE_TTL_S = 4 * 3600  # 4h per plan §4
-SYNTHETIC_SEED = 42
 
 # Quintet that covers every engine (plan §11)
 QUINTET = ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"]
 
-# Synthetic tickers universe (49) — matches sectors-idea-lab seed
-SYNTHETIC_UNIVERSE = [
-    "BBCA","BBRI","BMRI","BBNI","BRIS","TLKM","ISAT","EXCL","MTEL","TOWR",
-    "RATU","CDIA","ADRO","ADMR","PTBA","ANTM","INCO","MDKA","HRUM","PGAS",
-    "ASII","UNTR","AKRA","MEDC","ELSA","BUMI","BRMS","AMMN","NCKL",
-    "ICBP","INDF","UNVR","KLBF","MYOR","GGRM","HMSP","SIDO","CPIN","JPFA",
-    "ACES","MAPI","ERAA","LPPF","AMRT","INDY","ITMG","GOTO","BUKA","EMTK",
-]
+# NOTE (Sep 2026): seed-42 synthetic fallback retired (LOUD policy).
+# _synthetic() below raises RuntimeError by design (pinned by tests);
+# no SYNTHETIC_SEED/UNIVERSE constants — do not reintroduce invention paths.
 
 TIER1_SOURCES = [
     "idx.co.id", "kontan.co.id", "bisnis.com", "idxchannel.com",
@@ -131,8 +125,8 @@ def _try_idx(ticker: str) -> Optional[Dict[str, Any]]:
 def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
     """Sectors v2: overview + quarterly + daily prices + corporate actions.
 
-    Keyless or mis-shaped -> None (honest; caller falls back to labeled
-    synthetic). Never a silent legacy vendor fallback.
+    Keyless or mis-shaped -> None (honest; caller raises sectors_missing_key,
+    never invents). Never a silent legacy vendor fallback.
     """
     t = _ticker_norm(ticker)
     try:
@@ -212,7 +206,7 @@ def _synthetic(ticker: str) -> Dict[str, Any]:
 
 
 def _peers_for(ticker: str) -> Dict[str, Any]:
-    """Load data/peers.json if exists, else synthetic peers per ticker."""
+    """Load data/peers.json if exists, else empty + sectors_missing_key note (LOUD: no invented multiples)."""
     t = _ticker_norm(ticker)
     if PEERS_PATH.exists():
         try:
@@ -396,8 +390,9 @@ def build_collector_agent(model=None):
             description="Data Collector — Sectors v2 + peers + JCI + KPI (cache 4h)",
             instruction=(
                 "You are the Data Collector. Given a ticker, call collect(ticker) "
-                "and return the JSON. Sectors v2 is the single gateway, then "
-                "synthetic seed=42. Always disclose source per exhibit. "
+                "and return the JSON. Sectors v2 is the single gateway; "
+                "no synthetic fallback — gaps stay missing with "
+                "sectors_missing_key. Always disclose source per exhibit. "
                 "Cache 4h. Never hallucinate prices — call the tool."
             ),
             tools=[tool] if tool is not None else [],
