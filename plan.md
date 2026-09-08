@@ -4,6 +4,12 @@
 > **Locked idea:** Bikin equity research report kualitas institusi (kayak HP Sekuritas RATU 7 Jan 2026) tapi accessible buat retail investor. Multi-agent, tiap agent punya expertise.  
 > **Benchmark PDFs (3+4 archetypes):** `RATU` (HP 7 Jan 2026, pure Oil) + `CDIA` (BCA 23 Jun 2026, conglomerate SOTP) + `MTEL` (KSI 27 Aug 2026, infra recurring) + `JPM 2026 Outlook` (52p strategy, JCI 9100) + 4 local global-like (Samuel BBCA, Maybank Strategy, BRIDS SOTP+DCF, Samuel Strategy). **Library 15 sources** in `references/source-library.md`.  
 > **Deadline hackathon:** 30 Sep 2026 23:59 WIB — 29 hari lagi.
+>
+> **SUPERSEDED 8 Sep 2026 (Sectors-only rule):** any data OUTSIDE Sectors API/MCP
+> is prohibited. The P0-P1 `IDX+yfinance (.JK)` doctrine in §3/§4/§5/§7/§8 below
+> is HISTORICAL (locked 31 Aug, kept for audit trail) — do not implement from it.
+> Current state: `server/sectors.py` single gateway, scrapers/fixtures relabeled
+> (commit `e7df15d`), migration log in `docs/sectors-swap.md`.
 
 ---
 
