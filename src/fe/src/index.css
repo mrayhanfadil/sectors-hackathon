@@ -1,15 +1,21 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: "Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --font-terminal: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 
 :root {
-  --radius: 0.25rem;
+  --radius: 0.5rem;
 
   /* Bloomberg Terminal-grade light tokens */
   --background: #f8f9fa;
   --foreground: #0f172a;
   --accents-1: #ffffff;
-  --accents-2: #e2e8f0;
+  --accents-2: #f1f5f9;
   --accents-3: #94a3b8;
   --accents-4: #64748b;
   --accents-5: #475569;
@@ -20,15 +26,15 @@
   --accent-hover: #0369a1;
   --success: #059669;
   --success-bg: #ecfdf5;
-  --error: #dc2626;
-  --error-bg: #fef2f2;
+  --error: #e11d48;
+  --error-bg: #fff1f2;
   --warning: #d97706;
   --warning-bg: #fffbeb;
   --border: #e2e8f0;
   --terminal-amber: #d97706;
   --terminal-cyan: #0284c7;
   --terminal-green: #059669;
-  --terminal-red: #dc2626;
+  --terminal-red: #e11d48;
 }
 
 .dark {
@@ -45,17 +51,17 @@
   --accents-8: #f8fafc;
   --accent: #38bdf8;
   --accent-hover: #0284c7;
-  --success: #34d399;
+  --success: #10b981;
   --success-bg: #064e3b;
-  --error: #f87171;
-  --error-bg: #450a0a;
-  --warning: #fbbf24;
+  --error: #f43f5e;
+  --error-bg: #4c0519;
+  --warning: #f59e0b;
   --warning-bg: #451a03;
   --border: #262930;
-  --terminal-amber: #fbbf24;
+  --terminal-amber: #f59e0b;
   --terminal-cyan: #38bdf8;
-  --terminal-green: #34d399;
-  --terminal-red: #f87171;
+  --terminal-green: #10b981;
+  --terminal-red: #f43f5e;
   color-scheme: dark;
 }
 
@@ -68,14 +74,16 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     text-rendering: optimizeLegibility;
+    font-family: var(--font-sans);
   }
 
   body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-family: var(--font-sans);
     background: var(--background);
     color: var(--foreground);
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 13.5px;
+    line-height: 1.6;
+    letter-spacing: -0.01em;
   }
 
   ::selection {
