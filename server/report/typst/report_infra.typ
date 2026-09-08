@@ -180,8 +180,8 @@
     [
       #rating-box(
         cover.action,
-        str(cover.tp),
-        str(cover.price),
+        cover.tp,
+        cover.price,
         cover.upside_pct,
         prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
         palette: PALETTE,
@@ -200,15 +200,15 @@
         #grid(
           columns: (1fr, auto),
           row-gutter: 3pt,
-          text(size: 7pt)[Harga Kini], text(size: 7pt, weight: "bold")[Rp #cover.price],
-          text(size: 7pt)[Target Harga (12M)], text(size: 7pt, weight: "bold")[Rp #cover.tp],
+          text(size: 7pt)[Harga Kini], text(size: 7pt, weight: "bold")[Rp #nstr(cover.price)],
+          text(size: 7pt)[Target Harga (12M)], text(size: 7pt, weight: "bold")[Rp #nstr(cover.tp)],
           text(size: 7pt)[TP Sebelumnya], text(size: 7pt, weight: "bold")[#(if cover.at("prev_tp", default: none) != none { "Rp " + str(cover.prev_tp) } else { "—" })],
-          text(size: 7pt)[Potensi #(if cover.upside_pct >= 0 { "Kenaikan" } else { "Penurunan" })], text(size: 7pt, weight: "bold", fill: if cover.upside_pct >= 0 { PALETTE.pos } else { PALETTE.neg })[#(if cover.upside_pct > 0 { "+" } else { "" })#cover.upside_pct% (#cover.action)],
-          text(size: 7pt)[Saham Beredar], text(size: 7pt, weight: "bold")[#sh.at("outstanding", default: 81.50) Miliar],
-          text(size: 7pt)[Kapitalisasi Pasar], text(size: 7pt, weight: "bold")[Rp #str(calc.round(sh.at("outstanding", default: 81.50) * cover.price / 1000, digits: 2)) T],
-          text(size: 7pt)[Free Float], text(size: 7pt, weight: "bold")[#sh.at("free_float_pct", default: 28.2)%],
-          text(size: 7pt)[52-Wk Range], text(size: 7pt, weight: "bold")[#sh.at("range_52w", default: "420 - 710")],
-          text(size: 7pt)[Indeks Konstituen], text(size: 7pt, weight: "bold")[#sh.at("indices", default: "LQ45 / IDX80 / KOMPAS100")],
+          text(size: 7pt)[Potensi #(if cover.upside_pct == none { "—" } else if cover.upside_pct >= 0 { "Kenaikan" } else { "Penurunan" })], text(size: 7pt, weight: "bold", fill: if cover.upside_pct == none { PALETTE.muted } else if cover.upside_pct >= 0 { PALETTE.pos } else { PALETTE.neg })[#if cover.upside_pct == none { "— data Sectors pending" } else { (if cover.upside_pct > 0 { "+" } else { "" }) + str(cover.upside_pct) + "% (" + nstr(cover.action) + ")" }],
+          text(size: 7pt)[Saham Beredar], text(size: 7pt, weight: "bold")[#nstr(sh.at("outstanding", default: none)) Miliar],
+          text(size: 7pt)[Kapitalisasi Pasar], text(size: 7pt, weight: "bold")[#if cover.price == none or sh.at("outstanding", default: none) == none { "—" } else { "Rp " + str(calc.round(sh.at("outstanding") * cover.price / 1000, digits: 2)) + " T" }],
+          text(size: 7pt)[Free Float], text(size: 7pt, weight: "bold")[#if sh.at("free_float_pct", default: none) == none { "—" } else { str(sh.free_float_pct) + "%" }],
+          text(size: 7pt)[52-Wk Range], text(size: 7pt, weight: "bold")[#sh.at("range_52w", default: "—")],
+          text(size: 7pt)[Indeks Konstituen], text(size: 7pt, weight: "bold")[#sh.at("indices", default: "—")],
         )
       ]
 
@@ -477,7 +477,7 @@
       ("Rerata 3 Tahun (Mean)", str(pbv.avg) + "x", "Rentang Nilai Wajar Historis"),
       ("STD -1 (Batas Bawah)", str(pbv.at("std-1")) + "x", "Undervalued Menarik"),
       ("STD -2 (Batas Bawah Ekstrem)", str(pbv.at("std-2")) + "x", "Undervalued Ekstrem"),
-      ("Posisi Harga Kini (Rp " + str(cover.price) + ")", str(pbv.current) + "x", pbv.label),
+      ("Posisi Harga Kini (Rp " + nstr(cover.price) + ")", str(pbv.current) + "x", pbv.label),
     ),
     palette: PALETTE,
   )

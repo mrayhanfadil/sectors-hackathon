@@ -274,31 +274,13 @@ def _segments_for(archetype: str, assum: dict, stockdata_segments: Optional[dict
     if not assum.get("has_assumptions_file", True):
         return {"segments": [], "total_pct": 0.0, "source": "no_assumptions_file"}
 
-    if archetype == "sotp":
-        return {
-            "segments": [
-                {"pillar": "Energy", "name": "Energy", "revenue_mn": 25300, "pct": 55.0, "share_pct": 55.0, "peer_set": "POWR, BREN, Sembcorp", "peer_avg_pe": 9.0},
-                {"pillar": "Logistics", "name": "Logistics", "revenue_mn": 15640, "pct": 34.0, "share_pct": 34.0, "peer_set": "HATM, ASSA, Westports", "peer_avg_pe": 11.5},
-                {"pillar": "Water", "name": "Water", "revenue_mn": 3680, "pct": 8.0, "share_pct": 8.0, "peer_set": "ACWA, PAM", "peer_avg_pe": 12.0},
-                {"pillar": "Port", "name": "Port", "revenue_mn": 1380, "pct": 3.0, "share_pct": 3.0, "peer_set": "PGAS, Westports", "peer_avg_pe": 10.0},
-            ],
-            "total_pct": 100.0,
-            "source": assum.get("segment_source", "BCA Sekuritas CDIA 23 Jun 2026 (4 pilar)"),
-        }
-    elif archetype == "infra":
-        return {
-            "segments": [
-                {"pillar": "Tower leasing", "name": "Tower leasing", "revenue_mn": 3833, "pct": 81.0, "share_pct": 81.0, "growth_yoy": 0.01},
-                {"pillar": "Fiber", "name": "Fiber", "revenue_mn": 309, "pct": 7.0, "share_pct": 7.0, "growth_yoy": 0.08},
-                {"pillar": "Tower-Related", "name": "Tower-Related", "revenue_mn": 299, "pct": 6.0, "share_pct": 6.0, "growth_yoy": 0.15},
-                {"pillar": "Reseller", "name": "Reseller", "revenue_mn": 251, "pct": 6.0, "share_pct": 6.0, "growth_yoy": 0.0},
-            ],
-            "total_pct": 100.0,
-            "source": assum.get("segment_source", "KSI MTEL 27 Aug 2026"),
-        }
-    elif archetype in ("single", "bank", "coal"):
-        return {"segments": [], "total_pct": 100.0, "source": "single archetype (no segment breakdown)"}
-    return {"segments": [], "total_pct": 0.0, "source": "unknown archetype"}
+    # LOUD policy: no invented pillars — file/stockdata segments absent -> honest empty.
+    return {
+        "segments": [],
+        "total_pct": 0.0,
+        "source": "sectors_missing_key",
+        "note": "segment breakdown unavailable: no segments in assumptions file or stockdata (no fabrication)",
+    }
 
 
 def _kpis_for(archetype: str, assum: dict) -> list[dict] | None:
@@ -308,68 +290,19 @@ def _kpis_for(archetype: str, assum: dict) -> list[dict] | None:
     if not assum.get("has_assumptions_file", True):
         return []
 
-    if archetype == "infra":
-        return [
-            {"name": "Tower", "value": assum.get("tower", 40563), "unit": "unit", "formula": "jumlah tower", "source": assum.get("kpi_source", "KSI 27 Aug 2026")},
-            {"name": "Tenancy Ratio", "value": assum.get("tenancy_ratio", 1.57), "prev": 1.53, "unit": "x", "formula": "tenants/towers", "source": assum.get("kpi_source", "KSI 27 Aug 2026")},
-            {"name": "Fiber", "value": assum.get("fiber_km", 59239), "prev": 54348, "unit": "km", "formula": "panjang jaringan", "source": assum.get("kpi_source", "KSI 27 Aug 2026")},
-            {"name": "Colocation", "value": 23303, "unit": "unit", "formula": "colocation adds", "source": assum.get("kpi_source", "KSI 27 Aug 2026")},
-        ]
-    elif archetype == "single":
-        return [{"name": "Cepu BOPD", "value": 169000, "prev": 152000, "unit": "bopd", "formula": "produksi harian rata-rata", "source": assum.get("kpi_source", "SKK Migas")}]
-    elif archetype == "sotp":
-        return [
-            {"name": "CCPP", "value": 120, "unit": "MW", "formula": "120MW gas power", "source": assum.get("kpi_source", "BCA CDIA")},
-            {"name": "Tanks", "value": 130, "unit": "k m3", "formula": "72 tanks", "source": assum.get("kpi_source", "BCA CDIA")},
-        ]
-    elif archetype == "bank":
-        roe_val = assum.get("roe", 0.197)
-        roe_pct = round(roe_val * 100, 1) if roe_val < 1 else round(roe_val, 1)
-        return [
-            {"name": "ROE", "value": roe_pct, "unit": "%", "formula": "ROE FY24", "source": assum.get("kpi_source", "Samuel 21 Oct 2025")},
-            {"name": "CASA", "value": 75, "unit": "%", "formula": "CASA ratio", "source": "IDX"},
-        ]
-    return None
+    # LOUD policy: no invented KPIs — file kpis absent -> honest empty.
+    return []
 
 
 def _cover_boxes_for(archetype: str, assum: dict) -> Optional[dict]:
     """Enrich cover boxes dynamically per archetype and assumptions."""
     if assum.get("cover_boxes") and isinstance(assum["cover_boxes"], dict):
         return assum["cover_boxes"]
-    if not assum.get("has_assumptions_file", True):
-        return None
-
-    if archetype == "infra":
-        return {
-            "key_takeaways": [
-                "Tenancy 1.57x (+0.04) — merger PST+UMT +3k tenants by FY27-29",
-                "Blended TP 613 (DCF 575 + EV10x 671, 60/40)",
-                "Fiber 59,239 km (+9% YoY) momentum",
-            ],
-            "shareholders": [{"name": "TLKM", "pct": 71.83}, {"name": "Publik", "pct": 28.17}],
-            "esg": {"found": True, "e": 2.23, "s": 3.03, "g": 5.08, "source": "KSI"},
-        }
-    elif archetype == "sotp":
-        return {
-            "key_takeaways": [
-                "4 pilar Energy 55% / Logistics +44.7% y/y fastest",
-                "SOTP holdco discount 15% applied",
-                "Forecast revision -37% revenue on M&A delay",
-            ],
-            "shareholders": [{"name": "Chandra Group", "pct": 60}, {"name": "Publik", "pct": 40}],
-            "esg": {"found": False},
-        }
-    elif archetype == "single":
-        return {
-            "key_takeaways": [
-                "Cepu 169k BOPD low lifting cost",
-                "Margin 32% meski revenue -13%",
-                "PSC till 2031 + workover -8% decline",
-            ],
-            "shareholders": [{"name": "RETJ", "pct": 45.0}, {"name": "PJUC", "pct": 23.8}, {"name": "Publik", "pct": 31.2}],
-            "esg": {"found": False},
-        }
-    return None
+    # LOUD policy: no invented takeaways/shareholders/esg — file cover_boxes absent -> honest empty.
+    return {
+        "source": "sectors_missing_key",
+        "note": "cover boxes unavailable: no cover_boxes in assumptions file (no fabrication)",
+    }
 
 
 def _forecast_revision_for(archetype: str, assum: dict) -> Optional[dict]:
@@ -378,9 +311,11 @@ def _forecast_revision_for(archetype: str, assum: dict) -> Optional[dict]:
         return assum["forecast_revision"]
     if not assum.get("has_assumptions_file", True):
         return None
-    if archetype == "sotp":
-        return {"note": "one-off 15.9bn normalized → -72% adj net", "delta_pct": -37.4}
-    return None
+    # LOUD policy: no invented revision narrative — file forecast_revision absent -> honest empty.
+    return {
+        "source": "sectors_missing_key",
+        "note": "forecast revision unavailable: no forecast_revision in assumptions file (no fabrication)",
+    }
 
 
 def _quarterly_for(archetype: str, assum: dict) -> Optional[dict]:
@@ -389,23 +324,31 @@ def _quarterly_for(archetype: str, assum: dict) -> Optional[dict]:
         return assum["quarterly"]
     if not assum.get("has_assumptions_file", True):
         return None
-    if archetype == "infra":
-        return {"qoq": "+5% q/q", "yoy": "+2% y/y", "note": "1H26 MTEL style"}
-    return None
+    # LOUD policy: no invented quarterly narrative — file quarterly absent -> honest empty.
+    return {
+        "source": "sectors_missing_key",
+        "note": "quarterly breakdown unavailable: no quarterly in assumptions file (no fabrication)",
+    }
 
 
 def _ggm_for(archetype: str, assum: dict, coe: float) -> Optional[dict]:
     """Enrich GGM model dynamically for bank archetype or when ROE is provided."""
     if archetype == "bank" or assum.get("roe") is not None:
+        # LOUD policy: GGM needs file-present roe/g/bvps — absent -> omit, never default-invent.
+        _roe = assum.get("roe")
+        _g = assum.get("g")
+        _bvps = assum.get("bvps")
+        if _roe is None or _g is None or _bvps is None:
+            return None
         try:
             from ..engines import ggm as calc_ggm
-            return calc_ggm(assum.get("roe", 0.197), assum.get("g", 0.04), coe, assum.get("bvps", 4200))
+            return calc_ggm(_roe, _g, coe, _bvps)
         except Exception:
             return None
     return None
 
 
-def _live_price(tkr: str, base_fallback: float) -> tuple[float, str]:
+def _live_price(tkr: str, base_fallback: float | None) -> tuple[float | None, str]:
     """Try Sectors daily -> assumptions file -> base fixture. Returns (price, source_label)."""
     # 1) Sectors daily (live, last 14d window)
     try:
@@ -456,7 +399,10 @@ def _assumptions_for(ticker: str) -> dict:
             pass
 
     archetype = _infer_archetype(t, raw_json)
-    base = copy.deepcopy(ARCHETYPE_DEFAULTS.get(archetype, ARCHETYPE_DEFAULTS["unknown"]))
+    # LOUD policy: missing keys stay missing — file values as-is, never silently
+    # filled from ARCHETYPE_DEFAULTS (the dict now only defines valid archetype
+    # names for _infer_archetype; every consumer must handle absence loudly).
+    base: dict[str, Any] = {}
     base["archetype"] = archetype
     base["has_assumptions_file"] = has_assumptions_file
 
@@ -469,8 +415,9 @@ def _assumptions_for(ticker: str) -> dict:
         base["source"] = "no_assumptions_file"
 
     if archetype == "bank" and has_assumptions_file:
-        _live, _src = _live_price(t, base.get("last_price", 7890))
-        base["last_price"] = _live
+        _live, _src = _live_price(t, base.get("last_price"))
+        if _live is not None:
+            base["last_price"] = _live
         base["price_source"] = _src
 
     return base
@@ -528,9 +475,8 @@ async def tickers():
         try:
             rows = await _fetch_universe()
         except Exception as e:
-            if rows:
-                return {"count": len(rows), "tickers": rows, "source": "stockdata.tickers", "stale": True}
-            raise HTTPException(status_code=503, detail=f"ticker universe unavailable: {type(e).__name__}")
+            # LOUD policy: pool error -> 503, never a stale:True payload.
+            raise HTTPException(status_code=503, detail=f"ticker universe unavailable: {type(e).__name__} (no stale cache served)")
         _UNIVERSE_CACHE.update(at=now, rows=rows)
     return {"count": len(rows), "tickers": rows, "source": "stockdata.tickers"}
 
@@ -597,7 +543,7 @@ async def report_ticker(
     financials = None
     segments = None
     price = None
-    source = "synthetic"
+    source = "sectors_missing_key"
 
     # Sectors-only (single gateway). Keyless -> honest sectors_missing_key below,
     # never a silent legacy fallback (legacy removed, Lane E).
@@ -610,9 +556,6 @@ async def report_ticker(
             source = "sectors"
     except Exception:
         pass
-
-    if source == "synthetic":
-        source = "sectors_missing_key"
 
     # load assumptions file if present, else LOUD failure (no fabricated valuations)
     assum = _assumptions_for(t)
@@ -632,16 +575,39 @@ async def report_ticker(
     # deterministic valuation via engines (never LLM)
     from ..engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
 
+    # LOUD policy: every valuation input must be file-present — absent fields 422 by name, never invented.
+    _missing_wacc = [k for k in ("rf", "beta", "erp", "cod") if assum.get(k) is None]
+    if _missing_wacc:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Missing WACC input(s) for {t}: {', '.join(_missing_wacc)}. "
+                f"No defaults are invented keyless (sectors_missing_key). "
+                f"Add them to data/assumptions/{t}.json or run the full agent: "
+                f"POST /api/agent/start {{'ticker': '{t}'}}."
+            ),
+        )
+    _missing_val = [k for k in ("fcf", "shares_out", "net_debt", "ebitda", "ev_multiple") if assum.get(k) is None]
+    if _missing_val:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Missing valuation input(s) for {t}: {', '.join(_missing_val)}. "
+                f"No defaults are invented keyless (sectors_missing_key). "
+                f"Add them to data/assumptions/{t}.json or run the full agent: "
+                f"POST /api/agent/start {{'ticker': '{t}'}}."
+            ),
+        )
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
     try:
         # FCF base is in IDR bn — scale to full IDR to match cash/net_debt (e9)
-        raw_fcf = assum.get("fcf") or [1000, 1100, 1200, 1300, 1400]
+        raw_fcf = assum.get("fcf")
         fcf_list = [float(x) * 1e9 for x in raw_fcf]
-        dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum.get("shares_out", 1e9), net_debt=assum.get("net_debt", 0), cash=assum.get("cash", 0))
+        dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum["shares_out"], net_debt=assum["net_debt"], cash=assum.get("cash", 0))
         fv = dcf_res["fv_per_share"]
         # EV/EBITDA cross-check
-        ev_res = ev_ebitda(assum.get("ebitda", 2000), assum.get("ev_multiple", 10), net_debt=assum.get("net_debt", 0), shares_out=assum.get("shares_out", 1e9), cash=assum.get("cash", 0))
+        ev_res = ev_ebitda(assum["ebitda"], assum["ev_multiple"], net_debt=assum["net_debt"], shares_out=assum["shares_out"], cash=assum.get("cash", 0))
         # blended if infra
         chosen_template = template or _template_for(t, segments, archetype)
         if chosen_template == "infra":
@@ -657,13 +623,18 @@ async def report_ticker(
         blended_res = None
         fv = None
 
-    # Prefer assum last_price for known archetype tickers (live Sectors price when keyed)
-    if has_assump_file and assum.get("last_price") and archetype in ("infra", "sotp", "bank", "single", "coal"):
-        last_price = assum.get("last_price") or price or 1000
-        price_source = assum.get("price_source") or "assumptions (Sectors keyless disclosed)"
-    else:
-        last_price = price or assum.get("last_price") or 1000
-        price_source = source
+    # LOUD policy: no 'or 1000' — file last_price AND live price absent -> 422.
+    last_price = assum.get("last_price") or price
+    if not last_price:
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                f"Missing price for {t}: no last_price in data/assumptions/{t}.json "
+                f"and no live Sectors price (sectors_missing_key). "
+                f"Set SECTORS_API_KEY or add last_price to the assumptions file."
+            ),
+        )
+    price_source = assum.get("price_source") or source
     upside = round((fv - last_price) / last_price * 100, 2) if fv and last_price else None
     rating = _rating_from_upside(upside)
     chosen_template = template or _template_for(t, segments, archetype)
@@ -690,23 +661,12 @@ async def report_ticker(
     # GGM for bank archetype
     ggm_res = _ggm_for(archetype, assum, w["coe"])
 
-    # bands from synthetic_prices (disclosed synthetic 3Y)
-    bands_res = None
-    try:
-        from ..engines import historical_bands
-        import sqlite3, pathlib as _pl
-        db = _pl.Path(__file__).resolve().parents[2] / "data" / "sectors.db"
-        if db.exists():
-            import sqlite3 as _sq
-            con = _sq.connect(str(db)); cur = con.cursor()
-            cur.execute("SELECT close FROM synthetic_prices WHERE kode_saham=? ORDER BY time", (t,))
-            closes = [r[0] for r in cur.fetchall() if r[0] is not None]
-            con.close()
-            if len(closes) >= 20:
-                bands_res = historical_bands(closes)
-                bands_res["source"] = "sectors.db synthetic_prices (seed=42) — disclosed"
-    except Exception:
-        bands_res = None
+    # LOUD policy: no synthetic_prices read — empty bands + source note until Sectors daily backs them.
+    bands_res = {
+        "bands": [],
+        "source": "sectors_missing_key",
+        "note": "valuation bands unavailable keyless: synthetic_prices are disclosed-seed fixtures, not market data; wired to Sectors daily when SECTORS_API_KEY lands",
+    }
 
     # ratios
     ratios_res = None
@@ -872,6 +832,13 @@ async def outlook():
     settings = get_settings()
     cache = get_cache(settings.cache_ttl)
     ckey = cache_key("outlook:jci")
+    # LOUD policy: hardcoded JCI 9100/picks are research-note fixtures, not live
+    # data — keyless -> 503; keyed keeps the shape below.
+    if not settings.sectors_api_key:
+        raise HTTPException(
+            status_code=503,
+            detail="JCI outlook unavailable keyless (sectors_missing_key): set SECTORS_API_KEY to serve the outlook",
+        )
     hit = await cache.get(ckey)
     if hit:
         hit["cached"] = True
@@ -956,9 +923,9 @@ async def news(
     payload = {
         "ticker": clean_ticker,
         "items": items[:limit],
-        "source": "synthetic",
+        "source": "sectors_missing_key",
         "cached": False,
-        "note": "wire scripts/news.py search_news() when T02 lands; returns [] until then (no fabrication)",
+        "note": "wire scripts/news.py search_news() when T02 lands; returns [] until then (sectors_missing_key, no fabrication)",
     }
     await cache.set(key, payload)
     return payload
@@ -1000,12 +967,14 @@ async def sentiment(
             "ticker": t,
             "gauge": 50,
             "confidence": 0.0,
+            "empty": True,
+            "source": "sectors_missing_key",
             "top_narratives": [],
             "timeline": [],
             "items": [],
             "disclaimer": "sentiment != advice — retail narrative tracker only",
             "cached": False,
-            "note": "wire scripts/social.py search_social() when T02/T03 lands; returns empty until then (no fabrication)",
+            "note": "wire scripts/social.py search_social() when T02/T03 lands; returns empty until then (sectors_missing_key, no fabrication)",
         }
     else:
         # aggregate gauge as mean score
@@ -1017,6 +986,7 @@ async def sentiment(
             "ticker": t,
             "gauge": gauge,
             "confidence": 0.55,
+            "empty": False,
             "top_narratives": [],
             "timeline": [],
             "items": items[:8],
@@ -1066,7 +1036,8 @@ async def challenge(body: dict):
     # so downstream critic can still audit
     return {
         "verdict": "concede",
-        "evidence": "adversarial challenge stubbed — see agents/adversarial.py T09",
+        "stub": True,
+        "evidence": "adversarial challenge stubbed — see agents/adversarial.py T09 (sectors_missing_key, no live debate)",
         "exhibit_ref": None,
         "correction": None,
         "debate_id": debate_id,

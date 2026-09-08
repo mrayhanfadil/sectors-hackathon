@@ -139,8 +139,8 @@
       [
         #rating-box(
           cover.action,
-          str(cover.tp),
-          str(cover.price),
+          cover.tp,
+          cover.price,
           cover.upside_pct,
           prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
           palette: PALETTE,
@@ -159,14 +159,14 @@
           #grid(
             columns: (1fr, auto),
             row-gutter: 2.8pt,
-            text(size: 6.8pt)[Harga Terakhir], text(size: 6.8pt, weight: "bold")[Rp #cover.price],
-            text(size: 6.8pt)[Target Harga (12M)], text(size: 6.8pt, weight: "bold")[Rp #cover.tp],
-            text(size: 6.8pt)[Potensi Upside], text(size: 6.8pt, weight: "bold", fill: PALETTE.pos)[+#cover.upside_pct%],
-            text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#sh.at("outstanding", default: 15.0) Miliar],
-            text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[Rp 11,70 Triliun],
-            text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#sh.at("free_float_pct", default: 10.1)%],
-            text(size: 6.8pt)[52-Week Range], text(size: 6.8pt, weight: "bold")[620 - 1.250],
-            text(size: 6.8pt)[Indeks Konstituen], text(size: 6.8pt, weight: "bold")[KOMPAS100 / ISSI],
+            text(size: 6.8pt)[Harga Terakhir], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.price)],
+            text(size: 6.8pt)[Target Harga (12M)], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.tp)],
+            text(size: 6.8pt)[Potensi Upside], text(size: 6.8pt, weight: "bold", fill: if cover.upside_pct == none { PALETTE.muted } else { PALETTE.pos })[#if cover.upside_pct == none { "—" } else { "+" + str(cover.upside_pct) + "%" }],
+            text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#nstr(sh.at("outstanding", default: none)) Miliar],
+            text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[—],
+            text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#if sh.at("free_float_pct", default: none) == none { "—" } else { str(sh.free_float_pct) + "%" }],
+            text(size: 6.8pt)[52-Week Range], text(size: 6.8pt, weight: "bold")[—],
+            text(size: 6.8pt)[Indeks Konstituen], text(size: 6.8pt, weight: "bold")[—],
           )
         ]
 

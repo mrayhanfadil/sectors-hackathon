@@ -26,6 +26,22 @@ if str(REPO_ROOT) not in sys.path:
 from server.report.typst_renderer import render_report
 
 
+@pytest.fixture(autouse=True)
+def _loud_gate_inputs(monkeypatch):
+    """LOUD policy: renderer refuses invented gate params — inject explicit
+    test-owned inputs into whatever the loader returns (see
+    tests/_loud_test_inputs.py). Typography assertions only."""
+    import server.report.typst_renderer as TR
+    from tests._loud_test_inputs import inject_gate_inputs
+
+    _orig = TR._load_or_build_report_data
+
+    def _wrapped(ticker, archetype="auto"):
+        return inject_gate_inputs(_orig(ticker, archetype))
+
+    monkeypatch.setattr(TR, "_load_or_build_report_data", _wrapped)
+
+
 def _extract_pdf_text(pdf_path: str | Path) -> str:
     """Extract full layout text from PDF using pdftotext."""
     cmd = ["pdftotext", "-layout", str(pdf_path), "-"]

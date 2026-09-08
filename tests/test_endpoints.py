@@ -55,7 +55,12 @@ def test_health_endpoint(api_client):
 def test_report_bbca_endpoint(api_client):
     try:
         res = api_client.get("/api/report/BBCA")
-        assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
+        # LOUD policy (keyless): missing WACC inputs -> 422 naming them,
+        # never invented defaults. Keyed runs with full assumptions -> 200.
+        assert res.status_code in (200, 422), f"Unexpected {res.status_code}: {res.text}"
+        if res.status_code == 422:
+            assert "BBCA" in res.text and "sectors_missing_key" in res.text
+            return
         data = res.json()
         assert isinstance(data, dict), "Report response must be a dict"
         assert data.get("ticker") == "BBCA", f"Expected ticker 'BBCA', got {data.get('ticker')}"
@@ -69,7 +74,12 @@ def test_report_bbca_endpoint(api_client):
 def test_outlook_endpoint(api_client):
     try:
         res = api_client.get("/api/outlook")
-        assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
+        # LOUD policy (keyless): outlook refuses hardcoded JCI 9100 -> 503.
+        # Keyed runs with Sectors data -> 200.
+        assert res.status_code in (200, 503), f"Unexpected {res.status_code}: {res.text}"
+        if res.status_code == 503:
+            assert "sectors_missing_key" in res.text
+            return
         data = res.json()
         assert isinstance(data, dict), "Outlook response must be a dict"
         assert "jci_target" in data or "jci_base" in data, "Outlook missing jci_target/jci_base"

@@ -390,6 +390,8 @@
     palette: PALETTE,
   )
 ])
+#v(2pt)
+#text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Top Picks ilustratif, statis Sep 2026 — cross-check via Sectors screener pending.]
 
 #pagebreak()
 

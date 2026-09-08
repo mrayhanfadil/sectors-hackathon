@@ -50,152 +50,83 @@ ARCHETYPE_TEMPLATE_FILES = {
 }
 
 
+_GATE_REQUIRED_KEYS = (
+    "filing_history_years",
+    "ebit_positive_count",
+    "d_de_ratio",
+    "net_debt_to_ebitda",
+    "interest_coverage",
+    "shareholders_equity",
+    "nci_pct",
+    "revenue_drivers",
+    "has_steady_state_3y",
+    "life_cycle_stage",
+)
+
+
+def _domain_from_sector(sector: str) -> str:
+    """Map a fixture meta.sector string onto a Gate-0 domain.
+
+    Only the sector string (real fixture input) is used; anything
+    unrecognised defaults to single-business going concern.
+    """
+    s = (sector or "").lower()
+    if any(k in s for k in ("bank", "perbankan", "financial", "keuangan")):
+        return DOMAIN_BANK
+    if any(k in s for k in ("asuransi", "insurance")):
+        return DOMAIN_INSURANCE
+    if any(k in s for k in ("multifinance", "pembiayaan")):
+        return DOMAIN_MULTIFINANCE
+    if any(k in s for k in ("sekuritas", "securities")):
+        return DOMAIN_SECURITIES
+    if "reit" in s:
+        return DOMAIN_REIT
+    if any(k in s for k in ("mining", "tambang", "batubara", "coal", "nikel", "mineral", "emas")):
+        return DOMAIN_MINING
+    if any(k in s for k in ("migas", "oil", "gas")):
+        return DOMAIN_OIL_GAS
+    if any(k in s for k in ("plantation", "perkebunan", "sawit", "cpo")):
+        return DOMAIN_PLANTATION
+    if any(k in s for k in ("conglomerate", "diversified", "konglomerat", "dissimilar")):
+        return DOMAIN_HOLDING_DISSIMILAR
+    return DOMAIN_SINGLE_BUSINESS
+
+
 def _get_ticker_gate_params(ticker: str, data: dict) -> dict[str, Any]:
-    """Derive evaluation inputs for 6-gate framework from ticker and data."""
+    """Derive evaluation inputs for 6-gate framework from report data — honestly.
+
+    - upside_pct comes from cover.rating_box only (None when absent, never a
+      fabricated 20.0/27.1/38.0/-60.0).
+    - domain comes from data["gate_inputs"]["domain"] or the meta.sector
+      keyword map (default single business).
+    - Every other gate input must be present in data["gate_inputs"]; absent
+      inputs raise ValueError naming them instead of using fabricated
+      per-ticker numbers.
+    """
     t = ticker.upper().strip()
     cover = data.get("cover", {}).get("rating_box", {})
     tp = cover.get("tp")
     price = cover.get("price")
     upside = cover.get("upside_pct")
     if upside is not None:
-        upside_pct = float(upside)
+        upside_pct: float | None = float(upside)
     elif tp and price:
         upside_pct = (float(tp) - float(price)) / float(price) * 100.0
     else:
-        upside_pct = 20.0
+        upside_pct = None
 
-    # Specific quintet overrides
-    if t == "RATU":
-        return {
-            "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 8,
-            "ebit_positive_count": 3,
-            "d_de_ratio": 0.22,
-            "net_debt_to_ebitda": 0.0,
-            "interest_coverage": 12.4,
-            "shareholders_equity": 2.5e12,
-            "nci_pct": 0.0,
-            "revenue_drivers": ["oil_lifting", "volume_consumer"],
-            "has_steady_state_3y": True,
-            "life_cycle_stage": "mature",
-            "upside_pct": 27.1,
-        }
-    if t == "BBCA":
-        return {
-            "domain": DOMAIN_BANK,
-            "filing_history_years": 25,
-            "ebit_positive_count": 3,
-            "d_de_ratio": 0.0,
-            "net_debt_to_ebitda": 0.0,
-            "interest_coverage": 999.0,
-            "shareholders_equity": 1e13,
-            "nci_pct": 1.0,
-            "revenue_drivers": ["net_interest_margin"],
-            "has_steady_state_3y": True,
-            "life_cycle_stage": "mature",
-            "upside_pct": upside_pct,
-        }
-    if t == "ADRO":
-        return {
-            "domain": DOMAIN_MINING,
-            "filing_history_years": 18,
-            "ebit_positive_count": 3,
-            "d_de_ratio": 0.2,
-            "net_debt_to_ebitda": 0.5,
-            "interest_coverage": 10.0,
-            "shareholders_equity": 5e10,
-            "nci_pct": 5.0,
-            "revenue_drivers": ["commodity_coal"],
-            "has_steady_state_3y": True,
-            "life_cycle_stage": "mature",
-            "upside_pct": upside_pct,
-        }
-    if t == "CDIA":
-        return {
-            "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 2,  # < 4 years: thin data (IPO Jul-2025)
-            "ebit_positive_count": 2,
-            "d_de_ratio": 0.0,  # net cash 340 (pra-capex)
-            "net_debt_to_ebitda": 0.0,  # net cash
-            "interest_coverage": 9.9,  # op profit 22 / est interest
-            "shareholders_equity": 1.9e13,  # USD 1.073M x 17633
-            "nci_pct": 5.0,
-            "revenue_drivers": ["volume_manufacturing"],
-            "has_steady_state_3y": False,  # fleet 9->15 + CA-EDC 2027 ramping -> Gate 3 Relative
-            "life_cycle_stage": "growth",
-            "upside_pct": upside_pct,
-        }
-    if t == "MTEL":
-        return {
-            "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 6,
-            "ebit_positive_count": 3,
-            "d_de_ratio": 0.6,
-            "net_debt_to_ebitda": 3.5,
-            "interest_coverage": 2.5,
-            "shareholders_equity": 2e10,
-            "nci_pct": 25.0,  # 15-40% band: triggers SOTP cross-check
-            "revenue_drivers": ["volume_consumer", "rental"],
-            "has_steady_state_3y": True,
-            "life_cycle_stage": "mature",
-            "upside_pct": 38.0,
-        }
-    if t == "POWR":
-        return {
-            "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 8,
-            "ebit_positive_count": 3,
-            "d_de_ratio": 0.40,
-            "net_debt_to_ebitda": 2.0,
-            "interest_coverage": 4.5,
-            "shareholders_equity": 10e12,
-            "nci_pct": 5.0,
-            "revenue_drivers": ["volume_consumer"],
-            "has_steady_state_3y": True,
-            "life_cycle_stage": "mature",
-            "upside_pct": -60.0,  # < -50%: triggers Review Required
-        }
-
-    if t == "TPIA":
-        return {
-            "domain": DOMAIN_SINGLE_BUSINESS,
-            "filing_history_years": 8,
-            "ebit_positive_count": 1,  # trough FY23-24 EBIT negatif
-            "d_de_ratio": 1.65,  # FY25A Liab/Ek pasca-Aster
-            "net_debt_to_ebitda": 1.67,  # 2.67/1.6 ternormalisasi
-            "interest_coverage": 1.2,  # leverage breach -> relative cross-check
-            "shareholders_equity": 8.2e13,  # USD 4.657M x 17633
-            "nci_pct": 5.0,
-            "revenue_drivers": ["volume_manufacturing"],
-            "has_steady_state_3y": False,  # Aster ramping -> Gate 3 Relative primary
-            "life_cycle_stage": "mature",
-            "upside_pct": upside_pct,
-        }
-
-    # Generic defaults
-    domain = DOMAIN_SINGLE_BUSINESS
-    drivers = ["volume_consumer"]
-    if t in ("PTBA", "ITMG", "ANTM", "INCO", "NCKL", "MEDC"):
-        domain = DOMAIN_MINING
-        drivers = ["commodity_coal"]
-    elif t in ("BBRI", "BMRI", "BBNI", "BDMN"):
-        domain = DOMAIN_BANK
-        drivers = ["net_interest_margin"]
-
-    return {
-        "domain": domain,
-        "filing_history_years": 8,
-        "ebit_positive_count": 3,
-        "d_de_ratio": 0.30,
-        "net_debt_to_ebitda": 1.5,
-        "interest_coverage": 4.0,
-        "shareholders_equity": 1e12,
-        "nci_pct": 5.0,
-        "revenue_drivers": drivers,
-        "has_steady_state_3y": True,
-        "life_cycle_stage": "mature",
-        "upside_pct": upside_pct,
-    }
+    gi = data.get("gate_inputs") or {}
+    if not isinstance(gi, dict):
+        gi = {}
+    domain = gi.get("domain") or _domain_from_sector((data.get("meta") or {}).get("sector", ""))
+    missing = [k for k in _GATE_REQUIRED_KEYS if k not in gi]
+    if missing:
+        raise ValueError(
+            f"gate inputs absent for {t}: missing {missing} — refusing fabricated "
+            f"gate params (add data['gate_inputs'])")
+    params: dict[str, Any] = {"domain": domain, "upside_pct": upside_pct}
+    params.update({k: gi[k] for k in _GATE_REQUIRED_KEYS})
+    return params
 
 
 def _build_gate_verdict_dict(ticker: str, verdict: GateVerdict, params: dict, rating_action: str) -> dict[str, Any]:
@@ -391,95 +322,56 @@ def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
             pass
 
     months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
-    if t == "BBCA":
+    # No fixture or builder for this ticker: honest-empty exhibits + source
+    # note (never fabricated tp/charts/financials).
+    if t in ("BBCA", "ADRO"):
+        _name, _sector = {
+            "BBCA": ("Bank Central Asia", "Financials — Perbankan"),
+            "ADRO": ("Alamtri Resources Indonesia", "Energi — Pertambangan Batubara"),
+        }[t]
+        _note = "no fixture/builder (Sectors pending) — refusing fabricated exhibits"
         return {
             "meta": {
                 "template": archetype if archetype != "auto" else "single",
-                "ticker": "BBCA",
-                "company_name": "Bank Central Asia",
-                "sector": "Financials — Perbankan",
+                "ticker": t,
+                "company_name": _name,
+                "sector": _sector,
                 "report_type": "Initiation",
                 "date": "31 Agt 2026",
                 "prepared_by": "RESEARCH — Sectors Hackathon 2026",
                 "language": "id",
+                "data_warning": _note,
             },
             "cover": {
                 "rating_box": {
-                    "action": "BUY",
-                    "tp": 9500,
-                    "prev_tp": 9200,
-                    "price": 7890,
-                    "upside_pct": 20.4,
-                    "key_takeaways": ["Kualitas aset solid (NPL <1%)", "CASA ratio tinggi >80%", "DDM primary valuation"],
+                    "action": None,
+                    "tp": None,
+                    "prev_tp": None,
+                    "price": None,
+                    "upside_pct": None,
+                    "key_takeaways": [],
+                    "note": _note,
                 },
                 "vs_jci": {
-                    "ytd_abs": 15.2,
-                    "ytd_rel": 3.0,
-                    "source": "Sectors",
-                    "chart": {"labels": months, "series": [[0, 2, 4, 6, 8, 10, 12, 13, 14, 15, 15, 15], [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]},
+                    "ytd_abs": None,
+                    "ytd_rel": None,
+                    "source": _note,
+                    "chart": {"labels": months, "series": [[], []]},
                 },
-                "shares": {"outstanding": 123.2, "unit": "bn", "free_float_pct": 45.0},
-                "shareholders": [{"name": "PT Dwimuria Investama", "pct": 54.94}, {"name": "Publik", "pct": 45.06}],
-                "shareholders_src": "IDX — struktur pemegang saham",
+                "shares": {"outstanding": None, "unit": "bn", "free_float_pct": None},
+                "shareholders": [],
+                "shareholders_src": _note,
                 "esg": {"found": False},
             },
-            "financial_highlights": {
-                "source": "Laporan keuangan BBCA (IDX)",
-                "years": ["FY24A", "FY25A", "FY26F"],
-                "rows": [["NII (Rp bn)", 75000, 82000, 90000], ["Laba Bersih (Rp bn)", 48600, 53200, 58000], ["ROE (%)", 21.0, 20.5, 20.2]],
-            },
+            "financial_highlights": {"source": _note, "years": [], "rows": []},
             "segments": [],
             "kpis": [],
-            "thesis": [{"headline": "CASA Franchise Dominan", "detail": "CASA >80% menjaga cost of funds terendah di industri.", "source": "IDX"}],
-            "valuation": {"methods": [{"method": "DDM", "fv": 9500}]},
-            "financials": [{"title": "Laba Rugi Ringkas", "headers": ["Rp bn", "FY24A", "FY25A", "FY26F"], "rows": [["NII", 75000, 82000, 90000], ["Laba Bersih", 48600, 53200, 58000]], "source": "IDX"}],
-            "risks": [{"bucket": "Risiko Kredit", "detail": "Kenaikan NPL segmen komersial.", "source": None}],
-            "peers": {"tables": [{"pillar": "Peers Bank", "headers": ["Ticker", "P/BV", "ROE"], "rows": [["BBCA", 4.2, 20.5], ["BBRI", 2.4, 17.5]], "source": "IDX"}]},
-        }
-    if t == "ADRO":
-        return {
-            "meta": {
-                "template": archetype if archetype != "auto" else "single",
-                "ticker": "ADRO",
-                "company_name": "Alamtri Resources Indonesia",
-                "sector": "Energi — Pertambangan Batubara",
-                "report_type": "Initiation",
-                "date": "31 Agt 2026",
-                "prepared_by": "RESEARCH — Sectors Hackathon 2026",
-                "language": "id",
-            },
-            "cover": {
-                "rating_box": {
-                    "action": "BUY",
-                    "tp": 2850,
-                    "prev_tp": 2600,
-                    "price": 2080,
-                    "upside_pct": 37.0,
-                    "key_takeaways": ["Cadangan batubara >1 miliar ton", "Arus kas dividen kuat", "NAV reserve-based valuation"],
-                },
-                "vs_jci": {
-                    "ytd_abs": 8.5,
-                    "ytd_rel": -3.5,
-                    "source": "Sectors",
-                    "chart": {"labels": months, "series": [[0, 1, 3, 5, 6, 7, 8, 8, 8, 8, 8, 8], [0, 2, 5, 6, 8, 9, 11, 12, 12, 13, 14, 15]]},
-                },
-                "shares": {"outstanding": 28.8, "unit": "bn", "free_float_pct": 35.0},
-                "shareholders": [{"name": "PT Adaro Strategic", "pct": 43.91}, {"name": "Publik", "pct": 35.0}],
-                "shareholders_src": "IDX — struktur pemegang saham",
-                "esg": {"found": False},
-            },
-            "financial_highlights": {
-                "source": "Laporan keuangan ADRO (IDX)",
-                "years": ["FY24A", "FY25A", "FY26F"],
-                "rows": [["Pendapatan (Rp bn)", 65000, 62000, 60000], ["EBITDA (Rp bn)", 22000, 20000, 19000], ["Laba Bersih (Rp bn)", 15000, 13500, 12500]],
-            },
-            "segments": [],
-            "kpis": [],
-            "thesis": [{"headline": "Efisiensi Biaya Penambangan", "detail": "Strip ratio optimal menjaga marjin kas operasional.", "source": "IDX"}],
-            "valuation": {"methods": [{"method": "NAV", "fv": 2850}]},
-            "financials": [{"title": "Laba Rugi Ringkas", "headers": ["Rp bn", "FY24A", "FY25A", "FY26F"], "rows": [["Pendapatan", 65000, 62000, 60000], ["EBITDA", 22000, 20000, 19000]], "source": "IDX"}],
-            "risks": [{"bucket": "Risiko Komoditas", "detail": "Fluktuasi harga batubara global.", "source": None}],
-            "peers": {"tables": [{"pillar": "Peers Batubara", "headers": ["Ticker", "P/E", "EV/EBITDA"], "rows": [["ADRO", 4.5, 2.8], ["PTBA", 5.8, 3.5]], "source": "IDX"}]},
+            "thesis": [],
+            "valuation": {"methods": [], "note": _note},
+            "financials": [],
+            "risks": [],
+            "peers": {"tables": []},
+            "exhibits": [],
         }
 
     # Generic fallback

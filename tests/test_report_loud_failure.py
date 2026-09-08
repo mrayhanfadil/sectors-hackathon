@@ -2,7 +2,8 @@
 
 - GET /api/report/{ticker} without data/assumptions/{ticker}.json -> 422
   (was: 200 with default-assumption FV, e.g. ACES upside 2079% BUY).
-- Engine tickers (BBCA) still 200.
+- Engine tickers (BBCA) keyless -> 422 naming missing WACC inputs
+  (was: 200 via invented defaults; LOUD policy Sep 2026).
 - adversarial_instruction must contain the EXIT GUARD (no exit_loop on
   iteration 1, debate needs calc+source evidence).
 
@@ -47,12 +48,13 @@ def test_report_unknown_ticker_is_422_not_fabricated(api_client):
     assert "/api/agent/start" in detail, "422 must point to the full agent path"
 
 
-def test_report_engine_ticker_still_200(api_client):
+def test_report_engine_ticker_keyless_422_names_inputs(api_client):
     res = api_client.get("/api/report/BBCA")
-    assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text[:500]}"
-    data = res.json()
-    assert data.get("ticker") == "BBCA"
-    assert isinstance(data.get("valuation"), dict)
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text[:500]}"
+    detail = res.json().get("detail", "")
+    assert "BBCA" in detail, "422 must name the ticker"
+    assert "sectors_missing_key" in detail, "422 must disclose keyless cause"
+    assert "/api/agent/start" in detail, "422 must point to the full agent path"
 
 
 def test_adversarial_exit_guard_present():
