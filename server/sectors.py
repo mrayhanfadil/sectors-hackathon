@@ -8,8 +8,10 @@ Rules:
 - Tickers = bare IDX code (`BBCA`, never `BBCA.JK`) — normalized here.
 - No key  -> SectorsNotConfigured (callers map to honest 503, NEVER silent
   fallback to yfinance/Tavily — Fadil's explicit-failure rule).
-- Credit discipline: callers must use the 4h `cached_endpoint` layer + universe
-  feeds + minimal `sections=` (1,000-credit budget, no published per-call cost).
+- Credit discipline: _get() wraps a SQLite cache (server.storage.SectorsCache)
+  with per-endpoint TTLs. Hit saves 1 credit per call. Group repeated calls
+  (e.g., orchestrator loops) into the universe feed (1 credit, full IDX) instead
+  of N single-ticker calls.
 """
 from __future__ import annotations
 
@@ -21,6 +23,45 @@ import httpx
 from .config import get_settings
 
 log = logging.getLogger(__name__)
+
+
+# ── Per-endpoint TTL classification (seconds) ─────────────────────────────────
+# Trade-off: longer = fewer re-fetches (fewer credits), shorter = fresher data.
+# Default tier mapping documented in server/storage.py SectorsCache docstring.
+
+_TTL_BY_PREFIX: list[tuple[str, int]] = [
+    # TIER 1 — intra-day moves (6h)
+    ("/transaction/daily/", 6 * 3600),
+    ("/transaction/index-daily/", 6 * 3600),
+    ("/transaction/idx-total/", 6 * 3600),
+    ("/brokers/broker-summary/top/", 6 * 3600),
+    ("/brokers/foreign-flow/", 6 * 3600),
+    # TIER 2 — fundamentals/filings/news (12h)
+    ("/company/quarterly-financials/", 12 * 3600),
+    ("/company/quarterly-financial-dates/", 12 * 3600),
+    ("/company/segments/", 12 * 3600),
+    ("/company/shareholders-composition/", 12 * 3600),
+    ("/company/corporate-actions/", 12 * 3600),
+    ("/company/report/", 12 * 3600),
+    ("/news/news/", 12 * 3600),
+    ("/news/filings/", 12 * 3600),
+    ("/news/suspensions/", 12 * 3600),
+    # TIER 3 — slow-moving (24h)
+    ("/subsector/report/", 24 * 3600),
+    ("/companies/", 24 * 3600),
+    ("/ipo/listing-performance/", 24 * 3600),
+    ("/mining/", 24 * 3600),
+    # TIER 0 — transaction/close is the cheap universe feed (4h — covers EOD moves)
+    ("/transaction/close/", 4 * 3600),
+]
+_DEFAULT_TTL = 6 * 3600  # catch-all for any unlisted path
+
+
+def _ttl_for(endpoint: str) -> int:
+    for prefix, ttl in _TTL_BY_PREFIX:
+        if endpoint.startswith(prefix):
+            return ttl
+    return _DEFAULT_TTL
 
 
 class SectorsNotConfigured(RuntimeError):
@@ -56,11 +97,49 @@ def _client() -> httpx.Client:
 
 
 def _get(path: str, params: dict[str, Any] | None = None) -> Any:
-    with _client() as c:
+    """Sectors v2 GET with SQLite-backed credit-saving cache.
+
+    Lookup chain:
+      1. _cache.get(endpoint, params) — if hit and not expired, return cached payload.
+      2. _client() + GET path?params=params — populate cache with TTL _ttl_for(endpoint).
+      3. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
+    """
+    cache_key = None  # avoid unused-name lints
+    from .storage import SectorsCache  # late-bound import (avoids circular at module load)
+
+    # Lazy singleton — first call creates the table, subsequent calls reuse it.
+    global _cache
+    try:
+        cache = _cache  # type: ignore[name-defined]
+    except NameError:
+        cache = SectorsCache()
+        _cache = cache  # type: ignore[name-defined]
+    payload, hit = cache.get(path, params)
+    if hit:
+        log.debug("sectors cache HIT %s", path)
+        return payload
+
+    if not get_settings().sectors_api_key:
+        # Cache miss + no key — let the caller raise SectorsNotConfigured.
+        raise SectorsNotConfigured(
+            "SECTORS_API_KEY missing — onboard at sectors.app/api, "
+            "save key to .env (mode 600). No fallback wired on purpose."
+        )
+
+    with httpx.Client(
+        base_url=get_settings().sectors_base.rstrip("/"),
+        headers={"Authorization": get_settings().sectors_api_key},
+        timeout=15,
+    ) as c:
         r = c.get(path, params=params or {})
+
     if r.status_code >= 400:
+        # Errors are NOT cached — keep them transient so retries can succeed.
         raise SectorsError(r.status_code, r.text)
-    return r.json()
+    body = r.json()
+    cache.set(path, params, body, _ttl_for(path))
+    log.debug("sectors cache MISS %s (ttl=%ds)", path, _ttl_for(path))
+    return body
 
 
 # --- mapped endpoints (1:1 with the external sources they replace) ---

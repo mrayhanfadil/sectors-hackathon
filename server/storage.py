@@ -8,6 +8,7 @@ Schema:
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -301,6 +302,26 @@ class AgentRunStore:
             )
             cur.execute(
                 "CREATE INDEX IF NOT EXISTS idx_agent_events_run ON agent_events(run_id, seq);"
+            )
+            # Sectors payload cache — minimize Sectors API credit burn.
+            # Key = sha256(endpoint_path + normalized_params), payload = raw JSON
+            # blob, expires_at = unix seconds. Wrapped by sectors._get().
+            cur.execute(
+                """
+                CREATE TABLE IF NOT EXISTS sectors_cache (
+                    cache_key    TEXT PRIMARY KEY,
+                    endpoint     TEXT NOT NULL,
+                    fetched_at   REAL NOT NULL,
+                    expires_at   REAL NOT NULL,
+                    payload_json TEXT NOT NULL
+                );
+                """
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_sectors_cache_expiry ON sectors_cache(expires_at);"
+            )
+            cur.execute(
+                "CREATE INDEX IF NOT EXISTS idx_sectors_cache_endpoint ON sectors_cache(endpoint);"
             )
             self.conn.commit()
 
@@ -742,6 +763,153 @@ class AgentRunStore:
 
     def close(self) -> None:
         """Close SQLite connection."""
+        with self._lock:
+            try:
+                self.conn.close()
+            except Exception:
+                pass
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Sectors payload cache — minimize Sectors API credit burn.
+#
+# Lives in the same SQLite file as Storage but is a separate singleton so
+# hot-path lookups don't acquire the Storage row lock. Wrapped by sectors._get()
+# so every endpoint transparently caches. TTL is per-endpoint (see sectors.py
+# _TTL_BY_PREFIX).
+# ──────────────────────────────────────────────────────────────────────────────
+
+class SectorsCache:
+    """SQLite-backed cache for Sectors v2 responses.
+
+    Schema:
+      sectors_cache(cache_key PK, endpoint, fetched_at, expires_at, payload_json)
+
+    Usage:
+      cache.get_or_set(endpoint, params, ttl_fn) -> dict
+      cache.bust(endpoint_prefix=...) -> n  # manual invalidation
+      cache.stats() -> {n_entries, n_expired, by_endpoint}
+    """
+
+    def __init__(self, db_path: str | None = None):
+        self.db_path = db_path or default_db_path()
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
+        self._lock = threading.Lock()
+        # Ensure the sectors_cache table exists. Forward ref to Storage keeps
+        # circular import out: we inline the schema-evolution guard.
+        db_dir = os.path.dirname(self.db_path)
+        if db_dir:
+            os.makedirs(db_dir, exist_ok=True)
+        # Bootstrap SQLite with the same pragmas Storage uses (WAL + busy_timeout).
+        bootstrap = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
+        bootstrap.execute("CREATE TABLE IF NOT EXISTS sectors_cache ("
+                         "cache_key TEXT PRIMARY KEY, endpoint TEXT NOT NULL, "
+                         "fetched_at REAL NOT NULL, expires_at REAL NOT NULL, "
+                         "payload_json TEXT NOT NULL);")
+        bootstrap.execute("CREATE INDEX IF NOT EXISTS idx_sectors_cache_expiry "
+                         "ON sectors_cache(expires_at);")
+        bootstrap.execute("CREATE INDEX IF NOT EXISTS idx_sectors_cache_endpoint "
+                         "ON sectors_cache(endpoint);")
+        bootstrap.commit()
+        bootstrap.close()
+        # Open a separate connection so the hot path doesn't contend on Storage
+        # run-locks. check_same_thread=False + timeout=30 is the same pattern as
+        # Storage; WAL mode allows one writer + many readers concurrently.
+        self.conn = sqlite3.connect(self.db_path, check_same_thread=False, timeout=30.0)
+        self.conn.row_factory = sqlite3.Row
+        self.conn.execute("PRAGMA journal_mode=WAL;")
+        self.conn.execute("PRAGMA busy_timeout=5000;")
+
+    @staticmethod
+    def _key(endpoint: str, params: dict | None) -> str:
+        """Stable sha256 over endpoint + sorted params."""
+        norm = json.dumps(params or {}, sort_keys=True, separators=(",", ":"), default=str)
+        h = hashlib.sha256(f"{endpoint}?{norm}".encode("utf-8")).hexdigest()
+        return f"sc:{endpoint[:32]}:{h[:32]}"
+
+    def get(self, endpoint: str, params: dict | None) -> tuple[Any, bool]:
+        """Return (payload, hit). hit=False means expired or absent."""
+        key = self._key(endpoint, params)
+        now = time.time()
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT expires_at, payload_json FROM sectors_cache WHERE cache_key=?",
+                (key,),
+            ).fetchone()
+        if not row or row["expires_at"] <= now:
+            return (None, False)
+        try:
+            return (json.loads(row["payload_json"]), True)
+        except json.JSONDecodeError:
+            return (None, False)
+
+    def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int) -> None:
+        """Persist payload with TTL (seconds)."""
+        key = self._key(endpoint, params)
+        now = time.time()
+        body = json.dumps(payload, separators=(",", ":"), default=str)
+        with self._lock:
+            self.conn.execute(
+                """
+                INSERT INTO sectors_cache(cache_key, endpoint, fetched_at, expires_at, payload_json)
+                VALUES (?, ?, ?, ?, ?)
+                ON CONFLICT(cache_key) DO UPDATE SET
+                    fetched_at   = excluded.fetched_at,
+                    expires_at   = excluded.expires_at,
+                    payload_json = excluded.payload_json
+                """,
+                (key, endpoint, now, now + ttl_seconds, body),
+            )
+            self.conn.commit()
+
+    def bust(self, endpoint_prefix: str | None = None) -> int:
+        """Delete entries; with prefix, only that endpoint family. Returns n deleted."""
+        with self._lock:
+            if endpoint_prefix:
+                cur = self.conn.execute(
+                    "DELETE FROM sectors_cache WHERE endpoint LIKE ?",
+                    (endpoint_prefix + "%",),
+                )
+            else:
+                cur = self.conn.execute("DELETE FROM sectors_cache;")
+            self.conn.commit()
+            return cur.rowcount
+
+    def prune_expired(self) -> int:
+        """Drop rows past their expires_at. Call occasionally from cron / admin."""
+        now = time.time()
+        with self._lock:
+            cur = self.conn.execute("DELETE FROM sectors_cache WHERE expires_at <= ?;", (now,))
+            self.conn.commit()
+            return cur.rowcount
+
+    def stats(self) -> dict:
+        """Inspect cache state — used by a /api/debug/cache endpoint."""
+        now = time.time()
+        with self._lock:
+            total = self.conn.execute("SELECT COUNT(*) AS n FROM sectors_cache;").fetchone()["n"]
+            expired = self.conn.execute(
+                "SELECT COUNT(*) AS n FROM sectors_cache WHERE expires_at <= ?;",
+                (now,),
+            ).fetchone()["n"]
+            by_ep = self.conn.execute(
+                """
+                SELECT endpoint, COUNT(*) AS n, AVG(expires_at - fetched_at) AS avg_ttl
+                FROM sectors_cache GROUP BY endpoint ORDER BY n DESC LIMIT 20;
+                """
+            ).fetchall()
+        return {
+            "n_entries": total,
+            "n_expired": expired,
+            "by_endpoint": [
+                {"endpoint": r["endpoint"], "n": r["n"], "avg_ttl_s": r["avg_ttl"]}
+                for r in by_ep
+            ],
+        }
+
+    def close(self) -> None:
         with self._lock:
             try:
                 self.conn.close()
