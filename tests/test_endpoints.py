@@ -61,7 +61,12 @@ def test_report_bbca_endpoint(api_client):
         # never invented defaults. Keyed runs with full assumptions -> 200.
         assert res.status_code in (200, 422), f"Unexpected {res.status_code}: {res.text}"
         if res.status_code == 422:
-            assert "BBCA" in res.text and "sectors_missing_key" in res.text
+            body = res.json()
+            detail = body.get("detail", {})
+            assert isinstance(detail, dict), f"422 detail must be structured dict, got {type(detail).__name__}"
+            assert detail.get("ticker") == "BBCA", "422 must name the ticker"
+            missing = detail.get("missing", [])
+            assert "rf" in missing, f"422 must disclose missing WACC keys, got {missing}"
             return
         data = res.json()
         assert isinstance(data, dict), "Report response must be a dict"

@@ -70,10 +70,20 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # assumptions file must 422, mirroring endpoints.py:583-592.
     _repo = Path(__file__).resolve().parents[2]
     _has_assump = (_repo / "data" / "assumptions" / f"{t}.json").exists()
+    _required = ("rf", "beta", "erp", "cod", "g", "payout", "fcf", "shares_out",
+                 "net_debt", "cash", "ebitda", "ev_multiple", "last_price", "we", "wd")
     if not _has_assump:
         raise HTTPException(
-            422, f"no verified assumptions for {t} — refusing generic fallback "
-            f"(add data/assumptions/{t}.json or set SECTORS_API_KEY)")
+            status_code=422,
+            detail={
+                "ticker": t,
+                "missing": list(_required),
+                "summary": (
+                    f"no verified assumptions for {t} — refusing generic fallback "
+                    f"(add data/assumptions/{t}.json or set SECTORS_API_KEY)"
+                ),
+            },
+        )
     # reuse _assumptions_for logic (duplicate to avoid circular import)
     import json, os
 
@@ -101,13 +111,19 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         return base
 
     assum = _assumptions_for_inner(t)
-    _required = ("rf", "beta", "erp", "cod", "g", "payout", "fcf", "shares_out",
-                 "net_debt", "cash", "ebitda", "ev_multiple", "last_price", "we", "wd")
     _missing = [k for k in _required if assum.get(k) is None]
     if assum.get("source") == "no_assumptions_file" or _missing:
         raise HTTPException(
-            422, f"no verified assumptions for {t} — refusing generic fallback "
-            f"(missing={_missing or ['assumptions file']}; add data/assumptions/{t}.json)")
+            status_code=422,
+            detail={
+                "ticker": t,
+                "missing": _missing or list(_required),
+                "summary": (
+                    f"no verified assumptions for {t} — refusing generic fallback "
+                    f"(missing={_missing or ['assumptions file']}; add data/assumptions/{t}.json)"
+                ),
+            },
+        )
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
     raw_fcf = assum.get("fcf")

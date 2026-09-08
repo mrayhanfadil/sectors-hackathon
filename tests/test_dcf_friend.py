@@ -208,9 +208,18 @@ def test_scenarios_order():
     assert bear_fv < base_fv < bull_fv
 
 
-def test_dcf_full_smoke_mtel_file_backed():
-    # MTEL has the only dcf_full-complete data/assumptions/*.json — file-backed, no seeds.
-    res = dcf_full("MTEL")
+def test_dcf_full_smoke_mtel_overrides_backed():
+    # Loud policy Sep 2026: dcf_full requires explicit inputs (file or overrides).
+    # No data/assumptions/*.json exist post-purge — all MTEL math flows via overrides.
+    res = dcf_full(
+        "MTEL",
+        overrides={
+            "rf": 0.07, "beta": 1.0, "erp": 0.069, "cod": 0.09,
+            "revenue": 5000e9, "ebit_margin": 0.20, "g1": 0.08, "g": 0.03,
+            "tax": 0.22, "capex_pct": 0.06, "nwc_pct": 0.05,
+            "shares_out": 5e9, "last_price": 2000.0, "price": 2000.0,
+        },
+    )
     required_keys = [
         "wacc",
         "wacc_table",
@@ -243,15 +252,25 @@ def test_dcf_full_bare_ratu_raises_no_seeds():
 
 
 def test_dcf_full_unknown_ticker_raises_no_file():
+    # Loud policy: unknown tickers raise naming the explicit inputs the caller
+    # must supply (no seed-math, no fabricated fallback).
     import pytest as _pytest
 
-    with _pytest.raises(ValueError, match="no assumptions for ZZZZZZ"):
+    with _pytest.raises(ValueError, match="missing explicit inputs"):
         dcf_full("ZZZZZZ")
 
 
 def test_dcf_full_review_required_threshold():
-    # extreme assumption -> review_required (MTEL file-backed + price override)
-    res = dcf_full("MTEL", overrides={"last_price": 50.0, "price": 50.0})
+    # extreme assumption -> review_required (overrides-only; no assumption file)
+    res = dcf_full(
+        "MTEL",
+        overrides={
+            "rf": 0.07, "beta": 1.0, "erp": 0.069, "cod": 0.09,
+            "revenue": 5000e9, "ebit_margin": 0.20, "g1": 0.08, "g": 0.03,
+            "tax": 0.22, "capex_pct": 0.06, "nwc_pct": 0.05,
+            "shares_out": 5e9, "last_price": 50.0, "price": 50.0,
+        },
+    )
     assert res["recommendation"]["rating"] == "Review Required"
     assert "reason_override" in res["recommendation"]
 

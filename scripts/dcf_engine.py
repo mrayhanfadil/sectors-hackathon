@@ -823,7 +823,11 @@ def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[st
     EV/Equity bridge, Recommendation rating with gates, WACC x g Sensitivity grid,
     and Bull/Base/Bear scenarios. Ported from friend's s05-s12 math.
     """
-    assum = _load_ticker_assumptions(ticker)
+    t = ticker.upper().strip()
+    try:
+        assum = _load_ticker_assumptions(t)
+    except ValueError:
+        assum = {"ticker": t, "source": "no_assumptions_file"}
     if overrides:
         assum.update(overrides)
 
