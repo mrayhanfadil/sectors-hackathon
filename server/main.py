@@ -32,6 +32,7 @@ import logging
 from .config import get_settings
 from .cache import get_cache
 from .logging_config import setup_logging, ProductionHardeningMiddleware
+from .storage import SectorsCache
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf, router_universe
 from .routers.agent import router_agent
 from .routers.memory import router_memory
@@ -131,6 +132,7 @@ def create_app() -> FastAPI:
             "name": "Sectors Institutional Report API",
             "docs": "/docs",
             "health": "/api/health",
+            "cache_stats": "/api/debug/cache",
             "endpoints": [
                 "/api/report/{ticker}",
                 "/api/dcf/{ticker}",
@@ -146,8 +148,36 @@ def create_app() -> FastAPI:
                 "/api/mock/news?symbols=BBCA",
                 "/api/mock/corporate-actions?symbol=BBCA",
                 "/api/mock/quarterly-financials?symbol=BBCA",
+                "/api/debug/cache  — SQLite-backed Sectors payload cache stats",
+                "/api/debug/cache/bust (POST, ?prefix=…) — invalidate by prefix",
+                "/api/debug/cache/prune (POST) — drop expired rows",
             ],
         }
+
+    # ── Sectors payload cache: debug surface ──────────────────────────────
+    # SQLite-backed (server/storage.py:SectorsCache). Honors the policy:
+    #   get/set/bust/prune/stats are admin-only diagnostics. GET /api/debug/cache
+    #   is a no-side-effect read; bust and prune are explicit mutations.
+    _sectors_cache = SectorsCache()
+
+    @app.get("/api/debug/cache", tags=["debug"], summary="Sectors payload cache stats (credits-saved visibility)")
+    async def debug_cache_stats():
+        s = _sectors_cache.stats()
+        s["db_path"] = _sectors_cache.db_path
+        s["fetched_at_iso"] = time.strftime("%Y-%m-%dT%H:%M:%S%z", time.gmtime())
+        return s
+
+    @app.post("/api/debug/cache/bust", tags=["debug"], summary="Invalidate cache entries (?prefix=… or whole)")
+    async def debug_cache_bust(prefix: str | None = None):
+        n = _sectors_cache.bust(endpoint_prefix=prefix)
+        log.info("sectors cache bust: prefix=%s, deleted=%d", prefix or "<ALL>", n)
+        return {"deleted": n, "prefix": prefix}
+
+    @app.post("/api/debug/cache/prune", tags=["debug"], summary="Drop sectors_cache rows past their expires_at")
+    async def debug_cache_prune():
+        n = _sectors_cache.prune_expired()
+        log.info("sectors cache prune: deleted=%d", n)
+        return {"deleted": n}
 
     return app
 
