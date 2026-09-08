@@ -21,6 +21,8 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+import json
+
 REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
@@ -126,6 +128,41 @@ def test_challenge_endpoint(api_client):
     except Exception as exc:
         warnings.warn(f"POST /api/challenge failed assertion: {exc}")
         raise
+
+
+def test_report_ratu_keyless_422(api_client):
+    # H1-restore (AGY-H1 reverted H1's hunks via git checkout 10:43:07; AGY-H1's
+    # own file covers BBCA/unknown/dcf-RATU/outlook/tickers/pdf — these are the
+    # non-overlapping gaps). RATU file lacks WACC inputs -> strict 422 keyless.
+    res = api_client.get("/api/report/RATU")
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+    for k in ("rf", "beta", "erp", "cod"):
+        assert k in res.text, f"422 must name missing key {k}: {res.text[:300]}"
+
+
+def test_report_bbca_html_keyless_422(api_client):
+    res = api_client.get("/api/report/BBCA/html")
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+
+
+def test_report_unknown_pdf_html_422(api_client):
+    for suffix in ("pdf", "html"):
+        res = api_client.get(f"/api/report/NOPEXYZ/{suffix}")
+        assert res.status_code == 422, f"Expected 422 for {suffix}, got {res.status_code}: {res.text}"
+
+
+def test_dcf_bbca_bare_422(api_client):
+    res = api_client.get("/api/dcf/BBCA")
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+    assert "BBCA" in res.text
+
+
+def test_dcf_bbca_declared_overrides_200(api_client):
+    ov = json.dumps({"rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06})
+    res = api_client.get(f"/api/dcf/BBCA?overrides={ov}")
+    assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
+    data = res.json()
+    assert "wacc" in data and "valuation" in data
 
 
 if __name__ == "__main__":
