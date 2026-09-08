@@ -7,7 +7,6 @@ from typing import Optional, Any
 import time
 import hashlib
 import json
-import os
 import copy
 from pathlib import Path
 
@@ -162,21 +161,21 @@ def _template_for(ticker: str, segments: Optional[dict] = None, archetype: Optio
     return "single"
 
 
-def _segments_for(archetype: str, assum: dict, stockdata_segments: Optional[dict] = None) -> dict:
+def _segments_for(archetype: str, assum: dict, sectors_segments: Optional[dict] = None) -> dict:
     """Enrich segments dictionary dynamically per archetype and assumptions."""
-    if stockdata_segments and isinstance(stockdata_segments, dict):
-        return stockdata_segments
+    if sectors_segments and isinstance(sectors_segments, dict):
+        return sectors_segments
     if assum.get("segments") and isinstance(assum["segments"], dict):
         return assum["segments"]
     if not assum.get("has_assumptions_file", True):
         return {"segments": [], "total_pct": 0.0, "source": "no_assumptions_file"}
 
-    # LOUD policy: no invented pillars — file/stockdata segments absent -> honest empty.
+    # LOUD policy: no invented pillars — file/Sectors segments absent -> honest empty.
     return {
         "segments": [],
         "total_pct": 0.0,
         "source": "sectors_missing_key",
-        "note": "segment breakdown unavailable: no segments in assumptions file or stockdata (no fabrication)",
+        "note": "segment breakdown unavailable: no segments in assumptions file or Sectors (no fabrication)",
     }
 
 
@@ -281,7 +280,7 @@ def _live_price(tkr: str, base_fallback: float | None) -> tuple[float | None, st
 
 
 def _assumptions_for(ticker: str) -> dict:
-    """Load data/assumptions/{ticker}.json if exists and merge with archetype defaults."""
+    """Load data/assumptions/{ticker}.json if exists (file values as-is, LOUD on gaps)."""
     t = _clean_ticker(ticker)
     p = Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t}.json"
     raw_json = {}
@@ -321,17 +320,13 @@ def _assumptions_for(ticker: str) -> dict:
 
 
 # ---------- health ----------
-@router_health.get("/api/health", summary="Health + stockdata + cache")
+@router_health.get("/api/health", summary="Health + cache (Sectors-only)")
 async def health():
-    from ..stockdata import get_stockdata
-
     settings = get_settings()
     cache = get_cache(settings.cache_ttl)
-    sd = get_stockdata()
     return {
         "status": "ok",
         "uptime_s": round(time.time() - _started, 1),
-        "stockdata": await sd.health(),
         "cache": await cache.stats(),
         "version": "t04-0.1.0",
         "env": settings.env,
@@ -339,35 +334,13 @@ async def health():
     }
 
 
-# ---------- tickers (IDX universe from Morning Brief DB) ----------
-_UNIVERSE_CACHE: dict[str, Any] = {"at": 0.0, "rows": []}
-_UNIVERSE_TTL_S = 86400
-
-
-async def _fetch_universe() -> list[dict[str, Any]]:
-    """Read active tickers from stockdata.tickers (IDX Morning Brief DB)."""
-    import asyncpg
-
-    dsn = os.getenv("STOCKDATA_PG_URL", "postgresql://postgres:password@localhost:15437/stockdata")
-    con = await asyncpg.connect(dsn, timeout=8)
-    try:
-        rows = await con.fetch(
-            "SELECT kode_saham, nama_saham, sector FROM tickers "
-            "WHERE is_active IS NOT FALSE ORDER BY kode_saham"
-        )
-        return [
-            {"kode": r["kode_saham"], "nama": r["nama_saham"], "sector": r["sector"]}
-            for r in rows
-            if r["kode_saham"]
-        ]
-    finally:
-        await con.close()
-
-
-@router_universe.get("/api/tickers", summary="IDX ticker universe (Sectors screener, pending)")
+# ---------- tickers (Sectors screener, pending key) ----------
+# IDX Postgres universe killed Sep 2026 (external source). Sectors screener
+# wiring lands post-key; until then this endpoint is honest 503.
+@router_universe.get("/api/tickers", summary="Ticker universe (Sectors screener, pending)")
 async def tickers():
-    # LOUD policy: the stockdata:15437 pool is retired as a prod source — serving
-    # it labeled still violates Sectors-only. Sectors screener wiring lands post-key.
+    # LOUD policy: IDX Postgres killed Sep 2026 (external source). Universe
+    # comes from the Sectors screener post-key — honest 503 until then.
     raise HTTPException(status_code=503, detail="ticker universe unavailable (sectors screener pending): set SECTORS_API_KEY, then wire companies/?where=&order_by=")
 
 
