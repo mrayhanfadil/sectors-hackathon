@@ -239,8 +239,6 @@ function ReportPage() {
   }
 
   const tpl = (r.template ?? "single").toLowerCase()
-  const isInfra = tpl === "infra"
-  const isSotp = tpl === "sotp"
   const vd = r.valuationDetail
   const takeaways = r.cover?.rating_box?.key_takeaways ?? []
   const vs = r.cover?.vs_jci
@@ -304,12 +302,7 @@ function ReportPage() {
             segments={r.segments}
             rawSegments={r.raw?.segments}
             segmentsSource={
-              ((r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined) ??
-              (isSotp
-                ? "Laporan segmentasi CDIA 1H26 (IDX)"
-                : isInfra
-                ? "MTEL 1H26 - laporan segmentasi (IDX)"
-                : undefined)
+              ((r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined)
             }
             ratios={r.ratios}
             rawBands={r.raw?.bands}

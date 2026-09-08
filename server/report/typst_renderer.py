@@ -285,41 +285,10 @@ def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
     """Load fixture or build structured report data dict."""
     t = ticker.upper().strip()
     # Verified JSON fixtures win over python builders (builders go stale silently).
-    fix_json_first = SCRIPTS_DIR / "fixtures" / f"{t.lower()}_report_data.json"
-    if fix_json_first.exists():
-        try:
-            return json.loads(fix_json_first.read_text(encoding="utf-8"))
-        except Exception:
-            pass
-    try:
-        from report_fixtures import ALL
-        if t in ALL:
-            return ALL[t]()
-    except Exception:
-        pass
-    try:
-        import report_fixtures as rf
-        fixtures = {
-            "RATU": getattr(rf, "ratu_single", None),
-            "CDIA": getattr(rf, "cdia_sotp", None),
-            "MTEL": getattr(rf, "mtel_infra", None),
-            "POWR": getattr(rf, "powr_infra", None),
-            "JCI": getattr(rf, "jpm_strategy", None),
-            "IHSG": getattr(rf, "jpm_strategy", None),
-            "JPM": getattr(rf, "jpm_strategy", None),
-        }
-        if t in fixtures and fixtures[t] is not None:
-            return fixtures[t]()
-    except Exception:
-        pass
-
-    # Check scripts/fixtures/*.json
-    fix_json = SCRIPTS_DIR / "fixtures" / f"{t.lower()}_report_data.json"
-    if fix_json.exists():
-        try:
-            return json.loads(fix_json.read_text(encoding="utf-8"))
-        except Exception:
-            pass
+    # LOUD policy: fixture interception removed from the prod loader — static
+    # demo payloads (scripts/fixtures/*.json, report_fixtures module) are never
+    # served as live responses. Tests load them explicitly via
+    # tests/_loud_test_inputs.py::load_demo_fixture.
 
     months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
     # No fixture or builder for this ticker: honest-empty exhibits + source

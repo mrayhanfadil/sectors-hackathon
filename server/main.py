@@ -113,7 +113,7 @@ def create_app() -> FastAPI:
             "cache": await cache.stats(),
             "version": "t04-0.1.0",
             "env": settings.env,
-            "sectors_gate": "P2 (disabled)" if not settings.sectors_api_key else "enabled",
+            "sectors_gate": "keyless (sectors_missing_key)" if not settings.sectors_api_key else "enabled",
             "mock_sectors_router": mock_status.get("mock_sectors_router", True),
             "registered_endpoints": mock_status.get("registered_endpoints", []),
             "endpoints": mock_status.get("endpoints", []),

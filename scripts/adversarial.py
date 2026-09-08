@@ -46,19 +46,13 @@ def _load_assumptions(ticker: str) -> Dict[str, Any]:
             return json.loads(p.read_text(encoding="utf-8"))
         except Exception:
             pass
-    # default archetype fallbacks
-    t = ticker.upper()
-    if t == "RATU":
-        return {"wacc": 0.084, "beta": 0.70, "rf": 0.07, "erp": 0.069, "cod": 0.035, "g": 0.05, "fv_dcf": 7880, "fv_ev": 6960}
-    elif t == "CDIA":
-        return {"wacc": 0.090, "beta": 0.90, "rf": 0.0696, "erp": 0.06, "cod": 0.05, "g": 0.03, "fv_dcf": 815, "fv_ddm": 810}
-    elif t == "MTEL":
-        return {"wacc": 0.101, "beta": 0.65, "rf": 0.0696, "erp": 0.0889, "cod": 0.06, "g": 0.015, "fv_dcf": 630, "fv_blended": 635, "tenancy_ratio": 1.57, "towers": 40563, "tenants": 63866}
-    elif t == "BBCA":
-        return {"wacc": 0.100, "beta": 0.80, "rf": 0.0696, "erp": 0.06, "cod": 0.05, "g": 0.04, "fv_ggm": 9850}
-    elif t == "ADRO":
-        return {"wacc": 0.090, "beta": 0.95, "rf": 0.0696, "erp": 0.06, "cod": 0.05, "g": 0.02, "fv_sotp_pre": 4120, "fv_sotp_post": 3502, "holdco_discount": 0.15}
-    return {"wacc": 0.095, "beta": 0.85, "rf": 0.0696, "erp": 0.06, "cod": 0.06, "g": 0.025}
+    # LOUD policy: no archetype fallback numbers (RATU 7880 / CDIA 815 / MTEL
+    # 630 / BBCA 9850 / ADRO 4120 were invented calibration served as live).
+    # Missing file -> loud error; caller surfaces the stub disclosure.
+    raise FileNotFoundError(
+        f"no verified assumptions for {ticker.upper()} — refusing invented "
+        f"calibration (add data/assumptions/{ticker.upper()}.json)"
+    )
 
 
 def _append_debate_log(log_path: Path, entry: Dict[str, Any]) -> None:

@@ -467,18 +467,11 @@ async def _fetch_universe() -> list[dict[str, Any]]:
         await con.close()
 
 
-@router_universe.get("/api/tickers", summary="IDX ticker universe (Morning Brief DB)")
+@router_universe.get("/api/tickers", summary="IDX ticker universe (Sectors screener, pending)")
 async def tickers():
-    now = time.time()
-    rows = _UNIVERSE_CACHE["rows"]
-    if not rows or (now - _UNIVERSE_CACHE["at"]) > _UNIVERSE_TTL_S:
-        try:
-            rows = await _fetch_universe()
-        except Exception as e:
-            # LOUD policy: pool error -> 503, never a stale:True payload.
-            raise HTTPException(status_code=503, detail=f"ticker universe unavailable: {type(e).__name__} (no stale cache served)")
-        _UNIVERSE_CACHE.update(at=now, rows=rows)
-    return {"count": len(rows), "tickers": rows, "source": "stockdata.tickers"}
+    # LOUD policy: the stockdata:15437 pool is retired as a prod source — serving
+    # it labeled still violates Sectors-only. Sectors screener wiring lands post-key.
+    raise HTTPException(status_code=503, detail="ticker universe unavailable (sectors screener pending): set SECTORS_API_KEY, then wire companies/?where=&order_by=")
 
 
 # ---------- report/{ticker} ----------
@@ -587,7 +580,7 @@ async def report_ticker(
                 f"POST /api/agent/start {{'ticker': '{t}'}}."
             ),
         )
-    _missing_val = [k for k in ("fcf", "shares_out", "net_debt", "ebitda", "ev_multiple") if assum.get(k) is None]
+    _missing_val = [k for k in ("fcf", "shares_out", "net_debt", "ebitda", "ev_multiple", "we", "wd", "g") if assum.get(k) is None]
     if _missing_val:
         raise HTTPException(
             status_code=422,
@@ -668,13 +661,11 @@ async def report_ticker(
         "note": "valuation bands unavailable keyless: synthetic_prices are disclosed-seed fixtures, not market data; wired to Sectors daily when SECTORS_API_KEY lands",
     }
 
-    # ratios
+    # ratios — LOUD policy: revenue/equity are absent from assumption files, and
+    # revenue=ebitda*2 / equity=cash*2 was invented math. No ratios until
+    # Sectors quarterly backs them.
     ratios_res = None
-    try:
-        from ..engines import ratios as calc_ratios
-        ratios_res = calc_ratios({"revenue": assum.get("ebitda", 0)*2, "ebitda": assum.get("ebitda", 0), "net_debt": assum.get("net_debt", 0), "cash": assum.get("cash", 0), "equity": assum.get("cash", 0)*2})
-    except Exception:
-        ratios_res = None
+    ratios_note = "ratios unavailable: revenue/equity absent from assumptions (no ebitda*2 invention); wired to Sectors quarterly when SECTORS_API_KEY lands"
 
     payload = {
         "ticker": t,
@@ -707,6 +698,7 @@ async def report_ticker(
             "bands": bands_res,
         },
         "ratios": ratios_res,
+        "ratios_note": ratios_note,
         "thesis": None,
         "risks": [],
         "segments": segments_payload,
@@ -833,54 +825,15 @@ async def outlook():
     cache = get_cache(settings.cache_ttl)
     ckey = cache_key("outlook:jci")
     # LOUD policy: hardcoded JCI 9100/picks are research-note fixtures, not live
-    # data — keyless -> 503; keyed keeps the shape below.
-    if not settings.sectors_api_key:
-        raise HTTPException(
-            status_code=503,
-            detail="JCI outlook unavailable keyless (sectors_missing_key): set SECTORS_API_KEY to serve the outlook",
-        )
-    hit = await cache.get(ckey)
-    if hit:
-        hit["cached"] = True
-        return hit
-    # try stockdata JCI price for context, fallback to plan numbers
-    jci_price = None
-    try:
-        from ..stockdata import get_stockdata
-
-        sd = get_stockdata()
-        # jci via stockdata or sectors gate later
-        _ = await sd.get_prices("JCI", period="1y")
-    except Exception:
-        pass
-    payload = {
-        "jci_target": 9100,
-        "scenarios": {
-            "base": 9100,
-            "bull": 10000,
-            "bear": 7800,
-        },
-        "jci_base": 9100,
-        "jci_bull": 10000,
-        "jci_bear": 7800,
-        "eps_growth": 0.08,
-        "pe": 15.0,
-        "ow": ["Industrials", "Materials", "Consumer Staples", "Consumer Discretionary", "Property"],
-        "uw": ["Energy", "Utilities"],
-        "neutral": ["Financials", "Communication Services", "Healthcare"],
-        "picks": [
-            {"ticker": "BBCA", "reason": "GGM-implied P/BV, ROE 19.7%", "sector": "Banks"},
-            {"ticker": "ASII", "reason": "Industrial conglomerate SOTP", "sector": "Industrials"},
-            {"ticker": "ICBP", "reason": "Consumer Staples defensif", "sector": "Consumer Staples"},
-            {"ticker": "MTEL", "reason": "Infra recurring, tenancy 1.57x", "sector": "Infrastructure"},
-        ],
-        "jci_price": jci_price,
-        "source": "JPM 2026 Outlook (JCI 9100 base) + plan §5; JCI price via stockdata when available",
-        "generated_at": _now_iso(),
-        "cached": False,
-    }
-    await cache.set(ckey, payload)
-    return payload
+    # LOUD policy: outlook serves Sectors-native data only. The JPM-9100 fixture
+    # block below is retired until the Sectors-native outlook is wired (post-key);
+    # serving it keyed would present analyst notes as live data.
+    raise HTTPException(
+        status_code=503,
+        detail="JCI outlook unavailable (sectors-native outlook pending): set SECTORS_API_KEY, then wire subsector breadth + movers; JPM-9100 fixture retired, never served as live",
+    )
+    # Retired fixture block deleted (LOUD policy): JPM-9100 numbers must never
+    # be served as live. Sectors-native outlook lands post-key.
 
 
 # ---------- news ----------
@@ -1054,6 +1007,23 @@ router_dcf = APIRouter(prefix="/api/dcf", tags=["dcf"])
 @router_dcf.get("/{ticker}", summary="Friend-style full DCF payload for a ticker")
 def dcf_full_endpoint(ticker: str, overrides: str | None = None):
     """Friend-style full DCF payload for a ticker."""
+    from fastapi import HTTPException as _HTTPException
+
+    # LOUD policy: dcf_full() computes on hardcoded seed assumptions when the
+    # file lacks keys (rf 0.065 / revenue 10000e9). Require file-backed WACC
+    # inputs first — never serve seed-math as valuation.
+    from ..config import get_settings as _get_settings
+
+    _ = _get_settings()
+    import pathlib as _pl
+    import json as _js
+
+    _fp = _pl.Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{ticker.upper()}.json"
+    try:
+        _assum = _js.loads(_fp.read_text(encoding="utf-8")) if _fp.exists() else {}
+    except Exception:
+        _assum = {}
+    _need = ("rf", "beta", "erp", "cod")
     try:
         from ..engines import dcf_full
     except ImportError:
@@ -1065,6 +1035,19 @@ def dcf_full_endpoint(ticker: str, overrides: str | None = None):
             ov = json.loads(overrides)
         except Exception:
             ov = None
+    # File-backed inputs only: dcf_full seeds missing keys (rf 0.065, revenue
+    # 10000e9). Pass the verified assumptions file as overrides so engines
+    # compute on file numbers, never seeds. Explicit caller overrides count
+    # as honest inputs (tests declare them); gate on the merged set.
+    file_ov = {k: v for k, v in _assum.items() if v is not None}
+    ov = {**file_ov, **(ov or {})}
+    _miss2 = [k for k in _need if ov.get(k) is None]
+    if _miss2:
+        raise _HTTPException(
+            status_code=422,
+            detail=f"DCF unavailable for {ticker.upper()}: missing {', '.join(_miss2)} "
+            f"(file + overrides; no seed-math served as valuation)",
+        )
     try:
         result = dcf_full(ticker.upper(), overrides=ov)
         result["provenance"] = result.get("provenance", "") + " :: /api/dcf endpoint"

@@ -2,7 +2,8 @@
 
 Covers:
   - test_endpoint_smoke_ratu: GET /api/dcf/RATU -> 200, has wacc, valuation, recommendation
-  - test_endpoint_smoke_bbcA: GET /api/dcf/bbcA -> 200, case-insensitive, provenance noted
+  - test_endpoint_smoke_bbcA: GET /api/dcf/bbcA bare -> 422 (no seed-math)
+  - test_endpoint_smoke_ratu_declared_inputs: declared overrides -> 200 full shape
   - test_endpoint_review_required: extreme upside triggers Review Required rating gate
   - test_endpoint_invalid_ticker: fallback on unknown ticker returns 200 (not 500)
   - test_endpoint_overrides_parsing: overrides={"rf": 0.10} applied correctly
@@ -40,9 +41,21 @@ def client():
     return TestClient(app)
 
 
+FULL_OV = {"rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06}
+
+
 def test_endpoint_smoke_ratu(client):
-    """GET /api/dcf/RATU -> 200, has wacc, valuation, recommendation, projection."""
+    """GET /api/dcf/RATU bare -> 422 (file lacks WACC inputs; no seed-math)."""
     res = client.get("/api/dcf/RATU")
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+    assert "RATU" in res.text
+
+
+def test_endpoint_smoke_ratu_declared_inputs(client):
+    """GET /api/dcf/RATU with declared overrides -> 200, full shape."""
+    import json as _json
+
+    res = client.get(f"/api/dcf/RATU?overrides={_json.dumps(FULL_OV)}")
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     data = res.json()
     assert isinstance(data, dict), "Response must be a dict"
@@ -58,20 +71,15 @@ def test_endpoint_smoke_ratu(client):
 
 
 def test_endpoint_smoke_bbcA(client):
-    """GET /api/dcf/bbcA -> 200 (case-insensitive, GGM-flavoured, provenance noted)."""
+    """GET /api/dcf/bbcA bare -> 422 (no seed-math, case-insensitive ticker)."""
     res = client.get("/api/dcf/bbcA")
-    assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
-    data = res.json()
-    assert isinstance(data, dict)
-    assert "wacc" in data
-    assert "valuation" in data
-    assert "provenance" in data
-    assert "/api/dcf endpoint" in data["provenance"]
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+    assert "BBCA" in res.text
 
 
 def test_endpoint_review_required(client):
     """Overrides with extreme divergence trigger 'Review Required' gate."""
-    overrides = json.dumps({"price": 50.0, "last_price": 50.0})
+    overrides = json.dumps({**FULL_OV, "price": 50.0, "last_price": 50.0})
     res = client.get(f"/api/dcf/RATU?overrides={overrides}")
     assert res.status_code == 200
     data = res.json()
@@ -83,16 +91,13 @@ def test_endpoint_review_required(client):
 def test_endpoint_invalid_ticker(client):
     """GET /api/dcf/NOPE -> returns dict (with error key or valid fallback), NOT 500."""
     res = client.get("/api/dcf/NOPE")
-    assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
-    data = res.json()
-    assert isinstance(data, dict), "Response must be a dict"
-    assert ("error" in data) or ("valuation" in data and "wacc" in data)
-    assert "provenance" in data
+    assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"
+    assert "NOPE" in res.text
 
 
 def test_endpoint_overrides_parsing(client):
     """Overrides={'rf': 0.10} returns 200 and reflects the custom risk-free rate."""
-    overrides = json.dumps({"rf": 0.10})
+    overrides = json.dumps({**FULL_OV, "rf": 0.10})
     res = client.get(f"/api/dcf/RATU?overrides={overrides}")
     assert res.status_code == 200
     data = res.json()
@@ -101,7 +106,7 @@ def test_endpoint_overrides_parsing(client):
 
 def test_endpoint_sensitivity_shape(client):
     """Sensitivity grid has shape len = 2*steps+1 on each axis."""
-    overrides = json.dumps({"sens_steps": 2})
+    overrides = json.dumps({**FULL_OV, "sens_steps": 2})
     res = client.get(f"/api/dcf/RATU?overrides={overrides}")
     assert res.status_code == 200
     data = res.json()
@@ -119,7 +124,9 @@ def test_endpoint_sensitivity_shape(client):
 
 def test_endpoint_scenarios_structure(client):
     """Scenarios payload contains BEAR, BASE, and BULL structures."""
-    res = client.get("/api/dcf/RATU")
+    import json as _json2
+
+    res = client.get(f"/api/dcf/RATU?overrides={_json2.dumps(FULL_OV)}")
     assert res.status_code == 200
     data = res.json()
     scen = data["scenarios"]

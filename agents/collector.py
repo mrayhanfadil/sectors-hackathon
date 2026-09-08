@@ -199,108 +199,16 @@ def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
 # ── Synthetic fallback (seed=42, deterministic per ticker) ─────────────────
 
 def _synthetic(ticker: str) -> Dict[str, Any]:
-    t = _ticker_norm(ticker)
-    # deterministic seed per ticker: 42 + hash
-    h = int(hashlib.md5(t.encode()).hexdigest()[:8], 16)
-    rng = random.Random(SYNTHETIC_SEED + h)
+    """RETIRED (LOUD policy, Sep 2026): seed-42 synthetic fallback removed.
 
-    base_price = rng.uniform(400, 12000)
-    # 5Y financials — income/balance/cashflow simplified
-    years = [2020, 2021, 2022, 2023, 2024]
-    revenue_base = rng.uniform(2_000, 80_000)  # IDR Bn
-    revenues = [round(revenue_base * (1 + rng.uniform(-0.1, 0.25)) ** (i), 1) for i in range(5)]
-    # keep monotonic-ish for demo
-    revenues = sorted(revenues)
-    gross_margin = rng.uniform(0.25, 0.55)
-    ebitda_margin = rng.uniform(0.15, 0.40)
-    net_margin = rng.uniform(0.08, 0.22)
+    It generated uniform(400,12000) prices and invented financials that flowed
+    into Sectors-stamped payloads. Callers must use Sectors v2 or fail loud.
+    """
+    raise RuntimeError(
+        "sectors_missing_key: synthetic fallback retired — set SECTORS_API_KEY "
+        "or provide user-owned data/idx/{TICKER}.json"
+    )
 
-    financials = {
-        str(y): {
-            "revenue": revenues[i],
-            "gross_profit": round(revenues[i] * gross_margin, 1),
-            "ebitda": round(revenues[i] * ebitda_margin, 1),
-            "net_income": round(revenues[i] * net_margin, 1),
-            "total_assets": round(revenues[i] * rng.uniform(1.5, 3.0), 1),
-            "total_equity": round(revenues[i] * rng.uniform(0.6, 1.2), 1),
-            "total_debt": round(revenues[i] * rng.uniform(0.2, 0.9), 1),
-        }
-        for i, y in enumerate(years)
-    }
-
-    # JCI synthetic 5Y daily (260 trading days × 5)
-    jci_base = 7000
-    jci_prices = []
-    price = jci_base
-    for i in range(260 * 5):
-        price *= 1 + rng.uniform(-0.015, 0.018)
-        d = (datetime(2020, 1, 2) + timedelta(days=i * 7 // 5)).date().isoformat()
-        jci_prices.append({"date": d, "close": round(price, 2)})
-
-    # Segments — conglomerate vs single (CDIA/MTEL vs RATU/BBCA)
-    conglomerate_tickers = {"CDIA", "ADRO"}
-    infra_tickers = {"MTEL", "TOWR", "TLKM", "ISAT", "EXCL"}
-    if t in conglomerate_tickers:
-        segments = [
-            {"name": "Energy", "pct": 55, "revenue": round(revenues[-1] * 0.55, 1)},
-            {"name": "Logistics", "pct": 34, "revenue": round(revenues[-1] * 0.34, 1)},
-            {"name": "Port & Storage", "pct": 7, "revenue": round(revenues[-1] * 0.07, 1)},
-            {"name": "Water", "pct": 4, "revenue": round(revenues[-1] * 0.04, 1)},
-        ]
-    elif t in infra_tickers:
-        segments = [
-            {"name": "Tower Leasing", "pct": 68, "revenue": round(revenues[-1] * 0.68, 1)},
-            {"name": "Fiber", "pct": 15, "revenue": round(revenues[-1] * 0.15, 1)},
-            {"name": "Reseller", "pct": 10, "revenue": round(revenues[-1] * 0.10, 1)},
-            {"name": "Other", "pct": 7, "revenue": round(revenues[-1] * 0.07, 1)},
-        ]
-    else:
-        segments = [{"name": "Single", "pct": 100, "revenue": revenues[-1]}]
-
-    # KPI per subsector (MTEL hero)
-    kpi = None
-    if t in infra_tickers:
-        towers = rng.randint(35000, 45000)
-        tenants = int(towers * rng.uniform(1.45, 1.65))
-        kpi = {
-            "towers": towers,
-            "tenants": tenants,
-            "tenancy_ratio": round(tenants / towers, 2),
-            "fiber_km": rng.randint(45000, 65000),
-            "colocation": rng.randint(18000, 26000),
-        }
-    elif t == "RATU":
-        kpi = {"bopd": rng.randint(12000, 18000), "gas_mmscfd": round(rng.uniform(20, 40), 1)}
-
-    holders = {
-        "major": rng.choice(["Chandra Asri 60%", "TLKM 71.83%", "Public 45%", "Founders 55%"]),
-        "free_float": round(rng.uniform(0.15, 0.45), 2),
-    }
-
-    ratios = {
-        "roe": round(rng.uniform(0.06, 0.35), 3),
-        "der": round(rng.uniform(0.3, 1.7), 2),
-        "current_ratio": round(rng.uniform(0.8, 2.5), 2),
-        "interest_coverage": round(rng.uniform(2.0, 8.0), 1),
-        "gearing": round(rng.uniform(0.4, 1.7), 2),
-        "debt_ebitda": round(rng.uniform(1.5, 6.0), 1),
-    }
-
-    return {
-        "source": "synthetic",
-        "seed": SYNTHETIC_SEED,
-        "ticker": t,
-        "company": {"symbol": t, "name": f"{t} Synthetic", "sector": rng.choice(["Energy","Infrastructure","Financials","Materials"])},
-        "financials": financials,
-        "segments": segments,
-        "kpi": kpi,
-        "holders": holders,
-        "ratios": ratios,
-        "jci": jci_prices[-260:],  # last 1Y for vs-JCI chart
-        "prices": [{"date": p["date"], "close": round(base_price * (0.9 + rng.uniform(-0.2, 0.3)), 2)} for p in jci_prices[-260:]],
-        "dividends": {},
-        "note": "synthetic fallback — labeled estimated per plan §4",
-    }
 
 
 def _peers_for(ticker: str) -> Dict[str, Any]:
@@ -317,27 +225,20 @@ def _peers_for(ticker: str) -> Dict[str, Any]:
         except Exception as e:
             logger.warning("peers.json parse failed: %s", e)
 
-    # synthetic peers — 8-12 per ticker from universe
-    rng = random.Random(SYNTHETIC_SEED + int(hashlib.md5(t.encode()).hexdigest()[:8], 16))
-    pool = [x for x in SYNTHETIC_UNIVERSE if x != t]
-    rng.shuffle(pool)
+    # LOUD policy: no invented peer multiples — Sectors peers only.
     peers = []
-    for sym in pool[:10]:
-        peers.append({
-            "symbol": sym,
-            "pe_ratio": round(rng.uniform(8, 28), 1),
-            "ev_ebitda": round(rng.uniform(6, 18), 1),
-            "pbv": round(rng.uniform(0.8, 4.5), 2),
-            "roe": round(rng.uniform(0.05, 0.28), 3),
-        })
-    return {"mode": "single", "peers": peers, "source": "synthetic"}
+    return {"mode": "single", "peers": peers, "source": "sectors_missing_key",
+            "note": "peer multiples await Sectors peers (no uniform() invention)"}
 
 
 # ── Public API ─────────────────────────────────────────────────────────────
 
 def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) -> Dict[str, Any]:
     """
-    Collect all data for a ticker — local IDX dumps → Sectors v2 → synthetic.
+    Collect all data for a ticker — local IDX dumps → Sectors v2 → LOUD raise.
+
+    No synthetic fallback (retired LOUD policy): no source -> RuntimeError
+    with sectors_missing_key. Gaps stay None with *_source flags.
 
     Returns dict with keys:
       ticker, as_of, source, company, financials, segments, peers, jci,
@@ -377,69 +278,53 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "kpi": raw.get("kpi"),
             "_cache_hit": False,
         }
-        # Fill missing with synthetic supplements (labeled)
-        synth = _synthetic(t)
+        # LOUD policy: missing IDX fields stay missing (no synthetic supplement).
         for k in ("segments", "peers", "jci", "prices", "kpi", "ratios"):
             if payload.get(k) is None:
-                payload[k] = synth[k]
-                payload[f"{k}_source"] = "synthetic_supplement"
+                payload[f"{k}_source"] = "sectors_missing_key"
         _save_cache(t, payload)
         return payload
 
-    # 2) Sectors v2 (single gateway)
+    # 2) Sectors v2 (single gateway) — Sectors fields only, gaps stay empty.
     sec_hit = _try_sectors(t)
     if sec_hit is not None:
-        # Sectors quarterly is authoritative; supplement display-only fields
-        synth = _synthetic(t)
         payload = {
             "ticker": t,
             "as_of": _now_iso(),
             "source": "sectors",
             "symbol": sec_hit.get("symbol"),
             "company": sec_hit.get("info") or {"symbol": t},
-            "financials": sec_hit.get("financials") or synth["financials"],
+            "financials": sec_hit.get("financials"),
             "balance": sec_hit.get("balance"),
             "cashflow": sec_hit.get("cashflow"),
-            "prices": sec_hit.get("prices") or synth["prices"],
+            "prices": sec_hit.get("prices"),
             "dividends": sec_hit.get("dividends") or {},
-            "segments": synth["segments"],
+            "segments": None,
+            "segments_source": "sectors_missing_key",
             "peers": _peers_for(t),
-            "jci": synth["jci"],
-            "holders": synth["holders"],
-            "ratios": synth["ratios"],
-            "kpi": synth["kpi"],
+            "jci": None,
+            "jci_source": "sectors_missing_key",
+            "holders": None,
+            "holders_source": "sectors_missing_key",
+            "ratios": None,
+            "ratios_source": "sectors_missing_key",
+            "kpi": None,
+            "kpi_source": "sectors_missing_key",
             "esg": {"found": False, "note": "Sectors tidak provide ESG — hide if not found"},
             "sectors_history_rows": sec_hit.get("history_rows"),
             "_cache_hit": False,
         }
-        # Mark synthetic-supplemented fields
+        # Mark Sectors-absent fields explicitly (no synthetic backfill).
         if sec_hit.get("financials") is None:
-            payload["financials_source"] = "synthetic_supplement"
+            payload["financials_source"] = "sectors_missing_key"
         _save_cache(t, payload)
         return payload
 
-    # 3) Synthetic fallback (deterministic)
-    synth = _synthetic(t)
-    payload = {
-        "ticker": t,
-        "as_of": _now_iso(),
-        "source": "synthetic",
-        "company": synth["company"],
-        "financials": synth["financials"],
-        "segments": synth["segments"],
-        "peers": _peers_for(t),
-        "jci": synth["jci"],
-        "prices": synth["prices"],
-        "holders": synth["holders"],
-        "dividends": synth["dividends"],
-        "esg": {"found": False, "note": "synthetic — no ESG"},
-        "ratios": synth["ratios"],
-        "kpi": synth["kpi"],
-        "_cache_hit": False,
-        "note": "synthetic fallback seed=42 — labeled estimated per plan §4",
-    }
-    _save_cache(t, payload)
-    return payload
+    # 3) No source available — LOUD (synthetic fallback retired).
+    raise RuntimeError(
+        "sectors_missing_key: no IDX dump and no Sectors key for "
+        f"{t} — set SECTORS_API_KEY or provide data/idx/{t}.json (synthetic fallback retired)"
+    )
 
 
 def collect_batch(tickers: List[str], use_cache: bool = True) -> Dict[str, Dict[str, Any]]:
@@ -482,7 +367,7 @@ def collector_as_tool():
                 continue
             # google-adk FunctionTool wraps a python callable
             def _collect_tool(ticker: str) -> dict:
-                """Collect Sectors/synthetic data for a ticker (Sectors-first, honest source)."""
+                """Collect Sectors/IDX data for a ticker (Sectors-first, loud when keyless)."""
                 return collect(ticker)
 
             tool = FT(func=_collect_tool)

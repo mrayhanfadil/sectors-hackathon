@@ -47,18 +47,6 @@ class ReportResponse(BaseModel):
     generated_at: str
 
 
-class OutlookResponse(BaseModel):
-    jci_base: int = 9100
-    jci_bull: int = 10000
-    jci_bear: int = 7800
-    eps_growth: float = 0.08
-    pe: float = 15.0
-    ow: list[str] = ["Industrials", "Materials", "Consumer Staples"]
-    uw: list[str] = ["Energy", "Utilities"]
-    picks: list[dict] = []
-    source: str = "JPM 2026 Outlook + synthetic"
-
-
 class NewsItem(BaseModel):
     url: str
     date: str

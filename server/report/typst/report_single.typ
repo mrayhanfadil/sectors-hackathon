@@ -29,7 +29,7 @@
 )
 
 // Helper: visual placeholder for chart rendering
-#let chart-placeholder(label, caption: "Engine Chart Renderer (IDX / yfinance)", height: 80pt, palette: PALETTE) = {
+#let chart-placeholder(label, caption: "Engine Chart Renderer (Sectors pending)", height: 80pt, palette: PALETTE) = {
   block(
     width: 100%,
     height: height,
@@ -123,7 +123,7 @@
       #v(8pt)
       #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
       #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
-      #let pc_src = vj.at("source", default: "IDX & yfinance (" + m.ticker + ".JK vs ^JKSE)")
+      #let pc_src = vj.at("source", default: "Sectors pending (" + m.ticker + " vs IHSG)")
       #exhibit-header("Exhibit 2", pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
       #v(2pt)
       #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
@@ -687,17 +687,11 @@
   #let peer_tables = peer_data.at("tables", default: ())
   #let peer_tab = if peer_tables.len() > 0 { peer_tables.at(0) } else { (:) }
   #let default_peer_headers = ("Ticker", "Market Cap", "P/E (x)", "EV/EBITDA", "P/BV (x)", "ROE (%)", "Gearing")
-  #let default_peer_rows = if m.ticker == "RATU" { (
-    (m.ticker, [*Rp 16,8 T*], "42,7x", "22,6x", "1,47x", "30,0%", "Net Cash"),
-    ("MEDC", "Rp 34,2 T", "8,9x", "4,2x", "1,15x", "22,0%", "1,42x"),
-    ("ENRG", "Rp 8,9 T", "12,4x", "5,1x", "0,92x", "15,0%", "0,85x"),
-    ("ELSA", "Rp 4,8 T", "7,6x", "3,4x", "0,81x", "14,2%", "Net Cash"),
-    ("PGAS", "Rp 38,6 T", "8,1x", "3,9x", "0,88x", "12,8%", "0,45x"),
-    ([*Rata-rata Peers (Average)*], [*Rp 20,7 T*], [*15,9x*], [*7,8x*], [*1,05x*], [*18,8%*], [*0,54x*]),
-    ([*Median Peers*], [*Rp 16,8 T*], [*8,9x*], [*4,2x*], [*0,92x*], [*15,0%*], [*0,45x*]),
-  )} else { ((m.ticker, "-", "-", "-", "-", "-", "-"),) }
+  // LOUD policy: RATU/MEDC/ENRG/ELSA/PGAS peer multiples were baked demo
+  // comparables. Peer rows come from Sectors peers only; absent -> dashes.
+  #let default_peer_rows = ((m.ticker, "-", "-", "-", "-", "-", "-"),)
   #let peer_title = if peer_tab.at("pillar", default: none) != none { "Peer Comparison — " + peer_tab.pillar } else { "Peer Comparison — Emiten Sektor " + m.sector }
-  #let peer_src = peer_tab.at("source", default: "IDX & Bloomberg")
+  #let peer_src = peer_tab.at("source", default: "Sectors (pending)")
   #let peer_headers = peer_tab.at("headers", default: default_peer_headers)
   #let peer_rows = if peer_tab.at("rows", default: ()).len() > 0 {
     peer_tab.rows.map(r => r.map(c => if type(c) == str or type(c) == content { c } else { str(c) }))
@@ -715,7 +709,7 @@
 
   #v(4pt)
   #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
-  #let relval_src = "IDX & yfinance"
+  #let relval_src = "Sectors (pending)"
   #if not data.at("charts", default: (:)).at("peer_evebitda", default: false) {
     exhibit-header("Exhibit 16", relval_title, relval_src);
     v(2pt);

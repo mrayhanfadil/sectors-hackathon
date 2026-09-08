@@ -23,24 +23,18 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
   const tk = ticker.toUpperCase()
   const [activeView, setActiveView] = useState<"gauge" | "timeline">("gauge")
 
-  const gauge = sentiment?.gauge != null ? Number(sentiment.gauge) : 50
-  const narratives = sentiment?.top_narratives?.length
+  // LOUD policy: no invented gauge/narratives/timeline. Missing BE data
+  // renders the honest-empty state below (gauge —, no rows).
+  const gauge: number | null = sentiment?.gauge != null ? Number(sentiment.gauge) : null
+  const narratives: string[] = sentiment?.top_narratives?.length
     ? sentiment.top_narratives
     : sentiment?.narratives?.length
     ? sentiment.narratives
-    : [
-        `Pertumbuhan kinerja operasional dan fundamental ${tk} tetap menjadi jangkar utama perbincangan.`,
-        "Ekspektasi dividen final dan rasio payout menjadi katalis sentimen positif ritel.",
-        "Dampak suku bunga acuan dan likuiditas perbankan dipantau ketat sebagai faktor volatilitas.",
-      ]
+    : []
 
-  const timeline = sentiment?.timeline && sentiment.timeline.length > 0
+  const timeline: Array<{ date: string; note: string }> = sentiment?.timeline && sentiment.timeline.length > 0
     ? sentiment.timeline
-    : [
-        { date: "Terbaru", note: `Pergerakan harga ${tk} menguji level konsolidasi dengan volume wajar.` },
-        { date: "Pekan Lalu", note: "Rilis ikhtisar kinerja tahunan dan pengumuman aksi korporasi." },
-        { date: "Awal Bulan", note: "Peningkatan atensi pelaku pasar pada laporan riset sektoral." },
-      ]
+    : []
 
   const sources = sentiment?.sources || []
 
@@ -49,7 +43,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
   const centerX = 120
   const centerY = 100
   // Angle maps 0 -> -180 deg (left), 100 -> 0 deg (right)
-  const angleDeg = -180 + (gauge / 100) * 180
+  const angleDeg = -180 + ((gauge ?? 0) / 100) * 180
   const angleRad = (angleDeg * Math.PI) / 180
   const needleLength = 62
   const needleX = centerX + needleLength * Math.cos(angleRad)
@@ -102,6 +96,11 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
         {isLoading ? (
           <div className="flex h-48 items-center justify-center text-xs text-neutral-400">
             <span>Memuat visualisasi sentimen {tk}...</span>
+          </div>
+        ) : gauge == null && narratives.length === 0 && timeline.length === 0 ? (
+          <div className="flex h-48 flex-col items-center justify-center gap-1 text-xs text-neutral-400">
+            <span className="font-semibold text-neutral-500 dark:text-neutral-400">Belum ada data sentimen</span>
+            <span>Menunggu Sectors sentiment — tidak ada angka karangan.</span>
           </div>
         ) : activeView === "gauge" ? (
           <div className="grid gap-6 md:grid-cols-12 items-center">
@@ -168,13 +167,13 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
 
               <div className="mt-1 text-center">
                 <div className="text-xl font-bold font-mono text-neutral-900 dark:text-neutral-100">
-                  {gauge} <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">/ 100</span>
+                  {gauge == null ? "—" : gauge} <span className="text-xs font-normal text-neutral-500 dark:text-neutral-400">/ 100</span>
                 </div>
                 <Badge
-                  variant={gauge >= 60 ? "success" : gauge <= 40 ? "destructive" : "secondary"}
+                  variant={gauge == null ? "secondary" : gauge >= 60 ? "success" : gauge <= 40 ? "destructive" : "secondary"}
                   className="mt-1 text-[11px]"
                 >
-                  {gauge >= 60 ? "Bullish" : gauge <= 40 ? "Bearish" : "Neutral"}
+                  {gauge == null ? "Menunggu data" : gauge >= 60 ? "Bullish" : gauge <= 40 ? "Bearish" : "Neutral"}
                 </Badge>
               </div>
             </div>

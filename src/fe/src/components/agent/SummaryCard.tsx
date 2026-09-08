@@ -40,10 +40,12 @@ function parseAnalysisFromEvents(
   ticker: string,
   done: { n_events: number; state_keys: string[]; ms: number } | null
 ): ParsedAnalysis {
-  let rating = "BUY"
+  // LOUD policy: no default BUY / passed-QA claims. Values below only when
+  // real agent outputs (critic/writer/valuation) say so; else pending/empty.
+  let rating = "PENDING"
   let targetPrice: string | null = null
   let upside: string | null = null
-  let verdict = "Lolos Uji QA"
+  let verdict: string | null = null
   const takeaways: string[] = []
 
   // Extract from state deltas across events
@@ -93,11 +95,10 @@ function parseAnalysisFromEvents(
     }
   }
 
-  // Fallback takeaways if not present in writer_output
+  // LOUD policy: no invented fallback takeaways. Empty list renders the
+  // honest-empty state in the card (no Red Team / 4-source claims).
   if (takeaways.length === 0) {
-    takeaways.push("Data historis dan fundamental berhasil dikumpulkan dari 4 sumber (IDX, berita, sentimen publik, konsensus).")
-    takeaways.push(`Model valuasi komprehensif (DCF, DDM, Multiples) telah dihitung secara deterministik untuk saham ${ticker.toUpperCase()}.`)
-    takeaways.push("Argumen tesis telah diuji oleh 2 putaran Red Team dan terverifikasi konsisten oleh QA Arbiter.")
+    // intentionally empty — caller shows pending state
   }
 
   const elapsedSeconds = done ? (done.ms / 1000).toFixed(1) : "0.0"
@@ -106,11 +107,11 @@ function parseAnalysisFromEvents(
   const uniqueAuthors = new Set(events.map((e) => e.author).filter(Boolean))
   const reviewerCount = Array.from(uniqueAuthors).filter((a) =>
     ["adversarial", "critic", "analyst", "risk", "industry"].includes(a)
-  ).length || 4
+  ).length
 
   const sourcesCount = Array.from(uniqueAuthors).filter((a) =>
     ["collector", "news_harvester", "social_sentiment", "news_search_sub"].includes(a)
-  ).length || 3
+  ).length
 
   return {
     rating,

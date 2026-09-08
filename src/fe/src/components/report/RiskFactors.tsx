@@ -27,11 +27,11 @@ export function RiskFactors({
   const isSotp = template.toLowerCase() === "sotp"
   const isInfra = template.toLowerCase() === "infra"
 
-  const leverageTrajectoryNote = isSotp
-    ? "CDIA gearing 96 → 170% + Debt/EBITDA 1.9 → 4.1x : lintasan utang pada pilar-pilar ekspansif memerlukan pemantauan ketat terhadap profil jatuh tempo."
-    : isInfra
-    ? "MTEL DER 0.67 → 0.69x, LT D/E 0.34 → 0.46x, ICR 2.0 → 4.0x : lintasan utang infrastruktur terkendali dengan arus kas kontraktual jangka panjang."
-    : null
+  // LOUD policy: ticker-specific leverage figures were hardcoded demo text
+  // rendered on arbitrary tickers. No leverage note until BE supplies ratios.
+  const leverageTrajectoryNote: string | null = null
+  void isSotp
+  void isInfra
 
   return (
     <section id="risk-factors" className="space-y-4 scroll-mt-28">

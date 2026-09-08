@@ -32,11 +32,16 @@ def _loud_gate_inputs(monkeypatch):
     test-owned inputs into whatever the loader returns (see
     tests/_loud_test_inputs.py). Typography assertions only."""
     import server.report.typst_renderer as TR
-    from tests._loud_test_inputs import inject_gate_inputs
+    from tests._loud_test_inputs import inject_gate_inputs, load_demo_fixture
 
     _orig = TR._load_or_build_report_data
 
     def _wrapped(ticker, archetype="auto"):
+        # Tests declare demo inputs explicitly: fixture file/module first,
+        # live loader only when no demo payload exists for the ticker.
+        demo = load_demo_fixture(ticker)
+        if demo is not None:
+            return demo
         return inject_gate_inputs(_orig(ticker, archetype))
 
     monkeypatch.setattr(TR, "_load_or_build_report_data", _wrapped)
