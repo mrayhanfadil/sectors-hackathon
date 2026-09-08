@@ -31,7 +31,6 @@ import logging
 
 from .config import get_settings
 from .cache import get_cache
-from .stockdata import get_stockdata
 from .logging_config import setup_logging, ProductionHardeningMiddleware
 from .routers.endpoints import router_health, router_report, router_outlook, router_news, router_sentiment, router_challenge, router_dcf, router_universe
 from .routers.agent import router_agent
@@ -54,20 +53,11 @@ _started = time.time()
 async def lifespan(app: FastAPI):
     await startup_hook()
     settings = get_settings()
-    # init cache + stockdata pool
-    cache = get_cache(settings.cache_ttl)
-    sd = get_stockdata()
-    try:
-        await sd.startup()
-    except Exception as e:
-        log.warning(f"stockdata startup failed (Sectors-only, no fallback): {e}")
-    log.info(f"server up — cache ttl {settings.cache_ttl}s, stockdata {settings.stockdata_url}")
+    # init cache (Sectors-only; IDX Postgres pool killed Sep 2026)
+    get_cache(settings.cache_ttl)
+    log.info(f"server up — cache ttl {settings.cache_ttl}s (Sectors-only, no external pools)")
     yield
     log.info("server received shutdown signal (SIGTERM/SIGINT) — initiating graceful shutdown")
-    try:
-        await sd.shutdown()
-    except Exception as e:
-        log.warning(f"error shutting down stockdata pool: {e}")
     log.info("server down — cleanup complete")
 
 
@@ -101,15 +91,13 @@ def create_app() -> FastAPI:
     )
 
     # Enhanced health endpoint exposing mock sectors status, upstream sources, and last call timestamps
-    @app.get("/api/health", summary="Health + stockdata + cache + mock_sectors status", tags=["health"])
+    @app.get("/api/health", summary="Health + cache + mock_sectors status", tags=["health"])
     async def health():
-        sd = get_stockdata()
         cache = get_cache(settings.cache_ttl)
         mock_status = get_mock_sectors_status()
         return {
             "status": "ok",
             "uptime_s": round(time.time() - _started, 1),
-            "stockdata": await sd.health(),
             "cache": await cache.stats(),
             "version": "t04-0.1.0",
             "env": settings.env,

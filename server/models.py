@@ -5,7 +5,6 @@ from typing import Optional, Any, Literal
 class HealthResponse(BaseModel):
     status: str
     uptime_s: float
-    stockdata: dict
     cache: dict
     version: str = "t04-0.1.0"
 

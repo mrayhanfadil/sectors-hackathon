@@ -3,8 +3,6 @@ from functools import lru_cache
 
 
 class Settings(BaseSettings):
-    stockdata_url: str = "http://stockdata:15437"
-    stockdata_timeout: int = 8
     sectors_api_key: str = ""
     sectors_base: str = "https://api.sectors.app/v2"
     cache_ttl: int = 14400  # 4h KV
