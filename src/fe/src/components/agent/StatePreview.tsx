@@ -61,7 +61,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
           variant="secondary"
           className="text-[9px] font-mono text-cyan-300 bg-cyan-950/80 border-cyan-800 px-1.5 py-0 shrink-0"
         >
-          {items.length} KEYS
+          {items.length} KUNCI
         </Badge>
       </CardHeader>
 
@@ -74,7 +74,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
               type="text"
               value={searchKey}
               onChange={(e) => setSearchKey(e.target.value)}
-              placeholder="Search state keys (e.g. dcf, valuation)..."
+              placeholder="Cari kunci data (mis. dcf, valuasi)..."
               className="w-full rounded bg-neutral-900 border border-neutral-800 pl-7 pr-2 py-1 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
             />
           </div>
@@ -88,12 +88,12 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
               <Database className="h-6 w-6 text-neutral-600 mb-2" />
               <p className="font-semibold text-neutral-400">NO ACTIVE STATE MEMORY</p>
               <p className="text-[11px] text-neutral-600 mt-1">
-                State delta keys will populate as pipeline runs or when a run is loaded.
+                Kunci data akan muncul saat mesin berjalan atau saat proses dimuat.
               </p>
             </div>
           ) : filteredItems.length === 0 ? (
             <div className="py-8 text-center text-xs text-neutral-500 font-mono">
-              No state keys matching &quot;{searchKey}&quot;
+              Tidak ada kunci yang cocok dengan &quot;{searchKey}&quot;
             </div>
           ) : (
             filteredItems.map((item) => {
@@ -135,7 +135,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                         {!item.hasValue ? (
                           <div className="font-mono text-[10px] text-neutral-600 flex items-center gap-1.5">
                             <span>-</span>
-                            <span className="italic">(key referenced in delta keys)</span>
+                            <span className="italic">(kunci dirujuk di daftar perubahan)</span>
                           </div>
                         ) : (
                           <div className="font-mono text-[10px] text-neutral-400 line-clamp-1 break-words">
@@ -150,7 +150,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                     <div className="mt-2 pl-5 space-y-1.5">
                       {!item.hasValue ? (
                         <div className="rounded border border-neutral-800 bg-neutral-900/80 px-2.5 py-1.5 font-mono text-[10px] text-neutral-500 italic">
-                          Key referenced in event state delta keys list without direct value payload.
+                          Kunci dirujuk di daftar perubahan tanpa nilai langsung.
                         </div>
                       ) : (
                         <div className="space-y-1.5">
@@ -197,7 +197,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
 
         <div className="border-t border-neutral-800 bg-neutral-900/60 px-3 py-1.5 text-[10px] font-mono text-neutral-400 flex items-center justify-between shrink-0">
           <span>{summaryText}</span>
-          <span className="text-neutral-500">pipeline state cache</span>
+          <span className="text-neutral-500">arsip data mesin</span>
         </div>
       </CardContent>
     </Card>

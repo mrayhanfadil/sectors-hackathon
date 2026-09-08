@@ -876,9 +876,9 @@ function AgentTrace() {
             <summary className="flex cursor-pointer items-center justify-between select-none hover:text-white">
               <div className="flex items-center gap-2">
                 <Code2 className="h-3.5 w-3.5 text-neutral-400" />
-                <span className="font-bold uppercase tracking-wider">RAW FRAME DEBUGGER</span>
+                <span className="font-bold uppercase tracking-wider">DATA MENTAH (DEBUG)</span>
                 <Badge variant="outline" className="font-mono text-[9px] border-neutral-700 text-neutral-400">
-                  {events.length} FRAMES
+                  {events.length} BINGKAI
                 </Badge>
               </div>
               {rawDebugOpen ? (
@@ -890,10 +890,10 @@ function AgentTrace() {
 
             <div className="mt-3 pt-3 border-t border-neutral-900 space-y-3">
               <div>
-                <div className="text-[10px] text-neutral-500 uppercase font-semibold">Active State Keys:</div>
+                <div className="text-[10px] text-neutral-500 uppercase font-semibold">Kunci Aktif:</div>
                 <div className="mt-1 flex flex-wrap gap-1">
                   {stateKeys.length === 0 ? (
-                    <span className="text-neutral-600 italic">No state keys generated yet</span>
+                    <span className="text-neutral-600 italic">Belum ada kunci yang dibuat</span>
                   ) : (
                     stateKeys.map((k) => (
                       <span key={k} className="rounded bg-neutral-900 border border-neutral-800 px-1.5 py-0.2 text-[9px] text-cyan-300 font-mono">
@@ -905,10 +905,10 @@ function AgentTrace() {
               </div>
 
               <div>
-                <div className="text-[10px] text-neutral-500 uppercase font-semibold">Raw JSON Event Frames:</div>
+                <div className="text-[10px] text-neutral-500 uppercase font-semibold">Bingkai Data Mentah:</div>
                 <div className="mt-1 max-h-60 overflow-y-auto rounded bg-black p-2 font-mono text-[10px] text-neutral-300 border border-neutral-900 scrollbar-thin">
                   {events.length === 0 ? (
-                    <div className="text-neutral-600 italic">No raw frames in buffer</div>
+                    <div className="text-neutral-600 italic">Belum ada data mentah</div>
                   ) : (
                     events.map((ev) => (
                       <div key={ev.seq} className="border-b border-neutral-900 py-1.5">

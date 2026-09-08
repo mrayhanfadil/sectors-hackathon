@@ -25,22 +25,22 @@ export interface TraceEvent {
 }
 
 export const AGENT_META_MAP: Record<string, { label: string; phase: string; color: string }> = {
-  collector: { label: "Collector", phase: "Intake", color: "bg-sky-100 text-sky-800 border-sky-300" },
-  news_harvester: { label: "News Harvester", phase: "Intake", color: "bg-amber-100 text-amber-800 border-amber-300" },
-  social_sentiment: { label: "Social Sentiment", phase: "Intake", color: "bg-violet-100 text-violet-800 border-violet-300" },
-  news_search_sub: { label: "News Search Sub", phase: "Intake Search", color: "bg-amber-50 text-amber-800 border-amber-200" },
-  social_search_sub: { label: "Social Search Sub", phase: "Intake Search", color: "bg-violet-50 text-violet-800 border-violet-200" },
-  modeler: { label: "Modeler", phase: "Valuation", color: "bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold" },
-  analyst: { label: "Analyst", phase: "Research", color: "bg-neutral-100 text-neutral-800 border-neutral-300" },
-  industry: { label: "Industry", phase: "Research", color: "bg-teal-100 text-teal-800 border-teal-300" },
-  industry_search_sub: { label: "Industry Search Sub", phase: "Research Search", color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
-  risk: { label: "Risk", phase: "Research", color: "bg-red-100 text-red-800 border-red-300" },
-  kpi: { label: "KPI", phase: "Research", color: "bg-cyan-100 text-cyan-800 border-cyan-300" },
-  writer: { label: "Writer", phase: "Narrative", color: "bg-indigo-100 text-indigo-800 border-indigo-300" },
-  visualizer: { label: "Visualizer", phase: "Charts", color: "bg-pink-100 text-pink-800 border-pink-300" },
-  sotp: { label: "SOTP", phase: "Aggregation", color: "bg-orange-100 text-orange-800 border-orange-300" },
-  adversarial: { label: "Adversarial", phase: "Red Team", color: "bg-rose-100 text-rose-800 border-rose-300" },
-  critic: { label: "Critic", phase: "QA", color: "bg-neutral-900 text-white border-neutral-900" },
+  collector: { label: "Pengumpul Data", phase: "Ambil Data", color: "bg-sky-100 text-sky-800 border-sky-300" },
+  news_harvester: { label: "Pemburu Berita", phase: "Ambil Data", color: "bg-amber-100 text-amber-800 border-amber-300" },
+  social_sentiment: { label: "Pembaca Sentimen", phase: "Ambil Data", color: "bg-violet-100 text-violet-800 border-violet-300" },
+  news_search_sub: { label: "Pencari Berita", phase: "Cari Data", color: "bg-amber-50 text-amber-800 border-amber-200" },
+  social_search_sub: { label: "Pencari Sosmed", phase: "Cari Data", color: "bg-violet-50 text-violet-800 border-violet-200" },
+  modeler: { label: "Penghitung Valuasi", phase: "Hitung Nilai", color: "bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold" },
+  analyst: { label: "Analis", phase: "Riset", color: "bg-neutral-100 text-neutral-800 border-neutral-300" },
+  industry: { label: "Industri", phase: "Riset", color: "bg-teal-100 text-teal-800 border-teal-300" },
+  industry_search_sub: { label: "Pencari Data Industri", phase: "Cari Riset", color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
+  risk: { label: "Risiko", phase: "Riset", color: "bg-red-100 text-red-800 border-red-300" },
+  kpi: { label: "KPI", phase: "Riset", color: "bg-cyan-100 text-cyan-800 border-cyan-300" },
+  writer: { label: "Penulis", phase: "Tulis Laporan", color: "bg-indigo-100 text-indigo-800 border-indigo-300" },
+  visualizer: { label: "Pembuat Grafik", phase: "Grafik", color: "bg-pink-100 text-pink-800 border-pink-300" },
+  sotp: { label: "SOTP", phase: "Gabung Nilai", color: "bg-orange-100 text-orange-800 border-orange-300" },
+  adversarial: { label: "Tim Penguji", phase: "Uji Silang", color: "bg-rose-100 text-rose-800 border-rose-300" },
+  critic: { label: "Reviewer QA", phase: "Periksa Akhir", color: "bg-neutral-900 text-white border-neutral-900" },
 }
 
 export const KNOWN_AGENTS: AgentMeta[] = Object.entries(AGENT_META_MAP).map(([key, meta]) => ({

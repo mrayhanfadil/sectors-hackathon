@@ -187,7 +187,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                     </div>
                     <div className="min-w-0">
                       <div className="text-[9px] font-mono font-medium uppercase tracking-wider text-neutral-500">
-                        PHASE 0{stage.stageNumber}
+                        TAHAP 0{stage.stageNumber}
                       </div>
                       <div className="text-xs font-bold font-mono tracking-tight text-neutral-200 truncate">
                         {stage.title.toUpperCase()}

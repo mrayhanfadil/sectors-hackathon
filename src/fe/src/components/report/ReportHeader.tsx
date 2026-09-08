@@ -300,7 +300,7 @@ export function ReportHeader({
           </Link>
 
           <div className="ml-auto hidden pr-1 font-mono text-[10px] text-neutral-400 sm:block">
-            TERMINAL VER 2.6 // DETERMINISTIC EQUITY ENGINE
+            TERMINAL VER 2.6 // MESIN SAHAM DETERMINISTIK
           </div>
         </div>
       </div>
