@@ -13,11 +13,8 @@ export const Route = (createFileRoute as any)("/report/$ticker/challenge")({
   component: ChallengePage,
 })
 
-// LOUD policy: no seeded debate history. Past "verdict: defend" entries were
-// hardcoded narratives presented as completed Red Team runs. Empty history
-// renders the clean empty state; real user runs persist via localStorage below.
+// LOUD policy: no seeded debate history. Real user runs persist via localStorage below.
 const SEED_CHALLENGES: Record<string, ChallengeEntry[]> = {}
-
 
 function getInitialLog(tk: string): ChallengeEntry[] {
   try {
@@ -146,15 +143,15 @@ function ChallengePage() {
   // Loading skeleton
   if (reportQuery.isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <ReportHeader ticker={tk} activeTab="challenge" />
-        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <Loader2 className="h-6 w-6 animate-spin text-neutral-700 dark:text-neutral-300" />
-            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-              Menyiapkan modul tantangan tesis & debat untuk {tk}...
+        <div className="border border-neutral-300 bg-white p-8 text-center font-mono text-xs dark:border-[#262930] dark:bg-[#121316]">
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-600 dark:text-amber-400" />
+            <p className="font-semibold text-neutral-800 dark:text-neutral-200">
+              TERMINAL :: MENYIAPKAN MODUL TANTANGAN TESIS &amp; DEBAT UNTUK {tk}...
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
               Menginisialisasi agent adversarial dan matriks bukti audit.
             </p>
           </div>
@@ -166,24 +163,24 @@ function ChallengePage() {
   // Offline banner
   if (reportData?.offline) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <ReportHeader
           ticker={tk}
           activeTab="challenge"
           companyName={reportData.name}
           updatedAt={reportData.updatedAt}
         />
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-2xs dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
-          <div className="font-semibold mb-1">Peringatan: Backend Offline</div>
-          <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+        <div className="border border-amber-300 bg-amber-50 p-4 font-mono text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+          <div className="font-bold mb-1">[WARNING] BACKEND OFFLINE</div>
+          <p className="font-sans text-xs leading-relaxed text-amber-800 dark:text-amber-200">
             {reportData.summary}
           </p>
           <Button
             size="sm"
             onClick={() => window.location.reload()}
-            className="mt-3 bg-amber-900 text-white hover:bg-amber-800 text-xs"
+            className="mt-3 h-7 rounded-none bg-amber-900 text-white hover:bg-amber-800 font-mono text-[11px]"
           >
-            Muat Ulang Halaman
+            [F5] MUAT ULANG
           </Button>
         </div>
       </div>
@@ -191,7 +188,7 @@ function ChallengePage() {
   }
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       {/* Shared Report Header */}
       <ReportHeader
         ticker={tk}
@@ -205,27 +202,21 @@ function ChallengePage() {
         source={reportData?.source}
       />
 
-      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
-        <span className="font-semibold text-[#0a0a0a] dark:text-white">Baru mulai baca analisanya? </span>
-        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
-        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar — di halaman ini kamu
-        bisa nanya atau nantang asumsi di balik angka-angka itu, AI-nya bakal jawab pakai data.
+      {/* Terminal Section Header */}
+      <div className="border-l-2 border-l-rose-500 border border-neutral-300 bg-neutral-900/[0.02] px-3 py-2 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-600 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-300">
+        // 03. ADVERSARIAL RED TEAM AUDIT // {tk} IJ &lt;EQUITY&gt; CHAL
       </div>
 
-      {/* Intro Description */}
-      <div className="space-y-1">
-        <h2 className="text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Tantang Asumsi Laporan ({tk})
-        </h2>
-        <p className="text-xs leading-relaxed text-neutral-600 max-w-3xl dark:text-neutral-400">
-          Punya keraguan sama angka di laporan (mis. asumsi pertumbuhan atau biaya modal)? Tulis
-          pertanyaanmu di sini — AI-nya bakal bela atau koreksi jawabannya pakai data, bukan asal setuju.
-        </p>
+      {/* Analyst notice banner */}
+      <div className="border border-neutral-300 bg-white p-3 font-mono text-[11px] leading-relaxed text-neutral-600 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-300">
+        <span className="font-bold text-amber-600 dark:text-amber-400">PROMPT :: ADVERSARIAL PROTOCOL NOTICE &gt; </span>
+        <span className="font-sans text-xs">
+          Uji ketahanan asumsi valuasi emiten (WACC, terminal growth, operating margin, capex). Agen penilai independen akan menguji kritik Anda terhadap data keuangan audited IDX dan memberikan putusan DEFEND, CONCEDE, atau REJECT.
+        </span>
       </div>
 
       {/* 2-Column Responsive Layout: Left Form, Right History */}
-      <div className="grid gap-6 md:grid-cols-12 items-start">
+      <div className="grid gap-4 md:grid-cols-12 items-start">
         {/* Left Column: Interactive Form */}
         <div className="md:col-span-5 lg:col-span-5">
           <ChallengeForm
@@ -249,9 +240,9 @@ function ChallengePage() {
       {/* ADK Run Card - Accessible directly from challenge sub-route */}
       {logData ? (
         <div className="space-y-2 pt-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-            Riwayat Analisis AI Agent ({tk})
-          </h3>
+          <div className="border-l-2 border-l-cyan-500 border border-neutral-300 bg-neutral-900/[0.02] px-3 py-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-600 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-300">
+            // AI AGENT REASONING AUDIT // TRACE LOG ({tk})
+          </div>
           <AdkRunCard
             ticker={tk}
             log={logData.log as Log}
@@ -262,11 +253,11 @@ function ChallengePage() {
       ) : null}
 
       {/* Shared Footer Disclaimer */}
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-500 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
-        <div className="font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-          INFORMASI, BUKAN SARAN INVESTASI
+      <div className="border border-neutral-300 bg-neutral-50/70 p-3 font-mono text-[10px] text-neutral-500 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-400">
+        <div className="font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+          // 05. DATA PROVENANCE &amp; OJK COMPLIANCE //
         </div>
-        <p className="mt-1 leading-relaxed text-[11px] text-neutral-600 dark:text-neutral-400">
+        <p className="mt-1 font-sans text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400">
           Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional (kepatuhan regulasi OJK). Argumen pembelaan dihasilkan oleh sistem multi-agent berbasis data publik emiten.
         </p>
       </div>

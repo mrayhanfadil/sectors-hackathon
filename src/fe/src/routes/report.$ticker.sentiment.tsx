@@ -47,15 +47,15 @@ function SentimentPage() {
   // Loading skeleton
   if (isLoading) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <ReportHeader ticker={tk} activeTab="sentiment" />
-        <div className="rounded-xl border border-neutral-200 bg-white p-8 text-center shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-          <div className="flex flex-col items-center justify-center space-y-3">
-            <Loader2 className="h-6 w-6 animate-spin text-neutral-700 dark:text-neutral-300" />
-            <p className="text-sm font-medium text-neutral-800 dark:text-neutral-200">
-              Memuat data sentimen ritel & analisis narasi untuk {tk}...
+        <div className="border border-neutral-300 bg-white p-8 text-center font-mono text-xs dark:border-[#262930] dark:bg-[#121316]">
+          <div className="flex flex-col items-center justify-center space-y-2">
+            <Loader2 className="h-5 w-5 animate-spin text-amber-600 dark:text-amber-400" />
+            <p className="font-semibold text-neutral-800 dark:text-neutral-200">
+              TERMINAL :: MEMUAT SENTIMEN RITEL &amp; ANALISIS NARASI {tk}...
             </p>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+            <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
               Mengagregasi sinyal sentimen dari Stockbit, X (Twitter), dan media finansial IDX.
             </p>
           </div>
@@ -67,7 +67,7 @@ function SentimentPage() {
   // Error State
   if (sentimentQuery.isError && !sentimentData) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <ReportHeader
           ticker={tk}
           activeTab="sentiment"
@@ -78,15 +78,15 @@ function SentimentPage() {
           upside={reportData?.upside}
           updatedAt={reportData?.updatedAt}
         />
-        <div className="rounded-xl border border-rose-200 bg-rose-50/70 p-6 text-neutral-800 shadow-2xs dark:border-rose-800 dark:bg-rose-950/70 dark:text-neutral-200">
-          <div className="flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-rose-600 shrink-0 mt-0.5 dark:text-rose-400" />
+        <div className="border border-rose-300 bg-rose-50/70 p-4 font-mono text-xs text-neutral-800 dark:border-rose-800 dark:bg-rose-950/70 dark:text-neutral-200">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="h-4 w-4 text-rose-600 shrink-0 mt-0.5 dark:text-rose-400" />
             <div className="space-y-2">
-              <h3 className="text-sm font-semibold text-rose-900 dark:text-rose-100">
-                Gagal memuat data sentimen untuk {tk}
+              <h3 className="font-semibold text-rose-900 dark:text-rose-200">
+                GALAT :: GAGAL MEMUAT DATA SENTIMEN UNTUK {tk}
               </h3>
-              <p className="text-xs text-neutral-600 leading-relaxed dark:text-neutral-400">
-                Terjadi kendala saat menghubungi modul agregasi sentimen. Anda dapat mencoba memuat ulang atau memeriksa status koneksi backend.
+              <p className="font-sans text-xs text-neutral-700 dark:text-neutral-300">
+                Terjadi kendala saat menghubungi modul agregasi sentimen backend.
               </p>
               <Button
                 size="sm"
@@ -95,10 +95,10 @@ function SentimentPage() {
                   sentimentQuery.refetch()
                   newsQuery.refetch()
                 }}
-                className="h-8 gap-1.5 text-xs bg-white cursor-pointer dark:bg-[#111111]"
+                className="h-7 gap-1.5 rounded-none border border-neutral-300 bg-white font-mono text-[11px] cursor-pointer dark:border-[#262930] dark:bg-[#121316]"
               >
-                <RefreshCw className="h-3.5 w-3.5" />
-                <span>Coba Lagi</span>
+                <RefreshCw className="h-3 w-3" />
+                <span>[RETRY] COBA LAGI</span>
               </Button>
             </div>
           </div>
@@ -110,24 +110,24 @@ function SentimentPage() {
   // Offline or Backend unavailable state
   if (reportData?.offline) {
     return (
-      <div className="space-y-6">
+      <div className="space-y-4">
         <ReportHeader
           ticker={tk}
           activeTab="sentiment"
           companyName={reportData.name}
           updatedAt={reportData.updatedAt}
         />
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-sm text-amber-900 shadow-2xs dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
-          <div className="font-semibold mb-1">Peringatan: Backend Offline</div>
-          <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">
+        <div className="border border-amber-300 bg-amber-50 p-4 font-mono text-xs text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-100">
+          <div className="font-bold mb-1">[WARNING] BACKEND OFFLINE</div>
+          <p className="font-sans text-xs leading-relaxed text-amber-800 dark:text-amber-200">
             {reportData.summary}
           </p>
           <Button
             size="sm"
             onClick={() => window.location.reload()}
-            className="mt-3 bg-amber-900 text-white hover:bg-amber-800 text-xs"
+            className="mt-3 h-7 rounded-none bg-amber-900 text-white hover:bg-amber-800 font-mono text-[11px]"
           >
-            Muat Ulang Halaman
+            [F5] MUAT ULANG
           </Button>
         </div>
       </div>
@@ -139,7 +139,7 @@ function SentimentPage() {
   const socialItems = sentimentData?.items || []
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="space-y-4 pb-12">
       {/* Shared Report Header */}
       <ReportHeader
         ticker={tk}
@@ -153,22 +153,17 @@ function SentimentPage() {
         source={reportData?.source}
       />
 
-      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
-        <span className="font-semibold text-[#0a0a0a] dark:text-white">Baru mulai baca sentimen saham? </span>
-        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
-        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar — halaman ini nunjukkin
-        apakah omongan pasar (berita & medsos) sejalan atau malah beda arah sama penilaian analis.
+      {/* Terminal Section Header */}
+      <div className="border-l-2 border-l-amber-500 border border-neutral-300 bg-neutral-900/[0.02] px-3 py-2 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-600 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-300">
+        // 02. SENTIMENT HARVESTER &amp; SOCIAL DIAL // {tk} IJ &lt;EQUITY&gt; SENT
       </div>
 
-      {/* Intro Description */}
-      <div className="space-y-1">
-        <h2 className="text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-          Kata Orang Tentang Saham Ini ({tk})
-        </h2>
-        <p className="text-xs leading-relaxed text-neutral-600 max-w-3xl dark:text-neutral-400">
-          Pemantauan opini ritel publik secara real-time yang memetakan optimisme vs pesimisme pasar di media sosial (Stockbit, X) dan pemberitaan pers IDX. Berguna untuk mengidentifikasi potensi divergensi antara valuasi fundamental institusional dan ekspektasi harga ritel.
-        </p>
+      {/* Analyst notice banner */}
+      <div className="border border-neutral-300 bg-white p-3 font-mono text-[11px] leading-relaxed text-neutral-600 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-300">
+        <span className="font-bold text-amber-600 dark:text-amber-400">PROMPT :: ANALYST NOTICE &gt; </span>
+        <span className="font-sans text-xs">
+          Pemantauan opini ritel memetakan konsensus pasar di media sosial (Stockbit, X) dan pemberitaan pers IDX. Berguna untuk mendeteksi divergensi antara model valuasi fundamental institusional dan ekspektasi harga ritel jangka pendek.
+        </span>
       </div>
 
       {/* Top Stat Cards */}
@@ -197,9 +192,9 @@ function SentimentPage() {
       {/* ADK Run Card - Accessible directly from sentiment sub-route */}
       {logData ? (
         <div className="space-y-2 pt-2">
-          <h3 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 dark:text-neutral-400">
-            Riwayat Analisis AI Agent ({tk})
-          </h3>
+          <div className="border-l-2 border-l-cyan-500 border border-neutral-300 bg-neutral-900/[0.02] px-3 py-1.5 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-600 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-300">
+            // AI AGENT REASONING AUDIT // TRACE LOG ({tk})
+          </div>
           <AdkRunCard
             ticker={tk}
             log={logData.log as Log}
@@ -210,12 +205,12 @@ function SentimentPage() {
       ) : null}
 
       {/* Shared Footer Disclaimer */}
-      <div className="rounded-lg border border-neutral-200 bg-neutral-50 p-4 text-xs text-neutral-500 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-400">
-        <div className="font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-          INFORMASI, BUKAN SARAN INVESTASI
+      <div className="border border-neutral-300 bg-neutral-50/70 p-3 font-mono text-[10px] text-neutral-500 dark:border-[#262930] dark:bg-[#15171c] dark:text-neutral-400">
+        <div className="font-bold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+          // 05. DATA PROVENANCE &amp; OJK COMPLIANCE //
         </div>
-        <p className="mt-1 leading-relaxed text-[11px] text-neutral-600 dark:text-neutral-400">
-          Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional (kepatuhan regulasi OJK). Data sentimen bersumber dari publikasi pihak ketiga yang diagregasikan secara otomatis.
+        <p className="mt-1 font-sans text-[11px] leading-relaxed text-neutral-600 dark:text-neutral-400">
+          Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional (kepatuhan regulasi OJK). Data sentimen bersumber dari agregasi publikasi pihak ketiga tanpa rekayasa bobot.
         </p>
       </div>
     </div>

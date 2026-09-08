@@ -4,7 +4,8 @@ import {
   AlertCircle,
   Loader2,
   ChevronRight,
-  Sparkles,
+  Activity,
+  Layers,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
@@ -44,7 +45,7 @@ function getStageStatus(
     else if (s === "finished") finCount += 1
   }
 
-  // Also check subagents if any
+  // Check subagents if any
   for (const k of stage.allAgents) {
     if (!primaryKeys.includes(k)) {
       const s = agentStatuses[k]
@@ -84,162 +85,173 @@ export const PhaseTimeline = memo(function PhaseTimeline({
   done = null,
   className,
 }: PhaseTimelineProps) {
+  let completedStages = 0
+  for (const st of PIPELINE_STAGES) {
+    const { status } = getStageStatus(st, agentStatuses, done, running)
+    if (status === "finished") completedStages++
+  }
+
   return (
-    <div className={cn("w-full space-y-2.5", className)}>
-      <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-xs">
-        <div className="flex items-center gap-1.5 font-medium text-neutral-700 dark:text-neutral-300">
-          <Sparkles className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
-          <span>Alur Pipeline 5 Tahap AI</span>
+    <div className={cn("w-full rounded-lg border border-neutral-800 bg-neutral-950 p-3.5 space-y-3 font-sans shadow-md", className)}>
+      {/* Header Bar */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-2.5">
+        <div className="flex items-center gap-2">
+          <div className="flex h-6 w-6 items-center justify-center rounded bg-neutral-900 border border-neutral-800 text-emerald-400">
+            <Layers className="h-3.5 w-3.5" />
+          </div>
+          <div>
+            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
+              <span>PIPELINE EXECUTION BLOTTER</span>
+              <span className="text-[10px] text-neutral-500 font-normal">
+                ({completedStages}/5 PHASES COMPLETE)
+              </span>
+            </h3>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-3 text-[11px] text-neutral-500 dark:text-neutral-400">
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-neutral-300" />
-            <span>Menunggu</span>
+
+        {/* Legend */}
+        <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-neutral-400">
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-neutral-700" />
+            <span>QUEUED</span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-amber-500" />
-            <span>Sedang Berjalan</span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
+            <span className="text-amber-300 font-bold">RUNNING</span>
           </span>
-          <span className="flex items-center gap-1.5">
-            <span className="h-2 w-2 rounded-full bg-emerald-500" />
-            <span>Selesai</span>
+          <span className="flex items-center gap-1">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span className="text-emerald-300">DONE</span>
           </span>
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-1">
             <span className="h-2 w-2 rounded-full bg-rose-500" />
-            <span>Kendala</span>
+            <span className="text-rose-300">FAIL</span>
           </span>
         </div>
       </div>
 
-      <div className="overflow-x-auto pb-2 pt-0.5">
-        <div className="flex min-w-[760px] items-stretch gap-2">
-          {PIPELINE_STAGES.map((stage, idx) => {
-            const { status, finishedCount, totalCount } = getStageStatus(
-              stage,
-              agentStatuses,
-              done,
-              running
-            )
-            const StageIcon = stage.icon
-            const isLast = idx === PIPELINE_STAGES.length - 1
+      {/* 5 Stages Grid / Horizontal Rail */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2">
+        {PIPELINE_STAGES.map((stage, idx) => {
+          const { status } = getStageStatus(
+            stage,
+            agentStatuses,
+            done,
+            running
+          )
+          const StageIcon = stage.icon
 
-            let containerStyle = "border-neutral-200 bg-neutral-50/70 text-neutral-600 dark:border-neutral-800 dark:bg-neutral-900/70 dark:text-neutral-400"
-            let badgeStyle = "bg-neutral-100 text-neutral-600 border-neutral-200 dark:bg-neutral-800 dark:text-neutral-300 dark:border-neutral-700"
-            let statusText = "Menunggu"
+          let borderClass = "border-neutral-800 bg-neutral-900/40 text-neutral-400"
+          let statusPill = "bg-neutral-900 border-neutral-700 text-neutral-500"
+          let statusLabel = "QUEUED"
 
-            if (status === "running") {
-              containerStyle = "border-amber-300 bg-amber-50/40 text-neutral-900 ring-1 ring-amber-300 dark:border-amber-800 dark:bg-amber-950/40 dark:text-neutral-100 dark:ring-amber-800"
-              badgeStyle = "bg-amber-100 text-amber-900 border-amber-300 animate-pulse dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800"
-              statusText = "Berjalan"
-            } else if (status === "finished") {
-              containerStyle = "border-emerald-200 bg-emerald-50/30 text-neutral-900 dark:border-emerald-800 dark:bg-emerald-950/30 dark:text-neutral-100"
-              badgeStyle = "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800"
-              statusText = "Selesai"
-            } else if (status === "error") {
-              containerStyle = "border-rose-300 bg-rose-50/50 text-rose-900 dark:border-rose-800 dark:bg-rose-950/50 dark:text-rose-200"
-              badgeStyle = "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800"
-              statusText = "Gagal"
-            }
+          if (status === "running") {
+            borderClass = "border-amber-700/80 bg-amber-950/20 text-neutral-100 ring-1 ring-amber-500/50"
+            statusPill = "bg-amber-950 border-amber-700 text-amber-300 font-bold"
+            statusLabel = "ACTIVE"
+          } else if (status === "finished") {
+            borderClass = "border-emerald-800/80 bg-emerald-950/20 text-neutral-200"
+            statusPill = "bg-emerald-950 border-emerald-700 text-emerald-300"
+            statusLabel = "DONE"
+          } else if (status === "error") {
+            borderClass = "border-rose-800/80 bg-rose-950/30 text-rose-200"
+            statusPill = "bg-rose-950 border-rose-700 text-rose-300 font-bold"
+            statusLabel = "FAIL"
+          }
 
-            return (
-              <div key={stage.id} className="flex flex-1 items-center gap-2">
-                <div
-                  className={cn(
-                    "flex flex-1 flex-col justify-between rounded-md border p-3 shadow-2xs transition-all",
-                    containerStyle
-                  )}
-                >
-                  {/* Stage Header */}
-                  <div>
-                    <div className="flex items-center justify-between gap-1.5">
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={cn(
-                            "flex h-7 w-7 items-center justify-center rounded-lg border",
-                            status === "running"
-                              ? "border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
-                              : status === "finished"
-                              ? "border-emerald-300 bg-emerald-100 text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                              : status === "error"
-                              ? "border-rose-300 bg-rose-100 text-rose-800 dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200"
-                              : "border-neutral-200 bg-white text-neutral-500 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-400"
-                          )}
-                        >
-                          <StageIcon className="h-3.5 w-3.5" />
-                        </div>
-                        <div>
-                          <div className="text-[10px] font-mono font-medium uppercase tracking-wider text-neutral-400 dark:text-neutral-500">
-                            Tahap {stage.stageNumber}
-                          </div>
-                          <div className="text-xs font-semibold text-neutral-900 dark:text-neutral-100">
-                            {stage.title}
-                          </div>
-                        </div>
+          return (
+            <div
+              key={stage.id}
+              className={cn(
+                "flex flex-col justify-between rounded-md border p-2.5 transition-all text-xs font-sans",
+                borderClass
+              )}
+            >
+              <div>
+                {/* Stage Header */}
+                <div className="flex items-start justify-between gap-1">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <div
+                      className={cn(
+                        "flex h-6 w-6 shrink-0 items-center justify-center rounded border text-[11px]",
+                        status === "running"
+                          ? "border-amber-700 bg-amber-950 text-amber-300"
+                          : status === "finished"
+                          ? "border-emerald-700 bg-emerald-950 text-emerald-300"
+                          : status === "error"
+                          ? "border-rose-700 bg-rose-950 text-rose-300"
+                          : "border-neutral-800 bg-neutral-900 text-neutral-500"
+                      )}
+                    >
+                      <StageIcon className="h-3 w-3" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="text-[9px] font-mono font-medium uppercase tracking-wider text-neutral-500">
+                        PHASE 0{stage.stageNumber}
                       </div>
-
-                      <span
-                        className={cn(
-                          "rounded-full border px-2 py-0.5 text-[10px] font-medium",
-                          badgeStyle
-                        )}
-                      >
-                        {statusText}
-                      </span>
-                    </div>
-
-                    {/* Stage Subtitle / Agents list */}
-                    <div className="mt-2 text-[11px] leading-tight text-neutral-500 dark:text-neutral-400">
-                      {stage.agentSubtitle}
+                      <div className="text-xs font-bold font-mono tracking-tight text-neutral-200 truncate">
+                        {stage.title.toUpperCase()}
+                      </div>
                     </div>
                   </div>
 
-                  {/* Sub-agents Indicator Badges */}
-                  <div className="mt-3 flex flex-wrap items-center gap-1.5 pt-2 border-t border-neutral-200/60 dark:border-neutral-700/60">
-                    {stage.primaryAgents.map((aKey) => {
-                      const aMeta = getFriendlyAgent(aKey)
-                      const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
-                      const isSelected = selectedAuthor === aKey
-
-                      return (
-                        <button
-                          key={aKey}
-                          type="button"
-                          onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
-                          className={cn(
-                            "flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-[10px] transition-all",
-                            isSelected
-                              ? "border-neutral-800 bg-neutral-900 text-white shadow-none dark:border-neutral-200 dark:bg-neutral-100 dark:text-neutral-900"
-                              : aStatus === "running"
-                              ? "border-amber-300 bg-white text-amber-900 font-medium dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
-                              : aStatus === "finished"
-                              ? "border-emerald-200 bg-white text-emerald-800 dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-                              : "border-neutral-200 bg-white/80 text-neutral-600 hover:bg-white dark:border-neutral-700 dark:bg-neutral-900/80 dark:text-neutral-300 dark:hover:bg-neutral-900"
-                          )}
-                          title={`${aMeta.title} - Klik untuk memfilter aktivitas`}
-                        >
-                          {aStatus === "running" ? (
-                            <Loader2 className="h-2.5 w-2.5 animate-spin text-amber-600" />
-                          ) : aStatus === "finished" ? (
-                            <CheckCircle2 className="h-2.5 w-2.5 text-emerald-600" />
-                          ) : aStatus === "error" ? (
-                            <AlertCircle className="h-2.5 w-2.5 text-rose-600" />
-                          ) : (
-                            <span className="h-1.5 w-1.5 rounded-full bg-neutral-300" />
-                          )}
-                          <span>{aMeta.shortLabel}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
+                  <span
+                    className={cn(
+                      "rounded border px-1.5 py-0.2 text-[9px] font-mono",
+                      statusPill
+                    )}
+                  >
+                    {statusLabel}
+                  </span>
                 </div>
 
-                {!isLast && (
-                  <ChevronRight className="h-4 w-4 shrink-0 text-neutral-300 dark:text-neutral-700" />
-                )}
+                {/* Subtitle */}
+                <p className="mt-1.5 text-[10px] text-neutral-400 line-clamp-2 leading-tight">
+                  {stage.description}
+                </p>
               </div>
-            )
-          })}
-        </div>
+
+              {/* Subagents Chips */}
+              <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex flex-wrap gap-1">
+                {stage.primaryAgents.map((aKey) => {
+                  const aMeta = getFriendlyAgent(aKey)
+                  const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
+                  const isSelected = selectedAuthor === aKey
+
+                  return (
+                    <button
+                      key={aKey}
+                      type="button"
+                      onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
+                      className={cn(
+                        "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono transition-colors border",
+                        isSelected
+                          ? "border-emerald-400 bg-emerald-950 text-emerald-200 font-bold"
+                          : aStatus === "running"
+                          ? "border-amber-700 bg-amber-950/80 text-amber-200 font-semibold"
+                          : aStatus === "finished"
+                          ? "border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500"
+                          : "border-neutral-800/80 bg-neutral-950 text-neutral-500 hover:border-neutral-700"
+                      )}
+                      title={`${aMeta.title} (${aStatus}) - Click to filter events`}
+                    >
+                      {aStatus === "running" ? (
+                        <Loader2 className="h-2 w-2 animate-spin text-amber-400" />
+                      ) : aStatus === "finished" ? (
+                        <CheckCircle2 className="h-2 w-2 text-emerald-400" />
+                      ) : aStatus === "error" ? (
+                        <AlertCircle className="h-2 w-2 text-rose-400" />
+                      ) : (
+                        <span className="h-1.5 w-1.5 rounded-full bg-neutral-700" />
+                      )}
+                      <span>{aMeta.shortLabel}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )
+        })}
       </div>
     </div>
   )

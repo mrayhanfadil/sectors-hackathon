@@ -143,3 +143,8 @@ with explicit approval since render tests consume them explicitly).
   endpoints.py (outlook 503), no OutlookResponse in models.py.
 - Residual: strategy tables (9100 target, Top Picks) have source labels but no
   ilustratif note; templates sotp/infra/strategy re-mirror still pending.
+
+## T-revamp Bloomberg-terminal FE (2026-09-08, 3x AGY 3.7-flash-high fallback — 3.8 stalled on 90s probe, answered late 2652B)
+T1 report routes + components/report (15 files), T2 agent.tsx + components/agent (10 + new RunCommandPalette), T3 shell/hub/mock/css (4). tsc 0 + build OK per lane, verified independently.
+Orchestrator anti-overclaim fixes: FEED LIVE -> FEED·SNAPSHOT, OJK-compliance footer -> DISCLAIMER RISET (Sectors API pending), hub 5/5 TERHUBUNG LIVE -> PANTAU 5 EMITEN·SNAPSHOT, REAL-TIME deck -> SNAPSHOT deck, via-Sectors-API source -> snapshot-IDX, 100%-live-audited edu claim -> BE-bound/PENDING, 11 AGENTS hardcoded -> {KNOWN_AGENTS.length} (16, single source with rail). Agent latency/STREAMING/QUEUED verified real-gated. DcfFriend untouched by lanes (dark: variants present, no clash). Render-verified via headless dump-dom (vision service 500): offline honest states, zero overclaim strings. vision_analyze down — visual aesthetic (density, alignment) NOT yet human-verified.
+Residual: FE has no test runner (NO-RUNNER) — null-state regressions unpinned; DcfFriend light-mode classes predate console theme.

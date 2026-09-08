@@ -1,4 +1,4 @@
-import { Users, Leaf, LineChart, Target } from "lucide-react"
+import { Users, Leaf, LineChart, Target, Hash } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { RecommendationBadge } from "./RecommendationBadge"
@@ -32,7 +32,7 @@ export interface ExecutiveSummaryProps {
   }
 }
 
-function Sparkline({ values, width = 140, height = 32 }: { values: number[]; width?: number; height?: number }) {
+function Sparkline({ values, width = 160, height = 32 }: { values: number[]; width?: number; height?: number }) {
   if (!Array.isArray(values) || values.length < 2) return null
   const min = Math.min(...values)
   const max = Math.max(...values)
@@ -45,18 +45,31 @@ function Sparkline({ values, width = 140, height = 32 }: { values: number[]; wid
     })
     .join(" ")
   return (
-    <svg width={width} height={height} className="text-neutral-800 dark:text-neutral-200">
-      <polyline points={points} fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" />
+    <svg width={width} height={height} className="text-emerald-600 dark:text-emerald-400">
+      <polyline
+        points={points}
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   )
 }
 
 function ShareholderBar({ holders, source }: { holders?: { name: string; pct: number }[]; source?: string }) {
   if (!holders || holders.length === 0) return null
-  const colors = ["bg-neutral-900 dark:bg-neutral-800", "bg-neutral-600 dark:bg-neutral-500", "bg-neutral-400 dark:bg-neutral-600", "bg-emerald-600", "bg-amber-500"]
+  const colors = [
+    "bg-amber-500",
+    "bg-sky-500",
+    "bg-emerald-500",
+    "bg-purple-500",
+    "bg-neutral-400",
+  ]
   return (
     <div className="space-y-3">
-      <div className="flex h-2.5 overflow-hidden rounded-full border border-neutral-200 dark:border-neutral-800">
+      <div className="flex h-2 overflow-hidden rounded-xs border border-neutral-300 dark:border-[#262930]">
         {holders.map((h, i) => (
           <div
             key={h.name}
@@ -66,16 +79,23 @@ function ShareholderBar({ holders, source }: { holders?: { name: string; pct: nu
           />
         ))}
       </div>
-      <div className="flex flex-wrap gap-2">
+      <div className="grid gap-1.5 sm:grid-cols-2">
         {holders.map((h, i) => (
-          <span key={h.name} className="inline-flex items-center gap-1.5 rounded-md border border-neutral-200 bg-white px-2.5 py-1 text-xs text-neutral-700 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-300">
-            <span className={`h-2 w-2 rounded-full ${colors[i % colors.length]}`} />
-            <span className="font-medium text-neutral-900 dark:text-neutral-100">{h.name}</span>
-            <span className="font-mono text-neutral-500 dark:text-neutral-400">{h.pct}%</span>
-          </span>
+          <div
+            key={h.name}
+            className="flex items-center justify-between rounded border border-neutral-200 bg-neutral-50 px-2.5 py-1 text-xs font-mono dark:border-[#262930] dark:bg-[#121316]"
+          >
+            <span className="flex items-center gap-1.5 truncate text-neutral-800 dark:text-neutral-200">
+              <span className={`h-2 w-2 shrink-0 rounded-xs ${colors[i % colors.length]}`} />
+              <span className="truncate">{h.name}</span>
+            </span>
+            <span className="ml-2 font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
+              {h.pct}%
+            </span>
+          </div>
         ))}
       </div>
-      {source && <p className="text-[11px] text-neutral-400">Sumber: {source}</p>}
+      {source && <p className="font-mono text-[10px] text-neutral-400">SRC: {source}</p>}
     </div>
   )
 }
@@ -100,52 +120,57 @@ export function ExecutiveSummary({
   const hasTakeaways = takeaways.length > 0
 
   return (
-    <section id="executive-summary" className="space-y-4 scroll-mt-28">
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
-            1. Ringkasan Eksekutif
+    <section id="executive-summary" className="space-y-3 scroll-mt-28">
+      {/* Terminal Section Header */}
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
+        <div className="flex items-center gap-2">
+          <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+            01
+          </span>
+          <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
+            {tk} IJ &lt;EQUITY&gt; // EXECUTIVE SUMMARY &amp; INVESTMENT THESIS
           </h2>
-          <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            Tesis investasi utama, profil rekomendasi, dan perbandingan kinerja pasar
-          </p>
         </div>
+        <span className="font-mono text-[10px] text-neutral-400">
+          BENCHMARK: JCI (IHSG) · DETERMINISTIC AUDIT
+        </span>
       </div>
 
       {/* Main Narrative Card */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-md border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-2">
-              <Target className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
-              <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Tesis Investasi & Pandangan Inti
+              <Target className="h-4 w-4 text-amber-500" />
+              <CardTitle className="font-mono text-xs font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
+                CORE THESIS &amp; RATIONALE
               </CardTitle>
             </div>
             <RecommendationBadge rating={rating} targetPrice={target} upside={upside} showTarget size="sm" />
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-2 space-y-4">
-          <p className="text-sm leading-relaxed text-neutral-700 font-normal dark:text-neutral-300">
+        <CardContent className="space-y-3 p-3 pt-3">
+          <p className="text-xs leading-relaxed text-neutral-800 dark:text-neutral-200">
             {summary}
           </p>
 
-          {/* Key Takeaways (3-5 Bullet Points) */}
+          {/* Key Takeaways */}
           {hasTakeaways && (
-            <div className="space-y-2 border-t border-neutral-100 pt-3 dark:border-neutral-800">
-              <div className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                Poin Kunci (Key Takeaways)
+            <div className="space-y-2 border-t border-neutral-200 pt-2.5 dark:border-[#1f2228]">
+              <div className="flex items-center gap-1.5 font-mono text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+                <Hash className="h-3 w-3" />
+                <span>KEY VALUE DRIVERS &amp; TAKEAWAYS</span>
               </div>
-              <div className="grid gap-2">
+              <div className="grid gap-1.5">
                 {takeaways.map((item, idx) => (
                   <div
                     key={idx}
-                    className="flex items-start gap-2.5 rounded-lg border border-neutral-100 bg-neutral-50/60 p-2.5 text-xs text-neutral-800 dark:border-neutral-800 dark:bg-neutral-900/60 dark:text-neutral-200"
+                    className="flex items-start gap-2.5 rounded border border-neutral-200 bg-neutral-50/80 p-2 text-xs leading-relaxed text-neutral-800 dark:border-[#262930] dark:bg-[#181a1f]/60 dark:text-neutral-200"
                   >
-                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white dark:bg-neutral-800">
-                      {idx + 1}
+                    <span className="flex h-4 w-5 shrink-0 items-center justify-center rounded-xs bg-neutral-900 font-mono text-[10px] font-bold text-amber-400 dark:bg-[#262930] dark:text-amber-400">
+                      [{String(idx + 1).padStart(2, "0")}]
                     </span>
-                    <span className="pt-0.5 leading-relaxed">{item}</span>
+                    <span className="pt-0.5">{item}</span>
                   </div>
                 ))}
               </div>
@@ -155,51 +180,51 @@ export function ExecutiveSummary({
       </Card>
 
       {/* Grid: vs JCI + Shareholder + ESG */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-3 md:grid-cols-2">
         {/* Kinerja vs IHSG */}
         {vsJci && (
-          <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-            <CardHeader className="p-4 pb-2">
+          <Card className="rounded-md border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <LineChart className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
-                  <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                    Kinerja vs IHSG (YTD)
+                  <LineChart className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                  <CardTitle className="font-mono text-xs font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
+                    PERFORMANCE VS JCI (YTD)
                   </CardTitle>
                 </div>
-                <div className="flex items-center gap-1.5">
-                  <Badge variant="secondary" className="text-xs font-mono">
-                    Abs {vsJci.ytd_abs != null ? `${vsJci.ytd_abs > 0 ? "+" : ""}${vsJci.ytd_abs}%` : "-"}
+                <div className="flex items-center gap-1 font-mono text-xs">
+                  <Badge variant="outline" className="border-neutral-300 px-1.5 py-px text-[10px] tabular-nums dark:border-[#262930]">
+                    ABS {vsJci.ytd_abs != null ? `${vsJci.ytd_abs > 0 ? "+" : ""}${vsJci.ytd_abs}%` : "—"}
                   </Badge>
-                  <Badge variant="outline" className="text-xs font-mono bg-neutral-50 dark:bg-neutral-900">
-                    Rel {vsJci.ytd_rel != null ? `${vsJci.ytd_rel > 0 ? "+" : ""}${vsJci.ytd_rel}%` : "-"}
+                  <Badge variant="outline" className="border-neutral-300 px-1.5 py-px text-[10px] tabular-nums dark:border-[#262930]">
+                    REL {vsJci.ytd_rel != null ? `${vsJci.ytd_rel > 0 ? "+" : ""}${vsJci.ytd_rel}%` : "—"}
                   </Badge>
                 </div>
               </div>
-              <CardDescription className="text-[11px] text-neutral-400">
-                {vsJci.source ?? "Sectors API"}
+              <CardDescription className="font-mono text-[10px] text-neutral-400">
+                BENCHMARK: {vsJci.source ?? "SECTORS HISTORICAL TICK"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-2 space-y-3">
+            <CardContent className="space-y-2.5 p-3 pt-2.5">
               {/* Monthly label list */}
               {vsJci.chart?.labels && vsJci.chart.series && (
-                <div className="overflow-x-auto rounded border border-neutral-100 bg-neutral-50/50 p-2 dark:border-neutral-800 dark:bg-neutral-900/50">
-                  <div className="flex gap-1 text-[10px] text-neutral-400 pb-1 border-b border-neutral-200/60 dark:border-neutral-800/60">
-                    <span className="w-14 font-medium">Bulan</span>
+                <div className="overflow-x-auto rounded border border-neutral-200 bg-neutral-50/60 p-2 font-mono text-[11px] dark:border-[#262930] dark:bg-[#181a1f]/50">
+                  <div className="flex gap-1 border-b border-neutral-200 pb-1 text-[10px] text-neutral-400 dark:border-[#262930]">
+                    <span className="w-12 font-bold uppercase">PERIOD</span>
                     {vsJci.chart.labels.map((l) => (
-                      <span key={l} className="w-7 text-center font-mono">{l.slice(0, 3)}</span>
+                      <span key={l} className="w-8 text-center">{l.slice(0, 3)}</span>
                     ))}
                   </div>
-                  <div className="flex gap-1 text-[11px] text-neutral-800 py-1 font-mono dark:text-neutral-200">
-                    <span className="w-14 font-semibold text-neutral-900 dark:text-neutral-100">{tk}</span>
+                  <div className="flex gap-1 py-1 font-bold text-neutral-900 dark:text-neutral-100">
+                    <span className="w-12 text-amber-500">{tk}</span>
                     {vsJci.chart.series[0]?.map((v, i) => (
-                      <span key={i} className="w-7 text-center">{v}</span>
+                      <span key={i} className="w-8 text-center tabular-nums">{v}</span>
                     ))}
                   </div>
-                  <div className="flex gap-1 text-[11px] text-neutral-500 font-mono dark:text-neutral-400">
-                    <span className="w-14 font-medium">IHSG</span>
+                  <div className="flex gap-1 text-neutral-500 dark:text-neutral-400">
+                    <span className="w-12 font-semibold">IHSG</span>
                     {vsJci.chart.series[1]?.map((v, i) => (
-                      <span key={i} className="w-7 text-center">{v}</span>
+                      <span key={i} className="w-8 text-center tabular-nums">{v}</span>
                     ))}
                   </div>
                 </div>
@@ -208,18 +233,18 @@ export function ExecutiveSummary({
               {/* Sparklines */}
               {rawChart && rawChart.length > 1 ? (
                 <div className="pt-1">
-                  <Sparkline values={rawChart} width={260} height={36} />
+                  <Sparkline values={rawChart} width={280} height={32} />
                 </div>
               ) : vsJci.chart?.series?.[0] && vsJci.chart.series[0].length > 1 ? (
-                <div className="flex flex-wrap items-center gap-4 pt-1">
-                  <div className="flex items-center gap-2 text-xs text-neutral-700 dark:text-neutral-300">
-                    <span className="font-semibold font-mono">{tk}:</span>
-                    <Sparkline values={vsJci.chart.series[0]} width={120} height={28} />
+                <div className="flex flex-wrap items-center gap-4 pt-1 font-mono text-xs">
+                  <div className="flex items-center gap-1.5 text-neutral-700 dark:text-neutral-300">
+                    <span className="font-bold text-amber-500">{tk}:</span>
+                    <Sparkline values={vsJci.chart.series[0]} width={110} height={24} />
                   </div>
                   {vsJci.chart.series[1] && (
-                    <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-                      <span className="font-medium">IHSG:</span>
-                      <Sparkline values={vsJci.chart.series[1]} width={120} height={28} />
+                    <div className="flex items-center gap-1.5 text-neutral-500 dark:text-neutral-400">
+                      <span className="font-semibold">IHSG:</span>
+                      <Sparkline values={vsJci.chart.series[1]} width={110} height={24} />
                     </div>
                   )}
                 </div>
@@ -230,19 +255,19 @@ export function ExecutiveSummary({
 
         {/* Struktur Pemegang Saham */}
         {hasShareholders && (
-          <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-            <CardHeader className="p-4 pb-2">
+          <Card className="rounded-md border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
               <div className="flex items-center gap-2">
-                <Users className="h-4 w-4 text-neutral-700 dark:text-neutral-300" />
-                <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                  Struktur Pemegang Saham
+                <Users className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
+                <CardTitle className="font-mono text-xs font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
+                  MAJOR SHAREHOLDERS &amp; FREE FLOAT
                 </CardTitle>
               </div>
-              <CardDescription className="text-[11px] text-neutral-400">
-                {shareholdersSrc ?? "Keterbukaan Informasi IDX"}
+              <CardDescription className="font-mono text-[10px] text-neutral-400">
+                {shareholdersSrc ?? "IDX DISCLOSURE / ANNUAL AUDIT"}
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 pt-2">
+            <CardContent className="p-3 pt-2.5">
               <ShareholderBar holders={shareholders} source={shareholdersSrc ?? undefined} />
             </CardContent>
           </Card>
@@ -250,37 +275,37 @@ export function ExecutiveSummary({
 
         {/* ESG Box (if found) */}
         {esg?.found && esg.scores && (
-          <Card className="border-neutral-200 bg-white shadow-2xs md:col-span-2 dark:border-neutral-800 dark:bg-[#111111]">
-            <CardHeader className="p-4 pb-2">
+          <Card className="rounded-md border border-neutral-300 bg-white shadow-none md:col-span-2 dark:border-[#262930] dark:bg-[#121316]">
+            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Leaf className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
-                  <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                    Skor Keberlanjutan & ESG
+                  <Leaf className="h-4 w-4 text-emerald-500" />
+                  <CardTitle className="font-mono text-xs font-bold uppercase tracking-wide text-neutral-900 dark:text-neutral-100">
+                    SUSTAINABILITY &amp; ESG SCORECARD
                   </CardTitle>
                 </div>
-                <span className="text-[11px] text-neutral-400 font-mono">
+                <span className="font-mono text-[10px] text-neutral-400">
                   {esg.source} · {esg.date}
                 </span>
               </div>
             </CardHeader>
-            <CardContent className="p-4 pt-2 space-y-2">
-              <div className="grid grid-cols-3 gap-3 text-center">
-                <div className="rounded-lg border border-neutral-100 bg-neutral-50/80 p-2.5 dark:border-neutral-800 dark:bg-neutral-900/80">
-                  <div className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Environmental (E)</div>
-                  <div className="text-base font-bold font-mono text-neutral-900 dark:text-neutral-100">{esg.scores.e}</div>
+            <CardContent className="space-y-2 p-3 pt-2.5">
+              <div className="grid grid-cols-3 gap-2 text-center font-mono">
+                <div className="rounded border border-neutral-200 bg-neutral-50 p-2 dark:border-[#262930] dark:bg-[#181a1f]">
+                  <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">ENVIRONMENT (E)</div>
+                  <div className="mt-0.5 text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">{esg.scores.e}</div>
                 </div>
-                <div className="rounded-lg border border-neutral-100 bg-neutral-50/80 p-2.5 dark:border-neutral-800 dark:bg-neutral-900/80">
-                  <div className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Social (S)</div>
-                  <div className="text-base font-bold font-mono text-neutral-900 dark:text-neutral-100">{esg.scores.s}</div>
+                <div className="rounded border border-neutral-200 bg-neutral-50 p-2 dark:border-[#262930] dark:bg-[#181a1f]">
+                  <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">SOCIAL (S)</div>
+                  <div className="mt-0.5 text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">{esg.scores.s}</div>
                 </div>
-                <div className="rounded-lg border border-neutral-100 bg-neutral-50/80 p-2.5 dark:border-neutral-800 dark:bg-neutral-900/80">
-                  <div className="text-[11px] font-medium text-neutral-500 dark:text-neutral-400">Governance (G)</div>
-                  <div className="text-base font-bold font-mono text-neutral-900 dark:text-neutral-100">{esg.scores.g}</div>
+                <div className="rounded border border-neutral-200 bg-neutral-50 p-2 dark:border-[#262930] dark:bg-[#181a1f]">
+                  <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">GOVERNANCE (G)</div>
+                  <div className="mt-0.5 text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">{esg.scores.g}</div>
                 </div>
               </div>
-              <p className="text-[11px] text-neutral-400">
-                Skor ESG dari penyedia data terverifikasi (Sustainalytics/IDX). Hanya ditampilkan jika data resmi tersedia.
+              <p className="font-mono text-[10px] text-neutral-400">
+                Verified ESG data from primary issuer disclosure. Rendered strictly when verified score is available.
               </p>
             </CardContent>
           </Card>
@@ -289,3 +314,4 @@ export function ExecutiveSummary({
     </section>
   )
 }
+

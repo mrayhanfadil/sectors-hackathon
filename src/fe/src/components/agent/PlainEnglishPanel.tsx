@@ -6,8 +6,10 @@ import {
   Clock,
   Code2,
   Filter,
-  Layers,
-  Sparkles,
+  Search,
+  ArrowDownCircle,
+  Copy,
+  Check,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -16,10 +18,11 @@ import { cn } from "@/lib/utils"
 import {
   getFriendlyAgent,
   getEventActionDescription,
-  formatDurationMs,
   formatTimestamp,
   type TraceEvent,
 } from "./AGENT_FRIENDLY_META"
+import { FunctionCallCard } from "./FunctionCallCard"
+import { FunctionResponseCard } from "./FunctionResponseCard"
 
 export interface PlainEnglishPanelProps {
   events: TraceEvent[]
@@ -30,22 +33,40 @@ export interface PlainEnglishPanelProps {
   className?: string
 }
 
-/** Static dark-mode companions for dynamic agent badge colors (kept literal for Tailwind). */
-function darkBadgeClasses(badgeBg: string): string {
-  if (badgeBg.includes("neutral-900")) return "dark:border-neutral-300 dark:bg-neutral-100 dark:text-neutral-900"
-  if (badgeBg.includes("neutral-")) return "dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
-  if (badgeBg.includes("sky-")) return "dark:border-sky-800 dark:bg-sky-950 dark:text-sky-200"
-  if (badgeBg.includes("amber-")) return "dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200"
-  if (badgeBg.includes("violet-")) return "dark:border-violet-800 dark:bg-violet-950 dark:text-violet-200"
-  if (badgeBg.includes("emerald-")) return "dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-200"
-  if (badgeBg.includes("teal-")) return "dark:border-teal-800 dark:bg-teal-950 dark:text-teal-200"
-  if (badgeBg.includes("rose-")) return "dark:border-rose-800 dark:bg-rose-950 dark:text-rose-200"
-  if (badgeBg.includes("cyan-")) return "dark:border-cyan-800 dark:bg-cyan-950 dark:text-cyan-200"
-  if (badgeBg.includes("indigo-")) return "dark:border-indigo-800 dark:bg-indigo-950 dark:text-indigo-200"
-  if (badgeBg.includes("pink-")) return "dark:border-pink-800 dark:bg-pink-950 dark:text-pink-200"
-  if (badgeBg.includes("orange-")) return "dark:border-orange-800 dark:bg-orange-950 dark:text-orange-200"
-  if (badgeBg.includes("red-")) return "dark:border-red-800 dark:bg-red-950 dark:text-red-200"
-  return "dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300"
+function getAgentTerminalColor(author: string): { bg: string; text: string; border: string } {
+  switch (author) {
+    case "collector":
+      return { bg: "bg-sky-950/80", text: "text-sky-300", border: "border-sky-800" }
+    case "news_harvester":
+    case "news_search_sub":
+      return { bg: "bg-amber-950/80", text: "text-amber-300", border: "border-amber-800" }
+    case "social_sentiment":
+    case "social_search_sub":
+      return { bg: "bg-purple-950/80", text: "text-purple-300", border: "border-purple-800" }
+    case "modeler":
+      return { bg: "bg-emerald-950/80", text: "text-emerald-300", border: "border-emerald-700" }
+    case "analyst":
+      return { bg: "bg-slate-900", text: "text-slate-200", border: "border-slate-700" }
+    case "industry":
+    case "industry_search_sub":
+      return { bg: "bg-teal-950/80", text: "text-teal-300", border: "border-teal-800" }
+    case "risk":
+      return { bg: "bg-rose-950/80", text: "text-rose-300", border: "border-rose-800" }
+    case "kpi":
+      return { bg: "bg-cyan-950/80", text: "text-cyan-300", border: "border-cyan-800" }
+    case "writer":
+      return { bg: "bg-indigo-950/80", text: "text-indigo-300", border: "border-indigo-800" }
+    case "visualizer":
+      return { bg: "bg-pink-950/80", text: "text-pink-300", border: "border-pink-800" }
+    case "sotp":
+      return { bg: "bg-orange-950/80", text: "text-orange-300", border: "border-orange-800" }
+    case "adversarial":
+      return { bg: "bg-red-950/90", text: "text-red-300", border: "border-red-700" }
+    case "critic":
+      return { bg: "bg-neutral-800", text: "text-emerald-200", border: "border-emerald-600" }
+    default:
+      return { bg: "bg-neutral-900", text: "text-neutral-300", border: "border-neutral-700" }
+  }
 }
 
 interface EventRowProps {
@@ -58,7 +79,7 @@ interface EventRowProps {
 function EventRow({ event, prevEvent, ticker }: EventRowProps) {
   const [expanded, setExpanded] = useState(false)
   const agent = getFriendlyAgent(event.author)
-  const AgentIcon = agent.icon
+  const colors = getAgentTerminalColor(event.author)
 
   const actionText = useMemo(() => {
     return getEventActionDescription(event, ticker)
@@ -72,149 +93,130 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
   }, [event, prevEvent])
 
   const hasTechDetails =
-    event.function_calls?.length > 0 ||
-    event.function_responses?.length > 0 ||
-    event.state_delta_keys?.length > 0 ||
+    (event.function_calls && event.function_calls.length > 0) ||
+    (event.function_responses && event.function_responses.length > 0) ||
+    (event.state_delta_keys && event.state_delta_keys.length > 0) ||
     Boolean(event.branch) ||
     Boolean(event.transfer_to)
 
-  return (
-    <div className="group border-b border-neutral-100 p-3.5 transition-colors hover:bg-neutral-50/80 dark:border-neutral-800 dark:hover:bg-neutral-900/80">
-      <div className="flex items-start justify-between gap-3">
-        {/* Agent badge + sequence */}
-        <div className="flex flex-wrap items-center gap-2">
-          <div
-            className={cn(
-              "inline-flex items-center gap-1.5 rounded-md border px-2 py-0.5 text-xs font-medium",
-              agent.badgeBg,
-              agent.badgeText,
-              agent.badgeBorder,
-              darkBadgeClasses(agent.badgeBg)
-            )}
-          >
-            <AgentIcon className="h-3.5 w-3.5 shrink-0" />
-            <span>{agent.shortLabel}</span>
-          </div>
+  const formattedSeq = String(event.seq).padStart(4, "0")
 
-          <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-500">
-            #{event.seq}
+  return (
+    <div className="group border-b border-neutral-900 p-2.5 transition-colors hover:bg-neutral-900/50 font-mono text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Sequence + Agent tag + Event type */}
+        <div className="flex flex-wrap items-center gap-2">
+          <span className="text-[11px] font-mono text-cyan-400 font-bold">
+            #{formattedSeq}
           </span>
 
-          {event.event_type && event.event_type !== "text" && (
-            <span className="rounded bg-neutral-100 px-1.5 py-0.2 font-mono text-[10px] text-neutral-500 dark:bg-neutral-800 dark:text-neutral-400">
+          <span
+            className={cn(
+              "inline-flex items-center gap-1 rounded border px-1.5 py-0.2 text-[10px] font-mono font-bold tracking-tight",
+              colors.bg,
+              colors.text,
+              colors.border
+            )}
+          >
+            {agent.shortLabel.toUpperCase()}
+          </span>
+
+          {event.event_type && (
+            <span className="rounded bg-neutral-900 px-1 py-0.2 font-mono text-[9px] text-neutral-400 border border-neutral-800 uppercase">
               {event.event_type}
             </span>
           )}
-        </div>
 
-        {/* Timestamp + latency */}
-        <div className="flex shrink-0 items-center gap-2 text-right">
-          {latencyMs !== null && latencyMs > 0 && (
-            <span className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
-              <Clock className="h-3 w-3 text-neutral-400" />
-              {formatDurationMs(latencyMs)}
+          {event.node && (
+            <span className="text-[10px] font-mono text-neutral-500">
+              node:{event.node}
             </span>
           )}
-          <span className="font-mono text-[11px] text-neutral-400 dark:text-neutral-500">
-            {formatTimestamp(event.ts)}
-          </span>
+        </div>
+
+        {/* Timestamp + Real latency diff */}
+        <div className="flex items-center gap-2 text-right text-[10px] font-mono text-neutral-500">
+          {latencyMs !== null && latencyMs > 0 && (
+            <span className="text-emerald-400/90 font-medium">
+              +{latencyMs}ms
+            </span>
+          )}
+          <span>{formatTimestamp(event.ts)}</span>
         </div>
       </div>
 
-      {/* Main plain Indonesian 1-line action description */}
-      <div className="mt-2">
-        <p className="text-sm font-medium leading-normal text-neutral-900 dark:text-neutral-100">
+      {/* Main Action Line */}
+      <div className="mt-1.5">
+        <p className="text-xs font-mono font-medium leading-normal text-neutral-200">
           {actionText}
         </p>
 
-        {/* Narrative text snippet if available */}
+        {/* Text snippet if available */}
         {event.text && event.text.trim().length > 0 && (
-          <div className="mt-2 rounded-lg border border-neutral-200 bg-white p-2.5 text-xs leading-relaxed text-neutral-700 shadow-2xs dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-300">
-            <div className="font-sans whitespace-pre-wrap break-words">
-              {event.text.length > 350
-                ? `${event.text.slice(0, 350)}...`
+          <div className="mt-1.5 rounded bg-black/80 border border-neutral-800/80 p-2 text-[11px] font-mono leading-relaxed text-neutral-300">
+            <div className="whitespace-pre-wrap break-words">
+              {event.text.length > 500
+                ? `${event.text.slice(0, 500)}…`
                 : event.text}
             </div>
           </div>
         )}
       </div>
 
-      {/* Technical details toggle */}
+      {/* Function Calls / Responses / Delta keys preview */}
       {hasTechDetails && (
-        <div className="mt-2.5">
+        <div className="mt-2">
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 transition-colors hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-100"
+            className="flex items-center gap-1 text-[10px] font-mono text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"
           >
-            <Code2 className="h-3 w-3 text-neutral-400" />
-            <span>{expanded ? "Tutup detail teknis" : "Lihat detail teknis"}</span>
+            <Code2 className="h-3 w-3 text-neutral-500" />
+            <span>{expanded ? "HIDE PAYLOAD" : "INSPECT PAYLOAD / PARAMS"}</span>
             {expanded ? (
-              <ChevronUp className="h-3 w-3" />
+              <ChevronUp className="h-3 w-3 text-neutral-500" />
             ) : (
-              <ChevronDown className="h-3 w-3" />
+              <ChevronDown className="h-3 w-3 text-neutral-500" />
             )}
           </button>
 
           {expanded && (
-            <div className="mt-2 space-y-2 rounded-lg border border-neutral-200 bg-neutral-900 p-3 text-white shadow-none dark:border-neutral-700 dark:bg-black">
+            <div className="mt-2 space-y-2 rounded border border-neutral-800 bg-black p-2.5 text-neutral-200">
               {/* Function Calls */}
               {event.function_calls && event.function_calls.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="text-[11px] font-mono font-medium text-amber-300">
-                    Panggilan Fungsi (Function Calls):
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono font-bold text-amber-400 uppercase">
+                    Function Invocations:
                   </div>
                   {event.function_calls.map((fc, i) => (
-                    <div
-                      key={fc.id || `${fc.name}-${i}`}
-                      className="rounded bg-neutral-800 p-2 font-mono text-[11px]"
-                    >
-                      <div className="font-semibold text-emerald-400">
-                        {fc.name}()
-                      </div>
-                      <pre className="mt-1 overflow-x-auto text-[10px] text-neutral-300">
-                        {JSON.stringify(fc.args, null, 2)}
-                      </pre>
-                    </div>
+                    <FunctionCallCard key={fc.id || `${fc.name}-${i}`} fc={fc} />
                   ))}
                 </div>
               )}
 
               {/* Function Responses */}
               {event.function_responses && event.function_responses.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="text-[11px] font-mono font-medium text-emerald-300">
-                    Respon Fungsi (Function Responses):
+                <div className="space-y-1">
+                  <div className="text-[10px] font-mono font-bold text-emerald-400 uppercase">
+                    Function Returns:
                   </div>
                   {event.function_responses.map((fr, i) => (
-                    <div
-                      key={fr.id || `${fr.name}-${i}`}
-                      className="rounded bg-neutral-800 p-2 font-mono text-[11px]"
-                    >
-                      <div className="font-semibold text-sky-400">
-                        {fr.name} - hasil:
-                      </div>
-                      <pre className="mt-1 max-h-40 overflow-auto text-[10px] text-neutral-300">
-                        {typeof fr.response === "object"
-                          ? JSON.stringify(fr.response, null, 2)
-                          : String(fr.response)}
-                      </pre>
-                    </div>
+                    <FunctionResponseCard key={fr.id || `${fr.name}-${i}`} fr={fr} />
                   ))}
                 </div>
               )}
 
               {/* State Delta Keys */}
               {event.state_delta_keys && event.state_delta_keys.length > 0 && (
-                <div>
-                  <div className="text-[11px] font-mono font-medium text-sky-300">
-                    Kunci Memori Tersimpan (State Keys):
+                <div className="pt-1">
+                  <div className="text-[10px] font-mono font-bold text-cyan-400 uppercase">
+                    State Keys Delta:
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {event.state_delta_keys.map((k) => (
                       <span
                         key={k}
-                        className="rounded bg-neutral-800 px-1.5 py-0.5 font-mono text-[10px] text-neutral-300 border border-neutral-700"
+                        className="rounded bg-neutral-900 px-1.5 py-0.2 font-mono text-[9px] text-cyan-300 border border-neutral-800"
                       >
                         {k}
                       </span>
@@ -224,10 +226,10 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               )}
 
               {/* Node / Branch Info */}
-              <div className="flex flex-wrap gap-3 pt-1 border-t border-neutral-800 text-[10px] font-mono text-neutral-400">
-                {event.node && <span>node: {event.node}</span>}
-                {event.branch && <span>branch: {event.branch}</span>}
-                {event.transfer_to && <span>transfer_to: {event.transfer_to}</span>}
+              <div className="flex flex-wrap gap-3 pt-1 border-t border-neutral-900 text-[9px] font-mono text-neutral-500">
+                {event.node && <span>NODE: {event.node}</span>}
+                {event.branch && <span>BRANCH: {event.branch}</span>}
+                {event.transfer_to && <span>TRANSFER_TO: {event.transfer_to}</span>}
               </div>
             </div>
           )}
@@ -246,14 +248,17 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
   className,
 }: PlainEnglishPanelProps) {
   const listRef = useRef<HTMLDivElement>(null)
-  const [filterType, setFilterType] = useState<"all" | "calculations" | "data">("all")
+  const [filterType, setFilterType] = useState<"all" | "calculations" | "data" | "qa" | "errors">("all")
+  const [searchText, setSearchText] = useState("")
+  const [autoScroll, setAutoScroll] = useState(true)
+  const [copiedTrace, setCopiedTrace] = useState(false)
 
   // Auto-scroll to bottom when streaming events arrive
   useEffect(() => {
-    if (listRef.current) {
+    if (autoScroll && listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight
     }
-  }, [events.length])
+  }, [events.length, autoScroll])
 
   const filteredEvents = useMemo(() => {
     return events.filter((ev) => {
@@ -261,7 +266,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
       if (selectedAuthor !== "all" && ev.author !== selectedAuthor) {
         return false
       }
-      // Type filter
+      // Category filter
       if (filterType === "calculations") {
         return (
           ev.function_calls?.some((fc) => fc.name.startsWith("calc_")) ||
@@ -273,12 +278,31 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
         return (
           ev.author === "collector" ||
           ev.author === "news_harvester" ||
-          ev.author === "social_sentiment"
+          ev.author === "social_sentiment" ||
+          ev.author === "news_search_sub" ||
+          ev.author === "social_search_sub"
         )
       }
+      if (filterType === "qa") {
+        return ev.author === "adversarial" || ev.author === "critic"
+      }
+      if (filterType === "errors") {
+        return ev.event_type === "error" || ev.text.toLowerCase().includes("error")
+      }
+
+      // Free text search
+      if (searchText.trim()) {
+        const q = searchText.toLowerCase().trim()
+        const textMatch = ev.text.toLowerCase().includes(q)
+        const authorMatch = ev.author.toLowerCase().includes(q)
+        const nodeMatch = ev.node?.toLowerCase().includes(q)
+        const fcMatch = ev.function_calls?.some((fc) => fc.name.toLowerCase().includes(q))
+        return textMatch || authorMatch || nodeMatch || fcMatch
+      }
+
       return true
     })
-  }, [events, selectedAuthor, filterType])
+  }, [events, selectedAuthor, filterType, searchText])
 
   const authorsInTrace = useMemo(() => {
     const set = new Set<string>()
@@ -288,112 +312,174 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
     return Array.from(set)
   }, [events])
 
+  const handleCopyTraceJson = () => {
+    const jsonStr = JSON.stringify(events, null, 2)
+    navigator.clipboard.writeText(jsonStr)
+    setCopiedTrace(true)
+    setTimeout(() => setCopiedTrace(false), 2000)
+  }
+
   return (
-    <Card className={cn("overflow-hidden border-neutral-200 shadow-none dark:border-neutral-800", className)}>
-      <CardHeader className="border-b border-neutral-100 bg-neutral-50/50 py-3.5 dark:border-neutral-800 dark:bg-neutral-900/50">
-        <div className="flex flex-wrap items-center justify-between gap-3">
+    <Card className={cn("overflow-hidden border-neutral-800 bg-neutral-950 text-neutral-100 shadow-md font-mono", className)}>
+      <CardHeader className="border-b border-neutral-800 bg-neutral-900/90 p-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-neutral-900 text-white shadow-2xs dark:bg-neutral-100 dark:text-neutral-900">
-              <Activity className="h-4 w-4" />
+            <div className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-emerald-400 border border-neutral-700">
+              <Activity className="h-3.5 w-3.5" />
             </div>
             <div>
-              <CardTitle className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Aktivitas Langsung Tim AI
+              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100">
+                TRANSCRIPT &amp; EVENT STREAM
               </CardTitle>
-              <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-                Transkrip langkah demi langkah dalam bahasa yang mudah dipahami
-              </p>
             </div>
           </div>
 
           <div className="flex items-center gap-2">
             {running && (
-              <span className="flex items-center gap-1.5 rounded-full border border-amber-300 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-900 dark:border-amber-800 dark:bg-amber-950 dark:text-amber-200">
-                <span className="h-2 w-2 animate-pulse rounded-full bg-amber-500" />
-                <span>Sedang Memproses...</span>
+              <span className="flex items-center gap-1 rounded bg-amber-950 border border-amber-800 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300">
+                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
+                <span>STREAMING</span>
               </span>
             )}
-            <Badge variant="outline" className="font-mono text-xs text-neutral-600 dark:border-neutral-700 dark:text-neutral-300">
-              {filteredEvents.length} aktivitas
+            <Badge variant="outline" className="font-mono text-[10px] border-neutral-700 bg-neutral-900 text-neutral-300">
+              {filteredEvents.length} / {events.length} EVTS
             </Badge>
+
+            <button
+              type="button"
+              onClick={() => setAutoScroll((prev) => !prev)}
+              className={cn(
+                "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono border transition-colors",
+                autoScroll
+                  ? "bg-emerald-950 border-emerald-800 text-emerald-300"
+                  : "bg-neutral-900 border-neutral-800 text-neutral-500"
+              )}
+              title="Toggle auto-scroll on new events"
+            >
+              <ArrowDownCircle className="h-2.5 w-2.5" />
+              <span>SCROLL: {autoScroll ? "ON" : "OFF"}</span>
+            </button>
+
+            {events.length > 0 && (
+              <button
+                type="button"
+                onClick={handleCopyTraceJson}
+                className="flex items-center gap-1 rounded bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-1.5 py-0.5 text-[9px] font-mono text-neutral-300 transition-colors"
+                title="Copy entire trace as JSON"
+              >
+                {copiedTrace ? (
+                  <>
+                    <Check className="h-2.5 w-2.5 text-emerald-400" />
+                    <span>COPIED</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="h-2.5 w-2.5" />
+                    <span>JSON</span>
+                  </>
+                )}
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Quick Filter Bar */}
-        {events.length > 0 && (
-          <div className="flex flex-wrap items-center gap-1.5 pt-2.5 border-t border-neutral-100 dark:border-neutral-800">
-            <div className="flex items-center gap-1 text-[11px] font-medium text-neutral-500 mr-1 dark:text-neutral-400">
-              <Filter className="h-3 w-3" />
-              <span>Filter:</span>
+        {/* Search & Category Filter Toolbar */}
+        <div className="mt-2 pt-2 border-t border-neutral-800 space-y-1.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="relative flex-1 min-w-[140px]">
+              <Search className="absolute left-2 top-1.5 h-3 w-3 text-neutral-500" />
+              <input
+                type="text"
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                placeholder="Search event logs (text, function, node)..."
+                className="w-full rounded bg-neutral-900 border border-neutral-800 pl-7 pr-2 py-1 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
+              />
             </div>
 
-            <Button
-              size="sm"
-              variant={filterType === "all" && selectedAuthor === "all" ? "default" : "outline"}
-              className="h-6 px-2 text-[11px]"
-              onClick={() => {
-                setFilterType("all")
-                onFilterAuthor?.("all")
-              }}
-            >
-              Semua ({events.length})
-            </Button>
-
-            <Button
-              size="sm"
-              variant={filterType === "data" ? "default" : "outline"}
-              className="h-6 px-2 text-[11px]"
-              onClick={() => setFilterType("data")}
-            >
-              Data & Berita
-            </Button>
-
-            <Button
-              size="sm"
-              variant={filterType === "calculations" ? "default" : "outline"}
-              className="h-6 px-2 text-[11px]"
-              onClick={() => setFilterType("calculations")}
-            >
-              Perhitungan Valuasi
-            </Button>
-
-            {authorsInTrace.map((aKey) => {
-              const aMeta = getFriendlyAgent(aKey)
-              const isSelected = selectedAuthor === aKey
-              return (
-                <Button
-                  key={aKey}
-                  size="sm"
-                  variant={isSelected ? "default" : "outline"}
-                  className="h-6 px-2 text-[11px]"
-                  onClick={() => {
-                    setFilterType("all")
-                    onFilterAuthor?.(isSelected ? "all" : aKey)
-                  }}
+            <div className="flex flex-wrap items-center gap-1">
+              {(
+                [
+                  { id: "all", label: "ALL" },
+                  { id: "data", label: "DATA" },
+                  { id: "calculations", label: "VALUATION" },
+                  { id: "qa", label: "QA/RED TEAM" },
+                  { id: "errors", label: "ERRORS" },
+                ] as const
+              ).map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setFilterType(cat.id)}
+                  className={cn(
+                    "px-1.5 py-0.5 rounded text-[9px] font-mono transition-colors border",
+                    filterType === cat.id
+                      ? "bg-neutral-800 text-white font-bold border-neutral-600"
+                      : "bg-neutral-900/60 text-neutral-400 border-neutral-800 hover:text-neutral-200"
+                  )}
                 >
-                  {aMeta.shortLabel}
-                </Button>
-              )
-            })}
+                  {cat.label}
+                </button>
+              ))}
+            </div>
           </div>
-        )}
+
+          {/* Author micro-chips if multiple authors exist */}
+          {authorsInTrace.length > 0 && (
+            <div className="flex flex-wrap items-center gap-1 pt-1">
+              <span className="text-[9px] font-mono text-neutral-500 mr-1">AGENTS:</span>
+              <button
+                type="button"
+                onClick={() => onFilterAuthor?.("all")}
+                className={cn(
+                  "px-1.5 py-0.2 rounded text-[9px] font-mono transition-colors border",
+                  selectedAuthor === "all"
+                    ? "bg-emerald-950 border-emerald-800 text-emerald-300 font-bold"
+                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
+                )}
+              >
+                ALL ({events.length})
+              </button>
+              {authorsInTrace.map((aKey) => {
+                const aMeta = getFriendlyAgent(aKey)
+                const isSelected = selectedAuthor === aKey
+                const aCount = events.filter((e) => e.author === aKey).length
+                return (
+                  <button
+                    key={aKey}
+                    type="button"
+                    onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
+                    className={cn(
+                      "px-1.5 py-0.2 rounded text-[9px] font-mono transition-colors border",
+                      isSelected
+                        ? "bg-emerald-950 border-emerald-800 text-emerald-300 font-bold"
+                        : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
+                    )}
+                  >
+                    {aMeta.shortLabel.toUpperCase()} ({aCount})
+                  </button>
+                )
+              })}
+            </div>
+          )}
+        </div>
       </CardHeader>
 
       <CardContent className="p-0">
         <div
           ref={listRef}
-          className="max-h-[64vh] min-h-[320px] overflow-y-auto divide-y divide-neutral-100 dark:divide-neutral-800"
+          className="max-h-[580px] min-h-[360px] overflow-y-auto divide-y divide-neutral-900 scrollbar-thin bg-black"
         >
           {filteredEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-4 py-16 text-center">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full bg-neutral-100 text-neutral-400 dark:bg-neutral-800 dark:text-neutral-500">
-                <Sparkles className="h-6 w-6" />
-              </div>
-              <h3 className="mt-3 text-sm font-semibold text-neutral-900 dark:text-neutral-100">
-                Belum ada aktivitas
+            <div className="flex flex-col items-center justify-center px-4 py-16 text-center font-mono text-xs">
+              <Activity className="h-8 w-8 text-neutral-700 mb-2" />
+              <h3 className="font-bold text-neutral-400">
+                {events.length === 0 ? "TRANSCRIPT IDLE" : "NO MATCHING EVENTS"}
               </h3>
-              <p className="mt-1 max-w-sm text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
-                Klik <span className="font-semibold text-neutral-800 dark:text-neutral-200">Jalankan Analisis</span> di atas untuk memulai penyelidikan saham {ticker} secara otomatis.
+              <p className="mt-1 max-w-sm text-[11px] text-neutral-600">
+                {events.length === 0
+                  ? `Execute a run for ${ticker || "selected ticker"} to stream live multi-agent execution events.`
+                  : "Try clearing filter criteria or searching a different term."}
               </p>
             </div>
           ) : (
