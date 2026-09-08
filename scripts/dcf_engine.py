@@ -789,209 +789,31 @@ def scenarios_bull_bear(
 
 
 def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
-    """Load default seed assumptions per archetype."""
+    """Load valuation assumptions for ticker — FILE ONLY (LOUD, Sep 2026).
+
+    KILLED: the five hardcoded per-ticker seed bases (MTEL/TOWR/TLKM, RATU,
+    CDIA, BBCA, ADRO with invented revenue/ebitda/shares/last_price) plus the
+    generic dummy base and the README.json/seed_assumptions.json side-paths.
+    Only data/assumptions/{T}.json counts; anything else raises ValueError
+    naming the missing file. Callers: pass explicit overrides or stop.
+    """
     t = ticker.upper().strip()
-    if t in ("MTEL", "TOWR", "TLKM"):
-        base = {
-            "ticker": t,
-            "rf": 0.0696,
-            "beta": 0.65,
-            "erp": 0.0889,
-            "cod": 0.06,
-            "we": 0.608,
-            "wd": 0.392,
-            "wacc": 0.101,
-            "g": 0.015,
-            "revenue": 9000e9,
-            "g1": 0.07,
-            "ebit_margin": 0.45,
-            "tax": 0.22,
-            "capex_pct": 0.20,
-            "nwc_pct": 0.05,
-            "shares_out": 81.5e9,
-            "shares_outstanding": 81.5e9,
-            "total_debt": 21430e9,
-            "net_debt": 21430e9,
-            "cash": 1643e9,
-            "minority": 0.0,
-            "ebitda": 7451e9,
-            "last_price": 460,
-            "price": 460,
-            "growth_sd": 0.03,
-            "margin_sd": 0.02,
-        }
-    elif t == "RATU":
-        base = {
-            "ticker": t,
-            "rf": 0.07,
-            "beta": 0.70,
-            "erp": 0.069,
-            "cod": 0.035,
-            "we": 1.0,
-            "wd": 0.0,
-            "wacc": 0.084,
-            "g": 0.025,
-            "revenue": 3000e9,
-            "g1": 0.10,
-            "ebit_margin": 0.32,
-            "tax": 0.22,
-            "capex_pct": 0.06,
-            "nwc_pct": 0.05,
-            "shares_out": 2.71e9,
-            "shares_outstanding": 2.71e9,
-            "total_debt": 0.0,
-            "net_debt": 0.0,
-            "cash": 500e9,
-            "minority": 0.0,
-            "ebitda": 585e9,
-            "last_price": 4200,
-            "price": 4200,
-            "growth_sd": 0.04,
-            "margin_sd": 0.03,
-        }
-    elif t == "CDIA":
-        base = {
-            "ticker": t,
-            "rf": 0.0696,
-            "beta": 0.90,
-            "erp": 0.06,
-            "cod": 0.05,
-            "we": 0.70,
-            "wd": 0.30,
-            "wacc": 0.09,
-            "g": 0.03,
-            "revenue": 15000e9,
-            "g1": 0.08,
-            "ebit_margin": 0.18,
-            "tax": 0.22,
-            "capex_pct": 0.08,
-            "nwc_pct": 0.08,
-            "shares_out": 124.8e9,
-            "shares_outstanding": 124.8e9,
-            "total_debt": 5000e9,
-            "net_debt": 5000e9,
-            "cash": 1200e9,
-            "minority": 0.0,
-            "ebitda": 2500e9,
-            "last_price": 645,
-            "price": 645,
-            "growth_sd": 0.05,
-            "margin_sd": 0.03,
-        }
-    elif t == "BBCA":
-        base = {
-            "ticker": t,
-            "rf": 0.0696,
-            "beta": 0.80,
-            "erp": 0.06,
-            "cod": 0.05,
-            "we": 1.0,
-            "wd": 0.0,
-            "wacc": 0.10,
-            "g": 0.04,
-            "revenue": 100000e9,
-            "g1": 0.09,
-            "ebit_margin": 0.50,
-            "tax": 0.22,
-            "capex_pct": 0.04,
-            "nwc_pct": 0.05,
-            "shares_out": 123.2e9,
-            "shares_outstanding": 123.2e9,
-            "total_debt": 0.0,
-            "net_debt": 0.0,
-            "cash": 50000e9,
-            "minority": 0.0,
-            "ebitda": 35000e9,
-            "last_price": 6350,
-            "price": 6350,
-            "growth_sd": 0.02,
-            "margin_sd": 0.02,
-        }
-    elif t == "ADRO":
-        base = {
-            "ticker": t,
-            "rf": 0.0696,
-            "beta": 0.95,
-            "erp": 0.06,
-            "cod": 0.05,
-            "we": 0.85,
-            "wd": 0.15,
-            "wacc": 0.09,
-            "g": 0.02,
-            "revenue": 60000e9,
-            "g1": 0.05,
-            "ebit_margin": 0.25,
-            "tax": 0.22,
-            "capex_pct": 0.08,
-            "nwc_pct": 0.08,
-            "shares_out": 28.8e9,
-            "shares_outstanding": 28.8e9,
-            "total_debt": 2000e9,
-            "net_debt": 2000e9,
-            "cash": 3500e9,
-            "minority": 0.0,
-            "ebitda": 8000e9,
-            "last_price": 2610,
-            "price": 2610,
-            "growth_sd": 0.08,
-            "margin_sd": 0.05,
-        }
-    else:
-        base = {
-            "ticker": t,
-            "rf": 0.065,
-            "beta": 1.0,
-            "erp": 0.07,
-            "cod": 0.085,
-            "we": 0.70,
-            "wd": 0.30,
-            "wacc": 0.10,
-            "g": 0.025,
-            "revenue": 10000e9,
-            "g1": 0.08,
-            "ebit_margin": 0.15,
-            "tax": 0.22,
-            "capex_pct": 0.06,
-            "nwc_pct": 0.10,
-            "shares_out": 10e9,
-            "shares_outstanding": 10e9,
-            "total_debt": 2000e9,
-            "net_debt": 2000e9,
-            "cash": 1000e9,
-            "minority": 0.0,
-            "ebitda": 2000e9,
-            "last_price": 1000,
-            "price": 1000,
-            "growth_sd": 0.03,
-            "margin_sd": 0.01,
-        }
-
-    # Attempt to load seed / assumptions files if available
-    cand_paths = [
-        pathlib.Path(f"data/assumptions/{t}.json"),
-        pathlib.Path("seed_assumptions.json"),
-        pathlib.Path("data/assumptions/README.json"),
-    ]
-    loaded_from_file = False
-    for p in cand_paths:
-        if p.exists():
-            try:
-                data = json.loads(p.read_text(encoding="utf-8"))
-                if isinstance(data, dict):
-                    if t in data and isinstance(data[t], dict):
-                        base.update({k: v for k, v in data[t].items() if v is not None})
-                        loaded_from_file = True
-                    elif data.get("ticker") == t:
-                        base.update({k: v for k, v in data.items() if v is not None})
-                        loaded_from_file = True
-            except Exception:
-                pass
-
-    if base.get("source") == "fallback generic" and not loaded_from_file:
+    fp = pathlib.Path(f"data/assumptions/{t}.json")
+    base: Dict[str, Any] = {"ticker": t}
+    if fp.exists():
+        try:
+            data = json.loads(fp.read_text(encoding="utf-8"))
+            if isinstance(data, dict):
+                if t in data and isinstance(data[t], dict):
+                    base.update({k: v for k, v in data[t].items() if v is not None})
+                elif data.get("ticker") == t:
+                    base.update({k: v for k, v in data.items() if v is not None})
+        except Exception:
+            pass
+    if len(base) <= 1:
         raise ValueError(
-            f"no assumptions for {t}: refusing generic dummy DCF "
-            f"(add data/assumptions/{t}.json or a hardcoded base)")
-
+            f"no assumptions for {t}: add data/assumptions/{t}.json "
+            f"(hardcoded seed bases killed Sep 2026 — refusing invented DCF)")
     return base
 
 
@@ -1004,6 +826,24 @@ def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[st
     assum = _load_ticker_assumptions(ticker)
     if overrides:
         assum.update(overrides)
+
+    # LOUD gate (Sep 2026, no-fabrication sweep): valuation-driving inputs must
+    # be explicit (file or overrides) — no silent .get() invention. Display /
+    # scenario knobs (years, sens steps, thresholds, sds) keep safe defaults.
+    _need = ["rf", "beta", "erp", "cod", "revenue", "ebit_margin", "g1",
+             "tax", "capex_pct", "nwc_pct"]
+    _missing = [k for k in _need if assum.get(k) is None]
+    if assum.get("g") is None and assum.get("g_terminal") is None:
+        _missing.append("g|g_terminal")
+    if assum.get("shares_out") is None and assum.get("shares_outstanding") is None:
+        _missing.append("shares_out|shares_outstanding")
+    if assum.get("last_price") is None and assum.get("price") is None:
+        _missing.append("last_price|price")
+    if _missing:
+        raise ValueError(
+            f"dcf_full({ticker.upper().strip()}): missing explicit inputs "
+            f"{', '.join(_missing)} (file data/assumptions/*.json or overrides; "
+            f"seed defaults killed Sep 2026)")
 
     rf = float(assum.get("rf", 0.065))
     beta = float(assum.get("beta", 1.0))

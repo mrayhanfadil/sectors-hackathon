@@ -208,9 +208,9 @@ def test_scenarios_order():
     assert bear_fv < base_fv < bull_fv
 
 
-def test_dcf_full_smoke_ratu():
-    # call with ticker="RATU", verify keys exist
-    res = dcf_full("RATU")
+def test_dcf_full_smoke_mtel_file_backed():
+    # MTEL has the only dcf_full-complete data/assumptions/*.json — file-backed, no seeds.
+    res = dcf_full("MTEL")
     required_keys = [
         "wacc",
         "wacc_table",
@@ -233,9 +233,25 @@ def test_dcf_full_smoke_ratu():
     assert res["valuation"]["fair_value_per_share"] > 0
 
 
+def test_dcf_full_bare_ratu_raises_no_seeds():
+    # Seed bases killed Sep 2026: RATU.json is provenance-only (no valuation
+    # keys) so bare dcf_full must raise naming the gap, never invent math.
+    import pytest as _pytest
+
+    with _pytest.raises(ValueError, match="missing explicit inputs"):
+        dcf_full("RATU")
+
+
+def test_dcf_full_unknown_ticker_raises_no_file():
+    import pytest as _pytest
+
+    with _pytest.raises(ValueError, match="no assumptions for ZZZZZZ"):
+        dcf_full("ZZZZZZ")
+
+
 def test_dcf_full_review_required_threshold():
-    # extreme assumption -> review_required
-    res = dcf_full("RATU", overrides={"last_price": 50.0, "price": 50.0})
+    # extreme assumption -> review_required (MTEL file-backed + price override)
+    res = dcf_full("MTEL", overrides={"last_price": 50.0, "price": 50.0})
     assert res["recommendation"]["rating"] == "Review Required"
     assert "reason_override" in res["recommendation"]
 

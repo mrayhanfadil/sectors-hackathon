@@ -1,7 +1,0 @@
-{
-  "RATU":   {"wacc":0.084, "beta":0.7,  "rf":0.07,  "erp":0.069, "cod":0.035, "g":0.05,  "template":"single"},
-  "CDIA":   {"wacc":0.09,  "beta":0.9,  "rf":0.0696,"erp":0.06,  "cod":0.05,  "g":0.03,  "template":"sotp"},
-  "MTEL":   {"wacc":0.101, "beta":0.65, "rf":0.0696,"erp":0.0889,"cod":0.06,  "g":0.015, "template":"infra"},
-  "BBCA":   {"wacc":0.10,  "beta":0.8,  "rf":0.0696,"erp":0.06,  "cod":0.05,  "g":0.04,  "template":"single"},
-  "ADRO":   {"wacc":0.09,  "beta":0.95, "rf":0.0696,"erp":0.06,  "cod":0.05,  "g":0.02,  "template":"sotp"}
-}

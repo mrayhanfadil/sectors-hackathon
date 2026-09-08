@@ -1,8 +1,8 @@
 """No-fabrication gates for news path (LOUD policy, Sep 2026).
 
-Pins: CURATED_NEWS items served via search_news always carry
-provenance="curated-unverified", and unknown tickers return []
-(never a generated idx.co.id disclosure entry — that is fabrication).
+CURATED_NEWS was killed — search_news returns [] for every ticker until a
+live Sectors/IDX source wires in. These gates pin the empty behavior so no
+hand-written or generated disclosure entry can ever come back silently.
 """
 
 import asyncio
@@ -12,20 +12,14 @@ def _run(coro):
     return asyncio.run(coro)
 
 
-def test_search_news_unknown_ticker_returns_empty():
+def test_search_news_always_empty_until_live_source():
     from scripts.news import search_news
 
-    assert _run(search_news("ZZZZ")) == []
-    assert _run(search_news("GOTO")) == []
-    assert _run(search_news("BRIS")) == []
+    for t in ("RATU", "CDIA", "MTEL", "BBCA", "ADRO", "ZZZZ", "GOTO", "BRIS"):
+        assert _run(search_news(t)) == [], t
 
 
-def test_search_news_curated_items_tagged_unverified():
-    from scripts.news import search_news
+def test_curated_dict_stays_empty():
+    from scripts.news import CURATED_NEWS
 
-    for t in ("RATU", "CDIA", "MTEL", "BBCA", "ADRO"):
-        items = _run(search_news(t))
-        assert items, f"expected curated items for {t}"
-        for it in items:
-            assert it.get("provenance") == "curated-unverified", it
-            assert it.get("url") and it.get("date") and it.get("title"), it
+    assert CURATED_NEWS == {}

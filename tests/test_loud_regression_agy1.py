@@ -60,8 +60,13 @@ def test_dcf_ratu_bare_422(client):
 
 
 def test_dcf_ratu_with_declared_overrides_200(client):
-    """GET /api/dcf/RATU?overrides={"rf":0.0696,"beta":0.9,"erp":0.07,"cod":0.06} -> 200 with wacc + valuation keys."""
-    overrides = json.dumps({"rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06})
+    """GET /api/dcf/RATU with fully-declared overrides -> 200 with wacc + valuation keys."""
+    overrides = json.dumps({
+        "rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06,
+        "revenue": 5000e9, "ebit_margin": 0.20, "g1": 0.08, "g": 0.03,
+        "tax": 0.22, "capex_pct": 0.06, "nwc_pct": 0.05,
+        "shares_out": 5e9, "last_price": 2000.0,
+    })
     res = client.get(f"/api/dcf/RATU?overrides={overrides}")
     assert res.status_code == 200, f"Expected 200, got {res.status_code}: {res.text}"
     data = res.json()

@@ -41,7 +41,14 @@ def client():
     return TestClient(app)
 
 
-FULL_OV = {"rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06}
+# Explicit test inputs (Sep 2026): prod seed bases killed, so every valuation
+# driver must be declared. Round fixture numbers — obviously test-only.
+FULL_OV = {
+    "rf": 0.0696, "beta": 0.9, "erp": 0.07, "cod": 0.06,
+    "revenue": 5000e9, "ebit_margin": 0.20, "g1": 0.08, "g": 0.03,
+    "tax": 0.22, "capex_pct": 0.06, "nwc_pct": 0.05,
+    "shares_out": 5e9, "last_price": 2000.0,
+}
 
 
 def test_endpoint_smoke_ratu(client):
@@ -202,7 +209,7 @@ def test_adk_friend_tools_unit():
     )
     assert "BEAR" in scen_res and "BASE" in scen_res and "BULL" in scen_res
 
-    # 7. calc_dcf_full_valuation
-    full_res = calc_dcf_full_valuation("RATU")
+    # 7. calc_dcf_full_valuation (explicit overrides — no prod seeds)
+    full_res = calc_dcf_full_valuation("RATU", overrides=dict(FULL_OV))
     assert full_res["wacc"] is not None
     assert full_res["valuation"]["fair_value_per_share"] > 0
