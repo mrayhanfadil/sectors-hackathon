@@ -174,11 +174,12 @@ def test_aces_no_stale_5col_labels(aces):
 
 def test_live_inline_payload_6col():
     """pdf.py inline payload emits 2A+4F via the shared forecast module."""
+    from fastapi.exceptions import HTTPException
+
     from server.routers.pdf import _build_live_payload  # noqa: E402
-    payload = _build_live_payload("ADRO", None)  # ADRO: assumptions JSON, no static fixture -> live path
-    fh = payload["financial_highlights"]
-    assert fh["years"] == EXPECTED_YEARS
-    assert all(len(r) == 7 for r in fh["rows"])  # label + 6 values
-    assert "forecast.py" in fh["source"]
-    fin = payload["financials"][0]
-    assert fin["headers"] == ["Rp bn", *EXPECTED_YEARS]
+    # LOUD policy (keyless): ADRO assumptions lack required keys -> 422
+    # naming them instead of a fabricated 6-col table.
+    with pytest.raises(HTTPException) as exc_info:
+        _build_live_payload("ADRO", None)  # ADRO: assumptions JSON, no static fixture -> live path
+    assert exc_info.value.status_code == 422
+    assert "ADRO" in str(exc_info.value.detail)

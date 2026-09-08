@@ -67,7 +67,7 @@ def load_financials(ticker: str) -> dict[str, Any] | None:
 PRIMARY_SOURCES = {
     "idx": "IDX / company filings",
     "sectors": "Sectors API v2",
-    "yfinance": "Sectors API v2 (legacy label)",
+    "yfinance": "yfinance (legacy, pre-Sectors — not Sectors data)",
     "broker": "broker research (BCA Sekuritas / KSI)",
     "synthetic": "synthetic (seed=42, disclosed — IDX fundamentals gap)",
     "news": "news harvester (T01)",

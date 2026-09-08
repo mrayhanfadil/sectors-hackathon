@@ -25,6 +25,22 @@ SERVER_TEMPLATE = REPO_ROOT / "server" / "report" / "typst" / "report_single.typ
 FALLBACK_TEMPLATE = REPO_ROOT / "templates" / "typst" / "archetypes" / "report_single.typ"
 FIXTURES_DIR = REPO_ROOT / "scripts" / "fixtures"
 
+
+@pytest.fixture(autouse=True)
+def _loud_gate_inputs(monkeypatch):
+    """LOUD policy: renderer refuses invented gate params — inject explicit
+    test-owned inputs into whatever the loader returns (see
+    tests/_loud_test_inputs.py). Leak assertions only."""
+    import server.report.typst_renderer as TR
+    from tests._loud_test_inputs import inject_gate_inputs
+
+    _orig = TR._load_or_build_report_data
+
+    def _wrapped(ticker, archetype="auto"):
+        return inject_gate_inputs(_orig(ticker, archetype))
+
+    monkeypatch.setattr(TR, "_load_or_build_report_data", _wrapped)
+
 FORBIDDEN_LEAK_STRINGS = [
     "RATU",
     "Banyu",

@@ -100,7 +100,10 @@ def test_dynamic_ticker_assum_loader():
 
     ratu = _assumptions_for("RATU")
     bmri = _assumptions_for("BMRI")
-    assert "wacc" in ratu or "beta" in ratu
+    # LOUD policy: file values as-is, missing keys stay missing (no defaults-fill).
+    assert ratu.get("ticker") == "RATU"
+    assert ratu.get("has_assumptions_file") is True
+    assert "beta" not in ratu, "missing keys must stay missing, never invented"
     assert bmri is not None  # even unknown tickers get skeleton
 
 

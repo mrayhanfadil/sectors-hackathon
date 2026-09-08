@@ -74,3 +74,28 @@ Corrected filenames (audit fix — prior doc drafts cited files that do not exis
 97-credit harvest math (`scripts/sectors_harvest.py --dry-run`): per-ticker ~17 (report 5 sections + daily + dates/quarterly + segments + shareholders + news + filings + actions + flow + brokertop + suspensions + listing) × 5 quintet (RATU/CDIA/MTEL/BBCA/ADRO) = 85, shared ~12 (universe + idx-mcap + jci + 4 subsectors×2 + screener) → 85 + 12 = 97. Daily refresh ≈ 11. Budget 1,000 — full harvest <10%.
 
 Roster-lock warning: do NOT claim API credits before the roster is final — claim = roster lock. Registration deadline 22 Sep 2026 23:59 WIB (see team-roster.md banner).
+
+## LOUD-policy fix batch (2026-09-08, orchestrator append — do not rewrite above)
+
+Sweep D1+D2+D3 found silent invented numbers in prod paths; user approved loud
+policy (keyless errors until SECTORS_API_KEY lands). Fixed in 3 lanes + orchestrator:
+
+- F1 endpoints.py: ARCHETYPE_DEFAULTS no longer merged; missing fcf/shares/price
+  -> 422 naming fields; helpers return []/{} + sectors_missing_key; bands drop
+  synthetic_prices; outlook/universe -> 503 keyless; news source honest; stubs flagged.
+- F2 pdf.py + typst_renderer.py: fabricated archetype dicts + gate inputs +
+  BBCA/ADRO exhibits -> 422/ValueError/empty-skeleton; fixture "Sectors (^JKSE)"
+  strings -> "yfinance/IDX (Sectors pending)".
+- F3 (orchestrator-completed, lane produced nothing): common.py yfinance label
+  wash fixed; SOTP pillar + strategy Top Picks tables labeled static-demo.
+- Templates none-safe: theme.typ nstr() + rating-box renders "— data Sectors
+  pending"; single/sotp/infra numeric spots + market rows guarded; RATU-branched
+  market defaults -> "-". Narrative RATU fallbacks have honest else-branches (left).
+  Mirrored to templates/ copies (single enforced by sync test; sotp/infra/strategy
+  fallback copies patched for crash spots only — still stale vs server, P2).
+- Tests: tests/_loud_test_inputs.py per-ticker declared scenarios (RATU full-pass
+  DCF, CDIA thin+ramping Relative, MTEL NCI-band SOTP x-check, BBCA bank DDM,
+  ADRO mining NAV); endpoint/loud/dynamic/forecast expectations updated to loud codes.
+
+Verify: 275 passed, 3 skipped. Residual NEEDS-KEY: assumptions re-seed, harvest
+--execute (97), live probe keyed run, gate_inputs from real Sectors fundamentals.

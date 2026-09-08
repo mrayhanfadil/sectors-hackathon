@@ -147,8 +147,8 @@
     [
       #rating-box(
         cover.action,
-        str(cover.tp),
-        str(cover.price),
+        cover.tp,
+        cover.price,
         cover.upside_pct,
         prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
         palette: PALETTE,
@@ -168,14 +168,14 @@
         #grid(
           columns: (1fr, auto),
           row-gutter: 2.8pt,
-          text(size: 6.8pt)[Harga Kini], text(size: 6.8pt, weight: "bold")[Rp #cover.price],
-          text(size: 6.8pt)[Target Harga], text(size: 6.8pt, weight: "bold")[Rp #cover.tp],
+          text(size: 6.8pt)[Harga Kini], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.price)],
+          text(size: 6.8pt)[Target Harga], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.tp)],
           text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#sh.at("outstanding", default: 2.71) #sh.at("unit", default: "Miliar")],
-          text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[#mkt.at("market_cap", default: if m.ticker == "RATU" { "Rp 16,80 T" } else { "Rp " + str(calc.round(cover.price * sh.at("outstanding", default: 0) / 1000, digits: 2)) + " T" })],
-          text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#if sh.at("free_float_pct", default: none) != none { str(sh.free_float_pct) + "%" } else if m.ticker == "RATU" { "31.2%" } else { "-" }],
-          text(size: 6.8pt)[52-Wk Range], text(size: 6.8pt, weight: "bold")[#mkt.at("range_52w", default: if m.ticker == "RATU" { "4.500 - 8.200" } else { "-" })],
-          text(size: 6.8pt)[Rerata Nilai 3M], text(size: 6.8pt, weight: "bold")[#mkt.at("avg_value_3m", default: if m.ticker == "RATU" { "Rp 14,2 M/hari" } else { "-" })],
-          text(size: 6.8pt)[Klasifikasi Indeks], text(size: 6.8pt, weight: "bold")[#mkt.at("index_class", default: if m.ticker == "RATU" { "MSCI / IDX80 / JII" } else { "IDX Kompas100" })],
+          text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[#mkt.at("market_cap", default: if cover.price == none { "-" } else { "Rp " + str(calc.round(cover.price * sh.at("outstanding", default: 0) / 1000, digits: 2)) + " T" })],
+          text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#if sh.at("free_float_pct", default: none) != none { str(sh.free_float_pct) + "%" } else { "-" }],
+          text(size: 6.8pt)[52-Wk Range], text(size: 6.8pt, weight: "bold")[#mkt.at("range_52w", default: "-")],
+          text(size: 6.8pt)[Rerata Nilai 3M], text(size: 6.8pt, weight: "bold")[#mkt.at("avg_value_3m", default: "-")],
+          text(size: 6.8pt)[Klasifikasi Indeks], text(size: 6.8pt, weight: "bold")[#mkt.at("index_class", default: "-")],
         )
       ]
     ]
@@ -385,18 +385,18 @@
   #let methods = val.at("methods", default: ())
   #let dcf_m = methods.find(x => x.method == "DCF")
   #let dcf_assump = if dcf_m != none { dcf_m.at("assumptions", default: (:)) } else { (:) }
-  #let dcf_wacc = dcf_assump.at("wacc", default: 8.40)
-  #let dcf_g = dcf_assump.at("g", default: 5.00)
-  #let dcf_beta = dcf_assump.at("beta", default: 0.70)
-  #let dcf_rf = dcf_assump.at("rf", default: 6.20)
-  #let dcf_erp = dcf_assump.at("erp", default: 6.90)
+  #let dcf_wacc = dcf_assump.at("wacc", default: none)
+  #let dcf_g = dcf_assump.at("g", default: none)
+  #let dcf_beta = dcf_assump.at("beta", default: none)
+  #let dcf_rf = dcf_assump.at("rf", default: none)
+  #let dcf_erp = dcf_assump.at("erp", default: none)
   #let dcf_fv = if dcf_m != none { dcf_m.at("fv", default: cover.tp) } else { cover.tp }
   #let dcf_table = if dcf_m != none { dcf_m.at("table", default: (:)) } else { (:) }
   #let dcf_headers = dcf_table.at("headers", default: ("Komponen DCF (Rp bn)", "FY26F", "FY27F", "FY28F", "FY29F"))
   #let default_dcf_rows = (
-    ("Free Cash Flow (FCF)", "410", "432", "455", "478"),
-    ("Discount Factor", "0,922", "0,851", "0,785", "0,724"),
-    ("Present Value FCF", "378", "368", "357", "346"),
+    ("Free Cash Flow (FCF)", "—", "—", "—", "—"),
+    ("Discount Factor", "—", "—", "—", "—"),
+    ("Present Value FCF", "—", "—", "—", "—"),
   )
   #let dcf_rows = if dcf_table.at("rows", default: ()).len() > 0 {
     dcf_table.rows.map(r => r.map(c => str(c)))
@@ -406,15 +406,15 @@
 
   #let mult_m = methods.find(x => x.method == "EV/EBITDA" or x.method == "Multiples")
   #let mult_assump = if mult_m != none { mult_m.at("assumptions", default: (:)) } else { (:) }
-  #let mult_multiple = mult_assump.at("multiple", default: 22.6)
-  #let mult_fv = if mult_m != none { mult_m.at("fv", default: 6960) } else { 6960 }
+  #let mult_multiple = mult_assump.at("multiple", default: none)
+  #let mult_fv = if mult_m != none { mult_m.at("fv", default: none) } else { none }
   #let mult_table = if mult_m != none { mult_m.at("table", default: (:)) } else { (:) }
   #let mult_headers = mult_table.at("headers", default: ("Parameter", "Nilai", "Satuan"))
   #let default_mult_rows = (
-    ("Target EV/EBITDA", str(mult_multiple), "x"),
+    ("Target EV/EBITDA", nstr(mult_multiple), "x"),
     ("EBITDA", str(mult_assump.at("ebitda_bn", default: "-")), "Rp bn"),
     ("Implied EV", if mult_assump.at("ebitda_bn", default: none) != none { str(calc.round(mult_multiple * mult_assump.ebitda_bn, digits: 0)) } else { "-" }, "Rp bn"),
-    ("Fair Value EV/EBITDA", str(mult_fv), "Rp/saham"),
+    ("Fair Value EV/EBITDA", nstr(mult_fv), "Rp/saham"),
   )
   #let mult_rows = if mult_table.at("rows", default: ()).len() > 0 {
     mult_table.rows.map(r => r.map(c => str(c)))
@@ -433,7 +433,7 @@
       #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Metode 1: Discounted Cash Flow (DCF)]
       #v(2pt)
       #text(size: 7.2pt, fill: PALETTE.muted)[
-        Asumsi: WACC #dcf_wacc%, Terminal Growth (g) #dcf_g%, Beta #dcf_beta, Rf #dcf_rf%, ERP #dcf_erp%
+        Asumsi: WACC #nstr(dcf_wacc)%, Terminal Growth (g) #nstr(dcf_g)%, Beta #nstr(dcf_beta), Rf #nstr(dcf_rf)%, ERP #nstr(dcf_erp)%
       ]
       #v(4pt)
       #exhibit-header("Exhibit 6", "Proyeksi Arus Kas Bebas (FCFF)", if dcf_m != none { dcf_m.at("source", default: "Engine DCF") } else { "Engine DCF" })
@@ -473,9 +473,9 @@
       #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Valuasi Blended (#blended_weights)]
       #v(2pt)
       #let blended_rows = (
-        ("DCF (WACC " + str(dcf_wacc) + "%, g " + str(dcf_g) + "%)", "pembanding", if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }),
-        ("EV/EBITDA (" + str(mult_multiple) + "x)", "primer", "Rp " + str(mult_fv)),
-        ("Target Price (TP 12M)", "100%", "Rp " + str(blended_fv)),
+        ("DCF (WACC " + nstr(dcf_wacc) + "%, g " + nstr(dcf_g) + "%)", "pembanding", if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }),
+        ("EV/EBITDA (" + nstr(mult_multiple) + "x)", "primer", "Rp " + nstr(mult_fv)),
+        ("Target Price (TP 12M)", "100%", "Rp " + nstr(blended_fv)),
       )
       #fin-table(
         ("Metode", "Bobot", "Fair Value"),
@@ -496,7 +496,7 @@
       ("Rerata 3 Tahun (Mean)", "-", "-", "Rentang Nilai Wajar"),
       ("STD -1 (Batas Bawah)", "-", "-", "Undervalued Menarik"),
       ("STD -2 (Batas Bawah)", "-", "-", "Undervalued Ekstrem"),
-      ("Posisi Harga Kini", "-", "Rp " + str(cover.price), "Valuasi Wajar"),
+      ("Posisi Harga Kini", "-", "Rp " + nstr(cover.price), "Valuasi Wajar"),
     )
   }
   #exhibit-header("Exhibit 7", "Pita Valuasi Historis P/BV 3-Tahun (STD±2)", "IDX & Analisis Data")
@@ -512,7 +512,7 @@
   }
 
   #v(6pt)
-  #let conclusion_text = val.at("conclusion", default: "Harga saham kini Rp " + str(cover.price) + " mencerminkan target harga Rp " + str(cover.tp) + " dengan potensi imbal hasil " + (if cover.upside_pct > 0 { "+" } else { "" }) + str(cover.upside_pct) + "% (" + cover.action + "), didukung oleh analisis fundamental komprehensif pada sektor " + m.sector + ".")
+  #let conclusion_text = val.at("conclusion", default: if cover.tp == none { "Valuasi menunggu data Sectors — target harga dan kesimpulan belum tersedia untuk " + m.ticker + "." } else { "Harga saham kini Rp " + nstr(cover.price) + " mencerminkan target harga Rp " + nstr(cover.tp) + " dengan potensi imbal hasil " + (if cover.upside_pct != none and cover.upside_pct > 0 { "+" } else { "" }) + nstr(cover.upside_pct) + "% (" + nstr(cover.action) + "), didukung oleh analisis fundamental komprehensif pada sektor " + m.sector + "." })
   #card(PALETTE)[
     #text(weight: "bold", fill: PALETTE.ink)[Kesimpulan Valuasi]
     #v(2pt)

@@ -114,21 +114,13 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # reuse _assumptions_for logic (duplicate to avoid circular import)
     import json, os
 
-    # Inline _assumptions_for (copied semantics from endpoints.py)
+    # Inline _assumptions_for (same loud-failure policy as endpoints.py).
+    # No fabricated archetype numbers: only keys present in
+    # data/assumptions/{T}.json are used — missing keys stay missing and 422
+    # below instead of being silently completed with generic numbers.
     def _assumptions_for_inner(ticker: str) -> dict:
         tt = ticker.upper().strip()
-        if tt in ("MTEL", "TOWR", "TLKM"):
-            base = {"rf": 0.0696, "beta": 0.65, "erp": 0.0889, "cod": 0.06, "we": 0.608, "wd": 0.392, "wacc": 0.101, "g": 0.015, "payout": 0.35, "fcf": [4988, 5200, 5400, 5600, 5800], "shares_out": 81.5e9, "net_debt": 21430e9, "cash": 1643e9, "ebitda": 7451e9, "ev_multiple": 10, "last_price": 460, "tower": 40563, "tenancy_ratio": 1.57, "fiber_km": 59239, "source": "assumptions/MTEL.json"}
-        elif tt == "RATU":
-            base = {"rf": 0.07, "beta": 0.7, "erp": 0.069, "cod": 0.035, "g": 0.05, "payout": 0.3, "fcf": [456, 570, 684, 760, 836], "shares_out": 2.71e9, "net_debt": 0, "cash": 500e9, "ebitda": 585e9, "ev_multiple": 22.6, "last_price": 6200, "source": "assumptions/RATU.json"}
-        elif tt == "CDIA":
-            base = {"rf": 0.0696, "beta": 0.90, "erp": 0.06, "cod": 0.05, "g": 0.03, "payout": 0.40, "fcf": [4800, 5400, 6000, 6600, 7200], "shares_out": 124.8e9, "net_debt": 5000e9, "cash": 1200e9, "ebitda": 2500e9, "ev_multiple": 12.0, "last_price": 645, "source": "assumptions/CDIA.json"}
-        elif tt == "BBCA":
-            base = {"rf": 0.0696, "beta": 0.80, "erp": 0.06, "cod": 0.05, "g": 0.04, "roe": 0.197, "bvps": 4200, "payout": 0.50, "fcf": [40000, 46000, 52000, 58000, 64000], "shares_out": 123.2e9, "net_debt": 0, "cash": 50000e9, "ebitda": 35000e9, "ev_multiple": 16.9, "last_price": 7890, "source": "assumptions/BBCA.json"}
-        elif tt == "ADRO":
-            base = {"rf": 0.0696, "beta": 0.95, "erp": 0.06, "cod": 0.05, "g": 0.02, "payout": 0.45, "fcf": [7500, 7800, 8100, 8400, 8700], "shares_out": 28.8e9, "net_debt": 2000e9, "cash": 3500e9, "ebitda": 8000e9, "ev_multiple": 6.5, "last_price": 2080, "source": "assumptions/ADRO.json"}
-        else:
-            base = {"rf": 0.0696, "beta": 0.85, "erp": 0.06, "cod": 0.06, "g": 0.025, "payout": 0.4, "fcf": [1000, 1100, 1200, 1300, 1400], "shares_out": 10e9, "net_debt": 5000e9, "cash": 1000e9, "ebitda": 3000e9, "ev_multiple": 12, "last_price": 1000, "source": "fallback generic"}
+        base: dict = {}
         p = os.path.join(os.path.dirname(__file__), "..", "..", "data", "assumptions", f"{tt}.json")
         p = os.path.normpath(p)
         if os.path.exists(p):
@@ -138,18 +130,25 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                     for k, v in loaded.items():
                         if v is not None:
                             base[k] = v
+                    base["source"] = f"assumptions/{tt}.json"
             except Exception:
                 pass
+        else:
+            base["source"] = "no_assumptions_file"
         return base
 
     assum = _assumptions_for_inner(t)
-    if assum.get("source") == "fallback generic":
+    _required = ("rf", "beta", "erp", "cod", "g", "payout", "fcf", "shares_out",
+                 "net_debt", "cash", "ebitda", "ev_multiple", "last_price")
+    _missing = [k for k in _required if assum.get(k) is None]
+    if assum.get("source") == "no_assumptions_file" or _missing:
         raise HTTPException(
             422, f"no verified assumptions for {t} — refusing generic fallback "
-            f"(add data/assumptions/{t}.json)")
+            f"(missing={_missing or ['assumptions file']}; add data/assumptions/{t}.json)")
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
-    raw_fcf = assum.get("fcf") or [1000, 1100, 1200, 1300, 1400]
+    raw_fcf = assum.get("fcf")
+    assert raw_fcf is not None  # guaranteed by required-key 422 above
     fcf_list = [float(x) * 1e9 for x in raw_fcf]
     try:
         dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum.get("shares_out", 1e9), net_debt=assum.get("net_debt", 0), cash=assum.get("cash", 0))
@@ -163,10 +162,9 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             blended_res = calc_blended({"dcf": dcf_res["fv_per_share"], "ev": ev_res["fv_per_share"]}, {"dcf": 0.6, "ev": 0.4})
             fv = blended_res["blended"]
     except Exception as e:
-        dcf_res = {"error": str(e)}
-        ev_res = {}
-        blended_res = None
-        fv = assum.get("last_price", 1000)
+        raise HTTPException(
+            422, f"valuation engine failed for {t}: {e} — refusing generic fallback "
+            f"(check data/assumptions/{t}.json inputs; no silent last_price FV)")
 
     last_price = assum.get("last_price", 1000)
     upside = round((fv - last_price) / last_price * 100, 2) if fv and last_price else None

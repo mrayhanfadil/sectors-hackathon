@@ -193,6 +193,10 @@
   ]
 }
 
+// ------ Honest-empty display (LOUD policy, Sep 2026): none renders as em
+// dash instead of crashing str(none) or inventing a number. ------
+#let nstr(x) = if x == none { "—" } else { str(x) }
+
 // ------ Rating box (BUY badge + TP + upside) ------
 #let rating-box(action, tp, price, upside-pct, prev-tp: none, palette: DEFAULT_PALETTE) = {
   block(
@@ -203,19 +207,23 @@
   )[
     #set align(center)
     #set text(font: FONT_SANS)
-    #text(size: T_RATING, weight: "black", fill: palette.brand_dark)[#action]
+    #text(size: T_RATING, weight: "black", fill: palette.brand_dark)[#if action == none { "—" } else { action }]
     #v(2pt)
     #text(size: T_SMALL, fill: rgb("#475467"))[12 bulan · eks-dividen]
     #v(6pt)
-    #text(size: T_TP_BIG, weight: "black")[Rp #tp]
+    #text(size: T_TP_BIG, weight: "black")[Rp #nstr(tp)]
     #v(2pt)
-    #text(size: T_SMALL)[Harga kini Rp #price]
+    #text(size: T_SMALL)[Harga kini Rp #nstr(price)]
     #v(2pt)
-    #text(
-      size: T_BODY,
-      weight: "bold",
-      fill: if upside-pct > 0 { palette.pos } else { palette.neg },
-    )[#calc.abs(upside-pct)% #if upside-pct > 0 [upside] else [downside]]
+    #if upside-pct == none {
+      text(size: T_BODY, weight: "bold", fill: palette.muted)[— data Sectors pending]
+    } else {
+      text(
+        size: T_BODY,
+        weight: "bold",
+        fill: if upside-pct > 0 { palette.pos } else { palette.neg },
+      )[#calc.abs(upside-pct)% #if upside-pct > 0 [upside] else [downside]]
+    }
     #if prev-tp != none {
       v(2pt)
       text(size: T_SMALL, fill: rgb("#475467"))[TP sebelumnya: Rp #prev-tp]

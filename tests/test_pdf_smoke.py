@@ -126,6 +126,12 @@ def rendered_reports(tmp_path_factory) -> dict[str, dict[str, Any]]:
         else:
             data = _load_or_build_report_data(ticker, archetype="auto")
 
+        # LOUD policy: renderer refuses invented gate params — tests supply
+        # explicit test-owned inputs (see tests/_loud_test_inputs.py).
+        from tests._loud_test_inputs import inject_gate_inputs
+
+        inject_gate_inputs(data)
+
         # Inject gate verdict for tickers with method selection framework
         if ticker != "JCI":
             params = _get_ticker_gate_params(ticker, data)
