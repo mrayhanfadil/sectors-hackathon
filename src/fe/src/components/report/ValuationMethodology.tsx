@@ -373,11 +373,9 @@ export function ValuationMethodology({
                     </tr>
                   </thead>
                   <tbody>
-                    {(
-                      vd.blended.rows ?? [
-                        ["DCF", "60%", vd.blended.fv],
-                        ["EV/EBITDA", "40%", 740],
-                      ]
+                    {(vd.blended.rows && vd.blended.rows.length > 0
+                      ? vd.blended.rows
+                      : [["DCF", "60%", "—"], ["EV/EBITDA", "40%", "—"]]
                     ).map((row, i) => (
                       <tr key={i} className="border-b last:border-0">
                         <td className="py-1.5 px-3 font-medium text-neutral-800 dark:text-neutral-200">{String(row[0])}</td>
@@ -439,7 +437,7 @@ export function ValuationMethodology({
                 <div className="rounded-lg border border-neutral-100 bg-neutral-50 p-2.5 dark:border-neutral-800 dark:bg-neutral-900">
                   <div className="text-neutral-500 text-[11px] dark:text-neutral-400">BVPS Proyeksi</div>
                   <div className="font-bold font-mono text-neutral-900 text-sm mt-0.5 dark:text-neutral-100">
-                    Rp {fmtIDR(Number((vd.ggm.assumptions as Record<string, unknown>)?.["bvps"] ?? 4200))}
+                    {(() => { const v = Number((vd.ggm.assumptions as Record<string, unknown>)?.["bvps"]); return Number.isFinite(v) && v > 0 ? "Rp " + fmtIDR(v) : "—"; })()}
                   </div>
                 </div>
                 <div className="rounded-lg border border-emerald-200 bg-emerald-50/80 p-2.5 dark:border-emerald-800 dark:bg-emerald-950/80">
@@ -456,13 +454,13 @@ export function ValuationMethodology({
                 </div>
                 <div className="grid grid-cols-3 gap-1 font-mono text-[11px]">
                   <div>
-                    ROE: {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["roe"] ?? 0.197) * 100).toFixed(1)}%
+                    ROE: {(() => { const v = Number((vd.ggm.assumptions as Record<string, unknown>)?.["roe"]); return Number.isFinite(v) ? (v * 100).toFixed(1) + "%" : "—"; })()}
                   </div>
                   <div>
-                    g (terminal): {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["g"] ?? 0.04) * 100).toFixed(1)}%
+                    g (terminal): {(() => { const v = Number((vd.ggm.assumptions as Record<string, unknown>)?.["g"]); return Number.isFinite(v) ? (v * 100).toFixed(1) + "%" : "—"; })()}
                   </div>
                   <div>
-                    CoE: {(Number((vd.ggm.assumptions as Record<string, unknown>)?.["coe"] ?? 0.1176) * 100).toFixed(2)}%
+                    CoE: {(() => { const v = Number((vd.ggm.assumptions as Record<string, unknown>)?.["coe"]); return Number.isFinite(v) ? (v * 100).toFixed(2) + "%" : "—"; })()}
                   </div>
                 </div>
               </div>

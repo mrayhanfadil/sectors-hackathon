@@ -32,7 +32,7 @@
 )
 
 // Helper: visual placeholder for chart rendering
-#let chart-placeholder(label, caption: "Engine Chart Renderer (IDX / yfinance)", height: 70pt, palette: PALETTE) = {
+#let chart-placeholder(label, caption: "Engine Chart Renderer (Sectors pending)", height: 70pt, palette: PALETTE) = {
   block(
     width: 100%,
     height: height,

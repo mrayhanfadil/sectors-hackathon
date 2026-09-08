@@ -74,16 +74,10 @@ def test_report_bbca_endpoint(api_client):
 def test_outlook_endpoint(api_client):
     try:
         res = api_client.get("/api/outlook")
-        # LOUD policy (keyless): outlook refuses hardcoded JCI 9100 -> 503.
-        # Keyed runs with Sectors data -> 200.
-        assert res.status_code in (200, 503), f"Unexpected {res.status_code}: {res.text}"
-        if res.status_code == 503:
-            assert "sectors_missing_key" in res.text
-            return
-        data = res.json()
-        assert isinstance(data, dict), "Outlook response must be a dict"
-        assert "jci_target" in data or "jci_base" in data, "Outlook missing jci_target/jci_base"
-        assert "scenarios" in data or "ow" in data, "Outlook missing scenarios/ow"
+        # LOUD policy: outlook always 503 until the Sectors-native outlook is
+        # wired post-key (JPM-9100 fixture retired, never served as live).
+        assert res.status_code == 503, f"Expected 503, got {res.status_code}: {res.text}"
+        assert "sectors-native outlook pending" in res.text
     except Exception as exc:
         warnings.warn(f"GET /api/outlook failed assertion: {exc}")
         raise

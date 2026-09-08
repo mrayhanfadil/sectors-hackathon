@@ -54,3 +54,46 @@ def inject_gate_inputs(data: dict[str, Any]) -> dict[str, Any]:
         ticker = str((data.get("meta") or {}).get("ticker", "")).upper()
         data.setdefault("gate_inputs", dict(TEST_GATE_SCENARIOS.get(ticker, TEST_GATE_INPUTS)))
     return data
+
+
+def load_demo_fixture(ticker: str) -> dict[str, Any] | None:
+    """Load a DECLARED demo payload for render-path tests (never prod).
+
+    Order: scripts/fixtures/<t>_report_data.json file, then the
+    scripts/report_fixtures.py builder of the same name. Returns None when
+    neither exists. Test-only: prod loaders must never call this.
+    """
+    from pathlib import Path as _Path
+    import json as _json
+
+    t = (ticker or "").upper().strip()
+    _repo = _Path(__file__).resolve().parents[1]
+    _fp = _repo / "scripts" / "fixtures" / f"{t.lower()}_report_data.json"
+    if _fp.exists():
+        try:
+            data = _json.loads(_fp.read_text(encoding="utf-8"))
+            return inject_gate_inputs(data)
+        except Exception:
+            pass
+    try:
+        import sys as _sys
+
+        if str(_repo / "scripts") not in _sys.path:
+            _sys.path.insert(0, str(_repo / "scripts"))
+        import report_fixtures as _rf  # type: ignore
+
+        _names = {
+            "RATU": "ratu_single",
+            "CDIA": "cdia_sotp",
+            "MTEL": "mtel_infra",
+            "POWR": "powr_infra",
+            "JCI": "jpm_strategy",
+            "ACES": None,
+            "TEST": None,
+        }
+        _fn = getattr(_rf, str(_names.get(t) or ""), None)
+        if callable(_fn):
+            return inject_gate_inputs(_fn())
+    except Exception:
+        pass
+    return None

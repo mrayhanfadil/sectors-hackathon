@@ -1,9 +1,12 @@
-"""Test Sectors-backed collector (Lane E rewrite) — keyless honest behavior.
+"""Test Sectors-only collector (LOUD policy, Sep 2026) — no synthetic fallback.
 
-Legacy removed: no yfinance, no IDX Postgres stockdata, no silent fallbacks.
-Keyless runs return labeled synthetic; keyed runs return source=sectors.
+Keyless runs raise RuntimeError(sectors_missing_key); keyed runs return
+source=sectors. No yfinance, no IDX Postgres, no silent fallbacks, no seed-42.
 """
 import sys, json, os
+
+import pytest
+
 sys.path.insert(0, "/home/fadil/projects/sectors-hackathon")
 
 _CACHE = "/home/fadil/projects/sectors-hackathon/data/output/cache_collector_{t}.json"
@@ -36,35 +39,38 @@ def test_try_sectors_unknown_ticker_keyless():
     print("PASS try_sectors_unknown_ticker_keyless")
 
 
-def test_collect_keyless_honest_source():
-    """Keyless collect() -> labeled synthetic (or local idx), never legacy vendors."""
+def test_collect_keyless_raises_loud():
+    """Keyless collect() with no IDX dump -> RuntimeError naming sectors_missing_key."""
     _keyless()
     from agents.collector import collect
     _clear("BBCA")
-    data = collect("BBCA", use_cache=False)
-    assert data["source"] in ("sectors", "synthetic", "idx"), f"source: {data.get('source')}"
-    assert "today_idx" not in data, "legacy idx_db supplement must be gone"
-    assert "sector_source" not in data or data.get("sector_source") != "idx_db"
-    blob = json.dumps(data, default=str)
-    assert "yfinance" not in blob, "legacy vendor leaked into payload"
-    assert "stockdata:15437" not in blob, "legacy DB leaked into payload"
-    print("PASS collect_keyless_honest_source")
+    with pytest.raises(RuntimeError, match="sectors_missing_key"):
+        collect("BBCA", use_cache=False)
+    print("PASS collect_keyless_raises_loud")
 
 
-def test_collect_unknown_ticker_is_labeled_synthetic():
-    """Unknown ticker keyless -> synthetic fallback with honest seed note."""
+def test_collect_unknown_ticker_keyless_raises_loud():
+    """Unknown ticker keyless -> RuntimeError, never invented company."""
     _keyless()
     from agents.collector import collect
     _clear("ZZZZZZ")
-    data = collect("ZZZZZZ", use_cache=False)
-    assert data["source"] == "synthetic", f"source: {data.get('source')}"
-    assert "seed=42" in str(data.get("note", "")), f"note: {data.get('note')}"
-    print("PASS collect_unknown_ticker_is_labeled_synthetic")
+    with pytest.raises(RuntimeError, match="sectors_missing_key"):
+        collect("ZZZZZZ", use_cache=False)
+    print("PASS collect_unknown_ticker_keyless_raises_loud")
+
+
+def test_synthetic_generator_retired():
+    """_synthetic() raises — seed-42 invention is gone."""
+    from agents.collector import _synthetic
+    with pytest.raises(RuntimeError, match="synthetic fallback retired"):
+        _synthetic("BBCA")
+    print("PASS synthetic_generator_retired")
 
 
 if __name__ == "__main__":
     test_try_sectors_keyless_returns_none()
     test_try_sectors_unknown_ticker_keyless()
-    test_collect_keyless_honest_source()
-    test_collect_unknown_ticker_is_labeled_synthetic()
+    test_collect_keyless_raises_loud()
+    test_collect_unknown_ticker_keyless_raises_loud()
+    test_synthetic_generator_retired()
     print("ALL COLLECTOR TESTS PASSED")

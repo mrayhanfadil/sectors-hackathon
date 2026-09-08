@@ -486,7 +486,7 @@ async def agent_start(req: AgentRunRequest):
     else:
         session_id = f"{ticker.lower()}-{os.urandom(4).hex()}"
 
-    p = req.prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP if available; otherwise use synthetic disclosures. Every number must be via calc_* tools."
+    p = req.prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key — never synthetic disclosures."
 
     # Spawn background task; do NOT await it
     task = asyncio.create_task(_execute_run_to_sqlite(ticker, p, session_id))

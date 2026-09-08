@@ -144,7 +144,8 @@ export async function fetchReport(ticker: string): Promise<Report> {
   const anyLive = live as unknown as Record<string, unknown>
   if (anyLive && typeof anyLive["fair_value"] === "number") {
     const fv = anyLive["fair_value"] as number
-    const price = (anyLive["price"] as number) || 0
+    // LOUD policy: no 0-price or default-HOLD when BE omits them.
+    const price = (anyLive["price"] as number) ?? null
     const upside = anyLive["upside_pct"] as number | null
     const val = anyLive["valuation"] as Record<string, unknown> | undefined
     const base: Report = {
@@ -153,8 +154,8 @@ export async function fetchReport(ticker: string): Promise<Report> {
       price,
       target: Math.round(fv),
       upside: upside != null ? `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%` : "-",
-      rating: (anyLive["rating"] as Report["rating"]) ?? "HOLD",
-      summary: (anyLive["summary"] as string) || `Live DCF engine - ${(val?.["method"] as string) ?? "dcf"}`,
+      rating: (anyLive["rating"] as Report["rating"]) ?? null,
+      summary: (anyLive["summary"] as string) || "Ringkasan menunggu BE",
       valuation: [{ method: String(val?.["method"] ?? "DCF"), value: Math.round(fv) }],
       updatedAt: String(anyLive["generated_at"] ?? new Date().toISOString().slice(0, 10)),
       source: (anyLive["source"] as string) ?? "live",

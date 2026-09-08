@@ -87,7 +87,8 @@ policy (keyless errors until SECTORS_API_KEY lands). Fixed in 3 lanes + orchestr
   BBCA/ADRO exhibits -> 422/ValueError/empty-skeleton; fixture "Sectors (^JKSE)"
   strings -> "yfinance/IDX (Sectors pending)".
 - F3 (orchestrator-completed, lane produced nothing): common.py yfinance label
-  wash fixed; SOTP pillar + strategy Top Picks tables labeled static-demo.
+  wash fixed; SOTP pillar + strategy Top Picks tables carry static-demo notes
+  (peer/sensitivity rows in single.typ de-baked to dashes in the E-batch below).
 - Templates none-safe: theme.typ nstr() + rating-box renders "— data Sectors
   pending"; single/sotp/infra numeric spots + market rows guarded; RATU-branched
   market defaults -> "-". Narrative RATU fallbacks have honest else-branches (left).
@@ -99,3 +100,36 @@ policy (keyless errors until SECTORS_API_KEY lands). Fixed in 3 lanes + orchestr
 
 Verify: 275 passed, 3 skipped. Residual NEEDS-KEY: assumptions re-seed, harvest
 --execute (97), live probe keyed run, gate_inputs from real Sectors fundamentals.
+
+## E-batch adversarial removal (2026-09-08, 6-lane cross-check: 3 Hermes + 3 AGY flash)
+
+AGY lanes caught holes Hermes lanes missed. Removed, verified:
+- pdf.py fallback payload: vs_jci synthetic series labeled "Sectors", peers
+  [t,10,6] labeled "Sectors", financial rows 1000/1100, segments/KPI/risk/
+  catalyst invented blocks, placeholder-trend forecast expansion -> all
+  honest-empty + sectors_missing_key notes. we/wd/g added to required keys.
+- outlook: always 503 (JPM-9100 fixture block deleted, OutlookResponse model
+  deleted); /api/tickers: always 503 (stockdata pool retired as source);
+  /api/dcf: 422 without file-backed rf/beta/erp/cod + file-as-overrides.
+- ratios ebitda*2 invention -> None + note. last_price or-1000 -> direct
+  (422-guaranteed). agent.py default prompt: STOP keyless, never synthetic.
+- Collector neutered: _synthetic raises, _peers_for empty, supplements dropped,
+  no-source -> RuntimeError. Orphans deleted: data/sectors.db (git rm),
+  .cache/yfinance/, cache_collector_*.json. yfinance dep removed from
+  server/requirements.txt. adversarial.py calibration fallbacks -> raise.
+- Templates: relval/peer/caption sources -> Sectors (pending); RATU peer rows
+  de-baked; market-cap math + upside comparisons none-guarded; SOTP pillar +
+  strategy tables carry static-demo notes. Mirrored to templates/ copies.
+- FE: SEED_CHALLENGES emptied; blended 740 fallback + GGM 4200/0.197/0.04/0.1176
+  defaults -> "—"; RiskFactors ticker text + segmentsSource ternary removed;
+  SentimentChart/StatCards invention -> nulls + honest-empty states; SummaryCard
+  BUY/4/3 defaults -> PENDING/counts/empty; api.ts price||0/rating HOLD removed.
+- Fixture interception removed from prod loaders (pdf route + typst renderer);
+  tests declare demo payloads explicitly via load_demo_fixture().
+
+Residual NEEDS-KEY (cannot fabricate, cannot do keyless): assumptions re-seed
+from sectors.company_report, harvest --execute (97), live probe keyed run,
+Sectors-native outlook + screener wiring, gate_inputs from real fundamentals.
+Orphaned-but-kept: seed_synthetic.py/seed_assumptions.py/report_fixtures.py +
+scripts/fixtures/*.json (demo generators, zero prod importers — delete only
+with explicit approval since render tests consume them explicitly).

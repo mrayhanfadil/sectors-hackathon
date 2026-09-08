@@ -139,7 +139,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
 
     assum = _assumptions_for_inner(t)
     _required = ("rf", "beta", "erp", "cod", "g", "payout", "fcf", "shares_out",
-                 "net_debt", "cash", "ebitda", "ev_multiple", "last_price")
+                 "net_debt", "cash", "ebitda", "ev_multiple", "last_price", "we", "wd")
     _missing = [k for k in _required if assum.get(k) is None]
     if assum.get("source") == "no_assumptions_file" or _missing:
         raise HTTPException(
@@ -166,7 +166,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             422, f"valuation engine failed for {t}: {e} — refusing generic fallback "
             f"(check data/assumptions/{t}.json inputs; no silent last_price FV)")
 
-    last_price = assum.get("last_price", 1000)
+    last_price = assum["last_price"]  # guaranteed by required-key 422 above; never invented
     upside = round((fv - last_price) / last_price * 100, 2) if fv and last_price else None
 
     # Map rating
@@ -187,10 +187,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     chosen = template_override or _template_for_inline(t, None)
 
     # Build minimal contract that all templates can render without crashing
-    # Use payload structure expected by templates: meta, cover, financial_highlights, thesis, valuation, etc.
-    MONTHS = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
     is_infra = chosen == "infra"
-    seg_name = "Tower Leasing" if is_infra else "Core"
     payload = {
         "meta": {
             "template": chosen,
@@ -205,27 +202,26 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             "subsector": "telco-infra" if is_infra else "",
         },
         "cover": {
-            "rating_box": {"action": rating, "tp": round(fv or last_price), "prev_tp": None, "price": last_price, "upside_pct": upside or 0, "key_takeaways": ["Valuasi DCF deterministik", "Asumsi WACC eksplisit", "Bukan saran investasi"] if is_infra else []},
-            "vs_jci": {"ytd_abs": 0, "ytd_rel": 0, "source": "Sectors", "chart": {"labels": MONTHS, "series": [[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], [0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5, 5, 5.5]]}},
-            "shares": {"outstanding": round(assum.get("shares_out", 10e9) / 1e9, 1), "unit": "bn", "free_float_pct": 30.0},
-            "shareholders": [{"name": "Publik", "pct": 30.0}, {"name": "Pengendali", "pct": 70.0}],
-            "shareholders_src": "IDX",
+            "rating_box": {"action": rating, "tp": round(fv or last_price), "prev_tp": None, "price": last_price, "upside_pct": upside, "key_takeaways": ["Valuasi DCF deterministik", "Asumsi WACC eksplisit", "Bukan saran investasi"] if is_infra else []},
+            "vs_jci": {"ytd_abs": None, "ytd_rel": None, "source": "sectors_missing_key", "note": "perbandingan vs IHSG menunggu Sectors daily (tidak ada deret sintetik)"},
+            "shares": {"outstanding": round(assum["shares_out"] / 1e9, 1), "unit": "bn", "free_float_pct": None, "note": "free float menunggu Sectors ownership"},
+            "shareholders": [],
+            "shareholders_src": "sectors_missing_key",
+            "shareholders_note": "komposisi pemegang saham menunggu Sectors ownership (tidak ada 30/70 karangan)",
             "esg": {"found": False},
         },
         "financial_highlights": {
-            "source": "Laporan keuangan (IDX), data diolah",
-            "years": ["FY24A", "FY25A", "FY26F"],
-            "rows": [["Pendapatan (Rp bn)", 1000, 1100, 1200], ["EBITDA (Rp bn)", 500, 550, 600], ["Laba bersih (Rp bn)", 200, 220, 250]],
+            "source": "sectors_missing_key",
+            "note": "ikhtisar keuangan menunggu Sectors quarterly (tidak ada baris 1000/1100 karangan)",
+            "years": [],
+            "rows": [],
         },
-        "segments": [
-            {"name": seg_name, "revenue": 1000, "yoy_pct": 5, "qoq_pct": 2, "share_pct": 100.0, "row": [seg_name, 1000, "+5%", "+2%", "100%"]}
-        ] if chosen in ("sotp", "infra") else [],
-        "segments_src": "IDX",
-        "kpis": [
-            {"name": "Tenancy Ratio", "value": 1.57, "prev": 1.53, "unit": "x", "formula": "tenant/tower", "source": "Company data", "row": ["Tenancy Ratio", 1.57, 1.53, "+0.04", "x", "tenant/tower", "Company data"]},
-            {"name": "Tower", "value": 40563, "prev": 39767, "unit": "unit", "formula": "jumlah tower", "source": "Company data", "row": ["Tower", 40563, 39767, "+796", "unit", "jumlah tower", "Company data"]},
-        ] if is_infra else [],
-        "kpis_src": "Company data 1H26, data diolah" if is_infra else "",
+        "segments": [],
+        "segments_src": "sectors_missing_key",
+        "segments_note": "pilar segmen menunggu data segmen Sectors/IDX (tidak ada 1000/+5% karangan)",
+        "kpis": [],
+        "kpis_src": "sectors_missing_key",
+        "kpis_note": "KPI menunggu data emiten terverifikasi (tidak ada tenancy/tower karangan)",
         "thesis": [
             {"headline": "Valuasi terdorong DCF", "detail": f"WACC {wacc_val*100:.2f}% → FV Rp {fv:,.0f}", "source": "scripts/dcf.py"},
             {"headline": "Asumsi eksplisit & auditable", "detail": f"Rf {assum['rf']*100:.2f}%, Beta {assum['beta']}, ERP {assum['erp']*100:.2f}%", "source": "assumptions"},
@@ -238,47 +234,22 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             "blended": {"source": "scripts/blended.py", "weights": {"DCF": 60, "EV/EBITDA": 40}, "fv": round(fv or 0), "margin_of_safety_pct": 15, "weights_sum_100": True, "rows": [["DCF", "60%", round(dcf_res.get("fv_per_share", 0) if isinstance(dcf_res, dict) else 0)], ["EV/EBITDA", "40%", round(ev_res.get("fv_per_share", 0) if isinstance(ev_res, dict) else 0)]], "fv_str": str(round(fv or 0))} if blended_res else None,
             "bands": None,
         },
-        "financials": [
-            {"title": "Laba Rugi Ringkas", "headers": ["Rp bn", "FY24A", "FY25A", "FY26F"], "rows": [["Pendapatan", 1000, 1100, 1200], ["EBITDA", 500, 550, 600]], "source": "Laporan keuangan IDX"},
-        ],
-        "risks": [{"bucket": "Risiko Pasar", "detail": "Volatilitas harga & permintaan.", "source": None}],
-        "peers": {"tables": [{"pillar": "Peers", "headers": ["Ticker", "P/E", "EV/EBITDA"], "rows": [[t, 10.0, 6.0]], "source": "Sectors"}]},
+        "financials": [],
+        "financials_note": "laporan keuangan menunggu Sectors quarterly (tidak ada baris 1000/1100 karangan; proyeksi placeholder dimatikan LOUD policy)",
+        "risks": [],
+        "risks_note": "risiko menunggu Sectors filings/suspensions (tidak ada bucket generik)",
+        "peers": {"tables": [], "source": "sectors_missing_key", "note": "komparabel menunggu Sectors peers (tidak ada baris 10.0/6.0 karangan)"},
         "news": [],
         "sentiment": None,
         "strategy": None,
-        "catalysts": [{"name": "Ekspansi jaringan", "effect": "Tambahan tenant", "quantified": {"tenants": "+1.000", "revenue_idr_bn": "+100", "by": "FY27"}, "source": "Company disclosure"}] if is_infra else [],
+        "catalysts": [],
+        "catalysts_note": "katalis menunggu filings/keterbukaan (tidak ada tenant-kuantifikasi karangan)" if is_infra else "",
         "exhibits": [],
     }
-    # 2A+4F forecast expansion — projection math lives in agents/valuation/forecast.py.
-    # Actuals = last 2 years of the inline placeholder trend; FY26F..FY29F =
-    # last-actual x (1+g)^t with g from assumptions (revenue_growth > g > 1.5% default).
-    try:
-        from agents.valuation.forecast import build_trend_forecast as _build_fc
-        if "revenue_growth" in assum:
-            _g_live, _g_key = float(assum["revenue_growth"]), "revenue_growth"
-        elif "g" in assum and assum["g"] is not None:
-            _g_live, _g_key = float(assum["g"]), "g"
-        else:
-            _g_live, _g_key = 0.015, "default 1,5%"
-        _g_pct = f"{_g_live * 100:.1f}%".replace(".", ",")
-        _g_src = f"proyeksi FY26F-FY29F = FY25A x (1+g)^t, g={_g_pct} ({_g_key}, agents/valuation/forecast.py)"
-        _fc = _build_fc(
-            {"revenue": [1000.0, 1100.0], "ebitda": [500.0, 550.0], "net": [200.0, 220.0]},
-            {"revenue": _g_live, "ebitda": _g_live, "net": _g_live},
-            {"revenue": _g_src, "ebitda": _g_src, "net": _g_src},
-        )
-        _rev, _eb, _nt = _fc["series"]["revenue"], _fc["series"]["ebitda"], _fc["series"]["net"]
-        payload["financial_highlights"] = {
-            "source": f"Laporan keuangan (IDX), data diolah; {_g_src}",
-            "years": _fc["years"],
-            "rows": [["Pendapatan (Rp bn)", *_rev], ["EBITDA (Rp bn)", *_eb], ["Laba bersih (Rp bn)", *_nt]],
-        }
-        payload["financials"] = [
-            {"title": "Laba Rugi Ringkas", "headers": ["Rp bn", *_fc["years"]],
-             "rows": [["Pendapatan", *_rev], ["EBITDA", *_eb]], "source": f"Laporan keuangan IDX; {_g_src}"},
-        ]
-    except Exception:
-        pass
+    # 2A+4F forecast expansion RETIRED (LOUD policy): it projected FY26F-FY29F
+    # from placeholder actuals [1000, 1100] — fabricated trend presented as IDX
+    # financials. Re-enable only with real Sectors quarterly actuals as base.
+    # financial_highlights stays honest-empty (set above).
     return payload
 
 
@@ -319,14 +290,10 @@ def render_html_for_ticker(ticker: str, template_override: Optional[str] = None)
     from jinja2 import Environment, FileSystemLoader, select_autoescape
 
     t = ticker.upper().strip()
-    # Prefer fixtures for known archetypes (richer exhibits)
-    data = _load_fixture(t)
-    if data is None:
-        data = _build_live_payload(t, template_override)
-    else:
-        # honor explicit template override if provided
-        if template_override in ("single", "sotp", "infra", "strategy"):
-            data["meta"]["template"] = template_override
+    # LOUD policy: no fixture preference in prod — fixtures are declared demo
+    # data (scripts/report_fixtures.py), never live responses. Tests that need
+    # demo payloads load them explicitly (tests/_loud_test_inputs.py).
+    data = _build_live_payload(t, template_override)
 
     # select template (honors meta.template override + infra precedence)
     template_name, reason = _select_template(data)

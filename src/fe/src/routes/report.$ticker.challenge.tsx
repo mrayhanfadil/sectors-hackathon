@@ -13,44 +13,11 @@ export const Route = (createFileRoute as any)("/report/$ticker/challenge")({
   component: ChallengePage,
 })
 
-// Default starter examples per ticker if history is empty
-const SEED_CHALLENGES: Record<string, ChallengeEntry[]> = {
-  MTEL: [
-    {
-      q: "WACC 10.1% terlalu tinggi dibanding rata-rata industri menara telekomunikasi (8.5 - 9.0%)?",
-      verdict: "defend",
-      evidence: "Model menggunakan Risk-Free Rate 6.96% (SBN 10Y) dan Equity Risk Premium 8.89% yang merefleksikan tensi likuiditas perbankan 2026. Bobot utang 39.2% dengan Cost of Debt 6.0% menghasilkan WACC 10.1% yang prudent tanpa manipulasi valuasi.",
-      exhibit_ref: "Exhibit 3.1 - WACC Breakdown & Sensitivity Matrix",
-      debate_id: "mtel-wacc-01",
-    },
-    {
-      q: "Tenancy ratio 1.57x berisiko melambat akibat merger operator seluler?",
-      verdict: "defend",
-      evidence: "Kombinasi spektrum 700MHz dan 2.6GHz pasca lelang Komdigi diperkirakan menambah 3.000 hingga 3.500 tenant baru (+Rp 360-420 miliar) pada FY27-FY29, memitigasi risiko churning operator.",
-      exhibit_ref: "Exhibit 2.4 - Operational Tenancy Projections",
-      debate_id: "mtel-tenancy-02",
-    },
-  ],
-  BBCA: [
-    {
-      q: "GGM P/BV implied 2.29x terlalu konservatif dibanding historis BBCA 3Y di kisaran 3.5 - 4.5x?",
-      verdict: "defend",
-      evidence: "Formula GGM = (ROE - g) / (CoE - g). Dengan ROE 19.7%, g 4.0%, dan CoE 11.76%, implied P/BV wajar berada di 2.02x s/d 2.29x. Model menjaga margin of safety 15% dari peak euforia pasar.",
-      exhibit_ref: "Exhibit 4.1 - Gordon Growth Model (GGM) Valuation",
-      debate_id: "bbca-ggm-01",
-    },
-  ],
-  RATU: [
-    {
-      q: "WACC 8.4% terlalu rendah untuk profil risiko emiten hulu migas?",
-      verdict: "concede",
-      evidence: "Kritik diterima: Beta 0.70x mungkin mencerminkan volatilitas historis rendah masa kontrak bagi hasil, namun sensitivitas WACC dinaikkan ke 9.5% menghasilkan TP Rp 7.150 (tetap memberikan upside positif).",
-      exhibit_ref: "Exhibit 1.3 - Oil Price & Beta Sensitivity",
-      correction: "TP disesuaikan ke rentang Rp 7.150 - Rp 7.880",
-      debate_id: "ratu-beta-01",
-    },
-  ],
-}
+// LOUD policy: no seeded debate history. Past "verdict: defend" entries were
+// hardcoded narratives presented as completed Red Team runs. Empty history
+// renders the clean empty state; real user runs persist via localStorage below.
+const SEED_CHALLENGES: Record<string, ChallengeEntry[]> = {}
+
 
 function getInitialLog(tk: string): ChallengeEntry[] {
   try {

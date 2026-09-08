@@ -24,9 +24,17 @@ export function SentimentStatCards({
   newsCount = 0,
   socialCount = 0,
 }: SentimentStatCardsProps) {
-  const gaugeVal = sentiment?.gauge != null ? Number(sentiment.gauge) : 50
+  // LOUD policy: no invented gauge 50. Null means missing BE data.
+  const gaugeVal: number | null = sentiment?.gauge != null ? Number(sentiment.gauge) : null
 
   const { statusLabel, badgeVariant, colorClass } = useMemo(() => {
+    if (gaugeVal == null) {
+      return {
+        statusLabel: "Menunggu data",
+        badgeVariant: "secondary" as const,
+        colorClass: "text-neutral-500 dark:text-neutral-400",
+      }
+    }
     if (gaugeVal >= 60) {
       return {
         statusLabel: sentiment?.label || "Bullish / Positif",
@@ -69,22 +77,19 @@ export function SentimentStatCards({
         totalItems: total,
       }
     }
-    // Fallback derived from gauge
-    const bullPct = Math.min(100, Math.max(0, gaugeVal))
-    const bearPct = Math.min(100, Math.max(0, 100 - gaugeVal))
+    // LOUD policy: no gauge-derived invention (0.7 factors, floor 10).
     return {
-      bullishPct: Math.round(bullPct * 0.7),
-      bearishPct: Math.round(bearPct * 0.7),
-      neutralPct: Math.max(10, 100 - Math.round(bullPct * 0.7) - Math.round(bearPct * 0.7)),
-      totalItems: items.length || (newsCount + socialCount),
+      bullishPct: null as number | null,
+      bearishPct: null as number | null,
+      neutralPct: null as number | null,
+      totalItems: items.length,
     }
   }, [sentiment?.items, gaugeVal, newsCount, socialCount])
 
-  const confidencePct = sentiment?.confidence != null
+  // LOUD policy: no invented 65/40 confidence scores.
+  const confidencePct: number | null = sentiment?.confidence != null
     ? Math.round(sentiment.confidence * 100)
-    : gaugeVal !== 50
-    ? 65
-    : 40
+    : null
 
   const totalSources = (sentiment?.sources?.length || 0) + (sentiment?.items?.length || 0) + newsCount
 
@@ -152,7 +157,7 @@ export function SentimentStatCards({
                 <TrendingUp className="h-3 w-3" /> Positif
               </div>
               <div className="font-mono text-xs font-bold text-emerald-800 dark:text-emerald-200">
-                {distribution.bullishPct}%
+                {distribution.bullishPct == null ? "—" : `${distribution.bullishPct}%`}
               </div>
             </div>
             <div className="rounded border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-800 dark:bg-neutral-900">
@@ -160,7 +165,7 @@ export function SentimentStatCards({
                 <MinusCircle className="h-3 w-3" /> Netral
               </div>
               <div className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-200">
-                {distribution.neutralPct}%
+                {distribution.neutralPct == null ? "—" : `${distribution.neutralPct}%`}
               </div>
             </div>
             <div className="rounded border border-rose-100 bg-rose-50/50 p-1 dark:border-rose-800 dark:bg-rose-950/50">
@@ -168,7 +173,7 @@ export function SentimentStatCards({
                 <TrendingDown className="h-3 w-3" /> Negatif
               </div>
               <div className="font-mono text-xs font-bold text-rose-800 dark:text-rose-200">
-                {distribution.bearishPct}%
+                {distribution.bearishPct == null ? "—" : `${distribution.bearishPct}%`}
               </div>
             </div>
           </div>
@@ -176,18 +181,18 @@ export function SentimentStatCards({
           <div className="flex h-2 overflow-hidden rounded-full border border-neutral-200 dark:border-neutral-800">
             <div
               className="bg-emerald-600 transition-all"
-              style={{ width: `${distribution.bullishPct}%` }}
-              title={`Positif: ${distribution.bullishPct}%`}
+              style={{ width: `${distribution.bullishPct ?? 0}%` }}
+              title={`Positif: ${distribution.bullishPct ?? "—"}%`}
             />
             <div
               className="bg-neutral-400 transition-all dark:bg-neutral-600"
-              style={{ width: `${distribution.neutralPct}%` }}
-              title={`Netral: ${distribution.neutralPct}%`}
+              style={{ width: `${distribution.neutralPct ?? 0}%` }}
+              title={`Netral: ${distribution.neutralPct ?? "—"}%`}
             />
             <div
               className="bg-rose-500 transition-all"
-              style={{ width: `${distribution.bearishPct}%` }}
-              title={`Negatif: ${distribution.bearishPct}%`}
+              style={{ width: `${distribution.bearishPct ?? 0}%` }}
+              title={`Negatif: ${distribution.bearishPct ?? "—"}%`}
             />
           </div>
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
@@ -212,16 +217,16 @@ export function SentimentStatCards({
         <CardContent className="p-4 pt-1 space-y-2">
           <div className="flex items-baseline justify-between">
             <span className="text-2xl font-bold font-mono tracking-tight text-neutral-900 dark:text-neutral-100">
-              {confidencePct}%
+              {confidencePct == null ? "—" : `${confidencePct}%`}
             </span>
             <Badge variant="outline" className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300">
-              {confidencePct >= 70 ? "Kerapatan Tinggi" : confidencePct >= 50 ? "Sampel Cukup" : "Sampel Awal"}
+              {confidencePct == null ? "Menunggu data" : confidencePct >= 70 ? "Kerapatan Tinggi" : confidencePct >= 50 ? "Sampel Cukup" : "Sampel Awal"}
             </Badge>
           </div>
           <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
             <div
               className="h-full bg-neutral-800 transition-all"
-              style={{ width: `${confidencePct}%` }}
+              style={{ width: `${confidencePct ?? 0}%` }}
             />
           </div>
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
