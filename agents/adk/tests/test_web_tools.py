@@ -6,12 +6,11 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Tests for web_tools — Sectors search + local readability extract (legacy removed, Lane E).
+"""Tests for web_tools — Sectors search only (extract killed Sep 2026, Sectors-only rule).
 
-Three layers:
+Two layers:
   1) Pure unit: domain tier classification, schema validation
   2) Behavioral: missing key → sectors_missing_key honest empty; legacy keys ignored
-  3) Live extract (network): kontan.co.id / wikipedia — skipped in CI without network
 
 Run: .venv/bin/python -m pytest agents/adk/tests/test_web_tools.py -v
 Or:  .venv/bin/python agents/adk/tests/test_web_tools.py
@@ -29,13 +28,7 @@ _REPO = Path(__file__).resolve().parents[3]
 if str(_REPO) not in sys.path:
     sys.path.insert(0, str(_REPO))
 
-from agents.adk.tools.web_tools import (  # noqa: E402
-    _domain_tier,
-    TIER_DOMAINS,
-    web_search,
-    web_extract,
-    web_search_and_extract,
-)
+from agents.adk.tools.web_tools import _domain_tier, TIER_DOMAINS, web_search  # noqa: E402
 
 
 # ----------------------------------------------------------------------------
@@ -105,44 +98,7 @@ def test_web_search_legacy_keys_ignored():
             os.environ["TAVILY_API_KEYS"] = saved_multi
         if saved_sectors is not None:
             os.environ["SECTORS_API_KEY"] = saved_sectors
-
-
-def test_web_search_and_extract_missing_key():
-    """Composite tool with no Sectors key → extract skipped, search empty, honest composite_source."""
-    saved = os.environ.pop("SECTORS_API_KEY", None)
-    try:
-        out = asyncio.run(web_search_and_extract("BBCA", n_results=3, extract_top_n=2))
-        assert out["search"]["source"] == "sectors_missing_key"
-        assert out["extract"]["results"] == []
-        assert out["composite_source"] == "sectors_missing_key+readability_local"
-    finally:
-        if saved is not None:
-            os.environ["SECTORS_API_KEY"] = saved
-
-
-def test_web_extract_ignores_non_http_urls():
-    """Non-http URLs are silently dropped — no exception."""
-    out = asyncio.run(web_extract(["file:///etc/passwd", "javascript:alert(1)", "not-a-url", "https://example.com"]))
-    assert out["source"] == "readability_local"
-    # Only the one https URL even attempts
-    assert len(out["results"]) == 1
-    assert out["results"][0]["url"] == "https://example.com"
-
-
-# ----------------------------------------------------------------------------
 # Live network test — only runs if explicitly enabled
-# ----------------------------------------------------------------------------
-def test_web_extract_live_kontan_skipped_without_network():
-    """Opt-in live extract test. Skipped unless LIVE_WEB_TESTS=1."""
-    if os.environ.get("LIVE_WEB_TESTS") != "1":
-        print("    (skipped — set LIVE_WEB_TESTS=1 to run live network tests)")
-        return  # graceful no-op when run as __main__ (no pytest)
-    out = asyncio.run(web_extract(["https://www.kontan.co.id/"]))
-    assert out["results"][0]["status"] == "ok"
-    assert out["results"][0]["char_count"] > 0
-
-
-# ----------------------------------------------------------------------------
 # Tool registration smoke — FunctionTool compatibility
 # ----------------------------------------------------------------------------
 def test_web_search_live_with_real_key():
@@ -160,9 +116,9 @@ def test_web_search_live_with_real_key():
 
 
 def test_function_tool_wraps_cleanly():
-    """Verify all 3 tools can be wrapped by ADK FunctionTool without errors."""
+    """Verify web_search (sole survivor, Sectors-only) wraps cleanly."""
     from google.adk.tools.function_tool import FunctionTool
-    for fn in [web_search, web_extract, web_search_and_extract]:
+    for fn in [web_search]:
         ft = FunctionTool(fn)
         assert ft.name == fn.__name__
         assert ft.description  # non-empty

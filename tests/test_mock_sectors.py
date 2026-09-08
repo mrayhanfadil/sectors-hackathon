@@ -310,9 +310,9 @@ def test_health_endpoint_reports_mock_sectors():
         assert ep in registered, f"Missing registered endpoint in /api/health: {ep}"
 
     sources = data.get("upstream_sources", {})
-    assert sources.get("filings") == "sectors filings + idx.co.id via Camoufox"
-    assert sources.get("news") == "sectors news (+ IDX scrape via Camoufox; curated killed Sep 2026)"
-    assert sources.get("corporate_actions") == "sectors corporate-actions + IDX"
+    assert sources.get("filings") == "sectors filings (scrapers killed Sep 2026)"
+    assert sources.get("news") == "sectors news (scrapers+curated killed Sep 2026)"
+    assert sources.get("corporate_actions") == "sectors corporate-actions (scrapers killed Sep 2026)"
     assert sources.get("quarterly_financials") == "sectors quarterly-financials"
 
     last_call = data.get("last_successful_call", {})

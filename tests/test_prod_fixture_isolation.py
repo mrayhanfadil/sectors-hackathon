@@ -1,21 +1,18 @@
 """Prod-vs-fixture isolation guards (H2, LOUD policy Sep 2026).
 
-Pins that prod loaders never serve static demo fixtures implicitly —
-fixtures are reachable in tests ONLY via tests/_loud_test_inputs.py::
-load_demo_fixture(). Covers:
+Pins the Sectors-only purge: static demo fixtures
+(scripts/fixtures/*.json, scripts/report_fixtures.py) are DELETED and
+server/routers/pdf.py::_load_fixture is REMOVED. Prod loaders 422 or
+return honest-empty skeletons without Sectors-backed inputs.
 
 - data/sectors.db absent (legacy sqlite removed via git-rm).
 - zero `import yfinance` under server/ (Sectors v2 is the single gateway).
-- zero LIVE prod importers of scripts/report_fixtures.py (server/ + src/fe
-  scan). NOTE: server/routers/pdf.py still contains a dead `_load_fixture`
-  helper with function-local report_fixtures imports — this file pins it as
-  unreachable (no callers) instead of pretending it is gone. Deleting it is
-  owned by another lane; any NEW importer or caller fails these tests.
+- scripts/report_fixtures.py does not exist; zero references under server/.
+- no `_load_fixture` symbol anywhere under server/ (dead canary removed).
 - collector synthetic path neutered: agents/collector.py::_synthetic raises.
 - pdf-route (render_html_for_ticker) + typst-renderer
-  (_load_or_build_report_data) return no fixture payload without explicit
-  load_demo_fixture().
-- no 'Sectors (' provenance strings on fixture-shaped payloads.
+  (_load_or_build_report_data) 422 keyless without data/assumptions files.
+- no 'Sectors (' provenance strings on honest prod payloads.
 
 Run: .venv/bin/python -m pytest tests/test_prod_fixture_isolation.py -q
 (from repo root)
@@ -116,15 +113,23 @@ def test_no_yfinance_imports_under_server():
     assert not offenders, f"yfinance imports under server/: {offenders}"
 
 
-# ---------------------------------------------------------------- 3. report_fixtures importers
+# ---------------------------------------------------------------- 3. report_fixtures purged
+
+def test_report_fixtures_module_absent():
+    """scripts/report_fixtures.py is deleted (Sectors-only purge, Sep 2026)."""
+    assert not (REPO_ROOT / "scripts" / "report_fixtures.py").exists(), (
+        "scripts/report_fixtures.py resurrected — static builders are purged, "
+        "Sectors v2 + data/assumptions files are the only prod sources"
+    )
+    assert not list((REPO_ROOT / "scripts" / "fixtures").glob("*.json")), (
+        "fixture JSON resurrected under scripts/fixtures/"
+    )
+
 
 def test_no_live_prod_importers_of_report_fixtures():
-    """Zero live prod importers of scripts/report_fixtures.py.
+    """Zero report_fixtures references anywhere under server/ or src/fe.
 
-    server/ + src/fe are scanned for report_fixtures imports. The single
-    exception is the KNOWN-DEAD server/routers/pdf.py::_load_fixture helper
-    (function-local imports, zero callers — pinned dead below). Anything
-    else fails.
+    The module is deleted, so any reference is a resurrection attempt.
     """
     live: list[str] = []
 
@@ -142,21 +147,6 @@ def test_no_live_prod_importers_of_report_fixtures():
                 continue
             if not any("report_fixtures" in m for m in mods):
                 continue
-            # Allow ONLY imports nested inside the dead _load_fixture def.
-            if p.name == "pdf.py":
-                parent = next(
-                    (
-                        n
-                        for n in ast.walk(tree)
-                        if isinstance(n, ast.FunctionDef)
-                        and n.name == "_load_fixture"
-                        and node.lineno >= n.lineno
-                        and node.lineno <= (n.end_lineno or node.lineno)
-                    ),
-                    None,
-                )
-                if parent is not None:
-                    continue
             live.append(f"{p.relative_to(REPO_ROOT)}:{node.lineno}")
 
     for p in _iter_fe():
@@ -174,20 +164,17 @@ def test_no_live_prod_importers_of_report_fixtures():
     assert not live, f"live prod importers of report_fixtures: {live}"
 
 
-def test_dead_fixture_helper_has_no_callers():
-    """pdf._load_fixture is dead code: defined once, called nowhere.
+def test_load_fixture_helper_deleted():
+    """pdf._load_fixture is removed: zero hits anywhere under server/.
 
-    If anyone re-wires it into render_html_for_ticker/routes, this fails.
+    The dead canary was purged Sep 2026. Any reintroduction fails here.
     """
     hits = []
     for p in _iter_py(REPO_ROOT / "server"):
         for i, raw in enumerate(p.read_text(encoding="utf-8").splitlines(), 1):
             if "_load_fixture" in raw:
-                hits.append((p, i, raw.strip()))
-    defs = [h for h in hits if h[2].startswith("def _load_fixture(")]
-    calls = [h for h in hits if h not in defs]
-    assert len(defs) == 1, f"expected exactly one _load_fixture def, got: {hits}"
-    assert not calls, f"_load_fixture re-wired into prod path: {calls}"
+                hits.append(f"{p.relative_to(REPO_ROOT)}:{i}: {raw.strip()}")
+    assert not hits, f"_load_fixture resurrected under server/: {hits}"
 
 
 def test_prod_loader_sources_import_no_fixtures():
@@ -230,10 +217,10 @@ def test_collector_collect_no_source_raises_loud(monkeypatch):
 
 @pytest.mark.parametrize("ticker", ["RATU", "CDIA", "MTEL"])
 def test_pdf_route_serves_no_fixture_implicitly(ticker):
-    """Prod pdf loader 422s on demo tickers; only explicit load_demo_fixture() serves them."""
+    """Prod pdf loader 422s keyless without data/assumptions files (fixtures purged)."""
     from server.routers.pdf import render_html_for_ticker
 
-    assert load_demo_fixture(ticker) is not None, f"no declared demo for {ticker}"
+    assert load_demo_fixture(ticker) is None, "demo stub must stay retired"
     with pytest.raises(HTTPException) as ei:
         render_html_for_ticker(ticker)
     assert ei.value.status_code == 422, f"expected 422, got {ei.value.status_code}"
@@ -269,19 +256,12 @@ def test_typst_renderer_no_implicit_fixture(ticker):
 # ---------------------------------------------------------------- 7. provenance
 
 def test_no_sectors_paren_provenance_on_fixture_shaped_payloads():
-    # Negative control: the static builder module DOES carry the marker,
-    # proving the detector below is not vacuous.
-    builders = (REPO_ROOT / "scripts" / "report_fixtures.py").read_text(encoding="utf-8")
-    assert "Sectors (" in builders
+    # Positive control: the retired demo stub serves nothing, so no payload
+    # can carry a fake live-Sectors marker from fixtures anymore...
+    for ticker in ("RATU", "CDIA", "MTEL", "POWR", "JCI", "ACES"):
+        assert load_demo_fixture(ticker) is None, f"demo stub must stay retired for {ticker}"
 
-    # Declared demos must never claim live Sectors sourcing...
-    for ticker in KNOWN_DEMO_TICKERS:
-        demo = load_demo_fixture(ticker)
-        if demo is None:
-            continue
-        assert_no_fixture_provenance(demo, f"demo {ticker}")
-
-    # ...and neither may prod loader outputs for fixture-shaped tickers.
+    # ...and neither may prod loader outputs for honest tickers.
     prod = __import__(
         "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
     )
@@ -292,10 +272,12 @@ def test_no_sectors_paren_provenance_on_fixture_shaped_payloads():
 
 
 def test_fixture_shape_detector_calibrated():
-    """is_fixture_shaped() separates explicit demos from honest-empty prod output."""
+    """is_fixture_shaped() separates demo-shaped dicts from honest-empty prod output."""
     prod = __import__(
         "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
     )
-    demo = load_demo_fixture("RATU")
-    assert demo is not None and is_fixture_shaped(demo)
+    demo_shaped = {"cover": {"rating_box": {"tp": 7880, "price": 6200}},
+                   "valuation": {"methods": [{"method": "DCF"}]},
+                   "financial_highlights": {"rows": [["x"]]}}
+    assert is_fixture_shaped(demo_shaped)
     assert not is_fixture_shaped(prod._load_or_build_report_data("BBCA", "auto"))

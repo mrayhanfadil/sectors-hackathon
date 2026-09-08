@@ -282,13 +282,13 @@ def _build_gate_verdict_dict(ticker: str, verdict: GateVerdict, params: dict, ra
 
 
 def _load_or_build_report_data(ticker: str, archetype: str) -> dict[str, Any]:
-    """Load fixture or build structured report data dict."""
+    """Build structured report data dict from Sectors-backed inputs only."""
     t = ticker.upper().strip()
-    # Verified JSON fixtures win over python builders (builders go stale silently).
-    # LOUD policy: fixture interception removed from the prod loader — static
-    # demo payloads (scripts/fixtures/*.json, report_fixtures module) are never
-    # served as live responses. Tests load them explicitly via
-    # tests/_loud_test_inputs.py::load_demo_fixture.
+    # Sectors-only rule (Sep 2026): static demo fixtures purged. No fixture
+    # interception exists in the prod loader — unknown tickers fall through
+    # to honest-empty skeletons (BBCA/ADRO) or _build_live_payload, which
+    # 422s without data/assumptions/{T}.json. Tests use explicit inline
+    # scaffolding (see synthetic payloads in test_template_leak.py).
 
     months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agt", "Sep", "Okt", "Nov", "Des"]
     # No fixture or builder for this ticker: honest-empty exhibits + source

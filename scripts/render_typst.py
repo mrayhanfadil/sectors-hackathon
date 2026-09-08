@@ -265,47 +265,19 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Typst institutional PDF renderer")
-    ap.add_argument("report_data", nargs="?", help="path to report_data.json")
+    ap.add_argument("report_data", help="path to report_data.json (explicit Sectors-built payload; no fixture defaults)")
     ap.add_argument("--out", help="output pdf path")
-    ap.add_argument("--all", action="store_true", help="render all fixtures")
     ap.add_argument("--renderer", default="typst", choices=["typst", "chromium"])
     args = ap.parse_args()
     if args.renderer == "chromium":
-        sys.argv = ["render_pdf_chromium.py"] + ([args.report_data] if args.report_data else []) + (["--out", args.out] if args.out else []) + (["--all"] if args.all else [])
+        sys.argv = ["render_pdf_chromium.py", args.report_data] + (["--out", args.out] if args.out else [])
         from render_pdf_chromium import main as legacy_main
         legacy_main()
         return
-    if args.all:
-        from report_fixtures import ALL
-        for name, fn in ALL.items():
-            try:
-                data = fn()
-                data_path = CACHE_ROOT / f"render_{name.lower()}" / "report_data.json"
-                data_path.parent.mkdir(parents=True, exist_ok=True)
-                data_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-                out_pdf = PROJECT / "output" / f"{name.lower()}_report_typst.pdf"
-                render(data_path, out_pdf)
-                print(f"[OK] {name} -> {out_pdf}")
-            except Exception as exc:
-                print(f"[FAIL] {name}: {exc}")
-        return
-    if not args.report_data:
-        ap.print_help()
-        sys.exit(2)
 
     report_path = Path(args.report_data)
     if not report_path.exists():
-        from report_fixtures import ALL
-        if args.report_data.upper() in ALL:
-            name = args.report_data.upper()
-            data = ALL[name]()
-            data_path = CACHE_ROOT / f"render_{name.lower()}" / "report_data.json"
-            data_path.parent.mkdir(parents=True, exist_ok=True)
-            data_path.write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
-            out_pdf = Path(args.out) if args.out else PROJECT / "output" / f"{name.lower()}_report_typst.pdf"
-            render(data_path, out_pdf)
-            print(f"[OK] {name} -> {out_pdf}")
-            return
+        ap.error(f"report_data not found: {args.report_data} — build it via the Sectors pipeline first (fixtures purged Sep 2026)")
 
     out_pdf = Path(args.out) if args.out else Path(args.report_data).with_suffix(".pdf")
     render(report_path, out_pdf)

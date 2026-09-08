@@ -65,7 +65,7 @@ PEER_PROTOCOL = (
     "(3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis "
     "provenance gap. DILARANG request tanpa needed_fields."
 )
-from google.adk.tools.google_search_tool import GoogleSearchTool
+# (Sep 2026, Sectors-only rule): GoogleSearchTool import removed (external source).
 
 from .agents.instructions import (
     adversarial_instruction,
@@ -90,11 +90,7 @@ from .tools.finance_tools import DETERMINISTIC_TOOLS
 from .tools.sectors_financial_tools import SECTORS_FINANCIAL_TOOLS
 from .debate import submit_debate
 from .tools.mcp_sectors import maybe_sectors_mcp_toolset
-from .tools.web_tools import (
-    web_search,
-    web_extract,
-    web_search_and_extract,
-)
+from .tools.web_tools import web_search
 
 logger = logging.getLogger(__name__)
 
@@ -171,38 +167,15 @@ def _build_search_subagent(
 ) -> LlmAgent:
     """Search-grounded sub-agent isolated from function tools (genai limit).
 
-    P0-P1 has no valid GOOGLE_API_KEY (the key in ~/.env is a stale placeholder
-    that litellm auto-loaded). To avoid crashing the Parallel group with 400
-    INVALID_ARGUMENT, degrade to Spark/DeepSeek WITHOUT GoogleSearchTool unless
-    ADK_ENABLE_GOOGLE_SEARCH=true and a real Gemini key is present.
-
-    Note: GoogleSearch + functiontools cannot coexist in one LlmAgent (genai limit,
-    see adk-go-skill pitfall section). For composite search+extract, parent agents
-    should use `web_search_and_extract` FunctionTool directly instead of routing
-    through this sub-agent.
+    Sectors-only rule (Sep 2026): GoogleSearchTool removed (Google = external
+    source, prohibited) along with ADK_ENABLE_GOOGLE_SEARCH. This sub-agent
+    always runs keyless-honest: no tools, Sectors-only suffix forcing
+    source=sectors_missing_key + STOP instead of invention.
     """
-    enable_google = os.getenv("ADK_ENABLE_GOOGLE_SEARCH", "").strip().lower() in ("1", "true", "yes")
-    if model is None:
-        if enable_google:
-            try:
-                model = gemini_model()
-                return LlmAgent(name=name, model=model, description=description, instruction=instruction, tools=[GoogleSearchTool()])
-            except ValueError:
-                logger.info("ADK_ENABLE_GOOGLE_SEARCH=true but no GOOGLE_API_KEY for %s — degrading", name)
-        logger.info("Search sub-agent %s: using Spark (no GoogleSearchTool) — 0-credit mode", name)
-        model = _deepseek_or_gemini()
-        suffix = "\n\nNote: External web grounding is disabled in this run (Sectors-only mode). Do NOT invent results: emit source=sectors_missing_key with an empty list and STOP.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
-        return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
-    else:
-        has_google_search = True
-    tools = [GoogleSearchTool()] if has_google_search else []
-    return LlmAgent(
-        name=name,
-        model=model,
-        description=description,
-        instruction=instruction,
-        tools=tools,
-    )
+    logger.info("Search sub-agent %s: Sectors-only (no GoogleSearchTool) — 0-credit mode", name)
+    model = _deepseek_or_gemini()
+    suffix = "\n\nNote: External web grounding is disabled in this run (Sectors-only mode). Do NOT invent results: emit source=sectors_missing_key with an empty list and STOP.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
+    return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
 
 
 def _assumptions_block(ticker: str) -> str:
@@ -248,21 +221,13 @@ def _assumptions_block(ticker: str) -> str:
 
 
 def _web_composite_tools() -> list[Any]:
-    """Composite web toolset — Sectors-backed search + local extract.
+    """Sectors search toolset — web_search only (Sectors-only rule, Sep 2026).
 
-    Provides web_search, web_extract, and web_search_and_extract as FunctionTools
-    directly to parent agents. Avoids the GoogleSearch + functiontool conflict by
-    not using GoogleSearchTool at all (Sectors v2 news + httpx+readability cover
-    the same surface for our IDX-equity use case through the single gateway).
-
-    Honest provenance: each tool returns {source: 'sectors'|'sectors_missing_key'|...}
-    so the Critic agent can verify before accepting claims.
+    web_extract + web_search_and_extract killed (arbitrary-URL fetching =
+    external source). Agents cite Sectors urls; keyless runs get honest
+    sectors_missing_key empties so the Critic rejects uncited claims.
     """
-    return [
-        FunctionTool(web_search),
-        FunctionTool(web_extract),
-        FunctionTool(web_search_and_extract),
-    ]
+    return [FunctionTool(web_search)]
 
 
 def build_graph(
@@ -331,8 +296,8 @@ def build_graph(
     composite_web_tools = _web_composite_tools()
 
     # Collector: Sectors financial FunctionTools always (keyless-honest),
-    # plus Sectors MCP if present, else Sectors web_search_and_extract backup.
-    # (Previously empty tools caused LLM hallucination of web_search_and_extract.)
+    # plus Sectors MCP if present, else Sectors web_search backup.
+    # (Previously empty tools caused LLM hallucination of tool names.)
     collector_tools: list[Any] = [FunctionTool(fn) for fn in SECTORS_FINANCIAL_TOOLS]
     if sectors_toolset is not None:
         collector_tools.append(sectors_toolset)
@@ -342,7 +307,7 @@ def build_graph(
     collector = LlmAgent(
         name="collector",
         model=main_model,
-        description="Gathers IDX financials/segments/peers/filings via Sectors financial tools (+ MCP if keyed), else Sectors search + readability extract.",
+        description="Gathers IDX financials/segments/peers/filings via Sectors financial tools (+ MCP if keyed), else Sectors search.",
         instruction=_fmt(collector_instruction),
         tools=collector_tools,
         output_key="collector_output",
@@ -351,7 +316,7 @@ def build_graph(
     news_harvester = LlmAgent(
         name="news_harvester",
         model=main_model,
-        description="Harvests last 30d IDX news (max 8, tier-filtered) via Sectors search + readability extract.",
+        description="Harvests last 30d IDX news (max 8, tier-filtered) via Sectors search.",
         instruction=_fmt(news_harvester_instruction),
         tools=composite_web_tools,
         output_key="news_output",
@@ -377,7 +342,7 @@ def build_graph(
     industry = LlmAgent(
         name="industry",
         model=main_model,
-        description="Macro/industry thematics with url+date citations via Sectors + readability.",
+        description="Macro/industry thematics with url+date citations via Sectors.",
         instruction=_fmt(industry_instruction) + PEER_PROTOCOL,
         tools=[*composite_web_tools, peer_tool],
         output_key="industry_output",

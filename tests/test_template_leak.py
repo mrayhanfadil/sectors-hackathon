@@ -1,10 +1,14 @@
 """Tests for Typst template leak and copy drift harness (Lane H2).
 
 Verifies:
-1. test_no_ratu_leak_for_synthetic_ticker: Minimal synthetic fixture produces PDF without RATU leaks.
+1. test_no_ratu_leak_for_synthetic_ticker: Minimal synthetic TEST scaffolding
+   (inline declared test data, never market facts) renders without RATU leaks.
 2. test_template_copies_in_sync: server/report/typst/report_single.typ and templates/typst/archetypes/report_single.typ differ ONLY in the two #import lines.
-3. test_ratu_regression: RATU render still contains RATU + 7880/7.880.
+3. test_ratu_regression: live RATU render still contains RATU + 7880/7.880 (skipped keyless).
 4. test_generic_fallback_no_ratu_defaults: Template defaults containing RATU/Banyu/Cepu/MEDC sit inside m.ticker == "RATU" branches.
+
+Static fixtures purged Sep 2026 (Sectors-only rule); render tests needing
+live payloads skip honestly when Sectors data is absent.
 """
 from __future__ import annotations
 
@@ -32,16 +36,11 @@ def _loud_gate_inputs(monkeypatch):
     test-owned inputs into whatever the loader returns (see
     tests/_loud_test_inputs.py). Leak assertions only."""
     import server.report.typst_renderer as TR
-    from tests._loud_test_inputs import inject_gate_inputs, load_demo_fixture
+    from tests._loud_test_inputs import inject_gate_inputs
 
     _orig = TR._load_or_build_report_data
 
     def _wrapped(ticker, archetype="auto"):
-        # Tests declare demo inputs explicitly: fixture file/module first,
-        # live loader only when no demo payload exists for the ticker.
-        demo = load_demo_fixture(ticker)
-        if demo is not None:
-            return demo
         return inject_gate_inputs(_orig(ticker, archetype))
 
     monkeypatch.setattr(TR, "_load_or_build_report_data", _wrapped)
@@ -311,37 +310,35 @@ def synthetic_test_fixture():
     }
 
 
-def test_no_ratu_leak_for_synthetic_ticker(synthetic_test_fixture, tmp_path):
-    """Render synthetic fixture 'TEST' and assert zero RATU-specific strings in PDF."""
+def test_no_ratu_leak_for_synthetic_ticker(synthetic_test_fixture, tmp_path, monkeypatch):
+    """Render synthetic TEST scaffolding and assert zero RATU-specific strings in PDF."""
+    import server.report.typst_renderer as TR
+    from tests._loud_test_inputs import inject_gate_inputs
     from server.report.typst_renderer import render_report
 
-    fixture_file = FIXTURES_DIR / "test_report_data.json"
+    monkeypatch.setattr(
+        TR, "_load_or_build_report_data",
+        lambda ticker, archetype="auto": inject_gate_inputs(dict(synthetic_test_fixture)),
+    )
+
     pdf_out = tmp_path / "test_synthetic_report.pdf"
+    rendered_pdf = render_report("TEST", archetype="single", out_path=str(pdf_out))
+    assert Path(rendered_pdf).exists(), f"Rendered PDF does not exist: {rendered_pdf}"
 
-    try:
-        FIXTURES_DIR.mkdir(parents=True, exist_ok=True)
-        fixture_file.write_text(json.dumps(synthetic_test_fixture, ensure_ascii=False, indent=2), encoding="utf-8")
+    pdf_text = _extract_pdf_text(rendered_pdf)
+    assert len(pdf_text) > 500, f"PDF text extracted is unexpectedly short ({len(pdf_text)} chars)"
 
-        rendered_pdf = render_report("TEST", archetype="single", out_path=str(pdf_out))
-        assert Path(rendered_pdf).exists(), f"Rendered PDF does not exist: {rendered_pdf}"
+    # Assert zero forbidden strings
+    leaks_found = []
+    for s in FORBIDDEN_LEAK_STRINGS:
+        # Check whole word / substring presence
+        if s.lower() in pdf_text.lower():
+            leaks_found.append(s)
 
-        pdf_text = _extract_pdf_text(rendered_pdf)
-        assert len(pdf_text) > 500, f"PDF text extracted is unexpectedly short ({len(pdf_text)} chars)"
-
-        # Assert zero forbidden strings
-        leaks_found = []
-        for s in FORBIDDEN_LEAK_STRINGS:
-            # Check whole word / substring presence
-            if s.lower() in pdf_text.lower():
-                leaks_found.append(s)
-
-        assert not leaks_found, (
-            f"RATU template leak detected in synthetic TEST render! Forbidden strings found: {leaks_found}\n"
-            f"Extracted PDF text snippet:\n{pdf_text[:1000]}..."
-        )
-    finally:
-        if fixture_file.exists():
-            fixture_file.unlink()
+    assert not leaks_found, (
+        f"RATU template leak detected in synthetic TEST render! Forbidden strings found: {leaks_found}\n"
+        f"Extracted PDF text snippet:\n{pdf_text[:1000]}..."
+    )
 
 
 def test_template_copies_in_sync():
@@ -377,11 +374,17 @@ def test_template_copies_in_sync():
 
 
 def test_ratu_regression(tmp_path):
-    """Render RATU via render_report and assert PDF text still contains RATU + 7880/7.880."""
+    """Live RATU render still contains RATU + 7880/7.880 (skipped keyless)."""
+    from fastapi import HTTPException
     from server.report.typst_renderer import render_report
 
     pdf_out = tmp_path / "ratu_regression_report.pdf"
-    rendered_pdf = render_report("RATU", archetype="single", out_path=str(pdf_out))
+    try:
+        rendered_pdf = render_report("RATU", archetype="single", out_path=str(pdf_out))
+    except HTTPException as exc:
+        if exc.status_code == 422:
+            pytest.skip("needs Sectors data for RATU (keyless, no data/assumptions file)")
+        raise
     assert Path(rendered_pdf).exists(), f"Rendered RATU PDF missing: {rendered_pdf}"
 
     pdf_text = _extract_pdf_text(rendered_pdf)

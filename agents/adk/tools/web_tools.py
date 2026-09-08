@@ -6,16 +6,12 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Web tools — FunctionTool wrappers for search + extract.
+"""Web tools — FunctionTool wrapper for Sectors search (Sectors-only).
 
-Sectors-only search (legacy removed, Lane E):
-  80% → web_search (Sectors v2 news) + web_extract (parallel) → web_search_and_extract
-  15% → browser_exec (not ported here — too stateful for stateless FunctionTool)
-   5% → terminal + Camoufox (use agents.tools.terminal instead)
-
-Backends:
-  web_search    → Sectors v2 news (single gateway, extension=idx)
-  web_extract   → httpx + readability-lxml + markdownify (local, no third-party)
+Sectors-only search (extract killed Sep 2026, Sectors-only rule):
+  web_search → Sectors v2 news (single gateway, extension=idx). No other tool:
+  web_extract + web_search_and_extract (arbitrary-URL fetching) were removed
+  as external sources. Agents cite Sectors urls only.
 
 Env:
   SECTORS_API_KEY — required for live search; missing key returns honest empty result
@@ -30,8 +26,8 @@ FunctionTool wrapping:
   in agents/adk/app.py. We expose plain callables here — ADK introspects them.
 
 Usage:
-    from .web_tools import web_search, web_extract, web_search_and_extract
-    tools = [FunctionTool(web_search), FunctionTool(web_extract), FunctionTool(web_search_and_extract)]
+    from .web_tools import web_search
+    tools = [FunctionTool(web_search)]
 """
 
 from __future__ import annotations
@@ -42,10 +38,6 @@ import os
 from typing import Any, Annotated
 from datetime import datetime, timezone
 
-import httpx
-from readability import Document
-from markdownify import markdownify as md
-from lxml import html as lxml_html
 
 logger = logging.getLogger(__name__)
 
@@ -292,171 +284,11 @@ async def web_search(
 
 
 # ----------------------------------------------------------------------------
-# Tool 2: web_extract — local HTTP + readability + markdownify
 # ----------------------------------------------------------------------------
-async def _extract_one(client: httpx.AsyncClient, url: str) -> dict[str, Any]:
-    """Extract a single URL as markdown. Errors don't kill the batch."""
-    try:
-        r = await client.get(
-            url,
-            timeout=15.0,
-            follow_redirects=True,
-            headers={
-                "User-Agent": "Mozilla/5.0 (compatible; HermesEquityBot/1.0; +https://sektoral.id/bot)",
-                "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-                "Accept-Language": "id,en;q=0.8",
-            },
-        )
-        r.raise_for_status()
-        # Cap to 5MB before parsing (readability chokes on huge pages)
-        raw = r.text[:5_000_000]
-
-        # Strip control chars (NULs, BELs etc) — lxml.html_clean dies with
-        # "All strings must be XML compatible: Unicode or ASCII, no NULL bytes
-        # or control characters" on PDFs / binary blobs served with text/html
-        # content-type (e.g. idx.co.id quarterly PDFs). Keep tab/newline/cr.
-        raw = ''.join(ch for ch in raw if ch == '\t' or ch == '\n' or ch == '\r' or ord(ch) >= 0x20)
-
-        # readability-lxml returns the article HTML; markdownify → markdown
-        try:
-            doc = Document(raw)
-            article_html = doc.summary(html_partial=True)
-        except (ValueError, Exception) as re:
-            # readability / lxml can throw on weird HTML — return empty with reason
-            return {"url": url, "title": "", "content": "", "char_count": 0,
-                    "status": "parse_error", "error": f"readability: {str(re)[:200]}"}
-        content_md = md(article_html, heading_style="ATX", strip=["img", "script", "style", "iframe"])
-
-        # Trim very long content — model only needs first ~5k chars
-        content_md = content_md.strip()[:5_000]
-
-        return {
-            "url": url,
-            "title": doc.title() or "",
-            "content": content_md,
-            "char_count": len(content_md),
-            "status": "ok",
-        }
-    except httpx.HTTPError as e:
-        return {
-            "url": url,
-            "title": "",
-            "content": "",
-            "char_count": 0,
-            "status": "http_error",
-            "error": str(e),
-        }
-    except Exception as e:  # readability/markdownify can throw on weird HTML
-        logger.warning("Extract failed for %s: %s", url, e)
-        return {
-            "url": url,
-            "title": "",
-            "content": "",
-            "char_count": 0,
-            "status": "parse_error",
-            "error": str(e)[:200],
-        }
-
-
-async def web_extract(
-    urls: Annotated[list[str], "List of URLs to extract as markdown. Max 10 per call."],
-) -> dict[str, Any]:
-    """Extract page content as markdown via local readability + markdownify.
-
-    Returns:
-        {
-          "source": "readability_local",
-          "fetched_at": ISO timestamp,
-          "results": [
-            {"url": str, "title": str, "content": str, "char_count": int, "status": "ok"|"http_error"|"parse_error"}
-          ],
-        }
-
-    Honest behavior: never fabricates content. Failed URLs return status=error
-    with empty content — Critic will skip them.
-    """
-    fetched_at = datetime.now(timezone.utc).isoformat()
-    # Cap input — don't blow up memory on 100 URLs
-    safe_urls = [u for u in (urls or []) if isinstance(u, str) and u.startswith(("http://", "https://"))][:10]
-
-    if not safe_urls:
-        return {
-            "source": "readability_local",
-            "fetched_at": fetched_at,
-            "results": [],
-        }
-
-    async with httpx.AsyncClient(timeout=20.0) as cli:
-        # Concurrent extraction — 5 at a time max (be a polite citizen)
-        sem = asyncio.Semaphore(5)
-
-        async def _guarded(url: str) -> dict[str, Any]:
-            async with sem:
-                return await _extract_one(cli, url)
-
-        results = await asyncio.gather(*[_guarded(u) for u in safe_urls])
-
-    return {
-        "source": "readability_local",
-        "fetched_at": fetched_at,
-        "results": list(results),
-    }
-
-
-# ----------------------------------------------------------------------------
-# Tool 3: web_search_and_extract — composite (run search + extract in parallel)
-# ----------------------------------------------------------------------------
-async def web_search_and_extract(
-    query: Annotated[str, "Search query. Include ticker + topic."],
-    n_results: Annotated[int, "Max search results (1..20)."] = 5,
-    extract_top_n: Annotated[int, "Extract content from top N search results (0..10, 0=skip extract)."] = 3,
-    tier: Annotated[str, "Source tier: 't1'/'t2'/'t3'/'all'."] = "all",
-    days: Annotated[int, "Recency in days (0 = no filter)."] = 0,
-) -> dict[str, Any]:
-    """Run web_search + web_extract in parallel — saves 1 round-trip vs sequential.
-
-    This is the 80% case from Hermes Agent session patterns. Use this when the agent
-    needs both discovery AND content from the search results.
-
-    Returns:
-        {
-          "search": <web_search result>,
-          "extract": <web_extract result, may be empty if extract_top_n=0 or search returned 0>,
-          "composite_source": "sectors+readability_local" | "sectors_missing_key+readability_local" | ...,
-        }
-
-    Concurrency: search and extract are run with asyncio.gather once search
-    returns the URL list. extract_top_n=0 skips extraction entirely.
-    """
-    search_result = await web_search(query, n_results=n_results, tier=tier, days=days)
-
-    urls_to_extract: list[str] = []
-    if extract_top_n > 0:
-        urls_to_extract = [
-            r["url"]
-            for r in search_result.get("results", [])[:extract_top_n]
-            if r.get("url")
-        ]
-
-    if not urls_to_extract:
-        extract_result: dict[str, Any] = {
-            "source": "readability_local",
-            "fetched_at": datetime.now(timezone.utc).isoformat(),
-            "results": [],
-        }
-    else:
-        extract_result = await web_extract(urls_to_extract)
-
-    composite_source = f"{search_result.get('source', 'unknown')}+{extract_result.get('source', 'unknown')}"
-
-    return {
-        "search": search_result,
-        "extract": extract_result,
-        "composite_source": composite_source,
-    }
-
-
-# ----------------------------------------------------------------------------
+# KILLED (Sep 2026, Sectors-only rule): web_extract + web_search_and_extract
+# lived here (arbitrary-URL fetching via httpx+readability — external source,
+# prohibited). Only Sectors-backed web_search survives below. Agents must cite
+# Sectors urls; no third-party page extraction. Do not re-add fetchers.
 # Smoke test (run as: .venv/bin/python -m agents.adk.tools.web_tools)
 # ----------------------------------------------------------------------------
 if __name__ == "__main__":
@@ -464,11 +296,11 @@ if __name__ == "__main__":
     import sys
 
     if not os.environ.get("SECTORS_API_KEY"):
-        print("SECTORS_API_KEY not set — running extract-only smoke test")
-        out = asyncio.run(web_extract(["https://www.idx.co.id/"]))
-        print(json.dumps(out, indent=2)[:1500])
+        print("SECTORS_API_KEY not set — web_search returns honest empty (extract killed Sep 2026)")
+        out = asyncio.run(web_search("BBCA IDX earnings 2026", n_results=3))
+        print(json.dumps(out, indent=2)[:800])
         sys.exit(0)
 
-    print("Running composite smoke test with Sectors key present...")
-    out = asyncio.run(web_search_and_extract("BBCA IDX earnings 2026", n_results=3, extract_top_n=2))
+    print("Running Sectors search smoke test...")
+    out = asyncio.run(web_search("BBCA IDX earnings 2026", n_results=3))
     print(json.dumps(out, indent=2, default=str)[:3000])

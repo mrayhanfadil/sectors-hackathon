@@ -1,9 +1,10 @@
 """End-to-end behavioral smoke tests for institutional Typst PDF reports.
 
-Renders all benchmark archetypes from scripts/fixtures/ (and synthetic fixtures
-for BBCA/ADRO) to assert that the rendered PDFs strictly comply with the
-Valuation Method Selection Framework contract, page baselines, font embeddings,
-FY standardization, and corporate section conventions.
+Renders benchmark archetypes from live Sectors-backed payloads (fixtures
+purged Sep 2026) to assert rendered PDFs comply with the Valuation Method
+Selection Framework contract, page baselines, font embeddings, FY
+standardization, and corporate section conventions. Skips honestly keyless
+without data/assumptions files.
 """
 from __future__ import annotations
 
@@ -99,7 +100,13 @@ def _get_embedded_font_names(pdf_path: Path) -> list[str]:
 
 @pytest.fixture(scope="module")
 def rendered_reports(tmp_path_factory) -> dict[str, dict[str, Any]]:
-    """Render all 4 archetypes (+ quintet tickers) once and cache outputs."""
+    """Render all archetypes (+ quintet tickers) once and cache outputs.
+
+    Live Sectors-backed payloads only (fixtures purged Sep 2026). Skips the
+    whole module honestly when Sectors data is absent.
+    """
+    from fastapi import HTTPException
+
     cache_base = tmp_path_factory.mktemp("pdf_smoke")
     palette = {
         "brand": "#067647",
@@ -120,11 +127,12 @@ def rendered_reports(tmp_path_factory) -> dict[str, dict[str, Any]]:
         tpl_path = ARCHETYPE_TEMPLATES[archetype]
         assert tpl_path.exists(), f"Typst template missing: {tpl_path}"
 
-        fix_path = FIXTURES_DIR / f"{ticker.lower()}_report_data.json"
-        if fix_path.exists():
-            data = json.loads(fix_path.read_text(encoding="utf-8"))
-        else:
+        try:
             data = _load_or_build_report_data(ticker, archetype="auto")
+        except HTTPException as exc:
+            if exc.status_code == 422:
+                pytest.skip(f"needs Sectors data for {ticker} (keyless, no data/assumptions file)")
+            raise
 
         # LOUD policy: renderer refuses invented gate params — tests supply
         # explicit test-owned inputs (see tests/_loud_test_inputs.py).
