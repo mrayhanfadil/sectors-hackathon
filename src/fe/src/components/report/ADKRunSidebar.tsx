@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Loader2, ChevronRight, Info } from "lucide-react"
+import { Loader2, ChevronRight, Info, Compass } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { AdkRunCard, type Log, type HistoryItem } from "./AdkRunCard"
@@ -28,7 +28,7 @@ export interface ADKRunSidebarProps {
 }
 
 function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "-"
+  if (n == null || Number.isNaN(Number(n))) return "—"
   return Number(n).toLocaleString("id-ID")
 }
 
@@ -48,13 +48,13 @@ export function ADKRunSidebar({
   const tk = ticker.toUpperCase()
 
   return (
-    <aside className="space-y-4 w-full lg:w-[320px] shrink-0">
+    <aside className="w-full shrink-0 space-y-3 font-mono lg:w-[320px]">
       {/* 1. ADK Run Card */}
       {logLoading ? (
-        <Card className="border-neutral-200 bg-white p-4 shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
+        <Card className="rounded-md border border-neutral-300 bg-white p-3 shadow-none dark:border-[#262930] dark:bg-[#121316]">
           <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400">
-            <Loader2 className="h-4 w-4 animate-spin text-neutral-400" />
-            <span>Memuat status trace ADK {tk}...</span>
+            <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
+            <span>CONNECTING TO ADK RUN STREAM...</span>
           </div>
         </Card>
       ) : logData ? (
@@ -74,51 +74,51 @@ export function ADKRunSidebar({
       )}
 
       {/* 2. Compact Valuation & Target Summary Card */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-md border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-              Ringkasan Valuasi
+            <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              VALUATION METRICS
             </CardTitle>
-            <Badge variant="outline" className="text-[10px] font-mono uppercase bg-neutral-50 dark:bg-neutral-900">
+            <Badge variant="outline" className="border-neutral-300 text-[9px] uppercase dark:border-[#262930]">
               {template}
             </Badge>
           </div>
         </CardHeader>
-        <CardContent className="p-4 pt-2 space-y-3">
+        <CardContent className="space-y-2.5 p-3 pt-2.5">
           {/* Main Price & Target Box */}
-          <div className="rounded-lg border border-neutral-100 bg-neutral-50/80 p-3 space-y-2 dark:border-neutral-800 dark:bg-neutral-900/80">
+          <div className="space-y-1.5 rounded border border-neutral-200 bg-neutral-50 p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
             <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-500 dark:text-neutral-400">Harga Terkini</span>
-              <span className="font-mono font-semibold text-neutral-900 dark:text-neutral-100">
-                {price != null ? `Rp ${fmtIDR(price)}` : "-"}
+              <span className="text-neutral-500 dark:text-neutral-400">PX LAST</span>
+              <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
+                {price != null ? `Rp ${fmtIDR(price)}` : "—"}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="text-neutral-500 dark:text-neutral-400">Nilai Wajar (TP)</span>
-              <span className="font-mono font-bold text-neutral-900 dark:text-neutral-100">
-                {target != null ? `Rp ${fmtIDR(target)}` : "-"}
+              <span className="text-neutral-500 dark:text-neutral-400">FAIR VALUE (TP)</span>
+              <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
+                {target != null ? `Rp ${fmtIDR(target)}` : "—"}
               </span>
             </div>
-            <div className="flex items-center justify-between border-t border-neutral-200/60 pt-2 text-xs dark:border-neutral-800/60">
-              <span className="font-medium text-neutral-700 dark:text-neutral-300">Rekomendasi</span>
+            <div className="flex items-center justify-between border-t border-neutral-200 pt-1.5 text-xs dark:border-[#262930]">
+              <span className="text-neutral-500 dark:text-neutral-400">RATING</span>
               <RecommendationBadge rating={rating} upside={upside} size="sm" />
             </div>
           </div>
 
           {/* Shares Information */}
           {shares && (
-            <div className="space-y-1.5 border-t border-neutral-100 pt-2.5 text-xs dark:border-neutral-800">
-              <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                <span>Saham Beredar</span>
-                <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+            <div className="space-y-1 border-t border-neutral-200 pt-2 text-xs text-neutral-600 dark:border-[#1f2228] dark:text-neutral-400">
+              <div className="flex justify-between">
+                <span>SHARES OUT</span>
+                <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                   {shares.outstanding} {shares.unit}
                 </span>
               </div>
               {shares.free_float_pct != null && (
-                <div className="flex justify-between text-neutral-600 dark:text-neutral-400">
-                  <span>Free Float</span>
-                  <span className="font-mono font-medium text-neutral-900 dark:text-neutral-100">
+                <div className="flex justify-between">
+                  <span>FREE FLOAT</span>
+                  <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
                     {shares.free_float_pct}%
                   </span>
                 </div>
@@ -127,74 +127,77 @@ export function ADKRunSidebar({
           )}
 
           {/* Sub-route Quick Action Shortcuts */}
-          <div className="grid grid-cols-2 gap-2 border-t border-neutral-100 pt-3 dark:border-neutral-800">
+          <div className="grid grid-cols-2 gap-1.5 border-t border-neutral-200 pt-2 dark:border-[#1f2228]">
             <Link
               to="/report/$ticker/sentiment"
               params={{ ticker: tk }}
-              className="inline-flex items-center justify-center gap-1 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="inline-flex items-center justify-center gap-1 rounded border border-neutral-200 bg-white py-1.5 text-center text-[11px] font-bold text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300 dark:hover:bg-[#22252c] dark:hover:text-neutral-100"
             >
-              <span>Sentimen Ritel</span>
+              <span>[F2] SENTIMEN</span>
             </Link>
             <Link
               to="/report/$ticker/challenge"
               params={{ ticker: tk }}
-              className="inline-flex items-center justify-center gap-1 rounded-md border border-neutral-200 bg-white px-2.5 py-1.5 text-xs font-medium text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-300 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="inline-flex items-center justify-center gap-1 rounded border border-neutral-200 bg-white py-1.5 text-center text-[11px] font-bold text-neutral-700 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300 dark:hover:bg-[#22252c] dark:hover:text-neutral-100"
             >
-              <span>Uji Tesis</span>
+              <span>[F3] UJI TESIS</span>
             </Link>
           </div>
         </CardContent>
       </Card>
 
       {/* 3. Fast Section Jump Navigation */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
-          <CardTitle className="text-xs font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-            Navigasi Halaman
-          </CardTitle>
+      <Card className="rounded-md border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
+          <div className="flex items-center gap-2">
+            <Compass className="h-3.5 w-3.5 text-amber-500" />
+            <CardTitle className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
+              TERMINAL JUMP NAV
+            </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent className="p-4 pt-1">
-          <nav className="space-y-1 text-xs">
+        <CardContent className="p-3 pt-2">
+          <nav className="space-y-0.5 text-xs">
             <a
               href="#executive-summary"
-              className="flex items-center justify-between rounded px-2 py-1.5 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="flex items-center justify-between rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
             >
-              <span>1. Ringkasan Eksekutif</span>
+              <span>01. EXECUTIVE SUMMARY</span>
               <ChevronRight className="h-3 w-3 text-neutral-400" />
             </a>
             <a
               href="#valuation-methodology"
-              className="flex items-center justify-between rounded px-2 py-1.5 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="flex items-center justify-between rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
             >
-              <span>2. Metodologi Valuasi</span>
+              <span>02. VALUATION &amp; KPIS</span>
               <ChevronRight className="h-3 w-3 text-neutral-400" />
             </a>
             <a
               href="#sensitivity-analysis"
-              className="flex items-center justify-between rounded px-2 py-1.5 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="flex items-center justify-between rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
             >
-              <span>3. Analisis Sensitivitas</span>
+              <span>03. DCF SENSITIVITY</span>
               <ChevronRight className="h-3 w-3 text-neutral-400" />
             </a>
             <a
               href="#risk-factors"
-              className="flex items-center justify-between rounded px-2 py-1.5 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="flex items-center justify-between rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
             >
-              <span>4. Faktor Risiko & Solvabilitas</span>
+              <span>04. RISK &amp; SOLVENCY</span>
               <ChevronRight className="h-3 w-3 text-neutral-400" />
             </a>
             <a
               href="#sources-disclaimer"
-              className="flex items-center justify-between rounded px-2 py-1.5 text-neutral-600 hover:bg-neutral-50 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-neutral-900 dark:hover:text-neutral-100"
+              className="flex items-center justify-between rounded px-2 py-1 text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900 transition-colors dark:text-neutral-400 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
             >
-              <span>5. Sumber & Kepatuhan</span>
+              <span>05. COMPLIANCE &amp; SRC</span>
               <ChevronRight className="h-3 w-3 text-neutral-400" />
             </a>
           </nav>
 
           {provenance && (
-            <div className="mt-3 border-t border-neutral-100 pt-2.5 text-[11px] text-neutral-400 font-mono flex items-center gap-1 dark:border-neutral-800">
-              <Info className="h-3 w-3 shrink-0" />
+            <div className="mt-2.5 flex items-center gap-1 border-t border-neutral-200 pt-2 text-[10px] text-neutral-400 dark:border-[#1f2228]">
+              <Info className="h-3 w-3 shrink-0 text-amber-500" />
               <span className="truncate">{provenance}</span>
             </div>
           )}
@@ -203,3 +206,4 @@ export function ADKRunSidebar({
     </aside>
   )
 }
+

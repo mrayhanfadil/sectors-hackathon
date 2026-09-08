@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { AlertTriangle, RefreshCw, ShieldAlert, FileText, Database } from "lucide-react"
+import { AlertTriangle, RefreshCw, ShieldAlert, FileText, Database, Sliders, Info } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import { fetchReport, fetchPdf } from "@/lib/api"
@@ -75,17 +75,17 @@ function ReportPage() {
   // Loading State
   if (isLoading) {
     return (
-      <div className="space-y-4">
-        <p className="text-center text-xs text-neutral-500 dark:text-neutral-400">
-          Lagi nyiapin laporan {tk}... datanya diambil langsung dari backend, tunggu sebentar ya.
-        </p>
-        <div className="h-20 animate-pulse rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-[#111111]" />
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6">
+      <div className="space-y-4 font-mono">
+        <div className="rounded border border-neutral-300 bg-neutral-100 p-3 text-center text-xs text-neutral-600 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-400">
+          [TERMINAL LOADING] FETCHING EQUITY REPORT BUFFER FOR {tk} IJ &lt;EQUITY&gt;...
+        </div>
+        <div className="h-16 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
-            <div className="h-64 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
-            <div className="h-80 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
+            <div className="h-48 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
+            <div className="h-64 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
           </div>
-          <div className="h-96 animate-pulse rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-[#111111]" />
+          <div className="h-80 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
         </div>
       </div>
     )
@@ -94,24 +94,24 @@ function ReportPage() {
   // Error State
   if (error || !data) {
     return (
-      <Card className="border-red-200 bg-red-50/50 p-6 dark:border-red-800 dark:bg-red-950/50">
+      <Card className="rounded-md border border-rose-300 bg-rose-50/70 p-4 font-mono dark:border-rose-800/60 dark:bg-rose-950/60">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="h-5 w-5 text-red-600 shrink-0 mt-0.5 dark:text-red-400" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold text-red-900 dark:text-red-100">
-              Gagal Memuat Laporan Riset {tk}
+            <h3 className="text-xs font-bold uppercase text-rose-900 dark:text-rose-100">
+              [SYSTEM ERROR] FAILED TO RETRIEVE REPORT BUFFER ({tk})
             </h3>
-            <p className="text-xs text-red-700 leading-relaxed dark:text-red-200">
-              Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif.
+            <p className="text-xs text-rose-700 leading-relaxed dark:text-rose-300">
+              Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif dan ticker terdaftar.
             </p>
             <Button
               onClick={() => refetch()}
               size="sm"
               variant="outline"
-              className="mt-2 h-8 gap-1.5 bg-white text-xs border-red-200 text-red-800 hover:bg-red-50 dark:bg-[#111111] dark:border-red-800 dark:text-red-200 dark:hover:bg-red-950"
+              className="mt-1 h-7 gap-1.5 border-rose-300 bg-white font-mono text-xs text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:bg-[#121316] dark:text-rose-200 dark:hover:bg-rose-950"
             >
-              <RefreshCw className="h-3.5 w-3.5" />
-              <span>Coba Lagi</span>
+              <RefreshCw className="h-3 w-3" />
+              <span>&gt; RETRY FETCH</span>
             </Button>
           </div>
         </div>
@@ -122,20 +122,22 @@ function ReportPage() {
   // Offline State (Honest fallback)
   if (data.offline) {
     return (
-      <div className="space-y-4">
-        <Card className="border-amber-200 bg-amber-50/80 p-6 text-sm text-amber-900 shadow-2xs dark:border-amber-800 dark:bg-amber-950/80 dark:text-amber-100">
+      <div className="space-y-4 font-mono">
+        <Card className="rounded-md border border-amber-300 bg-amber-50/80 p-4 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/80 dark:text-amber-100">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="h-5 w-5 text-amber-700 shrink-0 mt-0.5 dark:text-amber-200" />
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
             <div className="space-y-2">
-              <h3 className="font-semibold text-amber-950 dark:text-amber-100">Backend Tidak Tersedia (Mode Offline)</h3>
+              <h3 className="font-bold uppercase tracking-wider text-amber-950 dark:text-amber-100">
+                [OFFLINE MODE] BACKEND UNREACHABLE // {tk}
+              </h3>
               <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{data.summary}</p>
               <Button
                 onClick={() => window.location.reload()}
                 size="sm"
-                className="mt-2 h-8 bg-amber-900 text-xs text-white hover:bg-amber-800"
+                className="mt-1 h-7 bg-amber-900 font-mono text-xs text-white hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
               >
-                <RefreshCw className="h-3.5 w-3.5 mr-1" />
-                <span>Muat Ulang Halaman</span>
+                <RefreshCw className="mr-1 h-3 w-3" />
+                <span>&gt; RELOAD TERMINAL</span>
               </Button>
             </div>
           </div>
@@ -246,7 +248,7 @@ function ReportPage() {
 
   return (
     <div className="min-h-screen pb-12">
-      {/* 1. Sticky Top Navigation & Header */}
+      {/* 1. Sticky Terminal Header & Key-Stats Strip */}
       <ReportHeader
         ticker={tk}
         name={r.name}
@@ -263,19 +265,22 @@ function ReportPage() {
         pdfMsg={pdfMsg}
       />
 
-      {/* Panduan pemula: rating + upside dalam 2 kalimat */}
-      <div className="rounded-md border border-neutral-200 border-l-2 border-l-[#0070f3] bg-white p-3 text-xs leading-relaxed text-neutral-600 dark:border-neutral-800 dark:bg-[#111111] dark:text-neutral-400">
-        <span className="font-semibold text-[#0a0a0a] dark:text-white">Baru mulai baca laporan saham? </span>
-        BUY artinya analis menilai saham ini layak dibeli, HOLD artinya ditahan dulu, SELL artinya
-        sebaiknya dihindari. Upside = potensi kenaikan harga ke harga wajar (target) — makin besar
-        prosentasenya, makin besar potensi cuannya, tapi risikonya tetap perlu dicek di bagian bawah.
+      {/* Terminal Analyst Notice Box */}
+      <div className="mb-4 flex items-start gap-2 rounded border border-neutral-300 bg-neutral-50/80 p-2.5 font-mono text-xs leading-relaxed text-neutral-700 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-300">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+        <div>
+          <span className="font-bold text-neutral-900 dark:text-neutral-100">[ANALYST GUIDE] </span>
+          <span>
+            BUY: Analis merekomendasikan akumulasi saham (harga wajar &gt; pasar). HOLD: Pertahankan posisi. SELL: Valuasi telah merefleksikan harga penuh. UPSIDE: Potensi apresiasi harga ke target deterministik.
+          </span>
+        </div>
       </div>
 
       {/* 2. Responsive 2-Column Grid Layout */}
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_320px] gap-6 items-start">
-        {/* Main Content Area (Center / Scrollable) */}
-        <div className="space-y-6 min-w-0">
-          {/* Section 1: Ringkasan Eksekutif */}
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
+        {/* Main Center Console */}
+        <div className="min-w-0 space-y-4">
+          {/* Section 1: Executive Summary */}
           <ExecutiveSummary
             ticker={tk}
             name={r.name}
@@ -292,7 +297,7 @@ function ReportPage() {
             esg={r.cover?.esg}
           />
 
-          {/* Section 2: Metodologi Valuasi */}
+          {/* Section 2: Valuation Methodology */}
           <ValuationMethodology
             ticker={tk}
             valuation={r.valuation ?? []}
@@ -308,51 +313,69 @@ function ReportPage() {
             rawBands={r.raw?.bands}
           />
 
-          {/* Section 3: Analisis Sensitivitas & Model DCF Interaktif */}
-          <section id="sensitivity-analysis" className="space-y-4 scroll-mt-28">
-            <div>
-              <h2 className="text-[15px] font-semibold tracking-tight text-[#0a0a0a] dark:text-white">
-                3. Coba Ubah Asumsinya Sendiri (Model DCF Interaktif)
-              </h2>
-              <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                Geser-geser asumsi (mis. biaya modal & pertumbuhan) lalu lihat harga wajarnya berubah
-                — termasuk skenario jelek (Bear), wajar (Base), dan bagus (Bull)
-              </p>
+          {/* Section 3: Interactive DCF Sensitivity Model */}
+          <section id="sensitivity-analysis" className="space-y-3 scroll-mt-28">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+                  03
+                </span>
+                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
+                  {tk} IJ &lt;EQUITY&gt; // INTERACTIVE DCF SENSITIVITY MODEL
+                </h2>
+              </div>
+              <span className="font-mono text-[10px] text-neutral-400">
+                WACC &amp; TERMINAL GROWTH DYNAMIC MATRIX
+              </span>
             </div>
             <DcfFriend ticker={tk} />
           </section>
 
-          {/* Section 4: Faktor Risiko & Solvabilitas */}
+          {/* Section 4: Risk Factors & Solvency */}
           <RiskFactors
             ticker={tk}
             template={tpl}
             ratios={r.ratios}
           />
 
-          {/* Section 5: Sumber Data, Kepatuhan & Disclaimer */}
-          <section id="sources-disclaimer" className="space-y-3 scroll-mt-28 border-t border-neutral-200 pt-6 dark:border-neutral-800">
-            <div className="rounded-xl border border-neutral-200 bg-white p-4 shadow-2xs space-y-2 dark:border-neutral-800 dark:bg-[#111111]">
-              <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
-                <FileText className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                <span>INFORMASI RISET - BUKAN SARAN INVESTASI</span>
+          {/* Section 5: Sources & Compliance */}
+          <section id="sources-disclaimer" className="scroll-mt-28 space-y-3 border-t border-neutral-200 pt-4 dark:border-[#262930]">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
+              <div className="flex items-center gap-2">
+                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+                  05
+                </span>
+                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
+                  {tk} IJ &lt;EQUITY&gt; // DATA PROVENANCE &amp; OJK REGULATORY COMPLIANCE
+                </h2>
               </div>
-              <p className="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi resmi (kepatuhan regulasi OJK). Seluruh estimasi dan nilai wajar dihitung secara deterministik berdasarkan data historis dan asumsi yang diungkapkan secara transparan.
+              <span className="font-mono text-[10px] text-neutral-400">
+                RESEARCH ATTESTATION · NOT FINANCIAL ADVICE
+              </span>
+            </div>
+
+            <div className="rounded-md border border-neutral-300 bg-white p-3 font-mono shadow-none dark:border-[#262930] dark:bg-[#121316]">
+              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
+                <FileText className="h-3.5 w-3.5 text-amber-500" />
+                <span>INFORMASI RISET - BUKAN SARAN INVESTASI (OJK COMPLIANCE)</span>
+              </div>
+              <p className="mt-1 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi resmi (kepatuhan regulasi OJK). Seluruh estimasi dan nilai wajar dihitung secara deterministik berdasarkan data historis dan asumsi yang diungkapkan secara transparan tanpa angka buatan.
               </p>
             </div>
 
-            <div className="flex flex-wrap items-center justify-between gap-2 text-[11px] text-neutral-400 font-mono px-1">
+            <div className="flex flex-wrap items-center justify-between gap-2 px-1 font-mono text-[10px] text-neutral-400">
               <div className="flex items-center gap-1.5">
-                <Database className="h-3.5 w-3.5" />
-                <span>Sumber: Laporan Keuangan IDX via Sectors API, SKK Migas, Sustainalytics</span>
+                <Database className="h-3 w-3" />
+                <span>SUMBER: IDX Laporan Keuangan via Sectors API, SKK Migas, Sustainalytics</span>
               </div>
               <div>TanStack Query · Cache 4h · Template {tpl}</div>
             </div>
           </section>
         </div>
 
-        {/* Right Column: Persistent Sticky Sidebar */}
-        <div className="lg:sticky lg:top-28 space-y-4">
+        {/* Right Sticky Sidebar */}
+        <div className="space-y-3 lg:sticky lg:top-28">
           <ADKRunSidebar
             ticker={tk}
             name={r.name}
@@ -371,3 +394,4 @@ function ReportPage() {
     </div>
   )
 }
+

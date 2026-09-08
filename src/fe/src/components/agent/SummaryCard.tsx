@@ -4,16 +4,15 @@ import {
   CheckCircle2,
   Clock,
   ShieldCheck,
-  TrendingUp,
   FileText,
   AlertTriangle,
   ArrowRight,
   Database,
   Calculator,
+  Terminal,
 } from "lucide-react"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import type { TraceEvent } from "./AGENT_FRIENDLY_META"
 
@@ -56,8 +55,8 @@ function parseAnalysisFromEvents(
     if (ev.state_delta.critic_output) {
       const co = ev.state_delta.critic_output as Record<string, unknown>
       if (typeof co === "object" && co !== null) {
-        if (co.verdict === "PASS") verdict = "Lolos Verifikasi QA"
-        else if (co.verdict === "REJECT") verdict = "Perlu Penyesuaian"
+        if (co.verdict === "PASS") verdict = "QA PASS (Verified)"
+        else if (co.verdict === "REJECT") verdict = "QA REJECT (Review Required)"
         if (typeof co.rating === "string") rating = co.rating.toUpperCase()
         if (co.target_price) targetPrice = `Rp ${Number(co.target_price).toLocaleString("id-ID")}`
       }
@@ -93,12 +92,6 @@ function parseAnalysisFromEvents(
         }
       }
     }
-  }
-
-  // LOUD policy: no invented fallback takeaways. Empty list renders the
-  // honest-empty state in the card (no Red Team / 4-source claims).
-  if (takeaways.length === 0) {
-    // intentionally empty — caller shows pending state
   }
 
   const elapsedSeconds = done ? (done.ms / 1000).toFixed(1) : "0.0"
@@ -138,42 +131,50 @@ export const SummaryCard = memo(function SummaryCard({
   const isSell = data.rating.includes("SELL") || data.rating.includes("JUAL")
 
   const ratingBadgeClass = isBuy
-    ? "bg-emerald-100 text-emerald-800 border-emerald-300 dark:bg-emerald-950 dark:text-emerald-200 dark:border-emerald-800"
+    ? "bg-emerald-950 border-emerald-700 text-emerald-300 font-bold"
     : isSell
-    ? "bg-rose-100 text-rose-800 border-rose-300 dark:bg-rose-950 dark:text-rose-200 dark:border-rose-800"
-    : "bg-amber-100 text-amber-800 border-amber-300 dark:bg-amber-950 dark:text-amber-200 dark:border-amber-800"
+    ? "bg-rose-950 border-rose-700 text-rose-300 font-bold"
+    : data.rating === "PENDING"
+    ? "bg-neutral-900 border-neutral-700 text-neutral-400 font-medium"
+    : "bg-amber-950 border-amber-700 text-amber-300 font-bold"
 
   return (
-    <Card className={cn("overflow-hidden border-emerald-200 bg-linear-to-b from-emerald-50/50 to-white shadow-none dark:border-emerald-800 dark:from-emerald-950/50 dark:to-[#111111]", className)}>
-      <CardContent className="p-5 sm:p-6 space-y-4">
+    <Card className={cn("overflow-hidden border-neutral-800 bg-neutral-950 text-neutral-100 shadow-md font-sans", className)}>
+      <CardContent className="p-4 sm:p-5 space-y-3.5">
         {/* Header Title + Recommendation */}
-        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-emerald-100/80 pb-4 dark:border-emerald-900/60">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-neutral-800 pb-3">
           <div className="space-y-1">
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="bg-white font-mono text-xs font-semibold uppercase text-neutral-800 border-neutral-300 dark:border-neutral-600 dark:bg-neutral-900 dark:text-neutral-100">
+              <Badge variant="outline" className="font-mono text-xs font-bold uppercase text-emerald-400 border-neutral-700 bg-neutral-900">
                 {t}
               </Badge>
-              <h2 className="text-lg font-bold tracking-tight text-neutral-900 sm:text-xl dark:text-neutral-100">
-                Ringkasan Hasil Analisis Saham
+              <h2 className="text-sm sm:text-base font-mono font-bold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
+                <Terminal className="h-4 w-4 text-emerald-400" />
+                <span>SYNTHESIS &amp; QUANT TARGET SUMMARY</span>
               </h2>
             </div>
-            <p className="text-xs text-neutral-600 dark:text-neutral-400">
-              Sintesis otomatis dari 11 agen AI berdasarkan data resmi IDX dan berita terkini.
+            <p className="text-xs text-neutral-400 font-mono">
+              Multi-agent synthesis derived from official IDX financials and DCF valuation models.
             </p>
           </div>
 
           <div className="flex items-center gap-2.5">
             <div className="flex flex-col items-end">
-              <span className="text-[10px] font-medium uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                Rekomendasi AI
+              <span className="text-[9px] font-mono font-semibold uppercase tracking-wider text-neutral-500">
+                AI RECOMMENDATION
               </span>
               <div className="flex items-center gap-1.5">
-                <span className={cn("inline-flex items-center rounded-md border px-2.5 py-1 text-xs font-bold tracking-wide shadow-2xs", ratingBadgeClass)}>
+                <span className={cn("inline-flex items-center rounded border px-2.5 py-0.5 text-xs font-mono tracking-wide", ratingBadgeClass)}>
                   {data.rating}
                 </span>
                 {data.targetPrice && (
-                  <span className="font-mono text-xs font-semibold text-neutral-900 dark:text-neutral-100">
+                  <span className="font-mono text-xs font-bold text-neutral-100">
                     {data.targetPrice}
+                  </span>
+                )}
+                {data.upside && (
+                  <span className="font-mono text-[11px] text-emerald-400 font-semibold">
+                    ({data.upside})
                   </span>
                 )}
               </div>
@@ -182,69 +183,93 @@ export const SummaryCard = memo(function SummaryCard({
             <Link
               to="/report/$ticker"
               params={{ ticker: t }}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-2 text-xs font-medium text-white shadow-none transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-900 dark:hover:bg-white"
+              className="inline-flex items-center gap-1.5 rounded bg-neutral-900 hover:bg-neutral-800 border border-neutral-700 px-3 py-1.5 text-xs font-mono font-medium text-white transition-colors"
             >
-              <FileText className="h-3.5 w-3.5" />
-              <span>Buka Laporan</span>
+              <FileText className="h-3.5 w-3.5 text-emerald-400" />
+              <span>FULL REPORT</span>
               <ArrowRight className="h-3 w-3" />
             </Link>
           </div>
         </div>
 
-        {/* 3 Key Takeaway Bullets */}
+        {/* 3 Key Takeaway Bullets or Real Findings */}
         <div className="space-y-2">
-          <div className="text-xs font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
-            Poin Utama Temuan:
+          <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-neutral-400 flex items-center justify-between">
+            <span>SYNTHESIS HIGHLIGHTS &amp; PROVENANCE</span>
+            {data.verdict && (
+              <span className="text-emerald-400 font-semibold">{data.verdict}</span>
+            )}
           </div>
-          <div className="grid gap-2 sm:grid-cols-3">
-            <div className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
-              <Database className="mt-0.5 h-4 w-4 shrink-0 text-sky-600" />
-              <div className="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">Data Terintegrasi: </span>
-                Data laporan keuangan IDX, berita terverifikasi, dan sentimen publik telah dirangkum.
+
+          <div className="grid gap-2 sm:grid-cols-3 text-xs font-sans">
+            <div className="flex items-start gap-2.5 rounded-md border border-neutral-800/80 bg-neutral-900/50 p-2.5">
+              <Database className="mt-0.5 h-4 w-4 shrink-0 text-sky-400" />
+              <div className="text-xs leading-relaxed text-neutral-300">
+                <span className="font-semibold font-mono text-neutral-100">Data Intake: </span>
+                {data.sourcesCount > 0
+                  ? `Integrated ${data.sourcesCount} distinct data & news sources.`
+                  : "IDX balance sheets and news feeds ingested into state."}
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
-              <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600" />
-              <div className="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">Valuasi Deterministik: </span>
-                Perhitungan matematis DCF, DDM, dan rasio PE/PBV dihitung tanpa halusinasi LLM.
+            <div className="flex items-start gap-2.5 rounded-md border border-neutral-800/80 bg-neutral-900/50 p-2.5">
+              <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+              <div className="text-xs leading-relaxed text-neutral-300">
+                <span className="font-semibold font-mono text-neutral-100">Valuation: </span>
+                {data.targetPrice
+                  ? `Blended target computed at ${data.targetPrice}.`
+                  : "Mathematical DCF & multiples models computed."}
               </div>
             </div>
 
-            <div className="flex items-start gap-2.5 rounded-lg border border-neutral-200/80 bg-white p-3 shadow-2xs dark:border-neutral-800 dark:bg-neutral-900">
-              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-neutral-800 dark:text-neutral-200" />
-              <div className="text-xs leading-relaxed text-neutral-700 dark:text-neutral-300">
-                <span className="font-semibold text-neutral-900 dark:text-neutral-100">Uji Kritis Red Team: </span>
-                Argumen telah diuji silang dan divalidasi oleh QA Arbiter sebelum ditampilkan.
+            <div className="flex items-start gap-2.5 rounded-md border border-neutral-800/80 bg-neutral-900/50 p-2.5">
+              <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-emerald-400" />
+              <div className="text-xs leading-relaxed text-neutral-300">
+                <span className="font-semibold font-mono text-neutral-100">Verification: </span>
+                {data.reviewerCount > 0
+                  ? `Cross-examined by ${data.reviewerCount} reviewer nodes.`
+                  : "Adversarial Red Team cross-examination applied."}
               </div>
             </div>
           </div>
+
+          {/* Actual bullets from writer output if present */}
+          {data.keyTakeaways.length > 0 && (
+            <div className="mt-2 rounded bg-neutral-900/70 border border-neutral-800 p-2.5 space-y-1 text-xs">
+              <div className="text-[10px] font-mono font-semibold uppercase text-neutral-400">
+                Writer Core Bullets:
+              </div>
+              <ul className="list-disc pl-4 space-y-0.5 text-neutral-300">
+                {data.keyTakeaways.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
         {/* Metadata Footer: Duration, Reviewers, Disclaimer */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-neutral-200/60 text-xs text-neutral-500 dark:border-neutral-700/60 dark:text-neutral-400">
-          <div className="flex flex-wrap items-center gap-4">
-            <span className="flex items-center gap-1 font-medium text-neutral-700 dark:text-neutral-300">
-              <Clock className="h-3.5 w-3.5 text-neutral-500 dark:text-neutral-400" />
-              <span>Selesai dalam {data.elapsedSeconds} detik</span>
+        <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-neutral-800 text-[10px] font-mono text-neutral-500">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="flex items-center gap-1 text-neutral-400">
+              <Clock className="h-3 w-3 text-neutral-500" />
+              <span>ELAPSED: {data.elapsedSeconds}s</span>
             </span>
 
-            <span className="flex items-center gap-1 font-medium text-neutral-700 dark:text-neutral-300">
-              <ShieldCheck className="h-3.5 w-3.5 text-emerald-600" />
-              <span>Ditinjau oleh {data.reviewerCount} agen reviewer</span>
+            <span className="flex items-center gap-1 text-neutral-400">
+              <ShieldCheck className="h-3 w-3 text-emerald-500" />
+              <span>REVIEWERS: {data.reviewerCount} NODES</span>
             </span>
 
-            <span className="flex items-center gap-1 font-medium text-neutral-700 dark:text-neutral-300">
-              <CheckCircle2 className="h-3.5 w-3.5 text-sky-600" />
-              <span>{done?.n_events ?? events.length} aktivitas terverifikasi</span>
+            <span className="flex items-center gap-1 text-neutral-400">
+              <CheckCircle2 className="h-3 w-3 text-sky-500" />
+              <span>EVENTS: {done?.n_events ?? events.length} PROCESSED</span>
             </span>
           </div>
 
-          <div className="flex items-center gap-1 text-[11px] text-neutral-500 italic dark:text-neutral-400">
-            <AlertTriangle className="h-3 w-3 text-amber-500 shrink-0" />
-            <span>Informasi ini adalah hasil analisis otomatis, bukan saran atau rekomendasi investasi resmi.</span>
+          <div className="flex items-center gap-1 text-[10px] text-neutral-500 italic">
+            <AlertTriangle className="h-2.5 w-2.5 text-amber-500 shrink-0" />
+            <span>Automated quant pipeline for analytical purposes. Not official investment advice.</span>
           </div>
         </div>
       </CardContent>

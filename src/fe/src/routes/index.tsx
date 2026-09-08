@@ -1,337 +1,525 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import {
-  MousePointerClick,
+  Terminal,
   FileText,
-  Target,
-  ArrowRight,
-  ChevronRight,
+  Bot,
+  Swords,
+  MessageSquare,
   ShieldAlert,
-  ThumbsUp,
-  Minus,
-  ThumbsDown,
   Loader2,
+  ChevronRight,
+  TrendingUp,
+  Activity,
+  Layers,
+  Info,
+  Database,
+  ArrowUpRight,
+  HelpCircle,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { fetchReport, type Report } from "@/lib/api"
+import { fetchReport, fetchDcfFull, type Report, type DcfFriendPayload } from "@/lib/api"
 
-export const Route = (createFileRoute as any)("/")({ component: Home })
+export const Route = (createFileRoute as any)("/")({ component: MarketMonitorHub })
 
 const QUINTET = ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"] as const
+type QuintetTicker = (typeof QUINTET)[number]
 
-const STEPS = [
-  {
-    icon: MousePointerClick,
-    title: "1. Pilih saham",
-    desc: "Klik salah satu dari 5 saham di bawah — semuanya perusahaan besar Indonesia.",
-  },
-  {
-    icon: FileText,
-    title: "2. Baca ringkasan",
-    desc: "Setiap laporan dibuka dengan kesimpulan 1 menit: layak dilirik atau tidak, dan kenapa.",
-  },
-  {
-    icon: Target,
-    title: "3. Cek target & risiko",
-    desc: "Lihat harga wajar menurut riset, lalu baca risikonya sebelum memutuskan apa pun.",
-  },
-]
-
-function ratingBadgeVariant(rating: string | null) {
-  if (rating === "BUY") return "success" as const
-  if (rating === "SELL") return "destructive" as const
-  return "secondary" as const
+function formatIDR(n: number | null | undefined): string {
+  if (n === null || n === undefined || Number.isNaN(Number(n))) return "PENDING"
+  return `Rp ${Number(n).toLocaleString("id-ID")}`
 }
 
-function formatIDR(n: number | null) {
-  if (n === null || n === undefined) return "—"
-  return `Rp ${n.toLocaleString("id-ID")}`
+function parseUpside(upside: string | null | undefined): {
+  text: string
+  isPositive: boolean
+  isNegative: boolean
+  isPending: boolean
+} {
+  if (!upside || upside === "-" || upside === "—") {
+    return { text: "PENDING", isPositive: false, isNegative: false, isPending: true }
+  }
+  const clean = upside.replace(/\./g, "").replace(",", ".").replace(/[^0-9.\-]/g, "")
+  const val = parseFloat(clean)
+  if (Number.isNaN(val)) {
+    return { text: upside, isPositive: false, isNegative: false, isPending: false }
+  }
+  return {
+    text: upside,
+    isPositive: val > 0,
+    isNegative: val < 0,
+    isPending: false,
+  }
 }
 
-/** Positive → green, negative → red. Returns "" when unparseable. */
-function upsideTone(upside: string | null | undefined): string {
-  if (!upside) return ""
-  const v = parseFloat(upside.replace(/\./g, "").replace(",", ".").replace(/[^0-9.\-]/g, ""))
-  if (Number.isNaN(v)) return ""
-  if (v > 0) return "text-[#007f56] dark:text-emerald-400"
-  if (v < 0) return "text-[#e00] dark:text-red-400"
-  return "text-[#666] dark:text-[#a1a1a1]"
-}
-
-function LogoChip({ ticker }: { ticker: string }) {
+function TerminalRatingBadge({ rating }: { rating: string | null | undefined }) {
+  if (!rating || rating === "Review Required") {
+    return (
+      <span className="inline-flex items-center rounded border border-neutral-300 bg-neutral-100 px-2 py-0.5 font-terminal text-[11px] font-bold text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400">
+        PENDING
+      </span>
+    )
+  }
+  if (rating === "BUY") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded border border-emerald-500/40 bg-emerald-500/10 px-2 py-0.5 font-terminal text-[11px] font-bold text-emerald-600 dark:text-emerald-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
+        BUY
+      </span>
+    )
+  }
+  if (rating === "SELL") {
+    return (
+      <span className="inline-flex items-center gap-1 rounded border border-rose-500/40 bg-rose-500/10 px-2 py-0.5 font-terminal text-[11px] font-bold text-rose-600 dark:text-rose-400">
+        <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
+        SELL
+      </span>
+    )
+  }
   return (
-    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md border border-[#eaeaea] bg-[#fafafa] text-[12px] font-bold text-black dark:border-[#262626] dark:bg-[#111111] dark:text-white">
-      {ticker.charAt(0)}
+    <span className="inline-flex items-center gap-1 rounded border border-amber-500/40 bg-amber-500/10 px-2 py-0.5 font-terminal text-[11px] font-bold text-amber-600 dark:text-amber-400">
+      <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
+      HOLD
     </span>
   )
 }
 
-/** Dense market-snapshot strip — live report data only, same query keys as rows (shared cache). */
-function MarketStrip() {
-  const queries = QUINTET.map((t) =>
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    useQuery({ queryKey: ["report", t], queryFn: () => fetchReport(t) }),
-  )
-  const loading = queries.some((q) => q.isLoading)
-  const allFailed = queries.every((q) => q.isError || !q.data)
-
-  return (
-    <section aria-label="Ringkasan pasar" className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white dark:border-[#262626] dark:bg-[#111111]">
-      <div className="flex items-center justify-between border-b border-[#eaeaea] px-4 py-2 dark:border-[#262626]">
-        <span className="text-[12px] font-medium text-[#666] dark:text-[#a1a1a1]">Ringkasan pasar · data live</span>
-        {loading && <Loader2 className="h-3.5 w-3.5 animate-spin text-[#999] dark:text-neutral-500" />}
-      </div>
-      {allFailed && !loading ? (
-        <p className="px-4 py-3 text-[12px] text-[#666] dark:text-[#a1a1a1]">
-          Data pasar belum tersedia — periksa koneksi lalu muat ulang.
-        </p>
-      ) : (
-        <div className="grid grid-cols-2 divide-[#eaeaea] max-sm:divide-y sm:grid-cols-5 sm:divide-x dark:divide-[#262626]">
-          {QUINTET.map((t, i) => {
-            const q = queries[i]
-            const r = q.data as Report | undefined
-            return (
-              <Link
-                key={t}
-                to="/report/$ticker"
-                params={{ ticker: t }}
-                className="block px-4 py-2.5 transition-colors hover:bg-[#fafafa] dark:hover:bg-neutral-800"
-              >
-                <div className="text-[12px] font-bold tracking-tight text-black dark:text-white">{t}</div>
-                {q.isLoading ? (
-                  <div className="mt-1.5 space-y-1">
-                    <div className="h-3 w-16 animate-pulse rounded bg-[#eaeaea] dark:bg-neutral-800" />
-                    <div className="h-3 w-12 animate-pulse rounded bg-[#eaeaea] dark:bg-neutral-800" />
-                  </div>
-                ) : !r ? (
-                  <div className="tnum mt-1 text-[12px] text-[#999] dark:text-neutral-500">—</div>
-                ) : (
-                  <div className="tnum mt-1 flex items-baseline gap-2 text-[12px]">
-                    <span className="font-medium text-black dark:text-white">{formatIDR(r.price)}</span>
-                    {r.upside && <span className={`font-medium ${upsideTone(r.upside)}`}>{r.upside}</span>}
-                  </div>
-                )}
-              </Link>
-            )
-          })}
-        </div>
-      )}
-    </section>
-  )
-}
-
-function QuintetRow({ ticker }: { ticker: string }) {
-  const { data, isLoading, isError } = useQuery({
+function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
+  const reportQuery = useQuery({
     queryKey: ["report", ticker],
     queryFn: () => fetchReport(ticker),
   })
 
-  const report = data as Report | undefined
+  const dcfQuery = useQuery({
+    queryKey: ["dcf-full", ticker],
+    queryFn: () => fetchDcfFull(ticker),
+  })
+
+  const report = reportQuery.data as Report | undefined
+  const dcfData = (dcfQuery.data && !("error" in dcfQuery.data) ? dcfQuery.data : null) as DcfFriendPayload | null
+
+  const isLoading = reportQuery.isLoading || dcfQuery.isLoading
+  const isOffline = report?.offline
+
+  // Real fields strictly bound to BE payload
+  const price = report?.price ?? null
+  const target = report?.target ?? (dcfData?.valuation?.fair_value_per_share ? Math.round(dcfData.valuation.fair_value_per_share) : null)
+  const upsideRaw = report?.upside ?? (dcfData?.recommendation?.upside != null ? `${dcfData.recommendation.upside > 0 ? "+" : ""}${dcfData.recommendation.upside.toFixed(1)}%` : null)
+  const rating = report?.rating ?? dcfData?.recommendation?.rating ?? null
+  const companyName = report?.name || `${ticker} Tbk`
+  const archetype = report?.template ? report.template.toUpperCase() : "EQUITY"
+  const method = report?.valuation?.[0]?.method ?? "DCF Model"
+  const wacc = dcfData?.wacc?.wacc != null ? `${(dcfData.wacc.wacc * 100).toFixed(1)}%` : null
+  const summarySnippet =
+    report?.cover?.rating_box?.key_takeaways?.[0] ||
+    report?.summary ||
+    "Data laporan keuangan live sedang disinkronisasikan dari backend..."
+
+  const upsideInfo = parseUpside(upsideRaw)
 
   return (
-    <Link
-      to="/report/$ticker"
-      params={{ ticker }}
-      className="group grid grid-cols-[1fr_auto] items-center gap-3 px-4 py-3 transition-colors hover:bg-[#fafafa] sm:grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] sm:gap-4 dark:hover:bg-neutral-800"
-    >
-      <div className="flex min-w-0 items-center gap-3">
-        <LogoChip ticker={ticker} />
-        <div className="min-w-0">
-          <div className="text-[13px] font-bold tracking-tight text-black dark:text-white">{ticker}</div>
-          <div className="truncate text-[12px] text-[#666] dark:text-[#a1a1a1]">
-            {isLoading ? "Memuat..." : (report?.name ?? ticker)}
+    <div className="flex flex-col justify-between rounded border border-neutral-300 bg-white font-mono shadow-none transition-all hover:border-neutral-400 dark:border-[#262930] dark:bg-[#121418] dark:hover:border-[#3a3f4b]">
+      {/* 1. Header Strip */}
+      <div className="border-b border-neutral-200 bg-neutral-50 px-3.5 py-2.5 dark:border-[#1e2229] dark:bg-[#15181e]">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex min-w-0 items-center gap-2">
+            <Link
+              to={`/report/${ticker}` as any}
+              className="group inline-flex items-center gap-1.5 rounded bg-neutral-900 px-2 py-0.5 text-xs font-bold text-amber-400 hover:bg-neutral-800 dark:bg-amber-400/10 dark:border dark:border-amber-400/30 dark:text-amber-400"
+            >
+              <span>{ticker} IJ</span>
+              <ArrowUpRight className="h-3 w-3 text-neutral-400 group-hover:text-amber-300" />
+            </Link>
+            <span className="truncate text-xs font-semibold text-neutral-800 dark:text-neutral-200">
+              {companyName}
+            </span>
+          </div>
+
+          <div className="flex shrink-0 items-center gap-1.5">
+            {isLoading ? (
+              <Loader2 className="h-3.5 w-3.5 animate-spin text-neutral-400" />
+            ) : (
+              <TerminalRatingBadge rating={rating} />
+            )}
+          </div>
+        </div>
+
+        <div className="mt-1 flex items-center justify-between text-[10px] text-neutral-500 dark:text-neutral-400">
+          <span>ARCHETYPE: {archetype}</span>
+          <span>{report?.updatedAt ? `AUDITED: ${report.updatedAt}` : "LIVE FEED"}</span>
+        </div>
+      </div>
+
+      {/* 2. Key Valuation Metrics Grid (BE-bound numbers only, Missing = PENDING) */}
+      <div className="grid grid-cols-3 divide-x divide-neutral-200 border-b border-neutral-200 p-3 dark:divide-[#1e2229] dark:border-[#1e2229]">
+        {/* PX LAST */}
+        <div className="pr-2">
+          <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">PX LAST</div>
+          <div className="tnum mt-0.5 text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            {isLoading ? (
+              <div className="h-4 w-16 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            ) : (
+              formatIDR(price)
+            )}
+          </div>
+        </div>
+
+        {/* TARGET (FV) */}
+        <div className="px-2">
+          <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">TARGET (FV)</div>
+          <div className="tnum mt-0.5 text-sm font-bold text-neutral-900 dark:text-neutral-100">
+            {isLoading ? (
+              <div className="h-4 w-16 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            ) : (
+              formatIDR(target)
+            )}
+          </div>
+        </div>
+
+        {/* UPSIDE */}
+        <div className="pl-2">
+          <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400">UPSIDE</div>
+          <div
+            className={`tnum mt-0.5 text-sm font-bold ${
+              upsideInfo.isPending
+                ? "text-neutral-400 dark:text-neutral-500"
+                : upsideInfo.isPositive
+                ? "text-emerald-600 dark:text-emerald-400"
+                : upsideInfo.isNegative
+                ? "text-rose-600 dark:text-rose-400"
+                : "text-neutral-700 dark:text-neutral-300"
+            }`}
+          >
+            {isLoading ? (
+              <div className="h-4 w-12 animate-pulse rounded bg-neutral-200 dark:bg-neutral-800" />
+            ) : (
+              `${upsideInfo.isPositive ? "▲ " : upsideInfo.isNegative ? "▼ " : ""}${upsideInfo.text}`
+            )}
           </div>
         </div>
       </div>
 
-      {isLoading ? (
-        <div className="col-span-1 h-4 w-20 animate-pulse rounded bg-[#eaeaea] sm:col-span-3 dark:bg-neutral-800" />
-      ) : isError || !report ? (
-        <div className="tnum text-[12px] text-[#999] sm:col-span-3 dark:text-neutral-500">
-          Klik untuk membuka laporannya.
+      {/* 3. Valuation Engine Detail Strip */}
+      <div className="space-y-2 p-3 text-xs">
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-neutral-500 dark:text-neutral-400">Primary Engine:</span>
+          <span className="font-semibold text-neutral-800 dark:text-neutral-200">{method}</span>
         </div>
-      ) : (
-        <>
-          <div className="tnum hidden text-[13px] text-black sm:block dark:text-white">{formatIDR(report.price)}</div>
-          <div className="tnum hidden text-[13px] text-black sm:block dark:text-white">{formatIDR(report.target)}</div>
-          <div className={`tnum text-right text-[13px] font-medium sm:text-left ${upsideTone(report.upside)}`}>
-            {report.upside ?? "—"}
-          </div>
-          {/* mobile: price under upside */}
-          <div className="tnum text-[12px] text-[#666] sm:hidden dark:text-[#a1a1a1]">{formatIDR(report.price)}</div>
-        </>
-      )}
 
-      <div className="hidden items-center gap-2 sm:flex">
-        {!isLoading && report?.rating ? (
-          <Badge variant={ratingBadgeVariant(report.rating)}>{report.rating}</Badge>
-        ) : (
-          <span className="w-10" />
-        )}
-        <ChevronRight className="h-4 w-4 text-[#999] transition-transform group-hover:translate-x-0.5 group-hover:text-black dark:text-neutral-500 dark:group-hover:text-white" />
+        <div className="flex items-center justify-between text-[11px]">
+          <span className="text-neutral-500 dark:text-neutral-400">Cost of Capital (WACC):</span>
+          <span className="tnum font-semibold text-neutral-800 dark:text-neutral-200">
+            {wacc ? wacc : "PENDING"}
+          </span>
+        </div>
+
+        {/* Takeaway / Summary snippet */}
+        <div className="mt-2 rounded bg-neutral-100/70 p-2 font-sans text-xs leading-relaxed text-neutral-600 dark:bg-[#181b22] dark:text-neutral-300">
+          <div className="mb-0.5 font-mono text-[10px] font-bold uppercase tracking-wider text-amber-600 dark:text-amber-400">
+            [EXECUTIVE TAKEAWAY]
+          </div>
+          <p className="line-clamp-2">{summarySnippet}</p>
+        </div>
       </div>
-      <ChevronRight className="h-4 w-4 justify-self-end text-[#999] sm:hidden dark:text-neutral-500" />
-    </Link>
-  )
-}
 
-function Home() {
-  return (
-    <div className="space-y-8">
-      <MarketStrip />
+      {/* 4. Function-Key Action Strip */}
+      <div className="grid grid-cols-3 divide-x divide-neutral-200 border-t border-neutral-200 bg-neutral-50 text-[11px] dark:divide-[#1e2229] dark:border-[#1e2229] dark:bg-[#15181e]">
+        <Link
+          to={`/report/${ticker}` as any}
+          className="flex items-center justify-center gap-1 py-2 font-bold text-neutral-700 transition-colors hover:bg-neutral-200/70 dark:text-neutral-300 dark:hover:bg-[#1f232c]"
+        >
+          <FileText className="h-3 w-3 text-amber-500" />
+          <span>[F1] REPORT</span>
+        </Link>
 
-      {/* Hero */}
-      <section className="py-2">
-        <Badge className="mb-3">Riset saham · Bahasa sederhana</Badge>
-        <h1 className="max-w-2xl text-[24px] font-bold leading-tight tracking-tight text-black sm:text-[32px] dark:text-white">
-          Riset saham Indonesia yang rumit, diterjemahkan untuk pemula.
-        </h1>
-        <p className="mt-2 max-w-2xl text-[14px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-          Sektoral.id merangkum laporan analis menjadi kesimpulan 1 menit: layak dilirik atau
-          tidak, dan kenapa — tanpa jargon.
-        </p>
+        <Link
+          to="/agent"
+          search={{ ticker } as any}
+          className="flex items-center justify-center gap-1 py-2 font-bold text-neutral-700 transition-colors hover:bg-neutral-200/70 dark:text-neutral-300 dark:hover:bg-[#1f232c]"
+        >
+          <Bot className="h-3 w-3 text-sky-500" />
+          <span>[F2] AGENT</span>
+        </Link>
 
-        <div className="mt-6 grid gap-3 sm:grid-cols-3">
-          {STEPS.map((s) => {
-            const Icon = s.icon
-            return (
-              <div key={s.title} className="rounded-lg border border-[#eaeaea] bg-white p-4 dark:border-[#262626] dark:bg-[#111111]">
-                <Icon className="h-4 w-4 text-black dark:text-white" />
-                <div className="mt-2.5 text-[13px] font-semibold text-black dark:text-white">{s.title}</div>
-                <p className="mt-1 text-[12px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">{s.desc}</p>
-              </div>
-            )
-          })}
-        </div>
-
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <a
-            href="#saham"
-            className="inline-flex items-center gap-2 rounded-md bg-black px-4 py-2 text-[13px] font-medium text-white transition-colors hover:bg-[#333] dark:bg-white dark:text-black dark:hover:bg-neutral-200"
-          >
-            Mulai dari 5 saham di bawah
-            <ArrowRight className="h-4 w-4" />
-          </a>
-          <a
-            href="#cara-baca"
-            className="inline-flex items-center gap-2 rounded-md border border-[#eaeaea] bg-white px-4 py-2 text-[13px] font-medium text-black transition-colors hover:bg-[#fafafa] dark:border-[#262626] dark:bg-[#111111] dark:text-white dark:hover:bg-neutral-800"
-          >
-            Cara baca laporan
-          </a>
-        </div>
-      </section>
-
-      {/* Quintet — dense ticker rows */}
-      <section id="saham" className="scroll-mt-20 space-y-3">
-        <div>
-          <h2 className="text-[16px] font-bold tracking-tight text-black dark:text-white">
-            5 saham yang kami ulas tuntas
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-            Angka di daftar diambil langsung dari laporan terbaru — bukan angka contoh. Klik baris
-            mana pun untuk membaca analisis lengkapnya.
-          </p>
-        </div>
-        <div className="overflow-hidden rounded-lg border border-[#eaeaea] bg-white dark:border-[#262626] dark:bg-[#111111]">
-          <div className="hidden grid-cols-[minmax(0,2fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_auto] gap-4 border-b border-[#eaeaea] bg-[#fafafa] px-4 py-2 text-[11px] font-medium uppercase tracking-wide text-[#666] sm:grid dark:border-[#262626] dark:bg-[#111111] dark:text-[#a1a1a1]">
-            <span>Saham</span>
-            <span>Harga</span>
-            <span>Target</span>
-            <span>Upside</span>
-            <span className="w-16" />
-          </div>
-          <div className="divide-y divide-[#eaeaea] dark:divide-[#262626]">
-            {QUINTET.map((t) => (
-              <QuintetRow key={t} ticker={t} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Cara baca */}
-      <section id="cara-baca" className="scroll-mt-20 space-y-3">
-        <div>
-          <h2 className="text-[16px] font-bold tracking-tight text-black dark:text-white">
-            Cara membaca laporan (2 menit)
-          </h2>
-          <p className="mt-1 max-w-2xl text-[13px] leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-            Setiap laporan memakai tiga istilah yang sama. Kalau paham tiga ini, kamu sudah bisa
-            membaca semua laporan di sini.
-          </p>
-        </div>
-
-        <div className="grid gap-3 sm:grid-cols-3">
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <ThumbsUp className="h-4 w-4 text-[#007f56] dark:text-emerald-400" />
-                <CardTitle className="text-sm">BUY = layak dilirik</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-              Riset menilai harga sekarang masih murah dibanding nilai wajarnya. Bukan perintah
-              beli — tetap cek apakah cocok dengan uang dan tujuanmu.
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <Minus className="h-4 w-4 text-[#666] dark:text-[#a1a1a1]" />
-                <CardTitle className="text-sm">HOLD = tunggu dulu</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-              Harganya sudah wajar — tidak murah, tidak mahal. Kalau sudah punya, tidak perlu
-              buru-buru jual; kalau belum punya, sabar menunggu harga lebih baik.
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <div className="flex items-center gap-2">
-                <ThumbsDown className="h-4 w-4 text-[#e00] dark:text-red-400" />
-                <CardTitle className="text-sm">SELL = hati-hati</CardTitle>
-              </div>
-            </CardHeader>
-            <CardContent className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-              Riset menilai harga sekarang sudah kemahalan dibanding nilainya. Bukan perintah
-              jual — tapi pahami alasannya sebelum menambah.
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardContent className="grid gap-4 p-5 text-xs leading-relaxed text-[#666] sm:grid-cols-2 dark:text-[#a1a1a1]">
-            <div>
-              <CardTitle className="mb-1 text-sm">Potensi naik (upside) itu apa?</CardTitle>
-              <CardDescription className="text-xs leading-relaxed">
-                Selisih antara harga sekarang dan harga wajar menurut riset. Contoh: harga Rp 1.000,
-                harga wajar Rp 1.200 — potensinya 20%. Makin besar belum tentu makin bagus: cek juga
-                risikonya.
-              </CardDescription>
-            </div>
-            <div>
-              <CardTitle className="mb-1 text-sm">Harga wajar (target) itu apa?</CardTitle>
-              <CardDescription className="text-xs leading-relaxed">
-                Perkiraan analis tentang nilai pantas saham ini setahun ke depan, dihitung dari
-                keuntungan perusahaan. Ini perkiraan, bukan janji — harga asli bisa di atas atau di
-                bawahnya.
-              </CardDescription>
-            </div>
-          </CardContent>
-        </Card>
-      </section>
-
-      {/* Disclaimer */}
-      <div className="flex items-start gap-3 rounded-lg border border-[#eaeaea] border-l-2 border-l-[#f5a623] bg-[#fffdf5] p-4 dark:border-[#262626] dark:bg-amber-950">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#8a6d00] dark:text-amber-400" />
-        <p className="text-xs leading-relaxed text-[#666] dark:text-[#a1a1a1]">
-          <span className="font-semibold text-black dark:text-white">Penting:</span> semua isi Sektoral.id adalah informasi
-          dan edukasi, <span className="font-semibold text-black dark:text-white">bukan saran investasi</span>. Investasi
-          saham bisa untung dan bisa rugi. Jangan pakai uang kebutuhan harian, dan keputusan
-          sepenuhnya tanggung jawabmu.
-        </p>
+        <Link
+          to={`/report/${ticker}/challenge` as any}
+          className="flex items-center justify-center gap-1 py-2 font-bold text-neutral-700 transition-colors hover:bg-neutral-200/70 dark:text-neutral-300 dark:hover:bg-[#1f232c]"
+        >
+          <Swords className="h-3 w-3 text-rose-500" />
+          <span>[F3] DEBATE</span>
+        </Link>
       </div>
     </div>
   )
 }
+
+function QuintetMatrixRow({ ticker }: { ticker: QuintetTicker }) {
+  const reportQuery = useQuery({
+    queryKey: ["report", ticker],
+    queryFn: () => fetchReport(ticker),
+  })
+
+  const report = reportQuery.data as Report | undefined
+  const price = report?.price ?? null
+  const target = report?.target ?? null
+  const upsideRaw = report?.upside ?? null
+  const rating = report?.rating ?? null
+  const method = report?.valuation?.[0]?.method ?? "DCF"
+  const upsideInfo = parseUpside(upsideRaw)
+
+  return (
+    <Link
+      to={`/report/${ticker}` as any}
+      className="group grid grid-cols-12 items-center gap-2 border-b border-neutral-200 px-3.5 py-2.5 text-xs font-mono transition-colors hover:bg-neutral-100 dark:border-[#1e2229] dark:hover:bg-[#161920]"
+    >
+      {/* Ticker & Name */}
+      <div className="col-span-4 flex items-center gap-2">
+        <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+          {ticker} IJ
+        </span>
+        <span className="truncate font-semibold text-neutral-800 dark:text-neutral-200">
+          {report?.name || `${ticker} Tbk`}
+        </span>
+      </div>
+
+      {/* Last Price */}
+      <div className="col-span-2 text-right text-neutral-900 dark:text-neutral-100">
+        {reportQuery.isLoading ? "..." : formatIDR(price)}
+      </div>
+
+      {/* Target Price */}
+      <div className="col-span-2 text-right text-neutral-900 dark:text-neutral-100">
+        {reportQuery.isLoading ? "..." : formatIDR(target)}
+      </div>
+
+      {/* Upside */}
+      <div
+        className={`col-span-2 text-right font-bold ${
+          upsideInfo.isPending
+            ? "text-neutral-400 dark:text-neutral-500"
+            : upsideInfo.isPositive
+            ? "text-emerald-600 dark:text-emerald-400"
+            : upsideInfo.isNegative
+            ? "text-rose-600 dark:text-rose-400"
+            : "text-neutral-600 dark:text-neutral-400"
+        }`}
+      >
+        {reportQuery.isLoading ? "..." : `${upsideInfo.isPositive ? "+" : ""}${upsideInfo.text}`}
+      </div>
+
+      {/* Rating & Jump Chevron */}
+      <div className="col-span-2 flex items-center justify-end gap-1.5">
+        <TerminalRatingBadge rating={rating} />
+        <ChevronRight className="h-3.5 w-3.5 text-neutral-400 transition-transform group-hover:translate-x-0.5 group-hover:text-amber-400" />
+      </div>
+    </Link>
+  )
+}
+
+function MarketMonitorHub() {
+  return (
+    <div className="space-y-6">
+      {/* 1. Market Monitor Header & Live Protocol Status */}
+      <div className="rounded border border-neutral-300 bg-white p-4 font-mono shadow-none dark:border-[#262930] dark:bg-[#121418]">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[11px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+                MONITOR DECK
+              </span>
+              <h1 className="text-base font-bold uppercase tracking-tight text-neutral-900 dark:text-neutral-100">
+                IDX QUINTET INSTITUTIONAL EQUITY MONITOR
+              </h1>
+            </div>
+            <p className="font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Terminal pemantauan valuasi deterministik dan multi-agent reasoning untuk 5 emiten tier-1 Bursa Efek Indonesia.
+            </p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2 text-[11px]">
+            <div className="flex items-center gap-1.5 rounded border border-amber-500/30 bg-amber-500/10 px-2.5 py-1 text-amber-600 dark:text-amber-400" title="Cakupan pantau — status koneksi per kartu">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <span className="font-bold">PANTAU 5 EMITEN · MODE SNAPSHOT</span>
+            </div>
+            <div className="rounded border border-neutral-300 bg-neutral-100 px-2.5 py-1 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              ZERO-FABRICATION PROTOCOL
+            </div>
+          </div>
+        </div>
+
+        {/* Data Provenance & Servicing Notice */}
+        <div className="mt-3 flex items-center justify-between border-t border-neutral-200 pt-2 text-[10px] text-neutral-500 dark:border-[#1e2229] dark:text-neutral-400">
+          <div className="flex items-center gap-2">
+            <Database className="h-3 w-3 text-amber-500" />
+            <span>SUMBER: snapshot asumsi IDX terverifikasi (Sectors API pending) · DCF WACC · Red-Team</span>
+          </div>
+          <div className="hidden sm:block font-bold text-neutral-600 dark:text-neutral-400">
+            [HOTKEY: KETIK KODE EMITEN LALU TEKAN ENTER DI TOP COMMAND BAR]
+          </div>
+        </div>
+      </div>
+
+      {/* 2. Quintet Market Monitor Cards Grid (The 5 Covered Equities) */}
+      <section aria-label="Quintet Equities Coverage" className="space-y-3">
+        <div className="flex items-center justify-between font-mono text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
+          <div className="flex items-center gap-2">
+            <Layers className="h-4 w-4 text-amber-500" />
+            <span>01 // QUINTET SNAPSHOT VALUATION DECK</span>
+          </div>
+          <span className="text-[10px] text-neutral-400 font-normal">
+            DATA TERVALIDASI · TANPA SINTETIK
+          </span>
+        </div>
+
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {QUINTET.map((ticker) => (
+            <QuintetMonitorCard key={ticker} ticker={ticker} />
+          ))}
+
+          {/* Quick-Jump Helper Card */}
+          <div className="flex flex-col justify-between rounded border border-dashed border-neutral-300 bg-neutral-50/70 p-4 font-mono dark:border-[#262930] dark:bg-[#121418]/60">
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+                <Bot className="h-4 w-4" />
+                <span>[F2] MULTI-AGENT ADVISORY</span>
+              </div>
+              <p className="font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+                Jalankan atau pantau proses 11 subagen AI yang melakukan audit laporan keuangan, valuasi DCF, dan analisis risiko secara mandiri.
+              </p>
+            </div>
+            <Link
+              to="/agent"
+              search={{ ticker: "BBCA" } as any}
+              className="mt-4 inline-flex items-center justify-center gap-1.5 rounded bg-neutral-900 py-2 text-xs font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+            >
+              <span>BUKA AGENT TRACE CONSOLE</span>
+              <ChevronRight className="h-3.5 w-3.5" />
+            </Link>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. Valuation & Coverage Comparative Matrix */}
+      <section aria-label="Comparative Matrix" className="space-y-2">
+        <div className="flex items-center justify-between font-mono text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
+          <div className="flex items-center gap-2">
+            <Activity className="h-4 w-4 text-amber-500" />
+            <span>02 // QUINTET COMPARATIVE VALUATION MATRIX</span>
+          </div>
+          <span className="text-[10px] text-neutral-400 font-normal">
+            KLIK BARIS UNTUK MEMBUKA DETAIL LAPORAN
+          </span>
+        </div>
+
+        <div className="overflow-hidden rounded border border-neutral-300 bg-white font-mono dark:border-[#262930] dark:bg-[#121418]">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-2 border-b border-neutral-300 bg-neutral-100 px-3.5 py-2 text-[10px] font-bold uppercase tracking-wider text-neutral-600 dark:border-[#1e2229] dark:bg-[#15181e] dark:text-neutral-400">
+            <div className="col-span-4">EMITEN (IJ &lt;EQUITY&gt;)</div>
+            <div className="col-span-2 text-right">HARGA (PX)</div>
+            <div className="col-span-2 text-right">TARGET (FV)</div>
+            <div className="col-span-2 text-right">UPSIDE</div>
+            <div className="col-span-2 text-right">RATING</div>
+          </div>
+
+          {/* Table Rows */}
+          {QUINTET.map((ticker) => (
+            <QuintetMatrixRow key={ticker} ticker={ticker} />
+          ))}
+        </div>
+      </section>
+
+      {/* 4. Educational Reference & Valuation Methodology Guide (STRICTLY LABELED AS EXAMPLE) */}
+      <section id="cara-baca" className="scroll-mt-20 space-y-3 font-mono">
+        <div className="flex items-center justify-between text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
+          <div className="flex items-center gap-2">
+            <Info className="h-4 w-4 text-amber-500" />
+            <span>03 // [EDUCATIONAL REFERENCE // PANDUAN METODOLOGI VALUASI]</span>
+          </div>
+          <span className="text-[10px] text-amber-600 dark:text-amber-400 font-bold">
+            CONTOH KONSEPTUAL · BUKAN SARAN INVESTASI
+          </span>
+        </div>
+
+        {/* Explicit Example Attestation Box */}
+        <div className="rounded border border-amber-500/40 bg-amber-50/60 p-3 text-xs leading-relaxed text-amber-900 dark:border-amber-500/30 dark:bg-amber-950/40 dark:text-amber-200">
+          <div className="flex items-start gap-2">
+            <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <div>
+              <span className="font-bold">[PANDUAN EDUKASI &amp; TERMINOLOGI RISSET] </span>
+              <span className="font-sans">
+                Penjelasan di bawah ini adalah simulasi konseptual untuk memahami istilah terminal bagi investor pemula. Angka dan valuasi pada kartu emiten di atas bersumber 100% dari respons backend (missing = PENDING), tanpa fabrikasi.
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* 3 Terminology Explainer Cards */}
+        <div className="grid gap-3 sm:grid-cols-3">
+          <div className="rounded border border-neutral-300 bg-white p-3.5 dark:border-[#262930] dark:bg-[#121418]">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600 dark:text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span>BUY = Undervalued</span>
+            </div>
+            <p className="mt-2 font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Harga pasar saat ini berada di bawah estimasi nilai wajar fundamental (Fair Value) berdasarkan proyeksi arus kas. Menandakan tersedianya margin of safety yang memadai.
+            </p>
+          </div>
+
+          <div className="rounded border border-neutral-300 bg-white p-3.5 dark:border-[#262930] dark:bg-[#121418]">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-amber-600 dark:text-amber-400">
+              <span className="h-2 w-2 rounded-full bg-amber-500" />
+              <span>HOLD = Fair Value</span>
+            </div>
+            <p className="mt-2 font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Harga pasar telah merefleksikan nilai intrinsik perusahaan secara wajar. Pertahankan kepemilikan aset atau tunggu konfirmasi momentum katalis baru sebelum akumulasi.
+            </p>
+          </div>
+
+          <div className="rounded border border-neutral-300 bg-white p-3.5 dark:border-[#262930] dark:bg-[#121418]">
+            <div className="flex items-center gap-1.5 text-xs font-bold text-rose-600 dark:text-rose-400">
+              <span className="h-2 w-2 rounded-full bg-rose-500" />
+              <span>SELL = Overvalued</span>
+            </div>
+            <p className="mt-2 font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Harga pasar dinilai telah melampaui valuasi fundamental konservatif. Risiko koreksi harga lebih besar daripada potensi apresiasi jangka pendek.
+            </p>
+          </div>
+        </div>
+
+        {/* Detailed Mechanics (Upside & Fair Value) */}
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="rounded border border-neutral-300 bg-white p-3.5 font-sans text-xs dark:border-[#262930] dark:bg-[#121418]">
+            <div className="font-mono text-xs font-bold uppercase text-neutral-900 dark:text-neutral-100">
+              Bagaimana Potensi Naik (Upside) Dihitung?
+            </div>
+            <p className="mt-1.5 leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Upside dihitung dari persentase selisih antara Target Price (Fair Value) hasil model DCF dan harga pasar terakhir: <code className="font-mono bg-neutral-100 dark:bg-neutral-800 px-1 py-0.5 rounded text-[11px]">((Target - Harga) / Harga) * 100%</code>.
+            </p>
+          </div>
+
+          <div className="rounded border border-neutral-300 bg-white p-3.5 font-sans text-xs dark:border-[#262930] dark:bg-[#121418]">
+            <div className="font-mono text-xs font-bold uppercase text-neutral-900 dark:text-neutral-100">
+              Apa Itu Discounted Cash Flow (DCF)?
+            </div>
+            <p className="mt-1.5 leading-relaxed text-neutral-600 dark:text-neutral-400">
+              Metode valuasi intrinsik yang memproyeksikan Free Cash Flow to Firm (FCFF) masa depan dan mendiskontokannya ke nilai sekarang menggunakan WACC (Weighted Average Cost of Capital).
+            </p>
+          </div>
+        </div>
+      </section>
+
+      {/* 5. Compliance & Attestation Alert */}
+      <div className="flex items-start gap-3 rounded border border-neutral-300 bg-neutral-100 p-3.5 font-mono text-xs dark:border-[#262930] dark:bg-[#121418]">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-500" />
+        <div className="space-y-1">
+          <div className="font-bold text-neutral-900 dark:text-neutral-100">
+            [COMPLIANCE DISCLOSURE // SECTORS HACKATHON 2026]
+          </div>
+          <p className="font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
+            Seluruh analisis riset pada dashboard ini diproduksi secara deterministik dari laporan keuangan audited IDX. Sektoral.id tidak menyajikan angka sintetis atau indeks buatan. Informasi ini ditujukan untuk tujuan riset kompetisi dan edukasi, bukan merupakan rekomendasi transaksi efek dari penasihat investasi berlisensi.
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+

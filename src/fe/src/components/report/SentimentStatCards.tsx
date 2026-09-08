@@ -8,8 +8,7 @@ import {
   TrendingDown,
   MinusCircle,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import type { Sentiment } from "@/lib/api"
 
 export type SentimentStatCardsProps = {
@@ -22,37 +21,36 @@ export type SentimentStatCardsProps = {
 export function SentimentStatCards({
   sentiment,
   newsCount = 0,
-  socialCount = 0,
 }: SentimentStatCardsProps) {
   // LOUD policy: no invented gauge 50. Null means missing BE data.
   const gaugeVal: number | null = sentiment?.gauge != null ? Number(sentiment.gauge) : null
 
-  const { statusLabel, badgeVariant, colorClass } = useMemo(() => {
+  const { statusLabel, badgeColor, barColor } = useMemo(() => {
     if (gaugeVal == null) {
       return {
-        statusLabel: "Menunggu data",
-        badgeVariant: "secondary" as const,
-        colorClass: "text-neutral-500 dark:text-neutral-400",
+        statusLabel: "NO DATA",
+        badgeColor: "border-neutral-300 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-400",
+        barColor: "bg-neutral-400 dark:bg-neutral-600",
       }
     }
     if (gaugeVal >= 60) {
       return {
-        statusLabel: sentiment?.label || "Bullish / Positif",
-        badgeVariant: "success" as const,
-        colorClass: "text-emerald-700 dark:text-emerald-200",
+        statusLabel: sentiment?.label ? `BULLISH // ${sentiment.label.toUpperCase()}` : "BULLISH / ACCUMULATION",
+        badgeColor: "border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+        barColor: "bg-emerald-600 dark:bg-emerald-500",
       }
     }
     if (gaugeVal <= 40) {
       return {
-        statusLabel: sentiment?.label || "Bearish / Negatif",
-        badgeVariant: "destructive" as const,
-        colorClass: "text-rose-700 dark:text-rose-200",
+        statusLabel: sentiment?.label ? `BEARISH // ${sentiment.label.toUpperCase()}` : "BEARISH / CAUTION",
+        badgeColor: "border-rose-500/40 bg-rose-500/10 text-rose-700 dark:text-rose-400",
+        barColor: "bg-rose-600 dark:bg-rose-500",
       }
     }
     return {
-      statusLabel: sentiment?.label || "Netral / Terkonsolidasi",
-      badgeVariant: "secondary" as const,
-      colorClass: "text-neutral-700 dark:text-neutral-300",
+      statusLabel: sentiment?.label ? `NEUTRAL // ${sentiment.label.toUpperCase()}` : "NEUTRAL / CONSOLIDATION",
+      badgeColor: "border-neutral-300 bg-neutral-100 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
+      barColor: "bg-amber-600 dark:bg-amber-500",
     }
   }, [gaugeVal, sentiment?.label])
 
@@ -77,16 +75,14 @@ export function SentimentStatCards({
         totalItems: total,
       }
     }
-    // LOUD policy: no gauge-derived invention (0.7 factors, floor 10).
     return {
       bullishPct: null as number | null,
       bearishPct: null as number | null,
       neutralPct: null as number | null,
       totalItems: items.length,
     }
-  }, [sentiment?.items, gaugeVal, newsCount, socialCount])
+  }, [sentiment?.items])
 
-  // LOUD policy: no invented 65/40 confidence scores.
   const confidencePct: number | null = sentiment?.confidence != null
     ? Math.round(sentiment.confidence * 100)
     : null
@@ -96,39 +92,60 @@ export function SentimentStatCards({
   return (
     <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
       {/* Card 1: Gauge Index */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-none border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#262930] dark:bg-[#181a1f]/70">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Indeks Sentimen Ritel
+            <CardTitle className="text-[11px] font-mono font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              SENTIMENT INDEX [0-100]
             </CardTitle>
-            <Activity className="h-4 w-4 text-neutral-400" />
+            <Activity className="h-3.5 w-3.5 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Skor agregat 0 (Bear) s/d 100 (Bull)
-          </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-2">
-          <div className="flex items-baseline gap-2">
-            <span className={`text-3xl font-bold tracking-tight ${colorClass}`}>
-              {sentiment?.gauge != null ? sentiment.gauge : "-"}
+        <CardContent className="p-3 space-y-2.5">
+          <div className="flex items-baseline justify-between">
+            <div className="flex items-baseline gap-1.5">
+              <span className={`font-mono text-2xl font-bold tabular-nums ${
+                gaugeVal == null
+                  ? "text-neutral-400"
+                  : gaugeVal >= 60
+                  ? "text-emerald-600 dark:text-emerald-400"
+                  : gaugeVal <= 40
+                  ? "text-rose-600 dark:text-rose-400"
+                  : "text-amber-600 dark:text-amber-400"
+              }`}>
+                {gaugeVal != null ? gaugeVal : "—"}
+              </span>
+              <span className="font-mono text-[11px] text-neutral-400">/ 100</span>
+            </div>
+            <span className={`rounded-none border px-1.5 py-0.5 font-mono text-[10px] font-semibold tracking-wider ${badgeColor}`}>
+              [{statusLabel}]
             </span>
-            <span className="text-xs font-normal text-neutral-400">/ 100</span>
-            <Badge variant={badgeVariant} className="ml-auto text-[10px]">
-              {statusLabel}
-            </Badge>
           </div>
-          {/* Visual Gauge Bar */}
-          <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
-            <div
-              className={`h-full transition-all duration-500 ${
-                gaugeVal >= 60 ? "bg-emerald-600" : gaugeVal <= 40 ? "bg-rose-600" : "bg-neutral-700"
-              }`}
-              style={{ width: `${Math.max(5, Math.min(100, gaugeVal))}%` }}
-            />
+
+          {/* Visual Gauge Bar with 40 / 60 thresholds */}
+          <div className="space-y-1">
+            <div className="relative h-2 w-full overflow-hidden rounded-none border border-neutral-300 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]">
+              {gaugeVal != null && (
+                <div
+                  className={`h-full transition-all duration-300 ${barColor}`}
+                  style={{ width: `${Math.max(3, Math.min(100, gaugeVal))}%` }}
+                />
+              )}
+              {/* Threshold tick indicators */}
+              <div className="absolute top-0 bottom-0 left-[40%] w-px bg-neutral-400/50 dark:bg-neutral-500/50" title="Bearish threshold 40" />
+              <div className="absolute top-0 bottom-0 left-[60%] w-px bg-neutral-400/50 dark:bg-neutral-500/50" title="Bullish threshold 60" />
+            </div>
+            <div className="flex justify-between font-mono text-[9px] text-neutral-400">
+              <span>0 BEAR</span>
+              <span className="text-neutral-500 dark:text-neutral-400">50 NET</span>
+              <span>100 BULL</span>
+            </div>
           </div>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {gaugeVal >= 60
+
+          <p className="font-mono text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+            {gaugeVal == null
+              ? "MENUNGGU INGESTI DATA SENTIMEN SECTORS."
+              : gaugeVal >= 60
               ? "Dominan akumulasi positif di kanal diskusi publik."
               : gaugeVal <= 40
               ? "Sentimen hati-hati / tekanan jual terpantau."
@@ -138,49 +155,46 @@ export function SentimentStatCards({
       </Card>
 
       {/* Card 2: Ratio Distribution */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-none border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#262930] dark:bg-[#181a1f]/70">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Distribusi Polarisasi
+            <CardTitle className="text-[11px] font-mono font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              POLARIZATION RATIO
             </CardTitle>
-            <BarChart2 className="h-4 w-4 text-neutral-400" />
+            <BarChart2 className="h-3.5 w-3.5 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Komposisi postingan & berita terkini
-          </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-2">
-          <div className="grid grid-cols-3 gap-1 text-center">
-            <div className="rounded border border-emerald-100 bg-emerald-50/50 p-1 dark:border-emerald-800 dark:bg-emerald-950/50">
-              <div className="flex items-center justify-center gap-0.5 text-[10px] font-medium text-emerald-700 dark:text-emerald-200">
-                <TrendingUp className="h-3 w-3" /> Positif
+        <CardContent className="p-3 space-y-2.5">
+          <div className="grid grid-cols-3 gap-1 text-center font-mono">
+            <div className="border border-emerald-300 bg-emerald-500/10 p-1 dark:border-emerald-800 dark:bg-emerald-950/40">
+              <div className="flex items-center justify-center gap-0.5 text-[9px] font-semibold text-emerald-700 dark:text-emerald-400">
+                <TrendingUp className="h-2.5 w-2.5" /> POS
               </div>
-              <div className="font-mono text-xs font-bold text-emerald-800 dark:text-emerald-200">
+              <div className="text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
                 {distribution.bullishPct == null ? "—" : `${distribution.bullishPct}%`}
               </div>
             </div>
-            <div className="rounded border border-neutral-200 bg-neutral-50 p-1 dark:border-neutral-800 dark:bg-neutral-900">
-              <div className="flex items-center justify-center gap-0.5 text-[10px] font-medium text-neutral-600 dark:text-neutral-400">
-                <MinusCircle className="h-3 w-3" /> Netral
+            <div className="border border-neutral-300 bg-neutral-100/70 p-1 dark:border-[#262930] dark:bg-[#181a1f]">
+              <div className="flex items-center justify-center gap-0.5 text-[9px] font-semibold text-neutral-600 dark:text-neutral-400">
+                <MinusCircle className="h-2.5 w-2.5" /> NET
               </div>
-              <div className="font-mono text-xs font-bold text-neutral-800 dark:text-neutral-200">
+              <div className="text-xs font-bold tabular-nums text-neutral-800 dark:text-neutral-200">
                 {distribution.neutralPct == null ? "—" : `${distribution.neutralPct}%`}
               </div>
             </div>
-            <div className="rounded border border-rose-100 bg-rose-50/50 p-1 dark:border-rose-800 dark:bg-rose-950/50">
-              <div className="flex items-center justify-center gap-0.5 text-[10px] font-medium text-rose-700 dark:text-rose-200">
-                <TrendingDown className="h-3 w-3" /> Negatif
+            <div className="border border-rose-300 bg-rose-500/10 p-1 dark:border-rose-800 dark:bg-rose-950/40">
+              <div className="flex items-center justify-center gap-0.5 text-[9px] font-semibold text-rose-700 dark:text-rose-400">
+                <TrendingDown className="h-2.5 w-2.5" /> NEG
               </div>
-              <div className="font-mono text-xs font-bold text-rose-800 dark:text-rose-200">
+              <div className="text-xs font-bold tabular-nums text-rose-800 dark:text-rose-300">
                 {distribution.bearishPct == null ? "—" : `${distribution.bearishPct}%`}
               </div>
             </div>
           </div>
 
-          <div className="flex h-2 overflow-hidden rounded-full border border-neutral-200 dark:border-neutral-800">
+          <div className="flex h-2 overflow-hidden rounded-none border border-neutral-300 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]">
             <div
-              className="bg-emerald-600 transition-all"
+              className="bg-emerald-600 transition-all dark:bg-emerald-500"
               style={{ width: `${distribution.bullishPct ?? 0}%` }}
               title={`Positif: ${distribution.bullishPct ?? "—"}%`}
             />
@@ -190,84 +204,84 @@ export function SentimentStatCards({
               title={`Netral: ${distribution.neutralPct ?? "—"}%`}
             />
             <div
-              className="bg-rose-500 transition-all"
+              className="bg-rose-600 transition-all dark:bg-rose-500"
               style={{ width: `${distribution.bearishPct ?? 0}%` }}
               title={`Negatif: ${distribution.bearishPct ?? "—"}%`}
             />
           </div>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Diolah dari data publik tanpa manipulasi bobot.
-          </p>
+
+          <div className="flex justify-between font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
+            <span>SAMPEL: {distribution.totalItems > 0 ? `${distribution.totalItems} POST` : "—"}</span>
+            <span>BE RAW DATA</span>
+          </div>
         </CardContent>
       </Card>
 
       {/* Card 3: Confidence Score */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-none border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#262930] dark:bg-[#181a1f]/70">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Tingkat Keyakinan
+            <CardTitle className="text-[11px] font-mono font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              SAMPLE CONFIDENCE
             </CardTitle>
-            <ShieldCheck className="h-4 w-4 text-neutral-400" />
+            <ShieldCheck className="h-3.5 w-3.5 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Validitas sampel & kepadatan bukti
-          </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-2">
+        <CardContent className="p-3 space-y-2.5">
           <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono tracking-tight text-neutral-900 dark:text-neutral-100">
+            <span className="font-mono text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
               {confidencePct == null ? "—" : `${confidencePct}%`}
             </span>
-            <Badge variant="outline" className="text-[10px] font-medium text-neutral-700 dark:text-neutral-300">
-              {confidencePct == null ? "Menunggu data" : confidencePct >= 70 ? "Kerapatan Tinggi" : confidencePct >= 50 ? "Sampel Cukup" : "Sampel Awal"}
-            </Badge>
+            <span className="rounded-none border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              {confidencePct == null ? "[PENDING]" : confidencePct >= 70 ? "[HIGH DENSITY]" : confidencePct >= 50 ? "[SUFFICIENT]" : "[PRELIMINARY]"}
+            </span>
           </div>
-          <div className="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800">
+
+          <div className="h-2 w-full overflow-hidden rounded-none border border-neutral-300 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]">
             <div
-              className="h-full bg-neutral-800 transition-all"
+              className="h-full bg-cyan-600 transition-all dark:bg-cyan-500"
               style={{ width: `${confidencePct ?? 0}%` }}
             />
           </div>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
+
+          <p className="font-mono text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400">
             Pelacakan algoritma NLP berbasis kata kunci kontekstual IDX.
           </p>
         </CardContent>
       </Card>
 
       {/* Card 4: Indexed Sources & Channels */}
-      <Card className="border-neutral-200 bg-white shadow-2xs dark:border-neutral-800 dark:bg-[#111111]">
-        <CardHeader className="p-4 pb-2">
+      <Card className="rounded-none border border-neutral-300 bg-white shadow-none dark:border-[#262930] dark:bg-[#121316]">
+        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3 pb-2 dark:border-[#262930] dark:bg-[#181a1f]/70">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
-              Cakupan Kanal & Sumber
+            <CardTitle className="text-[11px] font-mono font-semibold uppercase tracking-wider text-neutral-700 dark:text-neutral-300">
+              INDEXED CHANNELS
             </CardTitle>
-            <Globe2 className="h-4 w-4 text-neutral-400" />
+            <Globe2 className="h-3.5 w-3.5 text-neutral-400" />
           </div>
-          <CardDescription className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Stockbit, X, Reddit, Media Publik
-          </CardDescription>
         </CardHeader>
-        <CardContent className="p-4 pt-1 space-y-2">
-          <div className="flex items-baseline justify-between">
-            <span className="text-2xl font-bold font-mono tracking-tight text-neutral-900 dark:text-neutral-100">
-              {totalSources > 0 ? totalSources : "Siaga"}
+        <CardContent className="p-3 space-y-2.5">
+          <div className="flex items-baseline justify-between font-mono">
+            <span className="text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
+              {totalSources > 0 ? totalSources : "—"}
             </span>
-            <span className="text-xs text-neutral-500 dark:text-neutral-400">entri terdeteksi</span>
+            <span className="text-[10px] text-neutral-500 dark:text-neutral-400">ENTRIES DETECTED</span>
           </div>
-          <div className="flex flex-wrap gap-1">
-            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-              Stockbit
+
+          <div className="flex flex-wrap gap-1 font-mono text-[10px]">
+            <span className="border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              [STOCKBIT]
             </span>
-            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-              X / Twitter
+            <span className="border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              [X / TWITTER]
             </span>
-            <span className="rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
-              Media Berita
+            <span className="border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
+              [IDX PRESS]
             </span>
           </div>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Data diperbarui berkala via News & Social Harvester.
+
+          <p className="font-mono text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400">
+            Diperbarui berkala via News & Social Harvester.
           </p>
         </CardContent>
       </Card>
