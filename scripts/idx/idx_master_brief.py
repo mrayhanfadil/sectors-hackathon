@@ -1,24 +1,16 @@
-"""IDX Morning Brief — Sectors-backed edition (rewritten Lane E, legacy removed).
+"""IDX Morning Brief — Sectors-backed edition (rewritten Lane E, stubbed Lane A).
 
 Was: Yahoo global quotes + Postgres stockdata:15437 + investing.com scraping.
 Now: Sectors v2 universe feed for IDX breadth + daily bars for benchmarks.
 Keyless -> honest "sectors_missing_key" lines in the brief (loud, no fallback).
 
-Kept function names (get_db_data -> universe-backed alias, fetch_data ->
-sectors-backed) so CLI/scripts keep working. Camoufox investing/bi scrapers
-kept as-is (out of Lane E scope: not yfinance/Tavily/stockdata).
+Lane A: Camoufox/bi.go.id/investing.com live scrapers removed (Sectors
+API/MCP only). Kept function names (get_db_data, fetch_sectors_data,
+get_jisdor, main) so CLI/scripts keep working; get_jisdor is an honest
+stub (forex is not in the universe feed).
 """
 import asyncio
-import re
-import time
 from datetime import date, datetime, timedelta
-
-import polars as pl
-import requests
-
-# Config
-CAMOUFOX_URL = "http://127.0.0.1:9377"
-USER_ID = "fadil"
 
 # Sectors-backed benchmark symbols (bare IDX codes; ^JKSE via universe feed)
 BENCHMARK_SYMBOLS = {
@@ -44,44 +36,20 @@ def format_line(name, val, chg, pct, decimals=2, suffix=""):
 
 
 async def fetch_camoufox_snapshot(url, semaphore):
-    async with semaphore:
-        try:
-            resp = requests.post(f"{CAMOUFOX_URL}/tabs", json={"userId": USER_ID, "sessionKey": "brief_scrape", "url": url}, timeout=60)
-            tab_id = resp.json().get("tabId")
-            if not tab_id: return ""
-            wait_time = 18 if "investing.com" in url else 12
-            await asyncio.sleep(wait_time)
-            resp = requests.get(f"{CAMOUFOX_URL}/tabs/{tab_id}/snapshot", params={"userId": USER_ID}, timeout=30)
-            snapshot = resp.json().get("snapshot", "")
-            requests.delete(f"{CAMOUFOX_URL}/tabs/{tab_id}", params={"userId": USER_ID}, timeout=10)
-            return snapshot
-        except: return ""
+    # REMOVED (Sectors-only rule): Camoufox bridge deleted, no requests import.
+    return ""
 
 
 async def get_investing_quote(path, semaphore):
-    url = f"https://www.investing.com/{path}"
-    snapshot = await fetch_camoufox_snapshot(url, semaphore)
-    if not snapshot: return None
-    # Simplified regex for Investing.com
-    match = re.search(r'([\d,]{3,}\.\d{2})\s*([+\-]?\d+\.\d{2})\s*([+\-]?\d+\.\d{2})%', snapshot)
-    if match:
-        try:
-            val = float(match.group(1).replace(',', ''))
-            chg = float(match.group(2).replace(',', ''))
-            pct = float(match.group(3).replace(',', ''))
-            return {"val": val, "chg": chg, "pct": pct}
-        except: pass
+    # REMOVED (Sectors-only rule): investing.com scraping deleted — benchmarks
+    # come from fetch_sectors_data() (Sectors daily bars) instead.
     return None
 
 
-async def get_jisdor(semaphore):
-    snapshot = await fetch_camoufox_snapshot("https://www.bi.go.id/id/statistik/informasi-kurs/jisdor/default.aspx", semaphore)
-    if not snapshot: return {"val": 0}
-    match = re.search(r"Rp([\d\.]+),00", snapshot)
-    if match:
-        val = float(match.group(1).replace('.', ''))
-        return {"val": val}
-    return {"val": 0}
+async def get_jisdor(semaphore=None):
+    """Honest stub — BI JISDOR live scrape removed (Sectors-only rule). Forex is
+    not in the Sectors universe feed. Returns sectors_missing_key marker."""
+    return {"val": 0, "source": "sectors_missing_key"}
 
 
 async def get_db_data():
@@ -205,7 +173,7 @@ async def main():
         brief += "(source=sectors_missing_key — set SECTORS_API_KEY)\n"
 
     brief += f"\n── MACRO, BONDS & FOREX ──────────────────────────────────────────────\n"
-    brief += f"{'JISDOR (BI)':<14} .. {jisdor['val']:>11,.0f} {'':>9} {'':>9} ‼️\n"
+    brief += f"{'JISDOR (BI)':<14} .. {'N/A':>11} {'':>9} {'':>9} (source=sectors_missing_key — forex not in Sectors feed)\n"
 
     if len(df) > 0:
         brief += "\n── TOP TURNOVER (IDX) ────────────────────────────────────────────────\n"
@@ -214,7 +182,7 @@ async def main():
             brief += f"{row[0]:<14} .. {row[1]:>11,.0f} {row[5]:>+9.2f}% {get_emoji(row[5])}\n"
 
     brief += "\n══════════════════════════════════════════════════════════════════════\n"
-    brief += " SOURCE: SECTORS V2 UNIVERSE FEED (+ BI JISDOR)\n"
+    brief += " SOURCE: SECTORS V2 UNIVERSE FEED (forex unavailable — sectors_missing_key)\n"
     brief += "══════════════════════════════════════════════════════════════════════"
 
     print(brief)

@@ -82,7 +82,7 @@
       #text(size: 7.5pt, weight: "bold", fill: NAVY)[#cover.at("price_chart", default: (:)).at("title", default: "Price Performance")]
       #v(1pt)
       #image(chart-dir + "/vs_jci.png", width: 100%)
-      #src(cover.at("price_chart", default: (:)).at("caption", default: "yfinance monthly closes"))
+      #src(cover.at("price_chart", default: (:)).at("caption", default: "Sectors monthly closes"))
       #v(3pt)
     ]
     #text(size: 7pt, weight: "bold", fill: NAVY)[Analyst]
@@ -146,7 +146,7 @@
     #v(1pt)
     #text(size: 7.5pt)[#data.at("pbv_caption", default: "")]
     #v(1pt)
-    #src("yfinance monthly closes / BVPS year-end")
+    #src("Sectors monthly closes / BVPS year-end")
   ]
 ])
 

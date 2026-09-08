@@ -132,7 +132,7 @@
         "Kinerja Harga " + m.ticker + (if vj.at("ytd_abs", default: none) != none { " (" + (if vj.ytd_abs > 0 { "+" } else { "" }) + str(vj.ytd_abs) + "% YTD)" } else { "" }) + " vs IHSG"
       })
       #let pc_caption = pc.at("caption", default: if m.ticker == "RATU" {
-        "Performa Relatif YTD: Outperform +6,2% · Sumber: IDX & yfinance"
+        "Performa Relatif YTD: Outperform +6,2% · Sumber: Sectors"
       } else {
         "Performa Relatif YTD: " + (if vj.at("ytd_rel", default: none) != none { (if vj.ytd_rel > 0 { "Outperform +" } else { "Underperform " }) + str(vj.ytd_rel) + "%" } else { "-" }) + " · Sumber: " + pc_src
       })
@@ -802,7 +802,7 @@
 
   #v(3pt)
   #text(size: 5.8pt, fill: PALETTE.muted, style: "italic")[
-    Disiapkan oleh #m.at("prepared_by", default: "RESEARCH — Sectors Hackathon 2026") · Tanggal #m.date · Ticker: #(m.ticker + ".JK") · Bahasa: #upper(m.at("language", default: "id"))
+    Disiapkan oleh #m.at("prepared_by", default: "RESEARCH — Sectors Hackathon 2026") · Tanggal #m.date · Ticker: #m.ticker · Bahasa: #upper(m.at("language", default: "id"))
   ]
 ])
 
