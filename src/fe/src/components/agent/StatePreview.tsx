@@ -86,7 +86,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
           {items.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-10 px-4 text-center font-mono text-xs">
               <Database className="h-6 w-6 text-neutral-600 mb-2" />
-              <p className="font-semibold text-neutral-400">NO ACTIVE STATE MEMORY</p>
+              <p className="font-semibold text-neutral-400">BELUM ADA MEMORI AKTIF</p>
               <p className="text-[11px] text-neutral-600 mt-1">
                 Kunci data akan muncul saat mesin berjalan atau saat proses dimuat.
               </p>

@@ -1,10 +1,9 @@
-import { memo } from "react"
+import { memo, useState } from "react"
 import {
   CheckCircle2,
   AlertCircle,
   Loader2,
   ChevronRight,
-  Activity,
   Layers,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -77,6 +76,13 @@ function getStageStatus(
   return { status: "idle", finishedCount: finCount, totalCount: primaryKeys.length }
 }
 
+const STATUS_ID: Record<string, string> = {
+  running: "berjalan",
+  finished: "selesai",
+  error: "gagal",
+  idle: "antri",
+}
+
 export const PhaseTimeline = memo(function PhaseTimeline({
   agentStatuses,
   selectedAuthor = "all",
@@ -86,76 +92,90 @@ export const PhaseTimeline = memo(function PhaseTimeline({
   className,
 }: PhaseTimelineProps) {
   let completedStages = 0
+  let firstRunningId: string | null = null
   for (const st of PIPELINE_STAGES) {
     const { status } = getStageStatus(st, agentStatuses, done, running)
     if (status === "finished") completedStages++
+    if (status === "running" && firstRunningId === null) firstRunningId = st.id
   }
 
+  const [expandedId, setExpandedId] = useState<string | null>(firstRunningId)
+
+  const globalStatus = done !== null ? "SELESAI" : running ? "JALAN" : "SIAGA"
+
   return (
-    <div className={cn("w-full rounded-lg border border-neutral-800 bg-neutral-950 p-3.5 space-y-3 font-sans shadow-md", className)}>
-      {/* Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-neutral-800 pb-2.5">
-        <div className="flex items-center gap-2">
-          <div className="flex h-6 w-6 items-center justify-center rounded bg-neutral-900 border border-neutral-800 text-emerald-400">
-            <Layers className="h-3.5 w-3.5" />
+    <div className={cn("w-full rounded-lg border border-neutral-800 bg-neutral-950 p-4 font-sans shadow-md", className)}>
+      {/* Header: title + global status + progress bar */}
+      <div className="flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
+          <div className="flex h-8 w-8 items-center justify-center rounded-md bg-neutral-900 border border-neutral-800 text-emerald-400">
+            <Layers className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100 flex items-center gap-2">
-              <span>ALUR KERJA MESIN</span>
-              <span className="text-[10px] text-neutral-500 font-normal">
-                ({completedStages}/5 TAHAP SELESAI)
-              </span>
+            <h3 className="text-sm font-bold text-neutral-100">
+              Alur kerja mesin
             </h3>
+            <p className="text-[11px] text-neutral-500">
+              {completedStages}/{PIPELINE_STAGES.length} tahap selesai
+            </p>
           </div>
         </div>
-
-        {/* Legend */}
-        <div className="flex flex-wrap items-center gap-3 text-[10px] font-mono text-neutral-400">
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-neutral-700" />
-            <span>ANTRI</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-amber-400 animate-ping" />
-            <span className="text-amber-300 font-bold">JALAN</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span className="text-emerald-300">SELESAI</span>
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="h-2 w-2 rounded-full bg-rose-500" />
-            <span className="text-rose-300">GAGAL</span>
-          </span>
-        </div>
+        <span
+          className={cn(
+            "rounded-full border px-3 py-1 text-[11px] font-bold",
+            globalStatus === "JALAN"
+              ? "border-amber-700 bg-amber-950 text-amber-300"
+              : globalStatus === "SELESAI"
+              ? "border-emerald-700 bg-emerald-950 text-emerald-300"
+              : "border-neutral-700 bg-neutral-900 text-neutral-400"
+          )}
+        >
+          {globalStatus === "JALAN" ? (
+            <span className="flex items-center gap-1.5">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+              JALAN
+            </span>
+          ) : (
+            globalStatus
+          )}
+        </span>
+      </div>
+      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-neutral-800">
+        <div
+          className={cn(
+            "h-full rounded-full transition-all",
+            globalStatus === "JALAN" ? "bg-amber-400" : "bg-emerald-400"
+          )}
+          style={{ width: `${(completedStages / PIPELINE_STAGES.length) * 100}%` }}
+        />
       </div>
 
-      {/* 5 Stages Grid / Horizontal Rail */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-2">
-        {PIPELINE_STAGES.map((stage, idx) => {
-          const { status } = getStageStatus(
+      {/* Stages: compact cards, tap to expand */}
+      <div className="mt-3 grid grid-cols-1 gap-2.5 md:grid-cols-5">
+        {PIPELINE_STAGES.map((stage) => {
+          const { status, finishedCount, totalCount } = getStageStatus(
             stage,
             agentStatuses,
             done,
             running
           )
-          const StageIcon = stage.icon
+          const isExpanded = expandedId === stage.id
 
-          let borderClass = "border-neutral-800 bg-neutral-900/40 text-neutral-400"
-          let statusPill = "bg-neutral-900 border-neutral-700 text-neutral-500"
+          let ringClass = "border-neutral-700 bg-neutral-900 text-neutral-400"
+          let pillClass = "bg-neutral-900 border-neutral-700 text-neutral-400"
           let statusLabel = "ANTRI"
 
           if (status === "running") {
-            borderClass = "border-amber-700/80 bg-amber-950/20 text-neutral-100 ring-1 ring-amber-500/50"
-            statusPill = "bg-amber-950 border-amber-700 text-amber-300 font-bold"
-            statusLabel = "AKTIF"
+            ringClass = "border-amber-400 bg-amber-950 text-amber-200"
+            pillClass = "bg-amber-950 border-amber-700 text-amber-200 font-bold"
+            statusLabel = "JALAN"
           } else if (status === "finished") {
-            borderClass = "border-emerald-800/80 bg-emerald-950/20 text-neutral-200"
-            statusPill = "bg-emerald-950 border-emerald-700 text-emerald-300"
+            ringClass = "border-emerald-600 bg-emerald-950 text-emerald-200"
+            pillClass = "bg-emerald-950 border-emerald-700 text-emerald-200"
             statusLabel = "SELESAI"
           } else if (status === "error") {
-            borderClass = "border-rose-800/80 bg-rose-950/30 text-rose-200"
-            statusPill = "bg-rose-950 border-rose-700 text-rose-300 font-bold"
+            ringClass = "border-rose-500 bg-rose-950 text-rose-200"
+            pillClass = "bg-rose-950 border-rose-700 text-rose-200 font-bold"
             statusLabel = "GAGAL"
           }
 
@@ -163,96 +183,113 @@ export const PhaseTimeline = memo(function PhaseTimeline({
             <div
               key={stage.id}
               className={cn(
-                "flex flex-col justify-between rounded-md border p-2.5 transition-all text-xs font-sans",
-                borderClass
+                "rounded-lg border bg-neutral-900/40 transition-colors",
+                status === "running"
+                  ? "border-amber-700/70"
+                  : status === "finished"
+                  ? "border-emerald-800/60"
+                  : status === "error"
+                  ? "border-rose-800/70"
+                  : "border-neutral-800"
               )}
             >
-              <div>
-                {/* Stage Header */}
-                <div className="flex items-start justify-between gap-1">
-                  <div className="flex items-center gap-1.5 min-w-0">
-                    <div
-                      className={cn(
-                        "flex h-6 w-6 shrink-0 items-center justify-center rounded border text-[11px]",
-                        status === "running"
-                          ? "border-amber-700 bg-amber-950 text-amber-300"
-                          : status === "finished"
-                          ? "border-emerald-700 bg-emerald-950 text-emerald-300"
-                          : status === "error"
-                          ? "border-rose-700 bg-rose-950 text-rose-300"
-                          : "border-neutral-800 bg-neutral-900 text-neutral-500"
-                      )}
-                    >
-                      <StageIcon className="h-3 w-3" />
-                    </div>
-                    <div className="min-w-0">
-                      <div className="text-[9px] font-mono font-medium uppercase tracking-wider text-neutral-500">
-                        TAHAP 0{stage.stageNumber}
-                      </div>
-                      <div className="text-xs font-bold font-mono tracking-tight text-neutral-200 truncate">
-                        {stage.title.toUpperCase()}
-                      </div>
-                    </div>
-                  </div>
-
-                  <span
-                    className={cn(
-                      "rounded border px-1.5 py-0.2 text-[9px] font-mono",
-                      statusPill
-                    )}
-                  >
-                    {statusLabel}
-                  </span>
+              <div
+                role="button"
+                tabIndex={0}
+                onClick={() => setExpandedId(isExpanded ? null : stage.id)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault()
+                    setExpandedId(isExpanded ? null : stage.id)
+                  }
+                }}
+                className="flex cursor-pointer items-center gap-2.5 p-3"
+                title={isExpanded ? "Ketuk untuk ringkas" : "Ketuk untuk lihat mesin di tahap ini"}
+              >
+                <div
+                  className={cn(
+                    "flex h-9 w-9 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold",
+                    ringClass
+                  )}
+                >
+                  {status === "finished" ? (
+                    <CheckCircle2 className="h-4 w-4" />
+                  ) : status === "running" ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : status === "error" ? (
+                    <AlertCircle className="h-4 w-4" />
+                  ) : (
+                    stage.stageNumber
+                  )}
                 </div>
-
-                {/* Subtitle */}
-                <p className="mt-1.5 text-[10px] text-neutral-400 line-clamp-2 leading-tight">
-                  {stage.description}
-                </p>
+                <div className="min-w-0 flex-1">
+                  <div className="truncate text-sm font-bold text-neutral-100">
+                    {stage.title}
+                  </div>
+                  <div className="mt-0.5 text-[11px] text-neutral-500">
+                    {finishedCount}/{totalCount} mesin · {statusLabel}
+                  </div>
+                </div>
+                <ChevronRight
+                  className={cn(
+                    "h-4 w-4 shrink-0 text-neutral-500 transition-transform",
+                    isExpanded && "rotate-90"
+                  )}
+                />
               </div>
 
-              {/* Subagents Chips */}
-              <div className="mt-2.5 pt-2 border-t border-neutral-800/80 flex flex-wrap gap-1">
-                {stage.primaryAgents.map((aKey) => {
-                  const aMeta = getFriendlyAgent(aKey)
-                  const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
-                  const isSelected = selectedAuthor === aKey
+              {isExpanded && (
+                <div className="border-t border-neutral-800 px-3 pb-3 pt-2.5">
+                  <p className="text-xs leading-relaxed text-neutral-400">
+                    {stage.description}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-1.5">
+                    {stage.primaryAgents.map((aKey) => {
+                      const aMeta = getFriendlyAgent(aKey)
+                      const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
+                      const isSelected = selectedAuthor === aKey
 
-                  return (
-                    <button
-                      key={aKey}
-                      type="button"
-                      onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
-                      className={cn(
-                        "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono transition-colors border",
-                        isSelected
-                          ? "border-emerald-400 bg-emerald-950 text-emerald-200 font-bold"
-                          : aStatus === "running"
-                          ? "border-amber-700 bg-amber-950/80 text-amber-200 font-semibold"
-                          : aStatus === "finished"
-                          ? "border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500"
-                          : "border-neutral-800/80 bg-neutral-950 text-neutral-500 hover:border-neutral-700"
-                      )}
-                      title={`${aMeta.title} (${aStatus}) - Click to filter events`}
-                    >
-                      {aStatus === "running" ? (
-                        <Loader2 className="h-2 w-2 animate-spin text-amber-400" />
-                      ) : aStatus === "finished" ? (
-                        <CheckCircle2 className="h-2 w-2 text-emerald-400" />
-                      ) : aStatus === "error" ? (
-                        <AlertCircle className="h-2 w-2 text-rose-400" />
-                      ) : (
-                        <span className="h-1.5 w-1.5 rounded-full bg-neutral-700" />
-                      )}
-                      <span>{aMeta.shortLabel}</span>
-                    </button>
-                  )
-                })}
-              </div>
+                      return (
+                        <button
+                          key={aKey}
+                          type="button"
+                          onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-md px-2 py-1 text-[11px] transition-colors border",
+                            isSelected
+                              ? "border-emerald-400 bg-emerald-950 text-emerald-200 font-bold"
+                              : aStatus === "running"
+                              ? "border-amber-700 bg-amber-950/80 text-amber-200 font-semibold"
+                              : aStatus === "finished"
+                              ? "border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500"
+                              : "border-neutral-800 bg-neutral-950 text-neutral-500 hover:border-neutral-600"
+                          )}
+                          title={`${aMeta.title} (${STATUS_ID[aStatus] ?? aStatus}) — klik untuk saring catatan`}
+                        >
+                          {aStatus === "running" ? (
+                            <Loader2 className="h-2.5 w-2.5 animate-spin text-amber-400" />
+                          ) : aStatus === "finished" ? (
+                            <CheckCircle2 className="h-2.5 w-2.5 text-emerald-400" />
+                          ) : aStatus === "error" ? (
+                            <AlertCircle className="h-2.5 w-2.5 text-rose-400" />
+                          ) : (
+                            <span className="h-1.5 w-1.5 rounded-full bg-neutral-600" />
+                          )}
+                          <span>{aMeta.shortLabel}</span>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </div>
+              )}
             </div>
           )
         })}
       </div>
+
+      <p className="mt-3 text-[11px] text-neutral-600">
+        Ketuk tiap tahap untuk melihat mesin di dalamnya · ketuk nama mesin untuk menyaring catatan langkah.
+      </p>
     </div>
   )
 })
