@@ -35,7 +35,7 @@ if [[ ${#TARGETS[@]} -eq 0 ]]; then
   CHANGED=$(git status --porcelain 2>/dev/null | awk '{print $2}' | grep -E '\.py$' || true)
   for f in $CHANGED; do
     case "$f" in
-      scripts/report_charts.py|scripts/report_fixtures.py|agents/valuation/gates.py|agents/valuation/assumptions.py|server/routers/*)
+      scripts/report_charts.py|agents/valuation/gates.py|agents/valuation/assumptions.py|server/routers/*)
         # Skip forbidden / lane-B files
         ;;
       *)

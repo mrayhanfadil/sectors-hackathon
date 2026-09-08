@@ -8,8 +8,7 @@
 #show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "JCI")
-#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/jci_report_data.json"
-#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")

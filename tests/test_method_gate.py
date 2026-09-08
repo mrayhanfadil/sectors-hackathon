@@ -4,8 +4,8 @@ Matrix covers: healthy payer, zero-payout (DDM skipped), negative-EBITDA
 (EV/EBITDA skipped, EV/Sales gated), bank (DDM anchor, no DCF), mining
 (NAV + DCF comparison), NCI>40% (SOTP), NCI 15-40% (mandatory SOTP
 cross-check), thin-data (shortened DCF), critic/writer loud-fail, and the
-Gate 5 regression (synthetic 2079%-upside DCF -> Review Required; real ACES
-+69.42% from scripts/fixtures/aces_report_data.json stays BUY-eligible).
+Gate 5 regression (synthetic 2079%-upside DCF -> Review Required; 69.42%
+upside stays BUY-eligible). Pure gate math — no fixture dependency.
 """
 
 from __future__ import annotations
@@ -185,7 +185,8 @@ def test_gate5_fabricated_2079_upside_forces_review_required():
 
 
 def test_gate5_real_aces_69_upside_stays_buy_eligible():
-    # scripts/fixtures/aces_report_data.json: upside_pct 69.42, rating BUY.
+    # Gate 5 calibration: upside_pct 69.42 stays BUY-eligible (pure gate math,
+    # no fixture dependency since the Sep 2026 Sectors-only purge).
     v = evaluate(**_aces_params(69.42))
     assert v.rating_override is None
 

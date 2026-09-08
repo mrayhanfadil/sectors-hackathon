@@ -8,8 +8,7 @@
 #show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "MTEL")
-#let default-data-path = "/home/fadil/projects/sectors-hackathon/scripts/fixtures/mtel_report_data.json"
-#let data-path = sys.inputs.at("data_path", default: default-data-path)
+#let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")
@@ -813,15 +812,17 @@
         #text(size: 6.8pt)[
           - *Institusi:* #m.at("prepared_by", default: "RESEARCH — Sectors Hackathon 2026")
           - *Tanggal Publikasi:* #m.date · Bahasa: Indonesia (ID)
-          - *Analis Utama:* #m.analyst.name (#m.analyst.role)
-          - *Kontak Surel:* #m.analyst.email
+          #if m.at("analyst", default: none) != none [
+            - *Analis Utama:* #m.analyst.name (#m.analyst.role)
+            - *Kontak Surel:* #m.analyst.email
+          ]
         ]
       ],
       [
         #text(size: 7pt, weight: "bold", fill: PALETTE.muted)[KANTOR PUSAT & PROVENANCE]
         #v(2pt)
         #text(size: 6.8pt)[
-          - *Kantor Pusat:* #m.head_office
+          - *Kantor Pusat:* #m.at("head_office", default: "—")
           - *Engine Valuasi:* scripts/dcf_engine.py & scripts/blended_engine.py
           - *Audit Port:* abidamassi/dcf-valuation-tool (WACC #data.cDcf.wacc.wacc_raw%)
           - *Portal Riset:* www.skt.id/research

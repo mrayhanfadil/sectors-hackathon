@@ -5,7 +5,8 @@ Exposes:
   GET /api/report/{ticker}/html -> debug HTML (text/html)
 
 Pipeline:
-  report_fixtures fixture (if known ticker) OR build payload via _assumptions_for + engines
+  build payload via _assumptions_for + engines (Sectors-only, Sep 2026:
+  fixtures purged) -> select_template()
   -> select_template() -> Jinja2 HTML (templates/*.html via helpers) -> PDF (Playwright else weasyprint else minimal fallback)
 """
 from __future__ import annotations
@@ -24,7 +25,7 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = REPO_ROOT / "scripts"
 TEMPLATES_DIR = REPO_ROOT / "templates"
 
-# Make scripts importable for select_template / report_fixtures
+# Make scripts importable for select_template
 if str(SCRIPTS_DIR) not in sys.path:
     sys.path.insert(0, str(SCRIPTS_DIR))
 
@@ -53,44 +54,6 @@ def _pct(value, dec: int = 1) -> str:
     except Exception:
         return str(value)
 
-def _load_fixture(ticker: str) -> Optional[dict]:
-    """Try report_fixtures ALL for known archetypes (RATU/CDIA/MTEL)."""
-    try:
-        from report_fixtures import ALL  # type: ignore
-
-        fn = ALL.get(ticker.upper()) or ALL.get(ticker.upper().lower()) or ALL.get(f"{ticker.upper()}_single") or ALL.get(f"{ticker.upper()}_sotp") or ALL.get(f"{ticker.upper()}_infra")
-        # ALL is keyed as lower-case? check report_fixtures.py
-        # fallback direct names
-        mapping = {
-            "RATU": "ratu_single",
-            "CDIA": "cdia_sotp",
-            "MTEL": "mtel_infra",
-        }
-        key = mapping.get(ticker.upper())
-        if key and key in ALL:
-            fn = ALL[key]
-        if fn:
-            return fn()
-    except Exception:
-        pass
-    # also try direct import of functions
-    try:
-        import report_fixtures as rf  # type: ignore
-
-        t = ticker.upper()
-        if t == "RATU" and hasattr(rf, "ratu_single"):
-            return rf.ratu_single()
-        if t == "CDIA" and hasattr(rf, "cdia_sotp"):
-            return rf.cdia_sotp()
-        if t == "MTEL" and hasattr(rf, "mtel_infra"):
-            return rf.mtel_infra()
-        if t == "JPM" and hasattr(rf, "jpm_strategy"):
-            return rf.jpm_strategy()
-    except Exception:
-        pass
-    return None
-
-
 def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     """Build minimal DATA_CONTRACT payload via assumptions+engines when no fixture."""
     # import helpers from endpoints to reuse
@@ -103,14 +66,14 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     from server.engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
 
     t = ticker.upper().strip()
-    # Loud failure: no silent generic numbers. A ticker without a fixture or
+    # Loud failure: no silent generic numbers. A ticker without a verified
     # assumptions file must 422, mirroring endpoints.py:583-592.
     _repo = Path(__file__).resolve().parents[2]
-    _has_fixture = (_repo / "scripts" / "fixtures" / f"{t}_report_data.json").exists()
     _has_assump = (_repo / "data" / "assumptions" / f"{t}.json").exists()
-    if not _has_fixture and not _has_assump:
+    if not _has_assump:
         raise HTTPException(
-            422, f"no fixture or assumptions for {t} — refusing generic fallback")
+            422, f"no verified assumptions for {t} — refusing generic fallback "
+            f"(add data/assumptions/{t}.json or set SECTORS_API_KEY)")
     # reuse _assumptions_for logic (duplicate to avoid circular import)
     import json, os
 

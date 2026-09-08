@@ -127,37 +127,10 @@ def render_pdf(report_data: dict, out_pdf: Path, html_out: Path | None = None) -
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="Render report JSON to institutional PDF")
-    ap.add_argument("report_data", nargs="?", help="path to report_data.json")
+    ap.add_argument("report_data", help="path to report_data.json (explicit Sectors-built payload; no fixture defaults)")
     ap.add_argument("--out", help="output pdf path")
     ap.add_argument("--html-out", help="also dump intermediate html")
-    ap.add_argument("--all", action="store_true", help="render all fixtures (smoke test)")
     args = ap.parse_args()
-
-    if args.all:
-        from report_fixtures import ALL
-
-        failures = []
-        for name, fn in ALL.items():
-            data = fn()
-            errs = validate(data)
-            if errs:
-                failures.append((name, errs))
-                print(f"[FAIL validation] {name}: {errs}")
-                continue
-            out = HERE.parent / "output" / f"{name.lower()}_report.pdf"
-            try:
-                tpl = render_pdf(data, out, out.with_suffix(".html"))
-                print(f"[OK] {name} -> {out} (template={tpl})")
-            except Exception as exc:  # noqa: BLE001
-                failures.append((name, [str(exc)]))
-                print(f"[FAIL render] {name}: {exc}")
-        if failures:
-            raise SystemExit(1)
-        return
-
-    if not args.report_data:
-        ap.print_help()
-        raise SystemExit(2)
 
     report_data = json.loads(Path(args.report_data).read_text(encoding="utf-8"))
     errs = validate(report_data)

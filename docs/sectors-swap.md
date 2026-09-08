@@ -130,9 +130,12 @@ AGY lanes caught holes Hermes lanes missed. Removed, verified:
 Residual NEEDS-KEY (cannot fabricate, cannot do keyless): assumptions re-seed
 from sectors.company_report, harvest --execute (97), live probe keyed run,
 Sectors-native outlook + screener wiring, gate_inputs from real fundamentals.
-Orphaned-but-kept: seed_synthetic.py/seed_assumptions.py/report_fixtures.py +
-scripts/fixtures/*.json (demo generators, zero prod importers — delete only
-with explicit approval since render tests consume them explicitly).
+Orphaned-but-kept: seed_synthetic.py/seed_assumptions.py (demo generators,
+zero prod importers). PURGED Sep 2026 with explicit approval:
+scripts/report_fixtures.py + scripts/fixtures/*.json deleted,
+pdf._load_fixture removed, typst default-data-path fallbacks now require
+explicit data_path, render scripts require explicit report_data.json.
+Render tests use inline TEST scaffolding or skip honestly keyless.
 
 ## H3 template-mirror + docs consistency pins (2026-09-08, tests/test_template_docs_consistency.py — 9 passed)
 - Mirror server/report/typst -> templates/typst/archetypes holds ONLY for

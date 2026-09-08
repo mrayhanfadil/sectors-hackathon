@@ -1,12 +1,13 @@
 """Production purity tests (AGY-2): verify complete removal of fabricated fallbacks.
 
-Context (E-batch):
+Context (purge, Sep 2026):
 - data/sectors.db git-removed (seed=42 database removed)
 - yfinance dependency removed from server/requirements.txt and zero imports under server/
-- zero prod importers of scripts/report_fixtures.py under server/ and src/fe/
+- scripts/report_fixtures.py + scripts/fixtures/*.json DELETED; zero references under server/ and src/fe/
+- pdf._load_fixture helper REMOVED (was dead canary, now gone)
 - agents/collector.py synthetic path neutered to raise RuntimeError(sectors_missing_key)
-- pdf-route + typst-renderer prod loaders serve no fixture payloads without explicit load_demo_fixture()
-- no 'Sectors (' provenance strings on fixture-shaped payloads (de-baked to honest labels)
+- pdf-route + typst-renderer prod loaders 422 keyless without data/assumptions files
+- no 'Sectors (' provenance strings on honest prod skeletons
 """
 
 from __future__ import annotations
@@ -149,17 +150,16 @@ def test_zero_prod_importers_of_report_fixtures_in_server():
                     assert "report_fixtures" not in stmt.module, f"Top-level import from report_fixtures in {rel}"
 
 
-def test_dead_fixture_helper_in_pdf_has_zero_callers():
-    """Assert pdf._load_fixture is dead code with zero callers in server/."""
+def test_load_fixture_helper_removed_from_pdf():
+    """Assert pdf._load_fixture is fully removed from server/ (purge, Sep 2026)."""
     server_dir = REPO_ROOT / "server"
-    calls: list[str] = []
+    hits: list[str] = []
     for py_path in server_dir.rglob("*.py"):
         lines = py_path.read_text(encoding="utf-8").splitlines()
         for i, raw in enumerate(lines, 1):
-            stripped = raw.strip()
-            if "_load_fixture" in stripped and not stripped.startswith("def _load_fixture"):
-                calls.append(f"{py_path.relative_to(REPO_ROOT)}:{i}: {stripped}")
-    assert not calls, f"_load_fixture is called in prod path: {calls}"
+            if "_load_fixture" in raw:
+                hits.append(f"{py_path.relative_to(REPO_ROOT)}:{i}: {raw.strip()}")
+    assert not hits, f"_load_fixture resurrected in server/: {hits}"
 
 
 # ---------------------------------------------------------------------------
@@ -221,10 +221,8 @@ def test_typst_renderer_prod_loader_no_fixture_interception():
             assert exc.status_code == 422
             assert "refusing generic fallback" in str(exc.detail)
 
-    # 3. Contrast with explicit test loader load_demo_fixture which DOES load fixture data
-    fixture_ratu = load_demo_fixture("RATU")
-    assert fixture_ratu is not None, "load_demo_fixture('RATU') must load the demo fixture"
-    assert len(fixture_ratu.get("financial_highlights", {}).get("rows", [])) > 0, "Fixture must have non-empty rows"
+    # 3. Retired demo stub serves nothing (fixtures purged Sep 2026)
+    assert load_demo_fixture("RATU") is None, "demo stub must stay retired"
 
 
 def test_pdf_route_prod_loader_no_fixture_interception(client):
@@ -264,41 +262,26 @@ def _collect_all_strings(obj: Any) -> list[str]:
     return strings
 
 
-def test_negative_control_builder_contains_fixture_provenance():
-    """Negative control: scripts/report_fixtures.py contains 'Sectors (', proving detection is non-vacuous."""
-    builder_src = (REPO_ROOT / "scripts" / "report_fixtures.py").read_text(encoding="utf-8")
-    assert "Sectors (" in builder_src, "scripts/report_fixtures.py must contain 'Sectors (' as detector baseline"
+def test_negative_control_builder_module_absent():
+    """Positive control: scripts/report_fixtures.py is deleted (purge, Sep 2026)."""
+    assert not (REPO_ROOT / "scripts" / "report_fixtures.py").exists(), (
+        "scripts/report_fixtures.py resurrected — static builders stay purged"
+    )
 
 
-def test_no_sectors_open_paren_provenance_in_json_fixtures():
-    """Assert all scripts/fixtures/*.json files contain zero 'Sectors (' strings."""
+def test_no_fixture_json_files_on_disk():
+    """Assert scripts/fixtures/*.json are all deleted (purge, Sep 2026)."""
     fixtures_dir = REPO_ROOT / "scripts" / "fixtures"
-    fixture_files = list(fixtures_dir.glob("*.json"))
-    assert len(fixture_files) > 0, "Expected fixture JSON files under scripts/fixtures/"
-
-    violations: list[tuple[str, str]] = []
-    for fpath in fixture_files:
-        data = json.loads(fpath.read_text(encoding="utf-8"))
-        for s in _collect_all_strings(data):
-            if "Sectors (" in s:
-                violations.append((fpath.name, s))
-
-    assert not violations, f"Found 'Sectors (' provenance strings in fixture files: {violations}"
+    fixture_files = list(fixtures_dir.glob("*.json")) if fixtures_dir.is_dir() else []
+    assert not fixture_files, f"fixture JSON resurrected: {[f.name for f in fixture_files]}"
 
 
-def test_no_sectors_open_paren_provenance_in_loaded_demo_fixtures():
-    """Assert all payloads returned by load_demo_fixture() contain zero 'Sectors (' strings."""
+def test_demo_stub_serves_nothing():
+    """Assert the retired load_demo_fixture() stub returns None for every ticker."""
     benchmark_tickers = ["RATU", "CDIA", "MTEL", "POWR", "JCI", "ACES", "BBRI", "PGEO", "SSIA", "SSMS", "TPIA"]
-    violations: list[tuple[str, str]] = []
 
     for ticker in benchmark_tickers:
-        payload = load_demo_fixture(ticker)
-        if payload is not None:
-            for s in _collect_all_strings(payload):
-                if "Sectors (" in s:
-                    violations.append((ticker, s))
-
-    assert not violations, f"Found 'Sectors (' provenance strings in loaded demo fixtures: {violations}"
+        assert load_demo_fixture(ticker) is None, f"demo stub must stay retired for {ticker}"
 
 
 def test_no_sectors_open_paren_provenance_in_honest_skeletons():

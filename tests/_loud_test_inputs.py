@@ -57,45 +57,12 @@ def inject_gate_inputs(data: dict[str, Any]) -> dict[str, Any]:
 
 
 def load_demo_fixture(ticker: str) -> dict[str, Any] | None:
-    """Load a DECLARED demo payload for render-path tests (never prod).
+    """Retired Sep 2026 (Sectors-only purge): static demo fixtures deleted.
 
-    Order: scripts/fixtures/<t>_report_data.json file, then the
-    scripts/report_fixtures.py builder of the same name. Returns None when
-    neither exists. Test-only: prod loaders must never call this.
+    Always returns None. Kept as a stub so older imports fail soft during
+    the migration window — new code must not call this. Render-path tests
+    use explicit inline scaffolding; prod loaders 422 without Sectors data.
     """
-    from pathlib import Path as _Path
-    import json as _json
-
-    t = (ticker or "").upper().strip()
-    _repo = _Path(__file__).resolve().parents[1]
-    _fp = _repo / "scripts" / "fixtures" / f"{t.lower()}_report_data.json"
-    if _fp.exists():
-        try:
-            data = _json.loads(_fp.read_text(encoding="utf-8"))
-            return inject_gate_inputs(data)
-        except Exception:
-            pass
-    try:
-        import sys as _sys
-
-        if str(_repo / "scripts") not in _sys.path:
-            _sys.path.insert(0, str(_repo / "scripts"))
-        import report_fixtures as _rf  # type: ignore
-
-        _names = {
-            "RATU": "ratu_single",
-            "CDIA": "cdia_sotp",
-            "MTEL": "mtel_infra",
-            "POWR": "powr_infra",
-            "JCI": "jpm_strategy",
-            "ACES": None,
-            "TEST": None,
-        }
-        _fn = getattr(_rf, str(_names.get(t) or ""), None)
-        if callable(_fn):
-            return inject_gate_inputs(_fn())
-    except Exception:
-        pass
     return None
 
 
@@ -112,10 +79,10 @@ def load_demo_fixture(ticker: str) -> dict[str, Any] | None:
 #: scripts/report_fixtures.py historically used "Sectors (IDX disclosure)".
 FIXTURE_PROVENANCE_PREFIX = "Sectors ("
 
-#: Tickers with declared demo payloads (scripts/fixtures/*.json or a
-#: scripts/report_fixtures.py builder). Prod loaders must 422 or return
-#: honest-empty data for these unless live inputs exist — never the demo.
-KNOWN_DEMO_TICKERS: tuple[str, ...] = ("RATU", "CDIA", "MTEL", "POWR", "JCI", "ACES")
+#: Tickers that historically had declared demo payloads (purged Sep 2026).
+#: Prod loaders must 422 or return honest-empty data for these unless live
+#: inputs exist. Kept (empty) so isolation tests iterate a stable symbol.
+KNOWN_DEMO_TICKERS: tuple[str, ...] = ()
 
 
 def payload_text(payload: dict[str, Any]) -> str:
