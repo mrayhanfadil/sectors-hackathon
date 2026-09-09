@@ -115,16 +115,16 @@ def test_endpoint_classification_tiers():
     from server.sectors import _ttl_for
 
     # TIER 1 — intra-day (6h)
-    assert _ttl_for("/transaction/daily/BBCA/") == 6 * 3600
-    assert _ttl_for("/brokers/foreign-flow/BBCA/") == 6 * 3600
+    assert _ttl_for("/daily/BBCA/") == 6 * 3600
+    assert _ttl_for("/foreign-flow/BBCA/") == 6 * 3600
     # TIER 2 — fundamentals/news (12h)
-    assert _ttl_for("/company/quarterly-financials/BBCA/") == 12 * 3600
-    assert _ttl_for("/news/news/") == 12 * 3600
+    assert _ttl_for("/financials/quarterly/BBCA/") == 12 * 3600
+    assert _ttl_for("/news/") == 12 * 3600
     # TIER 3 — slow-moving (24h)
     assert _ttl_for("/subsector/report/banks/") == 24 * 3600
     assert _ttl_for("/companies/") == 24 * 3600
     # Universe feed (4h)
-    assert _ttl_for("/transaction/close/2026-09-08/") == 4 * 3600
+    assert _ttl_for("/close/") == 4 * 3600
     # Catch-all (default)
     assert _ttl_for("/completely/new/path/") == 6 * 3600
 

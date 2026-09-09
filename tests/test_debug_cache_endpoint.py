@@ -20,6 +20,24 @@ def client() -> TestClient:
     return TestClient(app)
 
 
+@pytest.fixture
+def isolated_client(tmp_path, monkeypatch) -> TestClient:
+    """Fresh app wired to a tmp SQLite DB.
+
+    The global app reads the PROD cache file, which legitimately holds
+    rows (each one a billed credit) — emptiness assertions must never run
+    against it.
+    """
+    from server.storage import SectorsCache
+    import server.main as _M
+
+    iso_path = str(tmp_path / "dbg-iso.db")
+    monkeypatch.setattr(
+        _M, "SectorsCache", lambda *a, **k: SectorsCache(db_path=iso_path)
+    )
+    return TestClient(_M.create_app())
+
+
 def test_debug_cache_endpoint_returns_stats_shape(client: TestClient) -> None:
     """Keyless (no SECTORS_API_KEY in test env) — stats must still return."""
     r = client.get("/api/debug/cache")
@@ -33,16 +51,20 @@ def test_debug_cache_endpoint_returns_stats_shape(client: TestClient) -> None:
     assert isinstance(body["by_endpoint"], list), "by_endpoint must be a list"
 
 
-def test_debug_cache_empty_state_initial_values(client: TestClient) -> None:
+def test_debug_cache_empty_state_initial_values(
+    isolated_client: TestClient,
+) -> None:
     """First call from a fresh DB must see 0 entries (no Sectors data fetched)."""
-    body = client.get("/api/debug/cache").json()
+    body = isolated_client.get("/api/debug/cache").json()
     assert body["n_entries"] == 0, "fresh DB must have 0 entries"
     assert body["n_expired"] == 0, "fresh DB must have 0 expired"
 
 
-def test_debug_cache_bust_empty_returns_zero(client: TestClient) -> None:
+def test_debug_cache_bust_empty_returns_zero(
+    isolated_client: TestClient,
+) -> None:
     """Bust against empty cache must return deleted=0, not 500."""
-    r = client.post("/api/debug/cache/bust")
+    r = isolated_client.post("/api/debug/cache/bust")
     assert r.status_code == 200, f"got {r.status_code}: {r.text[:400]}"
     body = r.json()
     assert body["deleted"] == 0

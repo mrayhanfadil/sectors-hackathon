@@ -65,7 +65,7 @@ def _honest_empty(base: str, extra: dict | None = None) -> dict:
 
 def get_sectors_prices(ticker: str, days: int = 90, force_refresh: bool = False) -> dict:
     """
-    Daily bars via Sectors transaction/daily (range max 90 days per call).
+    Daily bars via Sectors daily (range max 90 days per call).
 
     Returns dict:
       { ticker, source: 'sectors'|'sectors_missing_key', rows: [...], fetched_at, cache_hit, error? }
