@@ -1,10 +1,33 @@
 """Keyless-runnable tests for server/sectors.py — no API key, no network."""
+import pytest
+
 from server import sectors
 from server.sectors import (
     SectorsError,
     SectorsNotConfigured,
     bare_ticker,
 )
+
+
+@pytest.fixture(autouse=True)
+def _keyless_isolated_cache(tmp_path, monkeypatch):
+    """Pin _get() to a tmp SQLite DB with an empty key.
+
+    Warm prod cache rows return without a key by design (hit saves a
+    credit), which would mask the loud-failure assertions below. A key
+    inherited from the shell would do the same — force both away.
+    """
+    import server.sectors as _S
+    from server.config import get_settings
+    from server.storage import SectorsCache
+
+    monkeypatch.setenv("SECTORS_API_KEY", "")
+    get_settings.cache_clear()
+    iso = SectorsCache(db_path=str(tmp_path / "iso.db"))
+    monkeypatch.setattr(_S, "_cache", iso, raising=False)
+    yield
+    iso.close()
+    get_settings.cache_clear()
 
 
 def test_bare_ticker():

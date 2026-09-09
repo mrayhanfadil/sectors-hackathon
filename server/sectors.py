@@ -31,28 +31,28 @@ log = logging.getLogger(__name__)
 
 _TTL_BY_PREFIX: list[tuple[str, int]] = [
     # TIER 1 — intra-day moves (6h)
-    ("/transaction/daily/", 6 * 3600),
-    ("/transaction/index-daily/", 6 * 3600),
-    ("/transaction/idx-total/", 6 * 3600),
-    ("/brokers/broker-summary/top/", 6 * 3600),
-    ("/brokers/foreign-flow/", 6 * 3600),
+    ("/daily/", 6 * 3600),
+    ("/index-daily/", 6 * 3600),
+    ("/idx-total/", 6 * 3600),
+    ("/broker-summary/", 6 * 3600),
+    ("/foreign-flow/", 6 * 3600),
     # TIER 2 — fundamentals/filings/news (12h)
-    ("/company/quarterly-financials/", 12 * 3600),
-    ("/company/quarterly-financial-dates/", 12 * 3600),
-    ("/company/segments/", 12 * 3600),
+    ("/financials/quarterly/", 12 * 3600),
+    ("/company/get_quarterly_financial_dates/", 12 * 3600),
+    ("/company/get-segments/", 12 * 3600),
     ("/company/shareholders-composition/", 12 * 3600),
     ("/company/corporate-actions/", 12 * 3600),
     ("/company/report/", 12 * 3600),
-    ("/news/news/", 12 * 3600),
-    ("/news/filings/", 12 * 3600),
-    ("/news/suspensions/", 12 * 3600),
+    ("/news/", 12 * 3600),
+    ("/filings/", 12 * 3600),
+    ("/suspensions/", 12 * 3600),
     # TIER 3 — slow-moving (24h)
     ("/subsector/report/", 24 * 3600),
     ("/companies/", 24 * 3600),
-    ("/ipo/listing-performance/", 24 * 3600),
+    ("/listing-performance/", 24 * 3600),
     ("/mining/", 24 * 3600),
-    # TIER 0 — transaction/close is the cheap universe feed (4h — covers EOD moves)
-    ("/transaction/close/", 4 * 3600),
+    # TIER 0 — close is the cheap universe feed (4h — covers EOD moves)
+    ("/close/", 4 * 3600),
 ]
 _DEFAULT_TTL = 6 * 3600  # catch-all for any unlisted path
 
@@ -137,6 +137,12 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
         # Errors are NOT cached — keep them transient so retries can succeed.
         raise SectorsError(r.status_code, r.text)
     body = r.json()
+    if isinstance(body, list):
+        # Normalize bare-list feeds (daily, broker top, close) to dict so
+        # every caller can use .get("data"). Without this, list-shaped
+        # payloads crash dict-assuming callers (agents/collector.py,
+        # server/routers/endpoints.py) the moment paths actually go live.
+        body = {"data": body}
     cache.set(path, params, body, _ttl_for(path))
     log.debug("sectors cache MISS %s (ttl=%ds)", path, _ttl_for(path))
     return body
@@ -146,18 +152,18 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
 
 def daily(symbol: str, start: str, end: str) -> Any:
     """Replaces yfinance OHLCV. Range max 90 days (API limit)."""
-    return _get(f"/transaction/daily/{bare_ticker(symbol)}/",
+    return _get(f"/daily/{bare_ticker(symbol)}/",
                 {"start": start, "end": end})
 
 
 def universe_close(date: str) -> Any:
     """Replaces IDX Postgres stockdata feed — every ticker, one paginated call."""
-    return _get(f"/transaction/close/{date}/")
+    return _get("/close/", {"date": date})
 
 
 def quarterly(symbol: str, n_quarters: int = 8) -> Any:
     """Replaces yfinance statements engine (+ bank extras free)."""
-    return _get(f"/company/quarterly-financials/{bare_ticker(symbol)}/",
+    return _get(f"/financials/quarterly/{bare_ticker(symbol)}/",
                 {"n_quarters": n_quarters})
 
 
@@ -178,17 +184,17 @@ def news(symbols: str, start: str = "", end: str = "") -> Any:
         p["start"] = start
     if end:
         p["end"] = end
-    return _get("/news/news/", p)
+    return _get("/news/", p)
 
 
 def filings(symbol: str) -> Any:
     """Replaces filings scraper (insider buy/sell + holder_type)."""
-    return _get("/news/filings/", {"symbol": bare_ticker(symbol)})
+    return _get("/filings/", {"symbol": bare_ticker(symbol)})
 
 
 def foreign_flow(symbol: str, start: str, end: str) -> Any:
     """Net foreign-broker inflow — new signal we never had (max 90 days)."""
-    return _get(f"/brokers/foreign-flow/{bare_ticker(symbol)}/",
+    return _get(f"/foreign-flow/{bare_ticker(symbol)}/",
                 {"start": start, "end": end})
 
 
@@ -228,7 +234,7 @@ def management(symbol: str) -> Any:
 
 def broker_top(symbol: str, start: str, end: str, n_brokers: int = 20) -> Any:
     """Top accumulators/distributors for one stock — Asing-flow radar."""
-    return _get(f"/brokers/broker-summary/top/{bare_ticker(symbol)}/",
+    return _get(f"/broker-summary/{bare_ticker(symbol)}/top/",
                 {"start": start, "end": end, "n_brokers": n_brokers})
 
 
@@ -241,7 +247,7 @@ def suspensions(symbol: str = "", start: str = "", end: str = "") -> Any:
         p["start"] = start
     if end:
         p["end"] = end
-    return _get("/news/suspensions/", p)
+    return _get("/suspensions/", p)
 
 
 def subsector_report(sub_sector: str, sections: str) -> Any:
@@ -252,7 +258,7 @@ def subsector_report(sub_sector: str, sections: str) -> Any:
 
 def listing_performance(symbol: str) -> Any:
     """7/30/90/365d price change since listing — IPO-name context (CDIA)."""
-    return _get(f"/ipo/listing-performance/{bare_ticker(symbol)}/")
+    return _get(f"/listing-performance/{bare_ticker(symbol)}/")
 
 
 def segments(symbol: str, financial_year: str = "") -> Any:
@@ -260,7 +266,8 @@ def segments(symbol: str, financial_year: str = "") -> Any:
     from datetime import date as _d
 
     fy = financial_year or str(_d.today().year - 1)
-    return _get(f"/company/segments/{bare_ticker(symbol)}/{fy}/")
+    return _get(f"/company/get-segments/{bare_ticker(symbol)}/",
+                {"financial_year": fy})
 
 
 def shareholders_composition(symbol: str, year: str = "") -> Any:
@@ -268,12 +275,13 @@ def shareholders_composition(symbol: str, year: str = "") -> Any:
     from datetime import date as _d
 
     y = year or str(_d.today().year)
-    return _get(f"/company/shareholders-composition/{bare_ticker(symbol)}/{y}/")
+    return _get(f"/company/shareholders-composition/{bare_ticker(symbol)}/",
+                {"year": y})
 
 
 def quarterly_dates(symbol: str) -> Any:
     """Available quarterly report dates — call BEFORE quarterly to avoid billed-empty."""
-    return _get(f"/company/quarterly-financial-dates/{bare_ticker(symbol)}/")
+    return _get(f"/company/get_quarterly_financial_dates/{bare_ticker(symbol)}/")
 
 
 # --- Tier 3: breadth, cheap ---
@@ -290,13 +298,13 @@ def screener(where: str = "", order_by: str = "", limit: int = 50) -> Any:
 
 def index_daily(index_code: str, start: str, end: str) -> Any:
     """Index daily close — honest IHSG benchmark for vs-JCI charts."""
-    return _get(f"/transaction/index-daily/{index_code.strip().upper()}/",
+    return _get(f"/index-daily/{index_code.strip().upper()}/",
                 {"start": start, "end": end})
 
 
 def idx_market_cap(start: str, end: str) -> Any:
     """Total IDX market cap history (max 90 days)."""
-    return _get("/transaction/idx-total/", {"start": start, "end": end})
+    return _get("/idx-total/", {"start": start, "end": end})
 
 
 def mining_company_financials(slug: str, year: str = "") -> Any:
@@ -304,4 +312,4 @@ def mining_company_financials(slug: str, year: str = "") -> Any:
     p: dict[str, Any] = {}
     if year:
         p["year"] = year
-    return _get(f"/mining/companies/{slug.strip().lower()}/financials/", p)
+    return _get(f"/mining/companies/financials/{slug.strip().lower()}/", p)
