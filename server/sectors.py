@@ -48,6 +48,7 @@ _TTL_BY_PREFIX: list[tuple[str, int]] = [
     ("/suspensions/", 12 * 3600),
     # TIER 3 — slow-moving (24h)
     ("/subsector/report/", 24 * 3600),
+    ("/subsectors/", 24 * 3600),
     ("/companies/", 24 * 3600),
     ("/listing-performance/", 24 * 3600),
     ("/mining/", 24 * 3600),
@@ -248,6 +249,20 @@ def suspensions(symbol: str = "", start: str = "", end: str = "") -> Any:
     if end:
         p["end"] = end
     return _get("/suspensions/", p)
+
+
+def subsectors() -> Any:
+    """All sector/subsector slug pairs — resolve a company's sub_sector slug
+    before calling subsector_report (avoids billed-empty on bad slugs)."""
+    return _get("/subsectors/", None)
+
+
+def mining_companies(keyword: str = "", has_financials: bool = True) -> Any:
+    """Mining company list — resolve a slug (e.g. AMMN) before financials."""
+    p: dict[str, Any] = {"has_financials": has_financials}
+    if keyword:
+        p["keyword"] = keyword
+    return _get("/mining/companies/", p)
 
 
 def subsector_report(sub_sector: str, sections: str) -> Any:
