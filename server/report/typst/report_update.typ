@@ -45,7 +45,7 @@
 }
 #let h-main(t) = text(size: 10.5pt, weight: "bold", fill: NAVY_D)[#t]
 #let h-sec(t) = text(size: 9pt, weight: "bold", fill: NAVY)[#t]
-#let src(t) = text(size: 6pt, style: "italic", fill: rgb("#667085"))[Sumber: #t]
+#let src(t) = text(size: 6pt, style: "italic", fill: rgb("#667085"))[Source: #SOURCE_LINE]
 // compact zebra key-value table (sidebar market snapshot)
 #let zebra(rows) = {
   set text(font: SANS, size: 6.8pt)

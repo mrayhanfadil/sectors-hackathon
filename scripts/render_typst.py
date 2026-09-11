@@ -15,6 +15,10 @@ TEMPLATE_FILES = {
     "sotp": "report_sotp.typ",
     "infra": "report_infra.typ",
     "strategy": "report_strategy.typ",
+    # Without this entry a "update" fixture silently fell through the
+    # .get(template_name, "report_single.typ") default and rendered the single
+    # archetype — the Company Update template was never reachable from the CLI.
+    "update": "report_update.typ",
 }
 sys.path.insert(0, str(HERE))
 

@@ -89,7 +89,7 @@
         ]
 
         #v(5pt)
-        #exhibit-header("Exhibit 1", "Bauran Pendapatan 4 Pilar (1H26)", "Laporan Segmentasi CDIA (IDX)")
+        #exhibit-header("Bauran Pendapatan 4 Pilar (1H26)", "Laporan Segmentasi CDIA (IDX)")
         #v(1pt)
         #block(width: 100%)[
           #grid(
@@ -122,7 +122,7 @@
         )
 
         #v(5pt)
-        #exhibit-header("Exhibit 2", "Kinerja Saham vs IHSG (YTD 2026)", "Sectors (CDIA vs IHSG)")
+        #exhibit-header("Kinerja Saham vs IHSG (YTD 2026)", "Sectors (CDIA vs IHSG)")
         #v(1pt)
         #fin-table(
           ("Periode", "CDIA Return", "IHSG", "Alpha Relatif"),
@@ -207,7 +207,7 @@
     ]
 
     #v(4pt)
-    #exhibit-header("Exhibit 3", "Kinerja & Bauran Pendapatan Segmen 1H26", "Laporan Segmentasi CDIA 1H26 (IDX)")
+    #exhibit-header("Kinerja & Bauran Pendapatan Segmen 1H26", "Laporan Segmentasi CDIA 1H26 (IDX)")
     #v(1pt)
     #fin-table(
       ("Pilar Segmen", "Pendapatan (Rp bn)", "YoY (%)", "QoQ (%)", "Bauran (%)", "EBITDA (Rp bn)", "EBITDA Margin"),
@@ -330,7 +330,7 @@
     ]
 
     #v(5pt)
-    #exhibit-header("Exhibit 4", "Kinerja Keuangan Konsolidasian 6 Tahun (FY23A - FY28F)", "Laporan Keuangan CDIA & Proyeksi Riset")
+    #exhibit-header("Kinerja Keuangan Konsolidasian 6 Tahun (FY23A - FY28F)", "Laporan Keuangan CDIA & Proyeksi Riset")
     #v(1pt)
     #fin-table(
       ("Metrik Keuangan (Rp bn)", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
@@ -349,7 +349,7 @@
     )
 
     #v(6pt)
-    #exhibit-header("Exhibit 5", "Kontribusi Pendapatan per Pilar 6Y (Rp bn)", "Laporan Segmentasi CDIA (IDX)")
+    #exhibit-header("Kontribusi Pendapatan per Pilar 6Y (Rp bn)", "Laporan Segmentasi CDIA (IDX)")
     #v(1pt)
     #fin-table(
       ("Pilar Bisnis (Rp bn)", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
@@ -364,7 +364,7 @@
     )
 
     #v(6pt)
-    #exhibit-header("Exhibit 6", "Rasio Neraca, Likuiditas & Profitabilitas 6Y", "Kalkulasi Riset & Data Olahan")
+    #exhibit-header("Rasio Neraca, Likuiditas & Profitabilitas 6Y", "Kalkulasi Riset & Data Olahan")
     #v(1pt)
     #fin-table(
       ("Rasio Utama", "FY23A", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F"),
@@ -404,7 +404,7 @@
     ]
 
     #v(5pt)
-    #exhibit-header("Exhibit 7", "Tabel Valuasi Sum-Of-The-Parts (SOTP FY26F)", "Engine: scripts/sotp_engine.py")
+    #exhibit-header("Tabel Valuasi Sum-Of-The-Parts (SOTP FY26F)", "Engine: scripts/sotp_engine.py")
     #v(1pt)
     #fin-table(
       ("Pilar Segmen", "Metode", "Metrik (Rp bn)", "Multiple", "EV (Rp bn)", "Net Debt", "Nilai Ekuitas", "Per Saham", "Porsi"),
@@ -421,7 +421,7 @@
     )
 
     #v(5pt)
-    #exhibit-header("Exhibit 8", "Rekonsiliasi Valuasi Blended & Target Price", "Engine: scripts/dcf_engine.py & scripts/ddm_engine.py")
+    #exhibit-header("Rekonsiliasi Valuasi Blended & Target Price", "Engine: scripts/dcf_engine.py & scripts/ddm_engine.py")
     #v(1pt)
     #fin-table(
       ("Metode Valuasi", "Bobot (%)", "Fair Value (Rp)", "Kontribusi (Rp)", "Parameter & Asumsi Kunci"),
@@ -609,7 +609,7 @@
     ]
 
     #v(5pt)
-    #exhibit-header("Exhibit 9", "Matriks Mitigasi Risiko Terintegrasi", "Analisis Risiko Internal Riset")
+    #exhibit-header("Matriks Mitigasi Risiko Terintegrasi", "Analisis Risiko Internal Riset")
     #v(1pt)
     #fin-table(
       ("Pilar / Area", "Kategori Risiko", "Tingkat Risiko", "Mitigasi Strategis yang Diterapkan"),

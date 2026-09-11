@@ -85,7 +85,7 @@
 
       #v(8pt)
       #let sh_src = data.at("cover", default: (:)).at("shareholders_src", default: "KSEI & IDX")
-      #exhibit-header("Exhibit 1", "Struktur Kepemilikan Saham", sh_src)
+      #exhibit-header("Struktur Kepemilikan Saham", sh_src)
       #v(2pt)
       #let default_sh = (
         ("PT Ratu Energi Tuban Jaya (RETJ)", "45,0%", "Pengendali"),
@@ -123,7 +123,7 @@
       #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
       #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
       #let pc_src = vj.at("source", default: "Sectors pending (" + m.ticker + " vs IHSG)")
-      #exhibit-header("Exhibit 2", pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
+      #exhibit-header(pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
       #v(2pt)
       #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
         "Kinerja Harga " + m.ticker + " (+18,4% YTD) vs IHSG (+12,2% YTD)"
@@ -131,14 +131,14 @@
         "Kinerja Harga " + m.ticker + (if vj.at("ytd_abs", default: none) != none { " (" + (if vj.ytd_abs > 0 { "+" } else { "" }) + str(vj.ytd_abs) + "% YTD)" } else { "" }) + " vs IHSG"
       })
       #let pc_caption = pc.at("caption", default: if m.ticker == "RATU" {
-        "Performa Relatif YTD: Outperform +6,2% · Sumber: Sectors"
+        "Performa Relatif YTD: Outperform +6,2%"
       } else {
-        "Performa Relatif YTD: " + (if vj.at("ytd_rel", default: none) != none { (if vj.ytd_rel > 0 { "Outperform +" } else { "Underperform " }) + str(vj.ytd_rel) + "%" } else { "-" }) + " · Sumber: " + pc_src
+        "Performa Relatif YTD: " + (if vj.at("ytd_rel", default: none) != none { (if vj.ytd_rel > 0 { "Outperform +" } else { "Underperform " }) + str(vj.ytd_rel) + "%" } else { "-" }) 
       })
       #if data.at("charts", default: (:)).at("vs_jci", default: false) {
         image(chart-dir + "/vs_jci.png", width: 100%);
         v(2pt);
-        text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[#pc_label · Sumber: #pc_src];
+        text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[#pc_label];
       } else {
         chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE);
       }
@@ -241,7 +241,7 @@
     (("Parameter Operasional Utama", "-", "-", "-", "-"),)
   })
 
-  #exhibit-header("Exhibit 3", ex3_title, ex3_src)
+  #exhibit-header(ex3_title, ex3_src)
   #v(2pt)
   #fin-table(
     ex3_headers,
@@ -260,7 +260,7 @@
     ("Tata Kelola & Kepatuhan", "Standar kepatuhan industri dan keandalan operasional prima", "Kepatuhan penuh regulasi"),
   ))
 
-  #exhibit-header("Exhibit 4", ex4_title, ex4_src)
+  #exhibit-header(ex4_title, ex4_src)
   #v(2pt)
   #fin-table(
     ex4_headers,
@@ -304,7 +304,7 @@
     default_fh_rows
   }
 
-  #exhibit-header("Exhibit 5", fh_title, fh_src)
+  #exhibit-header(fh_title, fh_src)
   #v(2pt)
   #fin-table(
     ("Metrik Finansial", ..fh_years),
@@ -314,7 +314,7 @@
 
   #if data.at("charts", default: (:)).at("margin_trajectory", default: false) {
     v(4pt);
-    exhibit-header("Exhibit 5a", "Lintasan Pendapatan & Marjin", fh_src);
+    exhibit-header("Lintasan Pendapatan & Marjin", fh_src);
     v(2pt);
     image(chart-dir + "/margin_trajectory.png", width: 100%);
   }
@@ -435,7 +435,7 @@
         Asumsi: WACC #nstr(dcf_wacc)%, Terminal Growth (g) #nstr(dcf_g)%, Beta #nstr(dcf_beta), Rf #nstr(dcf_rf)%, ERP #nstr(dcf_erp)%
       ]
       #v(4pt)
-      #exhibit-header("Exhibit 6", "Proyeksi Arus Kas Bebas (FCFF)", if dcf_m != none { dcf_m.at("source", default: "Engine DCF") } else { "Engine DCF" })
+      #exhibit-header("Proyeksi Arus Kas Bebas (FCFF)", if dcf_m != none { dcf_m.at("source", default: "Engine DCF") } else { "Engine DCF" })
       #v(2pt)
       #fin-table(
         dcf_headers,
@@ -498,7 +498,7 @@
       ("Posisi Harga Kini", "-", "Rp " + nstr(cover.price), "Valuasi Wajar"),
     )
   }
-  #exhibit-header("Exhibit 7", "Pita Valuasi Historis P/BV 3-Tahun (STD±2)", "IDX & Analisis Data")
+  #exhibit-header("Pita Valuasi Historis P/BV 3-Tahun (STD±2)", "IDX & Analisis Data")
   #v(2pt)
   #if bands != none and bands.at("rows", default: ()).len() > 0 {
     fin-table(
@@ -533,7 +533,7 @@
   ]
   #v(6pt)
 
-  #exhibit-header("Exhibit 8", "Cost of Capital Build", "Model CAPM & SBN 10Y")
+  #exhibit-header("Cost of Capital Build", "Model CAPM & SBN 10Y")
   #v(2pt)
   #let wb = ddd.at("wacc_build", default: (:))
   #fin-table(
@@ -553,7 +553,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 9", ddd.at("sensitivity", default: (:)).at("title", default: "Sensitivity Analysis — WACC vs Terminal Growth (g)"), "Engine Sensitivitas 5x5")
+  #exhibit-header(ddd.at("sensitivity", default: (:)).at("title", default: "Sensitivity Analysis — WACC vs Terminal Growth (g)"), "Engine Sensitivitas 5x5")
   #v(2pt)
   #let sens = ddd.at("sensitivity", default: (:))
   #fin-table(
@@ -573,7 +573,7 @@
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 10", "Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
+      #exhibit-header("Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
       #v(2pt)
       #let scen = ddd.at("scenarios", default: (:))
       #fin-table(
@@ -587,7 +587,7 @@
       )
     ],
     [
-      #exhibit-header("Exhibit 11", "Jembatan Nilai EV ke Ekuitas", "Bridge Waterfall")
+      #exhibit-header("Jembatan Nilai EV ke Ekuitas", "Bridge Waterfall")
       #v(2pt)
       #let brg = ddd.at("bridge", default: (:))
       #fin-table(
@@ -615,7 +615,7 @@
   #section-header(5, fs.at("section_title", default: "Laporan Keuangan & Rasio Finansial 6 Tahun"), PALETTE, sub: fs.at("section_sub", default: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 6 tahun?"))
 
   #let inc = fs.at("income", default: (:))
-  #exhibit-header("Exhibit 12", inc.at("title", default: "Laporan Laba Rugi Komprehensif (Rp Miliar)"), inc.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #exhibit-header(inc.at("title", default: "Laporan Laba Rugi Komprehensif (Rp Miliar)"), inc.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
   #v(2pt)
   #fin-table(
     inc.at("headers", default: ("Akun Laba Rugi", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F")),
@@ -637,7 +637,7 @@
 
   #v(6pt)
   #let bal = fs.at("balance", default: (:))
-  #exhibit-header("Exhibit 13", bal.at("title", default: "Neraca Keuangan Ringkas 6 Tahun (FY24A - FY29F)"), bal.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #exhibit-header(bal.at("title", default: "Neraca Keuangan Ringkas 6 Tahun (FY24A - FY29F)"), bal.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
   #v(2pt)
   #fin-table(
     bal.at("headers", default: ("Pos Neraca", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F")),
@@ -657,7 +657,7 @@
 
   #v(6pt)
   #let rat = fs.at("ratios", default: (:))
-  #exhibit-header("Exhibit 14", rat.at("title", default: "Rasio Keuangan & Efisiensi 6 Tahun vs Peer Median"), rat.at("source", default: "Perhitungan Analis & IDX"))
+  #exhibit-header(rat.at("title", default: "Rasio Keuangan & Efisiensi 6 Tahun vs Peer Median"), rat.at("source", default: "Perhitungan Analis & IDX"))
   #v(2pt)
   #fin-table(
     rat.at("headers", default: ("Rasio Kunci", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F", "Peer Median")),
@@ -698,7 +698,7 @@
     default_peer_rows
   }
 
-  #exhibit-header("Exhibit 15", peer_title, peer_src)
+  #exhibit-header(peer_title, peer_src)
   #v(2pt)
   #fin-table(
     peer_headers,
@@ -710,15 +710,15 @@
   #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
   #let relval_src = "Sectors (pending)"
   #if not data.at("charts", default: (:)).at("peer_evebitda", default: false) {
-    exhibit-header("Exhibit 16", relval_title, relval_src);
+    exhibit-header(relval_title, relval_src);
     v(2pt);
     image(chart-dir + "/relval_bars.png", width: 100%);
     v(2pt);
-    text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif · Sumber: #relval_src];
+    text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik Batang Komparasi Multiple Valuasi Relatif];
   }
   #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
     v(4pt);
-    exhibit-header("Exhibit 16a", "EV/EBITDA Peers vs Subjek", peer_src);
+    exhibit-header("EV/EBITDA Peers vs Subjek", peer_src);
     v(2pt);
     image(chart-dir + "/peer_evebitda.png", width: 88%);
   }

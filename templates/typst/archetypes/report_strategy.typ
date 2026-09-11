@@ -82,7 +82,7 @@
       ]
 
       #v(5pt)
-      #exhibit-header("Exhibit 1", "Asumsi Makroekonomi & Parameter Kunci Pasar Modal 2026F", "Konsensus Riset & Bank Indonesia")
+      #exhibit-header("Asumsi Makroekonomi & Parameter Kunci Pasar Modal 2026F", "Konsensus Riset & Bank Indonesia")
       #v(2pt)
       #fin-table(
         ("Indikator Makro / Pasar", "2024A", "2025A", "2026F (Base)", "Implikasi Strategi"),
@@ -98,9 +98,9 @@
       )
 
       #v(5pt)
-      #exhibit-header("Exhibit 2", "Trajektori Target Indeks IHSG 2026 vs Historis 5 Tahun", "IDX, Bloomberg & Estimasi Riset")
+      #exhibit-header("Trajektori Target Indeks IHSG 2026 vs Historis 5 Tahun", "IDX, Bloomberg & Estimasi Riset")
       #v(2pt)
-      #chart-placeholder("Trajektori Target IHSG 2026: Bear (7.800) — Base (9.100) — Bull (10.000)", caption: "Pergerakan Indeks Historis 2021–2025 & Proyeksi Skenario 2026F · Sumber: IDX & Model Riset", height: 60pt, palette: PALETTE)
+      #chart-placeholder("Trajektori Target IHSG 2026: Bear (7.800) — Base (9.100) — Bull (10.000)", caption: "Pergerakan Indeks Historis 2021–2025 & Proyeksi Skenario 2026F", height: 60pt, palette: PALETTE)
     ],
     [
       #block(
@@ -237,7 +237,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 3", "Tabel Penurunan Matematis Target IHSG Berdasarkan EPS & Forward P/E", "Model Proyeksi Valuasi Riset")
+  #exhibit-header("Tabel Penurunan Matematis Target IHSG Berdasarkan EPS & Forward P/E", "Model Proyeksi Valuasi Riset")
   #v(2pt)
 
   #card(PALETTE)[
@@ -279,7 +279,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 4", "Sensitivity Analysis — Pertumbuhan EPS vs Kelipatan P/E Forward", "Engine Sensitivitas Valuasi Indeks")
+  #exhibit-header("Sensitivity Analysis — Pertumbuhan EPS vs Kelipatan P/E Forward", "Engine Sensitivitas Valuasi Indeks")
   #v(2pt)
   #fin-table(
     ("Forward P/E \\ EPS Growth", "+4,0% (Rp 584)", "+6,0% (Rp 596)", "+8,0% (Base Rp 607)", "+10,0% (Rp 618)", "+12,0% (Rp 625)"),
@@ -343,7 +343,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 5", "Matriks Alokasi Sektoral IHSG 2026 (Overweight / Neutral / Underweight)", "Strategi Alokasi Portofolio Riset")
+  #exhibit-header("Matriks Alokasi Sektoral IHSG 2026 (Overweight / Neutral / Underweight)", "Strategi Alokasi Portofolio Riset")
   #v(1.5pt)
 
   #set text(font: FONT_SANS, size: 6.2pt)
@@ -369,7 +369,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 6", "Peer Comparison — Valuasi Saham Pilihan Utama (Top Picks 2026)", "Semesta Riset Ekuitas")
+  #exhibit-header("Peer Comparison — Valuasi Saham Pilihan Utama (Top Picks 2026)", "Semesta Riset Ekuitas")
   #v(1.5pt)
 
   #fin-table(
@@ -405,7 +405,7 @@
   ]
   #v(3pt)
 
-  #exhibit-header("Exhibit 7", "Dinamika Arus Modal Asing (Foreign Flows) Historis & Proyeksi 2026F", "Bursa Efek Indonesia & Bank Indonesia")
+  #exhibit-header("Dinamika Arus Modal Asing (Foreign Flows) Historis & Proyeksi 2026F", "Bursa Efek Indonesia & Bank Indonesia")
   #v(1.5pt)
   #fin-table(
     ("Periode", "Net Buy (Rp T)", "Porsi IDX", "Yield SBN 10Y", "Cadangan Devisa", "Katalis & Sentimen Global"),
@@ -422,7 +422,7 @@
   )
 
   #v(3pt)
-  #exhibit-header("Exhibit 8", "Portofolio Aset Konsolidasi BP Danantara & Valuasi BUMN Terbuka", "Kementerian BUMN & Estimasi Riset")
+  #exhibit-header("Portofolio Aset Konsolidasi BP Danantara & Valuasi BUMN Terbuka", "Kementerian BUMN & Estimasi Riset")
   #v(1.5pt)
   #fin-table(
     ("Entitas BUMN Inti", "Porsi", "Total Aset", "Nilai Ekuitas", "Peran Strategis & Dampak Pasar Modal"),
@@ -441,7 +441,7 @@
   )
 
   #v(2pt)
-  #exhibit-header("Exhibit 7b", "Konsolidasi Laba Rugi Agregat Konstituen IHSG 6 Tahun", "Konsensus Bloomberg & IDX")
+  #exhibit-header("Konsolidasi Laba Rugi Agregat Konstituen IHSG 6 Tahun", "Konsensus Bloomberg & IDX")
   #v(1.5pt)
   #fin-table(
     ("Akun Laba Rugi Agregat", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"),
@@ -472,7 +472,7 @@
 #page-wrap("RESEARCH — Strategy Outlook", "31 Agt 2026", "IHSG / JCI", 5, PALETTE, [
   #section-header(4, "Panduan Rating, Valuation Methodology & Disklaimer Kepatuhan OJK", PALETTE)
 
-  #exhibit-header("Exhibit 9", "Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas Institusional")
+  #exhibit-header("Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas Institusional")
   #v(2pt)
   #fin-table(
     ("Kategori Peringkat", "Definisi Kriteria (Horizon 12-Bulan Eks-Dividen)", "Implikasi bagi Alokasi Portofolio"),

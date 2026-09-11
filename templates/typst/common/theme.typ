@@ -8,6 +8,56 @@
 
 #let FONT_DIR = "../assets/fonts"
 
+// ------ Brand assets ------
+// Official Sectors mark. Sourced from hackathon.sectors.app/brand/sectors-icon.svg
+// (an official Sectors property; sectors.app itself is behind a bot wall).
+// A copy ships next to EVERY theme.typ so this same relative path resolves for
+// both template trees (templates/typst/common/ and server/report/typst/).
+#let LOGO_PATH = "../assets/brand/sectors-icon.svg"
+
+// ------ House document furniture (fixed strings, do not vary per page) ------
+#let HEADER_TITLE = "Equity Research – Company Update"
+#let FOOTER_LEFT = "sectors.app"
+#let FOOTER_RIGHT = "See important disclosure at the back of this report"
+#let SOURCE_LINE = "Company, Team Estimates"
+#let HEADER_DIVIDER_COLOR = rgb("#067647")
+
+// ------ English date formatting: "Day, DD Month YYYY" ------
+// Accepts the mixed date strings the archetypes receive ("31 Agt 2026",
+// "20 Jul 2026", ISO, or free text). Unparseable input passes through
+// unchanged rather than inventing a date.
+#let _MONTHS = (
+  jan: 1, januari: 1, january: 1, feb: 2, februari: 2, february: 2,
+  mar: 3, maret: 3, march: 3, apr: 4, april: 4, mei: 5, may: 5,
+  jun: 6, juni: 6, june: 6, jul: 7, juli: 7, july: 7,
+  agt: 8, agu: 8, ags: 8, agustus: 8, aug: 8, august: 8,
+  sep: 9, sept: 9, september: 9, okt: 10, oktober: 10, oct: 10, october: 10,
+  nov: 11, november: 11, des: 12, desember: 12, dec: 12, december: 12,
+)
+#let _DAY_NAMES = (
+  "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday",
+)
+#let _MONTH_NAMES = (
+  "January", "February", "March", "April", "May", "June",
+  "July", "August", "September", "October", "November", "December",
+)
+
+#let format-date-en(raw) = {
+  let s = if type(raw) == str { raw } else { str(raw) }
+  let toks = s.replace(",", " ").replace(".", " ").split(" ").filter(t => t != "")
+  if toks.len() >= 3 {
+    let day-ok = toks.at(0).matches(regex("^[0-9]{1,2}$")).len() > 0
+    let yr-ok = toks.at(2).matches(regex("^[0-9]{4}$")).len() > 0
+    let m = _MONTHS.at(lower(toks.at(1)), default: none)
+    if day-ok and yr-ok and m != none {
+      let dt = datetime(year: int(toks.at(2)), month: m, day: int(toks.at(0)))
+      // Typst weekday(): 1 = Monday .. 7 = Sunday
+      return _DAY_NAMES.at(dt.weekday() - 1) + ", " + toks.at(0) + " " + _MONTH_NAMES.at(m - 1) + " " + toks.at(2)
+    }
+  }
+  return s
+}
+
 // ------ Page geometry ------
 #let PAGE_W = 210mm
 #let PAGE_H = 297mm
@@ -66,29 +116,40 @@
   doc
 }
 
-// ------ Running header ------
+// ------ Running header (house convention) ------
+// Left: report title, with the publication date on the line below, formatted
+// "Day, DD Month YYYY". Right: Sectors.app logo, identical size on every page.
+// Below: full-width house-color divider (#067647).
 #let running-header(brand-label, date, ticker) = {
   v(-2pt)
-  text(font: FONT_SANS, size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em, upper(brand-label))
-  h(1fr)
-  text(font: FONT_SANS, size: HEADER_SIZE, weight: "bold", fill: rgb("#475467"), tracking: 0.08em)[#ticker · #date]
-  v(-2pt)
-  line(length: 100%, stroke: 1.5pt + rgb("#067647"))
+  grid(
+    columns: (1fr, auto),
+    align: (left + horizon, right + horizon),
+    [
+      #text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#101828"))[#HEADER_TITLE]
+      #v(1pt)
+      #text(font: FONT_SANS, size: 7pt, weight: "regular", fill: rgb("#475467"))[#format-date-en(date)]
+    ],
+    image(LOGO_PATH, height: 13pt),
+  )
+  v(2.5pt)
+  line(length: 100%, stroke: 1.2pt + HEADER_DIVIDER_COLOR)
   v(8pt)
 }
 
-// ------ Page footer ------
+// ------ Page footer (house convention) ------
+// Left: sectors.app. Right: disclosure pointer + page number.
 #let page-footer(pg-num, palette) = {
   set text(font: FONT_SANS, size: FOOTER_SIZE, fill: rgb("#475467"))
   v(-2pt)
   line(length: 100%, stroke: 0.5pt + rgb("#e4e7ec"))
-  v(4pt)
+  v(3pt)
   block(width: 100%)[
     #grid(
       columns: (1fr, auto),
       align: (left, right),
-      [Informasi, bukan saran investasi — bukan rekomendasi jual/beli (OJK compliance)],
-      [#pg-num],
+      [#FOOTER_LEFT],
+      [#FOOTER_RIGHT · #pg-num],
     )
   ]
 }
@@ -121,17 +182,53 @@
   ]
 }
 
-// ------ Exhibit header (id + name + source, baseline-aligned) ------
-#let exhibit-header(id, title, source) = {
+// ------ Exhibit numbering: ONE global counter for the whole document ------
+// Numbering runs sequentially from the first page to the last and never resets
+// per page. No call site hardcodes "Exhibit N" — adding or removing an object
+// re-sequences every later exhibit automatically.
+#let exhibit-counter = counter("exhibit")
+#let exhibit-src-state = state("exhibit-src", SOURCE_LINE)
+#let exhibit-flushed = state("exhibit-flushed", true)
+
+// Source line, rendered UNDER the object it belongs to. House rule: the visible
+// line is always "Source: Company, Team Estimates", including for purely
+// historical data. The `source` argument still carries the real provenance
+// (engine, filing, screener) — it is stashed in exhibit-src-state so an audit
+// build can surface it via exhibit-source-detail().
+#let exhibit-source(source: none) = {
+  exhibit-flushed.update(true)
+  context {
+    let s = if source != none { source } else { SOURCE_LINE }
+    block(width: 100%)[
+      #v(1pt)
+      #text(font: FONT_SANS, size: 6.8pt, style: "italic", fill: rgb("#475467"))[Source: #s]
+    ]
+  }
+}
+
+// Provenance variant — internal/audit builds only, never the house PDF.
+#let exhibit-source-detail() = context {
+  exhibit-flushed.update(true)
   block(width: 100%)[
-    #set text(font: FONT_SANS, size: 7.5pt, weight: "bold", fill: rgb("#054f31"))
-    #grid(
-      columns: (auto, 1fr, auto),
-      align: (left, left, right),
-      [#id],
-      [#h(6pt) #text(size: 8.5pt, weight: "semibold")[#title]],
-      [#text(size: 6.8pt, style: "italic", fill: rgb("#475467"))[Sumber: #source]],
-    )
+    #v(1pt)
+    #text(font: FONT_SANS, size: 6.8pt, style: "italic", fill: rgb("#475467"))[Source: #exhibit-src-state.get()]
+  ]
+}
+
+// ------ Exhibit label (id + name) — ABOVE the object, auto-numbered ------
+// Both arguments are positional: exhibit-header("Title", "internal provenance").
+// Flushes the previous exhibit's source line first, so a source line always
+// lands directly beneath its own object rather than after the next label.
+#let exhibit-header(title, source) = {
+  context {
+    if not exhibit-flushed.get() { exhibit-source() }
+  }
+  exhibit-src-state.update(source)
+  exhibit-flushed.update(false)
+  exhibit-counter.step()
+  block(width: 100%, above: 6pt, below: 3pt)[
+    #set text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#054f31"))
+    #context [Exhibit #exhibit-counter.display(). #title]
   ]
 }
 
@@ -232,6 +329,9 @@
 }
 
 // ------ Page wrapper ------
+// Flushes any exhibit source line still pending at the end of the page content,
+// so the last object on a page gets its source line above that page's footer
+// instead of leaking onto the next page.
 #let page-wrap(
   brand-label,
   date,
@@ -242,6 +342,9 @@
 ) = {
   running-header(brand-label, date, ticker)
   content
+  context {
+    if not exhibit-flushed.get() { exhibit-source() }
+  }
   page-footer(pg-num, palette)
   v(8pt)
 }

@@ -126,7 +126,7 @@
       ]
 
       #v(6pt)
-      #exhibit-header("Exhibit 1", "Bauran Pendapatan per Segmen (1H26)", data.at("segments_src", default: m.ticker + " 1H26 (IDX)"))
+      #exhibit-header("Bauran Pendapatan per Segmen (1H26)", data.at("segments_src", default: m.ticker + " 1H26 (IDX)"))
       #v(2pt)
       #block(width: 100%)[
         #let segs = data.at("segments", default: ())
@@ -170,7 +170,7 @@
 
       #v(6pt)
       #let vs-jci = data.cover.at("vs_jci", default: (:))
-      #exhibit-header("Exhibit 2", "Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "Sectors"))
+      #exhibit-header("Kinerja Harga " + m.ticker + " vs IHSG (YTD)", vs-jci.at("source", default: "Sectors"))
       #v(2pt)
       #if data.at("charts", default: (:)).at("vs_jci", default: false) {
       image(chart-dir + "/vs_jci.png", width: 100%)
@@ -225,7 +225,7 @@
           )).flatten()
         )
         #v(2pt)
-        #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Sumber: #data.cover.at("shareholders_src", default: "IDX struktur pemegang saham")]
+        #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Source: #SOURCE_LINE]
       ]
 
       #v(5pt)
@@ -277,7 +277,7 @@
   }
 
   #v(6pt)
-  #exhibit-header("Exhibit 3", "Tabel KPI Operasional vs Periode Lalu (1H26 vs 1H25)", data.at("kpis_src", default: "Company data 1H26"))
+  #exhibit-header("Tabel KPI Operasional vs Periode Lalu (1H26 vs 1H25)", data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
   #fin-table(
     ("Metrik KPI", "Kini (1H26)", "Lalu (1H25)", "Perubahan (Δ)", "Satuan", "Formula & Karakteristik", "Sumber Data"),
@@ -286,7 +286,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 4", "Perbandingan Visual KPI Operasional " + m.ticker, data.at("kpis_src", default: "Company data 1H26"))
+  #exhibit-header("Perbandingan Visual KPI Operasional " + m.ticker, data.at("kpis_src", default: "Company data 1H26"))
   #v(2pt)
   #if data.at("charts", default: (:)).at("kpi_bars", default: false) {
   image(chart-dir + "/kpi_bars.png", width: 100%)
@@ -331,7 +331,7 @@
   ]
   #v(4pt)
 
-  #exhibit-header("Exhibit 5", "Pendapatan per Segmen: 1H26 vs 1H25 & Momentum Kuartalan (" + unit + ")", data.at("segments_src", default: m.ticker + " 1H26 Laporan Segmentasi (IDX)"))
+  #exhibit-header("Pendapatan per Segmen: 1H26 vs 1H25 & Momentum Kuartalan (" + unit + ")", data.at("segments_src", default: m.ticker + " 1H26 Laporan Segmentasi (IDX)"))
   #v(2pt)
   #fin-table(
     ("Segmen Bisnis", "1H25", "1H26", "YoY (%)", "Q2-25", "Q1-26", "Q2-26", "YoY (Q2)", "QoQ (%)"),
@@ -340,7 +340,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 6", "Laporan Laba Rugi Kuartalan (1H25 vs 1H26 & Q2-25 vs Q2-26)", data.quarterly_pl.source)
+  #exhibit-header("Laporan Laba Rugi Kuartalan (1H25 vs 1H26 & Q2-25 vs Q2-26)", data.quarterly_pl.source)
   #v(2pt)
   #fin-table(
     data.quarterly_pl.headers,
@@ -366,7 +366,7 @@
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 4, PALETTE, [
   #section-header(4, "Neraca Keuangan, Rasio & KPI Kuartalan", PALETTE)
 
-  #exhibit-header("Exhibit 7", "Neraca Keuangan Kuartalan Ringkas (" + data.quarterly_balance.headers.at(0) + ")", data.quarterly_balance.source)
+  #exhibit-header("Neraca Keuangan Kuartalan Ringkas (" + data.quarterly_balance.headers.at(0) + ")", data.quarterly_balance.source)
   #v(2pt)
   #fin-table(
     data.quarterly_balance.headers,
@@ -375,7 +375,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 8", "Rasio Keuangan Kuartalan", data.quarterly_ratios.source)
+  #exhibit-header("Rasio Keuangan Kuartalan", data.quarterly_ratios.source)
   #v(2pt)
   #fin-table(
     data.quarterly_ratios.headers,
@@ -384,7 +384,7 @@
   )
 
   #v(4pt)
-  #exhibit-header("Exhibit 9", "Operational KPI Kuartalan", data.quarterly_kpi.source)
+  #exhibit-header("Operational KPI Kuartalan", data.quarterly_kpi.source)
   #v(2pt)
   #fin-table(
     data.quarterly_kpi.headers,
@@ -416,7 +416,7 @@
         Asumsi: WACC #dcf_ass.wacc%, Beta #dcf_ass.beta, Rf #dcf_ass.rf%, ERP #dcf_ass.erp%, CoE #dcf_ass.coe%, CoD #dcf_ass.cod%, We #dcf_ass.we%, Wd #dcf_ass.wd%, g #dcf_ass.g%
       ]
       #v(3pt)
-      #exhibit-header("Exhibit 10", "Proyeksi Arus Kas Bebas (FCFF)", dcf_meth.source)
+      #exhibit-header("Proyeksi Arus Kas Bebas (FCFF)", dcf_meth.source)
       #v(2pt)
       #fin-table(
         dcf_meth.table.headers,
@@ -466,7 +466,7 @@
 
   #v(6pt)
   #let pbv = data.valuation.bands.pbv_3y
-  #exhibit-header("Exhibit 11", "Pita Valuasi Historis P/BV 3-Tahun (Mean Reversion)", data.valuation.bands.source)
+  #exhibit-header("Pita Valuasi Historis P/BV 3-Tahun (Mean Reversion)", data.valuation.bands.source)
   #v(2pt)
   #fin-table(
     ("Deviasi Standar", "P/BV (x)", "Interpretasi & Posisi Pasar"),
@@ -505,28 +505,28 @@
     column-gutter: 8pt,
     row-gutter: 4pt,
     [
-      #exhibit-header("Exhibit 12", "Cost of Capital Build", "CAPM & SBN 10Y")
+      #exhibit-header("Cost of Capital Build", "CAPM & SBN 10Y")
       #v(1pt)
       #if data.at("charts", default: (:)).at("wacc_breakdown", default: false) {
       image(chart-dir + "/wacc_breakdown.png", width: 100%)
       }
     ],
     [
-      #exhibit-header("Exhibit 13", "Sensitivity Analysis — Heatmap (WACC vs. g)", "Engine Sensitivitas 5x5")
+      #exhibit-header("Sensitivity Analysis — Heatmap (WACC vs. g)", "Engine Sensitivitas 5x5")
       #v(1pt)
       #if data.at("charts", default: (:)).at("sensitivity_heatmap", default: false) {
       image(chart-dir + "/sensitivity_heatmap.png", width: 100%)
       }
     ],
     [
-      #exhibit-header("Exhibit 14", "Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
+      #exhibit-header("Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
       #v(1pt)
       #if data.at("charts", default: (:)).at("scenario_bars", default: false) {
       image(chart-dir + "/scenario_bars.png", width: 100%)
       }
     ],
     [
-      #exhibit-header("Exhibit 15", "EV to Equity Bridge Waterfall", "Bridge Engine")
+      #exhibit-header("EV to Equity Bridge Waterfall", "Bridge Engine")
       #v(1pt)
       #if data.at("charts", default: (:)).at("ev_equity_waterfall", default: false) {
       image(chart-dir + "/ev_equity_waterfall.png", width: 100%)
@@ -540,7 +540,7 @@
     columns: (1.1fr, 1fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 16", "Sensitivity Analysis — Matriks Nilai Wajar (WACC vs. g)", "Engine Sensitivitas 5x5")
+      #exhibit-header("Sensitivity Analysis — Matriks Nilai Wajar (WACC vs. g)", "Engine Sensitivitas 5x5")
       #v(1pt)
       #let sens_headers = ("WACC \ g", ..sens.g_axis.map(g => str(calc.round(g * 100, digits: 2)) + "%"))
       #let sens_rows = sens.wacc_axis.enumerate().map(((i, w)) => {
@@ -562,7 +562,7 @@
       )
     ],
     [
-      #exhibit-header("Exhibit 17", "Scenario Analysis (Bear / Base / Bull) & Jembatan Nilai", "Model Deterministik")
+      #exhibit-header("Scenario Analysis (Bear / Base / Bull) & Jembatan Nilai", "Model Deterministik")
       #v(1pt)
       #let sc = data.cDcf.scenarios
       #fin-table(
@@ -595,7 +595,7 @@
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 7, PALETTE, [
   #section-header(7, "Ringkasan Finansial 6Y & Tesis Investasi", PALETTE)
 
-  #exhibit-header("Exhibit 18", "Financial Highlights 6 Tahun (" + data.financial_highlights.years.at(0) + " – " + data.financial_highlights.years.at(-1) + ")", data.financial_highlights.source)
+  #exhibit-header("Financial Highlights 6 Tahun (" + data.financial_highlights.years.at(0) + " – " + data.financial_highlights.years.at(-1) + ")", data.financial_highlights.source)
   #v(2pt)
   #fin-table(
     ("Metrik Finansial", ..data.financial_highlights.years),
@@ -604,7 +604,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 19", "Trajektori Kinerja & Margin Operasional", data.financial_highlights.source)
+  #exhibit-header("Trajektori Kinerja & Margin Operasional", data.financial_highlights.source)
   #v(2pt)
   #if data.at("charts", default: (:)).at("margin_trajectory", default: false) {
   image(chart-dir + "/margin_trajectory.png", width: 100%)
@@ -641,7 +641,7 @@
   #let fin_is = data.financials.at(0)
   #let fin_bs = data.financials.at(1)
 
-  #exhibit-header("Exhibit 20", fin_is.at("title", default: "Laporan Laba Rugi Komprehensif"), fin_is.source)
+  #exhibit-header(fin_is.at("title", default: "Laporan Laba Rugi Komprehensif"), fin_is.source)
   #v(2pt)
   #fin-table(
     fin_is.headers,
@@ -650,7 +650,7 @@
   )
 
   #v(6pt)
-  #exhibit-header("Exhibit 21", fin_bs.at("title", default: "Neraca Keuangan Konsolidasian"), fin_bs.source)
+  #exhibit-header(fin_bs.at("title", default: "Neraca Keuangan Konsolidasian"), fin_bs.source)
   #v(2pt)
   #fin-table(
     fin_bs.headers,
@@ -674,7 +674,7 @@
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Exhibit 22", fin_cf.at("title", default: "Laporan Arus Kas 6Y"), fin_cf.source)
+      #exhibit-header(fin_cf.at("title", default: "Laporan Arus Kas 6Y"), fin_cf.source)
       #v(1pt)
       #compact-fin-table(
         fin_cf.headers,
@@ -683,7 +683,7 @@
       )
     ],
     [
-      #exhibit-header("Exhibit 23", fin_ratio.at("title", default: "Rasio Keuangan Lengkap"), fin_ratio.source)
+      #exhibit-header(fin_ratio.at("title", default: "Rasio Keuangan Lengkap"), fin_ratio.source)
       #v(1pt)
       #compact-fin-table(
         fin_ratio.headers,
@@ -703,7 +703,7 @@
   #section-header(10, "Peer Comparison & Investment Risks", PALETTE)
 
   #let peer_tab = data.peers.tables.at(0)
-  #exhibit-header("Exhibit 24", "Peer Comparison — Emiten " + peer_tab.pillar, peer_tab.source)
+  #exhibit-header("Peer Comparison — Emiten " + peer_tab.pillar, peer_tab.source)
   #v(2pt)
   #fin-table(
     peer_tab.headers,
@@ -739,7 +739,7 @@
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 11, PALETTE, [
   #section-header(11, "Investment Recommendation Framework, Disklaimer Regulasi & Kontak", PALETTE)
 
-  #exhibit-header("Exhibit 25", "Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas")
+  #exhibit-header("Panduan Pemeringkatan Investment Recommendation (9 Kategori)", "Standar Metodologi Riset Ekuitas")
   #v(2pt)
   #fin-table(
     ("Kategori Peringkat", "Definisi Kriteria (12 Bulan Eks-Dividen)", "Implikasi bagi Keputusan Investor"),
