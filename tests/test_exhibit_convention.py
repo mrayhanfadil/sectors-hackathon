@@ -20,6 +20,8 @@ an archetype unreachable from the renderer's template map.
 from __future__ import annotations
 
 import re
+import shutil
+import subprocess
 from pathlib import Path
 
 import pytest
@@ -269,3 +271,184 @@ def test_cli_template_map_covers_every_archetype() -> None:
             f"CLI TEMPLATE_FILES is missing '{name}' -> renders report_single.typ instead"
         )
         assert (TEMPLATES_ARCHETYPES / fname).exists(), f"{fname} missing from templates"
+
+
+# ------------------------------------------------------- page furniture geometry
+#
+# Regression these guards exist for: the header used to be laid out with
+# `pad(top: HEADER_TOP_INSET)`, which Typst anchors to the BOTTOM of the top margin
+# box. Every offset therefore measured from the wrong origin — the bold title was
+# clipped at y = -0.5mm off the top of the paper, and the divider rule ignored the
+# padding entirely and tracked MARGIN_TOP at exactly 0.7x. Rendered PDFs looked
+# plausible, so nothing but a geometry check catches it.
+
+
+def _theme_mm(name: str) -> float:
+    m = re.search(rf"#let {name} = ([\d.]+)mm", _theme())
+    assert m, f"{name} not declared in mm in theme.typ"
+    return float(m.group(1))
+
+
+def _running_header() -> str:
+    txt = _theme()
+    body = txt[txt.index("#let running-header(") :]
+    return body[: body.index("\n}")]
+
+
+def test_header_band_is_placed_absolutely_from_the_paper_edge() -> None:
+    hdr = _running_header()
+    assert "place(top + left, dy: HEADER_TOP_INSET)" in hdr, (
+        "the header band must be placed absolutely from the paper edge; a pad()/v() "
+        "band is anchored to the bottom of the margin box and clips the title"
+    )
+    assert "pad(top: HEADER_TOP_INSET)" not in hdr, (
+        "pad(top:) measures from the margin box, not the paper edge"
+    )
+
+
+def test_header_title_and_date_are_a_stack_not_inline_v() -> None:
+    """Inline `v()` inside a single paragraph does not grow the grid row, so the
+    date's descenders ran straight through the divider rule."""
+    assert "stack(dir: ttb, spacing: HEADER_TITLE_DATE_GAP" in _running_header()
+
+
+def test_header_and_footer_cleared_by_margins() -> None:
+    """Measured inch-by-inch on rendered fixtures: title ink must sit well clear of
+    the paper edge, the rule must clear the date, and the footer rule must clear the
+    body. These are the constants that produce that geometry."""
+    inset = _theme_mm("HEADER_TOP_INSET")
+    gap = _theme_mm("HEADER_TITLE_DATE_GAP")
+    rule_gap = _theme_mm("HEADER_RULE_GAP")
+    margin_top = _theme_mm("MARGIN_TOP")
+    margin_bottom = _theme_mm("MARGIN_BOTTOM")
+    footer_inset = _theme_mm("FOOTER_BOTTOM_INSET")
+
+    TITLE_H, DATE_H = 3.0, 2.3  # measured ink heights at 8.5pt bold / 7pt
+    assert inset >= 8.0, f"title sits only {inset}mm from the paper edge"
+    assert gap >= 2.0, f"title->date gap {gap}mm is cramped"
+    assert rule_gap >= 1.5, f"date->rule gap {rule_gap}mm risks the rule crossing the date"
+
+    band = inset + TITLE_H + gap + DATE_H + rule_gap
+    assert margin_top >= band + 3.0, (
+        f"MARGIN_TOP {margin_top}mm leaves less than 3mm between the divider rule and "
+        f"the body (band ends at {band:.1f}mm)"
+    )
+    assert footer_inset >= 3.0, f"footer sits only {footer_inset}mm from the paper edge"
+    assert margin_bottom >= 14.0, (
+        f"MARGIN_BOTTOM {margin_bottom}mm is not clearing the footer rule"
+    )
+
+
+def _pgm_rows(pdf: Path, tmp_path: Path, dpi: int = 100):
+    """Rasterise page 1 to a PGM (poppler + stdlib only, no extra test dependency)."""
+    subprocess.run(
+        ["pdftoppm", "-gray", "-r", str(dpi), "-f", "1", "-l", "1",
+         str(pdf), str(tmp_path / "pg")],
+        check=True, capture_output=True, text=True,
+    )
+    raw = next(tmp_path.glob("pg-*.pgm")).read_bytes()
+    # P5 header: magic, width height, maxval
+    fields, i = [], 2
+    while len(fields) < 3:
+        while raw[i : i + 1].isspace():
+            i += 1
+        if raw[i : i + 1] == b"#":
+            while raw[i : i + 1] != b"\n":
+                i += 1
+            continue
+        j = i
+        while not raw[j : j + 1].isspace():
+            j += 1
+        fields.append(int(raw[i:j]))
+        i = j
+    width, height = fields[0], fields[1]
+    pixels = raw[i + 1 : i + 1 + width * height]
+    return width, height, pixels
+
+
+HEADER_FIXTURE = f"""#import "{TEMPLATES_COMMON / 'theme.typ'}": *
+
+#show: set-page-defaults.with(date: "31 Agt 2026")
+#page-wrap("RESEARCH - Equity Report", "31 Agt 2026", "TEST", 1, DEFAULT_PALETTE, {{
+  section-header(1, "Test Section", DEFAULT_PALETTE)
+  "Body content for the header geometry guard."
+}})
+"""
+
+
+def _render_header_fixture(tmp_path: Path, dpi: int = 100):
+    """Compile a minimal report through the real theme and rasterise page 1.
+
+    Deliberately not templates/typst/test_smoke.typ: that file calls the theme with
+    no date, so it renders a header without the date line this guard is about.
+    """
+    (tmp_path / "fixture.typ").write_text(HEADER_FIXTURE, encoding="utf-8")
+    pdf = tmp_path / "fixture.pdf"
+    subprocess.run(
+        # --root / because the fixture sits in tmp_path (outside the repo) while it
+        # imports the theme by absolute path
+        ["typst", "compile", "--root", "/",
+         "--font-path", str(REPO_ROOT / "assets" / "fonts"),
+         str(tmp_path / "fixture.typ"), str(pdf)],
+        check=True, capture_output=True, text=True,
+    )
+    subprocess.run(
+        ["pdftoppm", "-gray", "-r", str(dpi), "-f", "1", "-l", "1", str(pdf), str(tmp_path / "pg")],
+        check=True, capture_output=True, text=True,
+    )
+    raw = next(tmp_path.glob("pg-*.pgm")).read_bytes()
+    fields, i = [], 2  # skip the P5 magic
+    while len(fields) < 3:
+        while raw[i : i + 1].isspace():
+            i += 1
+        j = i
+        while not raw[j : j + 1].isspace():
+            j += 1
+        fields.append(int(raw[i:j]))
+        i = j
+    width, height = fields[0], fields[1]
+    return width, raw[i + 1 : i + 1 + width * height], dpi
+
+
+@pytest.mark.skipif(
+    shutil.which("typst") is None or shutil.which("pdftoppm") is None,
+    reason="needs the typst CLI and poppler pdftoppm",
+)
+def test_rendered_header_is_not_clipped_and_rule_clears_the_date(tmp_path: Path) -> None:
+    """Render-level guard. Font metrics boxes overlap by design, so this measures
+    real page pixels instead: the title's ink must sit clear of the paper edge, and
+    the divider rule must land below the date's ink. Before the `place`-based header
+    the title was clipped at y=-0.5mm and the rule cut straight through the date."""
+    width, px, dpi = _render_header_fixture(tmp_path)
+    mm = dpi / 25.4
+    # left window only (the logo sits in the header's right cell and would merge bands)
+    x0, x1 = int(_theme_mm("MARGIN_LR") * mm), int((_theme_mm("MARGIN_LR") + 100) * mm)
+
+    def dark_count(y: int) -> int:
+        row = px[y * width : (y + 1) * width]
+        return sum(1 for x in range(x0, x1) if row[x] < 180)
+
+    counts = [dark_count(y) for y in range(0, int(40 * mm))]
+    window_px = x1 - x0
+    rule_rows = {y for y, c in enumerate(counts) if c > 0.5 * window_px}
+    assert rule_rows, "no full-width divider rule found in the header band"
+    rule_y = min(rule_rows) / mm
+
+    bands, cur = [], None
+    for y, c in enumerate(counts):
+        inked = c > 0 and y not in rule_rows
+        if inked and cur is None:
+            cur = y
+        elif not inked and cur is not None:
+            bands.append((cur / mm, (y - 1) / mm))
+            cur = None
+    assert len(bands) >= 2, f"expected separate title and date ink bands, got {bands}"
+
+    title_top = bands[0][0]
+    date_bottom = bands[1][1]
+    assert title_top >= 8.0, (
+        f"header title ink sits {title_top:.2f}mm from the paper edge — clipped or cramped"
+    )
+    assert date_bottom < rule_y, (
+        f"divider rule at {rule_y:.2f}mm crosses the date ink (bottom {date_bottom:.2f}mm)"
+    )

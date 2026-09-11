@@ -63,12 +63,23 @@
 #let PAGE_H = 297mm
 #let MARGIN_LR = 12mm
 #let MARGIN_TB = 14mm
-// Page furniture now lives in the page margin boxes (native header/footer), so
-// the vertical bands must be tall enough to hold it. 22mm keeps the visual
-// distance from paper edge to body text at roughly the old 14mm + in-flow
-// header height, and 18mm clears the footer line + text.
-#let MARGIN_TOP = 18mm
-#let MARGIN_BOTTOM = 14mm
+// Page furniture lives in the page margin boxes. The header band is positioned
+// ABSOLUTELY from the paper edge with `place` (see running-header), so its offsets
+// are independent of MARGIN_TOP; MARGIN_TOP only decides where body text starts and
+// must clear the divider rule:
+//   HEADER_TOP_INSET      paper edge -> header title (0 clipped the ascenders)
+//   HEADER_TITLE_DATE_GAP title -> date
+//   HEADER_RULE_GAP       date -> green divider rule
+//   MARGIN_TOP            body start; must be > HEADER_TOP_INSET + band height
+//   FOOTER_BOTTOM_INSET   footer text -> paper edge
+//   MARGIN_BOTTOM         body stop; must clear the footer rule
+// Guarded by tests/test_exhibit_convention.py::test_header_and_footer_cleared_by_margins.
+#let HEADER_TOP_INSET = 10mm
+#let HEADER_TITLE_DATE_GAP = 3mm
+#let HEADER_RULE_GAP = 2.2mm
+#let FOOTER_BOTTOM_INSET = 3.5mm
+#let MARGIN_TOP = 24mm
+#let MARGIN_BOTTOM = 15mm
 #let HEADER_SIZE = 7pt
 #let FOOTER_SIZE = 6.5pt
 #let BODY_SIZE = 8.5pt
@@ -109,32 +120,44 @@
 // "Day, DD Month YYYY". Right: Sectors.app logo, identical size on every page.
 // Below: full-width house-color divider (#067647).
 #let running-header(title, date) = {
-  grid(
-    columns: (1fr, auto),
-    align: (left + horizon, right + horizon),
-    [
-      #text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#101828"))[#title]
-      #v(1pt)
-      #text(font: FONT_SANS, size: 7pt, weight: "regular", fill: rgb("#475467"))[#date]
-    ],
-    image(LOGO_PATH, height: 13pt),
-  )
-  v(2.5pt)
-  line(length: 100%, stroke: 1.2pt + HEADER_DIVIDER_COLOR)
+  set par(leading: 0.42em, spacing: 0pt)
+  // `place` pins the band to the PAPER edge. Without it Typst anchors header content
+  // to the BOTTOM of the margin box, so every offset inside measured from the wrong
+  // origin: the title clipped at y=-0.5mm, and the divider rule tracked MARGIN_TOP
+  // at exactly 0.7x (padding and `v()` could not move it). All offsets below are
+  // therefore absolute distances from the top of the paper.
+  place(top + left, dy: HEADER_TOP_INSET)[
+    #grid(
+      columns: (1fr, auto),
+      align: (left + horizon, right + horizon),
+      stack(dir: ttb, spacing: HEADER_TITLE_DATE_GAP,
+        text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#101828"))[#title],
+        text(font: FONT_SANS, size: 7pt, weight: "regular", fill: rgb("#475467"))[#date],
+      ),
+      image(LOGO_PATH, height: 13pt),
+    )
+    #v(HEADER_RULE_GAP)
+    #line(length: 100%, stroke: 1.2pt + HEADER_DIVIDER_COLOR)
+  ]
 }
 
 // ------ Page footer (house convention) ------
 // Left: sectors.app. Right: disclosure pointer + the real page number.
 #let page-footer() = context {
   set text(font: FONT_SANS, size: FOOTER_SIZE, fill: rgb("#475467"))
-  line(length: 100%, stroke: 0.5pt + rgb("#e4e7ec"))
-  v(3pt)
-  grid(
-    columns: (1fr, auto),
-    align: (left, right),
-    [#FOOTER_LEFT],
-    [#FOOTER_RIGHT · #counter(page).display()],
-  )
+  set par(leading: 0.42em, spacing: 0pt)
+  // Bottom-anchored too: the inset lifts the rule clear of the paper edge and
+  // keeps it below the content area (MARGIN_BOTTOM must clear it).
+  pad(bottom: FOOTER_BOTTOM_INSET)[
+    #line(length: 100%, stroke: 0.5pt + rgb("#e4e7ec"))
+    #v(3pt)
+    #grid(
+      columns: (1fr, auto),
+      align: (left, right),
+      [#FOOTER_LEFT],
+      [#FOOTER_RIGHT · #counter(page).display()],
+    )
+  ]
 }
 
 // ------ Section header ------
