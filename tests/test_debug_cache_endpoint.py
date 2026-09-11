@@ -78,11 +78,38 @@ def test_debug_cache_bust_with_prefix_no_match(client: TestClient) -> None:
     assert r.json()["deleted"] == 0
 
 
-def test_debug_cache_prune_empty_returns_zero(client: TestClient) -> None:
-    """Prune on empty DB — no rows to delete — must be a 200 not a 500."""
-    r = client.post("/api/debug/cache/prune")
+def test_debug_cache_prune_empty_returns_zero(isolated_client: TestClient) -> None:
+    """Prune on an empty DB — no rows to delete — must be a 200, deleted=0.
+
+    Runs against the isolated tmp DB, NOT the prod cache file: the prod cache
+    legitimately holds expired rows (each one a billed credit), so asserting
+    "deleted == 0" against it made this test order-dependent and red whenever
+    a live run had left expired entries behind.
+    """
+    r = isolated_client.post("/api/debug/cache/prune")
     assert r.status_code == 200, f"got {r.status_code}: {r.text[:400]}"
     assert r.json()["deleted"] == 0
+
+
+def test_debug_cache_prune_deletes_only_expired(tmp_path, isolated_client: TestClient) -> None:
+    """Prune must drop expired rows, report the real count, and keep live ones.
+
+    The fixture wires the app to tmp_path/"dbg-iso.db", so seeding through a
+    SectorsCache on that same path exercises the real prune path end-to-end.
+    """
+    from server.storage import SectorsCache
+
+    seed = SectorsCache(db_path=str(tmp_path / "dbg-iso.db"))
+    seed.set("/v2/test/expired", None, {"x": 1}, ttl_seconds=-5)
+    seed.set("/v2/test/live", None, {"x": 2}, ttl_seconds=3600)
+
+    r = isolated_client.post("/api/debug/cache/prune")
+    assert r.status_code == 200, f"got {r.status_code}: {r.text[:400]}"
+    assert r.json()["deleted"] == 1, "prune must delete exactly the expired row"
+
+    stats = isolated_client.get("/api/debug/cache").json()
+    assert stats["n_entries"] == 1, "the unexpired row must survive prune"
+    assert stats["n_expired"] == 0
 
 
 def test_debug_endpoints_listed_in_root(client: TestClient) -> None:
