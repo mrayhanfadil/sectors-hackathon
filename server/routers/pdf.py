@@ -288,6 +288,11 @@ def render_html_for_ticker(ticker: str, template_override: Optional[str] = None)
     )
     env.filters["idr"] = _idr
     env.filters["pct"] = _pct
+    # House furniture (docs/rules/house-report-format.md). Macros are imported without
+    # context, so the computed date and the inline logo can only reach them as globals.
+    from server.report import house_format
+
+    house_format.install(env, data)
 
     tpl_file = TEMPLATE_FILES.get(template_name, "report_single.html")
     tpl = env.get_template(tpl_file)

@@ -3,9 +3,17 @@
 Binding rules for every generated report document (all archetypes: `single`, `sotp`,
 `infra`, `strategy`, `update`). A document that breaks any rule below is not shippable.
 
-Owner: research. Enforced at: `templates/typst/` (render), `templates/DATA_CONTRACT.md`
-(data), `agents/adk/agents/instructions.py` (agent output), `agents/critic.py` (gate).
+Owner: research. Enforced at: `templates/typst/` (Typst render),
+`templates/*.html` + `templates/macros.html` (the Jinja/HTML render the report API and
+the front end actually serve), `server/report/house_format.py` (the furniture both
+renderers share), `templates/DATA_CONTRACT.md` (data),
+`agents/adk/agents/instructions.py` (agent output), `agents/critic.py` (gate).
 Guards: `tests/test_exhibit_convention.py`, `tests/test_house_format_adoption.py`.
+
+Both render paths are independent template trees, so a rule has to hold in both. The
+fixed strings live once in `server/report/house_format.py` and in
+`templates/typst/common/theme.typ`, and the tests assert the two agree — retyping them
+is how the trees drifted apart before.
 
 ---
 

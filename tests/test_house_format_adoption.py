@@ -203,19 +203,7 @@ def test_production_renderer_maps_every_archetype_to_a_convention_template() -> 
         )
 
 
-@pytest.mark.skipif(shutil.which("typst") is None, reason="needs the typst CLI")
-def test_legacy_chromium_renderer_refuses_by_default(tmp_path: Path) -> None:
-    """The Chromium/Jinja path renders its own per-exhibit source lines and layout, so
-    it cannot produce a compliant house report. It must refuse, not silently emit one."""
-    payload = tmp_path / "report_data.json"
-    payload.write_text(json.dumps({"meta": {}, "exhibits": []}), encoding="utf-8")
-    result = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "render_pdf_chromium.py"), str(payload)],
-        capture_output=True, text=True, timeout=120, cwd=str(REPO_ROOT),
-    )
-    assert result.returncode == 2, f"legacy renderer did not refuse (rc={result.returncode})"
-    assert "REFUSED" in result.stderr
-    assert not (tmp_path / "report_data.pdf").exists()
+
 
 
 # ------------------------------------------------------------ end-to-end adoption
@@ -452,3 +440,176 @@ def test_exhibit_counter_is_monotonic_down_the_page(tmp_path: Path) -> None:
                 assert seq == sorted(seq), f"page {pi} column {col}: exhibit numbers descend {seq}"
                 checked += 1
     assert checked >= 1, "no multi-exhibit column was actually checked"
+
+
+# =====================================================================================
+# The LIVE path. The report the FE downloads comes from
+# GET /api/report/{ticker}/pdf -> server/routers/pdf.py -> Jinja -> Playwright, which
+# renders templates/*.html. The Typst tree is a separate template set with no router
+# reaching it, so proving the Typst templates comply proves nothing about the document
+# a reader actually gets. These tests exercise the Jinja path.
+# =====================================================================================
+
+# A self-contained payload: no fixture, no live fetch. Just enough shape to reach every
+# exhibit-emitting branch of report_single.html (chart, table, statement, peer table).
+_JINJA_PAYLOAD = {
+    "meta": {
+        "template": "single", "ticker": "TEST", "company_name": "Test Persero",
+        "sector": "Energi — Uji", "report_type": "Initiation",
+        "date": "31 Agt 2026", "language": "id",
+    },
+    "cover": {
+        "rating_box": {"action": "BUY", "tp": 1000, "prev_tp": None, "price": 900,
+                       "upside_pct": 11.1, "key_takeaways": []},
+        "vs_jci": {"ytd_abs": 1.0, "ytd_rel": 0.5, "source": "Sectors",
+                   "chart": {"labels": ["Jan", "Feb"], "series": [[1, 2], [1, 1]]}},
+        "shares": {"outstanding": 1.0, "unit": "bn", "free_float_pct": 25.0},
+        "shareholders": [{"name": "Publik", "pct": 40.0}],
+        "shareholders_src": "KSEI test-only",
+        "esg": {"found": False},
+    },
+    "financial_highlights": {"source": "test-only", "years": ["FY24A", "FY25A"],
+                             "rows": [["Revenue", 100, 110]]},
+    "segments": [],
+    "kpis": [],
+    "thesis": [{"headline": "Scale", "detail": "test-only", "source": "test-only provenance"}],
+    "valuation": {
+        "methods": [{"method": "DCF", "fv": 1000, "source": "test-only engine",
+                     "table": {"headers": ["Item", "FY26F"], "rows": [["FCF", 10]]}}],
+        "blended": None, "bands": None,
+    },
+    "financials": [
+        {"title": "Laba Rugi Ringkas", "source": "test-only provenance",
+         "headers": ["Rp bn", "FY24A"], "rows": [["Revenue", 100]]},
+    ],
+    "risks": [{"bucket": "Harga", "detail": "test-only", "source": "test-only provenance"}],
+    "peers": {"tables": [{"pillar": "Peers energi", "source": "test-only provenance",
+                          "headers": ["Ticker", "P/E"], "rows": [["XXXX", 8.0]]}]},
+    "exhibits": [],
+}
+
+
+def _render_jinja_html(payload: dict) -> str:
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    sys.path.insert(0, str(REPO_ROOT))
+    from render_pdf_chromium import render_html
+
+    _name, html = render_html(payload)
+    return html
+
+
+def test_live_html_path_labels_every_object_and_numbers_globally() -> None:
+    """The strongest guard on the live path: what the templates actually emit."""
+    html = _render_jinja_html(dict(_JINJA_PAYLOAD))
+
+    labels = [
+        int(m.group(1))
+        for m in re.finditer(r'class="exhibit-id">Exhibit (\d+)\.</span>', html)
+    ]
+    assert labels, "the live HTML report emitted no exhibit labels at all"
+    assert sorted(labels) == list(range(1, len(labels) + 1)), (
+        f"live HTML exhibit counter is not 1..N with no gaps/repeats: {sorted(labels)}"
+    )
+
+    # the label carries a period and a descriptive title, not a bare number
+    titled = re.findall(
+        r'class="exhibit-id">Exhibit \d+\.</span> <span class="exhibit-name">([^<]*)</span>',
+        html,
+    )
+    assert len(titled) == len(labels), "an exhibit label has no title span"
+    for title in titled:
+        assert title.strip() and title.strip().lower() not in {
+            "chart", "table", "graph", "data", "figure",
+        }, f"generic exhibit title rendered: {title!r}"
+
+
+def test_live_html_path_prints_the_constant_source_line_below_every_object() -> None:
+    html = _render_jinja_html(dict(_JINJA_PAYLOAD))
+    labels = len(re.findall(r'class="exhibit-id">Exhibit \d+\.</span>', html))
+    assert html.count(CONSTANT_SOURCE) == labels, (
+        f"{labels} exhibits but {html.count(CONSTANT_SOURCE)} constant source lines — "
+        "one exhibit never had its source flushed (check pagefoot(ns=...))"
+    )
+    # the source line is a sibling AFTER the label, never inside the label row
+    assert not re.search(r'class="exhibit-head">[^<]*<[^>]*>[^<]*Source:', html)
+    # and no ad-hoc per-object source is printed anywhere
+    assert not re.search(r'<div class="src-tag">', html)
+    assert "Sumber:" not in html
+
+
+def test_live_html_path_carries_the_house_furniture_on_every_page() -> None:
+    html = _render_jinja_html(dict(_JINJA_PAYLOAD))
+    pages = html.count('class="rhdr"')
+    assert pages >= 1
+    assert html.count(HOUSE_HEADER) == pages, "header title missing from some page"
+    assert html.count('class="rhdr-logo"') == pages, "logo missing from some page"
+    assert html.count('class="rhdr-rule"') == pages, "header divider missing from some page"
+    assert html.count(">sectors.app<") == pages, "footer left missing from some page"
+    assert html.count(HOUSE_FOOTER_RIGHT) == pages, "footer right missing from some page"
+    # the date is rendered in house format, from the payload's raw date
+    assert "Monday, 31 August 2026" in html, "publication date not in `Day, DD Month YYYY`"
+    assert "31 Agt 2026" not in html, "raw date string still rendered"
+
+
+def test_live_html_path_provenance_is_kept_but_not_printed() -> None:
+    html = _render_jinja_html(dict(_JINJA_PAYLOAD))
+    # the audit trail survives for the /html debug endpoint...
+    assert "test-only provenance" in html
+    # ...but only inside comments
+    for line in html.splitlines():
+        if "test-only provenance" in line:
+            assert line.strip().startswith("<!--"), f"provenance printed: {line.strip()[:80]}"
+
+
+def test_both_renderers_share_one_house_format_implementation() -> None:
+    """Two independent Jinja environments (the API and the standalone script) render the
+    same templates. The furniture must come from the shared module, not be re-typed."""
+    from server.report import house_format
+
+    assert house_format.HEADER_TITLE == HOUSE_HEADER
+    assert house_format.FOOTER_LEFT == HOUSE_FOOTER_LEFT
+    assert house_format.FOOTER_RIGHT == HOUSE_FOOTER_RIGHT
+    assert house_format.DIVIDER_COLOR == HOUSE_DIVIDER
+    assert f"Source: {house_format.SOURCE_LINE}" == CONSTANT_SOURCE
+
+    for rel in ("server/routers/pdf.py", "scripts/render_pdf_chromium.py"):
+        src = (REPO_ROOT / rel).read_text(encoding="utf-8")
+        assert "house_format.install(env" in src, f"{rel} does not install the house furniture"
+
+
+def test_house_format_module_matches_the_typst_theme() -> None:
+    """The Jinja and Typst trees are independent; the values must not drift."""
+    from server.report import house_format
+
+    c = _theme_constants()
+    assert c["HEADER_TITLE"] == f'"{house_format.HEADER_TITLE}"'
+    assert c["FOOTER_LEFT"] == f'"{house_format.FOOTER_LEFT}"'
+    assert c["FOOTER_RIGHT"] == f'"{house_format.FOOTER_RIGHT}"'
+    assert c["SOURCE_LINE"] == f'"{house_format.SOURCE_LINE}"'
+    assert c["HEADER_DIVIDER_COLOR"] == f'rgb("{house_format.DIVIDER_COLOR}")'
+
+
+@pytest.mark.parametrize("tpl_file", ["report_single", "report_sotp", "report_infra",
+                                      "report_strategy"])
+def test_every_template_flushes_a_pending_source_line_on_every_page(tpl_file: str) -> None:
+    """A page's last exhibit is flushed by the footer, so every page must both pass the
+    namespace to pagefoot() and end with one. A page missing its footer silently drops
+    the source line of its last exhibit."""
+    src = (REPO_ROOT / "templates" / f"{tpl_file}.html").read_text(encoding="utf-8")
+    pages = src.count('class="page"')
+    foots = len(re.findall(r"\{\{ m\.pagefoot\(", src))
+    with_ns = len(re.findall(r"\{\{ m\.pagefoot\(\d+, ns\) \}\}", src))
+    assert pages == foots, f"{tpl_file}: {pages} pages but {foots} pagefoot calls"
+    assert foots == with_ns, (
+        f"{tpl_file}: {foots - with_ns} pagefoot call(s) do not pass the namespace, so a "
+        "pending source line would be dropped"
+    )
+    assert "namespace(ex=0" in src, f"{tpl_file}: exhibit counter not initialised"
+
+
+@pytest.mark.parametrize("tpl_file", ["report_single", "report_sotp", "report_infra",
+                                      "report_strategy"])
+def test_no_template_prints_its_own_source_line(tpl_file: str) -> None:
+    src = (REPO_ROOT / "templates" / f"{tpl_file}.html").read_text(encoding="utf-8")
+    assert "src-tag" not in src, f"{tpl_file} still styles a per-object source tag"
+    assert "Sumber:" not in src, f"{tpl_file} still prints a per-object source line"

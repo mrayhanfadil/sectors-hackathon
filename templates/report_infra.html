@@ -4,7 +4,7 @@
    Catalyst quantified, Blended valuation 60/40, Historical bands STD±2, Shareholder pie.
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
-{% set ns = namespace(ex=0) %}
+{% set ns = namespace(ex=0, pending=false) %}
 {% set palette = {"brand": "#067647", "brand_dark": "#054f31", "accent": "#ecfdf3"} %}
 <html lang="id">
 <head>
@@ -16,7 +16,7 @@
 
 {# ================= PAGE 1 — COVER ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
     <div>
       <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
@@ -65,14 +65,14 @@
         {{ m.kv("Environmental", "%.2f"|format(cover.esg.scores.e)) }}
         {{ m.kv("Social", "%.2f"|format(cover.esg.scores.s)) }}
         {{ m.kv("Governance", "%.2f"|format(cover.esg.scores.g)) }}
-        <div class="src-tag">Sumber: {{ cover.esg.source }} ({{ cover.esg.date }})</div>
+        <!-- provenance (audit only, never printed; house-report-format.md §1) {{ cover.esg.source }} ({{ cover.esg.date }}) -->
       </div>
       {% endif %}
       {% if cover.shareholders %}
       <div class="card" style="margin-top:8pt;">
         <div class="small muted" style="margin-bottom:2pt;">PEMEGANG SAHAM</div>
         {% for h in cover.shareholders %}{{ m.kv(h.name, "%.2f%%"|format(h.pct)) }}{% endfor %}
-        <div class="src-tag">Sumber: {{ cover.shareholders_src or "IDX" }}</div>
+        <!-- provenance (audit only, never printed; house-report-format.md §1) {{ cover.shareholders_src or "IDX" }} -->
       </div>
       {% endif %}
     </div>
@@ -85,12 +85,12 @@
     {{ m.svg_vs_jci(cover.vs_jci.chart.labels or [], cover.vs_jci.chart.series[0] or [], cover.vs_jci.chart.series[1] or [], meta.ticker) }}
   </div>
   {% endif %}
-  {{ m.pagefoot(1) }}
+  {{ m.pagefoot(1, ns) }}
 </div>
 
 {# ================= PAGE 2 — OPERATIONAL KPIs (HERO) ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {{ m.section(1, "KPI Operasional — Hero Section") }}
   <p class="small muted">KPI per subsector (tenancy ratio = tenant/tower, fiber km) adalah tesis utama bisnis recurring infra — bukan hanya P&amp;L.</p>
 
@@ -112,15 +112,15 @@
       {% endfor %}
     </div>
     {% endif %}
-    {% if c.source %}<div class="src-tag">Sumber: {{ c.source }}</div>{% endif %}
+    {% if c.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ c.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(2) }}
+  {{ m.pagefoot(2, ns) }}
 </div>
 
 {# ================= PAGE 3 — SEGMENTS + QUARTERLY P&L ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {% if segments %}
   {{ m.section(3, "Segment Breakdown + Momentum Kuartalan") }}
   {{ m.exhibit_auto(ns, "Pendapatan per Segmen: 1H26 vs 1H25 + Q2-26 vs Q1-26", segments_src or "IDX Financial Reports") }}
@@ -132,12 +132,12 @@
   {{ m.exhibit_auto(ns, "Income Statement Kuartalan — 1H26 vs 1H25 + Q2-26 vs Q1-26", quarterly_pl.source) }}
   {{ m.table(quarterly_pl.headers, quarterly_pl.rows) }}
   {% endif %}
-  {{ m.pagefoot(3) }}
+  {{ m.pagefoot(3, ns) }}
 </div>
 
 {# ================= PAGE 4 — QUARTERLY BALANCE + RATIOS + OPERATIONAL KPI ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {% if quarterly_balance %}
   {{ m.section(4, "Balance Sheet & Rasio Kuartalan") }}
   {{ m.exhibit_auto(ns, "Balance Sheet Kuartalan", quarterly_balance.source) }}
@@ -153,12 +153,12 @@
   {{ m.exhibit_auto(ns, "Operational KPI Kuartalan (Net Add per Quarter)", quarterly_kpi.source) }}
   {{ m.table(quarterly_kpi.headers, quarterly_kpi.rows) }}
   {% endif %}
-  {{ m.pagefoot(4) }}
+  {{ m.pagefoot(4, ns) }}
 </div>
 
 {# ================= PAGE 5 — VALUATION: DCF + BLENDED + BANDS ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {{ m.section(5, "Valuasi — DCF Detail + Blended + Bands") }}
 
   {% for vm in valuation.methods %}
@@ -170,11 +170,11 @@
     {% endfor %}
   </div>
   {% endif %}
+  {{ m.exhibit_auto(ns, "Valuation Method — " ~ vm.method, vm.source) }}
   {% if vm.table %}{{ m.table(vm.table.headers, vm.table.rows, vm.table.footers or []) }}{% endif %}
   <div class="card-tint" style="margin:6pt 0;">
     <div class="kv"><span class="kv-l">Fair value ({{ vm.method }})</span>
       <span class="kv-v">Rp {{ vm.fv|idr }}</span></div>
-    <div class="src-tag">Engine: {{ vm.source }}</div>
   </div>
   {% endfor %}
 
@@ -234,7 +234,7 @@
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
-  {{ m.pagefoot(4) }}
+  {{ m.pagefoot(4, ns) }}
 </div>
 
 {# ================= PAGE 5 — VALUATION continued (DCF friend + recom) ================= #}
@@ -242,7 +242,7 @@
 
 {# ================= PAGE 6 — FINANCIAL HIGHLIGHTS + THESIS + EXHIBITS ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {% if financial_highlights %}
   {{ m.section(6, "Ringkasan Investasi — Financial Highlights (6 tahun)") }}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
@@ -254,52 +254,52 @@
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ loop.index }}. {{ t.headline }}</b>
     <p class="small">{{ t.detail }}</p>
-    {% if t.source %}<div class="src-tag">Sumber: {{ t.source }}</div>{% endif %}
+    {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(6) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
 {# ================= PAGE 8 — FULL FINANCIALS (Income / Balance / CF / Ratios) ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {% if financials %}
   {{ m.section(8, "Income Statement, Balance Sheet & Cash Flow") }}
   {% for stmt in financials %}
     {% if stmt.title == "Income Statement" or stmt.title == "Balance Sheet" or stmt.title == "Cash Flow Statement" %}
     <h3>{{ stmt.title }}</h3>
+    {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
     {{ m.table(stmt.headers, stmt.rows) }}
-    <div class="src-tag">Sumber: {{ stmt.source }}</div>
     {% endif %}
   {% endfor %}
   {% endif %}
-  {{ m.pagefoot(8) }}
+  {{ m.pagefoot(8, ns) }}
 </div>
 
 {# ================= PAGE 9 — FINANCIAL RATIOS (30+) ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {% if financials %}
   {% for stmt in financials %}
     {% if stmt.title and "Financial Ratios" in stmt.title %}
     {{ m.section(9, stmt.title) }}
+    {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
     {{ m.table(stmt.headers, stmt.rows) }}
-    <div class="src-tag">Sumber: {{ stmt.source }}</div>
     {% endif %}
   {% endfor %}
   {% endif %}
-  {{ m.pagefoot(9) }}
+  {{ m.pagefoot(9, ns) }}
 </div>
 
 {# ================= PAGE 7 — PEERS + RISKS ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.ticker if false else meta.date, meta.ticker) }}
+  {{ m.running() }}
   {{ m.section(8, "Perbandingan Peers") }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
+    {{ m.exhibit_auto(ns, "Peer Comparison — " ~ (meta.sector or pt.pillar), pt.source) }}
     {{ m.table(pt.headers, pt.rows) }}
-    <div class="src-tag">Sumber: {{ pt.source }}</div>
     {% endfor %}
   {% endif %}
 
@@ -308,15 +308,15 @@
   <div class="risk-bucket">
     <b>{{ r.bucket }}</b>
     <p class="small">{{ r.detail }}</p>
-    {% if r.source %}<div class="src-tag">Sumber: {{ r.source }}</div>{% endif %}
+    {% if r.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ r.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(6) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
 {# ================= PAGE 7 — RATING GUIDE + DISCLAIMER + CONTACT ================= #}
 <div class="page">
-  {{ m.running("RESEARCH — Equity Report", meta.date, meta.ticker) }}
+  {{ m.running() }}
   {{ m.section(10, "Rating Guide, Disclaimer & Kontak") }}
 
   {{ m.rating_guide() }}
@@ -343,7 +343,7 @@
   <p class="small muted"><b>Kantor Pusat</b>: {{ meta.head_office }}</p>
   {% endif %}
 
-  {{ m.pagefoot(7) }}
+  {{ m.pagefoot(7, ns) }}
 </div>
 
 {{ m.chartjs() }}

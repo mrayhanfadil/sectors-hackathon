@@ -89,6 +89,14 @@ def render_html(report_data: dict) -> tuple[str, str]:
 
     env.filters["idr"] = _idr
     env.filters["pct"] = _pct
+    # Same house furniture as the API path — one implementation, so the two Jinja
+    # environments cannot drift into rendering different documents from one payload.
+    _root = HERE.parent
+    if str(_root) not in sys.path:
+        sys.path.insert(0, str(_root))
+    from server.report import house_format
+
+    house_format.install(env, report_data)
     tpl = env.get_template(TEMPLATE_FILES[template_name])
     html = tpl.render(**report_data, template_reason=reason, palette={
         "brand": "#1d4ed8", "brand_dark": "#152c6e", "accent": "#eef2ff",
@@ -134,26 +142,10 @@ def main() -> None:
     ap.add_argument("--html-out", help="also dump intermediate html")
     args = ap.parse_args()
 
-    # HOUSE FORMAT GUARD (docs/rules/house-report-format.md).
-    # This Chromium/Jinja path predates the house convention and renders its own
-    # per-exhibit source lines and layout, so it cannot produce a compliant house
-    # report. It is kept only for legacy HTML artifacts. Refuse by default rather
-    # than silently emitting a report PDF whose exhibits violate the format.
-    import os
-
-    if os.getenv("ALLOW_LEGACY_CHROMIUM_RENDERER", "") not in ("1", "true", "yes"):
-        print(
-            "REFUSED: the Chromium/Jinja renderer does not implement the house report "
-            "format (exhibit labeling, global numbering, constant source line, page "
-            "furniture).\n"
-            "Use the Typst renderer instead:\n"
-            "  .venv/bin/python scripts/render_typst.py <report_data.json> --out <out.pdf>\n"
-            "Set ALLOW_LEGACY_CHROMIUM_RENDERER=1 only for legacy HTML artifacts, never "
-            "for a report PDF.",
-            file=sys.stderr,
-        )
-        raise SystemExit(2)
-
+    # No compliance guard here: this path renders templates/macros.html, which
+    # implements the house format (docs/rules/house-report-format.md) and shares its
+    # furniture with the Typst path via server/report/house_format.py. Both renderers
+    # are covered by tests/test_house_format_adoption.py.
     report_data = json.loads(Path(args.report_data).read_text(encoding="utf-8"))
     errs = validate(report_data)
     if errs:
