@@ -83,6 +83,9 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
     timestamp = _now_iso()
     
     lower_claim = claim_clean.lower()
+    # HOUSE FORMAT (docs/rules/house-report-format.md §2): exhibits are numbered by
+    # the renderer's global counter, so this engine references an exhibit by TITLE only.
+    # A literal exhibit number here would drift the moment a chart moves in the PDF.
     
     # 1. Anti-sycophancy check for opinionated pressure / rating changes without evidence
     if any(phrase in lower_claim for phrase in ["change rating to buy", "make it buy", "should be buy", "ganti jadi buy", "ubah rekomendasi"]):
@@ -91,7 +94,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
             f"Anti-sycophancy gate triggered: Rating for {t} is strictly derived from deterministic valuation math "
             f"(DCF/blended upside vs current price), not subjective discretion. Recommendation remains algorithmically locked."
         )
-        exhibit_ref = "Exhibit 1: Rating Guide & Valuation Summary"
+        exhibit_ref = "Rating Guide & Valuation Summary"
         correction = None
 
     # 2. WACC / Cost of Capital challenges
@@ -103,7 +106,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 "In contrast, MTEL is a telecom tower operator with WACC 10.10% reflecting 60.8% equity weighting and 12.74% CoE. "
                 "Each discount rate reflects specific capital structures and asset risk profiles."
             )
-            exhibit_ref = "Exhibit 4: Valuation Methodology & WACC Schedule"
+            exhibit_ref = "Valuation Methodology & WACC Schedule"
             correction = None
         elif t == "MTEL" and ("10.1" in lower_claim or "high" in lower_claim or "low" in lower_claim):
             verdict = "defend"
@@ -111,7 +114,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 "MTEL WACC 10.10% uses verified Kiwoom benchmark: Rf 6.96%, Beta 0.65, ERP 8.89% -> CoE 12.74%, "
                 "CoD 6.00%, We 60.8% / Wd 39.2%, Terminal g 1.50%. Generates DCF target Rp 630/share."
             )
-            exhibit_ref = "Exhibit 5: MTEL DCF Parameters"
+            exhibit_ref = "MTEL DCF Parameters"
             correction = None
         else:
             wacc_val = assum.get("wacc", 0.095)
@@ -120,7 +123,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 f"WACC of {wacc_val*100:.2f}% for {t} is calibrated based on 10Y Indo Gov Bond Rf ({assum.get('rf', 0.0696)*100:.2f}%) "
                 f"plus sector Beta ({assum.get('beta', 0.85)}) × ERP ({assum.get('erp', 0.06)*100:.2f}%). Formula: We*CoE + Wd*CoD*(1-tax)."
             )
-            exhibit_ref = "Exhibit 4: Discount Rate Composition"
+            exhibit_ref = "Discount Rate Composition"
             correction = None
 
     # 3. Operational KPI & Tenancy challenges
@@ -131,12 +134,12 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 "MTEL Tenancy Ratio 1.57x is mathematically verified: 63,866 total tenants divided by 40,563 towers = 1.574x. "
                 "Supported by 59,239 km fiber (+9% YoY) and colocation growth (+10% YoY) as of 1H26."
             )
-            exhibit_ref = "Exhibit 6: Operational KPIs & Infrastructure Footprint"
+            exhibit_ref = "Operational KPIs & Infrastructure Footprint"
             correction = None
         else:
             verdict = "defend"
             evidence = f"Operational KPIs for {t} are sourced directly from IDX disclosures and company presentations."
-            exhibit_ref = "Exhibit 6: Operational Highlights"
+            exhibit_ref = "Operational Highlights"
             correction = None
 
     # 4. SOTP / Holdco Discount challenges
@@ -147,7 +150,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 "ADRO SOTP includes explicit 15% holdco discount bridging pre-discount equity of Rp 4,120/sh "
                 "to post-spin target of Rp 3,502/sh per BRIDS research benchmark."
             )
-            exhibit_ref = "Exhibit 8: SOTP Demerger Bridge & Holdco Discount"
+            exhibit_ref = "SOTP Demerger Bridge & Holdco Discount"
             correction = None
         elif t == "CDIA":
             verdict = "defend"
@@ -155,19 +158,19 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
                 "CDIA 4-pillar SOTP (Energy 55%, Logistics 34%, Water, Ports) reflects sum of individual segment peer multiples "
                 "benchmarked against POWR, Sembcorp, Westports, and HATM."
             )
-            exhibit_ref = "Exhibit 8: Conglomerate SOTP Matrix"
+            exhibit_ref = "Conglomerate SOTP Matrix"
             correction = None
         else:
             verdict = "defend"
             evidence = f"SOTP reconciliation for {t} verifies that segment values sum to 100% of enterprise assets."
-            exhibit_ref = "Exhibit 8: SOTP Reconciliation"
+            exhibit_ref = "SOTP Reconciliation"
             correction = None
 
     # 5. Arithmetic error conceded if an obvious mathematical contradiction is pointed out
     elif "math error" in lower_claim or "sum mismatch" in lower_claim:
         verdict = "concede"
         evidence = "Mathematical assertion conceded for recalculation audit by QA Critic."
-        exhibit_ref = "Audit Queue"
+        exhibit_ref = "Audit Queue"  # not an exhibit — an internal queue, no number
         correction = "Re-running deterministic engine verification to reconcile discrepancy."
 
     # 6. Default robust defense with evidence
@@ -177,7 +180,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
             f"Valuation and thesis for {t} are anchored in deterministic math (DCF/Multiples/KPI) "
             f"with verified inputs from IDX and historical financial statements. All assumptions remain auditable."
         )
-        exhibit_ref = "Exhibit 1-5"
+        exhibit_ref = "Cover rating box + valuation and KPI exhibits"
         correction = None
 
     result = {

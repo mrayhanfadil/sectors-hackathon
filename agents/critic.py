@@ -55,14 +55,40 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
                 reasons.append(f"Tenancy ratio mismatch: reported {tenancy} vs calculated {calc_ratio:.2f}x")
                 fixes.append("Update tenancy ratio to match tenants / towers")
 
-    # 4. Source per exhibit check
+    # 4. Exhibit house-format checks (docs/rules/house-report-format.md)
+    #
+    # Note on diagnostics: do NOT synthesise an "Exhibit N" label here. Exhibit
+    # numbers belong to the renderer's global counter, so inventing one in a gate
+    # message reintroduces exactly the manual numbering the rule bans and gives the
+    # reader a number that will not match the PDF. Refer to exhibits by index+title.
     exhibits = report_data.get("exhibits") or []
+    _GENERIC_TITLES = {"chart", "table", "graph", "data", "figure", "exhibit"}
     for i, ex in enumerate(exhibits, 1):
-        src = ex.get("source") if isinstance(ex, dict) else None
+        if not isinstance(ex, dict):
+            reasons.append(f"exhibit #{i} is not an object")
+            fixes.append(f"Emit exhibit #{i} as {{title, chart, source}}")
+            continue
+        label = f"exhibit #{i} ({ex.get('title') or 'untitled'})"
+        src = ex.get("source")
         if not src or not str(src).strip():
-            ex_id = ex.get("id", f"Exhibit {i}") if isinstance(ex, dict) else f"Exhibit {i}"
-            reasons.append(f"{ex_id} missing mandatory Source disclosure")
-            fixes.append(f"Add verifiable Source citation to {ex_id}")
+            reasons.append(f"{label} missing internal provenance `source`")
+            fixes.append(f"Add verifiable provenance to {label} (kept for audit, not printed)")
+        # A pre-numbered id is a local variable pretending to be the global counter.
+        ex_id = str(ex.get("id") or "").strip()
+        if ex_id:
+            reasons.append(
+                f"{label} carries a pre-numbered id {ex_id!r} — exhibit numbers come from "
+                "the renderer's global counter and must never be supplied in the payload"
+            )
+            fixes.append(f"Drop `id` from {label}; the renderer numbers it")
+        # Generic labels are explicitly non-compliant.
+        title = str(ex.get("title") or "").strip()
+        if title.lower() in _GENERIC_TITLES:
+            reasons.append(
+                f"{label} uses a generic title {title!r} — labels must describe the object "
+                "(e.g. 'Revenue and Revenue Growth (2024A-2028F)')"
+            )
+            fixes.append(f"Give {label} a descriptive title")
 
     # 5. News url + date provenance check
     news_items = report_data.get("news") or []

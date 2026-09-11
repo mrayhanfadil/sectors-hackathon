@@ -69,7 +69,16 @@ gracefully via `{{ if }}` guards instead of crashing the render.
   },
   "catalysts": [{"name": "PST & UMT Merger", "effect": "opex/capex efficiency",
                   "quantified": {"tenants": "+3,000-3,500", "revenue_idr_bn": "+360-420", "by": "FY27-29"}}],
-  "exhibits": [{"id": "Exhibit 1", "title": "...", "chart": {"type": "line|bar|pie|doughnut",
+  // HOUSE FORMAT (docs/rules/house-report-format.md):
+  //   - NO "id": exhibit numbers come from the renderer's global figure counter, so a
+  //     payload must never pre-number them. A hand-written "Exhibit 1" here is a
+  //     local variable pretending to be a global counter and desyncs on any revision.
+  //   - `source` is INTERNAL PROVENANCE (audit trail), NOT the printed line. The
+  //     renderer stamps the visible "Source: Company, Team Estimates" under every
+  //     object, without exception. Keep `source` populated for audit builds.
+  //   - `title` is descriptive, never generic ("Chart"/"Table" is a REJECT).
+  "exhibits": [{"title": "Revenue and Revenue Growth (2024A-2028F)",
+                 "chart": {"type": "line|bar|pie|doughnut",
                  "series": [...]}, "source": "SKK Migas, data diolah"}],
   "disclaimer": {"text": "<OJK boilerplate from disclaimer-template.md, ID locale>"}
 }
@@ -103,15 +112,18 @@ by the orchestrator for market-level reports (JPM overlay).
 | 6 | Segments | full segment table | + QoQ + YoY | — |
 | 7 | Financials 6Y + ratios | same | same | Economics per sector |
 | 8 | Risks buckets | pillar-specific | infra-specific | Flows/MSCI + Danantara |
-| 9 | Exhibits (charts w/ source) | same | same | 60+ exhibits paginated |
+| 9 | Exhibits (charts, auto-numbered, house source line) | same | same | 60+ exhibits paginated |
 | 10 | Disclaimer OJK | same | same | Disclosures |
 
-Every exhibit row carries `source` — render aborts (fail-loud) if any exhibit lacks one.
+Every exhibit row carries `source` as **internal provenance** (audit trail) — render aborts
+(fail-loud) if any exhibit lacks one. That field is never printed: the visible line under
+every object is always `Source: Company, Team Estimates` (house format §1).
 
 ## Validation rules enforced by renderer pre-flight
 
 1. `valuation.blended.weights` sums to 100 (Critic rule from plan §3).
-2. Every `exhibits[*]` has non-empty `source`.
+2. Every `exhibits[*]` has non-empty `source` (internal provenance) and must NOT carry a
+   pre-numbered `id` — exhibit numbers are owned by the renderer's global counter.
 3. `segments[*].share_pct` sums to 100 ± 0.5 when >1 segment (else template must hide the pie).
 4. `rating_box.upside_pct == round((tp - price) / price * 100, 1)` (deterministic recompute, abort on mismatch).
 5. `news[*]` has url + date; `sentiment.gauge` in 0..100.

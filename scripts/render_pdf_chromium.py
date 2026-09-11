@@ -40,9 +40,11 @@ def validate(report_data: dict) -> list[str]:
         if abs(total - 100) > 0.001:
             errors.append(f"blended weights sum to {total}, expected 100")
 
-    for ex in report_data.get("exhibits") or []:
+    # Exhibits are not pre-numbered (house format §2), so identify one by its title,
+    # never by an `id` the payload is not allowed to carry.
+    for i, ex in enumerate(report_data.get("exhibits") or [], 1):
         if not (ex.get("source") or "").strip():
-            errors.append(f"exhibit '{ex.get('id')}' missing source")
+            errors.append(f"exhibit #{i} ({ex.get('title') or 'untitled'}) missing source")
 
     segments = report_data.get("segments") or []
     if len(segments) > 1:
@@ -131,6 +133,26 @@ def main() -> None:
     ap.add_argument("--out", help="output pdf path")
     ap.add_argument("--html-out", help="also dump intermediate html")
     args = ap.parse_args()
+
+    # HOUSE FORMAT GUARD (docs/rules/house-report-format.md).
+    # This Chromium/Jinja path predates the house convention and renders its own
+    # per-exhibit source lines and layout, so it cannot produce a compliant house
+    # report. It is kept only for legacy HTML artifacts. Refuse by default rather
+    # than silently emitting a report PDF whose exhibits violate the format.
+    import os
+
+    if os.getenv("ALLOW_LEGACY_CHROMIUM_RENDERER", "") not in ("1", "true", "yes"):
+        print(
+            "REFUSED: the Chromium/Jinja renderer does not implement the house report "
+            "format (exhibit labeling, global numbering, constant source line, page "
+            "furniture).\n"
+            "Use the Typst renderer instead:\n"
+            "  .venv/bin/python scripts/render_typst.py <report_data.json> --out <out.pdf>\n"
+            "Set ALLOW_LEGACY_CHROMIUM_RENDERER=1 only for legacy HTML artifacts, never "
+            "for a report PDF.",
+            file=sys.stderr,
+        )
+        raise SystemExit(2)
 
     report_data = json.loads(Path(args.report_data).read_text(encoding="utf-8"))
     errs = validate(report_data)

@@ -274,6 +274,8 @@ def main() -> None:
     ap.add_argument("--renderer", default="typst", choices=["typst", "chromium"])
     args = ap.parse_args()
     if args.renderer == "chromium":
+        # Delegates to a renderer that does not implement the house format; it
+        # refuses unless ALLOW_LEGACY_CHROMIUM_RENDERER is set (see that module).
         sys.argv = ["render_pdf_chromium.py", args.report_data] + (["--out", args.out] if args.out else [])
         from render_pdf_chromium import main as legacy_main
         legacy_main()

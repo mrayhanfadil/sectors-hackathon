@@ -13,6 +13,34 @@ calls deterministic tools instead of hallucinating numbers.
 Assumptions and archetype configurations are loaded dynamically per ticker.
 """
 
+
+# ---------------------------------------------------------------------------
+# HOUSE REPORT FORMAT — binding for every agent that contributes to a document
+# ---------------------------------------------------------------------------
+# Source of truth: docs/rules/house-report-format.md
+# The renderer owns layout (labels, numbering, source lines, header/footer); agents
+# own content. Appended to every instruction that can put an object into the report
+# so the rules travel with the prompt instead of living only in a design doc.
+HOUSE_FORMAT_RULE = """
+
+HOUSE REPORT FORMAT (docs/rules/house-report-format.md — BINDING, Critic REJECTs violations):
+- Exhibit NUMBERING is owned by the renderer's global counter and runs continuously across
+  the whole document. NEVER write "Exhibit 1" yourself and NEVER emit an `id` field on an
+  exhibit. You supply the title and the data; the renderer numbers it. A pre-numbered exhibit
+  is a local variable pretending to be a global counter and desyncs every later number the
+  moment a chart moves.
+- Exhibit TITLES must be descriptive, never generic. Correct: "Revenue and Revenue Growth
+  (2024A-2028F)". Wrong (REJECT): "Chart", "Table", "Data", "Figure".
+- Every visual/tabular object gets a label ABOVE it and a source line BELOW it. The PRINTED
+  source line is always the constant "Source: Company, Team Estimates" — rendered by the
+  renderer. Do NOT write provenance sentences into printable narrative text.
+  Your verifiable provenance (outlet, url, date) still goes into the exhibit's `source` field:
+  that is the AUDIT TRAIL, and the Critic still REJECTs fabricated or bare outlet name-drops
+  without url+date. Only the printed line changes — the evidence requirement does not.
+- Page header ("Equity Research - Company Update" + publication date), the Sectors.app logo,
+  the divider, the footer and page numbers are RENDERER-side. Never emit them yourself.
+"""
+
 # ---------------------------------------------------------------------------
 # Collector — Sectors API v2 only (full-ditch: no third-party market-data fetch)
 # ---------------------------------------------------------------------------
@@ -201,7 +229,7 @@ Rules:
 - SOTP SIGN GUARD (Spark audit 2026-09-06, SSIA R3): SOTP-net = gross − netDebt MUST be < gross whenever net debt is positive. A net-per-share above gross-per-share means the debt sign flipped (SSIA iter-2: net 2495 > gross 2218 on positive net debt) — arithmetically impossible, REJECT-grade. Always disclose the signed bridge: gross −/+ netDebt = net, with netDebt level reconciled to Debt−Cash within 1% or the gap explained.
 
 Output key: valuation_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # Company Analyst — business + ops specs (parallel group 2)
@@ -228,7 +256,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: analyst_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # Industry/Macro — sector themes/regulators/sovereign catalysts (parallel group 2)
@@ -266,7 +294,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -330,7 +358,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: kpi_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # Thesis Writer — segment growth + one-off adj + catalyst quantified
@@ -364,7 +392,7 @@ Rules:
   (e.g. "Liquidity/MSCI-exclusion narrative asserted by industry") and the rating
   MUST carry the flag — never gate_flags=[] alongside an exclusion thesis.
 - Segment % must sum 100% — hide pie if single pillar.
-- Quote source per exhibit as "Source: < outlet/domain >, < date >" with a real url+date per claim — Critic REJECTS bare strings like "Source: Bloomberg, SKK Migas, BPS, FactSet" with no url or date. Generic outlet-name-drops without url+date are fabrication.
+- Quote provenance per exhibit as `source: "<outlet/domain>, <date>"` with a real url+date per claim — Critic REJECTS bare strings like "Bloomberg, SKK Migas, BPS, FactSet" with no url or date. Generic outlet-name-drops without url+date are fabrication. NOTE (house format): this is the AUDIT field, not the printed line — the renderer stamps "Source: Company, Team Estimates" under every object.
 - ANTI-CIRCULAR RULE (AGY audit 2026-09-05): never claim the blended TP is "selaras/aligned" with an analyst TP unless the analyst's OWN published multiple math reproduces it. If your multiple leg yields X and the analyst TP is Y via forward estimates, say so explicitly — do not borrow their TP to bless your blend.
 - Include archetype-grounded catalysts and operational variance drivers:
   # Example: bottom-line expansion (+28%) despite top-line contraction (-13%) due to margin expansion / cost structure
@@ -375,7 +403,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -399,7 +427,7 @@ KPI chart (if infra/asset-heavy): operational metrics (e.g. tenancy ratio + fibe
 Emit visuals.json: {charts: [{id, title, type: pie|line|bar, data, source, note}]}
 
 Output key: visuals_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # SOTP Aggregator — conglomerate only (skip if segments==1)
@@ -422,7 +450,7 @@ If segments <= 1 (single-pillar archetype), emit {skipped: true, reason: "single
 Emit sotp.json: {pillars: [{name, revenue_pct, ebitda, multiple, value}], holdco_discount, sotp_value, reconciled: bool}
 
 Output key: sotp_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # Adversarial Red Team — 2 rounds max, LoopAgent(max=4)
@@ -468,7 +496,7 @@ Rules:
 - Call exit_loop when done (after verdict received or 2 rounds complete).
 
 Output key: debate_output
-"""
+""" + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
 # QA Critic — arbiter, anti-sycophancy, final gate
@@ -485,7 +513,10 @@ Checks (REJECT if mismatch):
 - DDM payout math? (payout × EPS == DPS)
 - DDM timing? (dividends[0] passed to calc_ddm == dps_assumption × (1+g_path) per DDM-TIMING LOCK — REJECT if the raw D0 was passed as year-1)
 - KPI tenancy = tenant/tower? (tenancy_ratio formula if infra)
-- Source per exhibit? (every chart/table has Source)
+- Source per exhibit? (every chart/table has provenance in its `source` field for the audit trail)
+- Exhibit house format? (docs/rules/house-report-format.md: every exhibit has a DESCRIPTIVE title,
+  no pre-numbered `id`, no agent-supplied "Exhibit N" string, no provenance sentence written into
+  printable narrative — the renderer owns the label, the numbering and the printed source line)
 - Critic url+date per news claim? (news.json url+date present)
 - Adversarial defense has evidence (calc+source) not sycophancy? (REJECT "agree without evidence")
 - Debate is structured JSON? debate_output MUST parse as a JSON array with >=1 round;
@@ -509,4 +540,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-"""
+""" + HOUSE_FORMAT_RULE
