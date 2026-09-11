@@ -2,13 +2,13 @@
 #import "theme.typ": *
 #import "cover.typ": *
 
-#show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: none)
 #let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")
+#show: set-page-defaults.with(date: m.date)
 #let cover = data.at("cover").at("rating_box")
 #let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
 #let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
@@ -157,8 +157,8 @@
       #method-selection-panel(gate-verdict, palette: PALETTE)
 
       #v(4pt)
+      #exhibit-header("Informasi Pasar & Saham " + m.ticker, data.at("cover", default: (:)).at("market_src", default: "-"))
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI SAHAM]
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
         #v(2.5pt)
@@ -181,7 +181,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // // =====================================================================
 // PAGE 2 — KPI HERO (OPERATIONAL METRICS)
@@ -277,7 +277,7 @@
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 3 — FINANCIAL HIGHLIGHTS & INVESTMENT THESIS
@@ -372,7 +372,7 @@
   }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 4 — VALUATION (DCF, MULTIPLES, BLENDED & BANDS)
@@ -498,7 +498,8 @@
       ("Posisi Harga Kini", "-", "Rp " + nstr(cover.price), "Valuasi Wajar"),
     )
   }
-  #exhibit-header("Pita Valuasi Historis P/BV 3-Tahun (STD±2)", "IDX & Analisis Data")
+  #exhibit-mark("IDX & Analisis Data")
+    #exhibit-figure("Pita Valuasi Historis P/BV 3-Tahun (STD±2)") <ex-pbv>
   #v(2pt)
   #if bands != none and bands.at("rows", default: ()).len() > 0 {
     fin-table(
@@ -507,7 +508,7 @@
       palette: PALETTE,
     );
   } else {
-    text(size: 7.2pt, fill: PALETTE.muted)[Pita historis tidak disajikan — riwayat book value tidak komparabel pasca-akuisisi Aster (ekuitas USD 2,93 miliar menjadi USD 4,66 miliar). Lihat P/B spot 2,10x pada Exhibit 13.];
+    text(size: 7.2pt, fill: PALETTE.muted)[Pita historis tidak disajikan — riwayat book value tidak komparabel pasca-akuisisi Aster (ekuitas USD 2,93 miliar menjadi USD 4,66 miliar). Lihat P/B spot 2,10x pada @ex-pbv.];
   }
 
   #v(6pt)
@@ -519,7 +520,7 @@
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 5 — COMPREHENSIVE DCF DEEP DIVE
@@ -605,7 +606,7 @@
   #if false { }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 6 — FINANCIAL STATEMENTS 6Y (INCOME, BALANCE & CASHFLOW)
@@ -674,7 +675,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 7 — PEERS, RISKS, RATING GUIDE & DISCLAIMER
@@ -727,9 +728,13 @@
     text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik P/E tidak disajikan — P/E trailing tak bermakna di trough siklikal (TPIA 139x, peers terdistorsi).];
   }
 
-  #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
-    pagebreak();
-  }
+])
+
+#pagebreak(weak: true)
+// PAGE 8 — investment risks, rating guide and the regulatory disclosure the
+// footer points at. Split from page 7 so neither page overflows its paper.
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 8, PALETTE, [
+  #section-header(7, "Investment Risks & Disclosure", PALETTE, sub: "Menjawab: Apa risiko investasi utama, dan bagaimana pemeringkatan rekomendasi kami?")
   #text(size: 8.5pt, weight: "bold", fill: PALETTE.brand_dark)[Investment Risks]
   #v(2pt)
   #let risks_list = data.at("risks", default: ())

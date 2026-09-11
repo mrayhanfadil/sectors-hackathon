@@ -5,13 +5,13 @@
 #import "../common/theme.typ": *
 #import "../common/cover.typ": *
 
-#show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "JCI")
 #let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")
+#show: set-page-defaults.with(date: m.date)
 #let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
 #let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
 
@@ -130,8 +130,8 @@
       #method-selection-panel(gate-verdict, palette: PALETTE)
 
       #v(4pt)
+      #exhibit-header("Parameter Valuasi Indeks — Target IHSG 2026", "Model proyeksi valuasi indeks")
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[PARAMETER VALUASI INDEKS]
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Composite index targets, forward valuation multiples, and aggregate return metrics.]
         #v(2.5pt)
@@ -151,8 +151,8 @@
       ]
 
       #v(4pt)
+      #exhibit-header("Panduan Alokasi Aset 2026 (Equities / Bonds / Cash)", "Strategi alokasi portofolio riset")
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[PANDUAN ALOKASI ASET 2026]
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Asset allocation weighting recommendation across equities, fixed income, and cash.]
         #v(2.5pt)
@@ -166,8 +166,8 @@
       ]
 
       #v(4pt)
+      #exhibit-header("Sektor Top Picks 2026", "Semesta riset ekuitas")
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SEKTOR TOP PICKS]
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[High-conviction sectoral exposures and individual equity selection priorities.]
         #v(2pt)
@@ -182,7 +182,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 2 — INDEX TARGET SCENARIOS (BULL / BASE / BEAR + MATH DERIVATION)
@@ -294,7 +294,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 3 — THEMATICS + SECTOR POSITIONING GRID + TOP PICKS TABLE
@@ -392,7 +392,7 @@
 #v(2pt)
 #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Top Picks ilustratif, statis Sep 2026 — cross-check via Sectors screener pending.]
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 4 — FOREIGN FLOWS & BP DANANTARA
@@ -464,7 +464,7 @@
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 5 — RATING GUIDE & DISCLAIMER

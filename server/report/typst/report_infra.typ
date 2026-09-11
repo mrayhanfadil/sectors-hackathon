@@ -5,13 +5,13 @@
 #import "theme.typ": *
 #import "cover.typ": *
 
-#show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "MTEL")
 #let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")
+#show: set-page-defaults.with(date: m.date)
 #let cover = data.at("cover").at("rating_box")
 #let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
 #let unit = m.at("report_unit", default: if data.at("quarterly_pl", default: (:)).at("headers", default: ()).len() > 0 { data.quarterly_pl.headers.at(0) } else { "Rp Miliar" })
@@ -190,8 +190,8 @@
       #method-selection-panel(gate-verdict, palette: PALETTE)
 
       #v(4pt)
+      #exhibit-header("Ringkasan Pasar & Likuiditas Saham " + m.ticker, data.at("cover", default: (:)).at("market_src", default: "-"))
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR & SAHAM]
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
         #v(2.5pt)
@@ -212,8 +212,8 @@
       ]
 
       #v(5pt)
+      #exhibit-header("Struktur Kepemilikan Saham " + m.ticker, data.cover.at("shareholders_src", default: "-"))
       #card(PALETTE)[
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[STRUKTUR KEPEMILIKAN]
         #v(2.5pt)
         #let sh-list = data.cover.at("shareholders", default: ())
         #grid(
@@ -225,13 +225,12 @@
           )).flatten()
         )
         #v(2pt)
-        #text(size: 6.2pt, style: "italic", fill: PALETTE.muted)[Source: #SOURCE_LINE]
       ]
 
       #v(5pt)
+      #exhibit-header("Skor ESG (E / S / G) " + m.ticker, "Sustainalytics (public summary)")
       #card(PALETTE)[
         #let esg = data.cover.at("esg", default: (:))
-        #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[SKOR ESG (#upper(esg.at("source", default: "SUSTAINALYTICS")) #esg.at("date", default: "2026"))]
         #v(2.5pt)
         #let scores = esg.at("scores", default: (:))
         #grid(
@@ -247,7 +246,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 2 — KPI OPERASIONAL HERO & KATALIS TERKUANTIFIKASI
@@ -318,7 +317,7 @@
   }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 3 — SEGMENT BREAKDOWN QUARTERLY + INCOME STATEMENT QUARTERLY
@@ -358,7 +357,7 @@
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 4 — BALANCE SHEET, RATIOS & OPERATIONAL KPI QUARTERLY
@@ -393,7 +392,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 5 — DCF TABLE + BLENDED VALUATION + P/BV BANDS
@@ -487,7 +486,7 @@
   }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 6 — COMPREHENSIVE DCF DEEP DIVE (AUDITABLE ENGINE)
@@ -587,7 +586,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 7 — FINANCIAL HIGHLIGHTS 6Y & INVESTMENT THESIS
@@ -630,7 +629,7 @@
   }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 8 — INCOME STATEMENT 6Y & BALANCE SHEET 6Y
@@ -659,7 +658,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 9 — CASH FLOW 6Y & COMPREHENSIVE RATIOS (30+)
@@ -694,7 +693,7 @@
   )
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 10 — PEERS COMPARISON & RISK ANALYSIS
@@ -731,7 +730,7 @@
   }
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 11 — RATING GUIDE (9 ROWS), REGULATORY DISCLAIMER & CONTACT

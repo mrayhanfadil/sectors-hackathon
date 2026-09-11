@@ -4,9 +4,13 @@
 // sidebar 64mm / main 1fr, zero dead space.
 // =====================================================================
 #import "../common/theme.typ": *
-#let m = sys.inputs.at("ticker", default: "BBRI")
+#let ticker = sys.inputs.at("ticker", default: "BBRI")
+#let m = ticker  // legacy alias still referenced by the TICK fallback below
 #let data = json(sys.inputs.at("data_path", default: "/home/fadil/projects/sectors-hackathon/output/cache/render_bbri/report_data.json"))
 #let meta = data.at("meta", default: (:))
+// House furniture (header/footer) is drawn natively by the theme on every page;
+// the publication date feeds the running header.
+#show: set-page-defaults.with(date: meta.at("date", default: ""))
 #let INK = rgb("#101828")
 #let MUT = rgb("#475467")
 #let NAVY = rgb("#004b93")
@@ -16,36 +20,15 @@
 #let LINEG = rgb("#e5e9f0")
 #let SANS = "Liberation Sans"
 #let PAL2 = (brand: NAVY, brand_dark: NAVY_D, accent: TINT, ink: INK, muted: MUT, line: LINEG, band: ZEBRA, paper: white, pos: rgb("#067647"), neg: rgb("#b42318"))
+#set text(font: SANS, size: 8pt, fill: INK)
 
-#let banner() = {
-  set text(font: SANS)
-  grid(columns: (1fr, auto), gutter: 6pt,
-    [#text(size: 12pt, weight: "bold", fill: NAVY)[Equity Research – Company Update]
-     #text(size: 8pt, fill: MUT)[#meta.at("date", default: "")]],
-    align(right)[#text(size: 11pt, weight: "black", fill: NAVY)[SECTORS] #text(size: 8pt, fill: MUT)[Research]],
-  )
-  v(2pt)
-  line(length: 100%, stroke: 1.5pt + NAVY)
-  v(4pt)
-}
-#let foot(ticker, pg) = {
-  set text(font: SANS)
-  grid(columns: (1fr, auto), gutter: 6pt,
-    text(size: 6pt, fill: MUT)[SECTORS Research · #meta.at("date", default: "") · #ticker — informasi, bukan saran investasi],
-    text(size: 6pt, fill: MUT)[#str(pg)],
-  )
-  line(length: 100%, stroke: 0.5pt + LINEG)
-  text(size: 5.5pt, fill: MUT)[Bukan rekomendasi jual/beli (kepatuhan OJK). Lihat pengungkapan penting di akhir laporan.]
-}
-#let wrap(ticker, pg, body) = {
-  set page(paper: "a4", margin: (top: 8mm, bottom: 8mm, x: 10mm), footer: foot(ticker, pg), numbering: none)
-  set text(font: SANS, size: 8pt, fill: INK)
-  banner()
-  body
-}
+// Exhibit titles stay descriptive and data-driven - never a bare "Chart".
+#let ex-range(prefix, arr) = if arr.len() > 0 { prefix + " (" + str(arr.at(0)) + "–" + str(arr.at(-1)) + ")" } else { prefix }
+
+// Each page = house page-wrap, which flushes the last exhibit's Source line.
+#let wrap(ticker, pg, body) = page-wrap("", meta.at("date", default: ""), ticker, pg, PAL2, body)
 #let h-main(t) = text(size: 10.5pt, weight: "bold", fill: NAVY_D)[#t]
 #let h-sec(t) = text(size: 9pt, weight: "bold", fill: NAVY)[#t]
-#let src(t) = text(size: 6pt, style: "italic", fill: rgb("#667085"))[Source: #SOURCE_LINE]
 // compact zebra key-value table (sidebar market snapshot)
 #let zebra(rows) = {
   set text(font: SANS, size: 6.8pt)
@@ -66,6 +49,7 @@
   #grid(columns: (64mm, 1fr), gutter: 14pt, [
     #text(size: 22pt, weight: "black", fill: NAVY)[#str(rb.at("action", default: "-"))]
     #v(2pt)
+    #exhibit-header("Snapshot Pasar & Valuasi " + TICK, "Sectors & IDX")
     #zebra((
       ("Last Price (Rp)", str(rb.at("price", default: "-"))),
       ("Target Price (Rp)", str(rb.at("tp", default: "-"))),
@@ -79,10 +63,9 @@
     ))
     #v(4pt)
     #if has-chart("vs_jci") [
-      #text(size: 7.5pt, weight: "bold", fill: NAVY)[#cover.at("price_chart", default: (:)).at("title", default: "Price Performance")]
+      #exhibit-header(cover.at("price_chart", default: (:)).at("title", default: "Price Performance") + " — " + TICK + " vs IHSG", cover.at("vs_jci", default: (:)).at("source", default: "Sectors monthly closes"))
       #v(1pt)
       #image(chart-dir + "/vs_jci.png", width: 100%)
-      #src(cover.at("price_chart", default: (:)).at("caption", default: "Sectors monthly closes"))
       #v(3pt)
     ]
     #text(size: 7pt, weight: "bold", fill: NAVY)[Analyst]
@@ -109,15 +92,14 @@
     ]
     #v(1pt)
     #let fh = data.at("financial_highlights", default: (:))
-    #h-sec("Key Financials")
+    #exhibit-header(ex-range("Key Financials", fh.at("years", default: ())), fh.at("source", default: "-"))
     #v(2pt)
     #fin-table(("Year to 31 Dec", ..fh.at("years", default: ())), fh.at("rows", default: (("—",))).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
     #v(1pt)
-    #src(fh.at("source", default: "-"))
   ])
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 // ============ P2 — quarterly exhibit full-width ============
 #wrap(TICK, 2, [
   #let earn = data.at("earnings", default: (:))
@@ -126,31 +108,28 @@
   #text(size: 7.5pt)[#earn.at("narrative", default: "")]
   #v(3pt)
   #let et = earn.at("table", default: (:))
-  #h-sec("Exhibit 1 — " + et.at("title", default: "Results"))
+  #exhibit-header(et.at("title", default: earn.at("title", default: "Quarterly Results")), et.at("source", default: "-"))
   #v(2pt)
   #fin-table(et.at("headers", default: ("—",)), et.at("rows", default: (("—",))).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
   #v(1pt)
-  #src(et.at("source", default: "-"))
   #v(4pt)
   #let kr = data.at("key_ratios", default: (:))
-  #h-sec(kr.at("title", default: "Key Ratios"))
+  #exhibit-header(kr.at("title", default: "Key Ratios"), kr.at("source", default: "-"))
   #v(2pt)
   #fin-table(kr.at("headers", default: ("—",)), kr.at("rows", default: (("—",))).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
   #v(1pt)
-  #src(kr.at("source", default: "-"))
   #v(4pt)
   #if has-chart("pbv_bands") [
-    #h-sec("Exhibit 2 — P/BV Band (4Y)")
+    #exhibit-header("P/BV Band (4-Year History) — " + TICK, "Sectors monthly closes / BVPS year-end")
     #v(2pt)
     #image(chart-dir + "/pbv_bands.png", width: 100%)
     #v(1pt)
     #text(size: 7.5pt)[#data.at("pbv_caption", default: "")]
     #v(1pt)
-    #src("Sectors monthly closes / BVPS year-end")
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 // ============ P3 — valuation + outlook + risks + rating guide ============
 #wrap(TICK, 3, [
   #let val = data.at("valuation", default: (:))
@@ -159,12 +138,11 @@
   #text(size: 7.5pt)[#val.at("narrative", default: "")]
   #v(3pt)
   #for mt in val.at("methods", default: ()) [
-    #h-sec(mt.at("title", default: mt.at("method", default: "Metode")))
+    #exhibit-header(mt.at("title", default: mt.at("method", default: "Metode")), mt.at("source", default: "-"))
     #v(2pt)
     #let tb = mt.at("table", default: (:))
     #fin-table(tb.at("headers", default: ("Parameter", "Nilai", "Keterangan")), tb.at("rows", default: (("—", "—", "—"),)).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
     #v(1pt)
-    #src(mt.at("source", default: "-"))
     #v(3pt)
   ]
   #block(fill: TINT, inset: 6pt, radius: 2pt, width: 100%)[
@@ -185,7 +163,7 @@
       #if r.at("source", default: none) != none [#v(1pt) #text(size: 6pt, style: "italic", fill: rgb("#667085"))[#r.at("source")]]
     ]))
   #v(4pt)
-  #h-sec("Investment Rating Definition")
+  #exhibit-header("Investment Rating Definition (BUY / HOLD / SELL)", "Standar Metodologi Riset Ekuitas")
   #v(1pt)
   #fin-table(("Rating", "Kriteria", "Horizon"), (("BUY", "Upside > +15%", "12 bulan"), ("HOLD", "-15% s/d +15%", "12 bulan"), ("SELL", "Downside < -15%", "12 bulan")), palette: PAL2, font: SANS)
   #v(2pt)
@@ -196,7 +174,7 @@
   ]
 ])
 
-#pagebreak()
+#pagebreak(weak: true)
 // ============ P4 — financial statements + market history ============
 #wrap(TICK, 4, [
   #let st = data.at("statements", default: none)
@@ -205,23 +183,21 @@
     #v(1pt)
     #text(size: 7.5pt, fill: MUT)[Unit: #st.at("unit", default: "-")]
     #v(2pt)
-    #h-sec("Income Statement (ringkas)")
+    #exhibit-header(ex-range("Income Statement (ringkas)", st.at("years", default: ())), st.at("source", default: "-"))
     #v(2pt)
     #fin-table(("Pos", ..st.at("years", default: ())), st.at("income", default: (("—",))).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
     #v(1pt)
-    #src(st.at("source", default: "-"))
     #v(4pt)
   ]
   #let mh = data.at("market_hist", default: none)
   #if mh != none [
-    #h-sec("Riwayat Pasar & Dividen")
+    #exhibit-header("52-Week Trading Range — " + TICK, mh.at("source", default: "-"))
     #v(2pt)
     #fin-table(("Statistik 52M", "Nilai"), (("Tertinggi", mh.at("high52", default: "-")), ("Terendah", mh.at("low52", default: "-"))), palette: PAL2, font: SANS)
     #v(3pt)
-    #h-sec("Dividen Terakhir")
+    #exhibit-header("Recent Dividend History — " + TICK, mh.at("source", default: "-"))
     #v(2pt)
     #fin-table(("Ex-date", "DPS (Rp)"), mh.at("divs", default: (("—", "—"),)).map(r => r.map(c => str(c))), palette: PAL2, font: SANS)
     #v(1pt)
-    #src(mh.at("source", default: "-"))
   ]
 ])

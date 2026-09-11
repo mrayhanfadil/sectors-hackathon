@@ -63,6 +63,12 @@
 #let PAGE_H = 297mm
 #let MARGIN_LR = 12mm
 #let MARGIN_TB = 14mm
+// Page furniture now lives in the page margin boxes (native header/footer), so
+// the vertical bands must be tall enough to hold it. 22mm keeps the visual
+// distance from paper edge to body text at roughly the old 14mm + in-flow
+// header height, and 18mm clears the footer line + text.
+#let MARGIN_TOP = 18mm
+#let MARGIN_BOTTOM = 14mm
 #let HEADER_SIZE = 7pt
 #let FOOTER_SIZE = 6.5pt
 #let BODY_SIZE = 8.5pt
@@ -98,60 +104,37 @@
 #let T_RATING = 20pt
 
 // ------ Set page geometry + fonts ------
-#let set-page-defaults(doc) = {
-  set document(keywords: ("Font: Liberation Serif, Liberation Sans, Liberation Mono, Source Serif 4, Inter",))
-  set page(
-    paper: "a4",
-    margin: (left: MARGIN_LR, right: MARGIN_LR, top: MARGIN_TB, bottom: MARGIN_TB),
-  )
-  set text(
-    font: FONT_SERIF,
-    size: T_BODY,
-    lang: "id",
-    fill: rgb("#101828"),
-    features: ("tnum",),
-  )
-  set par(leading: 0.65em, justify: false)
-  set list(indent: 8pt, marker: [•])
-  doc
-}
-
 // ------ Running header (house convention) ------
 // Left: report title, with the publication date on the line below, formatted
 // "Day, DD Month YYYY". Right: Sectors.app logo, identical size on every page.
 // Below: full-width house-color divider (#067647).
-#let running-header(brand-label, date, ticker) = {
-  v(-2pt)
+#let running-header(title, date) = {
   grid(
     columns: (1fr, auto),
     align: (left + horizon, right + horizon),
     [
-      #text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#101828"))[#HEADER_TITLE]
+      #text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#101828"))[#title]
       #v(1pt)
-      #text(font: FONT_SANS, size: 7pt, weight: "regular", fill: rgb("#475467"))[#format-date-en(date)]
+      #text(font: FONT_SANS, size: 7pt, weight: "regular", fill: rgb("#475467"))[#date]
     ],
     image(LOGO_PATH, height: 13pt),
   )
   v(2.5pt)
   line(length: 100%, stroke: 1.2pt + HEADER_DIVIDER_COLOR)
-  v(8pt)
 }
 
 // ------ Page footer (house convention) ------
-// Left: sectors.app. Right: disclosure pointer + page number.
-#let page-footer(pg-num, palette) = {
+// Left: sectors.app. Right: disclosure pointer + the real page number.
+#let page-footer() = context {
   set text(font: FONT_SANS, size: FOOTER_SIZE, fill: rgb("#475467"))
-  v(-2pt)
   line(length: 100%, stroke: 0.5pt + rgb("#e4e7ec"))
   v(3pt)
-  block(width: 100%)[
-    #grid(
-      columns: (1fr, auto),
-      align: (left, right),
-      [#FOOTER_LEFT],
-      [#FOOTER_RIGHT · #pg-num],
-    )
-  ]
+  grid(
+    columns: (1fr, auto),
+    align: (left, right),
+    [#FOOTER_LEFT],
+    [#FOOTER_RIGHT · #counter(page).display()],
+  )
 }
 
 // ------ Section header ------
@@ -182,11 +165,19 @@
   ]
 }
 
-// ------ Exhibit numbering: ONE global counter for the whole document ------
+// ------ Exhibit labeling: ONE global counter for the whole document ------
 // Numbering runs sequentially from the first page to the last and never resets
-// per page. No call site hardcodes "Exhibit N" — adding or removing an object
-// re-sequences every later exhibit automatically.
-#let exhibit-counter = counter("exhibit")
+// per page. The number comes from Typst's own figure counter for kind
+// "exhibit", so adding or removing an object re-sequences every later exhibit
+// automatically — no call site ever writes "Exhibit N".
+//
+// Because the label is a real `figure`, an exhibit can also be CITED from prose:
+// attach a label at the call site and reference it — the number resolves at
+// layout time, so a stale hardcoded cross-reference is impossible.
+//
+//   #exhibit-header("Pita Valuasi Historis P/BV", "IDX") <ex-pbv>
+//   #fin-table(...)
+//   ... lihat @ex-pbv ...       -> renders "see Exhibit 13"
 #let exhibit-src-state = state("exhibit-src", SOURCE_LINE)
 #let exhibit-flushed = state("exhibit-flushed", true)
 
@@ -215,21 +206,42 @@
   ]
 }
 
-// ------ Exhibit label (id + name) — ABOVE the object, auto-numbered ------
+// ------ Exhibit label (auto-numbered) — ABOVE the object ------
 // Both arguments are positional: exhibit-header("Title", "internal provenance").
 // Flushes the previous exhibit's source line first, so a source line always
 // lands directly beneath its own object rather than after the next label.
-#let exhibit-header(title, source) = {
+// Bare label figure — a SINGLE element, so a markup label attaches to it and a
+// prose citation resolves to the exhibit number at layout time:
+//
+//   #exhibit-mark("<provenance>")
+//   #exhibit-figure("P/BV Band (4-Year History)") <ex-pbv>
+//   ... lihat @ex-pbv ...        -> renders "lihat Exhibit 13"
+//
+// (exhibit-header cannot be labeled at the call site: it emits the source flush
+// plus the figure, and a label on a multi-element sequence is unreferenceable.)
+#let exhibit-figure(title) = figure(
+  [],
+  kind: "exhibit",
+  supplement: [Exhibit],
+  caption: title,
+  placement: none,
+  numbering: "1.",
+)
+
+// Stash this exhibit's provenance and flush the previous exhibit's source line.
+#let exhibit-mark(source) = {
   context {
     if not exhibit-flushed.get() { exhibit-source() }
   }
   exhibit-src-state.update(source)
   exhibit-flushed.update(false)
-  exhibit-counter.step()
-  block(width: 100%, above: 6pt, below: 3pt)[
-    #set text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#054f31"))
-    #context [Exhibit #exhibit-counter.display(). #title]
-  ]
+}
+
+// The normal call: label above (auto-numbered), source line below (flushed by
+// the next label or by the end of the page).
+#let exhibit-header(title, source) = {
+  exhibit-mark(source)
+  exhibit-figure(title)
 }
 
 // ------ Financial table (with header band, alternating rows, tab nums) ------
@@ -329,9 +341,9 @@
 }
 
 // ------ Page wrapper ------
-// Flushes any exhibit source line still pending at the end of the page content,
-// so the last object on a page gets its source line above that page's footer
-// instead of leaking onto the next page.
+// Furniture is native (see set-page-defaults), so this only keeps the source-line
+// flush: the last exhibit on a page still gets its Source line before the page
+// ends instead of leaking onto the next page. Page breaks stay at the call site.
 #let page-wrap(
   brand-label,
   date,
@@ -340,11 +352,39 @@
   palette,
   content,
 ) = {
-  running-header(brand-label, date, ticker)
   content
   context {
     if not exhibit-flushed.get() { exhibit-source() }
   }
-  page-footer(pg-num, palette)
-  v(8pt)
+}
+
+#let set-page-defaults(doc, date: none) = {
+  set document(keywords: ("Font: Liberation Serif, Liberation Sans, Liberation Mono, Source Serif 4, Inter",))
+  // Native page furniture: Typst draws these on EVERY physical page, including
+  // pages produced by content overflow, and the page number is the real page
+  // counter rather than a hand-written literal.
+  set page(
+    paper: "a4",
+    margin: (left: MARGIN_LR, right: MARGIN_LR, top: MARGIN_TOP, bottom: MARGIN_BOTTOM),
+    header: context running-header(HEADER_TITLE, if date == none { "" } else { format-date-en(date) }),
+    footer: context page-footer(),
+  )
+  set text(
+    font: FONT_SERIF,
+    size: T_BODY,
+    lang: "id",
+    fill: rgb("#101828"),
+    features: ("tnum",),
+  )
+  set par(leading: 0.65em, justify: false)
+  set list(indent: 8pt, marker: [•])
+  // Exhibit labels render ABOVE their object and carry the document-global
+  // exhibit counter, so numbering re-sequences automatically on revision.
+  set figure.caption(position: top, separator: [ ])
+  set figure(gap: 1pt)
+  show figure.caption: it => block(width: 100%, above: 6pt, below: 2pt)[
+    #set text(font: FONT_SANS, size: 8.5pt, weight: "bold", fill: rgb("#054f31"))
+    #it
+  ]
+  doc
 }

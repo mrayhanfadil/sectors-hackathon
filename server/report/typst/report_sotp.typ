@@ -5,13 +5,13 @@
 #import "theme.typ": *
 #import "cover.typ": *
 
-#show: set-page-defaults
 
 #let ticker = sys.inputs.at("ticker", default: "CDIA")
 #let data-path = sys.inputs.at("data_path")
 #let data = json(data-path)
 
 #let m = data.at("meta")
+#show: set-page-defaults.with(date: m.date)
 #let cover = data.at("cover").at("rating_box")
 #let gate-verdict = data.at("gate-verdict", default: data.at("gate_verdict", default: none))
 #let chart-dir = "/home/fadil/projects/sectors-hackathon/output/cache/render_" + lower(m.ticker) + "/charts"
@@ -149,8 +149,8 @@
         #method-selection-panel(gate-verdict, palette: PALETTE)
 
         #v(4pt)
+        #exhibit-header("Informasi Pasar & Saham " + m.ticker, data.at("cover", default: (:)).at("market_src", default: "-"))
         #card(PALETTE)[
-          #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[INFORMASI PASAR]
           #v(1pt)
           #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
           #v(2.5pt)
@@ -170,8 +170,8 @@
         ]
 
         #v(4pt)
+        #exhibit-header("Struktur Pemegang Saham " + m.ticker, data.cover.at("shareholders_src", default: "-"))
         #card(PALETTE)[
-          #text(size: T_SMALL, weight: "bold", fill: PALETTE.muted)[STRUKTUR PEMEGANG SAHAM]
           #v(1pt)
           #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Ownership distribution, controlling shareholder stakes, and free-float allocation.]
           #v(2.5pt)
@@ -188,7 +188,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 2 — SEGMENT BREAKDOWN (4 PILLARS)
@@ -311,7 +311,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 3 — FINANCIAL HIGHLIGHTS 6Y
@@ -381,7 +381,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 4 — SOTP VALUATION & BLENDED FAIR VALUE
@@ -445,7 +445,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 5 — PEERS PER PILLAR (4 SUB-TABLES)
@@ -533,7 +533,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 6 — RISKS ANALYSIS
@@ -625,7 +625,7 @@
   ]
 )
 
-#pagebreak()
+#pagebreak(weak: true)
 
 // =====================================================================
 // PAGE 7 — RATING GUIDE & REGULATORY DISCLAIMER
