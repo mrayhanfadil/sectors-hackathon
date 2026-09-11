@@ -250,9 +250,18 @@ def test_document_built_by_the_production_loader_honours_the_house_format(tmp_pa
     pages = text.split("\f")[:-1] if text.endswith("\f") else text.split("\f")
     assert len(pages) >= 1
 
-    # 1. numbering runs 1..N with no gaps (the global counter)
+    # 1. the global counter: the numbers present must be exactly 1..N — no gaps, no
+    # repeats. NOT "appears in ascending order": a two-column page is extracted
+    # column-by-column by pdftotext, so a perfectly correct counter interleaves
+    # (JCI renders 1,3,4,2 by reading across columns). Order is checked per column
+    # below instead, which is the property the rule actually needs.
     labels = [int(m.group(1)) for m in re.finditer(r"(?m)^Exhibit[\s\u00a0]+(\d+)\.", text)]
-    assert labels == list(range(1, len(labels) + 1)), f"exhibit numbering not sequential: {labels}"
+    n = len(labels)
+    assert n > 0, "no exhibits rendered"
+    assert sorted(labels) == list(range(1, n + 1)), (
+        f"exhibit counter is not 1..N with no gaps/repeats: {sorted(labels)}"
+    )
+    assert len(set(labels)) == n, f"exhibit number repeated: {labels}"
 
     # 2. one constant source line per exhibit
     assert text.count(CONSTANT_SOURCE) == len(labels), (
@@ -376,3 +385,70 @@ def test_theme_carries_the_brand_mark() -> None:
     for tree in ("templates/typst/common", "server/report/typst"):
         asset = (REPO_ROOT / tree / rel).resolve()
         assert asset.exists(), f"logo missing for {tree}: {asset}"
+
+
+def _exhibit_positions(pdf) -> list:
+    """(page, x, y, n) for every exhibit label, from the PDF's own word boxes."""
+    import xml.etree.ElementTree as ET
+
+    out = subprocess.run(["pdftotext", "-bbox", str(pdf), "-"], capture_output=True, text=True,
+                         check=True).stdout
+    root = ET.fromstring(out)
+    ns = {"h": "http://www.w3.org/1999/xhtml"}
+    positions = []
+    for pi, page in enumerate(root.iter("{http://www.w3.org/1999/xhtml}page"), 1):
+        words = [(float(w.get("xMin")), float(w.get("yMin")), (w.text or "").strip())
+                 for w in page.iter("{http://www.w3.org/1999/xhtml}word")]
+        for i, (x, y, txt) in enumerate(words):
+            if txt == "Exhibit" and i + 1 < len(words):
+                m = re.match(r"(\d+)\.", words[i + 1][2])
+                if m:
+                    positions.append((pi, x, y, int(m.group(1))))
+    return positions
+
+
+@pytest.mark.skipif(
+    shutil.which("typst") is None or shutil.which("pdftotext") is None,
+    reason="needs the typst CLI and poppler pdftotext",
+)
+def test_exhibit_counter_is_monotonic_down_the_page(tmp_path: Path) -> None:
+    """The global counter must still run in reading order WITHIN a column: a lower
+    number must not appear below a higher one on the same page in the same column.
+    (Numbering is global across pages, so page-to-page starts are not constrained.)"""
+    sys.path.insert(0, str(REPO_ROOT))
+    from server.report.typst_renderer import _load_or_build_report_data
+
+    data_path = tmp_path / "report_data.json"
+    data_path.write_text(json.dumps(_load_or_build_report_data("BBCA", "auto"), ensure_ascii=False),
+                         encoding="utf-8")
+    pdf = tmp_path / "report.pdf"
+    subprocess.run([sys.executable, str(REPO_ROOT / "scripts" / "render_typst.py"),
+                    str(data_path), "--out", str(pdf)],
+                   capture_output=True, text=True, timeout=600, cwd=str(REPO_ROOT))
+    assert pdf.exists()
+
+    # bucket labels into columns by x-distance, then require ascending y within a bucket
+    from collections import defaultdict
+    per_page = defaultdict(list)
+    for pi, x, y, num in _exhibit_positions(pdf):
+        per_page[pi].append((x, y, num))
+
+    checked = 0
+    for pi, items in per_page.items():
+        if len(items) < 2:
+            continue
+        xs = sorted({round(x) for x, _, _ in items})
+        cols = []
+        for x in xs:
+            if not cols or x - cols[-1][-1] > 40:
+                cols.append([x])
+            else:
+                cols[-1].append(x)
+        for col in cols:
+            lo, hi = min(col) - 40, max(col) + 40
+            nums = sorted(((y, n) for x, y, n in items if lo <= x <= hi))
+            if len(nums) > 1:
+                seq = [n for _, n in nums]
+                assert seq == sorted(seq), f"page {pi} column {col}: exhibit numbers descend {seq}"
+                checked += 1
+    assert checked >= 1, "no multi-exhibit column was actually checked"
