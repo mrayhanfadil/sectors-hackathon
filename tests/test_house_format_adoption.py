@@ -536,6 +536,17 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
         assert f"Exhibit {number}." in page4, f"Exhibit {number} is not on the slide-3 page"
     assert "Exhibit 8." in doc[4].get_text(), "the valuation page no longer opens at Exhibit 8"
 
+    # Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md): the DCF page carries the three blocks
+    # and the WACC components, and the sensitivity grid with its narrative lands on the following page.
+    val = doc[4].get_text()
+    for marker in ("Blok 1 — Periode proyeksi eksplisit", "Blok 2 — Terminal value",
+                   "Blok 3 — Bridge ke equity value", "WACC Components", "Fair Value per Share"):
+        assert marker in val, f"slide 4 lost {marker!r} on paper"
+    val2 = doc[5].get_text()
+    assert "Sensitivity Analysis" in val2, "the sensitivity grid moved off the valuation spread"
+    assert "Parameter paling sensitif" in val2, "the slide-4 narrative is missing"
+    assert "UNRESOLVED" in val2, "the terminal-method gap is not disclosed on paper"
+
 
 # --------------------------------------------- template call-site hygiene
 # These three guards used to live in tests/test_exhibit_convention.py, which policed the

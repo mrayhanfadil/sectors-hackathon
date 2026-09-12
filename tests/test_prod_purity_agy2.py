@@ -93,7 +93,9 @@ def test_zero_yfinance_imports_under_server():
             stripped = line.strip()
             if stripped.startswith("#"):
                 continue
-            if "import yfinance" in stripped or "from yfinance" in stripped:
+            # Anchored: prose such as "Not available from yfinance" inside a string literal is not an
+            # import. The AST pass above already catches every real import.
+            if re.match(r"^(import yfinance|from yfinance)\b", stripped):
                 yf_text_matches.append((rel_path, idx, stripped))
 
     assert not yf_ast_imports, f"Found yfinance AST imports in server/: {yf_ast_imports}"

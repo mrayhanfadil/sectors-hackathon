@@ -186,12 +186,14 @@ def test_html_path_kills_mocks_and_shows_live_engine():
     assert tpl == "single"
     for mock in MOCKS + ("+500",):
         assert mock not in html
-    # friend-style block now sourced from cDcf (live engine output)
-    assert "WACC Breakdown" in html
-    assert "Sensitivitas WACC x Terminal Growth" in html
-    assert "Harga Pasar Acuan" in html
-    assert "Skenario Bear / Base / Bull vs Harga Pasar" in html
-    assert "Bridge: PV FCFF" in html
-    assert "IDR 238" in html          # live matrix cell (12,77% / 2,00%)
-    assert "Rp 4,831" in html         # live BEAR FV
-    assert "Rp 11,004" in html        # live BULL FV
+    # deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md) replaced the friend-style block, so the
+    # live markers are the three exhibits and the narrative the rules ask for.
+    assert "FCFF Forecast, Terminal Value and Bridge to Equity" in html
+    assert "Exhibit 8." in html and "Exhibit 9." in html and "Exhibit 10." in html
+    assert "Blok 1 — Periode proyeksi eksplisit" in html
+    assert "Blok 2 — Terminal value" in html
+    assert "Blok 3 — Bridge ke equity value" in html
+    assert "WACC Components" in html
+    assert "Sensitivity Analysis" in html
+    assert "Parameter paling sensitif" in html
+    assert "sens-base" in html                       # the base case is highlighted        # live BULL FV

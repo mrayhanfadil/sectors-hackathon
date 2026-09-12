@@ -221,83 +221,95 @@
 <div class="page">
   {{ m.running() }}
   {{ m.section(5, "Valuasi") }}
-  <p class="small muted">Metode kedua dipilih adaptif: infra/dividen → DDM, konglomerasi → SOTP, lainnya → EV/EBITDA (plan §5).</p>
+  {% if valuation_page and valuation_page.available %}
+  <p class="small muted">{{ valuation_page.subtitle }}</p>
 
-  {% for vm in valuation.methods %}
-  <h3>{{ vm.method }}</h3>
-  {% if vm.assumptions %}
-  <div class="grid-3" style="margin:4pt 0;">
-    {% for k, v in vm.assumptions.items() %}
-    <div class="kv"><span class="kv-l">{{ k|upper }}</span><span class="kv-v">{{ v }}</span></div>
+  {# ---- Exhibit 8: one exhibit, three blocks (rules for slide 4, Opsi A) ---- #}
+  {{ m.exhibit_auto(ns, "FCFF Forecast, Terminal Value and Bridge to Equity", "Engine: " ~ valuation_page.sources[2]) }}
+  <table class="fin-table">
+    <thead>
+      <tr><th>Blok 1 — Periode proyeksi eksplisit (Rp bn)</th>{% for p in valuation_page.periods %}<th>{{ p }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for label, series in valuation_page.block1_rows %}
+      <tr class="{{ 'bold' if label in ('FCFF (build-up)', 'PV of FCFF', 'FCFF growth (%)') else '' }}">
+        <td>{{ label }}</td>
+        {% for v in series %}<td class="num">{{ v}}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="fin-table" style="margin-top:5pt;">
+    <thead>
+      <tr><th>Blok 2 — Terminal value</th><th>Gordon Growth</th><th>Exit Multiple {{ valuation_page.drivers.multiple }}x</th></tr>
+    </thead>
+    <tbody>
+      {% for label, a, b in valuation_page.block2_rows %}
+      <tr class="{{ 'bold' if 'PV of Terminal' in label else '' }}"><td>{{ label }}</td><td class="num">{{ a}}</td><td class="num">{{ b}}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <table class="fin-table" style="margin-top:5pt;">
+    <thead><tr><th>Blok 3 — Bridge ke equity value</th><th>Rp bn</th><th>Per saham (Rp)</th></tr></thead>
+    <tbody>
+      {% for label, a, b in valuation_page.block3_rows %}
+      <tr class="{{ 'bold hl' if 'Fair Value' in label else ('bold' if label in ('Enterprise Value', 'Equity Value') else '') }}">
+        <td>{{ label }}</td><td class="num">{{ a}}</td><td class="num">{{ b}}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {{ m.exhibit_source(ns) }}
+
+  {# ---- Exhibit 9: WACC components, each parameter with its source ---- #}
+  {{ m.exhibit_auto(ns, "WACC Components", "Sumber per komponen tercantum di kolom ketiga") }}
+  {{ m.table(["Parameter", "Nilai", "Sumber"], valuation_page.wacc_rows) }}
+  {{ m.exhibit_source(ns) }}
+
+  {# ---- Exhibit 10: the sensitivity grid, base case called out ---- #}
+  {{ m.exhibit_auto(ns, "Sensitivity Analysis — WACC x Terminal Growth", "Engine: " ~ valuation_page.sources[2]) }}
+  <table class="fin-table sens">
+    <thead>
+      <tr><th>WACC \ g</th>{% for g in valuation_page.sensitivity.columns %}<th>{{ g }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for r in valuation_page.sensitivity.rows %}
+      <tr>
+        <td>{{ r.label }}</td>
+        {% for c in r.cells %}
+        <td class="num {{ 'sens-base' if c.base else '' }}">{{ c.value}}</td>
+        {% endfor %}
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="muted" style="font-size:6.6pt; margin-top:2pt;">
+    Base case (WACC {{ valuation_page.sensitivity.base_wacc }} · g {{ valuation_page.sensitivity.base_g }})
+    di-highlight; isi sel = Fair Value per saham (Rp). Rentang grid:
+    Rp {{ valuation_page.sensitivity.swing.min}} – Rp {{ valuation_page.sensitivity.swing.max}}.
+  </p>
+  {{ m.exhibit_source(ns) }}
+
+  {# ---- the integrated narrative the rules ask for ---- #}
+  <div class="card-tint" style="margin-top:7pt;">
+    <p class="small" style="font-weight:700; margin-bottom:2pt;">Analisa sensitivitas dan keterkaitan asumsi</p>
+    {% for para in valuation_page.narrative %}
+    <p class="small" style="margin:2pt 0;">{{ para }}</p>
     {% endfor %}
+    <ul class="small" style="margin:3pt 0 0 10pt;">
+      {% for note in valuation_page.notes %}<li>{{ note }}</li>{% endfor %}
+    </ul>
   </div>
+
+  {% if valuation.methods %}
+  {{ m.exhibit_auto(ns, "Metode pembanding (anchor target price)", "scripts/ev_ebitda.py, Sectors annual EBITDA") }}
+  {{ m.table(["Metode", "Fair value (Rp)", "Peran"], valuation_page.crosscheck_rows) }}
+  {{ m.exhibit_source(ns) }}
   {% endif %}
-  {{ m.exhibit_auto(ns, "Valuation Method — " ~ vm.method, vm.source) }}
-  {% if vm.table %}{{ m.table(vm.table.headers, vm.table.rows, vm.table.footers or []) }}{% endif %}
-  <div class="card-tint" style="margin:6pt 0;">
-    <div class="kv"><span class="kv-l">Fair value ({{ vm.method }})</span>
-      <span class="kv-v">Rp {{ vm.fv|idr }}</span></div>
-  </div>
-  {% endfor %}
-
-  {% if valuation.blended %}
-  {{ m.exhibit_auto(ns, "Valuasi Blended", valuation.blended.source or "scripts/blended.py") }}
-  {{ m.table(["Metode", "Bobot", "Fair Value (Rp)"],
-     valuation.blended.rows, [["Blended (MoS " ~ valuation.blended.margin_of_safety_pct ~ "%)", "100%", valuation.blended.fv_str]]) }}
-  {% endif %}
-
-  {% if valuation.bands and valuation.bands.pbv_3y %}
-  {{ m.exhibit_auto(ns, "Historical Band P/BV 3Y (STD±2)", valuation.bands.source or "IDX, data diolah") }}
-  {{ m.table(["STD+2", "STD+1", "AVG", "STD-1", "STD-2", "Kini", "Posisi"],
-     [[valuation.bands.pbv_3y["std+2"], valuation.bands.pbv_3y["std+1"], valuation.bands.pbv_3y.avg,
-       valuation.bands.pbv_3y["std-1"], valuation.bands.pbv_3y["std-2"],
-       valuation.bands.pbv_3y.current, valuation.bands.pbv_3y.label]]) }}
-  {% endif %}
-
-  {% set dcf_friend = cDcf if cDcf is defined and cDcf else (dcf if dcf is defined else none) %}
-  {% if dcf_friend %}
-  <section class="dcf-friend" style="margin-top:10pt;">
-    <h3 style="color:var(--brand-dark); font-size:11pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
-    <p class="small muted">Port dari <a href="https://github.com/abidamassi/dcf-valuation-tool">abidamassi/dcf-valuation-tool</a> - math deterministic, audit-friendly.</p>
-
-    {% if dcf_friend.wacc_table %}
-    <h4 class="small" style="margin-top:6pt; font-weight:700;">WACC Breakdown</h4>
-    <div class="chart-svg">{{ m.svg_wacc_breakdown(dcf_friend.wacc_table) }}</div>
-    {% endif %}
-
-    {% if dcf_friend.sensitivity and dcf_friend.sensitivity.fair_value %}
-    <h4 class="small" style="margin-top:6pt; font-weight:700;">Sensitivity: WACC x Terminal Growth</h4>
-    <div class="chart-svg">{{ m.svg_sensitivity_heatmap(dcf_friend.sensitivity.fair_value,
-         dcf_friend.sensitivity.wacc_axis, dcf_friend.sensitivity.g_axis, dcf_friend.valuation.market_price if dcf_friend.valuation is defined else none) }}</div>
-    {% endif %}
-
-    {% if dcf_friend.scenarios %}
-    <h4 class="small" style="margin-top:6pt; font-weight:700;">Skenario Bear / Base / Bull</h4>
-    <div class="chart-svg">{{ m.svg_scenarios(dcf_friend.scenarios, dcf_friend.valuation.market_price if dcf_friend.valuation is defined else none) }}</div>
-    {% endif %}
-
-    {% if dcf_friend.valuation %}
-    <h4 class="small" style="margin-top:6pt; font-weight:700;">Bridge: Enterprise -> Equity Value</h4>
-    <div class="chart-svg">{{ m.svg_ev_equity_waterfall(dcf_friend.valuation) }}</div>
-    {% endif %}
-
-    {% if dcf_friend.recommendation %}
-    <p class="small" style="margin-top:4pt;"><strong>Rekomendasi:</strong>
-      {{ dcf_friend.recommendation.rating }}
-      {% if dcf_friend.recommendation.label %}({{ dcf_friend.recommendation.label }}){% endif %}
-      {% if dcf_friend.recommendation.note %} - {{ dcf_friend.recommendation.note }}{% endif %}
-    </p>
-    {% if dcf_friend.recommendation.reason_override %}
-    <p class="review-flag">{{ dcf_friend.recommendation.reason_override }}</p>
-    {% endif %}
-    {% endif %}
-
-    {# rule 1: the constant source line must sit DIRECTLY under its object, so flush the
-       pending exhibit before any trailing block (disclaimer paragraph, section heading)
-       that would otherwise come between the object and its source line. #}
-    {{ m.exhibit_source(ns) }}
-    <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
-  </section>
+  {% else %}
+  <p class="small muted">Halaman valuasi tidak dapat disusun: {{ valuation_page.missing|join(", ") if valuation_page and valuation_page.missing else "assumptions emiten belum memuat parameter valuasi" }}.</p>
   {% endif %}
   {{ m.pagefoot(5, ns) }}
 </div>

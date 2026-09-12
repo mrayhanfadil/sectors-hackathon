@@ -729,3 +729,161 @@ def test_served_html_marks_forecast_bars_and_numbers_the_page_exhibits() -> None
     quad = payload["performance_page"]["quadrants"][0]
     assert quad["actual_n"] == 2 and len(quad["labels"]) == 5
     assert "Bentuk: 3 periode proyeksi" not in html  # guard against a stale caption
+
+
+# ------------------------------------------------- deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md)
+SLIDE4_SPEC = REPO_ROOT / "docs" / "ammn-slides" / "slide4-valuation-spec.md"
+
+
+def test_slide4_spec_carries_the_binding_rule_text() -> None:
+    text = SLIDE4_SPEC.read_text(encoding="utf-8")
+    for marker in (
+        "## 0. Binding rule text",
+        "Metode dipilih manual oleh analis",
+        "Opsi A — DCF (FCFF-based)",
+        "Blok 1 - Explicit forecast period",
+        "Tax on EBIT (dihitung EBIT x (1-effective tax rate)",
+        "Gordon Growth vs Exit Multiple), tampilkan berdampingan",
+        "Fair Value per Share (bold, highlight)",
+        "Exhibit 9. WACC Components",
+        "Exhibit 10. Sensitivity Analysis",
+        "di-highlight beda warna",
+        "wajib di-flag eksplisit sebagai unresolved assumption",
+        "Opsi B — DDM",
+        "Opsi C — RNAV",
+        "INDOGB 10Y untuk Rf IDR",
+        "finite reserve life",
+        "abidamassi/dcf-valuation-tool",
+        "abidamassi/ddm_tool",
+        "abidamassi/relativepeers",
+    ):
+        assert marker in text, f"slide-4 spec lost: {marker}"
+    assert "audit_valuation_page" in text and "engines/abida_dcf" in text
+
+
+def test_slide4_agent_contract_is_in_the_prompt() -> None:
+    block = " ".join(
+        INSTRUCTIONS.read_text(encoding="utf-8")
+        .split('SLIDE_PAGES_RULE = """', 1)[1]
+        .split('"""', 1)[0]
+        .split()
+    )
+    for marker in (
+        "Page 4 — Valuasi Intrinsik",
+        "the ANALYST picks it",
+        "State on the page which option you chose and why the other two do not apply",
+        "tax on EBIT at the EFFECTIVE rate",
+        "two separate columns",
+        "must name its source",
+        "base case is highlighted",
+        "UNRESOLVED assumption",
+        "Never average two terminal methods quietly",
+        "not defensible for a finite reserve",
+    ):
+        assert marker in block, f"the prompt lost: {marker}"
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_valuation_page_reproduces_the_cover_dcf_leg() -> None:
+    """Slide 4's bridge must be the same DCF the cover prints, not a second opinion: if the two differ,
+    the deck states two different fair values for one model."""
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    page = payload["valuation_page"]
+    assert page["available"], page.get("missing")
+    assert len(page["periods"]) == 5
+    cover_leg = (payload["valuation"]["legs"] or {}).get("dcf")
+    assert cover_leg, "the cover no longer publishes its DCF leg"
+    engine_fv = page["bridge"]["fv_gordon"]
+    assert abs(engine_fv - cover_leg) / cover_leg < 0.01, (
+        f"slide 4 says Rp {engine_fv:.2f}, the cover says Rp {cover_leg:.2f}"
+    )
+    # and the relative leg must still be the one that anchors the target price
+    assert payload["valuation"]["anchor"] == "ev_ebitda"
+    assert abs(page["bridge"]["fv_exit"] - page["bridge"]["fv_gordon"]) > 0
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_valuation_page_shape_and_disclosures() -> None:
+    from server.routers.pdf import _build_live_payload
+
+    page = _build_live_payload("AMMN", None)["valuation_page"]
+    rows = dict(page["block1_rows"])
+    for required in (
+        "Revenue", "EBIT", "Tax on EBIT (tarif efektif)", "NOPAT", "(+) Depreciation & Amortization",
+        "(-) Capital Expenditure", "(-/+) Increase/Decrease in Net Working Capital",
+        "FCFF (build-up)", "FCFF growth (%)", "Discount factor (1/(1+WACC)^n)", "PV of FCFF",
+    ):
+        assert required in rows, f"block 1 lost {required}"
+        assert len(rows[required]) == 5, f"{required} is not five periods wide"
+    labels = [r[0] for r in page["block2_rows"]]
+    assert any("Terminal Growth" in x or "Terminal growth" in x for x in labels)
+    assert any("PV of Terminal Value" in x for x in labels)
+    assert len(page["sensitivity"]["rows"]) == 5 and len(page["sensitivity"]["columns"]) == 5
+    assert sum(1 for r in page["sensitivity"]["rows"] for c in r["cells"] if c["base"]) == 1
+    notes = " ".join(page["notes"]).upper()
+    assert "UNRESOLVED" in notes, "the terminal gap is not flagged as unresolved"
+    assert "RESERVE" in notes, "the finite-reserve limitation is not disclosed"
+    assert "year-end" in " ".join(page["notes"]).lower() or "konvensi" in " ".join(page["notes"]).lower()
+    assert any("Sectors" in s for s in page["sources"])
+    assert any("abidamassi" in s for s in page["sources"]), "the engine provenance is not stated"
+
+
+def test_gate_catches_each_slide4_violation_class() -> None:
+    import copy
+
+    import pandas as pd
+
+    from server.report.house_rules import audit_valuation_page
+
+    def clean_page() -> dict:
+        return {
+            "available": True,
+            "subtitle": "DCF dipilih; DDM tidak berlaku; RNAV tidak dapat disusun",
+            "periods": ["FY2026F"] * 5,
+            "blocks": {"build_up": {
+                "Revenue": [1.0] * 5, "EBIT": [1.0] * 5, "Tax on EBIT": [1.0] * 5, "NOPAT": [1.0] * 5,
+                "(+) D&A": [1.0] * 5, "(-) Capex": [1.0] * 5, "(-/+) Delta NWC": [1.0] * 5,
+                "FCFF (build-up)": [1.0] * 5, "FCFF growth (%)": [None] * 5,
+                "Discount factor": [1.0] * 5, "PV of FCFF": [1.0] * 5,
+            }},
+            "bridge": {"pv_explicit": 1.0, "pv_tv_gordon": 1.0, "ev_gordon": 1.0, "equity_gordon": 1.0,
+                       "fv_gordon": 100.0, "tv_exit": 1.0, "fv_exit": 400.0},
+            "wacc_rows": [("Risk-free rate (Rf)", "7.10%", "INDOGB 10Y"), ("Beta", "1.4", "regression"),
+                          ("Equity Risk Premium (ERP)", "6.69%", "Damodaran"), ("Cost of Equity", "16.5%", "calc"),
+                          ("Cost of Debt pre-tax", "6.49%", "financials"), ("Effective tax rate", "22%", "financials"),
+                          ("Cost of Debt after-tax", "5.06%", "calc"), ("Weight of Equity", "76%", "market cap"),
+                          ("Weight of Debt", "24%", "debt"), ("WACC", "13.77%", "calc")],
+            "sensitivity": {"fair_value": pd.DataFrame([[1.0] * 5] * 5), "wacc_axis": [0] * 5,
+                            "g_axis": [0] * 5, "base": (2, 2)},
+            "notes": ["UNRESOLVED ASSUMPTION — the two terminals differ", "Reserve finite: perpetual growth not defensible"],
+        }
+
+    assert audit_valuation_page(clean_page()) == []
+    assert audit_valuation_page(None) == []
+    assert audit_valuation_page({"available": False}) == []
+
+    no_exit = clean_page()
+    no_exit["bridge"]["tv_exit"] = None
+    assert any("single terminal method" in v for v in audit_valuation_page(no_exit))
+
+    short_row = clean_page()
+    short_row["blocks"]["build_up"]["FCFF (build-up)"] = [1.0, 2.0]
+    assert any("FCFF (build-up)" in v for v in audit_valuation_page(short_row))
+
+    unsourced = copy.deepcopy(clean_page())
+    unsourced["wacc_rows"][0] = ("Risk-free rate (Rf)", "7.10%", "")
+    assert any("without naming its source" in v for v in audit_valuation_page(unsourced))
+
+    hidden_gap = clean_page()
+    hidden_gap["notes"] = ["Reserve finite only"]
+    assert any("unresolved assumption" in v for v in audit_valuation_page(hidden_gap))
+
+    unmarked = clean_page()
+    unmarked["sensitivity"]["base"] = None
+    assert any("base case" in v for v in audit_valuation_page(unmarked))
+
+    opaque = clean_page()
+    opaque["subtitle"] = "DCF FCFF"
+    assert any("excluded" in v for v in audit_valuation_page(opaque))

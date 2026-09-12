@@ -396,6 +396,93 @@ def _parse_id_like(value: Any) -> Optional[float]:
 
 
 # ------------------------------------------------------------------ entry point
+
+def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list[str]:
+    """Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
+
+    Checks the three exhibits the rules define, and — because the rules make it mandatory — that a
+    material gap between the terminal methods is DISCLOSED rather than averaged away. An empty page is
+    not applicable: a ticker whose assumptions carry no WACC has no intrinsic page to audit.
+    """
+    if not isinstance(page, dict) or not page or not page.get("available"):
+        return []
+    violations: list[str] = []
+    periods = [str(p) for p in (page.get("periods") or [])]
+
+    if len(periods) != 5:
+        violations.append("slide 4 must project five explicit periods (rules: 5 tahun)")
+
+    build = ((page.get("blocks") or {}).get("build_up") or {})
+    required_rows = (
+        "Revenue", "EBIT", "Tax on EBIT", "NOPAT", "(+) D&A", "(-) Capex",
+        "(-/+) Delta NWC", "FCFF (build-up)", "FCFF growth (%)", "Discount factor", "PV of FCFF",
+    )
+    for name in required_rows:
+        series = build.get(name)
+        if series is None:
+            violations.append(f"slide 4 block 1 is missing the '{name}' row the rules require")
+        elif len(series) != len(periods):
+            violations.append(f"slide 4 row '{name}' has {len(series)} values against {len(periods)} periods")
+    fcff = [v for v in (build.get("FCFF (build-up)") or []) if v is not None]
+    if not fcff or not any(abs(v) > 0 for v in fcff):
+        violations.append("slide 4 block 1 has no usable FCFF line")
+
+    bridge = page.get("bridge") or {}
+    for key, label in (
+        ("pv_explicit", "sum of PV of FCFF"), ("pv_tv_gordon", "PV of terminal value"),
+        ("ev_gordon", "enterprise value"), ("equity_gordon", "equity value"),
+        ("fv_gordon", "fair value per share"),
+    ):
+        if bridge.get(key) is None:
+            violations.append(f"slide 4 block 3 has no {label}")
+    if bridge.get("tv_exit") is None:
+        violations.append(
+            "slide 4 block 2 shows a single terminal method; the rules ask for Gordon and the exit "
+            "multiple side by side when both are computed"
+        )
+
+    wacc_rows = page.get("wacc_rows") or []
+    if len(wacc_rows) < 8:
+        violations.append("slide 4 Exhibit 9 must break the WACC into its components (risk-free, beta, ERP, CoE, Kd, tax, after-tax Kd, weights, WACC)")
+    for parameter in ("risk-free", "beta", "equity risk premium"):
+        row = next((r for r in wacc_rows if parameter in str(r[0]).lower()), None)
+        if row is None:
+            violations.append(f"slide 4 Exhibit 9 does not state the {parameter} parameter")
+        elif len(row) < 3 or not str(row[2]).strip():
+            violations.append(f"slide 4 Exhibit 9 gives {parameter} without naming its source")
+
+    sensitivity = page.get("sensitivity") or {}
+    grid = sensitivity.get("fair_value")
+    cells = 0
+    if grid is not None and hasattr(grid, "values"):
+        cells = len([v for row in grid.values.tolist() for v in row if v is not None])
+    if cells != (len(sensitivity.get("wacc_axis") or []) * len(sensitivity.get("g_axis") or [])) or cells == 0:
+        violations.append("slide 4 Exhibit 10 must fill every sensitivity cell; a partial grid invites the reader to trust a gap")
+    if sensitivity.get("base") is None:
+        violations.append("slide 4 Exhibit 10 must mark the base case cell (rules: highlight warna beda)")
+
+    notes = page.get("notes") or []
+    if not notes:
+        violations.append("slide 4 carries no disclosure block")
+    gap = None
+    if bridge.get("fv_gordon") and bridge.get("fv_exit") and bridge["fv_gordon"] > 0:
+        gap = max(bridge["fv_exit"], bridge["fv_gordon"]) / min(bridge["fv_exit"], bridge["fv_gordon"])
+    if gap is not None and gap >= 2.0:
+        if not any("UNRESOLVED" in str(n).upper() for n in notes):
+            violations.append(
+                f"the two terminal methods differ {gap:.1f}x and the page does not flag it as an "
+                "unresolved assumption (rules: wajib di-flag eksplisit, bukan dirata-rata diam-diam)"
+            )
+    if not any("reserve" in str(n).lower() or "perpetual" in str(n).lower() for n in notes):
+        violations.append("slide 4 does not disclose the perpetual-growth limitation on a depleting reserve")
+
+    subtitle = str(page.get("subtitle") or "")
+    if "DDM" not in subtitle or "RNAV" not in subtitle:
+        violations.append("slide 4 does not state why the other two methods were excluded (the choice is the analyst's and must be auditable)")
+
+    return violations
+
+
 def audit_house_rules(payload: Optional[dict]) -> dict:
     """Audit a render payload against §7-§9.
 
@@ -424,6 +511,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_industry_page(payload.get("industry_page"), payload)
     # Slide 3 of the deck is its own page as well.
     violations += audit_performance_page(payload.get("performance_page"), payload)
+    violations += audit_valuation_page(payload.get("valuation_page"), payload)
     return {
         "ok": not violations,
         "applicable": applicable,
@@ -433,7 +521,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance",
+            "slide3-performance", "slide4-valuation",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),

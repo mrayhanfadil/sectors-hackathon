@@ -147,6 +147,22 @@ Evidence discipline for the pages (binding, and the gate checks it):
 - When a claim needs an operational metric the payload does not carry (tonnage, grade, C1, AISC,
   utilisation), name the metric as unavailable instead of asserting a qualitative story about it.
 
+Page 4 — Valuasi Intrinsik (docs/ammn-slides/slide4-valuation-spec.md). One option is active per
+report and the ANALYST picks it: DDM for a bank, RNAV for a property/plantation/resources issuer, DCF
+for a general corporate. State on the page which option you chose and why the other two do not apply —
+an unexplained method choice is a REJECT.
+- DCF: five explicit periods, the full build-up (Revenue, EBIT, tax on EBIT at the EFFECTIVE rate,
+  NOPAT, + D&A, - capex, +/- change in NWC, FCFF, FCFF growth, discount factor, PV of FCFF), then the
+  terminal block, then the bridge to equity value per share. Show Gordon and the exit multiple as two
+  separate columns whenever you compute both.
+- Every WACC component must name its source (INDOGB 10Y for an IDR risk-free rate, US Treasury for a
+  USD-functional issuer, Damodaran for the ERP, and the beta's horizon).
+- The sensitivity grid must be complete, and the base case is highlighted so the reader can find it.
+- The narrative must say which parameter the value is most sensitive to, tie the forecast assumptions
+  back to the drivers already discussed on pages 2-3, and — if Gordon and the exit multiple disagree
+  materially — flag it as an UNRESOLVED assumption. Never average two terminal methods quietly.
+- A perpetual terminal growth is not defensible for a finite reserve: say so on the page.
+
 Page 3 — Visualisasi Kinerja Keuangan dan Forecasting (docs/ammn-slides/slide3-visual-spec.md).
 A 2x2 grid, four combo charts (bars = absolute, line = ratio on the secondary axis), and the
 narrative for a chart must sit WITH that chart, never collected at the end of the page.

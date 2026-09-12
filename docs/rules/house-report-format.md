@@ -152,6 +152,18 @@ document-wide figure counter treats it like any other object.
 | Narrative states the drivers, the CAGR comparison, the margin sanity check and the below-line gap | `server/report/performance_page.py` | computed from the series, not written by hand; an assumption the narrative disagrees with is printed on the page |
 | The fourth quadrant switches by sector | `performance_page` + page notes | DER/ROE is built for non-banks; the bank and E&P branches are named as unavailable rather than filled with lookalike numbers |
 
+### 6.3 Pages 5-6 — intrinsic valuation
+
+| Rule | Enforced by | Mechanism |
+|---|---|---|
+| Exhibit 8 is one exhibit with three blocks | `audit_valuation_page` | the 11 block-1 rows must each match the five-period count, and the terminal and bridge rows must all be present |
+| Gordon and exit multiple side by side | `audit_valuation_page` | a missing exit-multiple column violates the cross-check the rules require |
+| Every WACC parameter names its source | `audit_valuation_page` | risk-free, beta and ERP each need a non-empty source cell |
+| Complete sensitivity grid with the base case called out | `audit_valuation_page` | filled cells must equal rows x columns and the base cell must be marked |
+| A material terminal gap is an unresolved assumption | `audit_valuation_page` | a gap of 2x or more requires an "UNRESOLVED" note in the disclosure block |
+| Method choice is auditable | `audit_valuation_page` | the page must say which option is active and why DDM and RNAV were excluded |
+| Numbers tie out with the rest of the deck | builder + gate | the projection columns are the cover's own Key Financials columns, and the bridge reproduces the cover's DCF leg |
+
 ## 7. Cover slide — the one-pager
 
 The cover is **one physical page**. Sidebar (~30%, left) and main column (~70%, right)
