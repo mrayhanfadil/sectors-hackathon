@@ -887,3 +887,72 @@ def test_gate_catches_each_slide4_violation_class() -> None:
     opaque = clean_page()
     opaque["subtitle"] = "DCF FCFF"
     assert any("excluded" in v for v in audit_valuation_page(opaque))
+
+
+# ------------------------------------------------- deck slide 4, Opsi B (DDM) branch
+def _synthetic_bank_payload_and_assumptions():
+    """A deliberately synthetic dividend payer. The DDM branch is exercised on made-up inputs, never on
+    a real issuer's numbers dressed up as a bank report."""
+    import copy
+    import json
+
+    from server.routers.pdf import _build_live_payload
+
+    payload = copy.deepcopy(_build_live_payload("AMMN", None))
+    assum = json.loads(ASSUM_PATH.read_text(encoding="utf-8"))
+    assum.update({"valuation_method": "ddm", "payout": 0.45, "cost_of_equity": 0.142, "g": 0.04,
+                  "shares_out": 155_000_000_000, "last_price": 9_100})
+    for row in payload["financial_statements"]["balance"]["rows"]:
+        if str(row[0]).startswith("Shareholders"):
+            row[1:] = ["200000", "210000", "220000", "230000", "240000", "250000"]
+    for row in payload["financial_statements"]["ratios"]["rows"]:
+        if str(row[0]).startswith("Return on Equity"):
+            row[1:] = ["17.5", "18.0", "18.2", "18.4", "18.6", "18.8"]
+    for row in payload["cover"]["slide2"]["key_financials"]["rows"]:
+        if str(row[0]).lower().startswith("net profit"):
+            row[1:] = ["32000", "34000", "36000", "38000", "40000"]
+    return payload, assum
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_ddm_branch_builds_the_rows_the_rules_require() -> None:
+    from server.report.house_rules import audit_valuation_page
+    from server.report.valuation_page import build_valuation_page
+
+    payload, assum = _synthetic_bank_payload_and_assumptions()
+    page = build_valuation_page(payload, assum)
+    assert page["method"] == "ddm" and page["available"]
+    labels = [r[0] for r in page["block1_rows"]]
+    for required in ("Net Profit (Rp bn)", "Payout Ratio (%)", "DPS (Rp)", "DPS growth (%)",
+                     "Discount factor (Cost of Equity)", "PV of DPS"):
+        assert required in labels, f"the DDM block 1 lost {required}"
+    assert all(len(r[1]) == 5 for r in page["block1_rows"])
+    # the discount rate is the cost of equity, and the page says so
+    assert any("cost of equity" in r[0].lower() for r in page["wacc_rows"])
+    assert "wacc" in page["subtitle"].lower()
+    # both methods are shown side by side, never averaged
+    bridge = page["bridge"]
+    assert bridge["fv_gordon"] and bridge["fv_exit"]
+    assert abs(bridge["fv_exit"] - bridge["fv_gordon"]) > 0
+    assert page["sensitivity"]["fair_value"].shape == (5, 5)
+    assert sum(1 for r in page["sensitivity"]["rows"] for c in r["cells"] if c["base"]) == 1
+    assert any("payout" in str(n).lower() for n in page["notes"])
+    assert page["narrative"] and "Cost of Equity" in page["narrative"][0] or "growth" in page["narrative"][0]
+    assert audit_valuation_page(page, payload) == []
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_ddm_branch_refuses_instead_of_inventing_a_dividend() -> None:
+    """AMMN pays no dividend. Forcing the bank path must produce a loud empty page, not numbers."""
+    import json
+
+    from server.report.valuation_page import build_valuation_page
+
+    from server.routers.pdf import _build_live_payload
+
+    assum = json.loads(ASSUM_PATH.read_text(encoding="utf-8"))
+    assum["valuation_method"] = "ddm"
+    page = build_valuation_page(_build_live_payload("AMMN", None), assum)
+    assert page["available"] is False
+    assert any("payout" in m.lower() for m in page["missing"])
+    assert "block1_rows" not in page

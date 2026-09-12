@@ -81,8 +81,25 @@ def _fy25(statements: dict, block: str, label: str) -> float | None:
 
 
 def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict:
-    """Assemble deck slide 4. Returns None-shaped data when the inputs are not there, never a guess."""
+    """Assemble deck slide 4 for whichever option the analyst activated.
+
+    The rules make the choice manual: `valuation_method` in data/assumptions/<ticker>.json decides. With
+    no explicit choice the page falls back to the DCF and says so, and — when the issuer looks like a
+    financial — it says on the page that the DDM would be the expected default for that sector. A cheap
+    sector heuristic never silently switches the model.
+    """
     assum = assumptions or {}
+    method = str(assum.get("valuation_method") or "dcf").lower()
+    if method in ("ddm", "dividend"):
+        from server.report.valuation_ddm import build_ddm_page
+
+        page = build_ddm_page(payload, assum, {"row": _row, "num": _num})
+        if page.get("available") and not assum.get("valuation_method"):
+            page["notes"] = list(page.get("notes") or []) + [
+                "Metode dipilih otomatis ke DDM karena sektor emiten keuangan; rules meminta pilihan "
+                "manual, jadi tambahkan `valuation_method` di file assumptions untuk mengunci pilihan."
+            ]
+        return page
     statements = payload.get("financial_statements") or {}
     cover = ((payload.get("cover") or {}).get("slide2") or {}).get("key_financials") or {}
 
@@ -292,9 +309,10 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
     page = {
         "available": True,
+        "method": "dcf",
         "title": "Valuasi Intrinsik — DCF (FCFF)",
         "subtitle": (
-            "Metode dipilih manual: DCF FCFF. DDM tidak berlaku (emiten tidak membagi dividen) dan "
+            "Metode dipilih manual: Opsi A — DCF FCFF. DDM tidak berlaku (emiten tidak membagi dividen) dan "
             "RNAV tidak dapat disusun (tidak ada data NAV per aset di Sectors) — lihat catatan metode."
         ),
         "periods": list(PERIODS),
@@ -323,6 +341,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         },
         "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc),
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
+        "block2_headers": None,
+        "block3_headers": None,
         "assumptions_view": {
             "wacc": wacc, "g": g, "shares_bn": shares_bn, "rf": assum.get("rf"),
             "beta": assum.get("beta"), "erp": assum.get("erp"),

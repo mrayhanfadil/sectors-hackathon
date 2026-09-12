@@ -99,3 +99,11 @@ therefore feeds the engine Sectors numbers and never fetches at render time.
 | The perpetual-growth limitation on a depleting reserve | `audit_valuation_page` | a note mentioning the reserve or perpetual growth is required |
 | The method choice is auditable | `audit_valuation_page` | the subtitle must name DDM and RNAV and why they were excluded |
 | No re-derivation of the numbers | `server/report/valuation_page.py` | the projection columns come from the same cover table the reader sees, and the gate compares slide 4 against the cover's DCF leg |
+
+## 4. Activating an option
+
+`valuation_method` in `data/assumptions/<ticker>.json` selects the option (`dcf` or `ddm`). With no key
+the page falls back to the DCF and says so on the page itself; a sector heuristic never switches the
+model silently, because the rules make the choice the analyst's. The DDM branch ships with its own
+builder (`server/report/valuation_ddm.py`), its own gate arm (`_audit_ddm_page`) and guard tests on a
+synthetic dividend payer — an issuer that pays nothing gets a loud empty page, not invented dividends.

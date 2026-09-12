@@ -397,6 +397,53 @@ def _parse_id_like(value: Any) -> Optional[float]:
 
 # ------------------------------------------------------------------ entry point
 
+
+def _audit_ddm_page(page: dict) -> list[str]:
+    """Opsi B (DDM) half of deck slide 4: dividend rows, Cost of Equity discounting, and the payout
+    consistency test the rules' narrative section asks for."""
+    violations: list[str] = []
+    periods = [str(p) for p in (page.get("periods") or [])]
+    if len(periods) != 5:
+        violations.append("slide 4 (DDM) must project five explicit periods")
+    rows = (page.get("blocks") or {}).get("build_up") or {}
+    for name in ("Net Profit", "Payout Ratio (%)", "DPS", "DPS growth (%)",
+                 "Discount factor (Cost of Equity)", "PV of DPS"):
+        series = rows.get(name)
+        if series is None:
+            violations.append(f"slide 4 (DDM) is missing the '{name}' row the rules require")
+        elif len(series) != len(periods):
+            violations.append(f"slide 4 (DDM) row '{name}' has {len(series)} values against {len(periods)} periods")
+    if not any(abs(v or 0) > 0 for v in (rows.get("DPS") or [])):
+        violations.append("slide 4 (DDM) has no dividend per share to discount")
+    coe_rows = [r for r in (page.get("wacc_rows") or []) if "cost of equity" in str(r[0]).lower()]
+    if not coe_rows:
+        violations.append("slide 4 (DDM) Exhibit 9 must state the Cost of Equity it discounts with")
+    for row in coe_rows:
+        if len(row) < 3 or not str(row[2]).strip():
+            violations.append("slide 4 (DDM) gives a Cost of Equity without naming its source")
+    stated = " ".join(
+        [str(r[0]) + " " + str(r[1]) + " " + str(r[2]) for r in (page.get("wacc_rows") or [])]
+        + [str(n) for n in (page.get("notes") or [])]
+        + [str(page.get("subtitle") or "")]
+    ).lower()
+    if not ("cost of equity" in stated and "wacc" in stated):
+        violations.append("slide 4 (DDM) does not state that the discount rate is the Cost of Equity, not WACC")
+    bridge = page.get("bridge") or {}
+    if bridge.get("fv_gordon") is None:
+        violations.append("slide 4 (DDM) has no fair value per share")
+    if not any("payout" in str(n).lower() for n in (page.get("notes") or [])):
+        violations.append("slide 4 (DDM) must test payout sustainability, as the rules' narrative section requires")
+    if bridge.get("fv_exit") is None and not any("inverse" in str(n).lower() for n in (page.get("notes") or [])):
+        violations.append("slide 4 (DDM) neither shows the Inverse Cost of Equity path nor explains its absence")
+    sensitivity = page.get("sensitivity") or {}
+    grid = sensitivity.get("fair_value")
+    cells = len([v for row in grid.values.tolist() for v in row if v is not None]) if grid is not None and hasattr(grid, "values") else 0
+    if cells == 0 or cells != (len(sensitivity.get("wacc_axis") or []) * len(sensitivity.get("g_axis") or [])):
+        violations.append("slide 4 (DDM) Exhibit 10 must fill every cell")
+    if sensitivity.get("base") is None:
+        violations.append("slide 4 (DDM) Exhibit 10 must mark the base case")
+    return violations
+
 def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list[str]:
     """Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
@@ -406,6 +453,8 @@ def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list
     """
     if not isinstance(page, dict) or not page or not page.get("available"):
         return []
+    if str(page.get("method") or "dcf") == "ddm":
+        return _audit_ddm_page(page)
     violations: list[str] = []
     periods = [str(p) for p in (page.get("periods") or [])]
 

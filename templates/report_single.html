@@ -225,7 +225,7 @@
   <p class="small muted">{{ valuation_page.subtitle }}</p>
 
   {# ---- Exhibit 8: one exhibit, three blocks (rules for slide 4, Opsi A) ---- #}
-  {{ m.exhibit_auto(ns, "FCFF Forecast, Terminal Value and Bridge to Equity", "Engine: " ~ valuation_page.sources[2]) }}
+  {{ m.exhibit_auto(ns, valuation_page.exhibit8_title or "FCFF Forecast, Terminal Value and Bridge to Equity", "Engine: " ~ valuation_page.sources[2]) }}
   <table class="fin-table">
     <thead>
       <tr><th>Blok 1 — Periode proyeksi eksplisit (Rp bn)</th>{% for p in valuation_page.periods %}<th>{{ p }}</th>{% endfor %}</tr>
@@ -242,7 +242,7 @@
 
   <table class="fin-table" style="margin-top:5pt;">
     <thead>
-      <tr><th>Blok 2 — Terminal value</th><th>Gordon Growth</th><th>Exit Multiple {{ valuation_page.drivers.multiple }}x</th></tr>
+      <tr>{% for h in (valuation_page.block2_headers or ["Blok 2 — Terminal value", "Gordon Growth", "Exit Multiple " ~ (valuation_page.drivers.multiple or 0) ~ "x"]) %}<th>{{ h }}</th>{% endfor %}</tr>
     </thead>
     <tbody>
       {% for label, a, b in valuation_page.block2_rows %}
@@ -252,7 +252,7 @@
   </table>
 
   <table class="fin-table" style="margin-top:5pt;">
-    <thead><tr><th>Blok 3 — Bridge ke equity value</th><th>Rp bn</th><th>Per saham (Rp)</th></tr></thead>
+    <thead><tr>{% for h in (valuation_page.block3_headers or ["Blok 3 — Bridge ke equity value", "Rp bn", "Per saham (Rp)"]) %}<th>{{ h }}</th>{% endfor %}</tr></thead>
     <tbody>
       {% for label, a, b in valuation_page.block3_rows %}
       <tr class="{{ 'bold hl' if 'Fair Value' in label else ('bold' if label in ('Enterprise Value', 'Equity Value') else '') }}">
