@@ -95,10 +95,12 @@ The page number is the real page counter, not a per-page literal.
 | Label above object | `templates/typst` | `figure.caption(position: top)`, one call per object |
 | Descriptive label | template authoring + Critic | titles are template-side; agents never write labels |
 | Constant source line | `templates/typst` | `exhibit-source()` stamps `SOURCE_LINE`; per-exhibit provenance is stashed, not printed |
-| Global sequential numbering | `templates/typst` | Typst `figure` counter for kind `exhibit` |
+| Global sequential numbering | `templates/typst` | Typst `figure` counter for kind `exhibit` — the counter is NEVER offset, so the first rendered label is `Exhibit 1` |
 | No hand-numbered exhibits in data | `templates/DATA_CONTRACT.md` + Critic | `exhibits[*].id` banned |
-| Header / logo / divider / footer on every page | `templates/typst` | native page furniture via `set page(header:/footer:)` — survives content overflow |
-| Date format | `templates/typst` | `format-date-en()` |
+| Header / logo / divider / footer on every page | `server/report/house_format.py` (`header_template()`, `footer_template()`, `PDF_MARGIN`) driven by Chromium `display_header_footer` | repeats on every PHYSICAL page. The per-`<div class="page">` fallback in `templates/macros.html` is used only when Chromium is unavailable, because it cannot survive a page overflow |
+| Footer page number = real page counter | Chromium `<span class="pageNumber">` | resolves to the physical page index; never a per-page literal |
+| Date format | `house_format.format_house_date()` / `format-date-en()` | `Day, DD Month YYYY` from the payload's raw date |
+| Label/object/source not split by a page break | template authoring | Typst: wrap the three statements in `block(breakable: false)`. HTML: `break-after/before: avoid` is a hint Chromium does NOT honour reliably — measure with `scripts/verify_house_format.py` |
 
 Agents do not lay out pages. They supply data and narrative; the renderer owns
 every element in the tables above. An agent that emits its own header, footer, page

@@ -44,6 +44,10 @@ from server.report.house_format import (  # noqa: E402
 )
 
 SOURCE_FULL = f"Source: {SOURCE_LINE}"
+# The source line can be WRAPPED by a narrow column ("Source:\nCompany,\nTeam\nEstimates"),
+# which is a layout wart, not a missing line — match the words with any whitespace between
+# them and report the wrapped occurrences separately as a warning.
+SOURCE_RE = re.compile(r"Source:\s+" + r"\s+".join(re.escape(w) for w in SOURCE_LINE.split()))
 DATE_RE = re.compile(
     r"(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s*"
     r"\d{1,2}\s+(January|February|March|April|May|June|July|August|September|"
@@ -81,7 +85,13 @@ def check(pdf: Path) -> dict:
         ftr_r = FOOTER_RIGHT in text
         m = PAGENUM_RE.search(text.replace("\n", " "))
         page_numbers.append(int(m.group(1)) if m else None)
-        n_src = len(re.findall(re.escape(SOURCE_FULL), text))
+        n_src = len(re.findall(SOURCE_RE, text))
+        n_src_flat = len(re.findall(re.escape(f"Source: {SOURCE_LINE}"), text))
+        if n_src > n_src_flat:
+            warn.append(
+                f"rule 1 page {pno}: {n_src - n_src_flat} source line(s) WRAPPED across lines "
+                "(column too narrow for one line) — present, but not the house one-liner"
+            )
         source_lines += n_src
         exhibits = sorted(int(n) for n in EXHIBIT_RE.findall(text))
         all_exhibits.extend(exhibits)
@@ -94,8 +104,14 @@ def check(pdf: Path) -> dict:
             no_ftr_l.append(pno)
         if not ftr_r:
             no_ftr_r.append(pno)
-        # A page carrying an object but no source line is the "object rendered, source
-        # line left behind on the previous page" failure.
+        # A source line on a page with NO exhibit label is legitimate when the object
+        # spans the page break (the line belongs under its last fragment) — surfacing it
+        # as a warning keeps the case visible without failing a correct document.
+        if n_src > 0 and not exhibits:
+            warn.append(
+                f"rule 1 page {pno}: source line with no exhibit label on the page — correct "
+                "if the object spans the page break, a separated source line otherwise"
+            )
         if n_src == 0 and exhibits:
             no_src.append(pno)
 

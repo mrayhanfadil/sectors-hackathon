@@ -238,10 +238,11 @@ def test_document_built_by_the_production_loader_honours_the_house_format(tmp_pa
     pages = text.split("\f")[:-1] if text.endswith("\f") else text.split("\f")
     assert len(pages) >= 1
 
-    # 1. the global counter: the numbers present must be exactly 2..N+1 — no
-    # gaps, no repeats. Exhibit 1 is SKIPPED by canonical spec (no locked EPS
-    # consensus feed; see slide1-cover-spec + AMMN-R2T R1 one-time counter
-    # offset in report_single.typ), so the first header numbers as Exhibit 2.
+    # 1. the global counter: the numbers present must be exactly 1..N — no gaps, no
+    # repeats. An exhibit that is deliberately NOT rendered (the canonical Ex 1
+    # EPS-consensus table, no locked consensus feed) does not consume a number, so the
+    # first rendered label IS `Exhibit 1` (house-report-format.md §2: the numbering runs
+    # continuously from the first page, and a reader must never wonder where Ex 1 went).
     # NOT "appears in ascending order": a two-column page is extracted
     # column-by-column by pdftotext, so a perfectly correct counter interleaves
     # (JCI renders 1,3,4,2 by reading across columns). Order is checked per column
@@ -249,8 +250,8 @@ def test_document_built_by_the_production_loader_honours_the_house_format(tmp_pa
     labels = [int(m.group(1)) for m in re.finditer(r"(?m)^Exhibit[\s\u00a0]+(\d+)\.", text)]
     n = len(labels)
     assert n > 0, "no exhibits rendered"
-    assert sorted(labels) == list(range(2, n + 2)), (
-        f"exhibit counter is not 2..N+1 with no gaps/repeats: {sorted(labels)}"
+    assert sorted(labels) == list(range(1, n + 1)), (
+        f"exhibit counter is not 1..N with no gaps/repeats: {sorted(labels)}"
     )
     assert len(set(labels)) == n, f"exhibit number repeated: {labels}"
 
@@ -640,3 +641,45 @@ def test_no_template_prints_its_own_source_line(tpl_file: str) -> None:
     src = (REPO_ROOT / "templates" / f"{tpl_file}.html").read_text(encoding="utf-8")
     assert "src-tag" not in src, f"{tpl_file} still styles a per-object source tag"
     assert "Sumber:" not in src, f"{tpl_file} still prints a per-object source line"
+
+
+def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
+    """The strongest guard on the live path: the PDF a reader actually downloads.
+
+    Every source-level guard above can pass while the shipped document is still wrong on
+    paper, because none of them can see a PHYSICAL page:
+
+    * per-`<div class="page">` furniture is lost to a page overflow, so a continuation
+      page ships with no header and the previous logical page's footer (measured: 3 of 8
+      pages, footer page numbers `[1,2,-,3,-,4,-,5]`);
+    * an exhibit label is orphaned at the bottom of one page while its chart renders on
+      the next, so the label is no longer ABOVE its object;
+    * the footer page numbers repeat.
+
+    So render the real thing through the real entrypoint and run the artifact verifier on
+    it. Skips honestly when the only renderable ticker has no verified assumptions file.
+    """
+    if not (REPO_ROOT / "data" / "assumptions" / "AMMN.json").exists():
+        pytest.skip("no verified assumptions for AMMN — nothing to render")
+
+    import asyncio
+
+    from server.routers.pdf import render_pdf_bytes_for_ticker
+
+    pdf_bytes, engine, _tpl, _data = asyncio.run(render_pdf_bytes_for_ticker("AMMN"))
+    assert engine == "playwright", (
+        f"the shipped path fell back to {engine!r}: the Chromium furniture (header/footer on "
+        "every physical page) is the only variant that satisfies house-report-format.md §3-4"
+    )
+
+    out = tmp_path / "live.pdf"
+    out.write_bytes(pdf_bytes)
+
+    sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import verify_house_format
+
+    result = verify_house_format.check(out)
+    assert result["info"]["exhibits"] > 0, "the shipped PDF carries no exhibit at all"
+    assert not result["fails"], (
+        "the shipped PDF breaks the house format:\n  " + "\n  ".join(result["fails"])
+    )
