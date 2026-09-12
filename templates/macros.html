@@ -217,6 +217,14 @@
   .risk-bucket { border-left: 2.5pt solid var(--neg); padding: 4pt 8pt; margin: 5pt 0;
                  background: #fffbfa; border-radius: 0 3pt 3pt 0; }
   .risk-bucket b { color: var(--neg); font-size: 8.6pt; }
+
+  /* ---- deck slide 3: 2x2 performance grid, each chart with its own narrative ---- */
+  .s3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 10pt; margin-top: 3pt; }
+  .s3-cell { break-inside: avoid; }
+  .s3-cell .exhibit-head { margin-bottom: 1pt; }
+  .s3-narasi { font-size: 6.6pt; line-height: 1.33; color: #1f2937; margin: 3pt 0 0 0;
+               text-align: justify; }
+  .s3-cell .exhibit-src { font-size: 5.8pt; margin-top: 1pt; }
 </style>
 {%- endmacro %}
 

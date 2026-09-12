@@ -287,6 +287,114 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
     return out
 
 
+PERFORMANCE_PAGE_QUADRANTS = (
+    "Revenue & Revenue Growth",
+    "EBITDA & EBITDA Margin",
+    "Net Profit & EPS Growth",
+    "DER vs ROE",
+)
+
+
+def audit_performance_page(page: Optional[dict], payload: Optional[dict] = None) -> list[str]:
+    """Audit slide 3 of the deck (`docs/ammn-slides/slide3-visual-spec.md`).
+
+    Four quadrants, each a chart that carries its own narrative block — the spec is explicit that the
+    narrative must sit with its chart, not collected at the end of the page. Two things make this
+    page worth gating rather than trusting: the cross-exhibit tie-out rule, and the fact that a
+    forecast series can be built from assumptions the page itself should be warning about.
+    """
+    if not isinstance(page, dict) or not page:
+        return []
+    # The source table can be absent from a payload (a fixture, a non-financial archetype). In that
+    # case an empty quadrant is honest rather than a violation; when the table IS there, an empty
+    # quadrant means the page failed to use the data it had, and that is a violation.
+    kf = ((payload or {}).get("cover") or {}).get("slide2") or {}
+    has_source_table = bool((kf.get("key_financials") or {}).get("rows"))
+    violations: list[str] = []
+    quads = [q for q in (page.get("quadrants") or []) if isinstance(q, dict)]
+    titles = [str(q.get("title") or "") for q in quads]
+    for want in PERFORMANCE_PAGE_QUADRANTS:
+        if want not in titles:
+            violations.append(f"slide 3 is missing quadrant '{want}'")
+    for q in quads:
+        title = str(q.get("title") or "?")
+        bars = [v for v in (q.get("bars") or []) if v is not None]
+        line = [v for v in (q.get("line") or []) if v is not None]
+        if has_source_table and len(bars) < 2:
+            violations.append(f"slide 3 quadrant '{title}' has no usable bar series")
+        if has_source_table and not line:
+            violations.append(f"slide 3 quadrant '{title}' has no line series")
+        narrative = _text(q.get("narrative"))
+        if len(narrative) < 120:
+            violations.append(f"slide 3 quadrant '{title}' has no attached narrative block")
+        labels = q.get("labels") or []
+        if bars and labels and len(bars) != len(labels):
+            violations.append(f"slide 3 quadrant '{title}' bars do not match its period labels")
+        if q.get("actual_n") is None:
+            violations.append(f"slide 3 quadrant '{title}' does not mark which bars are actual")
+
+    # Tie-out (spec: no number may differ between this slide and Key Financials for the same period).
+    # Only checked against the block the quadrant names, so the check is real rather than decorative.
+    if payload:
+        kf_rows = (((payload.get("cover") or {}).get("slide2") or {}).get("key_financials") or {}).get(
+            "rows"
+        ) or []
+        kf_headers = (
+            (((payload.get("cover") or {}).get("slide2") or {}).get("key_financials") or {}).get(
+                "headers"
+            )
+            or []
+        )[1:]
+        if kf_rows and kf_headers:
+            for label in ("revenue", "ebitda", "net profit"):
+                row = next(
+                    (
+                        r
+                        for r in kf_rows
+                        if label in str(r[0] if isinstance(r, (list, tuple)) and r else "").lower()
+                    ),
+                    None,
+                )
+                if not row:
+                    continue
+                cover_values = [p for p in (_parse_id_like(v) for v in row[1:]) ]
+                quad = next((q for q in quads if q.get("title", "").lower().startswith(label.split()[0])), None)
+                if not quad:
+                    continue
+                for i, value in enumerate(quad.get("bars") or []):
+                    if value is None or i >= len(cover_values):
+                        continue
+                    reference = cover_values[i]
+                    if reference is None:
+                        continue
+                    if abs(float(value) - float(reference)) > max(0.5, abs(reference) * 0.001):
+                        violations.append(
+                            f"slide 3 '{quad.get('title')}' {kf_headers[i]} = {value} but the Key "
+                            f"Financials exhibit says {reference} (tie-out)"
+                        )
+    return violations
+
+
+def _parse_id_like(value: Any) -> Optional[float]:
+    """Parse the cover table's pre-formatted cells the Indonesian way (see performance_page)."""
+    if isinstance(value, (int, float)):
+        return float(value)
+    text = str(value or "").strip()
+    if text in ("", "—", "-", "n/a", "N/A"):
+        return None
+    negative = text.startswith("(") and text.endswith(")")
+    text = text.strip("()").replace("%", "")
+    if "," in text:
+        text = text.replace(".", "").replace(",", ".")
+    elif text.count(".") == 1 and len(text.split(".")[1]) == 3:
+        text = text.replace(".", "")
+    try:
+        number = float(text)
+    except ValueError:
+        return None
+    return -number if negative else number
+
+
 # ------------------------------------------------------------------ entry point
 def audit_house_rules(payload: Optional[dict]) -> dict:
     """Audit a render payload against §7-§9.
@@ -314,11 +422,19 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
         violations += audit_key_financials(slide2.get("key_financials") or {})
     # Slide 2 of the deck is audited regardless of the cover spread: it is its own page.
     violations += audit_industry_page(payload.get("industry_page"), payload)
+    # Slide 3 of the deck is its own page as well.
+    violations += audit_performance_page(payload.get("performance_page"), payload)
     return {
         "ok": not violations,
         "applicable": applicable,
         "violations": violations,
-        "sections": ["7-cover", "8-paragraphs", "9-key-financials", "slide2-industry"],
+        "sections": [
+            "7-cover",
+            "8-paragraphs",
+            "9-key-financials",
+            "slide2-industry",
+            "slide3-performance",
+        ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
             (slide2.get("katalis") or {}).get("body", ""),

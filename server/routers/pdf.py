@@ -386,6 +386,11 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         from server.report.industry_page import build_industry_page
 
         payload["industry_page"] = build_industry_page(payload, assum if _has_assump else {})
+        # Deck slide 3: the performance/forecast 2x2. Read from the same payload, so its columns are
+        # the very same series the cover's Key Financials table renders (the tie-out the spec demands).
+        from server.report.performance_page import build_performance_page
+
+        payload["performance_page"] = build_performance_page(payload, assum if _has_assump else {})
     except Exception as exc:
         build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:

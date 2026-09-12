@@ -115,7 +115,7 @@ page index is the slide number, so a page cannot be inserted without renumbering
 |---|---|---|---|---|
 | 1 | 1 | Cover one-pager | `docs/ammn-slides/slide1-cover-spec.md` | §7-§9 below |
 | 2 | 2 | Kondisi industri, katalis emiten, sentimen pasar (three narrative paragraphs, **no mandatory object**) | `docs/ammn-slides/slide2-industry-spec.md` | §6.1 below |
-| 3 | 3 | Performance visualisation and forecasting | `docs/ammn-slides/slide3-visual-spec.md` | pending |
+| 3 | 3 | Performance visualisation and forecasting (2x2 grid) | `docs/ammn-slides/slide3-visual-spec.md` | §6.2 below |
 | 4 | 4 | Valuation methods and assumptions | `docs/ammn-slides/slide4-valuation-spec.md` | pending |
 | 5 | 5 | Peer and relative valuation | `docs/ammn-slides/slide5-peer-spec.md` | pending |
 | 6-7 | 6-7 | Financial statements and disclosures | `docs/ammn-slides/slide6-statements-spec.md` | §3-§4 furniture |
@@ -141,6 +141,16 @@ document-wide figure counter treats it like any other object.
 | Related-party flow reported in both directions | `audit_industry_page(page, payload)` | when the payload's filings block carries buys and sells, paragraph 2 must name both; one side is a violation |
 | The CLI/native path cannot dodge the page rules | `scripts/render_pdf.py` (`ensure_industry_page` + `validate`) | attaches the page when the payload predates it, then runs the same `audit_house_rules` |
 | The prompt carries the evidence rules, not only the doc | `agents/adk/agents/instructions.py` (`SLIDE_PAGES_RULE`) | widest-Sectors evidence list, both-directions rule, like-for-like comparison, named unavailable metrics |
+
+### 6.2 Page 4 — the 2x2 performance grid
+
+| Rule | Enforced by | Mechanism |
+|---|---|---|
+| Four quadrants, each chart with its own narrative block | `audit_performance_page` | a quadrant without a narrative of at least 120 characters is a violation, so the narrative cannot drift to the end of the page |
+| Actual vs forecast readable without the axis labels | `templates/_slide3_macro.html` | solid navy bars for the actual periods, lighter bars under a hatch pattern for the forecast periods |
+| Every period ties out with the Key Financials exhibit | `audit_performance_page(page, payload)` | each bar is compared against the cover table for the same period label; a mismatch names the period and both values |
+| Narrative states the drivers, the CAGR comparison, the margin sanity check and the below-line gap | `server/report/performance_page.py` | computed from the series, not written by hand; an assumption the narrative disagrees with is printed on the page |
+| The fourth quadrant switches by sector | `performance_page` + page notes | DER/ROE is built for non-banks; the bank and E&P branches are named as unavailable rather than filled with lookalike numbers |
 
 ## 7. Cover slide — the one-pager
 

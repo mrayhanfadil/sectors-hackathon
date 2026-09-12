@@ -2,6 +2,7 @@
 {# TEMPLATE: single — RATU archetype (pure-play, 9 sections).
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
+{% import "_slide3_macro.html" as s3 %}
 {% set ns = namespace(ex=0, pending=false) %}
 {% set palette = {"brand": "#1d4ed8", "brand_dark": "#152c6e", "accent": "#eef2ff"} %}
 <html lang="id">
@@ -189,10 +190,37 @@
   {{ m.pagefoot(3, ns) }}
 </div>
 
+{# ================= PAGE 4 — SLIDE 3: PERFORMANCE & FORECAST (2x2) =================
+   docs/ammn-slides/slide3-visual-spec.md: four combo charts, each with the narrative that explains
+   it attached to the chart itself; every 2024A-2028F number is read from the same series the cover's
+   Key Financials table prints (house-report-format.md §6, deck page order). #}
+<div class="page">
+  {{ m.running() }}
+  {{ m.section(4, performance_page.title if performance_page else "Visualisasi Kinerja Keuangan dan Forecasting") }}
+  {% if performance_page %}
+  <p class="muted small">{{ performance_page.subtitle }}</p>
+  <div class="s3-grid">
+    {% for q in performance_page.quadrants %}
+    <div class="s3-cell">
+      {{ m.exhibit_auto(ns, q.title, q.tie_out.block if q.tie_out else "") }}
+      {{ s3.svg_combo(loop.index, q.labels or [], q.bars or [], q.line or [], q.actual_n or 0, q.bar_fmt or [], q.line_fmt or [], q.bar_unit or "", q.line_unit or "") }}
+      <p class="s3-narasi">{{ q.narrative }}</p>
+      {{ m.exhibit_source(ns) }}
+    </div>
+    {% endfor %}
+  </div>
+  <p class="muted" style="font-size:6.4pt; margin-top:4pt;">Basis data: {{ performance_page.sources | join('; ') }}</p>
+  {% else %}
+  <p class="small muted">Halaman ini tidak dapat disusun: payload tidak membawa tabel Key Financials (2024A-2028F) maupun rasio DER/ROE.</p>
+  {% endif %}
+  {{ m.pagefoot(4, ns) }}
+</div>
+
+
 {# ================= PAGE 3 — VALUATION ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(4, "Valuasi") }}
+  {{ m.section(5, "Valuasi") }}
   <p class="small muted">Metode kedua dipilih adaptif: infra/dividen → DDM, konglomerasi → SOTP, lainnya → EV/EBITDA (plan §5).</p>
 
   {% for vm in valuation.methods %}
@@ -271,13 +299,13 @@
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
-  {{ m.pagefoot(4, ns) }}
+  {{ m.pagefoot(5, ns) }}
 </div>
 
 {# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Financials 6Y + Rasio") }}
+  {{ m.section(6, "Financials 6Y + Rasio") }}
   {% if exhibits %}
     {% for ex in exhibits %}
     {% if ex.chart %}
@@ -292,13 +320,13 @@
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
   {% endfor %}
-  {{ m.pagefoot(5, ns) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(6, "Perbandingan Peers") }}
+  {{ m.section(7, "Perbandingan Peers") }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
@@ -307,7 +335,7 @@
     {% endfor %}
   {% endif %}
 
-  {{ m.section(7, "Faktor Risiko") }}
+  {{ m.section(8, "Faktor Risiko") }}
   {% for r in risks %}
   <div class="risk-bucket">
     <b>{{ r.bucket }}</b>
@@ -319,10 +347,10 @@
   {# rule 1: flush the pending exhibit before the closing blocks, so the source line
      lands directly under its object instead of after the disclaimer. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(8, "Disklaimer") }}
+  {{ m.section(9, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(6, ns) }}
+  {{ m.pagefoot(7, ns) }}
 </div>
 
 {{ m.chartjs() }}

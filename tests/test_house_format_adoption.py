@@ -526,6 +526,16 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
         assert heading in page2, f"deck page 2 lost {heading!r} on paper"
     assert "Ringkasan Investasi" in doc[2].get_text(), "the summary page is no longer page 3"
 
+    # Deck slide 3 (docs/ammn-slides/slide3-visual-spec.md) is a 2x2 grid on ONE physical page, and
+    # its four charts take exhibits 4-7 -- the numbering the owner's spec assumes.
+    page4 = doc[3].get_text()
+    for quadrant in ("Revenue & Revenue Growth", "EBITDA & EBITDA Margin",
+                     "Net Profit & EPS Growth", "DER vs ROE"):
+        assert quadrant in page4, f"slide 3 lost {quadrant!r} on paper"
+    for number in (4, 5, 6, 7):
+        assert f"Exhibit {number}." in page4, f"Exhibit {number} is not on the slide-3 page"
+    assert "Exhibit 8." in doc[4].get_text(), "the valuation page no longer opens at Exhibit 8"
+
 
 # --------------------------------------------- template call-site hygiene
 # These three guards used to live in tests/test_exhibit_convention.py, which policed the

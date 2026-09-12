@@ -1,5 +1,33 @@
 # Slide 3 — Performance Visualisation & Forecasting spec (AMMN)
 
+## 0. Binding rule text (owner, 12 Sep 2026)
+
+The owner's wording outranks any paraphrase elsewhere in this document.
+
+> **SLIDE 3 — Visualisasi Kinerja Keuangan dan Forecasting**
+>
+> Layout grid 2x2, masing-masing kuadran berisi satu chart plus blok narasi pendamping (baik di bawah chart atau di sampingnya tergantung ruang, tapi harus menempel visual dengan chart-nya masing-masing, bukan narasi terpisah di ujung slide).
+>
+> **Exhibit 4. Revenue & Revenue Growth.** Chart combo: bar untuk Revenue absolut (Rpbn) periode 2024A-2028F, line untuk growth yoy (%) di secondary axis. Warna bar navy solid untuk data aktual, navy dengan pattern/opacity lebih rendah untuk data forecast (supaya visual langsung membedakan aktual vs proyeksi tanpa perlu baca label). Narasi (2-3 kalimat): identifikasi driver utama pertumbuhan atau penurunan revenue di tiap periode signifikan, bandingkan CAGR historis (2024A-2025A) dengan CAGR forecast (2026F-2028F) dan jelaskan kalau ada perbedaan laju yang material, flag inflection point kalau ada (contoh: growth melambat tajam di satu tahun forecast karena base effect tinggi atau selesainya periode ekspansi kapasitas).
+>
+> **Exhibit 5. EBITDA & EBITDA Margin.** Chart combo serupa: bar EBITDA (Rpbn), line EBITDA margin (%) secondary axis. Narasi: jelaskan arah trajectory margin (ekspansi atau kontraksi) dan penyebab strukturalnya (cost structure shift, pricing power, operating leverage dari fixed cost absorption), bandingkan level margin forecast dengan rata-rata historis 3-5 tahun sebagai sanity check apakah asumsi margin forecast realistis atau terlalu optimis/pesimis dibanding track record perusahaan.
+>
+> **Exhibit 6. Net Profit & EPS Growth.** Chart combo: bar Net Profit (Rpbn), line EPS growth (%) secondary axis. Narasi: bandingkan laju growth net profit/EPS dengan laju growth revenue dan EBITDA di dua chart sebelumnya, kalau ada gap material (misal EBITDA growth 15% tapi net profit growth cuma 5%), wajib jelaskan below-the-line item penyebabnya secara eksplisit (kenaikan tax rate efektif, beban bunga naik karena leverage tambahan, minority interest, atau kerugian/keuntungan kurs).
+>
+> **Exhibit 7. Chart keempat (switchable by sector).** Default non-bank: DER (bar, x) vs ROE (line, %) - untuk menilai apakah pertumbuhan yang diproyeksikan didanai dengan leverage yang sehat atau berisiko meningkatkan financial risk berlebihan. Bank: NIM (%) dan Cost of Credit (%) trend, atau alternatif NPL/LaR ratio trend, karena ini driver utama profitabilitas emiten bank, bukan leverage dalam pengertian umum. E&P/upstream: production volume (bar) dan lifting cost per barrel/boe (line), karena revenue emiten E&P tidak bisa dianalisis lewat leverage sederhana, harus lihat volume dan cost structure produksi. Sektor lain (property, plantation) perlu penyesuaian serupa sesuai driver utama earnings masing-masing, didiskusikan case-by-case saat build.
+>
+> **Tie-out.** Semua data di Slide 3 harus tie-out langsung dengan Exhibit 3 (Key Financials Slide 1), tidak boleh ada angka yang berbeda antara dua exhibit ini untuk periode yang sama.
+
+### 0.1 How the rules are enforced
+
+| Rule | Enforced by | Mechanism |
+|---|---|---|
+| 2x2 grid, narrative attached to its own chart | `templates/report_single.html` + `templates/macros.html` | `.s3-grid` two-column CSS grid, one `.s3-cell` per quadrant holding label, chart, narrative and source line; `audit_performance_page` fails a quadrant without an attached narrative |
+| Combo charts, 2024A-2028F, actual vs forecast visually distinct | `templates/_slide3_macro.html` (`svg_combo`) | bars solid navy for the actual periods and lighter with a hatch overlay for the forecast periods; the line rides the secondary axis with its own value labels |
+| Every number ties out with the Key Financials exhibit | `server/report/house_rules.py::audit_performance_page` | the builder reads the cover's Key Financials rows themselves, and the gate re-compares each bar against that table per period, naming the period in the violation |
+| Narrative per quadrant (drivers, CAGR, margin sanity check, below-the-line gap) | `server/report/performance_page.py` | each narrative is computed from the series (growth, CAGR, margin vs realised average, EBITDA-to-net-profit gap with the leverage and coverage that explain it); a forecast assumption the narrative disagrees with is stated on the page |
+| Sector switch for the fourth quadrant | `performance_page.QUADRANT_TITLES` + page notes | non-bank default (DER vs ROE) is built; bank (NIM/CoC) and E&P (volume/lifting cost) branches are named as unavailable in the data rather than faked |
+
 Ticker: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ). Sector: copper-gold mining.
 Slide 3 is the model made visible: four charts on a 2x2 grid, each with its own attached
 narrative block. Its job is to make the forecast auditable — a reader must be able to see

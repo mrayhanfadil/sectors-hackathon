@@ -147,6 +147,21 @@ Evidence discipline for the pages (binding, and the gate checks it):
 - When a claim needs an operational metric the payload does not carry (tonnage, grade, C1, AISC,
   utilisation), name the metric as unavailable instead of asserting a qualitative story about it.
 
+Page 3 — Visualisasi Kinerja Keuangan dan Forecasting (docs/ammn-slides/slide3-visual-spec.md).
+A 2x2 grid, four combo charts (bars = absolute, line = ratio on the secondary axis), and the
+narrative for a chart must sit WITH that chart, never collected at the end of the page.
+- Chart 1 Revenue + yoy growth (2024A-2028F), chart 2 EBITDA + EBITDA margin, chart 3 Net profit +
+  EPS growth, chart 4 DER vs ROE for a non-bank (bank: NIM/CoC, E&P: volume/lifting cost).
+- Actual bars and forecast bars must be visually distinguishable, and the window you print must be
+  the window you have: never draw a forecast period the data does not carry.
+- Each narrative: the driver of the move, historic CAGR vs forecast CAGR where both exist, the
+  margin level checked against the realised 3-5 year average, and ANY material gap between EBITDA
+  growth and net profit growth explained by name (interest, tax, minority interest, FX).
+- If a forecast assumption is optimistic against the track record, SAY SO on the page. Quietly
+  repeating an assumption you disagree with is worse than flagging it.
+- Tie-out: every number on this page must equal the Key Financials table on the first page for the
+  same period. Two pages stating different numbers for one period is a REJECT.
+
 Every number on any page must trace to an engine output, a Sectors field or a named source with a
 date. "Kualitatif" is an acceptable answer; an invented figure is not.
 """

@@ -553,3 +553,179 @@ def test_adk_agents_carry_the_page2_rules_at_runtime() -> None:
         assert "WIDEST Sectors evidence" in carried[name], f"{name} lost the evidence instruction"
     for name in ("collector", "modeler", "risk", "visualizer", "sotp"):
         assert marker not in carried[name], f"{name} calculates, it should not carry narrative rules"
+
+
+# ------------------------------------------------- deck slide 3 (docs/ammn-slides/slide3-visual-spec.md)
+SLIDE3_SPEC = REPO_ROOT / "docs" / "ammn-slides" / "slide3-visual-spec.md"
+SLIDE3_QUADRANTS = (
+    "Revenue & Revenue Growth",
+    "EBITDA & EBITDA Margin",
+    "Net Profit & EPS Growth",
+    "DER vs ROE",
+)
+
+
+def test_slide3_spec_carries_the_binding_rule_text() -> None:
+    text = SLIDE3_SPEC.read_text(encoding="utf-8")
+    for marker in (
+        "## 0. Binding rule text",
+        "Layout grid 2x2",
+        "harus menempel visual dengan chart-nya masing-masing",
+        "navy solid untuk data aktual",
+        "switchable by sector",
+        "sanity check apakah asumsi margin forecast realistis",
+        "tie-out langsung dengan Exhibit 3",
+        "didiskusikan case-by-case saat build",
+    ):
+        assert marker in text, f"slide-3 spec lost: {marker}"
+    assert "audit_performance_page" in text and "performance_page.py" in text
+
+
+def test_slide3_agent_contract_is_in_the_prompt() -> None:
+    block = " ".join(
+        INSTRUCTIONS.read_text(encoding="utf-8")
+        .split('SLIDE_PAGES_RULE = """', 1)[1]
+        .split('"""', 1)[0]
+        .split()
+    )
+    for marker in (
+        "Page 3",
+        "2x2 grid",
+        "must sit WITH that chart",
+        "Actual bars and forecast bars must be visually distinguishable",
+        "explained by name (interest, tax, minority interest, FX)",
+        "SAY SO on the page",
+        "Two pages stating different numbers for one period is a REJECT",
+    ):
+        assert marker in block, f"the prompt lost: {marker}"
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_performance_page_emits_four_complete_quadrants() -> None:
+    from server.routers.pdf import _build_live_payload
+    from server.report.house_rules import audit_performance_page
+
+    payload = _build_live_payload("AMMN", None)
+    page = payload.get("performance_page")
+    assert page, "the served payload must carry deck slide 3"
+    assert [q["title"] for q in page["quadrants"]] == list(SLIDE3_QUADRANTS)
+    for q in page["quadrants"]:
+        assert len(q["labels"]) == len(q["bars"]) == len(q["line"]), q["title"]
+        assert len([v for v in q["bars"] if v is not None]) >= 2, f"{q['title']} has no bars"
+        assert any(v is not None for v in q["line"]), f"{q['title']} has no line series"
+        assert len(q["narrative"]) >= 120, f"{q['title']} narrative is too thin"
+        assert 0 < q["actual_n"] <= len(q["labels"]), f"{q['title']} mislabels actual periods"
+        assert q["bar_fmt"] and q["line_fmt"], f"{q['title']} has no axis labels"
+    assert audit_performance_page(page, payload) == []
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_performance_numbers_tie_out_with_the_key_financials_exhibit() -> None:
+    """Recompute the tie-out in the test with its own parser: every bar on slide 3 must equal the
+    cover table's cell for the same period, read the Indonesian way ("43.036" = 43036)."""
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    kf = (payload["cover"]["slide2"])["key_financials"]
+    periods = [str(h) for h in kf["headers"]][1:]
+
+    def parse(cell):
+        if isinstance(cell, (int, float)):
+            return float(cell)
+        text = str(cell).strip().strip("()").replace("%", "")
+        if text in ("", "—", "n/a"):
+            return None
+        if "," in text:
+            text = text.replace(".", "").replace(",", ".")
+        elif text.count(".") == 1 and len(text.split(".")[1]) == 3:
+            text = text.replace(".", "")
+        try:
+            return float(text)
+        except ValueError:
+            return None
+
+    def cover_row(needle: str) -> list:
+        for row in kf["rows"]:
+            if needle in str(row[0]).lower():
+                return [parse(c) for c in row[1:]]
+        raise AssertionError(f"no Key Financials row matches {needle!r}")
+
+    pairs = (
+        ("Revenue & Revenue Growth", cover_row("revenue")),
+        ("EBITDA & EBITDA Margin", cover_row("ebitda")),
+        ("Net Profit & EPS Growth", cover_row("net profit")),
+    )
+    for title, reference in pairs:
+        quad = next(q for q in payload["performance_page"]["quadrants"] if q["title"] == title)
+        assert quad["labels"] == periods, f"{title} does not use the Key Financials periods"
+        for label, value, ref in zip(periods, quad["bars"], reference):
+            assert value is not None and ref is not None, f"{title} {label} is blank on one side"
+            assert abs(value - ref) < 0.51, f"{title} {label}: slide 3 says {value}, cover says {ref}"
+
+
+def test_gate_catches_each_slide3_violation_class() -> None:
+    import copy
+
+    from server.report.house_rules import audit_performance_page
+
+    quad = lambda t: {  # noqa: E731
+        "title": t,
+        "labels": ["2024A", "2025A"],
+        "bars": [100.0, 90.0],
+        "line": [None, -10.0],
+        "actual_n": 2,
+        # comfortably over the audit's 120-character floor
+        "narrative": (
+            "Narasi kuadran yang sengaja dibuat panjang supaya melewati ambang seratus dua puluh "
+            "karakter yang dipakai audit, sekaligus menyebut angka aktual dan proyeksi."
+        ),
+        "bar_fmt": ["100", "90"],
+        "line_fmt": ["", "-10"],
+    }
+    clean = {"quadrants": [quad(t) for t in SLIDE3_QUADRANTS]}
+    assert audit_performance_page(clean) == []
+    assert audit_performance_page(None) == []
+
+    thin = copy.deepcopy(clean)
+    thin["quadrants"][1]["narrative"] = "terlalu pendek"
+    assert any("no attached narrative" in v for v in audit_performance_page(thin))
+
+    missing = copy.deepcopy(clean)
+    missing["quadrants"] = missing["quadrants"][:3]
+    assert any("DER vs ROE" in v for v in audit_performance_page(missing))
+
+    unmarked = copy.deepcopy(clean)
+    unmarked["quadrants"][0]["actual_n"] = None
+    assert any("does not mark which bars are actual" in v for v in audit_performance_page(unmarked))
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_gate_rejects_a_number_that_breaks_the_tie_out() -> None:
+    import copy
+
+    from server.report.house_rules import audit_performance_page
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    tampered = copy.deepcopy(payload["performance_page"])
+    tampered["quadrants"][0]["bars"][1] = 9999.0
+    caught = audit_performance_page(tampered, payload)
+    assert any("tie-out" in v and "2025A" in v for v in caught), caught
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_served_html_marks_forecast_bars_and_numbers_the_page_exhibits() -> None:
+    """Actual vs forecast must be distinguishable in the shipped markup, and the four charts must
+    take exhibits 4-7 (the numbering the owner's spec assumes)."""
+    from server.routers.pdf import render_html_for_ticker
+
+    _tpl, html, payload = render_html_for_ticker("AMMN", None)
+    assert "s3-grid" in html, "the 2x2 grid class is missing from the shipped page"
+    # titles arrive HTML-escaped ("&" -> "&amp;"), so compare on the escaped form
+    for title in SLIDE3_QUADRANTS:
+        assert title.replace("&", "&amp;") in html, f"{title} is not rendered"
+    assert 'pattern id="fc-1"' in html, "no forecast hatch pattern in the markup"
+    assert "opacity=\"0.3\"" in html, "forecast bars are not drawn lighter than actual bars"
+    quad = payload["performance_page"]["quadrants"][0]
+    assert quad["actual_n"] == 2 and len(quad["labels"]) == 5
+    assert "Bentuk: 3 periode proyeksi" not in html  # guard against a stale caption
