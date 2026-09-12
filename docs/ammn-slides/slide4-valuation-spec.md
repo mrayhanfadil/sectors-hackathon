@@ -113,6 +113,13 @@ open identity: SUM(NAV x ownership) + cash - total debt - PV(corporate overhead)
 minus the discount to RNAV. With no asset data at all the branch returns `available: False` and lists
 what is missing — it never invents a NAV, and it says so when the bridge leaves a non-positive RNAV.
 
+**Verified 12 Sep 2026: Sectors cannot supply this.** `GET /v2/news/filings/` is an insider-filing feed
+(`references/sectors-api-and-mcp.md`: "insider buy/sell + holder_type"; filters are transaction_type,
+holder_type, sector and dates). The cached AMMN pull returns 22 filings — 11 buys worth Rp 1,901 bn
+against 9 sells worth Rp 5,442 bn between 2025-08-15 and 2026-07-22 — each carrying an IDX PDF link in
+`source`, and nothing else: no annual report, no reserve statement, no per-asset production. Asset-level
+NAV has to come from the issuer's annual report (amman.co.id/annual-report) or from the analyst.
+
 ## 4. Activating an option
 
 `valuation_method` in `data/assumptions/<ticker>.json` selects the option (`dcf`, `ddm` or `rnav`). With no key
