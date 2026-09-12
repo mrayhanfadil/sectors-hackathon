@@ -193,7 +193,6 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     fcf_list = [float(x) * 1e9 for x in raw_fcf]
     try:
         dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum.get("shares_out", 1e9), net_debt=assum.get("net_debt", 0), cash=assum.get("cash", 0))
-        fv = dcf_res["fv_per_share"]
         ev_res = ev_ebitda(assum.get("ebitda", 2000), assum.get("ev_multiple", 10), net_debt=assum.get("net_debt", 0), shares_out=assum.get("shares_out", 1e9), cash=assum.get("cash", 0))
         blended_res = None
         chosen = template_override or _template_for_inline(t, None)
@@ -202,6 +201,24 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
 
             blended_res = calc_blended({"dcf": dcf_res["fv_per_share"], "ev": ev_res["fv_per_share"]}, {"dcf": 0.6, "ev": 0.4})
             fv = blended_res["blended"]
+            fv_anchor = {"leg": "blended_dcf_ev", "fv": fv,
+                         "basis": "infra template: blended 60% DCF / 40% EV/EBITDA"}
+        else:
+            from server.engines import pick_fv_anchor
+
+            try:
+                fv_anchor = pick_fv_anchor(assum, dcf_res["fv_per_share"], ev_res["fv_per_share"])
+            except ValueError as e:
+                raise HTTPException(422, str(e))
+            fv = fv_anchor["fv"]
+            if fv is None:
+                raise HTTPException(
+                    422,
+                    f"fv anchor '{fv_anchor['leg']}' produced no value for {t} "
+                    f"({fv_anchor['basis']}) — refusing to rate on a missing leg.",
+                )
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(
             422, f"valuation engine failed for {t}: {e} — refusing generic fallback "
@@ -277,8 +294,18 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             {"headline": "Asumsi eksplisit & auditable", "detail": f"Rf {assum['rf']*100:.2f}%, Beta {assum['beta']}, ERP {assum['erp']*100:.2f}%", "source": "assumptions"},
         ],
         "valuation": {
+            # Which leg anchors the headline FV (server/engines pick_fv_anchor). Without this
+            # the cover's TP provenance is unknowable, and methods[] used to label the ANCHORED
+            # value as "DCF" even when the anchor was EV/EBITDA — the table named the wrong leg
+            # as the source of the number it printed.
+            "anchor": fv_anchor["leg"],
+            "anchor_basis": fv_anchor["basis"],
+            "legs": {
+                "dcf": (dcf_res.get("fv_per_share") if isinstance(dcf_res, dict) else None),
+                "ev_ebitda": (ev_res.get("fv_per_share") if isinstance(ev_res, dict) else None),
+            },
             "methods": [
-                {"method": "DCF", "fv": round(fv or 0), "assumptions": {"wacc": round(wacc_val*100, 2), "beta": assum["beta"], "rf": assum["rf"]*100, "erp": assum["erp"]*100, "g": assum.get("g", 0.015)*100}, "table": {"headers": ["Item", "Nilai"], "rows": [["WACC (%)", round(wacc_val*100, 2)], ["FV (Rp)", round(fv or 0)]]}, "source": "scripts/dcf.py"},
+                {"method": "DCF", "fv": round(dcf_res.get("fv_per_share", 0) if isinstance(dcf_res, dict) else 0), "assumptions": {"wacc": round(wacc_val*100, 2), "beta": assum["beta"], "rf": assum["rf"]*100, "erp": assum["erp"]*100, "g": assum.get("g", 0.015)*100}, "table": {"headers": ["Item", "Nilai"], "rows": [["WACC (%)", round(wacc_val*100, 2)], ["FV (Rp)", round(dcf_res.get("fv_per_share", 0) if isinstance(dcf_res, dict) else 0)]]}, "source": "scripts/dcf.py"},
                 {"method": "EV/EBITDA", "fv": round(ev_res.get("fv_per_share", 0) if isinstance(ev_res, dict) else 0), "assumptions": {"multiple": assum.get("ev_multiple", 10)}, "table": {"headers": ["Item", "Nilai"], "rows": [["Multiple (x)", assum.get("ev_multiple", 10)]]}, "source": "scripts/ev_ebitda.py"},
             ],
             "blended": {"source": "scripts/blended.py", "weights": {"DCF": 60, "EV/EBITDA": 40}, "fv": round(fv or 0), "margin_of_safety_pct": 15, "weights_sum_100": True, "rows": [["DCF", "60%", round(dcf_res.get("fv_per_share", 0) if isinstance(dcf_res, dict) else 0)], ["EV/EBITDA", "40%", round(ev_res.get("fv_per_share", 0) if isinstance(ev_res, dict) else 0)]], "fv_str": str(round(fv or 0))} if blended_res else None,
@@ -311,9 +338,21 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             apply_ammn_fill = None  # type: ignore
         if apply_ammn_fill is not None:
             try:
-                apply_ammn_fill(payload, assum, fv, rating, upside, wacc_val)
+                apply_ammn_fill(payload, assum, fv, rating, upside, wacc_val,
+                                anchor_basis=fv_anchor.get("basis"),
+                                anchor_leg=fv_anchor.get("leg"))
             except Exception:
                 pass
+    # Slide-1 contract (rating status, price box, secondary stats, analyst, theme title,
+    # 24M price-vs-IHSG series, quarterly performance paragraph). Runs for every ticker,
+    # after the AMMN fill so it reads the filled cover. Never raises: a leg with no source
+    # renders as an honest "n/a" (see server/report/cover_slide1.py).
+    try:
+        from server.report.cover_slide1 import build as build_slide1
+
+        build_slide1(payload, assum if _has_assump else {})
+    except Exception:
+        pass
     return payload
 
 

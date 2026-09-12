@@ -70,7 +70,10 @@ def test_thesis_and_summary_populated():
     blob = " ".join(t["detail"] for t in d["thesis"]) + d["cover"]["summary"]
     assert "lengkapi fixture" not in blob
     assert "Rp" in d["cover"]["summary"]
-    assert str(d["cover"]["rating_box"]["tp"]) in d["cover"]["summary"]
+    # The summary states the TP; accept either separator style so this guard tests CONTENT,
+    # not the number formatting (which the id-ID switch on the cover copy changes).
+    _tp = d["cover"]["rating_box"]["tp"]
+    assert f"{_tp:,.0f}".replace(",", ".") in d["cover"]["summary"] or f"{_tp:,}" in d["cover"]["summary"]
 
 
 @needs_fill

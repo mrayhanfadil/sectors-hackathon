@@ -483,7 +483,6 @@ async def report_ticker(
         raw_fcf = assum.get("fcf")
         fcf_list = [float(x) * 1e9 for x in raw_fcf]
         dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum["shares_out"], net_debt=assum["net_debt"], cash=assum.get("cash", 0))
-        fv = dcf_res["fv_per_share"]
         # EV/EBITDA cross-check
         ev_res = ev_ebitda(assum["ebitda"], assum["ev_multiple"], net_debt=assum["net_debt"], shares_out=assum["shares_out"], cash=assum.get("cash", 0))
         # blended if infra
@@ -493,13 +492,34 @@ async def report_ticker(
 
             blended_res = calc_blended({"dcf": dcf_res["fv_per_share"], "ev": ev_res["fv_per_share"]}, {"dcf": 0.6, "ev": 0.4})
             fv = blended_res["blended"]
+            fv_anchor = {"leg": "blended_dcf_ev", "fv": fv,
+                         "basis": "infra template: blended 60% DCF / 40% EV/EBITDA"}
         else:
             blended_res = None
+            from ..engines import pick_fv_anchor
+
+            try:
+                fv_anchor = pick_fv_anchor(assum, dcf_res["fv_per_share"],
+                                           ev_res["fv_per_share"])
+            except ValueError as e:
+                raise HTTPException(status_code=422, detail=str(e))
+            fv = fv_anchor["fv"]
+            if fv is None:
+                raise HTTPException(
+                    status_code=422,
+                    detail=(
+                        f"fv anchor '{fv_anchor['leg']}' produced no value for {t} "
+                        f"({fv_anchor['basis']}) — refusing to rate on a missing leg."
+                    ),
+                )
+    except HTTPException:
+        raise
     except Exception as e:
         dcf_res = {"error": str(e)}
         ev_res = {}
         blended_res = None
         fv = None
+        fv_anchor = {"leg": "none", "fv": None, "basis": f"valuation failed: {e}"}
 
     # LOUD policy: no 'or 1000' — file last_price AND live price absent -> 422.
     last_price = assum.get("last_price") or price
@@ -563,6 +583,15 @@ async def report_ticker(
         "valuation": {
             "method": "blended 60/40" if chosen_template == "infra" else "dcf+ev/ebitda",
             "fair_value": fv,
+            # Which leg anchors the headline FV, and what the others said. The cover's rating
+            # box, TP and upside all come from `fair_value`, so the anchor must be readable
+            # (house-report-format.md §1 provenance; AMMN's DCF-vs-EV divergence is why).
+            "anchor": fv_anchor["leg"],
+            "anchor_basis": fv_anchor["basis"],
+            "legs": {
+                "dcf": (dcf_res.get("fv_per_share") if isinstance(dcf_res, dict) else None),
+                "ev_ebitda": (ev_res.get("fv_per_share") if isinstance(ev_res, dict) else None),
+            },
             "currency": "IDR",
             "assumptions": {
                 "wacc": wacc_val,

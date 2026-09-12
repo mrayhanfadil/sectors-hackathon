@@ -6,6 +6,36 @@ Units: all currency in IDR (full rupiah, not billions) unless noted. Keep consis
 from typing import List, Dict, Any
 
 
+def pick_fv_anchor(assum: Dict[str, Any], dcf_fv: Any, ev_fv: Any) -> dict:
+    """Which valuation leg anchors the headline fair value.
+
+    The assumptions file carries the report's OWN gate decision (`gate_primary`, `dcf_role`),
+    and the anchor must be that leg — not DCF-by-default. AMMN is the case that exposed it:
+    the file says `gate_primary = "EV/EBITDA mid-cycle (REL)"` and `dcf_role = "Comparison-only,
+    NOT the anchor ... punitive by construction"` (that DCF subtracts Rp 110.8 tn gross debt),
+    while the headline FV came from the DCF leg — the cover read SELL at −96.97% when the
+    file's own anchor implied +20.8%. Rating, TP and every valuation table follow this number,
+    so anchoring on the wrong leg is a wrong report.
+
+    A primary the engines do not implement (NAV/SOTP/DDM) raises instead of quietly falling
+    back to DCF, so the caller can 422 by name (LOUD policy).
+    """
+    gp = str((assum or {}).get("gate_primary") or "").strip()
+    low = gp.lower()
+    if "ev/ebitda" in low or "rel" in low:
+        return {"leg": "ev_ebitda", "fv": ev_fv, "basis": f"gate_primary: {gp}"}
+    if "dcf" in low:
+        return {"leg": "dcf", "fv": dcf_fv, "basis": f"gate_primary: {gp}"}
+    if not low:
+        return {"leg": "dcf", "fv": dcf_fv,
+                "basis": "DCF (no gate_primary in the assumptions file)"}
+    raise ValueError(
+        f"gate_primary '{gp}' names a method no engine implements yet (NAV/SOTP/DDM): "
+        f"refusing to anchor the fair value on the DCF leg instead. Wire the engine or "
+        f"change gate_primary in data/assumptions/<TICKER>.json."
+    )
+
+
 def wacc(rf: float, beta: float, erp: float, cod: float, we: float = 0.608, wd: float = 0.392, tax: float = 0.22) -> dict:
     """WACC = We*CoE + Wd*CoD*(1-tax), CoE = Rf + beta*ERP"""
     coe = rf + beta * erp
@@ -151,6 +181,7 @@ from scripts.dcf_engine import (
 )
 
 __all__ = [
+    "pick_fv_anchor",
     "wacc",
     "dcf",
     "ddm",

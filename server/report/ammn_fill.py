@@ -66,6 +66,14 @@ def _bn(x: Any, digits: int = 1) -> Any:
         return "—"
 
 
+def _idn(x: Any, digits: int = 2) -> str:
+    """id-ID number for reader-facing copy: 24.978,8 / +20,84% (matches the cover tables)."""
+    if not isinstance(x, (int, float)):
+        return "—"
+    s = f"{x:,.{digits}f}"
+    return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+
+
 def _pct100(x: Any, digits: int = 2) -> Any:
     if x is None:
         return "—"
@@ -95,7 +103,8 @@ def _idr_t(x: Any) -> str:
 
 def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     rating: str, upside: Optional[float],
-                    wacc_val: float) -> dict:
+                    wacc_val: float, anchor_basis: Optional[str] = None,
+                    anchor_leg: Optional[str] = None) -> dict:
     """Fill FILL_MAP-mapped keys into a live payload (AMMN-only).
 
     Mutates ``payload`` in place, stamps ``payload["fill_meta"]`` with
@@ -273,15 +282,20 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     last_price = (val.get("last_close_price")
                   or ov.get("last_close_price") or assum.get("last_price"))
     tp_int = int(round(fv or 0))
-    up_txt = f"{upside:+.2f}%" if isinstance(upside, (int, float)) else "—"
+    up_txt = (("+" if upside > 0 else "") + _idn(upside, 2) + "%") if isinstance(upside, (int, float)) else "—"
 
     ttm_eb_tn = ttm.get("ebitda", 0) / 1e12
     ttm_rev_tn = ttm.get("revenue", 0) / 1e12
     rbox = cover.setdefault("rating_box", {})
+    # Cover copy is reader-facing Indonesian, so numbers use id-ID separators (24,98 tn /
+    # +20,84%) to match the sidebar tables. English separators here made the same figure read
+    # two different ways on one page.
     rbox["key_takeaways"] = [
         f"Tembaga+emas 100% pendapatan FY2024 (emas 55,0% menyalip tembaga 45,0%) — Sectors get-segments FY2024.",
-        f"EBITDA TTM {f2(ttm_eb_tn)} tn, marjin EBITDA Q1-2026 {f1(q0_emgn)}%; net-debt/EBITDA TTM {f1(ttm_netd_ebitda)}× — Sectors quarterly 8Q.",
-        f"EV/EBITDA 2026 17,99× (dari 34,31× di 2025); TP Rp {tp_int:,} ({rating}, {up_txt}) — engine DCF/EV-blend.",
+        f"EBITDA TTM {_idn(ttm_eb_tn, 2)} tn, marjin EBITDA Q1-2026 {_idn(q0_emgn, 1)}%; net-debt/EBITDA TTM {_idn(ttm_netd_ebitda, 1)}× — Sectors quarterly 8Q.",
+        f"EV/EBITDA 2026 17,99× (dari 34,31× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) — "
+        + (f"anchor EV/EBITDA mid-cycle, DCF sebagai pembanding." if (anchor_leg or "") == "ev_ebitda"
+           else f"anchor {str(anchor_basis or 'DCF').replace('gate_primary: ', '')}."),
     ]
     cover["summary"] = (
         f"PT Amman Mineral Internasional Tbk. (AMMN) — penambang tembaga-emas Batu Hijau "
@@ -297,7 +311,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         f"EV/EBITDA 2026 17,99× vs 34,31× (2025) — de-rating adalah argumen, kontra: PE 38,23× "
         f"vs rerata peer sektor 10,07×. Konsensus analis directionally positif (29 beli / 1 tahan, "
         f"30 analis, 2 Sep 2026 — tanpa angka forward). "
-        f"Target harga Rp {tp_int:,} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
+        f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
         f"(DCF/EV-blend, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
         f"Profil gate: domain mining, filing 6 thn (gate_inputs AMMN.json)."
     )
