@@ -129,6 +129,24 @@ the house formatting rules you already have.
 - Paragraph 3 wording note: report the window you actually have (the daily feed caps at 90 days)
   and never extrapolate a longer one.
 
+Evidence discipline for the pages (binding, and the gate checks it):
+- Use the WIDEST Sectors evidence the ticker has, not the headline blocks. For a sector paragraph
+  that means the subsector report (sector growth actual and forecast, largest capitalisations); for
+  an issuer paragraph the filings (related-party and insider transactions), the corporate actions
+  (AGM dates, dividend/bonus/right-issue/split status) and the monthly shareholders composition; for
+  a sentiment paragraph the foreign flow, the broker summary, the index series and the news feed. A
+  block whose endpoint returned nothing is written as unavailable by name — never replaced by a
+  plausible figure and never silently dropped.
+- Related-party flow is reported in BOTH directions whenever the filings carry both. The press
+  leads with the buys; the filings also carry sells, often for a larger value. Quote both, and say
+  that a one-sided "insiders are accumulating" read is not supported by the data. Reporting one side
+  is a REJECT.
+- Compare like with like: a one-year growth against a one-year forecast, and say out loud when the
+  periods differ (actual vs forecast). A cumulative multi-year move placed beside a one-year forecast
+  is a REJECT.
+- When a claim needs an operational metric the payload does not carry (tonnage, grade, C1, AISC,
+  utilisation), name the metric as unavailable instead of asserting a qualitative story about it.
+
 Every number on any page must trace to an engine output, a Sectors field or a named source with a
 date. "Kualitatif" is an acceptable answer; an invented figure is not.
 """

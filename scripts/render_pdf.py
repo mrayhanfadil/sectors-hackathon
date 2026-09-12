@@ -16,8 +16,12 @@ import sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
-TEMPLATES_DIR = HERE.parent / "templates"
+REPO_ROOT = HERE.parent
+TEMPLATES_DIR = REPO_ROOT / "templates"
 sys.path.insert(0, str(HERE))
+# `server.*` lives at the repo root, so the script has to work when it is run directly rather than
+# only when the caller happens to export PYTHONPATH.
+sys.path.insert(0, str(REPO_ROOT))
 
 from select_template import select_template  # noqa: E402
 
@@ -27,6 +31,24 @@ TEMPLATE_FILES = {
     "infra": "report_infra.html",
     "strategy": "report_strategy.html",
 }
+
+
+# ---------------------------------------------------------------- deck pages
+def ensure_industry_page(report_data: dict) -> dict:
+    """Attach deck page 2 when the payload does not carry it yet.
+
+    The API builds the page itself; this keeps the CLI/native path from rendering a payload that
+    predates the page. Never raises here — a builder failure shows up in `validate()`.
+    """
+    if report_data.get("industry_page"):
+        return report_data
+    try:
+        from server.report.industry_page import build_industry_page
+
+        report_data["industry_page"] = build_industry_page(report_data)
+    except Exception:
+        pass
+    return report_data
 
 
 # ---------------------------------------------------------------- validation
@@ -65,6 +87,19 @@ def validate(report_data: dict) -> list[str]:
     gauge = (report_data.get("sentiment") or {}).get("gauge")
     if gauge is not None and not 0 <= gauge <= 100:
         errors.append(f"sentiment gauge {gauge} out of 0..100")
+
+    # Deck pages (docs/rules/house-report-format.md §6). This path renders whatever payload the
+    # caller handed over, so build the narrative page when it is missing and then run the SAME
+    # audit the Critic gate and the API renderer run. Without it the CLI would happily render a
+    # payload whose page 2 breaks the slide rules.
+    ensure_industry_page(report_data)
+    try:
+        from server.report.house_rules import audit_house_rules
+
+        for violation in (audit_house_rules(report_data).get("violations") or []):
+            errors.append(f"house rules: {violation}")
+    except Exception as exc:  # a broken gate must fail loudly, not pass quietly
+        errors.append(f"house rules audit failed: {type(exc).__name__}: {exc}")
 
     return errors
 

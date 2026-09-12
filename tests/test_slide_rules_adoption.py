@@ -457,3 +457,99 @@ def test_slide2_single_year_comparison_is_not_a_cumulative_move() -> None:
     assert "pertumbuhan pendapatan tahun terakhir" in body
     assert "(aktual, tahun terakhir vs sebelumnya)" in body
     assert "periodenya berbeda" in body
+
+
+# ------------------------------------------------- rules in the ADK prompt, the gate and the CLI
+def test_agent_prompt_states_the_evidence_discipline() -> None:
+    """The prompt, not only the reference doc, has to carry the evidence rules the gate enforces."""
+    block = " ".join(
+        INSTRUCTIONS.read_text(encoding="utf-8")
+        .split('SLIDE_PAGES_RULE = """', 1)[1]
+        .split('"""', 1)[0]
+        .split()
+    )
+    for marker in (
+        "WIDEST Sectors evidence",
+        "subsector report",
+        "Related-party flow is reported in BOTH directions",
+        "is a REJECT",
+        "Compare like with like",
+        "tonnage, grade, C1, AISC",
+    ):
+        assert marker in block, f"the agent prompt lost: {marker}"
+
+
+def test_gate_rejects_a_one_sided_related_party_read() -> None:
+    """The press leads with the buys and the filings also carry sells: the gate refuses a page that
+    reports one direction while the payload holds both."""
+    from server.report.house_rules import audit_industry_page
+
+    def page(catalysts_body: str) -> dict:
+        return {
+            "paragraphs": [
+                {"heading": "1. Kondisi Industri", "body": "x" * 250},
+                {"heading": "2. Katalis Spesifik Emiten", "body": catalysts_body},
+                {"heading": "3. Sentimen Pasar", "body": "y" * 250},
+            ]
+        }
+
+    payload = {"filings_digest": {"buy": {"n": 11}, "sell": {"n": 9}}}
+    one_sided = audit_industry_page(page("hanya transaksi beli insider yang disebut"), payload)
+    assert any("omits related-party 'jual'" in v for v in one_sided), one_sided
+    assert audit_industry_page(page("transaksi beli dan jual dua-duanya disebut"), payload) == []
+    # an absent digest cannot trigger the check: the copy's missing-data line covers that case
+    assert audit_industry_page(page("hanya transaksi beli insider yang disebut"), {}) == []
+
+
+def test_cli_pipeline_builds_and_audits_the_page() -> None:
+    """`scripts/render_pdf.py` renders whatever payload it is handed, so it must attach the page
+    and run the same audit instead of rendering a payload that predates the slide rules."""
+    import json
+    import sys as _sys
+
+    _sys.path.insert(0, str(REPO_ROOT / "scripts"))
+    import render_pdf
+
+    payload = json.loads(
+        (REPO_ROOT / "output" / "cache" / "render_ammn" / "report_data.json").read_text(
+            encoding="utf-8"
+        )
+    )
+    payload.pop("industry_page", None)  # a payload that predates the page, whatever the cache holds
+    render_pdf.ensure_industry_page(payload)
+    assert [p["heading"] for p in payload["industry_page"]["paragraphs"]] == list(SLIDE2_PARAGRAPHS)
+    assert render_pdf.validate(payload) == []
+
+    # and it must refuse a payload whose page breaks the rules
+    broken = json.loads(json.dumps(payload))
+    broken["industry_page"]["paragraphs"] = broken["industry_page"]["paragraphs"][:2]
+    assert any("house rules" in e for e in render_pdf.validate(broken))
+
+
+def test_adk_agents_carry_the_page2_rules_at_runtime() -> None:
+    """The composition can be right in the constant and still not reach an agent. Build the real
+    ADK tree and read the instruction the framework will actually send, then check the roster:
+    the narrative agents carry the rule and the calculating agents do not."""
+    import os
+
+    from agents.adk.app import build_graph
+
+    os.environ.setdefault("GOOGLE_API_KEY", "structure-only")
+    os.environ.setdefault("DEEPSEEK_API_KEY", "structure-only")
+    root = build_graph(ticker="AMMN")
+
+    carried: dict[str, str] = {}
+
+    def walk(agent) -> None:
+        carried[str(getattr(agent, "name", "?"))] = str(getattr(agent, "instruction", "") or "")
+        for sub in getattr(agent, "sub_agents", []) or []:
+            walk(sub)
+
+    walk(root)
+    marker = "Related-party flow is reported in BOTH directions"
+    for name in ("news_harvester", "social_sentiment", "industry", "writer", "critic"):
+        assert name in carried, f"the ADK graph no longer builds a {name} agent"
+        assert marker in carried[name], f"{name} does not receive the page-2 evidence rules"
+        assert "WIDEST Sectors evidence" in carried[name], f"{name} lost the evidence instruction"
+    for name in ("collector", "modeler", "risk", "visualizer", "sotp"):
+        assert marker not in carried[name], f"{name} calculates, it should not carry narrative rules"

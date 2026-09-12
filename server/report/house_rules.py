@@ -164,7 +164,7 @@ def audit_valuasi(text: str) -> list[str]:
     return out
 
 
-def audit_industry_page(page: Optional[dict]) -> list[str]:
+def audit_industry_page(page: Optional[dict], payload: Optional[dict] = None) -> list[str]:
     """Audit slide 2 of the deck (`docs/ammn-slides/slide2-industry-spec.md`).
 
     Three paragraphs are mandatory and none may be empty; paragraph 3 must not carry valuation
@@ -195,6 +195,26 @@ def audit_industry_page(page: Optional[dict]) -> list[str]:
         violations.append(
             "slide 2 paragraph 3 (sentiment) carries valuation language: " + ", ".join(leaked)
         )
+
+    # §6.1 one-sided related-party flow. The filings block carries both directions, and the press
+    # leads with the buys, so a page that reports one side is sourced and still misleading. Checked
+    # only when the payload carries BOTH sides; an absent block is the copy's problem, not this
+    # audit's.
+    digest = (payload or {}).get("filings_digest") or {}
+    buy_n = int((digest.get("buy") or {}).get("n") or 0)
+    sell_n = int((digest.get("sell") or {}).get("n") or 0)
+    if buy_n and sell_n:
+        catalysts = _text(
+            next(
+                (p.get("body") for p in paras if str(p.get("heading") or "").startswith("2.")), ""
+            )
+        ).lower()
+        for direction in ("beli", "jual"):
+            if direction not in catalysts:
+                violations.append(
+                    f"slide 2 paragraph 2 omits related-party '{direction}' transactions although "
+                    f"the filings carry both ({buy_n} beli / {sell_n} jual)"
+                )
     return violations
 
 
@@ -293,7 +313,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
         ])
         violations += audit_key_financials(slide2.get("key_financials") or {})
     # Slide 2 of the deck is audited regardless of the cover spread: it is its own page.
-    violations += audit_industry_page(payload.get("industry_page"))
+    violations += audit_industry_page(payload.get("industry_page"), payload)
     return {
         "ok": not violations,
         "applicable": applicable,

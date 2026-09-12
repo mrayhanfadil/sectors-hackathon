@@ -138,6 +138,9 @@ document-wide figure counter treats it like any other object.
 | Sentiment stays out of valuation | `audit_industry_page` | paragraph 3 is scanned for target price, fair value, multiple and WACC language; a hit is a violation |
 | No forced number when the data has no basis | agent instructions (`SLIDE_PAGES_RULE`) + `industry_page.py` | a missing input is written as unavailable or qualitative in the copy, never estimated |
 | Optional objects obey the exhibit rules | `templates/macros.html` | `exhibit_auto` + constant source line, global counter |
+| Related-party flow reported in both directions | `audit_industry_page(page, payload)` | when the payload's filings block carries buys and sells, paragraph 2 must name both; one side is a violation |
+| The CLI/native path cannot dodge the page rules | `scripts/render_pdf.py` (`ensure_industry_page` + `validate`) | attaches the page when the payload predates it, then runs the same `audit_house_rules` |
+| The prompt carries the evidence rules, not only the doc | `agents/adk/agents/instructions.py` (`SLIDE_PAGES_RULE`) | widest-Sectors evidence list, both-directions rule, like-for-like comparison, named unavailable metrics |
 
 ## 7. Cover slide — the one-pager
 
