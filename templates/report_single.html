@@ -13,58 +13,95 @@
 <body>
 
 {# ================= PAGE 1 — COVER ================= #}
+{# Layout follows the house slide-1 spec: sidebar ~30% on the LEFT (rating, price box,
+   secondary stats, analyst), main content ~70% on the right (company header + theme title,
+   3 quantitative highlights, paragraph 1 financial performance), one full-width exhibit
+   underneath. Values come from cover.slide1 (server/report/cover_slide1.py) — the template
+   never formats a number itself, so the PDF cannot drift from the artifact. #}
+{% set s1 = cover.slide1 or {} %}
 <div class="page">
   {{ m.running() }}
-  <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
-    <div>
-      <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
-      <h1 style="font-size:26pt; color:var(--brand-dark); line-height:1.1; margin:4pt 0 2pt;">{{ meta.company_name }}</h1>
-      <div style="font-size:13pt; font-weight:700; color:var(--muted);">{{ meta.ticker }} · IDX</div>
+  <div class="grid-2" style="grid-template-columns: 32% 68%; gap: 14pt; margin-top: 6pt;">
 
-      {% if cover.rating_box %}
-      <div class="card-tint" style="margin-top:14pt;">
-        <div class="small muted">Harga: Rp {{ cover.rating_box.price|idr }} · Target Harga: Rp {{ cover.rating_box.tp|idr }} · Upside {{ cover.rating_box.upside_pct|pct if cover.rating_box.upside_pct > 0 else cover.rating_box.upside_pct|pct }}</div>
+    {# ---------------- sidebar (left, ~30%) ---------------- #}
+    <div>
+      {% if s1.rating %}
+      <div class="side-block">
+        <div class="rate-big">{{ s1.rating.action }}</div>
+        <div class="rate-status">{{ s1.rating.action_status }}</div>
       </div>
       {% endif %}
 
-      {% if cover.shareholders %}
-      <div style="margin-top:16pt;">
-        {{ m.exhibit_auto(ns, "Struktur Pemegang Saham", cover.shareholders_src or "IDX") }}
-        <div class="chart-wrap"><canvas id="cHolders" width="300" height="180"></canvas></div>
+      {% if s1.price_box %}
+      <div class="side-block">
+        <div class="side-h">Harga &amp; Target</div>
+        <table class="ptable">
+          {% for row in s1.price_box.rows %}
+          <tr><td class="l">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+          {% endfor %}
+        </table>
+        <!-- provenance (audit only, never printed; house-report-format.md §1)
+             FV anchor: {{ s1.price_box.anchor }} — {{ s1.price_box.anchor_basis }} -->
+      </div>
+      {% endif %}
+
+      {% if s1.stats and s1.stats.rows %}
+      <div class="side-block">
+        <div class="side-h">Statistik Sekunder</div>
+        <table class="ptable">
+          {% for row in s1.stats.rows %}
+          <tr><td class="l">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+          {% endfor %}
+          {% for h in s1.stats.major_shareholders %}
+          <tr><td class="l">{{ h.name }}</td><td class="v">{{ h.pct_str | default("%.2f%%"|format(h.pct)) }}</td></tr>
+          {% endfor %}
+        </table>
+        {% if s1.stats.notes %}<div class="small muted" style="margin-top:4pt; font-size:6.6pt; line-height:1.35;">{% for nt in s1.stats.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+        <!-- provenance (audit only, never printed; house-report-format.md §1)
+             {% for k, v in s1.stats.sources.items() %}{{ k }}: {{ v }} | {% endfor %} -->
+      </div>
+      {% endif %}
+
+      {% if s1.analyst %}
+      <div class="analyst">
+        <div class="analyst-name">{{ s1.analyst.name }}</div>
+        <div class="analyst-title">{{ s1.analyst.title }}</div>
       </div>
       {% endif %}
     </div>
 
+    {# ---------------- main content (right, ~70%) ---------------- #}
     <div>
-      {% if cover.rating_box %}
-      <div class="rating-box">
-        <div class="rating-action">{{ cover.rating_box.action }}</div>
-        <div class="small muted">12 bulan · eks-dividen</div>
-        <div class="tp-big" style="margin-top:6pt;">Rp {{ cover.rating_box.tp|idr }}</div>
-        <div class="small">Harga kini Rp {{ cover.rating_box.price|idr }}</div>
-        <div class="{{ 'pos' if cover.rating_box.upside_pct > 0 else 'neg' }}" style="font-weight:700; margin-top:2pt;">
-          {{ cover.rating_box.upside_pct|pct if cover.rating_box.upside_pct > 0 else cover.rating_box.upside_pct|pct }} upside
-        </div>
-        {% if cover.rating_box.prev_tp %}<div class="small muted">TP sebelumnya: Rp {{ cover.rating_box.prev_tp|idr }}</div>{% endif %}
-      </div>
+      <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
+      <div class="co-name">{{ meta.company_name }} <span style="color:var(--muted);">({{ meta.ticker }} IJ)</span></div>
+      {% if s1.theme_title %}<div class="theme-title">{{ s1.theme_title }}</div>{% endif %}
+
+      {% if s1.highlights %}
+      <ul class="hl-list">
+        {% for h in s1.highlights %}<li>{{ h }}</li>{% endfor %}
+      </ul>
       {% endif %}
-      <div class="card" style="margin-top:10pt;">
-        <div class="small muted" style="margin-bottom:2pt;">INFORMASI SAHAM</div>
-        {{ m.kv("Saham beredar", "%.2f %s"|format(cover.shares.outstanding, cover.shares.unit) if cover.shares else "n/a") }}
-        {% if cover.shares and cover.shares.free_float_pct %}{{ m.kv("Free float", "%.1f%%"|format(cover.shares.free_float_pct)) }}{% endif %}
-        {% if cover.esg and cover.esg.found and cover.esg.scores %}
-          {{ m.kv("ESG (E/S/G)", "%.2f / %.2f / %.2f"|format(cover.esg.scores.e, cover.esg.scores.s, cover.esg.scores.g)) }}
-          <!-- provenance (audit only, never printed; house-report-format.md §1) ESG {{ cover.esg.source }} ({{ cover.esg.date }}) -->
-        {% endif %}
-      </div>
+
+      {% if s1.financial_para %}
+      <div class="para-h">{{ s1.financial_para.heading }}</div>
+      <div class="para-b">{{ s1.financial_para.body }}</div>
+      <!-- provenance (audit only, never printed; house-report-format.md §1)
+           paragraf kinerja: {{ s1.financial_para.source | default("n/a") }} -->
+      {% endif %}
+
+      {% if cover.summary and not s1.financial_para %}
+      <div class="para-b" style="margin-top:8pt;">{{ cover.summary }}</div>
+      {% endif %}
     </div>
   </div>
 
-  {% if cover.vs_jci %}
-  <div style="margin-top:14pt;">
-    {{ m.exhibit_auto(ns, "Kinerja Harga vs IHSG (YTD)", cover.vs_jci.source or "Sectors") }}
-    <div class="chart-wrap"><canvas id="cVsJci" width="680" height="200"></canvas></div>
-    {{ m.svg_vs_jci(cover.vs_jci.chart.labels or [], cover.vs_jci.chart.series[0] or [], cover.vs_jci.chart.series[1] or [], meta.ticker) }}
+  {% if s1.jci_chart %}
+  <div style="margin-top:12pt;">
+    {{ m.exhibit_auto(ns, meta.ticker ~ " relative to JCI Index (" ~ s1.jci_chart.months ~ "M, " ~ s1.jci_chart.window ~ ")", s1.jci_chart.source or "yfinance") }}
+    {{ m.svg_price_vs_jci(s1.jci_chart.labels or [], s1.jci_chart.price or [], s1.jci_chart.rel_pct or [], meta.ticker) }}
+    <!-- provenance (audit only, never printed; house-report-format.md §1)
+         harga {{ "%.2f"|format(s1.jci_chart.abs_chg_pct) }}% vs IHSG {{ "%.2f"|format(s1.jci_chart.idx_chg_pct) }}%
+         ({{ s1.jci_chart.source }}) -->
   </div>
   {% endif %}
   {{ m.pagefoot(1, ns) }}
@@ -231,22 +268,11 @@
 {{ m.chartjs() }}
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  {% if cover.shareholders %}
-  mkChart("cHolders", { type: "doughnut",
-    data: { labels: {{ cover.shareholders | map(attribute="name") | list | tojson }},
-            datasets: [{ data: {{ cover.shareholders | map(attribute="pct") | list | tojson }} }] },
-    options: { plugins: { legend: { position: "right" } } } });
-  {% endif %}
-  {% if cover.vs_jci %}
-  mkChart("cVsJci", { type: "line",
-    data: { labels: {{ (cover.vs_jci.chart.labels or []) | tojson }},
-            datasets: [
-              { label: "{{ meta.ticker }}", data: {{ (cover.vs_jci.chart.series[0] or []) | tojson }} },
-              { label: "IHSG", data: {{ (cover.vs_jci.chart.series[1] or []) | tojson }} }] } });
-  {% endif %}
   {% for ex in exhibits if ex.chart %}
   mkChart("ex{{ loop.index }}", {{ ex.chart | tojson }});
   {% endfor %}
+  {#- Cover exhibits are server-rendered SVG (macros.html svg_price_vs_jci) on purpose:
+      canvas is hidden by @media print, SVG is not, so the shipped PDF always has the chart. -#}
 });
 </script>
 </body>

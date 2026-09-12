@@ -248,6 +248,14 @@
       "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctryprem.html",
       "as_of": "page updated 2026-01-05; accessed 2026-09-12",
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
+    },
+    "theme_title": {
+      "value": "Multiple 2026 di 17,99x vs mid-cycle 28,42x — re-rating belum tercermin dalam harga",
+      "kind": "derived_editorial",
+      "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
+      "url": "internal://data/assumptions/AMMN.json",
+      "as_of": "2026-09-12",
+      "note": "Membandingkan ev_multiple_latest_print (17,99x, Sectors historical_valuation 2026) dengan ev_multiple (28,42x, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section."
     }
   },
   "pending": {
@@ -265,7 +273,9 @@
     "interest_coverage": 3.4761,
     "shareholders_equity": 93687393398000.0,
     "nci_pct": 1.704,
-    "revenue_drivers": ["other"],
+    "revenue_drivers": [
+      "other"
+    ],
     "has_steady_state_3y": true,
     "life_cycle_stage": "mature"
   },
@@ -335,7 +345,9 @@
       "note": "USD 95,086 thousand NCI / USD 5,581,260 thousand Total Equity = 1.704%. Way under Gate 2's 15% threshold (single-business + DCF proceeds normally; no SOTP cross-check)."
     },
     "revenue_drivers": {
-      "value": ["other"],
+      "value": [
+        "other"
+      ],
       "kind": "derived_sectors",
       "outlet": "AMMN financial statements — Penjualan (revenue breakdown by commodity, FY2024 PDF discloses 'Penjualan tembaga, bersih' + 'Penjualan emas, bersih' as the only product lines)",
       "url": "https://www.amman.co.id/financial-statement",
@@ -358,5 +370,6 @@
       "as_of": "FY2023, FY2024, FY2025 audited annuals",
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
-  }
+  },
+  "theme_title": "Multiple 2026 di 17,99x vs mid-cycle 28,42x — re-rating belum tercermin dalam harga"
 }
