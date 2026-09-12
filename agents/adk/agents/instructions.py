@@ -218,6 +218,7 @@ Rules:
 - DDM PAYOUT CAP (AGY audit 2026-09-05): the projected DPS path must keep implied payout (DPS_t / EPS) ≤ 100% in EVERY year. If DPS growth implies payout >100% in any year, cap DPS growth that year so payout ≤ 95% and disclose the cap. Never publish a DPS path that contradicts a "stable payout" claim.
 - MID-CYCLE BASE FOR CYCLICALS (AGY audit 2026-09-06, SSMS; extended SSIA property): for commodity/cyclical tickers (incl. property/construction/hospitality with lumpy land sales), the payout cap MUST be tested against 3Y-average NORMALIZED EPS, not forward/projected EPS — testing against your own growth forecast is circular and lets peak dividends pass. Likewise the DDM base DPS is the D0 normalized payout (e.g. dps_mid from assumptions = last normalized actual DPS, never the latest peak dividend); year-1 dividend follows the DDM-TIMING LOCK below. Multiples leg: apply EV/EBITDA to MID-CYCLE average EBITDA (3Y), never to TTM/peak EBITDA — peak-earnings-on-peak-multiple is the classic cyclical overvaluation (SSMS: 3.24T peak x 7x vs mid-cycle base).
 - DCF CAPEX DISCIPLINE (AGY audit 2026-09-05): FCF projections MUST deduct announced expansion capex (capacity roadmap, e.g. +MW/GW targets, from news_output). If the capex schedule is unknown, haircut annual FCF by an explicit disclosed amount and flag the uncertainty — never project smooth FCF growth through a known multi-trillion expansion cycle.
+- FINITE-RESERVE DISCIPLINE (mining archetype, Slide 4 Opsi C): a perpetual Gordon terminal is NOT defensible for a depleting reserve — never anchor {ticker} on an infinite-life DCF when the archetype is mining/resources. Use DCF (shortened horizon) with the explicit horizon tied to reserve life (reserve tonnes / annual ore throughput, disclosed in years) plus a fade on grades/prices past the current mine plan; cross-check with an RNAV asset bridge (sum of per-asset NAV + cash − debt − corporate overhead → RNAV/share with an explicit discount-to-RNAV) and with EV/EBITDA on MID-CYCLE EBITDA (3Y constituents cited per MID-EBITDA PROVENANCE). Extend the DCF CAPEX rule above to mine-development capex explicitly (pre-strip/stripping, underground development, concentrator/smelter build): deduct the announced mine-development + smelter capex schedule from FCF, or haircut + flag if the schedule is unknown.
 - Emit valuation.json with {wacc, primary_fv (gate-primary method FV, top-level — never nested-only), dcf_fv, secondary_fv, blended_fv, assumptions, sources, multipliers}.
 - Every assumption must be explicit (WACC/beta/RF/RP/g/payout/blended/multipliers).
 - SOTP-NET CARRY (Spark audit 2026-09-06, SSIA R2): any SOTP-derived FV you publish (secondary leg, cross-checks) MUST be the NET-equity figure; GROSS EV/share only as a labeled pair, never the sole headline number.
@@ -274,6 +275,7 @@ Objective: thematic outlook tailored to ticker {ticker}'s sector archetype and I
 # - Banking/Financials: BI interest rate cycle, credit growth trends, OJK regulations, loan demand
 # - Telecom/Infra: 5G rollout/capex cycles, telco consolidation, fiberization demand
 # - Diversified/Holding: cross-sector synergy, regulatory reforms, infrastructure spending
+# - Mining/copper-gold: ESDM/DMO/royalty policy shifts, smelter economics (commissioning ramp, tolling/TC-RC), development-pipeline timeline (permitting → construction → commissioning for the next deposit phase), Cu/Au price-deck cycle
 
 HOW TO SEARCH (Sectors fetch-* tools PRIMARY, web backup for color):
 - fetch-subsector-report + fetch-news for macro context: sector forecast, regulator policies,
@@ -346,6 +348,7 @@ Hero KPI benchmarks by archetype:
 # Example for conglomerate: MW capacity, water treatment m³, vessel capacity DWT, flow rate l/s (see data/assumptions/CDIA.json)
 # Example for banking: NIM, CASA ratio, LDR, gross NPL, ROE (see data/assumptions/BBCA.json)
 # Example for mining/coal: production volume (Mt), strip ratio, cash cost/ton (see data/assumptions/ADRO.json)
+# Example for mining/copper-gold ({ticker}-generic): Cu-eq production (t/lbs), ore grade (Cu % / Au g/t), strip ratio, C1 cash cost and AISC per lb Cu-eq, realized Cu price (USD/lb) and realized Au price (USD/oz), reserve life (years)
 
 Formula validation:
 - If infra: tenancy_ratio = tenants / towers (validate: critic checks this).
@@ -421,6 +424,8 @@ Charts:
 5. ROE/ROA
 6. Stock perf vs JCI/IHSG (YTD/1M/3M/12M abs & rel) — use JCI benchmark from collector
 7. Peer multiples (+ Bands if infra/recurring: PBV & EV/EBITDA 3Y with STD±2, AVG)
+
+Exhibit-7 SECTOR SWITCH (Slide 3 Exhibit 7 — archetype-driven, never fixed DER/ROE): default non-bank = DER bar vs ROE line; bank = NIM (%) + Cost of Credit (%) trend (or NPL/LaR); E&P/upstream = production volume bar + lifting cost per boe line; mining = production volume bar (ore/Cu-eq) + cash-cost line (C1/AISC per lb or per ton). Read {ticker} archetype from assumptions and emit the matching variant — Critic REJECTs a fixed DER/ROE chart 7 on a bank/E&P/mining ticker.
 
 KPI chart (if infra/asset-heavy): operational metrics (e.g. tenancy ratio + fiber km quarterly).
 
