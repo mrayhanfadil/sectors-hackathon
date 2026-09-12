@@ -100,9 +100,22 @@ therefore feeds the engine Sectors numbers and never fetches at render time.
 | The method choice is auditable | `audit_valuation_page` | the subtitle must name DDM and RNAV and why they were excluded |
 | No re-derivation of the numbers | `server/report/valuation_page.py` | the projection columns come from the same cover table the reader sees, and the gate compares slide 4 against the cover's DCF leg |
 
+### 4.1 Opsi C (RNAV) — the data contract
+
+Wired as `server/report/valuation_rnav.py` with its own gate arm (`_audit_rnav_page`). It needs, per
+asset: `name`, `size` + `size_unit` (ha / ton / boe / MW), `nav_bn` (per-project DCF or an independent
+appraisal), `ownership_pct`, a `nav_source`, and optionally `discount_rate`. The assumptions file also
+carries `rnav_discount` and either `rnav_discount_comparables` (a benchmark: peer or sector discount
+levels) or nothing — in which case the page declares the discount a PURE JUDGMENT, as the rules demand.
+
+No engine repo covers RNAV (the owner supplied DCF, DDM and relative peers), so the arithmetic is the
+open identity: SUM(NAV x ownership) + cash - total debt - PV(corporate overhead), divided by shares,
+minus the discount to RNAV. With no asset data at all the branch returns `available: False` and lists
+what is missing — it never invents a NAV, and it says so when the bridge leaves a non-positive RNAV.
+
 ## 4. Activating an option
 
-`valuation_method` in `data/assumptions/<ticker>.json` selects the option (`dcf` or `ddm`). With no key
+`valuation_method` in `data/assumptions/<ticker>.json` selects the option (`dcf`, `ddm` or `rnav`). With no key
 the page falls back to the DCF and says so on the page itself; a sector heuristic never switches the
 model silently, because the rules make the choice the analyst's. The DDM branch ships with its own
 builder (`server/report/valuation_ddm.py`), its own gate arm (`_audit_ddm_page`) and guard tests on a

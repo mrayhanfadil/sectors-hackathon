@@ -444,6 +444,43 @@ def _audit_ddm_page(page: dict) -> list[str]:
         violations.append("slide 4 (DDM) Exhibit 10 must mark the base case")
     return violations
 
+
+def _audit_rnav_page(page: dict) -> list[str]:
+    """Opsi C (RNAV) half of deck slide 4: valued asset by asset, with the discount justified or declared
+    as pure judgment."""
+    violations: list[str] = []
+    assets = page.get("assets") or []
+    if not assets:
+        violations.append("slide 4 (RNAV) renders without a single asset row")
+    for asset in assets:
+        name = str(asset.get("name") or "?")
+        if asset.get("nav") is None:
+            violations.append(f"slide 4 (RNAV) asset '{name}' has no NAV per aset")
+        if asset.get("ownership") is None:
+            violations.append(f"slide 4 (RNAV) asset '{name}' has no ownership share")
+        if asset.get("nav_attributable") is None:
+            violations.append(f"slide 4 (RNAV) asset '{name}' has no attributable NAV")
+        source = str(asset.get("nav_source") or "").strip()
+        if not source or source == "sumber tidak dicantumkan":
+            violations.append(f"slide 4 (RNAV) asset '{name}' does not name where its NAV comes from")
+    bridge = page.get("bridge") or {}
+    for key, label in (("sum_nav", "sum of NAV"), ("total_rnav", "total RNAV"),
+                       ("rnav_per_share", "RNAV per share"), ("target_price", "target price")):
+        if bridge.get(key) is None:
+            violations.append(f"slide 4 (RNAV) bridge has no {label}")
+    if bridge.get("discount") is None:
+        violations.append("slide 4 (RNAV) does not state the discount to RNAV")
+    notes = [str(n).lower() for n in (page.get("notes") or [])]
+    if not any("judgment" in n or "pembanding" in n for n in notes):
+        violations.append(
+            "slide 4 (RNAV) must either cite a comparable discount level or declare the discount a pure "
+            "judgment assumption (rules for Opsi C)"
+        )
+    rows = page.get("block1_rows") or []
+    if len(rows) != len(assets):
+        violations.append("slide 4 (RNAV) asset table does not list every asset")
+    return violations
+
 def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list[str]:
     """Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
@@ -455,6 +492,8 @@ def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list
         return []
     if str(page.get("method") or "dcf") == "ddm":
         return _audit_ddm_page(page)
+    if str(page.get("method") or "dcf") == "rnav":
+        return _audit_rnav_page(page)
     violations: list[str] = []
     periods = [str(p) for p in (page.get("periods") or [])]
 

@@ -228,7 +228,7 @@
   {{ m.exhibit_auto(ns, valuation_page.exhibit8_title or "FCFF Forecast, Terminal Value and Bridge to Equity", "Engine: " ~ valuation_page.sources[2]) }}
   <table class="fin-table">
     <thead>
-      <tr><th>Blok 1 — Periode proyeksi eksplisit (Rp bn)</th>{% for p in valuation_page.periods %}<th>{{ p }}</th>{% endfor %}</tr>
+      <tr>{% for h in (valuation_page.block1_headers or ["Blok 1 — Periode proyeksi eksplisit (Rp bn)"] + valuation_page.periods) %}<th>{{ h }}</th>{% endfor %}</tr>
     </thead>
     <tbody>
       {% for label, series in valuation_page.block1_rows %}

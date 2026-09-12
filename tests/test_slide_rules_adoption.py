@@ -956,3 +956,94 @@ def test_ddm_branch_refuses_instead_of_inventing_a_dividend() -> None:
     assert page["available"] is False
     assert any("payout" in m.lower() for m in page["missing"])
     assert "block1_rows" not in page
+
+
+# ------------------------------------------------- deck slide 4, Opsi C (RNAV) branch
+def _synthetic_property_assumptions(assum: dict) -> dict:
+    """A deliberately synthetic property issuer: NAV per aset, ownership, and a balance sheet at the
+    scale of that issuer — never a real issuer's figures dressed up as a landbank story."""
+    import copy
+
+    prop = copy.deepcopy(assum)
+    prop.update({
+        "valuation_method": "rnav", "rnav_discount": 0.35, "shares_out": 14_000_000_000,
+        "last_price": 1_250, "total_debt": 3_100_000_000_000, "cash": 1_450_000_000_000,
+        "corporate_overhead_pv_bn": 620.0,
+        "assets": [
+            {"name": "Landbank Bogor (mature)", "size": 210, "size_unit": "ha", "nav_bn": 6_400,
+             "ownership_pct": 100, "nav_source": "DCF per proyek, WACC 11%", "discount_rate": 0.11},
+            {"name": "Landbank Karawang (development)", "size": 640, "size_unit": "ha", "nav_bn": 4_100,
+             "ownership_pct": 70, "nav_source": "appraisal KJPP, Jun 2026", "discount_rate": 0.145},
+            {"name": "Proyek mixed-use (JV)", "size": 3.2, "size_unit": "ha", "nav_bn": 1_800,
+             "ownership_pct": 45, "nav_source": "DCF per proyek, WACC 13%", "discount_rate": 0.13},
+        ],
+    })
+    return prop
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_rnav_branch_values_assets_then_bridges_to_target_price() -> None:
+    import json
+
+    from server.report.house_rules import audit_valuation_page
+    from server.report.valuation_page import build_valuation_page
+    from server.routers.pdf import _build_live_payload
+
+    assum = _synthetic_property_assumptions(json.loads(ASSUM_PATH.read_text(encoding="utf-8")))
+    page = build_valuation_page(_build_live_payload("AMMN", None), assum)
+    assert page["method"] == "rnav" and page["available"]
+    assert len(page["block1_rows"]) == 3
+    # attributable NAV = NAV x ownership, per the rules
+    def parsed(cell: str) -> float:
+        return float(cell.replace(".", "").replace(",", "."))
+
+    nav = {r[0]: r[1] for r in page["block1_rows"]}
+    assert parsed(nav["Landbank Karawang (development)"][3]) == pytest.approx(4100 * 0.70, abs=1)
+    assert parsed(nav["Proyek mixed-use (JV)"][3]) == pytest.approx(1800 * 0.45, abs=1)
+    bridge = page["bridge"]
+    assert bridge["sum_nav"] == pytest.approx(6400 + 4100 * 0.70 + 1800 * 0.45, abs=1)
+    assert bridge["target_price"] == pytest.approx(bridge["rnav_per_share"] * 0.65, abs=1)
+    assert [r[0] for r in page["block3_rows"]][1].startswith("Target Price")
+    assert len(page["sensitivity"]["rows"]) == 5
+    assert sum(1 for r in page["sensitivity"]["rows"] for c in r["cells"] if c["base"]) == 1
+    assert audit_valuation_page(page, page and _build_live_payload("AMMN", None)) == []
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_rnav_branch_refuses_without_asset_data() -> None:
+    """AMMN has no asset-level NAV anywhere in Sectors: the branch must say what is missing, not invent it."""
+    import json
+
+    from server.report.valuation_page import build_valuation_page
+    from server.routers.pdf import _build_live_payload
+
+    assum = json.loads(ASSUM_PATH.read_text(encoding="utf-8"))
+    assum["valuation_method"] = "rnav"
+    page = build_valuation_page(_build_live_payload("AMMN", None), assum)
+    assert page["available"] is False
+    missing = " ".join(page["missing"]).lower()
+    assert "aset" in missing and "nav" in missing
+    assert "block1_rows" not in page
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_rnav_gate_demands_a_sourced_nav_and_a_justified_discount() -> None:
+    import json
+
+    from server.report.house_rules import audit_valuation_page
+    from server.report.valuation_page import build_valuation_page
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    assum = _synthetic_property_assumptions(json.loads(ASSUM_PATH.read_text(encoding="utf-8")))
+    page = build_valuation_page(payload, assum)
+    assert audit_valuation_page(page, payload) == []
+
+    unsourced = build_valuation_page(payload, {**assum, "assets": [
+        {**assum["assets"][0], "nav_source": None}] + assum["assets"][1:]})
+    caught = audit_valuation_page(unsourced, payload)
+    assert any("where its NAV comes from" in v for v in caught), caught
+
+    unjustified = build_valuation_page(payload, {**assum, "rnav_discount_comparables": None})
+    unjustified["notes"] = [n for n in unjustified["notes"] if "judgment" not in n.lower()]
+    assert any("pure judgment" in v or "comparable" in v for v in audit_valuation_page(unjustified, payload))

@@ -90,6 +90,16 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     """
     assum = assumptions or {}
     method = str(assum.get("valuation_method") or "dcf").lower()
+    if method in ("rnav", "nav"):
+        from server.report.valuation_rnav import build_rnav_page
+
+        page = build_rnav_page(payload, assum, {"num": _num})
+        if page.get("available") and not assum.get("valuation_method"):
+            page["notes"] = list(page.get("notes") or []) + [
+                "Metode dipilih otomatis ke RNAV karena aset dominan; rules meminta pilihan manual, jadi "
+                "tambahkan `valuation_method` di file assumptions untuk mengunci pilihan."
+            ]
+        return page
     if method in ("ddm", "dividend"):
         from server.report.valuation_ddm import build_ddm_page
 
@@ -343,6 +353,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
         "block2_headers": None,
         "block3_headers": None,
+        "block1_headers": None,
         "assumptions_view": {
             "wacc": wacc, "g": g, "shares_bn": shares_bn, "rf": assum.get("rf"),
             "beta": assum.get("beta"), "erp": assum.get("erp"),

@@ -162,6 +162,10 @@ an unexplained method choice is a REJECT.
   back to the drivers already discussed on pages 2-3, and — if Gordon and the exit multiple disagree
   materially — flag it as an UNRESOLVED assumption. Never average two terminal methods quietly.
 - A perpetual terminal growth is not defensible for a finite reserve: say so on the page.
+- RNAV: list every asset with its size, NAV, the issuer's ownership share and where the NAV came from, then
+  the bridge (NAV + cash - debt - overhead) to RNAV per share and a target price after the discount. The
+  discount must either cite a comparable level or be declared a pure judgment assumption. Never invent a
+  NAV: with no asset-level data the page reports what is missing instead of filling the table.
 
 Page 3 — Visualisasi Kinerja Keuangan dan Forecasting (docs/ammn-slides/slide3-visual-spec.md).
 A 2x2 grid, four combo charts (bars = absolute, line = ratio on the secondary axis), and the
