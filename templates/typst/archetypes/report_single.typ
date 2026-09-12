@@ -319,6 +319,21 @@
     image(chart-dir + "/margin_trajectory.png", width: 100%);
   }
 
+  // Exhibit-7 sector switch (mining / E&P upstream): production volume bars
+  // (actual vs forecast) against the cash-cost line (C1/AISC). Title and units
+  // come from the payload because the same chart serves Cu-eq and concentrate
+  // builds; the renderer owns the number.
+  #if data.at("charts", default: (:)).at("production_cost", default: false) {
+    let pc = data.at("production_cost", default: (:))
+    v(4pt);
+    exhibit-header(
+      pc.at("title", default: "Volume Produksi & Biaya Kas (C1/AISC)"),
+      pc.at("source", default: fh_src),
+    );
+    v(2pt);
+    image(chart-dir + "/production_cost.png", width: 100%);
+  }
+
   #v(8pt)
   #let thesis_list = data.at("thesis", default: ())
   #let thesis_count = thesis_list.len()
@@ -653,6 +668,56 @@
       ("Total Liabilitas", "275", "247", "258", "269", "280", "291"),
       ("Total Ekuitas", "1.615", "1.617", "1.722", "1.856", "2.010", "2.165"),
     )).map(r => r.map(c => str(c))),
+    palette: PALETTE,
+  )
+
+  #v(6pt)
+  #let cf = fs.at("cashflow", default: (:))
+  #exhibit-header(cf.at("title", default: "Laporan Arus Kas 6 Tahun (FY24A - FY29F)"), cf.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #v(2pt)
+  // House Slide-7 row order: Operating -> Investing -> Financing -> closing
+  // balances. Section labels and subtotals are bolded IN PLACE via
+  // fin-table(bold-rows:), so the sub-total hierarchy is legible without colour,
+  // and the three closing balances close the table through `footers`. Rows are
+  // payload-driven; the default below is honest-empty (dashes), never fabricated.
+  #let cf_headers = cf.at("headers", default: ("Arus Kas", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"))
+  #let cf_has_data = cf.at("rows", default: ()).len() > 0
+  #let cf_rows = if cf_has_data {
+    cf.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+  } else {
+    (
+      ("ARUS KAS DARI OPERASI", "", "", "", "", "", ""),
+      ("Laba Bersih Tahun Berjalan", "—", "—", "—", "—", "—", "—"),
+      ("(+) Depresiasi & Amortisasi", "—", "—", "—", "—", "—", "—"),
+      ("(-)/(+) Perubahan Modal Kerja", "—", "—", "—", "—", "—", "—"),
+      ("Pos Operasional Lainnya", "—", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Operasi", "—", "—", "—", "—", "—", "—"),
+      ("ARUS KAS DARI INVESTASI", "", "", "", "", "", ""),
+      ("(-) Belanja Modal (Capex)", "—", "—", "—", "—", "—", "—"),
+      ("Pos Investasi Lainnya", "—", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Investasi", "—", "—", "—", "—", "—", "—"),
+      ("ARUS KAS DARI PENDANAAN", "", "", "", "", "", ""),
+      ("Utang Ditarik / (Dibayar)", "—", "—", "—", "—", "—", "—"),
+      ("Dividen Dibayarkan", "—", "—", "—", "—", "—", "—"),
+      ("Ekuitas Diterbitkan / (Buyback)", "—", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Pendanaan", "—", "—", "—", "—", "—", "—"),
+    )
+  }
+  #let cf_bold = if cf_has_data {
+    cf.at("bold_rows", default: ())
+  } else {
+    (0, 5, 6, 9, 10, 14)
+  }
+  #let cf_footers = cf.at("footers", default: (
+    ("Perubahan Kas Bersih", "—", "—", "—", "—", "—", "—"),
+    ("Saldo Kas Awal", "—", "—", "—", "—", "—", "—"),
+    ("Saldo Kas Akhir (tie-out ke Neraca)", "—", "—", "—", "—", "—", "—"),
+  ))
+  #fin-table(
+    cf_headers,
+    cf_rows,
+    footers: cf_footers,
+    bold-rows: cf_bold,
     palette: PALETTE,
   )
 

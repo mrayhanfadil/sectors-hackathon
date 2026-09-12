@@ -382,7 +382,8 @@ def _generate_charts(ticker: str, data: dict, palette: dict) -> Path:
     chart_names = [
         "vs_jci.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
         "wacc_breakdown.png", "sensitivity_heatmap.png", "scenario_bars.png",
-        "ev_equity_waterfall.png", "margin_trajectory.png", "index_trend.png",
+        "ev_equity_waterfall.png", "margin_trajectory.png", "production_cost.png",
+        "index_trend.png",
         "relval_bars.png", "peer_pe.png", "peer_evebitda.png", "peer_pb.png",
     ]
     try:
@@ -473,7 +474,8 @@ def render_report(ticker: str, archetype: str = "auto", out_path: str | Path | N
     data["charts"] = {}
     for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
-                  "ev_equity_waterfall", "margin_trajectory", "index_trend",
+                  "ev_equity_waterfall", "margin_trajectory", "production_cost",
+                  "index_trend",
                   "relval_bars", "peer_pe", "peer_evebitda", "peer_pb"]:
         _p = charts_dir / f"{_name}.png"
         data["charts"][_name] = bool(_p.exists() and _p.stat().st_size > 2048)

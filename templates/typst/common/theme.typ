@@ -268,7 +268,11 @@
 }
 
 // ------ Financial table (with header band, alternating rows, tab nums) ------
-#let fin-table(headers, rows, footers: (), columns: none, palette: DEFAULT_PALETTE, font: auto) = {
+// `bold-rows` names the body row indices that render bold in place — the way a
+// statement marks its subtotals (Laba Kotor, EBIT, Arus Kas Bersih dari Operasi)
+// without pretending they are bottom-of-table totals. `footers` stays for rows
+// that genuinely close the table.
+#let fin-table(headers, rows, footers: (), columns: none, palette: DEFAULT_PALETTE, font: auto, bold-rows: ()) = {
   set text(font: if font == auto { FONT_MONO } else { font }, size: 7.5pt, features: ("tnum",))
   set table(
     stroke: 0.5pt + palette.line,
@@ -285,18 +289,20 @@
     align: if i == 0 { left } else { right },
   ))
   // Body rows
-  let body-cells = rows-arr.map(row => {
+  let body-cells = rows-arr.enumerate().map(((ri, row)) => {
     let row-arr = if type(row) == array { row } else { row.pos() }
     row-arr.enumerate().map(((i, c)) => table.cell(
       align: if i == 0 { left } else { right },
-      [#c],
+      if bold-rows.contains(ri) { text(weight: "bold")[#c] } else { [#c] },
     ))
   })
-  // Footer rows (totals)
+  // Footer rows (totals). `table.cell` takes ONE positional body: this branch had
+  // `text(weight: "bold")` as the body and `[#c]` as a second positional argument,
+  // so it raised "missing argument: body" — it only stayed hidden because no call
+  // site used `footers:` until the cash-flow exhibit did.
   let footer-cells = footers.map(row => row.enumerate().map(((i, c)) => table.cell(
-    text(weight: "bold"),
     align: if i == 0 { left } else { right },
-    [#c],
+    text(weight: "bold")[#c],
   )))
   table(
     columns: cols,

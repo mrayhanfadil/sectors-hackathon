@@ -11,6 +11,8 @@ Generates minimalist, publication-grade PNG charts for research reports:
 8. chart_ev_equity_waterfall: EV to Equity valuation waterfall bridge
 9. chart_index_trend: Macro trend line with shaded area
 10. chart_margin_trajectory: Revenue bars + multi-margin trajectory time-series
+11. chart_production_cost: Mining Exhibit-7 — production volume bars (actual vs
+    forecast) + cash-cost line (C1/AISC), both unit-parameterized
 """
 
 from __future__ import annotations
@@ -952,6 +954,159 @@ def chart_margin_trajectory(
 
 
 # ---------------------------------------------------------------------------
+# Exhibit-7 sector switch (mining / E&P upstream): production volume bars
+# (actual vs forecast) against the cash-cost line. Both axes are parameterized
+# so one function serves Cu-eq (C1) and concentrate (AISC) builds.
+# ---------------------------------------------------------------------------
+def chart_production_cost(
+    palette: Optional[Dict[str, Any]],
+    years: Sequence[str],
+    volume: Sequence[float],
+    cost: Sequence[float],
+    out: Union[str, Path],
+    volume_unit: str = "kt Cu-eq",
+    cost_label: str = "C1 Cash Cost",
+    cost_unit: str = "US$/lb Cu-eq",
+    actual_periods: int = 0,
+    volume_label: str = "Production Volume",
+    source: str = "",
+    figsize: Tuple[float, float] = (6.8, 3.0),
+) -> Optional[Path]:
+    """Production volume bars (actual vs forecast) + cash-cost line (right axis).
+
+    - Bars: actual periods solid, forecast periods tinted + hatched, so actual vs
+      forecast is legible without reading the labels (house Slide-3 convention).
+    - Line: cash cost, labelled from `cost_label`/`cost_unit` (C1 or AISC).
+    - Units are caller-supplied: tonnes/lbs Cu-eq or concentrate both work.
+    """
+    if not years or not volume:
+        print("[warn] chart_production_cost: missing years or volume data")
+        return None
+    try:
+        year_labels = [str(y) for y in years]
+        vol_vals = [float(v) for v in volume]
+        cost_vals = [float(v) for v in cost] if cost else []
+    except (TypeError, ValueError) as exc:
+        print(f"[warn] chart_production_cost: invalid numeric data: {exc}")
+        return None
+    if len(year_labels) != len(vol_vals):
+        print("[warn] chart_production_cost: years and volume length mismatch")
+        return None
+
+    p = _get_palette(palette)
+    n = len(year_labels)
+    x = np.arange(n)
+    n_actual = max(0, min(int(actual_periods), n))
+
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=200)
+    _apply_style(ax1, p, horizontal_grid=True)
+
+    bar_w = 0.52
+    if n_actual > 0:
+        bars_a = ax1.bar(
+            x[:n_actual], vol_vals[:n_actual], width=bar_w,
+            color=p["brand_dark"], edgecolor="none", label="Volume (Aktual)", zorder=3,
+        )
+    else:
+        bars_a = []
+    if n_actual < n:
+        bars_f = ax1.bar(
+            x[n_actual:], vol_vals[n_actual:], width=bar_w,
+            color=p.get("accent", "#ecfdf3"), edgecolor=p["brand_dark"],
+            linewidth=0.8, hatch="//", label="Volume (Proyeksi)", zorder=3,
+        )
+    else:
+        bars_f = []
+
+    for bars, is_actual in ((bars_a, True), (bars_f, False)):
+        for bar, val in zip(bars, vol_vals[n_actual:] if not is_actual else vol_vals[:n_actual]):
+            ax1.annotate(
+                f"{val:,.1f}",
+                xy=(bar.get_x() + bar.get_width() / 2, bar.get_height()),
+                xytext=(0, 3), textcoords="offset points",
+                ha="center", va="bottom", fontsize=6.8,
+                fontweight="bold" if is_actual else "normal",
+                color=p["ink"] if is_actual else p["muted"], zorder=5,
+            )
+
+    # Actual | forecast boundary. Caption sits just ABOVE the plot area (the legend
+    # lives below it) so neither can collide with the other.
+    if 0 < n_actual < n:
+        ax1.axvline(n_actual - 0.5, color=p["line"], linestyle="--", linewidth=0.8, zorder=1)
+        ax1.annotate(
+            "aktual | proyeksi",
+            xy=(n_actual - 0.5, 0.0), xycoords=("data", "axes fraction"),
+            xytext=(0, 3), textcoords="offset points",
+            ha="center", va="bottom", fontsize=6.2, style="italic", color=p["muted"],
+            bbox=dict(facecolor=p["paper"], edgecolor="none", pad=0.8),
+        )
+
+    max_vol = max(vol_vals) if vol_vals else 1.0
+    vol_top = max_vol * 1.30 if max_vol > 0 else 1.0
+    ax1.set_ylim(0, vol_top)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(year_labels, fontsize=7.5, fontweight="semibold", color=p["ink"])
+    ax1.set_xlim(-0.6, n - 0.4)
+    ax1.set_ylabel(str(volume_unit), fontsize=7.5, color=p["muted"], labelpad=6)
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:,.0f}"))
+
+    # Right axis: cash cost line
+    ax2 = ax1.twinx()
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["left"].set_visible(False)
+    ax2.spines["right"].set_color(p.get("line", "#e4e7ec"))
+    ax2.spines["right"].set_linewidth(0.75)
+    ax2.tick_params(colors=p.get("muted", "#475467"), labelsize=7.0, length=3, width=0.75)
+    ax2.yaxis.grid(False)
+
+    color_cost = "#0e7490"  # institutional slate cyan, parallels the margin chart
+    if cost_vals and len(cost_vals) == n:
+        ax2.plot(
+            x, cost_vals, color=color_cost, linewidth=2.0,
+            marker="o", markersize=3.8, label=f"{cost_label} ({cost_unit})", zorder=6,
+        )
+        lo, hi = min(cost_vals), max(cost_vals)
+        pad = (hi - lo) * 0.35 if hi > lo else max(abs(hi) * 0.05, 0.1)
+        cost_bot, cost_top = lo - pad, hi + pad
+        ax2.set_ylim(cost_bot, cost_top)
+        # Anti-collision offset: a cost label landing in the same band as a bar's
+        # own value label is lifted clear of it (same device as chart_vs_jci).
+        span = cost_top - cost_bot
+        for xi, val in zip(x, cost_vals):
+            bar_frac = vol_vals[xi] / vol_top if vol_top else 0.0
+            cost_frac = (val - cost_bot) / span if span else 0.0
+            lift = 15 if abs(bar_frac - cost_frac) < 0.08 else 4
+            ax2.annotate(
+                f"{val:,.2f}",
+                xy=(xi, val), xytext=(0, lift), textcoords="offset points",
+                ha="center", va="bottom", fontsize=6.4,
+                fontweight="bold", color=color_cost, zorder=7,
+            )
+        ax2.set_ylabel(f"{cost_label} ({cost_unit})", fontsize=7.5, color=p["muted"], labelpad=6)
+    else:
+        ax2.set_visible(False)
+
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    if handles1 or handles2:
+        # Below the plot: an in-plot legend competes with bar-top value labels and
+        # the actual|forecast caption.
+        ax1.legend(handles1 + handles2, labels1 + labels2,
+                   loc="upper center", bbox_to_anchor=(0.5, -0.16),
+                   frameon=False, fontsize=6.8, ncol=max(1, len(handles1 + handles2)))
+
+    ax1.set_title(
+        f"{volume_label} & {cost_label}",
+        loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8,
+    )
+    if source:
+        fig.text(0.99, -0.02, f"Source: {source}", fontsize=6.8, color=p["muted"],
+                 ha="right", style="italic")
+
+    return _save_fig(fig, out)
+
+
+# ---------------------------------------------------------------------------
 # 11. peer_pe_bar: Horizontal bar chart of forward P/E per peer + subject ticker
 # ---------------------------------------------------------------------------
 def peer_pe_bar(
@@ -1387,6 +1542,7 @@ __all__ = [
     "chart_ev_equity_waterfall",
     "chart_index_trend",
     "chart_margin_trajectory",
+    "chart_production_cost",
     "peer_pe_bar",
     "peer_evebitda_bar",
     "peer_pb_scatter",

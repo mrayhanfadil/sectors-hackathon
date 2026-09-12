@@ -28,7 +28,7 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
         from report_charts import (chart_vs_jci, chart_segment_donut, chart_kpi_bars,
                                    chart_pbv_bands, chart_wacc_breakdown, chart_sensitivity_heatmap,
                                    chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend,
-                                   chart_margin_trajectory,
+                                   chart_margin_trajectory, chart_production_cost,
                                    peer_pe_bar, peer_evebitda_bar, peer_pb_scatter, relval_bars)
     except ImportError:
         print(f"[warn] report_charts not importable, skipping charts for {ticker}")
@@ -162,6 +162,27 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                 )
         except Exception as e:
             print(f"[warn] margin_trajectory: {e}")
+    # Exhibit-7 sector switch (mining / E&P upstream): production volume bars +
+    # cash-cost line. Payload-driven and unit-parameterized, so a Cu-eq (C1) and a
+    # concentrate (AISC) build both route through the same chart function.
+    production_cost = data.get("production_cost") or {}
+    if production_cost.get("years") and production_cost.get("volume"):
+        try:
+            chart_production_cost(
+                palette,
+                production_cost["years"],
+                production_cost["volume"],
+                production_cost.get("cost") or [],
+                cache / "production_cost.png",
+                volume_unit=production_cost.get("volume_unit", "kt Cu-eq"),
+                cost_label=production_cost.get("cost_label", "C1 Cash Cost"),
+                cost_unit=production_cost.get("cost_unit", "US$/lb Cu-eq"),
+                actual_periods=int(production_cost.get("actual_periods", 0) or 0),
+                volume_label=production_cost.get("volume_label", "Production Volume"),
+                source=production_cost.get("source", ""),
+            )
+        except Exception as e:
+            print(f"[warn] production_cost: {e}")
     if data.get("peers"):
         try:
             peers_data = data["peers"]
@@ -244,7 +265,8 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
     data["charts"] = {}
     for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
-                  "ev_equity_waterfall", "margin_trajectory", "index_trend",
+                  "ev_equity_waterfall", "margin_trajectory", "production_cost",
+                  "index_trend",
                   "relval_bars", "peer_pe", "peer_evebitda", "peer_pb"]:
         _p = charts_dir / f"{_name}.png"
         data["charts"][_name] = bool(_p.exists() and _p.stat().st_size > 2048)
