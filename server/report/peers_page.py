@@ -17,11 +17,10 @@ BAND_LABELS = {"pe": "P/E", "pbv": "P/BV", "ev_ebitda": "EV/EBITDA", "ev_sales":
 DEFAULT_BANDS = ("pe", "pbv")
 
 METHODOLOGY = (
-    "Tool ini adalah own-history relative valuation: empat trailing multiple (P/E, P/BV, EV/EBITDA, "
-    "EV/Sales) dihitung sepanjang window satu tahun dan level saat ini dibandingkan dengan distribusi "
-    "historisnya sendiri (average, median, persentil). Driver fundamental dibangun dengan rolling TTM "
-    "(jumlah empat kuartal terakhir) plus fallback berlapis bila ada data gap, dan konversi mata uang "
-    "laporan ke mata uang harga dilakukan sebelum multiple dihitung."
+    "Own-history relative valuation: empat trailing multiple (P/E, P/BV, EV/EBITDA, EV/Sales) sepanjang "
+    "window satu tahun, dibandingkan dengan distribusi historisnya sendiri (average, median, persentil). "
+    "Driver fundamental = rolling TTM (empat kuartal terakhir) dengan fallback berlapis; mata uang "
+    "laporan dikonversi ke mata uang harga sebelum multiple dihitung."
 )
 
 DISCLAIMER = (
@@ -137,16 +136,15 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
             continue
         series = [{"date": x["date"], "value": x[key]} for x in bands["sessions"] if x[key] is not None]
         implied = bands["implied_price"].get(key)
-        narr = (f"{BAND_LABELS[key]} trailing saat ini {s['current']:.2f}x berada di persentil "
-                f"{s['percentile']:.0f} dari distribusi {s['n']} sesi satu tahun (mean {s['mean']:.2f}x, "
-                f"median {s['median']:.2f}x).")
+        narr = (f"Sekarang {s['current']:.2f}x — persentil {s['percentile']:.0f} dari {s['n']} sesi "
+                f"(mean {s['mean']:.2f}x, median {s['median']:.2f}x).")
         if implied:
             if implied.get("is_range"):
-                narr += (f" Reversion ke mean memberi {_fmt_rp(implied['to_mean'])}, ke median "
-                         f"{_fmt_rp(implied['to_median'])} — selisih material, jadi disajikan sebagai "
-                         f"rentang {_fmt_rp(implied['low'])}–{_fmt_rp(implied['high'])}.")
+                narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
+                         f"{_fmt_rp(implied['to_median'])} — selisih material, disajikan sebagai rentang "
+                         f"{_fmt_rp(implied['low'])}–{_fmt_rp(implied['high'])}.")
             else:
-                narr += (f" Reversion ke mean memberi {_fmt_rp(implied['to_mean'])} dan ke median "
+                narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
                          f"{_fmt_rp(implied['to_median'])} — kedua metode konvergen.")
         band_blocks.append({
             "key": key, "label": BAND_LABELS[key], "n": s["n"], "mean": s["mean"], "median": s["median"],
@@ -183,7 +181,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
                          "b": "Relative Valuation — Own History (time-series)"}}
 
 
-def render_band_svg(block: dict, width: int = 460, height: int = 150) -> str:
+def render_band_svg(block: dict, width: int = 430, height: int = 104) -> str:
     """Inline SVG line for a band block: series + dashed mean + dotted median + current marker."""
     pts = block["series"]
     if len(pts) < 5:

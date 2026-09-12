@@ -66,19 +66,19 @@
     keduanya <b>tidak</b> saling mengonfirmasi satu kesimpulan</span>
   </div>
 
-  <p class="small">{{ B.methodology }}</p>
+  <p class="small method-note">{{ B.methodology }}</p>
 
-  <div class="band-grid">
+  <table class="band-grid"><tr>
     {% for blk in B.bands %}
       {% if blk.key in ("pe", "pbv") %}
-      <div class="band-card">
+      <td class="band-card">
         {{ m.exhibit_auto(ns, blk.label ~ " Historical Band (1-Year)", B.sources[0] if B.sources else "") }}
         {{ band_svg(blk) }}
         <p class="small band-narr">{{ blk.narrative }}</p>
-      </div>
+      </td>
       {% endif %}
     {% endfor %}
-  </div>
+  </tr></table>
 
   <h3>Implied Price Judgement</h3>
   <table class="fin-table">

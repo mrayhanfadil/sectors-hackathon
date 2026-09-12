@@ -371,11 +371,16 @@
   .slide5 .method-divider { margin: 10pt 0 6pt; padding: 4pt 0; border-top: 1.6pt solid #0f172a;
     border-bottom: 1.6pt solid #0f172a; text-align: center; font-size: 7.8pt; letter-spacing: .05em;
     text-transform: uppercase; color: #0f172a; }
-  .slide5 .band-grid { display: flex; gap: 10pt; }
+  .slide5 table.band-grid { width: 100%; border-collapse: separate; border-spacing: 8pt 0;
+    margin: 2pt 0 0; table-layout: fixed; }
+  .slide5 .band-grid td.band-card { vertical-align: top; width: 50%; }
   .slide5 .band-card { flex: 1; }
-  .slide5 .band-svg { width: 100%; height: auto; }
-  .slide5 .band-narr, .slide5 .peer-narr { font-size: 8.2pt; color: #1e293b; }
-  .slide5 .disclaim-inline { font-size: 8pt; background: #fff7ed; border-left: 2.5pt solid #b45309;
+  .slide5 .band-svg { width: 100%; height: auto; max-height: 74pt; }
+  .slide5 .band-narr, .slide5 .peer-narr { font-size: 7.4pt; color: #1e293b; }
+  .slide5 .method-note { font-size: 7.4pt; margin: 1pt 0 4pt; }
+  .slide5 table.fin-table { font-size: 7.6pt; }
+  .slide5 table.fin-table th, .slide5 table.fin-table td { padding-top: 1.6pt; padding-bottom: 1.6pt; }
+  .slide5 .disclaim-inline { font-size: 7.4pt; background: #fff7ed; border-left: 2.5pt solid #b45309;
     padding: 5pt 7pt; color: #3f2b12; }
 </style>
 {{ m.chartjs() }}
