@@ -392,7 +392,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
 
         payload["performance_page"] = build_performance_page(payload, assum if _has_assump else {})
 
-        # Deck slide 4: the intrinsic valuation page, arithmetic from the vendored Abida DCF engine.
+        # Deck slide 4: the intrinsic valuation page, arithmetic from the internal FCFF engine.
         from server.report.valuation_page import build_valuation_page
 
         payload["valuation_page"] = build_valuation_page(payload, assum if _has_assump else {})

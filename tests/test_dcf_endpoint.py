@@ -25,7 +25,7 @@ if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
 from server.main import app
-from agents.adk.tools.dcf_friend import (
+from agents.adk.tools.dcf_engine_tool import (
     calc_wacc_full,
     calc_fcff_projection,
     calc_terminal_value_check,
@@ -147,7 +147,7 @@ def test_endpoint_scenarios_structure(client):
 
 
 def test_adk_friend_tools_unit():
-    """Unit test ADK function tools in agents/adk/tools/dcf_friend.py."""
+    """Unit test ADK function tools in agents/adk/tools/dcf_engine_tool.py."""
     # 1. calc_wacc_full
     wacc_res = calc_wacc_full(
         rf=0.065, beta=1.0, erp=0.07, cod=0.085, market_cap=1e12, total_debt=2e11, tax=0.22

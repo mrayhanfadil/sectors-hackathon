@@ -83,7 +83,7 @@ export function DcfFriend({ ticker }: DcfFriendProps) {
         <div className="flex flex-wrap items-center gap-2">
           <span className="text-sm font-bold">Analisa DCF (Friend-style)</span>
           <span className="text-xs font-normal text-slate-500 dark:text-slate-400">
-            Port dari abidamassi/dcf-valuation-tool : math deterministic, audit-friendly
+            Engine valuasi internal: aritmetika deterministik, audit-friendly
           </span>
         </div>
         <svg className="h-4 w-4 text-slate-400 group-open:rotate-180 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">

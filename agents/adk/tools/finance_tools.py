@@ -346,8 +346,8 @@ DETERMINISTIC_TOOLS = [
     calc_ratios,
 ]
 
-# friend-derived math (port from abidamassi/dcf-valuation-tool, s05-s12)
-from .dcf_friend import (
+# FCFF / DCF math shared with server/report/engines/dcf_engine
+from .dcf_engine_tool import (
     calc_wacc_full,
     calc_fcff_projection,
     calc_terminal_value_check,

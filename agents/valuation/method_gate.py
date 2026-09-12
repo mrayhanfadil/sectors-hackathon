@@ -5,7 +5,7 @@ emits an ordered method list with skip reasons, and every downstream consumer
 (writer/blended, critic) honors ONLY the gated list. Loud-fail throughout:
 non-gated fair values raise instead of being silently averaged in.
 
-Source: Abida Massi Armand, Valuation Method Selection Framework
+Source: house valuation method-selection framework (docs/valuation-framework.md)
 (references/framework-valuation.pdf, 81.7K; decision flow pp.337-401,
 relative-multiple applicability table pp.407-428). The deterministic 6-gate
 verdict underneath lives in agents/valuation/gates.py; this module maps that

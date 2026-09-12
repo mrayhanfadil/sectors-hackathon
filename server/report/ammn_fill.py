@@ -1171,7 +1171,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         filled.append("valuation.dcf_grid + methods[DCF].table(FCFF/DF/PV)")
 
         # --- cDcf: friend-style block consumed by BOTH renderers -------------
-        # HTML: templates/report_single.html dcf_friend block (svg macros).
+        # HTML: templates/report_single.html valuation block (svg macros).
         payload["cDcf"] = {
             "wacc_table": [{"label": r[0], "value": r[1]} for r in wacc_rows],
             "sensitivity": {

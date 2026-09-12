@@ -2,7 +2,7 @@
 
 A structured decision logic for choosing between DCF, DDM, NAV, SOTP, and Relative Valuation before financial modeling. 6 sequential gates (0–5), evaluated in order from business-model fundamentals to output sanity.
 
-Source: Abida Massi Armand's working document (`doc_7804925ce4fd_framework-valuation.pdf`, cached at `/home/fadil/.hermes/cache/documents/doc_7804925ce4fd_framework-valuation.pdf` and archived in `references/framework-valuation.pdf`).
+Source: house working document on valuation method selection (archived in `references/framework-valuation.pdf`).
 
 This document covers **why method selection matters, what each gate decides, and how our code maps to them**. The deterministic implementation lives in [`agents/valuation/gates.py`](file:///home/fadil/projects/sectors-hackathon/agents/valuation/gates.py); the orchestrator wiring is in [`agents/adk/agents/instructions.py`](file:///home/fadil/projects/sectors-hackathon/agents/adk/agents/instructions.py).
 
@@ -11,7 +11,7 @@ This document covers **why method selection matters, what each gate decides, and
 ## 1. Intro — Why Method Selection Matters
 
 > "These five methods are not competing alternatives to be averaged together. Each has a domain where it is structurally correct and domains where it produces a confident-looking number that has no economic meaning. The most common valuation error is forcing one method, usually DCF because it looks the most rigorous, onto a company where its core assumptions do not hold."
-> — *Abida Massi Armand, Valuation Method Selection Framework*
+> — *Valuation Method Selection Framework (house working document)*
 
 The logic is ordered from the most fundamental gate (what kind of business is this) down to finer checks (data quality, ownership structure, cyclicality, life-cycle stage, and output sanity). A company passes through every gate in sequence; failing a gate does not always mean rejection — sometimes the primary method changes, and sometimes a mandatory second method is attached alongside the first.
 
@@ -73,7 +73,7 @@ To re-run the verification audit at any time:
 ## 5. Disclosure
 
 > [!NOTE]
-> This framework is adapted from a personal working document authored by **Abida Massi Armand** (`framework-valuation.pdf`). It is a working practitioner framework, not an institutional publication, and does not constitute formal investment advice or a regulatory research recommendation. Valuation method selection narrows and structures where analytical judgment is required; it does not replace analyst domain expertise.
+> This framework is a working practitioner framework kept inside the repo; it is not an institutional publication and does not constitute formal investment advice or a regulatory research recommendation. Valuation method selection narrows and structures where analytical judgment is required; it does not replace analyst domain expertise.
 
 ---
 

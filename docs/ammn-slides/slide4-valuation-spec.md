@@ -53,10 +53,7 @@ hand, never the system.
 
 > Catatan lintas ketiga opsi: semua komponen Risk-free rate, Beta, ERP harus dicatat sumbernya (INDOGB 10Y untuk Rf IDR, US Treasury untuk Rf USD kalau emiten functional currency USD seperti kasus GMFI, Damodaran untuk ERP, Bloomberg untuk Beta), supaya traceable saat direview internal maupun eksternal. Kasus khusus E&P/PSC company perlu modifikasi tambahan dari Opsi A standar karena perpetual growth DCF secara teoritis tidak defensible untuk aset dengan cadangan terbatas (finite reserve life), sesuai prinsip yang sudah established sebelumnya, perlu didiskusikan terpisah kalau ada emiten E&P yang akan pakai template ini.
 
-> ambil engine dari repo
-> https://github.com/abidamassi/dcf-valuation-tool
-> https://github.com/abidamassi/ddm_tool
-> https://github.com/abidamassi/relativepeers
+> Nilai intrinsik dihitung oleh engine internal repo ini (server/report/engines/), bukan repo luar.
 
 ## 1. Which option is active for AMMN, and why
 
@@ -76,16 +73,16 @@ show how far the cash-flow model reads below it.
 
 ## 2. Engine
 
-`server/report/engines/abida_dcf/` — the calculation modules of
-https://github.com/abidamassi/dcf-valuation-tool, copied verbatim (`config`, `utils`, `s06_wacc`,
-`s07_forecast`, `s08_terminal`, `s09_valuation`, `s11_sensitivity`). Only the math is taken: that
-repo's fetch layer reads yfinance, and yfinance's mapping for AMMN returns D&A of Rp 24 tn on revenue
-of Rp 32.5 tn (EBITDA above revenue), which drives its own output to Rp 768/share against a Rp 4,860
-price — its own module flags that as "Review Required ... likely modelling or data issue". The deck
-therefore feeds the engine Sectors numbers and never fetches at render time.
+Intrinsic value is computed by the repo's own engine modules under `server/report/engines/`:
 
-`ddm_tool` (Opsi B) and `relativepeers` (slide 5 peer work) are cloned at
-`~/projects/valuation-engines/` and import cleanly.
+* `dcf_engine/` — FCFF arithmetic (CAPM cost of equity, cost of debt, Gordon terminal value with the
+  implied exit multiple, discounting and the bridge to equity, the WACC x growth grid).
+* `ddm_engine/` — the equity-side arithmetic (dividend discounting, terminal value with the
+  stable-phase payout test, fair P/BV for the inverse cost-of-equity cross-check).
+
+Both are pure calculators: they fetch nothing, import no network client, and take every input from
+`data/assumptions/<ticker>.json` plus the Sectors payload, so a render stays offline and deterministic.
+Which numbers go in is the analyst's job; the engines only do the arithmetic.
 
 ## 3. Enforcement
 

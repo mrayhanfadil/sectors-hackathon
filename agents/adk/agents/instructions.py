@@ -280,7 +280,7 @@ Available tools:
 - calc_historical_bands(series)
 - calc_ratios(revenue, ebitda, net_income, total_debt, cash, equity, interest_expense, ...)
 
-DISCOUNT-RATE DISCIPLINE (Abida rule, 2026-09-04):
+DISCOUNT-RATE DISCIPLINE (house rule, 2026-09-04):
 - DCF (calc_dcf) uses WACC — discounted cash flows belong to the firm, discount at the firm's blended cost of capital.
 - DDM (calc_ddm) and GGM (calc_ggm) use Cost of Equity (CoE), NOT WACC — these discount equity cash flows (dividends, residual income), which belong to shareholders and must be discounted at the shareholders' required return.
 - Never pass WACC to calc_ddm or calc_ggm. Derive CoE separately via CAPM: CoE = Rf + β × ERP (or read from `cost_of_equity` in the assumptions file when present).

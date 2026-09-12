@@ -8,7 +8,7 @@
 
 """ADK FunctionTool wrappers for friend's deterministic DCF valuation math.
 
-Ported from friend's abidamassi/dcf-valuation-tool (s05-s12).
+FCFF / DCF tool math used by the ADK agents (same arithmetic as server/report/engines/dcf_engine).
 Exposes typed, deterministic financial calculation tools for the ADK Modeler agent.
 All formulas are pure Python with zero LLM math hallucinations.
 

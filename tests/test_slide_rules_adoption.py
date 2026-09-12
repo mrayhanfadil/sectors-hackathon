@@ -753,12 +753,12 @@ def test_slide4_spec_carries_the_binding_rule_text() -> None:
         "Opsi C — RNAV",
         "INDOGB 10Y untuk Rf IDR",
         "finite reserve life",
-        "abidamassi/dcf-valuation-tool",
-        "abidamassi/ddm_tool",
-        "abidamassi/relativepeers",
+        "server/report/engines/",
+        "dcf_engine/",
+        "ddm_engine/",
     ):
         assert marker in text, f"slide-4 spec lost: {marker}"
-    assert "audit_valuation_page" in text and "engines/abida_dcf" in text
+    assert "audit_valuation_page" in text and "dcf_engine" in text
 
 
 def test_slide4_agent_contract_is_in_the_prompt() -> None:
@@ -827,7 +827,7 @@ def test_valuation_page_shape_and_disclosures() -> None:
     assert "RESERVE" in notes, "the finite-reserve limitation is not disclosed"
     assert "year-end" in " ".join(page["notes"]).lower() or "konvensi" in " ".join(page["notes"]).lower()
     assert any("Sectors" in s for s in page["sources"])
-    assert any("abidamassi" in s for s in page["sources"]), "the engine provenance is not stated"
+    assert any("engines/dcf_engine" in s for s in page["sources"]), "the engine provenance is not stated"
 
 
 def test_gate_catches_each_slide4_violation_class() -> None:

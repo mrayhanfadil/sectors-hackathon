@@ -1,6 +1,6 @@
 """Opsi B — the DDM branch of deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
-Arithmetic from Abida's DDM engine (server/report/engines/abida_ddm, vendored verbatim). The page
+Arithmetic from the internal dividend-discount engine (server/report/engines/ddm_engine). The page
 contract is deliberately identical to the DCF branch — same `blocks` / `bridge` / `sensitivity` shapes
 and the same `_view()` — so the markup and the gate treat one option at a time without branching on
 the markup side. In the two-column terminal block the left column is the Gordon DDM value and the
@@ -13,7 +13,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from server.report.engines import abida_ddm as engine
+from server.report.engines import ddm_engine as engine
 
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
 
@@ -187,7 +187,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         "sources": [
             "Sectors API: company_report, financials, ownership",
             f"data/assumptions/{payload.get('ticker', '?')}.json (payout, cost of equity, g, shares)",
-            "Engine: github.com/abidamassi/ddm_tool (vendored math, server/report/engines/abida_ddm)",
+            "Engine valuasi internal: server/report/engines/ddm_engine",
         ],
     }
     return _view_ddm(page)

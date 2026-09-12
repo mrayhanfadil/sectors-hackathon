@@ -1,6 +1,6 @@
 """Deck slide 4 — intrinsic valuation (docs/ammn-slides/slide4-valuation-spec.md).
 
-The arithmetic is Abida's DCF engine (server/report/engines/abida_dcf, vendored verbatim). This module
+The arithmetic is the internal FCFF engine (server/report/engines/dcf_engine). This module
 only decides WHICH numbers go in, reads them from the Sectors payload + data/assumptions/<ticker>.json,
 and assembles the three exhibits the owner's rules define:
 
@@ -22,7 +22,7 @@ from types import SimpleNamespace
 
 import pandas as pd
 
-from server.report.engines import abida_dcf as engine
+from server.report.engines import dcf_engine as engine
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
@@ -365,7 +365,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         "sources": [
             "Sectors API: company_report, financials (income statement, balance sheet, cash flow), valuation",
             f"data/assumptions/{payload.get('ticker', '?')}.json (rf, beta, ERP, Kd, WACC, FCFF, net debt, shares)",
-            "Engine: github.com/abidamassi/dcf-valuation-tool (vendored math, server/report/engines/abida_dcf)",
+            "Engine valuasi internal: server/report/engines/dcf_engine",
         ],
     }
     return _view(page)
@@ -393,7 +393,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         "terbatas; terminal pertumbuhan di sini dipakai sebagai proxy jangka panjang, bukan klaim cadangan abadi."
     )
     notes.append(
-        "Konvensi diskon year-end (DF = 1/(1+WACC)^t). Engine Abida default-nya mid-year; selisihnya "
+        "Konvensi diskon year-end (DF = 1/(1+WACC)^t). Engine internal default-nya mid-year; selisihnya "
         "±6% ke atas pada nilai wajar, dan konvensi yang dipakai di sini adalah yang sama dengan leg DCF "
         "di halaman 1 supaya kedua halaman tidak berbeda."
     )
