@@ -359,12 +359,18 @@ def _resolve_archetype(ticker: str, data: dict, requested_archetype: str) -> str
         return "infra"
     if t == "CDIA":
         return "sotp"
-    segs = data.get("segments") or []
-    if len(segs) > 1:
-        return "sotp"
+    # meta.template explicit override wins (mirrors scripts/select_template.py
+    # precedence 1): commodity splits of one mine (AMMN Cu/Au, Batu Hijau) are
+    # pillar analysis, not dissimilar SOTP businesses (gate: NCI 1.7%, domain
+    # mining -> no SOTP cross-check), so they must not flip single -> sotp via
+    # the segments>1 rule. No-op for other tickers (their meta.template already
+    # matches the archetype resolved below).
     meta_tpl = data.get("meta", {}).get("template")
     if meta_tpl in ARCHETYPE_TEMPLATE_FILES:
         return meta_tpl
+    segs = data.get("segments") or []
+    if len(segs) > 1:
+        return "sotp"
     return "single"
 
 

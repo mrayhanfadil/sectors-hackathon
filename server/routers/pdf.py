@@ -301,6 +301,19 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # from placeholder actuals [1000, 1100] — fabricated trend presented as IDX
     # financials. Re-enable only with real Sectors quarterly actuals as base.
     # financial_highlights stays honest-empty (set above).
+    if t == "AMMN":
+        # AMMN-FILLT: fill FILL_MAP-mapped keys from output/cache/ammn_fill
+        # (sibling harvest, 0 credits). Missing cache -> honest-empty kept;
+        # never crash the render (filler itself is section-guarded too).
+        try:
+            from server.report.ammn_fill import apply_ammn_fill
+        except ImportError:
+            apply_ammn_fill = None  # type: ignore
+        if apply_ammn_fill is not None:
+            try:
+                apply_ammn_fill(payload, assum, fv, rating, upside, wacc_val)
+            except Exception:
+                pass
     return payload
 
 

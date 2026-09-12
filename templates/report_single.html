@@ -52,7 +52,7 @@
         <div class="small muted" style="margin-bottom:2pt;">INFORMASI SAHAM</div>
         {{ m.kv("Saham beredar", "%.2f %s"|format(cover.shares.outstanding, cover.shares.unit) if cover.shares else "n/a") }}
         {% if cover.shares and cover.shares.free_float_pct %}{{ m.kv("Free float", "%.1f%%"|format(cover.shares.free_float_pct)) }}{% endif %}
-        {% if cover.esg and cover.esg.found %}
+        {% if cover.esg and cover.esg.found and cover.esg.scores %}
           {{ m.kv("ESG (E/S/G)", "%.2f / %.2f / %.2f"|format(cover.esg.scores.e, cover.esg.scores.s, cover.esg.scores.g)) }}
           <!-- provenance (audit only, never printed; house-report-format.md §1) ESG {{ cover.esg.source }} ({{ cover.esg.date }}) -->
         {% endif %}
