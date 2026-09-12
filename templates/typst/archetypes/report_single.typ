@@ -122,6 +122,10 @@
       #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
       #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
       #let pc_src = vj.at("source", default: "Sectors pending (" + m.ticker + " vs IHSG)")
+      // R2T-R1: canonical Ex 1 (EPS consensus) is skipped per spec — offset the
+      // document-global exhibit counter once so Kinerja Harga vs IHSG numbers
+      // as Exhibit 2. theme.typ owns the counter; this is a one-time offset.
+      #counter(figure.where(kind: "exhibit")).update(1)
       #exhibit-header(pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
       #v(2pt)
       #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
@@ -316,14 +320,17 @@
   #let fh_years = fh.at("years", default: ("FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"))
   #let fh_src = fh.at("source", default: "Laporan Keuangan " + m.ticker + " (IDX), data diolah")
   #let fh_title = "Financial Highlights " + (if fh_years.len() > 0 { str(fh_years.len()) + " Periode (" + fh_years.at(0) + " – " + fh_years.at(-1) + ")" } else { "" })
+  // R2T-R2: honest-empty defaults (dashes) to tie out with Slide-1 Key
+  // Financials. The hardcoded static numbers (1.290, 610, 402...) contradicted
+  // the Slide-1 dashes — CHK-08.
   #let default_fh_rows = (
-    ("Pendapatan Bersih", "1.290", "1.122", "1.180", "1.245", "1.310", "1.375"),
-    ("EBITDA", "610", "540", "585", "620", "658", "694"),
-    ("Laba Bersih", "402", "355", "390", "425", "462", "498"),
-    ("EPS (Rp Penuh)", "148", "131", "144", "157", "170", "184"),
-    ("P/E (x)", "55,2x", "47,3x", "42,7x", "38,5x", "35,2x", "32,4x"),
-    ("ROE (%)", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%", "26,0%"),
-    ("Free Cash Flow", "435", "410", "432", "455", "480", "510"),
+    ("Pendapatan Bersih", "—", "—", "—", "—", "—", "—"),
+    ("EBITDA", "—", "—", "—", "—", "—", "—"),
+    ("Laba Bersih", "—", "—", "—", "—", "—", "—"),
+    ("EPS (Rp Penuh)", "—", "—", "—", "—", "—", "—"),
+    ("P/E (x)", "—", "—", "—", "—", "—", "—"),
+    ("ROE (%)", "—", "—", "—", "—", "—", "—"),
+    ("Free Cash Flow", "—", "—", "—", "—", "—", "—"),
   )
   #let fh_rows = if fh.at("rows", default: ()).len() > 0 {
     fh.rows.map(r => r.map(c => if c == none { "-" } else if type(c) == str { c } else { str(c) }))
@@ -347,44 +354,54 @@
   }
 
   // Slide-3 2x2 grid (canonical Ex4-7): three financial combos + the mining
-  // volume/cost chart. Each cell is payload-driven (title/source) with a
-  // conditional image, so a keyless honest-empty run emits no exhibit here
-  // and never crashes on a missing PNG. The renderer owns the numbers.
+  // volume/cost chart. R2T-R3: the exhibit header sits OUTSIDE the chart-flag
+  // guard and a muted placeholder renders when the PNG flag is false, so the
+  // header always fires and canonical numbering never shifts between keyless
+  // and keyed renders. Titles/sources stay payload-driven.
   #v(4pt)
   #grid(
     columns: (1fr, 1fr),
     column-gutter: 8pt,
-    row-gutter: 6pt,
-    [#if data.at("charts", default: (:)).at("revenue_combo", default: false) {
-      let rc = data.at("revenue_combo", default: (:));
-      exhibit-header(rc.at("title", default: "Revenue & Revenue Growth (2024A-2028F)"), rc.at("source", default: fh_src));
-      v(2pt);
-      image(chart-dir + "/revenue_combo.png", width: 100%);
-    }],
-    [#if data.at("charts", default: (:)).at("ebitda_combo", default: false) {
-      let ec = data.at("ebitda_combo", default: (:));
-      exhibit-header(ec.at("title", default: "EBITDA & EBITDA Margin (2024A-2028F)"), ec.at("source", default: fh_src));
-      v(2pt);
-      image(chart-dir + "/ebitda_combo.png", width: 100%);
-    }],
-    [#if data.at("charts", default: (:)).at("netprofit_combo", default: false) {
-      let nc = data.at("netprofit_combo", default: (:));
-      exhibit-header(nc.at("title", default: "Net Profit & EPS Growth (2024A-2028F)"), nc.at("source", default: fh_src));
-      v(2pt);
-      image(chart-dir + "/netprofit_combo.png", width: 100%);
-    }],
-    [#if data.at("charts", default: (:)).at("production_cost", default: false) {
-      let pc = data.at("production_cost", default: (:));
-      exhibit-header(
-        pc.at("title", default: "Volume Produksi & Biaya Kas (C1/AISC)"),
-        pc.at("source", default: fh_src),
-      );
-      v(2pt);
-      image(chart-dir + "/production_cost.png", width: 100%);
-    }],
+    row-gutter: 5pt,
+    [#let rc = data.at("revenue_combo", default: (:))
+     #let rc_title = rc.at("title", default: "Revenue & Revenue Growth (2024A-2028F)")
+     #exhibit-header(rc_title, rc.at("source", default: fh_src))
+     #v(2pt)
+     #if data.at("charts", default: (:)).at("revenue_combo", default: false) {
+       image(chart-dir + "/revenue_combo.png", width: 100%);
+     } else {
+       chart-placeholder(rc_title, height: 44pt, palette: PALETTE);
+     }],
+    [#let ec = data.at("ebitda_combo", default: (:))
+     #let ec_title = ec.at("title", default: "EBITDA & EBITDA Margin (2024A-2028F)")
+     #exhibit-header(ec_title, ec.at("source", default: fh_src))
+     #v(2pt)
+     #if data.at("charts", default: (:)).at("ebitda_combo", default: false) {
+       image(chart-dir + "/ebitda_combo.png", width: 100%);
+     } else {
+       chart-placeholder(ec_title, height: 44pt, palette: PALETTE);
+     }],
+    [#let nc = data.at("netprofit_combo", default: (:))
+     #let nc_title = nc.at("title", default: "Net Profit & EPS Growth (2024A-2028F)")
+     #exhibit-header(nc_title, nc.at("source", default: fh_src))
+     #v(2pt)
+     #if data.at("charts", default: (:)).at("netprofit_combo", default: false) {
+       image(chart-dir + "/netprofit_combo.png", width: 100%);
+     } else {
+       chart-placeholder(nc_title, height: 44pt, palette: PALETTE);
+     }],
+    [#let pcc = data.at("production_cost", default: (:))
+     #let pcc_title = pcc.at("title", default: "Volume Produksi & Biaya Kas (C1/AISC)")
+     #exhibit-header(pcc_title, pcc.at("source", default: fh_src))
+     #v(2pt)
+     #if data.at("charts", default: (:)).at("production_cost", default: false) {
+       image(chart-dir + "/production_cost.png", width: 100%);
+     } else {
+       chart-placeholder(pcc_title, height: 44pt, palette: PALETTE);
+     }],
   )
 
-  #v(8pt)
+  #v(4pt)
   #let thesis_list = data.at("thesis", default: ())
   #let thesis_count = thesis_list.len()
   #let thesis_title = if thesis_count > 0 { str(thesis_count) + " Pilar Tesis Investasi" } else { "Pilar Tesis Investasi" }
@@ -578,30 +595,9 @@
   )
 
   #v(6pt)
-  #let mcev = val.at("midcycle", default: (:))
-  #exhibit-header(mcev.at("title", default: "EV/EBITDA Mid-Cycle Cross-Check (3Y Average)"), mcev.at("source", default: "Engine Multiple (Sectors pending)"))
-  #v(2pt)
-  #fin-table(
-    mcev.at("headers", default: ("Komponen Mid-Cycle", "Nilai", "Keterangan")),
-    if mcev.at("rows", default: ()).len() > 0 {
-      mcev.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
-    } else {
-      (
-        ("EBITDA tahun-1 (constituent)", "—", "3Y constituent year 1"),
-        ("EBITDA tahun-2 (constituent)", "—", "3Y constituent year 2"),
-        ("EBITDA tahun-3 (constituent)", "—", "3Y constituent year 3"),
-        ("Rata-rata EBITDA 3Y (mid-cycle)", "—", "Average of 3 constituents"),
-        ("Target EV/EBITDA", "—", "Min 2 peer prints or assumption + sensitivity leg"),
-        ("Implied EV", "—", "Mid-cycle EBITDA x multiple"),
-        ("(-) Net Debt (same valuation date)", "—", "Same figure as DCF bridge"),
-        ("Implied equity", "—", "Implied EV - Net Debt"),
-        ("Implied per saham (cross-check)", "—", "Own upside, NOT headline TP"),
-      )
-    },
-    palette: PALETTE,
-  )
-
-  #v(8pt)
+  // R2T-R5: the Mid-Cycle EV/EBITDA cross-check lived here and spilled Page 4
+  // onto a second physical page — relocated to the Slide-4 DCF deep-dive page
+  // (before Cost of Capital Build) so Page 4 fits its paper.
   #let bands = val.at("bands", default: none)
   #let bands_rows = if bands != none and bands.at("rows", default: ()).len() > 0 {
     bands.rows.map(r => r.map(c => str(c)))
@@ -650,6 +646,33 @@
   ]
   #v(6pt)
 
+  // R2T-R5 (relocated from Page 4): EV/EBITDA Mid-Cycle cross-check stays in
+  // the Slide-4 family and fires before Cost of Capital Build, so canonical
+  // header order is preserved. Payload-driven, honest-empty defaults.
+  #let mcev = data.at("valuation", default: (:)).at("midcycle", default: (:))
+  #exhibit-header(mcev.at("title", default: "EV/EBITDA Mid-Cycle Cross-Check (3Y Average)"), mcev.at("source", default: "Engine Multiple (Sectors pending)"))
+  #v(2pt)
+  #fin-table(
+    mcev.at("headers", default: ("Komponen Mid-Cycle", "Nilai", "Keterangan")),
+    if mcev.at("rows", default: ()).len() > 0 {
+      mcev.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+    } else {
+      (
+        ("EBITDA tahun-1 (constituent)", "—", "3Y constituent year 1"),
+        ("EBITDA tahun-2 (constituent)", "—", "3Y constituent year 2"),
+        ("EBITDA tahun-3 (constituent)", "—", "3Y constituent year 3"),
+        ("Rata-rata EBITDA 3Y (mid-cycle)", "—", "Average of 3 constituents"),
+        ("Target EV/EBITDA", "—", "Min 2 peer prints or assumption + sensitivity leg"),
+        ("Implied EV", "—", "Mid-cycle EBITDA x multiple"),
+        ("(-) Net Debt (same valuation date)", "—", "Same figure as DCF bridge"),
+        ("Implied equity", "—", "Implied EV - Net Debt"),
+        ("Implied per saham (cross-check)", "—", "Own upside, NOT headline TP"),
+      )
+    },
+    palette: PALETTE,
+  )
+
+  #v(6pt)
   #exhibit-header("Cost of Capital Build", "Model CAPM & SBN 10Y")
   #v(2pt)
   #let wb = ddd.at("wacc_build", default: (:))
@@ -763,26 +786,38 @@
   #v(6pt)
   #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Historical Relative Valuation — Own-History Tool (Time-Series)]
   #v(2pt)
+  // R2T-R3: band exhibit headers sit OUTSIDE the chart-flag guards with a
+  // muted placeholder fallback, so Ex12-13 always fire and numbering never
+  // shifts between keyless and keyed renders.
+  #let peb = data.at("pe_hist_band", default: (:))
+  #let peb_title = peb.at("title", default: m.ticker + " — P/E Trailing Band vs 1-Year History (mean, median and current level)")
+  #exhibit-header(peb_title, peb.at("source", default: peer_src))
+  #v(2pt)
   #if data.at("charts", default: (:)).at("pe_hist_band", default: false) {
-    let peb = data.at("pe_hist_band", default: (:));
-    exhibit-header(peb.at("title", default: m.ticker + " — P/E Trailing Band vs 1-Year History (mean, median and current level)"), peb.at("source", default: peer_src));
-    v(2pt);
     image(chart-dir + "/pe_hist_band.png", width: 100%);
+  } else {
+    chart-placeholder(peb_title, height: 75pt, palette: PALETTE);
   }
+  #let pbb = data.at("pbv_hist_band", default: (:))
+  #let pbb_title = pbb.at("title", default: m.ticker + " — P/BV Trailing Band vs 1-Year History (mean, median and current level)")
+  #exhibit-header(pbb_title, pbb.at("source", default: peer_src))
+  #v(2pt)
   #if data.at("charts", default: (:)).at("pbv_hist_band", default: false) {
-    let pbb = data.at("pbv_hist_band", default: (:));
-    exhibit-header(pbb.at("title", default: m.ticker + " — P/BV Trailing Band vs 1-Year History (mean, median and current level)"), pbb.at("source", default: peer_src));
-    v(2pt);
     image(chart-dir + "/pbv_hist_band.png", width: 100%);
+  } else {
+    chart-placeholder(pbb_title, height: 75pt, palette: PALETTE);
   }
   #v(4pt)
   #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Implied prices from this own-history tool are mean-reversion cross-checks that hold fundamental drivers constant at their current TTM/forward level and revert only the multiple to its 1-year historical mean/median. They are a snapshot, not a forecast, and are NOT the official Target Price established in Slide 4 (DCF-shortened / RNAV).]
 
+  // R2T-R4: non-canonical extras — demoted to un-numbered plain titles (same
+  // pattern as the demoted Slide-4 tables). They consume no exhibit numbers,
+  // so the canonical sequence caps at 17.
   #v(4pt)
   #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
   #let relval_src = "Sectors (pending)"
   #if data.at("charts", default: (:)).at("relval_bars", default: false) {
-    exhibit-header(relval_title, relval_src);
+    text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[#relval_title];
     v(2pt);
     image(chart-dir + "/relval_bars.png", width: 100%);
     v(2pt);
@@ -790,7 +825,7 @@
   }
   #if data.at("charts", default: (:)).at("peer_evebitda", default: false) {
     v(4pt);
-    exhibit-header("EV/EBITDA Peers vs Subjek", peer_src);
+    text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[EV/EBITDA Peers vs Subjek];
     v(2pt);
     image(chart-dir + "/peer_evebitda.png", width: 88%);
   }

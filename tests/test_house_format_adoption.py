@@ -238,16 +238,19 @@ def test_document_built_by_the_production_loader_honours_the_house_format(tmp_pa
     pages = text.split("\f")[:-1] if text.endswith("\f") else text.split("\f")
     assert len(pages) >= 1
 
-    # 1. the global counter: the numbers present must be exactly 1..N — no gaps, no
-    # repeats. NOT "appears in ascending order": a two-column page is extracted
+    # 1. the global counter: the numbers present must be exactly 2..N+1 — no
+    # gaps, no repeats. Exhibit 1 is SKIPPED by canonical spec (no locked EPS
+    # consensus feed; see slide1-cover-spec + AMMN-R2T R1 one-time counter
+    # offset in report_single.typ), so the first header numbers as Exhibit 2.
+    # NOT "appears in ascending order": a two-column page is extracted
     # column-by-column by pdftotext, so a perfectly correct counter interleaves
     # (JCI renders 1,3,4,2 by reading across columns). Order is checked per column
     # below instead, which is the property the rule actually needs.
     labels = [int(m.group(1)) for m in re.finditer(r"(?m)^Exhibit[\s\u00a0]+(\d+)\.", text)]
     n = len(labels)
     assert n > 0, "no exhibits rendered"
-    assert sorted(labels) == list(range(1, n + 1)), (
-        f"exhibit counter is not 1..N with no gaps/repeats: {sorted(labels)}"
+    assert sorted(labels) == list(range(2, n + 2)), (
+        f"exhibit counter is not 2..N+1 with no gaps/repeats: {sorted(labels)}"
     )
     assert len(set(labels)) == n, f"exhibit number repeated: {labels}"
 
