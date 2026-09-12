@@ -412,3 +412,48 @@ def test_served_html_renders_page2_before_the_summary_page() -> None:
     numbers = sorted({int(n) for n in re.findall(r"back of this report · (\d+)", html)})
     assert numbers == list(range(1, len(numbers) + 1)), f"footer page numbers not sequential: {numbers}"
     assert html.count('<div class="page">') == len(numbers), "one footer per rendered page"
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_slide2_reports_both_directions_of_insider_activity() -> None:
+    """The catalyst ledger leads with insider buying; the filings carry selling too. A page that
+    prints one direction is fully sourced and still misleading, so both must reach the reader."""
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    digest = payload["filings_digest"]
+    assert digest["buy"]["n"] and digest["sell"]["n"], "the filings digest lost one side"
+    body = payload["industry_page"]["paragraphs"][1]["body"]
+    assert "transaksi beli" in body and "transaksi jual" in body
+    assert "tidak didukung datanya" in body, "the page must say the one-sided read is unsupported"
+    assert "Neto" in body and "bukan angka yang" in body, "the summed net must be labelled a sum"
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_slide2_uses_the_wider_sectors_evidence() -> None:
+    """Page 2 reads the subsector report, the IDX filings, corporate actions, the monthly ownership
+    composition and the free-float screener — not only the four headline catalysts."""
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
+    for block in ("sector_data", "filings_digest", "corporate_actions", "ownership_mix", "free_float"):
+        assert payload.get(block), f"{block} missing from the filled payload"
+    body = " ".join(p["body"] for p in payload["industry_page"]["paragraphs"])
+    assert "Proyeksi Sectors" in body, "the subsector report is not used"
+    assert "keterbukaan IDX" in body, "the filings digest is not used"
+    assert "RUPS" in body, "corporate actions are not used"
+    assert "kepemilikan asing" in body, "the ownership composition is not used"
+    assert "free float" in body, "the free-float screener is not used"
+    assert len(payload["industry_page"]["sources"]) >= 5, payload["industry_page"]["sources"]
+
+
+@pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
+def test_slide2_single_year_comparison_is_not_a_cumulative_move() -> None:
+    """The positioning line compares one-year growth with a one-year forecast. A five-year
+    cumulative move beside a forecast would flatter the issuer, so guard the choice."""
+    from server.routers.pdf import _build_live_payload
+
+    body = _build_live_payload("AMMN", None)["industry_page"]["paragraphs"][0]["body"]
+    assert "pertumbuhan pendapatan tahun terakhir" in body
+    assert "(aktual, tahun terakhir vs sebelumnya)" in body
+    assert "periodenya berbeda" in body

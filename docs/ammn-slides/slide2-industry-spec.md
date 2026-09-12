@@ -175,6 +175,27 @@ Sectors API tools are **PRIMARY**. Agents must operate under the **Max 2 fetch c
 
 ---
 
+### 5.3 Endpoints consumed by the shipped page
+
+The page is built by `server/report/industry_page.py` from blocks that
+`server/report/ammn_fill.py::_slide2_sector_blocks` puts into the payload. A block whose endpoint
+returns nothing is left ABSENT, and the paragraph that would have used it says so in words, so the
+list below is also the list of things the page can honestly be missing.
+
+| Block (payload key) | Sectors endpoint / cache file | Feeds |
+|---|---|---|
+| `sector_data` | `subsector-report` (basic-materials) — `output/cache/ammn_fill/subsector_report_basic-materials.json` | P1: growth 2025 aktual + proyeksi 2026F, lima kapitalisasi terbesar, peringkat emiten |
+| `filings_digest` | `filings` — `filings_AMMN.json` | P2: transaksi beli DAN jual pemegang saham terkait, dengan jumlah, nilai, dan rentang tanggal |
+| `corporate_actions` | `corporate-actions` — `corporate_actions_AMMN.json` | P2: RUPS terakhir, status dividen/bonus/right issue/stock split |
+| `ownership_mix` | `shareholders-composition` — `shareholders_composition_AMMN.json` | P3: kepemilikan asing vs domestik bulanan, rincian tipe investor asing |
+| `free_float` | `screener` free-float — `screener_free_float_top25.json` | P3: keanggotaan daftar free float terbesar (daftar tanpa persentase) |
+| `sentiment` | `foreign-flow` + `broker-summary` | P3: neto asing 30d/90d, konsentrasi broker, hari positif |
+| `news` | `news` (30d) | P3: judul untuk tone kualitatif |
+| `cover.vs_jci.chart` | `daily` 90d + `index-daily` IHSG | P3: kinerja harga relatif, dihitung dari seri yang sama dengan grafik halaman 1 |
+
+Tidak ada endpoint rating di daftar ini, sehingga agregat konsensus Buy/Hold/Sell sektor tidak
+pernah dinyatakan angkanya oleh halaman ini.
+
 ## 6. Quantified-Catalyst Worksheet Format
 
 To guarantee analytical rigour and auditability, all catalysts evaluated for P2 must be logged in a structured ledger before narrative synthesis.

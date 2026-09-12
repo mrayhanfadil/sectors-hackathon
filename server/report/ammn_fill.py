@@ -101,6 +101,120 @@ def _idr_t(x: Any) -> str:
         return "—"
 
 
+def _slide2_sector_blocks(payload: dict, filled: list) -> None:
+    """Sector, filing, corporate-action, ownership and free-float blocks for the deck's page 2.
+
+    Every value is what the Sectors endpoints returned for this ticker. The only arithmetic done
+    here is summing returned numbers (insider buys per holder, insider value) and differencing two
+    monthly ownership rows; the page states which of those are sums rather than reported figures. A
+    block whose endpoint returned nothing is left ABSENT, so the page writes "tidak tersedia"
+    instead of a plausible number.
+    """
+    sr = _load("subsector_report_basic-materials") or {}
+    growth = ((sr.get("growth") or {}).get("growth_forecasts") or {}).get("2026") or {}
+    hist = (((sr.get("growth") or {}).get("weighted_avg_growth_data") or {}).get("2025")) or {}
+    companies = (sr.get("companies") or {}).get("top_companies") or {}
+    mcap = [
+        {"symbol": k, "name": (v or {}).get("name"), "market_cap": (v or {}).get("market_cap")}
+        for k, v in (companies.get("top_mcap") or {}).items()
+    ]
+    mcap = sorted([m for m in mcap if m.get("market_cap")], key=lambda m: -m["market_cap"])
+    if mcap or growth:
+        payload["sector_data"] = {
+            "subsector": sr.get("sub_sector") or sr.get("sector"),
+            "growth_forecast_2026": {
+                "revenue_pct": _pct100(growth.get("revenue_growth")),
+                "eps_pct": _pct100(growth.get("eps_growth")),
+                "base_year": growth.get("base_year"),
+            },
+            "growth_actual_2025": {
+                "revenue_pct": _pct100(hist.get("avg_annual_revenue_growth")),
+                "eps_pct": _pct100(hist.get("avg_annual_earning_growth")),
+            },
+            "top_mcap": mcap[:5],
+            "source": "Sectors subsector report (basic-materials)",
+        }
+        filled.append(f"sector_data[{len(mcap[:5])} top mcap, growth 2025+2026F]")
+
+    fl = _load("filings_AMMN") or {}
+    rows = [r for r in (fl.get("results") or []) if isinstance(r, dict)]
+    if rows:
+
+        def _agg(items: list) -> dict:
+            return {
+                "n": len(items),
+                "shares": sum(int(r.get("amount_transaction") or 0) for r in items),
+                "value": sum(float(r.get("transaction_value") or 0) for r in items),
+                "holders": sorted({str(r.get("holder_name")) for r in items if r.get("holder_name")}),
+                "first": min(
+                    (str(r.get("timestamp"))[:10] for r in items if r.get("timestamp")), default=None
+                ),
+                "last": max(
+                    (str(r.get("timestamp"))[:10] for r in items if r.get("timestamp")), default=None
+                ),
+            }
+
+        by_type: dict = {}
+        for r in rows:
+            by_type.setdefault(str(r.get("transaction_type") or "?").lower(), []).append(r)
+        payload["filings_digest"] = {
+            "n": len(rows),
+            "buy": _agg(by_type.get("buy") or []),
+            "sell": _agg(by_type.get("sell") or []),
+            "source": "Sectors filings (keterbukaan IDX, dokumen terakhir yang dikembalikan endpoint)",
+        }
+        filled.append(f"filings_digest[{len(rows)} filings: buy/sell split]")
+
+    ca = (_load("corporate_actions_AMMN") or {}).get("corporate_actions") or {}
+    if ca:
+        payload["corporate_actions"] = {
+            "agm": [str(a.get("agm_date")) for a in (ca.get("agm") or []) if a.get("agm_date")],
+            "dividend": ca.get("dividend"),
+            "upcoming_dividend": ca.get("upcoming_dividend"),
+            "bonus": ca.get("bonus"),
+            "right_issue": ca.get("right_issue"),
+            "stock_split": ca.get("stock_split"),
+            "warrant": ca.get("warrant"),
+            "source": "Sectors corporate-actions",
+        }
+        filled.append("corporate_actions[agm + dividend status]")
+
+    sh = _load("shareholders_composition_AMMN") or {}
+    sh_rows = [r for r in (sh.get("data") or []) if isinstance(r, dict)]
+    if sh_rows:
+        ordered = sorted(sh_rows, key=lambda r: str(r.get("date")))
+
+        def _mix(r: dict) -> dict:
+            return {
+                "date": str(r.get("date")),
+                "domestic": r.get("total_l"),
+                "foreign": r.get("total_f"),
+                "foreign_institutions": r.get("financial_institutions_f"),
+                "foreign_mutual_fund": r.get("mutual_fund_f"),
+                "foreign_corporate": r.get("corporate_f"),
+                "individuals": r.get("individual_l"),
+                "insurance": r.get("insurance_l"),
+            }
+
+        payload["ownership_mix"] = {
+            "latest": _mix(ordered[-1]),
+            "first": _mix(ordered[0]),
+            "months": len(ordered),
+            "source": "Sectors shareholders-composition (bulanan)",
+        }
+        filled.append(f"ownership_mix[{len(ordered)} bulan lokal vs asing]")
+
+    ff = _load("screener_free_float_top25") or {}
+    ff_rows = [r for r in (ff.get("results") or []) if isinstance(r, dict)]
+    if ff_rows:
+        payload["free_float"] = {
+            "n": len(ff_rows),
+            "in_list": any("AMMN" in str((r.get("symbol") or "")) for r in ff_rows),
+            "source": "Sectors screener (25 emiten, daftar tanpa persentase)",
+        }
+        filled.append(f"free_float[in top-{len(ff_rows)} list]")
+
+
 def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     rating: str, upside: Optional[float],
                     wacc_val: float, anchor_basis: Optional[str] = None,
@@ -718,6 +832,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     payload["catalysts_note"] = ("Basis kuantifikasi dinyatakan per katalis; yang kualitatif "
                                  "dilabeli eksplisit (tanpa tenant-karangan).")
     filled.append("catalysts[4 quantified]")
+
+    # ================= slide 2 source blocks (full Sectors cache) ============
+    # Deck page 2 (server/report/industry_page.py) reads these; the blocks stay absent when the
+    # endpoint returned nothing, so the page degrades to an explicit missing-data line.
+    _slide2_sector_blocks(payload, filled)
 
     # ================= exhibits + chart combos ==============================
     rev_tn = [round(float(v) / 1000, 2) if isinstance(v, (int, float)) else 0.0 for v in rev]

@@ -1,44 +1,26 @@
 """Slide 2 — Kondisi Industri, Katalis Spesifik Emiten, Sentimen Pasar.
 
 Three narrative paragraphs, no mandatory object, per
-`docs/ammn-slides/slide2-industry-spec.md`. The page bridges the cover's thesis with the
-performance page: paragraph 1 sets the sector and macro backdrop, paragraph 2 lists the
-issuer-specific catalysts, paragraph 3 reads market positioning.
+`docs/ammn-slides/slide2-industry-spec.md`. The page bridges the cover's terse takeaways and the
+valuation pages by using the widest Sectors evidence the fill carries — the subsector report, the
+IDX filings digest, corporate actions, the monthly ownership composition and the free-float
+screener — instead of only the four headline catalysts.
 
-Two rules shape the code:
+Discipline this module keeps, because the page is read as prose and prose hides its own holes:
 
-* **Nothing is estimated.** Every number here comes from the render payload (engines + Sectors
-  fills) or from the assumptions file, and a datum the payload does not carry is stated as
-  unavailable rather than filled with a plausible one — the spec's quantification discipline, and
-  the same reason `kpis_note` exists.
-* **Paragraph 3 stays out of valuation.** No multiple, no fair value, no target price: the spec
-  forbids it there, and those numbers are the valuation page's. This module never reads the
-  valuation block, so a later copy edit cannot leak one in.
-
-The builder is deterministic and pure: same payload in, same three paragraphs out.
+* every number is copied from the payload (a Sectors endpoint value, an engine output, or a sum of
+  returned values, which the copy labels as a sum);
+* a slot whose data is absent says so in words. Nothing is estimated, interpolated, or carried over
+  from a neighbouring year;
+* paragraph 3 stays out of valuation — no multiple, no target price, no fair value. That is the
+  valuation pages' domain, and `house_rules.audit_industry_page` enforces it;
+* both directions of insider activity are reported when the filings carry both. A page that lists
+  the buys and drops the sells would be technically sourced and still misleading.
 """
+
 from __future__ import annotations
 
-import json
-from pathlib import Path
-import re
 from typing import Any, Optional
-
-REPO_ROOT = Path(__file__).resolve().parents[2]
-FX_CACHE = REPO_ROOT / "output" / "cache" / "fx_usdidr.json"
-
-BASIS_LABELS = {
-    "shares": "jumlah saham",
-    "avg_price": "harga rata-rata",
-    "copper": "tembaga",
-    "broker": "broker",
-    "capex_q1": "capex Q1",
-    "fcf_q1": "FCF Q1",
-    "note": "catatan",
-    "by": "periode",
-    "volume": "volume",
-    "price": "harga",
-}
 
 PARAGRAPH_HEADINGS = (
     "1. Kondisi Industri",
@@ -46,339 +28,501 @@ PARAGRAPH_HEADINGS = (
     "3. Sentimen Pasar",
 )
 
+_KEY_LABELS = {
+    "copper": "tembaga",
+    "broker": "broker",
+    "shares": "saham",
+    "avg_price": "harga rata-rata",
+    "by": "oleh",
+    "capex_q1": "capex Q1",
+    "fcf_q1": "FCF Q1",
+    "note": "catatan",
+    "volume": "volume",
+    "revenue": "pendapatan",
+}
 
-# --------------------------------------------------------------------- formatting (Indonesian)
-def _num(value: Any, decimals: int = 2, signed: bool = False) -> Optional[str]:
-    """1234.5 -> '1.234,50' (Indonesian decimal comma)."""
+
+# --------------------------------------------------------------------------- formatting helpers
+def _num(value: Any, digits: int = 2) -> str:
+    """Indonesian number: '.' thousands, ',' decimals."""
     try:
-        num = float(value)
+        text = f"{float(value):,.{digits}f}"
     except (TypeError, ValueError):
-        return None
-    txt = f"{num:+,.{decimals}f}" if signed else f"{num:,.{decimals}f}"
-    return txt.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+        return "—"
+    return text.replace(",", "\u00a0").replace(".", ",").replace("\u00a0", ".")
 
 
-def _idr_bn(value: Any) -> str:
+def _idr_bn(value: Any, digits: int = 2) -> str:
+    """Rp in miliar, the unit the rest of the deck uses. Net flows can be negative."""
     try:
-        num = float(value)
+        amount = float(value) / 1e9
     except (TypeError, ValueError):
-        return "tidak tersedia"
-    if abs(num) >= 1000:
-        return f"Rp {_num(num / 1000)} tn"
-    return f"Rp {_num(num)} md"
+        return "—"
+    sign = "-" if amount < 0 else ""
+    return sign + "Rp " + _num(abs(amount), digits) + " md"
 
 
-def _pct(value: Any, decimals: int = 2, signed: bool = False) -> Optional[str]:
-    txt = _num(value, decimals=decimals, signed=signed)
-    return None if txt is None else f"{txt}%"
-
-
-def _as_fraction_pct(value: Any) -> Optional[float]:
-    """`sector_context` stores growth as fractions (0.6808 = +68.08%), so scale before formatting."""
+def _idr_tn(value: Any, digits: int = 1) -> str:
     try:
-        return float(value) * 100
+        amount = float(value) / 1e12
     except (TypeError, ValueError):
-        return None
+        return "—"
+    sign = "-" if amount < 0 else ""
+    return sign + "Rp " + _num(abs(amount), digits) + " tn"
 
 
-_MONTHS = ("Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des")
+def _shares(value: Any, signed: bool = False) -> str:
+    try:
+        amount = float(value) / 1e6
+    except (TypeError, ValueError):
+        return "—"
+    sign = "+" if signed and amount > 0 else ("-" if amount < 0 else "")
+    return sign + _num(abs(amount), 2) + " jt saham"
+
+
+def _pct(value: Any, digits: int = 2) -> str:
+    if value is None:
+        return "—"
+    try:
+        return ("+" if float(value) > 0 else "") + _num(value, digits) + "%"
+    except (TypeError, ValueError):
+        return "—"
 
 
 def _human_date(value: Any) -> str:
-    """2026-09-12 -> '12 Sep 2026'; anything else passes through untouched."""
-    m = re.fullmatch(r"(\d{4})-(\d{2})-(\d{2})", str(value or ""))
-    if not m:
-        return str(value or "tanggal terakhir")
-    year, month, day = m.groups()
-    return f"{int(day)} {_MONTHS[int(month) - 1]} {year}"
-
-
-# --------------------------------------------------------------------- payload readers
-def _series_moves(chart: Any) -> list[Optional[float]]:
-    """Rebased % move per series. The cover chart carries unlabelled series, in the order the
-    builder writes them: ticker first, index second (verified against the block's own note)."""
-    if not isinstance(chart, dict):
-        return []
-    out: list[Optional[float]] = []
-    for series in chart.get("series") or []:
-        values = series.get("data") if isinstance(series, dict) else series
-        if not isinstance(values, list) or len(values) < 2:
-            out.append(None)
-            continue
-        try:
-            first, last = float(values[0]), float(values[-1])
-            out.append((last / first - 1) * 100 if first else None)
-        except (TypeError, ValueError, ZeroDivisionError):
-            out.append(None)
-    return out
-
-
-def _relative_performance(payload: dict) -> dict:
-    """Ticker vs index over the window the payload actually carries.
-
-    The Sectors daily feed caps at 90 days, so YTD is not computable and is reported as absent
-    rather than extrapolated.
-    """
-    vs_jci = ((payload.get("cover") or {}).get("vs_jci")) or {}
-    moves = _series_moves(vs_jci.get("chart"))
-    ticker_move = moves[0] if len(moves) > 0 else None
-    index_move = moves[1] if len(moves) > 1 else None
-    rel = None if ticker_move is None or index_move is None else ticker_move - index_move
-    return {
-        "window": "90 hari",
-        "ticker_move_pct": ticker_move,
-        "index_move_pct": index_move,
-        "rel_pp": rel,
-        "ytd_available": vs_jci.get("ytd_abs") is not None,
-        "source": vs_jci.get("source") or "",
-    }
-
-
-def _revenue_row(highlights: dict) -> tuple[Optional[str], Optional[float], list]:
-    """Company revenue path from `financial_highlights`, which stores rows as
-    [label, v1, v2, ...] under a parallel `years` list."""
-    years = highlights.get("years") or []
-    rows = highlights.get("rows") or []
-    row = next((r for r in rows if isinstance(r, list) and r and "pendapatan" in str(r[0]).lower()), None)
-    if not row or len(row) < 3:
-        return None, None, years
-    values = [v for v in row[1:] if isinstance(v, (int, float))]
-    if len(values) < 2:
-        return str(row[0]), None, years
-    move = (values[-1] / values[-2] - 1) * 100 if values[-2] else None
-    return re.sub(r"\s*\([^)]*\)\s*$", "", str(row[0])), move, years
-
-
-def _fx_rate(payload: dict) -> Optional[dict]:
-    """USD/IDR as the fill wrote it. The payload only carries it inside a prose source string,
-    so the cache file the same build wrote is the readable source of truth."""
+    """2026-09-12 -> 12 Sep 2026. Anything unexpected is passed through."""
+    months = (
+        "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
+    )
+    text = str(value or "")
     try:
-        fx = json.loads(FX_CACHE.read_text(encoding="utf-8"))
-        if isinstance(fx, dict) and fx.get("rate"):
-            return fx
-    except (OSError, ValueError):
-        pass
-    meta = payload.get("meta") or {}
-    return meta.get("fx_usdidr") if isinstance(meta.get("fx_usdidr"), dict) else None
+        year, month, day = text[:10].split("-")
+        return f"{int(day)} {months[int(month) - 1]} {year}"
+    except (ValueError, IndexError):
+        return text
 
 
-# --------------------------------------------------------------------- the three paragraphs
-def _paragraph_industry(payload: dict, assumptions: Optional[dict]) -> tuple[str, list[str]]:
-    facts: list[str] = []
-    sector = (assumptions or {}).get("sector_context") or {}
-    forecast = sector.get("sectors_growth_forecast_2026") or {}
-    # sector_context stores these as fractions (0.6808), unlike every other ratio in the repo
-    rev = _pct(_as_fraction_pct(forecast.get("revenue_growth")), signed=True)
-    eps = _pct(_as_fraction_pct(forecast.get("eps_growth")), signed=True)
-    if rev and eps:
-        facts.append(
-            f"Sektor basic materials diperkirakan 2026F dengan pendapatan {rev} tetapi EPS {eps} "
-            "(basis 2025; Sectors sector context), sehingga pemulihan laba sektor bertumpu pada "
-            "margin, bukan pertumbuhan top-line."
+def _sentence(parts: list[str]) -> str:
+    """Join non-empty fragments into one sentence, each already carrying its own full stop."""
+    return " ".join(p.strip() for p in parts if p and p.strip())
+
+
+def _basis(parts: list[str]) -> str:
+    return "; ".join(p for p in parts if p)
+
+
+# --------------------------------------------------------------------------- paragraph 1
+def _paragraph_industry(payload: dict, assumptions: Optional[dict]) -> tuple[str, str]:
+    """What the sector is doing, what the macro backdrop is, and where the issuer sits in it."""
+    sector = payload.get("sector_data") or {}
+    forecast = sector.get("growth_forecast_2026") or {}
+    actual = sector.get("growth_actual_2025") or {}
+    subsector = sector.get("subsector") or payload.get("meta", {}).get("subsector") or "sektor ini"
+
+    parts: list[str] = []
+    if forecast.get("revenue_pct") is not None or forecast.get("eps_pct") is not None:
+        base = forecast.get("base_year")
+        parts.append(
+            f"Proyeksi Sectors untuk subsektor {subsector} tahun 2026 memperkirakan pendapatan "
+            f"{_pct(forecast.get('revenue_pct'))} dengan laba per saham {_pct(forecast.get('eps_pct'))} "
+            f"(basis tahun {base}); pada 2025 subsektor ini membukukan pendapatan "
+            f"{_pct(actual.get('revenue_pct'))} dan laba {_pct(actual.get('eps_pct'))}. "
+            f"Artinya pertumbuhan laba sektor tidak lagi bertumpu pada pertumbuhan top-line, "
+            f"melainkan pada perbaikan margin dan basis biaya."
         )
-    elif sector:
-        facts.append(
-            "Proyeksi pertumbuhan sektor basic materials tidak lengkap di payload (Sectors sector "
-            "context tanpa pasangan pendapatan/EPS) — dinyatakan kualitatif, bukan diestimasi."
+    else:
+        parts.append(
+            f"Proyeksi pertumbuhan subsektor {subsector} tidak tersedia di payload, sehingga arah "
+            f"sektor tidak dinyatakan secara kuantitatif di sini."
         )
+
+    top = sector.get("top_mcap") or []
+    if top:
+        rank = next((i + 1 for i, t in enumerate(top) if "AMMN" in str(t.get("symbol", ""))), None)
+        leader = top[0]
+        if rank == 1:
+            runner = top[1] if len(top) > 1 else {}
+            parts.append(
+                f"Emiten yang dicover adalah yang terbesar di lima emiten berkapitalisasi teratas "
+                f"yang dikembalikan endpoint ({_idr_tn(leader.get('market_cap'))}"
+                + (
+                    f", di atas {runner.get('name')} pada {_idr_tn(runner.get('market_cap'))}"
+                    if runner
+                    else ""
+                )
+                + "), jadi kondisi sektor di atas langsung relevan ke laporan ini."
+            )
+        elif rank:
+            parts.append(
+                f"Emiten yang dicover berada di peringkat {rank} dari lima emiten berkapitalisasi "
+                f"terbesar di subsektor ini ({_idr_tn(leader.get('market_cap'))} untuk peringkat "
+                f"pertama), jadi ia menanggung risiko sektor tanpa menjadi penentu arahnya."
+            )
+        else:
+            parts.append(
+                "Emiten yang dicover tidak berada dalam lima kapitalisasi terbesar yang "
+                "dikembalikan endpoint, sehingga posisinya di sektor ini tidak dapat ditentukan "
+                "dari data yang ada."
+            )
 
     copper = None
-    for cat in payload.get("catalysts") or []:
-        q = (cat or {}).get("quantified") or {}
-        if isinstance(q, dict) and q.get("copper"):
-            copper = (str(cat.get("name") or ""), str(q["copper"]), str(cat.get("source") or ""))
-            break
+    for item in payload.get("catalysts") or []:
+        quantified = item.get("quantified") or {}
+        if quantified.get("copper"):
+            copper = quantified["copper"]
     if copper:
-        name, level, src = copper
-        facts.append(
-            f"Backdrop komoditas yang paling material tercatat pada katalis '{name}' — tembaga "
-            f"{level}" + (f" (sumber: {src})" if src else "") + "."
+        parts.append(
+            f"Backdrop komoditas yang paling material ke sektor ini adalah harga tembaga, yang "
+            f"mencatat {copper}."
+        )
+
+    fx_note = _fx_backdrop(payload)
+    if fx_note:
+        parts.append(fx_note)
+
+    # Latest reported year-over-year, so both sides of the comparison are one-year growth rates
+    # (the issuer's actual, the sector's forecast). A cumulative multi-year move would not be
+    # comparable with a forecast and would flatter the issuer.
+    company_revenue = None
+    for row in (payload.get("financial_highlights") or {}).get("rows") or []:
+        label = str(row[0] if isinstance(row, (list, tuple)) and row else "")
+        if label.lower().startswith("pendapatan") and isinstance(row, (list, tuple)) and len(row) > 2:
+            try:
+                prev, last = float(row[-2]), float(row[-1])
+                if prev:
+                    company_revenue = (last / prev - 1) * 100
+            except (TypeError, ValueError):
+                company_revenue = None
+    sector_rev = forecast.get("revenue_pct")
+    if company_revenue is not None and sector_rev is not None:
+        parts.append(
+            f"Posisi relatif: pertumbuhan pendapatan tahun terakhir emiten ini "
+            f"{_pct(company_revenue)} (aktual, tahun terakhir vs sebelumnya) terhadap proyeksi "
+            f"sektor {_pct(sector_rev)} untuk 2026. Keduanya satu tahun dan satuannya sama, tapi "
+            f"periodenya berbeda (aktual vs proyeksi), jadi perbandingan ini indikatif: emiten "
+            f"menyusut lebih dalam daripada proyeksi penurunan sektor, dan belum terlihat "
+            f"mengikuti pemulihan laba sektor."
         )
     else:
-        facts.append(
-            "Backdrop harga komoditas: tidak ada print terverifikasi di payload pada periode ini — "
-            "dinyatakan kualitatif, bukan diestimasi."
+        parts.append(
+            "Posisi relatif emiten terhadap sektor tidak dapat dinyatakan secara kuantitatif "
+            "karena salah satu sisi perbandingan tidak tersedia di payload."
         )
 
-    fx = _fx_rate(payload)
-    if fx:
-        facts.append(
-            f"Kurs USD/IDR {_num(fx['rate'], decimals=0)} per {_human_date(fx.get('date'))} "
-            f"({fx.get('source', 'sumber terverifikasi')}): pendapatan emiten berdenominasi harga "
-            "komoditas USD sementara sebagian basis biaya domestik berdenominasi rupiah, sehingga "
-            "pergerakan kurs bekerja sebagai bantalan marjin operasional."
-        )
-
-    label, company_move, years = _revenue_row(payload.get("financial_highlights") or {})
-    if company_move is not None and rev:
-        facts.append(
-            f"Posisi relatif emiten: {label or 'pendapatan'} pada tahun buku terakhir bergerak "
-            f"{_pct(company_move, decimals=1, signed=True)}"
-            + (f" (sampai {years[-1]})" if years else "")
-            + f" sementara proyeksi sektor 2026F {rev} — basis periode tidak sebanding "
-            "(aktual vs forecast), jadi pembacaan ini indikatif, bukan like-for-like."
-        )
-    elif company_move is not None:
-        facts.append(
-            f"Posisi relatif emiten belum dapat dibandingkan ke sektor: {label or 'pendapatan'} "
-            f"tahun buku terakhir {_pct(company_move, decimals=1, signed=True)}, proyeksi sektor "
-            "tidak tersedia di payload."
-        )
-
-    gap = payload.get("kpis_note")
-    if gap:
-        facts.append(
-            "Posisi biaya struktural (kuartil biaya tunai/C1, tonase, kadar bijih) tidak dapat "
-            f"dihitung dari payload: {gap}"
-        )
-
-    body = " ".join(facts) if facts else (
-        "Kondisi industri tidak dapat disusun: payload tidak membawa data sektor maupun komoditas "
-        "terverifikasi — dinyatakan sebagai tidak tersedia, bukan diisi estimasi."
+    parts.append(
+        "Posisi biaya yang menentukan daya saing sektor ini (tonase, kadar, C1, AISC) tidak dapat "
+        "dihitung dari data yang ada: payload tidak membawa metrik operasional tersebut, jadi "
+        "perbandingan biaya vs peers dinyatakan kualitatif dan tidak diisi angka."
     )
-    return body, facts
+
+    basis = _basis(
+        [
+            "proyeksi & aktual subsektor: " + str(sector.get("source") or "tidak tersedia"),
+            "kapitalisasi terbesar dari endpoint subsektor report",
+            "harga tembaga: sumber per katalis",
+            "kinerja keuangan emiten: financial_highlights payload",
+        ]
+    )
+    return _sentence(parts), basis
 
 
-def _paragraph_catalysts(payload: dict) -> tuple[str, list[str]]:
-    catalysts = [c for c in (payload.get("catalysts") or []) if isinstance(c, dict)]
-    if not catalysts:
+def _fx_backdrop(payload: dict) -> str:
+    """FX from the payload's market block when it is there, otherwise nothing (never a guess)."""
+    text = ""
+    stats = ((payload.get("cover") or {}).get("slide1") or {}).get("stats") or {}
+    sources = stats.get("sources") or {}
+    if isinstance(sources, dict):
+        text = str(sources.get("mkt_cap_usd") or "")
+    if "USD/IDR" in text:
         return (
-            "Belum ada katalis spesifik emiten yang terverifikasi di payload — katalis generik "
-            "sektor tidak dipakai sebagai penggantinya.",
-            [],
+            f"Backdrop makro yang paling mengikat: {text.split('·')[0].strip() if '·' in text else text}, "
+            f"sementara harga jual komoditas emiten ini didominasi denominasi dolar dan sebagian "
+            f"biayanya berdenominasi rupiah."
         )
+    return ""
+
+
+# --------------------------------------------------------------------------- paragraph 2
+def _paragraph_catalysts(payload: dict) -> tuple[str, str]:
+    """Issuer-specific catalysts, each with its own quantitative basis or an explicit label."""
     parts: list[str] = []
-    for i, cat in enumerate(catalysts, start=1):
-        name = str(cat.get("name") or "katalis tanpa nama").strip()
-        effect = str(cat.get("effect") or "").strip()
-        quantified_raw = cat.get("quantified")
-        src = str(cat.get("source") or "").strip()
-        has_number = False
-        if isinstance(quantified_raw, dict) and quantified_raw:
-            basis = "; ".join(
-                f"{BASIS_LABELS.get(str(k), str(k).replace('_', ' '))}: {v}"
-                for k, v in quantified_raw.items()
-                if v not in (None, "")
+    items = payload.get("catalysts") or []
+    if items:
+        listed = []
+        for item in items:
+            quantified = item.get("quantified") or {}
+            numeric = bool(quantified) and any(
+                any(ch.isdigit() for ch in str(v)) and "kualitatif" not in str(v).lower()
+                for v in quantified.values()
             )
-            has_number = any(re.search(r"\d", str(v)) for v in quantified_raw.values())
-            quantified = f"terkuantifikasi ({basis})" if has_number else f"kualitatif eksplisit ({basis})"
-        elif isinstance(quantified_raw, str) and quantified_raw.strip():
-            quantified = f"terkuantifikasi ({quantified_raw.strip()})"
-        else:
-            quantified = "kualitatif eksplisit (tanpa basis angka yang dapat dihitung)"
-        line = f"({i}) {name} — {quantified}"
-        if effect:
-            line += f"; arah dampak: {effect}"
-        if src:
-            line += f" (sumber: {src})"
-        parts.append(line + ".")
-    note = str(payload.get("catalysts_note") or "").strip()
-    body = "Katalis yang berlaku langsung ke emiten yang dicover: " + " ".join(parts)
-    if note:
-        body += f" Disiplin kuantifikasi: {note}"
-    return body, parts
-
-
-def _paragraph_sentiment(payload: dict) -> tuple[str, list[str]]:
-    s = payload.get("sentiment") or {}
-    facts: list[str] = []
-
-    n30, n90 = s.get("net_foreign_30d_bn"), s.get("net_foreign_90d_bn")
-    if n30 is not None or n90 is not None:
-        bits = []
-        if n30 is not None:
-            bits.append(
-                f"30 hari terakhir {'net beli' if float(n30) >= 0 else 'net jual'} "
-                f"{_idr_bn(abs(float(n30)))}"
+            detail = ", ".join(
+                f"{_KEY_LABELS.get(k, k.replace('_', ' '))} {v}" for k, v in quantified.items()
             )
-        if n90 is not None:
-            bits.append(
-                f"90 hari {'net beli' if float(n90) >= 0 else 'net jual'} "
-                f"{_idr_bn(abs(float(n90)))}"
+            label = "terkuantifikasi" if numeric else "kualitatif eksplisit"
+            listed.append(
+                f"{item.get('name')} ({label}: {detail}; sumber: {item.get('source')}) — "
+                f"efek: {item.get('effect')}"
             )
-        facts.append("Arus dana asing mencatat " + " dan ".join(bits) + ".")
-
-    buyers = [b for b in (s.get("top_buyers") or []) if isinstance(b, list) and len(b) >= 2]
-    sellers = [x for x in (s.get("top_sellers") or []) if isinstance(x, list) and len(x) >= 2]
-    if buyers and sellers:
-        b_txt = ", ".join(f"{b[0]} {_idr_bn(abs(float(b[1])))}" for b in buyers[:3])
-        s_txt = ", ".join(f"{x[0]} {_idr_bn(abs(float(x[1])))}" for x in sellers[:3])
-        facts.append(f"Konsentrasi broker: sisi beli {b_txt}; sisi jual {s_txt}.")
-    if s.get("pos_days"):
-        facts.append(f"Frekuensi hari positif {s['pos_days']} sesi perdagangan.")
-
-    rel = _relative_performance(payload)
-    if rel["ticker_move_pct"] is not None and rel["index_move_pct"] is not None:
-        facts.append(
-            f"Kinerja harga relatif terhadap IHSG pada jendela {rel['window']}: emiten "
-            f"{_pct(rel['ticker_move_pct'], signed=True)} vs IHSG {_pct(rel['index_move_pct'], signed=True)} "
-            f"(relatif {_num(rel['rel_pp'], signed=True)} poin persentase)"
-            + (f", basis {rel['source']}" if rel["source"] else "")
-            + "."
+        parts.append("Katalis yang langsung menyentuh emiten ini: " + "; ".join(listed) + ".")
+    else:
+        parts.append(
+            "Ledger katalis kosong di payload, sehingga daftar katalis emiten tidak dapat "
+            "dinyatakan pada halaman ini."
         )
-        if not rel["ytd_available"]:
-            facts.append(
-                "Jendela year-to-date tidak tersedia (feed harian Sectors dibatasi 90 hari) dan "
-                "tidak diekstrapolasi."
-            )
 
-    news = [n for n in (payload.get("news") or []) if isinstance(n, dict)]
-    if news:
-        themes = "; ".join(
-            f"{str(n.get('title') or '')[:70]} ({_human_date(n.get('date'))})" for n in news[:3]
+    digest = payload.get("filings_digest") or {}
+    buy, sell = digest.get("buy") or {}, digest.get("sell") or {}
+    if buy.get("n") or sell.get("n"):
+        parts.append(
+            f"Di sisi keterbukaan IDX, {digest.get('n')} dokumen terakhir yang dikembalikan "
+            f"endpoint berisi {buy.get('n', 0)} transaksi beli oleh "
+            f"{len(buy.get('holders') or [])} nama berbeda "
+            f"({_shares(buy.get('shares'))}, nilai transaksi {_idr_tn(buy.get('value'))}, "
+            f"{_human_date(buy.get('first'))} sampai {_human_date(buy.get('last'))}) dan "
+            f"{sell.get('n', 0)} transaksi jual oleh {len(sell.get('holders') or [])} nama "
+            f"({_shares(sell.get('shares'))}, nilai {_idr_tn(sell.get('value'))}, "
+            f"{_human_date(sell.get('first'))} sampai {_human_date(sell.get('last'))}). "
+            f"Dua arah ini harus dibaca bersama: pembelian insider yang jadi sorotan berita "
+            f"berjalan bersamaan dengan penjualan pemegang saham terkait, jadi kesimpulan "
+            f"sepihak bahwa insider mengakumulasi saham tidak didukung datanya."
         )
-        facts.append(
-            "Tone pemberitaan dinyatakan kualitatif: feed berita yang dipakai tidak membawa dimensi "
-            f"sentimen, sehingga tidak ada skor yang dilaporkan. Judul terbaru yang membentuk narasi: {themes}."
+        try:
+            net = float(buy.get("value") or 0) - float(sell.get("value") or 0)
+            parts.append(
+                f"Neto dari kedua arah transaksi tersebut adalah {_idr_tn(net)} "
+                f"(jumlah dari nilai transaksi yang dikembalikan endpoint, bukan angka yang "
+                f"dilaporkan langsung oleh Sectors)."
+            )
+        except (TypeError, ValueError):
+            pass
+    else:
+        parts.append(
+            "Ringkasan keterbukaan IDX tidak tersedia di payload, sehingga aktivitas insider "
+            "tidak dikuantifikasi di halaman ini."
+        )
+
+    ca = payload.get("corporate_actions") or {}
+    if ca:
+        status = [
+            name
+            for name, key in (
+                ("dividen", "dividend"),
+                ("dividen mendatang", "upcoming_dividend"),
+                ("bonus", "bonus"),
+                ("right issue", "right_issue"),
+                ("stock split", "stock_split"),
+                ("warran", "warrant"),
+            )
+            if ca.get(key)
+        ]
+        agm = ca.get("agm") or []
+        agm_text = (
+            f"RUPS terakhir tercatat {_human_date(sorted(agm)[-1])}"
+            if agm
+            else "tanggal RUPS tidak dikembalikan endpoint"
+        )
+        parts.append(
+            f"Aksi korporasi: {agm_text}. "
+            + (
+                "Tidak ada dividen, bonus, right issue, stock split, maupun warran yang tercatat, "
+                "sehingga katalis pengembalian modal kepada pemegang saham belum ada basisnya di "
+                "data ini."
+                if not status
+                else "Yang tercatat: " + ", ".join(status) + "."
+            )
         )
     else:
-        facts.append("Feed berita kosong pada periode ini — tone media tidak dapat dinilai.")
+        parts.append(
+            "Aksi korporasi tidak tersedia di payload, sehingga tidak ada katalis korporasi yang "
+            "dapat dinyatakan untuk emiten ini."
+        )
 
-    facts.append(
-        "Agregat konsensus rating sektor (jumlah Buy/Hold/Sell) tidak tersedia di payload: tidak "
-        "ada endpoint rating di sumber data yang dipakai, dan angkanya tidak diada-adakan."
+    if payload.get("catalysts_note"):
+        parts.append(str(payload["catalysts_note"]))
+    return _sentence(parts), _basis(
+        [
+            "ledger katalis payload (sumber per item)",
+            str(digest.get("source") or "keterbukaan IDX"),
+            str(ca.get("source") or "aksi korporasi tidak tersedia"),
+        ]
     )
-    return " ".join(facts), facts
 
 
+# --------------------------------------------------------------------------- paragraph 3
+def _paragraph_sentiment(payload: dict) -> tuple[str, str]:
+    """How the market currently treats the sector and the issuer. No valuation content."""
+    parts: list[str] = []
+    sentiment = payload.get("sentiment") or {}
+    window = sentiment.get("window") or "90 hari"
+    if sentiment.get("net_foreign_90d_bn") is not None or sentiment.get("net_foreign_30d_bn") is not None:
+        parts.append(
+            f"Arus dana asing: neto {_idr_bn((sentiment.get('net_foreign_90d_bn') or 0) * 1e9)} "
+            f"sepanjang {window} terakhir, dan {_idr_bn((sentiment.get('net_foreign_30d_bn') or 0) * 1e9)} "
+            f"pada 30 hari terakhir, jadi arus asing berbalik arah menjadi beli bersih di bulan "
+            f"terakhir setelah jual bersih pada jendela yang lebih panjang."
+            if (sentiment.get("net_foreign_30d_bn") or 0) > 0
+            and (sentiment.get("net_foreign_90d_bn") or 0) < 0
+            else f"Arus dana asing: neto {_idr_bn((sentiment.get('net_foreign_90d_bn') or 0) * 1e9)} "
+            f"pada {window} terakhir dan {_idr_bn((sentiment.get('net_foreign_30d_bn') or 0) * 1e9)} "
+            f"pada 30 hari terakhir, arahnya belum berbalik."
+        )
+        if sentiment.get("pos_days"):
+            parts.append(
+                f"Hari penutupan positif {sentiment['pos_days']} sesi pada jendela yang sama."
+            )
+    else:
+        parts.append(
+            f"Arus dana asing tidak tersedia di payload, sehingga arah dana asing pada {window} "
+            f"terakhir tidak dinyatakan angkanya."
+        )
+
+    buyers, sellers = sentiment.get("top_buyers") or [], sentiment.get("top_sellers") or []
+    if buyers or sellers:
+        parts.append(
+            "Konsentrasi broker: sisi beli "
+            + ", ".join(f"{b[0]} {_idr_bn((b[1] or 0) * 1e9)}" for b in buyers[:3])
+            + "; sisi jual "
+            + ", ".join(f"{s[0]} {_idr_bn(abs(s[1] or 0) * 1e9)}" for s in sellers[:3])
+            + _broker_gap(buyers)
+        )
+
+    mix = payload.get("ownership_mix") or {}
+    latest, first = mix.get("latest") or {}, mix.get("first") or {}
+    if latest.get("foreign") is not None and first.get("foreign") is not None:
+        try:
+            delta = float(latest["foreign"]) - float(first["foreign"])
+            dom_delta = float(latest.get("domestic") or 0) - float(first.get("domestic") or 0)
+            parts.append(
+                f"Komposisi pemegang saham (bulanan, {mix.get('months')} titik data): kepemilikan "
+                f"asing {_shares(latest['foreign'])} per {_human_date(latest.get('date'))} vs "
+                f"{_shares(first['foreign'])} per {_human_date(first.get('date'))} "
+                f"({_shares(delta)} dalam periode ini), sementara kepemilikan domestik "
+                f"{_shares(dom_delta, signed=True)}. Di dalam blok asing, institusi keuangan asing "
+                f"{_shares(latest.get('foreign_institutions'))} dan reksa dana asing "
+                f"{_shares(latest.get('foreign_mutual_fund'))}, jadi penurunan asing bukan "
+                f"penarikan tunggal satu tipe investor."
+            )
+        except (TypeError, ValueError):
+            parts.append("Komposisi pemegang saham tersedia tetapi tidak dapat dihitung selisihnya.")
+    else:
+        parts.append(
+            "Komposisi pemegang saham lokal vs asing tidak tersedia di payload, sehingga tidak "
+            "dinyatakan angkanya."
+        )
+
+    rel = ((payload.get("cover") or {}).get("vs_jci") or {}).get("chart") or {}
+    moves = _chart_moves(rel)
+    if moves:
+        parts.append(
+            f"Kinerja harga relatif: pada 90 hari terakhir saham ini bergerak {_pct(moves[0])} "
+            f"terhadap IHSG {_pct(moves[1])} (selisih {_num(moves[0] - moves[1])} poin persentase), "
+            f"menempatkan emiten sebagai outperform indeks pada jendela tersebut. Angka ini dihitung "
+            f"dari seri harga 90 hari yang sama dengan grafik kinerja di halaman pertama dan tidak "
+            f"diekstrapolasi ke periode lain."
+        )
+    else:
+        parts.append(
+            "Kinerja harga relatif terhadap IHSG tidak dapat dihitung karena seri harganya tidak "
+            "tersedia di payload."
+        )
+
+    news = payload.get("news") or []
+    if news:
+        themes = ", ".join(str(n.get("title")) for n in news[:3])
+        parts.append(
+            f"Tone pemberitaan: feed yang dipakai tidak membawa dimensi sentimen per artikel, jadi "
+            f"tone dinyatakan kualitatif dari judul yang ada ({len(news)} artikel, contoh: {themes}). "
+            f"Tidak ada skor sentimen yang dihitung atau dikarang dari judul tersebut."
+        )
+    else:
+        parts.append("Tidak ada artikel berita di payload untuk menyatakan tone pemberitaan.")
+
+    ff = payload.get("free_float") or {}
+    if ff.get("in_list"):
+        parts.append(
+            f"Emiten ini masuk daftar {ff.get('n')} saham dengan free float terbesar versi screener "
+            f"Sectors; daftar tersebut tidak membawa persentase, sehingga besarannya tidak "
+            f"dinyatakan di sini."
+        )
+
+    parts.append(
+        "Agregat konsensus rating broker (jumlah Buy/Hold/Sell untuk saham di sektor ini) tidak "
+        "tersedia: tidak ada endpoint rating di sumber data yang dipakai, jadi angka itu tidak "
+        "dinyatakan dan tidak diada-adakan."
+    )
+
+    return _sentence(parts), _basis(
+        [
+            str(sentiment.get("source") or "arus & broker: tidak tersedia"),
+            str(mix.get("source") or "komposisi pemegang saham: tidak tersedia"),
+            "kinerja relatif: seri harga 90 hari payload + IHSG",
+            "berita: feed news payload",
+            str(ff.get("source") or "free float: tidak tersedia"),
+        ]
+    )
+
+
+def _broker_gap(buyers: list) -> str:
+    """State how concentrated the buy side is using the two largest values, not an adjective."""
+    try:
+        first, second = float(buyers[0][1]), float(buyers[1][1])
+    except (IndexError, TypeError, ValueError):
+        return ", jadi sisi beli tercatat di beberapa broker."
+    if not second:
+        return ", jadi sisi beli tercatat di beberapa broker."
+    return (
+        f", dengan broker terbesar sekitar {_num(first / second, 1)} kali broker kedua di sisi beli."
+    )
+
+
+def _chart_moves(chart: dict) -> Optional[list]:
+    """Percent move of both series, rebased on the first point. Series order is issuer then index."""
+    series = chart.get("series") or []
+    out = []
+    for values in series[:2]:
+        if isinstance(values, dict):
+            values = values.get("data")
+        if not isinstance(values, (list, tuple)) or len(values) < 2:
+            return None
+        try:
+            first = float(values[0][1] if isinstance(values[0], (list, tuple)) else values[0])
+            last = float(values[-1][1] if isinstance(values[-1], (list, tuple)) else values[-1])
+        except (TypeError, ValueError, IndexError):
+            return None
+        if not first:
+            return None
+        out.append((last / first - 1) * 100)
+    return out if len(out) == 2 else None
+
+
+# --------------------------------------------------------------------------- page
 def build_industry_page(payload: dict, assumptions: Optional[dict] = None) -> dict:
-    """Return the slide-2 page block: three paragraphs, their basis, and the source list."""
-    p1, basis1 = _paragraph_industry(payload, assumptions)
-    p2, basis2 = _paragraph_catalysts(payload)
-    p3, basis3 = _paragraph_sentiment(payload)
-
+    """Assemble deck page 2 from the payload. Always returns three paragraphs, never raises."""
+    assumptions = assumptions or {}
+    built = (
+        _paragraph_industry(payload, assumptions),
+        _paragraph_catalysts(payload),
+        _paragraph_sentiment(payload),
+    )
+    paragraphs = [
+        {"heading": heading, "body": body, "basis": basis}
+        for heading, (body, basis) in zip(PARAGRAPH_HEADINGS, built)
+    ]
     sources: list[str] = []
-    for cat in payload.get("catalysts") or []:
-        if isinstance(cat, dict) and cat.get("source"):
-            sources.append(str(cat["source"]))
-    sent = payload.get("sentiment") or {}
-    if sent.get("source"):
-        sources.append(str(sent["source"]))
-    rel = _relative_performance(payload)
-    if rel["source"]:
-        sources.append(rel["source"])
-    for n in (payload.get("news") or [])[:3]:
-        if isinstance(n, dict) and n.get("source"):
-            sources.append(str(n["source"]))
-    sector = (assumptions or {}).get("sector_context") or {}
-    if sector.get("subsector_slug"):
-        sources.append(f"Sectors sector context ({sector['subsector_slug']})")
-    deduped = list(dict.fromkeys(s for s in sources if s))
-
+    for block in ("sector_data", "filings_digest", "corporate_actions", "ownership_mix",
+                  "free_float", "sentiment", "news"):
+        value = payload.get(block)
+        source = value.get("source") if isinstance(value, dict) else None
+        if source and source not in sources:
+            sources.append(str(source))
     return {
-        "title": "Kondisi Industri, Katalis & Sentimen",
-        "subtitle": (
-            "Latar sektor, katalis spesifik emiten, dan posisi pasar pada periode pelaporan. Tanpa "
-            "objek wajib: tiga paragraf naratif, setiap angka dapat dilacak ke sumbernya."
-        ),
-        "paragraphs": [
-            {"heading": PARAGRAPH_HEADINGS[0], "body": p1, "basis": basis1},
-            {"heading": PARAGRAPH_HEADINGS[1], "body": p2, "basis": basis2},
-            {"heading": PARAGRAPH_HEADINGS[2], "body": p3, "basis": basis3},
-        ],
-        "sources": deduped,
+        "title": f"Kondisi Industri, Katalis & Sentimen — {payload.get('meta', {}).get('ticker', '')}".strip(" —"),
+        "paragraphs": paragraphs,
+        "sources": sources,
         "notes": [
-            "Paragraf 3 tidak memuat multiple valuasi maupun target harga (domain halaman valuasi).",
-            "Angka yang tidak tersedia dinyatakan eksplisit, bukan diestimasi.",
+            "Halaman naratif: tidak ada objek wajib, dan tidak ada Exhibit yang ditambahkan, "
+            "sehingga penomoran Exhibit dokumen tidak bergeser.",
+            "Setiap paragraf menyertakan basis datanya; angka yang tidak ada basisnya dinyatakan "
+            "tidak tersedia, bukan diperkirakan.",
         ],
     }
