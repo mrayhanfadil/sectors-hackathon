@@ -49,6 +49,16 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                          vs_jci.get("source", "Sectors"), cache / "vs_jci.png")
         except Exception as e:
             print(f"[warn] vs_jci: {e}")
+        # Narrow variant for the cover SIDEBAR (one-pager layout, house-report-format §7): the
+        # wide 2.2:1 chart squeezed into a 30% rail renders ~70pt tall, so the rail gets its own
+        # figure at roughly the aspect the HTML cover uses (340x250).
+        try:
+            chart_vs_jci(palette, ticker, ch["labels"], ch["series"][0],
+                         ch["series"][1] if len(ch["series"]) > 1 else [],
+                         vs_jci.get("source", "Sectors"), cache / "vs_jci_narrow.png",
+                         figsize=(2.6, 2.0))
+        except Exception as e:
+            print(f"[warn] vs_jci_narrow: {e}")
     if data.get("segments"):
         try:
             chart_segment_donut(palette, data["segments"],
@@ -318,7 +328,7 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
                "pos": "#067647", "neg": "#b42318"}
     charts_dir = generate_charts(ticker, data, palette)
     data["charts"] = {}
-    for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
+    for _name in ["vs_jci", "vs_jci_narrow", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
                   "ev_equity_waterfall", "margin_trajectory", "production_cost",
                   "revenue_combo", "ebitda_combo", "netprofit_combo",

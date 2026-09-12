@@ -47,178 +47,197 @@
 }
 
 // =====================================================================
-// PAGE 1 — COVER & SNAPSHOT
+// =====================================================================
+// =====================================================================
+// PAGE 1 — COVER (one-pager)
+// Sidebar ~30% on the LEFT, main column ~70% on the RIGHT — mirrors
+// templates/report_single.html and docs/rules/house-report-format.md §7-§9, and reads the
+// same payload contract (cover.slide1 / cover.slide2) so the two template trees cannot
+// describe different covers:
+//   sidebar: rating + change status (italic), price box incl. the previous target, secondary
+//            stats, a titled Major Shareholder block, the relative-performance chart with its
+//            source line directly beneath it, then the analyst block;
+//   main:    company + (TICKER IJ), theme title, the three quantitative highlights in a
+//            tinted callout, paragraphs 1-3 (performance / catalysts / valuation), then the
+//            Key Financials exhibit.
+// The copy budget (§7) is what keeps the exhibit on this page: paragraphs 1-3 are pressed to
+// benchmark density because the four blocks share one physical page.
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 1, PALETTE, [
+  #let cov = data.at("cover", default: (:))
+  #let s1 = cov.at("slide1", default: (:))
+  #let s2 = cov.at("slide2", default: (:))
+  #let rating = s1.at("rating", default: (:))
+  #let pbox = s1.at("price_box", default: (:))
+  #let stats = s1.at("stats", default: (:))
+  #let analyst = s1.at("analyst", default: (:))
+  #let chart = s1.at("jci_chart", default: (:))
+  #let kf = s2.at("key_financials", default: data.at("key_financials", default: (:)))
+  #let charts = data.at("charts", default: (:))
+
+  // hairline label/value rows, figures right-aligned (third element = render muted/italic,
+  // used for the italic "NA" on an initiation)
+  #let kv(rows) = table(
+    columns: (1fr, auto),
+    stroke: none,
+    inset: (x: 0pt, y: 2.3pt),
+    align: (left, right),
+    ..rows.map(r => (
+      text(size: 7.3pt, fill: PALETTE.muted)[#r.at(0)],
+      text(
+        size: 7.3pt,
+        weight: if r.at(2, default: false) { "regular" } else { "bold" },
+        style: if r.at(2, default: false) { "italic" } else { "normal" },
+        fill: if r.at(2, default: false) { PALETTE.muted } else { PALETTE.ink },
+      )[#r.at(1)],
+    )).flatten(),
+  )
+
   #grid(
-    columns: (2fr, 1.15fr),
-    column-gutter: 14pt,
+    columns: (30%, 1fr),
+    column-gutter: 15pt,
     [
-      #text(size: T_SMALL, fill: PALETTE.muted, tracking: 0.12em, weight: "bold")[
-        #upper(m.at("report_type", default: "INITIATION")) · #upper(m.at("sector", default: "ENERGI — PURE-PLAY HOLDING"))
+      // ------------------------------------------------ sidebar
+      #block(
+        width: 100%,
+        fill: PALETTE.band,
+        stroke: 0.75pt + PALETTE.line,
+        radius: 4pt,
+        inset: (x: 8pt, y: 7pt),
+      )[
+        #text(size: 23pt, weight: "bold", fill: PALETTE.brand_dark)[#rating.at("action", default: "—")]
+        #v(1pt)
+        #text(size: 8.2pt, style: "italic", fill: PALETTE.muted)[#rating.at("action_status", default: "—")]
+        #v(4.5pt)
+        #line(length: 100%, stroke: 0.5pt + PALETTE.line)
+        #v(3.5pt)
+        #kv(pbox.at("rows", default: ()))
+        #v(3.5pt)
+        #line(length: 100%, stroke: 0.5pt + PALETTE.line)
+        #v(3.5pt)
+        #kv(stats.at("rows", default: ()))
+        #v(3.5pt)
+        #line(length: 100%, stroke: 0.5pt + PALETTE.line)
+        #v(3pt)
+        #text(size: 6.4pt, weight: "bold", tracking: 0.08em, fill: PALETTE.muted)[MAJOR SHAREHOLDER (%)]
+        #v(2pt)
+        #kv(stats.at("major_shareholders", default: ()).map(h => (
+          h.at("name", default: "-"),
+          h.at("pct_str", default: if h.at("pct", default: none) != none { str(h.pct) } else { "-" }),
+        )))
+      ]
+
+      // relative-performance chart — label above, source line directly below (rule §1)
+      #v(6pt)
+      #let vj = cov.at("vs_jci", default: (:))
+      #let chart-title = m.ticker + " relative to JCI Index" + (
+        if chart.at("months", default: none) != none and chart.at("window", default: none) != none {
+          " (" + str(chart.months) + "M, " + chart.window + ")"
+        } else { "" }
+      )
+      #block(breakable: false)[
+        #exhibit-header(chart-title, chart.at("source", default: vj.at("source", default: "Sectors (pending)")))
+        #v(2pt)
+        #if charts.at("vs_jci_narrow", default: false) {
+          image(chart-dir + "/vs_jci_narrow.png", width: 100%)
+        } else if charts.at("vs_jci", default: false) {
+          image(chart-dir + "/vs_jci.png", width: 100%)
+        } else {
+          chart-placeholder(m.ticker + " vs IHSG", caption: "Deret harga belum tersedia.", height: 70pt, palette: PALETTE)
+        }
+        #exhibit-source()
+      ]
+
+      // analyst block
+      #v(9pt)
+      #line(length: 100%, stroke: 1.5pt + PALETTE.brand)
+      #v(4pt)
+      #text(size: 6.4pt, weight: "bold", tracking: 0.08em, fill: PALETTE.muted)[SECTORS.APP ANALYSTS]
+      #v(1.5pt)
+      #text(size: 8.4pt, weight: "bold", fill: PALETTE.brand_dark)[#analyst.at("name", default: m.at("prepared_by", default: "RESEARCH"))]
+      #v(1pt)
+      #text(size: 7pt, fill: PALETTE.muted)[#analyst.at("title", default: "Equity Analyst")]
+    ],
+    [
+      // ------------------------------------------------ main column
+      #text(size: 20pt, weight: "bold", fill: PALETTE.brand_dark)[
+        #m.at("company_name", default: "—")
+      ]
+      #h(3pt)
+      #text(size: 11.5pt, weight: "bold", fill: PALETTE.muted)[(#m.ticker + " IJ")]
+      #v(1.5pt)
+      #text(size: 9pt, style: "italic", fill: PALETTE.muted)[
+        #s1.at("theme_title", default: "—")
       ]
       #v(4pt)
-      #text(size: T_COVER_TITLE, weight: "bold", fill: PALETTE.brand_dark)[
-        #m.at("company_name", default: if m.ticker == "RATU" { "Raharja Energi Cepu" } else { "—" })
-      ]
-      #v(2pt)
-      #text(size: 13pt, weight: "bold", fill: PALETTE.muted)[
-        #m.ticker · IDX
-      ]
-      #v(8pt)
 
-      #card(PALETTE)[
-        #text(weight: "bold", fill: PALETTE.ink)[Executive Summary / Key Points]
+      // three quantitative highlights, tinted callout (rule §7)
+      #block(
+        width: 100%,
+        fill: PALETTE.band,
+        inset: (left: 10pt, right: 8pt, top: 6pt, bottom: 6pt),
+        stroke: (left: 2.5pt + PALETTE.brand),
+      )[
+        #set text(size: 7.6pt, weight: "bold")
+        #set list(spacing: 2.5pt, indent: 9pt)
+        #list(..s1.at("highlights", default: ()).map(h => [#h]))
+      ]
+
+      // paragraphs 1-3 — body size matches the HTML cover (7.9pt/1.32) so the same copy budget
+      // produces the same page break in both trees
+      // Typst sets par(leading: 0.65em) by default, which is ~25% looser than the HTML
+      // cover (line-height 1.32). Without tightening it here the same copy that fits one
+      // page in Chromium spills the exhibit onto page 2.
+      #let para(h, b) = [
+        #v(3.5pt)
+        #text(size: 8.6pt, weight: "bold", fill: PALETTE.brand_dark)[#h]
         #v(1pt)
-        #text(size: 6pt, style: "italic", fill: PALETTE.muted)[Core investment thesis, rating stance, target price derivation, and operational highlights.]
-        #v(2.5pt)
-        #if data.at("cover", default: (:)).at("summary", default: none) != none [
-          #text(size: T_BODY)[#data.cover.summary]
-        ] else if cover.at("key_takeaways", default: ()).len() > 0 [
-          #list(
-            ..cover.key_takeaways.map(t => [#t])
-          )
-        ] else [
-          #text(size: T_BODY)[
-            #if m.ticker == "RATU" [Inisiasi liputan dengan Investment Recommendation *BUY* dan target harga *Rp 7.880* (+27,1% upside). Arus kas Lapangan Banyu Urip (Blok Cepu) menopang marjin EBITDA \~49,6%, efisiensi lifting cost USD 4,85/bbl, dan neraca net cash tanpa utang berbunga.] else [Ringkasan eksekutif belum tersedia untuk ticker ini — lengkapi fixture sebelum render.]
-          ]
-        ]
+        #set par(leading: 0.42em, justify: true)
+        #text(size: 7.2pt)[#b]
       ]
-
-      #v(8pt)
-      #text(weight: "bold", fill: PALETTE.brand_dark)[Struktur Kepemilikan Saham]
-      #v(2pt)
-      #let default_sh = (
-        ("PT Ratu Energi Tuban Jaya (RETJ)", "45,0%", "Pengendali"),
-        ("PT Petro Java Utama Cepu (PJUC)", "23,8%", "Strategis"),
-        ("Publik (Free Float)", "31,2%", "Non-Warkat"),
+      #para(
+        s1.at("financial_para", default: (:)).at("heading", default: "Kinerja Keuangan"),
+        s1.at("financial_para", default: (:)).at("body", default: "—"),
       )
-      #let sh_list = data.at("cover", default: (:)).at("shareholders", default: ())
-      #let sh_rows = if sh_list.len() > 0 {
-        sh_list.map(s => {
-          if type(s) == array {
-            s.map(c => str(c))
-          } else {
-            (
-              s.at("name", default: "-"),
-              if type(s.at("pct", default: "-")) == str { s.pct } else { str(s.pct) + "%" },
-              s.at("status", default: if s.name == "Publik" { "Non-Warkat" } else { "-" }),
-            )
-          }
-        })
-      } else if m.ticker == "RATU" {
-        default_sh
-      } else {
-        (
-          (m.company_name + " / Manajemen", "-", "Pengendali"),
-          ("Publik (Free Float)", if data.at("cover", default: (:)).at("shares", default: (:)).at("free_float_pct", default: none) != none { str(data.cover.shares.free_float_pct) + "%" } else { "-" }, "Non-Warkat"),
-        )
-      }
-      #fin-table(
-        ("Pemegang Saham", "Porsi (%)", "Status"),
-        sh_rows,
-        palette: PALETTE,
+      #para(
+        s2.at("katalis", default: (:)).at("heading", default: "News, Sentimen & Katalis"),
+        s2.at("katalis", default: (:)).at("body", default: "—"),
+      )
+      #para(
+        s2.at("valuasi", default: (:)).at("heading", default: "Valuasi"),
+        s2.at("valuasi", default: (:)).at("body", default: "—"),
       )
 
-      #v(8pt)
-      #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
-      #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
-      #let pc_src = vj.at("source", default: "Sectors pending (" + m.ticker + " vs IHSG)")
-      // House rule (docs/rules/house-report-format.md §2): the exhibit counter runs
-      // continuously from Exhibit 1 to the last exhibit, with NO gap — a reader who sees
-      // the first label as `Exhibit 2.` has to wonder where Exhibit 1 went. An exhibit
-      // that is deliberately not rendered (the canonical Ex 1 EPS-consensus table, which
-      // has no locked consensus feed) simply does not consume a number: the counter is
-      // never offset, so the first rendered exhibit IS Exhibit 1.
-      // Label + object + source in ONE unbreakable unit: a page break between the label
-      // and its chart leaves a dangling `Exhibit 1.` at the bottom of one page and an
-      // unlabelled chart at the top of the next (house-report-format.md §1: the label sits
-      // ABOVE its object, the source line directly BELOW it). Typst has no
-      // keep-with-next, so the three statements are wrapped in `block(breakable: false)`.
-      #block(breakable: false)[
-      #exhibit-header(pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
-      #v(2pt)
-      #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
-        "Kinerja Harga " + m.ticker + " (+18,4% YTD) vs IHSG (+12,2% YTD)"
-      } else {
-        "Kinerja Harga " + m.ticker + (if vj.at("ytd_abs", default: none) != none { " (" + (if vj.ytd_abs > 0 { "+" } else { "" }) + str(vj.ytd_abs) + "% YTD)" } else { "" }) + " vs IHSG"
-      })
-      #let pc_caption = pc.at("caption", default: if m.ticker == "RATU" {
-        "Performa Relatif YTD: Outperform +6,2%"
-      } else {
-        "Performa Relatif YTD: " + (if vj.at("ytd_rel", default: none) != none { (if vj.ytd_rel > 0 { "Outperform +" } else { "Underperform " }) + str(vj.ytd_rel) + "%" } else { "-" }) 
-      })
-      #if data.at("charts", default: (:)).at("vs_jci", default: false) {
-        image(chart-dir + "/vs_jci.png", width: 100%);
-        v(2pt);
-        text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[#pc_label];
-      } else {
-        chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE);
-      }
-      #exhibit-source()
-      ]
-
-      #v(8pt)
-      #let kf = data.at("key_financials", default: (:))
-      #let kf_title = kf.at("title", default: "Key Financials (2024A-2028F)")
-      #let kf_src = kf.at("source", default: "Sectors (pending)")
+      // Key Financials exhibit (rule §9): two actuals, three forecasts, the nine mandated rows
+      #v(4pt)
       #let kf_headers = kf.at("headers", default: ("Year to 31 Dec", "2024A", "2025A", "2026F", "2027F", "2028F"))
       #let kf_rows = if kf.at("rows", default: ()).len() > 0 {
         kf.rows.map(r => r.map(c => if c == none { "—" } else if type(c) == str { c } else { str(c) }))
       } else {
         (
-          ("Revenue", "—", "—", "—", "—", "—"),
-          ("EBITDA", "—", "—", "—", "—", "—"),
-          ("EBITDA Growth %", "—", "—", "—", "—", "—"),
-          ("Net Profit", "—", "—", "—", "—", "—"),
-          ("EPS", "—", "—", "—", "—", "—"),
-          ("EPS Growth %", "—", "—", "—", "—", "—"),
+          ("Revenue (Rpbn)", "—", "—", "—", "—", "—"),
+          ("EBITDA (Rpbn)", "—", "—", "—", "—", "—"),
+          ("EBITDA Growth (%)", "—", "—", "—", "—", "—"),
+          ("Net Profit (Rpbn)", "—", "—", "—", "—", "—"),
+          ("EPS (Rp)", "—", "—", "—", "—", "—"),
+          ("EPS Growth (%)", "—", "—", "—", "—", "—"),
           ("PER (x)", "—", "—", "—", "—", "—"),
           ("PBV (x)", "—", "—", "—", "—", "—"),
           ("EV/EBITDA (x)", "—", "—", "—", "—", "—"),
         )
       }
-      #exhibit-header(kf_title, kf_src)
-      #v(2pt)
-      #fin-table(
-        kf_headers,
-        kf_rows,
-        palette: PALETTE,
-      )
-    ],
-    [
-      #rating-box(
-        cover.action,
-        cover.tp,
-        cover.price,
-        cover.upside_pct,
-        prev-tp: if cover.at("prev_tp", default: none) != none { str(cover.prev_tp) } else { none },
-        palette: PALETTE,
-      )
-
-      #v(4pt)
-      #method-selection-panel(gate-verdict, palette: PALETTE)
-
-      #v(4pt)
-      #text(weight: "bold", fill: PALETTE.brand_dark)[#("Informasi Pasar & Saham " + m.ticker)]
-      #card(PALETTE)[
-        #v(1pt)
-        #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
-        #v(2.5pt)
-        #let sh = data.at("cover", default: (:)).at("shares", default: (:))
-        #let mkt = data.at("cover", default: (:)).at("market", default: (:))
-        #grid(
-          columns: (1fr, auto),
-          row-gutter: 2.8pt,
-          text(size: 6.8pt)[Harga Kini], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.price)],
-          text(size: 6.8pt)[Target Harga], text(size: 6.8pt, weight: "bold")[Rp #nstr(cover.tp)],
-          text(size: 6.8pt)[Saham Beredar], text(size: 6.8pt, weight: "bold")[#sh.at("outstanding", default: 2.71) #sh.at("unit", default: "Miliar")],
-          text(size: 6.8pt)[Kapitalisasi Pasar], text(size: 6.8pt, weight: "bold")[#mkt.at("market_cap", default: if cover.price == none { "-" } else { "Rp " + str(calc.round(cover.price * sh.at("outstanding", default: 0) / 1000, digits: 2)) + " T" })],
-          text(size: 6.8pt)[Free Float], text(size: 6.8pt, weight: "bold")[#if sh.at("free_float_pct", default: none) != none { str(sh.free_float_pct) + "%" } else { "-" }],
-          text(size: 6.8pt)[52-Wk Range], text(size: 6.8pt, weight: "bold")[#mkt.at("range_52w", default: "-")],
-          text(size: 6.8pt)[Rerata Nilai 3M], text(size: 6.8pt, weight: "bold")[#mkt.at("avg_value_3m", default: "-")],
-          text(size: 6.8pt)[Klasifikasi Indeks], text(size: 6.8pt, weight: "bold")[#mkt.at("index_class", default: "-")],
+      #block(breakable: false)[
+        #exhibit-header(
+          kf.at("title", default: kf.at("exhibit_title", default: "Key Financials (2024A-2028F)")),
+          kf.at("source", default: "Sectors (pending)"),
         )
+        #fin-table(kf_headers, kf_rows, palette: PALETTE)
+        #if kf.at("notes", default: ()).len() > 0 [
+          #v(1pt)
+          #set text(size: 5.6pt, fill: PALETTE.muted)
+          #for nt in kf.notes [#nt \ ]
+        ]
+        #exhibit-source()
       ]
     ]
   )
@@ -473,6 +492,13 @@
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 4, PALETTE, [
   #section-header(3, "Valuation Methodology & Hasil Valuasi", PALETTE, sub: "Menjawab: Berapa estimasi nilai wajar saham berdasarkan metode DCF dan perbandingan multiple pasar?")
+
+  // Method-selection panel (Typst-only): which valuation method the deterministic gate picked as
+  // primary and which cross-check it authorised. It used to sit on the cover, but the cover is a
+  // one-pager (docs/rules/house-report-format.md §7) and this panel is neither part of that
+  // contract nor part of the HTML cover — with valuation is where a reader looks for it.
+  #method-selection-panel(gate-verdict, palette: PALETTE)
+  #v(6pt)
 
   #let val = data.at("valuation", default: (:))
   #let methods = val.at("methods", default: ())

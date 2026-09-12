@@ -386,7 +386,7 @@ def _generate_charts(ticker: str, data: dict, palette: dict) -> Path:
 
     # Ensure all referenced chart images exist so typst sandbox never throws missing file
     chart_names = [
-        "vs_jci.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
+        "vs_jci.png", "vs_jci_narrow.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
         "wacc_breakdown.png", "sensitivity_heatmap.png", "scenario_bars.png",
         "ev_equity_waterfall.png", "margin_trajectory.png", "production_cost.png",
         "revenue_combo.png", "ebitda_combo.png", "netprofit_combo.png",
@@ -480,7 +480,7 @@ def render_report(ticker: str, archetype: str = "auto", out_path: str | Path | N
     # Chart availability flags (real render vs 1.2K placeholder): template
     # embeds only real charts, skips failed ones instead of showing junk.
     data["charts"] = {}
-    for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
+    for _name in ["vs_jci", "vs_jci_narrow", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
                   "ev_equity_waterfall", "margin_trajectory", "production_cost",
                   "revenue_combo", "ebitda_combo", "netprofit_combo",

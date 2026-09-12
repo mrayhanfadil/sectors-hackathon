@@ -128,6 +128,13 @@ and the price box before reading a single sentence, and reads the change status
 specifically to see whether the rating moved — so both are above everything else and the
 status is never omitted or folded into prose.
 
+Both render trees carry this cover: `templates/report_single.html` (the served Chromium path)
+and `templates/typst/archetypes/report_single.typ`, which read the same payload contract
+(`cover.slide1` / `cover.slide2`). The Typst tree sets `par(leading)` explicitly on the cover
+paragraphs — Typst's default 0.65em is ~25% looser than the HTML cover's line-height, which is
+enough to push the exhibit onto page 2 with identical copy. The Typst-only method-selection
+panel lives on the valuation page, not on the cover: it is not part of this contract.
+
 **Copy budget (binding):** paragraphs 1–3 together are limited to **2.600 characters**.
 Measured at the typography in `templates/macros.html`, that is the point at which the Key
 Financials exhibit stops fitting on the same page; past it the exhibit is pushed to page 2
