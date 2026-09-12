@@ -132,6 +132,8 @@
   {% if strategy.danantara.table %}{{ m.table(strategy.danantara.table.headers, strategy.danantara.table.rows) }}{% endif %}
   {% endif %}
 
+  {# rule 1: flush the pending exhibit before the closing blocks. #}
+  {{ m.exhibit_source(ns) }}
   {{ m.section(7, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}

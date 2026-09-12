@@ -70,7 +70,7 @@ def validate(report_data: dict) -> list[str]:
 
 
 # ---------------------------------------------------------------- render
-def render_html(report_data: dict) -> tuple[str, str]:
+def render_html(report_data: dict, native_furniture: bool = False) -> tuple[str, str]:
     from jinja2 import Environment, FileSystemLoader, select_autoescape
 
     template_name, reason = select_template(report_data)
@@ -96,7 +96,7 @@ def render_html(report_data: dict) -> tuple[str, str]:
         sys.path.insert(0, str(_root))
     from server.report import house_format
 
-    house_format.install(env, report_data)
+    house_format.install(env, report_data, native_furniture=native_furniture)
     tpl = env.get_template(TEMPLATE_FILES[template_name])
     html = tpl.render(**report_data, template_reason=reason, palette={
         "brand": "#1d4ed8", "brand_dark": "#152c6e", "accent": "#eef2ff",
@@ -105,13 +105,26 @@ def render_html(report_data: dict) -> tuple[str, str]:
 
 
 def render_pdf(report_data: dict, out_pdf: Path, html_out: Path | None = None) -> str:
+    """Render the payload to PDF with the house furniture drawn by Chromium per page.
+
+    The furniture is NOT emitted by the templates here (`native_furniture=True`): per-div
+    furniture only lands on physical pages that happen to end where a `<div class="page">`
+    ends, so an overflowing page would ship with no header and the previous page's footer.
+    Chromium's own header/footer templates repeat on every physical page and substitute
+    `.pageNumber` with the real page counter (house-report-format.md §3-4).
+    """
     import asyncio
 
-    template_name, html = render_html(report_data)
+    sys.path.insert(0, str(HERE.parent))
+    from server.report import house_format
+
+    template_name, html = render_html(report_data, native_furniture=True)
 
     if html_out:
         html_out.parent.mkdir(parents=True, exist_ok=True)
         html_out.write_text(html, encoding="utf-8")
+
+    date_str = house_format.format_house_date((report_data.get("meta") or {}).get("date"))
 
     async def _pdf() -> None:
         from playwright.async_api import async_playwright
@@ -127,7 +140,10 @@ def render_pdf(report_data: dict, out_pdf: Path, html_out: Path | None = None) -
                 path=str(out_pdf),
                 format="A4",
                 print_background=True,
-                margin={"top": "0", "right": "0", "bottom": "0", "left": "0"},
+                display_header_footer=True,
+                header_template=house_format.header_template(date_str),
+                footer_template=house_format.footer_template(),
+                margin=dict(house_format.PDF_MARGIN),
             )
             await browser.close()
 

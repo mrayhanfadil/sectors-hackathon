@@ -167,6 +167,10 @@
     {% endif %}
     {% endif %}
 
+    {# rule 1: the constant source line must sit DIRECTLY under its object, so flush the
+       pending exhibit before any trailing block (disclaimer paragraph, section heading)
+       that would otherwise come between the object and its source line. #}
+    {{ m.exhibit_source(ns) }}
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
@@ -215,6 +219,9 @@
   </div>
   {% endfor %}
 
+  {# rule 1: flush the pending exhibit before the closing blocks, so the source line
+     lands directly under its object instead of after the disclaimer. #}
+  {{ m.exhibit_source(ns) }}
   {{ m.section(7, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}

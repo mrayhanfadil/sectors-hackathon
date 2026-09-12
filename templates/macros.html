@@ -16,7 +16,14 @@
 
    The label is emitted before the object but the source belongs below it, so the
    source is deferred one call: it is flushed by the NEXT exhibit label, and by the
-   page footer for the last exhibit on a page. #}
+   page footer for the last exhibit on a page.
+
+   Keeping label → object → source on one page is the CSS's job (`break-after: avoid`
+   on the label, `break-before: avoid` on the source line in `styles()`), NOT a wrapper
+   element: the flush point is not always inside the container the label was emitted in
+   (an exhibit in one column of `.grid-2` gets its source flushed after the whole grid),
+   so a wrapping `<div>` would be auto-closed by the parser mid-page and unbalance the
+   rest of the document. #}
 
 {% macro exhibit_source(ns) -%}
 {% if ns.pending %}<div class="exhibit-src">Source: {{ HOUSE.source_line | default("Company, Team Estimates") }}</div>
@@ -77,12 +84,26 @@
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   body { font-family: "Helvetica Neue", Arial, sans-serif; color: var(--ink); font-size: 9.5pt; line-height: 1.45; }
   .page { page-break-after: always; position: relative; padding: 50pt 40pt 64pt; }
+{% if HOUSE.native_furniture %}
+  /* Furniture is drawn by Chromium on every physical page via header/footer templates
+     (server/report/house_format.py). The page margins reserve its space, so the content
+     box must not reserve it a second time. */
+  .page { padding: 2pt 40pt 6pt; }
+{% endif %}
   .page:last-child { page-break-after: auto; }
 
-  /* running header + footer (baked per page since Playwright displayHeaderFooter is off) */
-  /* House page furniture (house-report-format.md §3-4), baked per page since
-     Playwright displayHeaderFooter is off. Left: title + publication date.
-     Right: Sectors.app mark. Then the #067647 divider. */
+  /* Exhibit label + object + constant source line stay together across a page break.
+     Without this a page break between label and object leaves a dangling `Exhibit N.`
+     at the bottom of one page and an unlabelled chart at the top of the next. Expressed
+     as break-avoid rules on the label and the source line, never as a wrapper element
+     (see the exhibits comment at the top of this file). */
+  .exhibit-head { break-after: avoid; page-break-after: avoid; }
+  .exhibit-src { break-before: avoid; page-break-before: avoid; }
+
+  /* House page furniture (house-report-format.md §3-4). When Chromium renders the PDF it
+     draws this itself from the header/footer templates in server/report/house_format.py,
+     which repeat on EVERY physical page; the `.rhdr*` / `.rftr` rules below only apply to
+     a renderer that cannot (weasyprint, browser preview), where one div == one page. */
   .rhdr { display: flex; justify-content: space-between; align-items: flex-start;
           margin-bottom: 3pt; }
   .rhdr-title { font-size: 8.5pt; font-weight: 700; color: var(--ink); }
@@ -166,6 +187,9 @@
    `running()` keeps its arguments only as a fallback for a renderer that never
    installed the global. #}
 {% macro running(brand_label="", date="", ticker="") -%}
+{# Skipped when Chromium draws the furniture (native_furniture) — emitting it here as
+   well would print the header twice on every page. #}
+{% if not HOUSE.native_furniture %}
 <div class="rhdr">
   <div class="rhdr-l">
     <div class="rhdr-title">{{ HOUSE.header_title | default("Equity Research – Company Update") }}</div>
@@ -174,14 +198,17 @@
   <div class="rhdr-r">{% if HOUSE.logo %}<img class="rhdr-logo" src="{{ HOUSE.logo }}" alt="Sectors.app">{% endif %}</div>
 </div>
 <div class="rhdr-rule"></div>
+{% endif %}
 {%- endmacro %}
 
 {% macro pagefoot(pg, ns=none) -%}
 {{ exhibit_source(ns) }}
+{% if not HOUSE.native_furniture %}
 <div class="rftr">
   <span>{{ HOUSE.footer_left | default("sectors.app") }}</span>
   <span>{{ HOUSE.footer_right | default("See important disclosure at the back of this report") }} · {{ pg }}</span>
 </div>
+{% endif %}
 {%- endmacro %}
 
 {% macro rating_guide() -%}

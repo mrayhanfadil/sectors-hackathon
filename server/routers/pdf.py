@@ -349,8 +349,16 @@ def _select_template(report_data: dict) -> tuple[str, str]:
         return "single", "default"
 
 
-def render_html_for_ticker(ticker: str, template_override: Optional[str] = None) -> tuple[str, str, dict]:
-    """Return (template_name, html, report_data)."""
+def render_html_for_ticker(
+    ticker: str, template_override: Optional[str] = None, native_furniture: bool = False
+) -> tuple[str, str, dict]:
+    """Return (template_name, html, report_data).
+
+    `native_furniture=True` omits the per-`<div class="page">` header/footer and leaves the
+    furniture to Chromium (see `render_pdf_bytes_for_ticker`) — only the PDF path wants
+    that. The `/html` debug endpoint and the tests keep the per-div furniture because a
+    browser (which does not paginate) has no other way to show a header.
+    """
     from jinja2 import Environment, FileSystemLoader, select_autoescape
 
     t = ticker.upper().strip()
@@ -377,7 +385,7 @@ def render_html_for_ticker(ticker: str, template_override: Optional[str] = None)
     # context, so the computed date and the inline logo can only reach them as globals.
     from server.report import house_format
 
-    house_format.install(env, data)
+    house_format.install(env, data, native_furniture=native_furniture)
 
     tpl_file = TEMPLATE_FILES.get(template_name, "report_single.html")
     tpl = env.get_template(tpl_file)
@@ -424,8 +432,21 @@ def _minimal_pdf_bytes(title: str, text_lines: Optional[list[str]] = None) -> by
     return header + body + xref + trailer
 
 
-async def _html_to_pdf_bytes(html: str, title: str) -> bytes:
-    """Try Playwright, else weasyprint, else minimal fallback. Always returns %PDF bytes."""
+async def _html_to_pdf_bytes(
+    html: str,
+    title: str,
+    header_html: Optional[str] = None,
+    footer_html: Optional[str] = None,
+    margin: Optional[dict] = None,
+) -> tuple[bytes, str]:
+    """Try Playwright, else weasyprint, else minimal fallback. Always returns %PDF bytes.
+
+    Returns `(pdf_bytes, engine)` with engine in `{"playwright", "weasyprint", "minimal"}`
+    so the caller can tell whether the furniture it asked for was actually drawn: the
+    Chromium header/footer templates only exist in the Playwright branch. A caller that
+    rendered with `native_furniture=True` MUST fall back to a per-div-furniture render
+    when the engine is not Playwright, otherwise the document ships without furniture.
+    """
     # 1) Playwright
     try:
         from playwright.async_api import async_playwright  # type: ignore
@@ -437,13 +458,29 @@ async def _html_to_pdf_bytes(html: str, title: str) -> bytes:
                 page = await browser.new_page()
                 await page.set_content(html, wait_until="load")
                 await page.wait_for_timeout(700)
-                await page.pdf(path=str(out), format="A4", print_background=True, margin={"top": "0", "right": "0", "bottom": "0", "left": "0"})
+                pdf_kwargs: dict = {
+                    "path": str(out),
+                    "format": "A4",
+                    "print_background": True,
+                    "margin": margin or {"top": "0", "right": "0", "bottom": "0", "left": "0"},
+                }
+                if header_html is not None:
+                    # Chromium only renders the header/footer templates when it is asked
+                    # to AND the margins reserve room for them; it substitutes
+                    # `.pageNumber` / `.totalPages` with the real physical page counter.
+                    pdf_kwargs["display_header_footer"] = True
+                    pdf_kwargs["header_template"] = header_html
+                    pdf_kwargs["footer_template"] = footer_html or ""
+                await page.pdf(**pdf_kwargs)
                 await browser.close()
             data = out.read_bytes()
             if data.startswith(b"%PDF"):
-                return data
-    except Exception:
-        pass
+                return data, "playwright"
+    except Exception as exc:
+        # Loud: a failure here silently downgrades the document to per-div furniture (or
+        # to weasyprint), which is the exact bug this function exists to prevent. The
+        # usual cause is an invalid margin unit — Chromium rejects `pt`.
+        print(f"[warn] Playwright PDF render failed, falling back: {exc}", file=sys.stderr)
 
     # 2) WeasyPrint
     try:
@@ -451,12 +488,43 @@ async def _html_to_pdf_bytes(html: str, title: str) -> bytes:
 
         pdf_bytes = HTML(string=html, base_url=str(TEMPLATES_DIR)).write_pdf()
         if pdf_bytes.startswith(b"%PDF"):
-            return pdf_bytes
+            return pdf_bytes, "weasyprint"
     except Exception:
         pass
 
     # 3) Minimal fallback (pure python, no deps)
-    return _minimal_pdf_bytes(title, [f"Report {title}", "Generated via fallback minimal PDF (Playwright/WeasyPrint not available)", "HTML length: " + str(len(html))])
+    return _minimal_pdf_bytes(title, [f"Report {title}", "Generated via fallback minimal PDF (Playwright/WeasyPrint not available)", "HTML length: " + str(len(html))]), "minimal"
+
+
+async def render_pdf_bytes_for_ticker(
+    ticker: str, template_override: Optional[str] = None
+) -> tuple[bytes, str, str, dict]:
+    """Render the house-compliant PDF for a ticker. Returns (pdf, engine, template, data).
+
+    Two passes by design. Pass 1 renders with the furniture left to Chromium
+    (`native_furniture=True`), which is the only variant that reaches EVERY physical page
+    — per-`<div class="page">` furniture sits inside the content flow, so any page that
+    overflows produces a continuation page with no header and a duplicated footer
+    (house-report-format.md §3-4: header and footer on every slide). Pass 2 only runs if
+    Chromium was unavailable, re-rendering with the per-div furniture so the weasyprint
+    fallback is not left with a bare document.
+    """
+    from server.report import house_format
+
+    title = f"{ticker.upper().strip()} — institutional report"
+    tpl_name, html, data = render_html_for_ticker(ticker, template_override, native_furniture=True)
+    date_str = house_format.format_house_date((data.get("meta") or {}).get("date"))
+    pdf, engine = await _html_to_pdf_bytes(
+        html,
+        title,
+        header_html=house_format.header_template(date_str),
+        footer_html=house_format.footer_template(),
+        margin=dict(house_format.PDF_MARGIN),
+    )
+    if engine != "playwright":
+        tpl_name, html, data = render_html_for_ticker(ticker, template_override)
+        pdf, engine = await _html_to_pdf_bytes(html, title)
+    return pdf, engine, tpl_name, data
 
 
 # ---------------------------------------------------------------- routes
@@ -468,16 +536,18 @@ async def report_pdf(ticker: str, template: Optional[str] = Query(None, descript
     if template and template not in ("single", "sotp", "infra", "strategy"):
         raise HTTPException(400, "invalid template")
 
-    tpl_name, html, data = render_html_for_ticker(t, template)
+    pdf_bytes, engine, tpl_name, data = await render_pdf_bytes_for_ticker(t, template)
     title = f"{t} — {data.get('meta', {}).get('report_type', 'Report')} ({tpl_name})"
-    pdf_bytes = await _html_to_pdf_bytes(html, title)
 
     # Write to temp file for FileResponse (ensures proper streaming + Content-Disposition)
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", prefix=f"{t}_")
     tmp.write(pdf_bytes)
     tmp.close()
 
-    headers = {"Content-Disposition": f'attachment; filename="{t}_{tpl_name}.pdf"'}
+    headers = {
+        "Content-Disposition": f'attachment; filename="{t}_{tpl_name}.pdf"',
+        "X-PDF-Engine": engine,
+    }
     return FileResponse(tmp.name, media_type="application/pdf", headers=headers, filename=f"{t}_{tpl_name}.pdf")
 
 

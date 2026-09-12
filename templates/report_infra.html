@@ -231,6 +231,8 @@
     {% endif %}
     {% endif %}
 
+    {# rule 1: flush before the disclaimer paragraph so the source line stays under its object. #}
+    {{ m.exhibit_source(ns) }}
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
@@ -303,6 +305,8 @@
     {% endfor %}
   {% endif %}
 
+  {# rule 1: source line directly under its object, before the risk section. #}
+  {{ m.exhibit_source(ns) }}
   {{ m.section(9, "Faktor Risiko — Spesifik Infra") }}
   {% for r in risks %}
   <div class="risk-bucket">

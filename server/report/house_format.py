@@ -102,14 +102,27 @@ def logo_data_uri() -> str:
     return f"data:image/svg+xml;base64,{b64}"
 
 
-def install(env, report_data: dict | None = None) -> None:
+def install(env, report_data: dict | None = None, native_furniture: bool = False) -> None:
     """Register the house furniture on a Jinja `Environment`.
 
     `report_data` supplies the publication date; the templates pass the same value to
     `running()`, but macros imported without context cannot see it, so it is exposed
     as a global instead of being threaded through every call site.
+
+    `native_furniture` selects WHO draws the per-page header/footer:
+
+    * False (default, any non-Chromium renderer such as weasyprint): the templates emit
+      the furniture themselves, once per `<div class="page">`.
+    * True (Chromium/Playwright): the furniture is drawn by the PDF engine through
+      `header_template()` / `footer_template()` + `PDF_MARGIN`. This is the only variant
+      that survives pagination — per-div furniture lives inside the content flow, so a
+      page that overflows produces a continuation page with NO header, and the previous
+      logical page's footer gets carried onto it (measured: 3 of 8 physical pages without
+      a header, footer page numbers `[1,2,-,3,-,4,-,5]`). Per-div furniture is not
+      "wrong" — it is simply only correct when one div is exactly one physical page.
     """
     meta = (report_data or {}).get("meta") or {}
+    date_str = format_house_date(meta.get("date"))
     env.globals["HOUSE"] = {
         "header_title": HEADER_TITLE,
         "footer_left": FOOTER_LEFT,
@@ -117,5 +130,63 @@ def install(env, report_data: dict | None = None) -> None:
         "source_line": SOURCE_LINE,
         "divider_color": DIVIDER_COLOR,
         "logo": logo_data_uri(),
-        "date": format_house_date(meta.get("date")),
+        "date": date_str,
+        "native_furniture": native_furniture,
     }
+
+
+# --- Page furniture drawn by Chromium (Playwright print path) --------------------
+#
+# A Playwright header/footer template renders in its OWN document, on EVERY physical
+# page, and cannot see the report payload or the page's CSS. So: everything inline, no
+# classes from macros.html, and any derived value (the formatted date, the inlined logo)
+# has to be passed in from Python.
+#
+# The page-number span is Chromium's own substitution — `class="pageNumber"` is replaced
+# with the physical page index at render time, which is exactly the "real page counter,
+# not a per-page literal" the house rule asks for.
+FONT_STACK = "Helvetica Neue, Arial, sans-serif"
+PAGE_SIDE_PAD = "40pt"
+
+# Space reserved OUTSIDE the content flow for the furniture. Header content is
+# ~40pt tall (title + date + logo + divider), footer ~24pt.
+# NOTE: Chromium's printToPDF rejects `pt` margins ("Failed to parse parameter value:
+# 58pt") and silently drops the whole call — use px/in/mm/cm. Values in px here.
+PDF_MARGIN = {"top": "77px", "bottom": "61px", "left": "0px", "right": "0px"}
+
+
+def header_template(date_str: str | None = None) -> str:
+    """Top of every page: house title + publication date left, Sectors mark right, divider."""
+    date_html = ""
+    if date_str:
+        date_html = (
+            f'<div style="font:7pt {FONT_STACK};color:#475467;margin-top:1pt;">{date_str}</div>'
+        )
+    logo = logo_data_uri()
+    logo_html = (
+        f'<img src="{logo}" style="height:13pt;display:block;" alt="Sectors.app">' if logo else ""
+    )
+    return (
+        f'<div style="width:100%;padding:0 {PAGE_SIDE_PAD};box-sizing:border-box;'
+        f'-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
+        f'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
+        f'<div><div style="font:700 8.5pt {FONT_STACK};color:#101828;">{HEADER_TITLE}</div>'
+        f"{date_html}</div>"
+        f'<div style="flex:0 0 auto;">{logo_html}</div>'
+        f"</div>"
+        f'<div style="border-bottom:1.2pt solid {DIVIDER_COLOR};margin-top:3pt;"></div>'
+        f"</div>"
+    )
+
+
+def footer_template() -> str:
+    """Bottom of every page: `sectors.app` left, disclosure + page number right."""
+    return (
+        f'<div style="width:100%;padding:0 {PAGE_SIDE_PAD};box-sizing:border-box;'
+        f'font:6.5pt {FONT_STACK};color:#475467;-webkit-print-color-adjust:exact;">'
+        f'<div style="border-top:.5pt solid #e4e7ec;padding-top:4pt;display:flex;'
+        f'justify-content:space-between;">'
+        f"<span>{FOOTER_LEFT}</span>"
+        f'<span>{FOOTER_RIGHT} \u00b7 <span class="pageNumber"></span></span>'
+        f"</div></div>"
+    )
