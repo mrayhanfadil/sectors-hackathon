@@ -66,7 +66,7 @@ def check(pdf: Path) -> dict:
     pages = doc.page_count
     fails: list[str] = []
     warn: list[str] = []
-    no_header, no_date, no_ftr_l, no_ftr_r, no_src = [], [], [], [], []
+    no_header, no_date, no_ftr_l, no_ftr_r, no_src, no_logo = [], [], [], [], [], []
     page_numbers: list[int | None] = []
     all_exhibits: list[int] = []
     source_lines = 0
@@ -115,6 +115,34 @@ def check(pdf: Path) -> dict:
         if n_src == 0 and exhibits:
             no_src.append(pno)
 
+        # Rule 3: the Sectors.app mark, same size and position on every page. Chromium
+        # paints an SVG logo as VECTOR PATHS (4 bars, ~32 path items) and a raster logo as
+        # an image XObject, and the Typst header draws it as vector too — so accept either,
+        # but require something SMALL in the top-right corner, otherwise the full-width
+        # header divider (height 0.8pt) counts as a logo. Detecting with get_images() alone
+        # reports a perfectly rendered vector logo as MISSING.
+        mark_band = pymupdf.Rect(page.rect.width * 0.6, 0, page.rect.width, height * 0.12)
+        has_mark = False
+        for im in page.get_images(full=True):
+            try:
+                r = pymupdf.Rect(page.get_image_bbox(im))
+            except Exception:
+                continue
+            if r.is_valid and r.intersects(mark_band):
+                has_mark = True
+                break
+        if not has_mark:
+            try:
+                for d in page.get_drawings():
+                    r = pymupdf.Rect(d["rect"])
+                    if r.intersects(mark_band) and r.width < page.rect.width * 0.4 and r.height > 2:
+                        has_mark = True
+                        break
+            except Exception:
+                pass
+        if not has_mark:
+            no_logo.append(pno)
+
         detail.append(
             {
                 "page": pno,
@@ -139,6 +167,12 @@ def check(pdf: Path) -> dict:
         fails.append(f"rule 4 footer-right disclosure missing on pages {no_ftr_r}")
     if no_src:
         fails.append(f"rule 1 pages with an exhibit but no source line under it: {no_src}")
+    if no_logo:
+        fails.append(
+            f"rule 3 Sectors.app mark missing from the top-right corner on pages {no_logo} "
+            "— check house_format.header_template() still embeds the logo (an un-resolvable "
+            "src renders as nothing, with no error anywhere)"
+        )
 
     found = [n for n in page_numbers if n is not None]
     if len(found) < pages:
