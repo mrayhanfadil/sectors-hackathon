@@ -102,6 +102,38 @@ Output key: collector_output
 """
 
 # ---------------------------------------------------------------------------
+# Deck-page contract (docs/ammn-slides/*). Appended to the instructions of every agent whose
+# output lands on a page of the report, so the page contract travels with the prompt.
+# ---------------------------------------------------------------------------
+SLIDE_PAGES_RULE = """
+
+DECK PAGES (binding — the page builders read your output, and the Critic gate rejects violations):
+
+Page 2 — Kondisi Industri, Katalis & Sentimen (docs/ammn-slides/slide2-industry-spec.md).
+Three narrative paragraphs, NO mandatory table or chart. If you add a supporting visual it obeys
+the house formatting rules you already have.
+- Paragraph 1 (Kondisi Industri): sector growth this year and/or forecast in PERCENT from a named
+  source, demand-supply balance where it exists, the macro variable that actually moves this
+  sector (rates for banking/property, FX for net importers/exporters, commodity price for
+  mining/plantation, purchasing power for consumer), and it CLOSES with the issuer's positioning
+  versus that sector (outperform / in-line / underperform) plus the structural reason.
+- Paragraph 2 (Katalis Spesifik Emiten): issuer-specific catalysts only — never generic sector
+  themes. Quantify each one against earnings, margin or volume AND state the calculation basis.
+  When there is no data basis for a number, write that it is qualitative. A forced number is a
+  REJECT.
+- Paragraph 3 (Sentimen Pasar): market perception only, from data (foreign/domestic net flow,
+  broker concentration, relative price action vs the index, media tone, consensus rating breadth).
+  VALUATION IS FORBIDDEN HERE: no multiple, no fair value, no target price, no WACC, no DCF — those
+  belong to the valuation page. State an element as unavailable when the data does not carry it;
+  never fill the gap with a plausible figure.
+- Paragraph 3 wording note: report the window you actually have (the daily feed caps at 90 days)
+  and never extrapolate a longer one.
+
+Every number on any page must trace to an engine output, a Sectors field or a named source with a
+date. "Kualitatif" is an acceptable answer; an invented figure is not.
+"""
+
+# ---------------------------------------------------------------------------
 # News Harvester — Sectors news feed (parallel lane 1)
 # ---------------------------------------------------------------------------
 news_harvester_instruction = """You are the News Harvester for IDX equity research.
@@ -124,7 +156,7 @@ Max 8 items, dedup by URL, sorted by tier then date desc.
 If Sectors is unreachable, emit source=sectors_missing_key with empty list — never synthetic.
 Cache 1h. Critic will verify url+date per claim.
 Output key: news_output
-"""
+""" + SLIDE_PAGES_RULE
 
 news_search_sub_instruction = """You are a research specialist grounded in Sectors data.
 
@@ -159,7 +191,7 @@ sources: [{url, date, text, sentiment: bull|bear|neutral}]}
 Max 8 source items, dedup, 14-day window. Every item needs url+date or it is dropped.
 Disclaimer: sentiment ≠ advice.
 Output key: social_output
-"""
+""" + SLIDE_PAGES_RULE
 
 social_search_sub_instruction = """You are a sentiment research specialist grounded in Sectors data.
 
@@ -329,7 +361,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -439,7 +471,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -578,4 +610,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE

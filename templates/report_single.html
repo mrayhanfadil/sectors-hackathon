@@ -143,18 +143,42 @@
   {{ m.pagefoot(1, ns) }}
 </div>
 
+
+{# ================= PAGE 2 — INDUSTRY, CATALYSTS, SENTIMENT ================= #}
+{# Deck page 2 (docs/ammn-slides/slide2-industry-spec.md): three narrative paragraphs and NO
+   mandatory object. An optional visual added here later still owes an exhibit label above it and
+   the constant source line below it, like every other object. Built by
+   server/report/industry_page.py; a paragraph with no verified datum says so instead of
+   estimating. #}
+<div class="page">
+  {{ m.running() }}
+  {{ m.section(1, industry_page.title if industry_page else "Kondisi Industri, Katalis & Sentimen") }}
+  {% if industry_page %}
+  <p class="muted small">{{ industry_page.subtitle }}</p>
+  {% for p in industry_page.paragraphs %}
+  <div style="margin:6pt 0;">
+    <b>{{ p.heading }}</b>
+    <p class="small" style="margin-top:2pt;">{{ p.body }}</p>
+  </div>
+  {% endfor %}
+  <p class="muted" style="font-size:6.6pt; margin-top:5pt;">{{ industry_page.sources | join('; ') }}</p>
+  {% else %}
+  <p class="small muted">Halaman ini tidak dapat disusun: payload tidak membawa data katalis, sentimen, maupun konteks sektor yang terverifikasi.</p>
+  {% endif %}
+  {{ m.pagefoot(2, ns) }}
+</div>
 {# ================= PAGE 2 — SUMMARY + THESIS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(1, "Ringkasan Investasi") }}
-  <p class="muted small">Snapshot {{ meta.company_name }} — seluruh angka hasil engine deterministik, asumsi eksplisit di §4.</p>
+  {{ m.section(2, "Ringkasan Investasi") }}
+  <p class="muted small">Snapshot {{ meta.company_name }} — seluruh angka hasil engine deterministik, asumsi eksplisit pada halaman valuasi.</p>
 
   {% if financial_highlights %}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
   {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
   {% endif %}
 
-  {{ m.section(2, "Tesis Investasi") }}
+  {{ m.section(3, "Tesis Investasi") }}
   {% for t in thesis %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ loop.index }}. {{ t.headline }}</b>
@@ -162,13 +186,13 @@
     {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(2, ns) }}
+  {{ m.pagefoot(3, ns) }}
 </div>
 
 {# ================= PAGE 3 — VALUATION ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(3, "Valuasi") }}
+  {{ m.section(4, "Valuasi") }}
   <p class="small muted">Metode kedua dipilih adaptif: infra/dividen → DDM, konglomerasi → SOTP, lainnya → EV/EBITDA (plan §5).</p>
 
   {% for vm in valuation.methods %}
@@ -247,13 +271,13 @@
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
-  {{ m.pagefoot(3, ns) }}
+  {{ m.pagefoot(4, ns) }}
 </div>
 
 {# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(4, "Financials 6Y + Rasio") }}
+  {{ m.section(5, "Financials 6Y + Rasio") }}
   {% if exhibits %}
     {% for ex in exhibits %}
     {% if ex.chart %}
@@ -268,13 +292,13 @@
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
   {% endfor %}
-  {{ m.pagefoot(4, ns) }}
+  {{ m.pagefoot(5, ns) }}
 </div>
 
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Perbandingan Peers") }}
+  {{ m.section(6, "Perbandingan Peers") }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
@@ -283,7 +307,7 @@
     {% endfor %}
   {% endif %}
 
-  {{ m.section(6, "Faktor Risiko") }}
+  {{ m.section(7, "Faktor Risiko") }}
   {% for r in risks %}
   <div class="risk-bucket">
     <b>{{ r.bucket }}</b>
@@ -295,10 +319,10 @@
   {# rule 1: flush the pending exhibit before the closing blocks, so the source line
      lands directly under its object instead of after the disclaimer. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(7, "Disklaimer") }}
+  {{ m.section(8, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(5, ns) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
 {{ m.chartjs() }}

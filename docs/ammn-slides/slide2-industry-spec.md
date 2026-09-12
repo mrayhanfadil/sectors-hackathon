@@ -19,8 +19,29 @@ Slide 2 establishes the macro industry reality, issuer-specific operational cata
 - **Supporting visual discipline**: If an optional supporting visual is included (e.g. Copper/Gold Price Trend or Cumulative Foreign Flow):
   1. Descriptive label **ABOVE** the visual: e.g. `Exhibit [renderer-counter]. Copper LME Cash vs Gold LBMA Spot Trajectory (2024-2026YTD)`. Never generic (`Chart`, `Table`, `Figure`).
   2. Source line **BELOW** the visual: strictly `Source: Company, Team Estimates`, without exception.
-  3. Numbering is **renderer-owned**: managed via the global Typst figure counter (`kind: "exhibit"`). Payloads must **never** supply literal `Exhibit N` strings and must **never** emit an `id` field.
+  3. Numbering is **renderer-owned**: the exhibit macro in `templates/macros.html` owns the counter (`m.exhibit_auto(...)`), which runs unbroken across the whole document. Payloads must **never** supply literal `Exhibit N` strings and must **never** emit an `id` field.
   4. Page furniture (header, publication date, Sectors.app logo, `#067647` divider, footer disclosure, page numbers) is entirely **renderer-owned**. Agents never emit layout furniture.
+
+### 1.3 Binding rule text (owner, 12 Sep 2026)
+
+The paragraphs below are the owner's wording and outrank any paraphrase in this document.
+
+> **SLIDE 2 — Kondisi Industri dan Katalis/Sentimen Emiten**
+>
+> Tidak ada tabel/chart wajib di slide ini secara default (murni narasi tiga paragraf), tapi kalau ada data pendukung visual (misal sector growth trend chart atau fund flow chart), tetap ikut aturan Exhibit sequential dan wajib source line.
+>
+> **Paragraf 1 — Kondisi Industri.** Buka dengan snapshot kondisi sektor secara makro: growth rate sektor tahun berjalan dan/atau forecast (dalam persen, dari data BPS/asosiasi industri/riset internal), demand-supply balance kalau relevan (contoh: utilization rate industri, oversupply/undersupply signal), backdrop makro yang paling material ke sektor tersebut (bisa suku bunga untuk banking/property, nilai tukar untuk emiten net importer/exporter, harga komoditas untuk mining/plantation, atau perubahan daya beli untuk consumer). Tutup paragraf dengan positioning emiten yang dicover relatif terhadap tren sektor ini, apakah dia outperform, in-line, atau underperform sektornya, dan alasan strukturalnya.
+>
+> **Paragraf 2 — Katalis Spesifik Emiten.** Fokus ke katalis yang applicable langsung ke emiten yang dicover, bukan katalis generik sektor. Contoh kategori katalis: perubahan regulasi (POJK, OJK, Bank Indonesia, kebijakan Kementerian terkait), siklus harga komoditas untuk emiten yang exposure ke commodity price, rencana ekspansi kapasitas atau capex besar, aktivitas konsolidasi/M&A di sektor yang bisa mengubah competitive landscape. Setiap katalis yang disebut harus, kalau memungkinkan, dikuantifikasi dampaknya (ke earnings, margin, atau volume emiten), dengan basis perhitungan yang jelas, bukan asumsi tanpa dasar. Kalau tidak ada basis data untuk kuantifikasi, state itu sebagai kualitatif eksplisit, jangan dipaksa kasih angka.
+>
+> **Paragraf 3 — Sentimen Pasar.** Fokus murni ke bagaimana pasar sedang memandang sektor dan emiten ini saat ini, tanpa menyentuh valuasi atau target price sama sekali (itu domain Slide 4-5). Elemen yang bisa dibahas: net buy/sell asing atau domestik di sektor terkait (kalau data tersedia dari KSEI atau Bloomberg), pergerakan saham atau indeks sektor relatif terhadap JCI dalam periode berjalan (bisa refer ke Exhibit 2 di Slide 1 kalau relevan), tone pemberitaan media terhadap sektor (positif/negatif/netral, dengan sedikit konteks kenapa), dan agregat consensus rating di sektor tersebut (berapa banyak broker yang Buy/Hold/Sell untuk saham-saham di sektor ini, sebagai proxy risk appetite investor institusional).
+
+**Implementation (this repo).** The page is built by `server/report/industry_page.py` and rendered as
+deck page 2 by `templates/report_single.html`; it is audited by
+`server/report/house_rules.py::audit_industry_page` (three paragraphs mandatory, paragraph 3 free of
+valuation language) inside `audit_house_rules`, which is the same audit the Critic gate runs.
+Elements the data does not carry are stated as unavailable in the copy — paragraph 3 names the
+absent consensus breadth and the 90-day window cap instead of inventing either.
 
 ---
 

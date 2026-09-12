@@ -39,6 +39,22 @@ KF_NO_DECIMAL_ROWS = ("Revenue", "EBITDA", "Net Profit")
 
 # --- §8 narrative mandates ------------------------------------------------------------------
 KATALIS_HEADING = "News, Sentimen & Katalis"
+
+# Slide 2 (docs/ammn-slides/slide2-industry-spec.md): three narrative paragraphs, no mandatory
+# object. Paragraph 3 reads market positioning only — valuation language there is a domain
+# violation, not a style nit, because the numbers live on the valuation page.
+INDUSTRY_PAGE_HEADINGS = (
+    "1. Kondisi Industri",
+    "2. Katalis Spesifik Emiten",
+    "3. Sentimen Pasar",
+)
+# Matched as whole words: a substring test would fire on ordinary copy (and on English
+# headlines, where "Copper " contains "per ").
+SENTIMENT_FORBIDDEN_TERMS = (
+    "target price", "fair value", "harga wajar", "nilai wajar", "multiple", "valuasi",
+    "ev/ebitda", "wacc", "pbv", "p/bv", "p/e", "dcf", "tp",
+)
+SENTIMENT_FORBIDDEN_CS = (r"\bPER\b",)  # the multiple is written in caps
 VALUASI_HEADING = "Valuasi"
 #: the four sentence blocks the valuation paragraph must carry, in order
 VALUASI_BLOCKS = (
@@ -148,6 +164,40 @@ def audit_valuasi(text: str) -> list[str]:
     return out
 
 
+def audit_industry_page(page: Optional[dict]) -> list[str]:
+    """Audit slide 2 of the deck (`docs/ammn-slides/slide2-industry-spec.md`).
+
+    Three paragraphs are mandatory and none may be empty; paragraph 3 must not carry valuation
+    language. A payload with no such page is not applicable rather than a violation, so an
+    archetype that never renders it cannot be failed for a page it does not have.
+    """
+    if not isinstance(page, dict) or not page:
+        return []
+    paras = [p for p in (page.get("paragraphs") or []) if isinstance(p, dict)]
+    violations: list[str] = []
+    headings = [str(p.get("heading") or "") for p in paras]
+    for want in INDUSTRY_PAGE_HEADINGS:
+        if want not in headings:
+            violations.append(f"slide 2 is missing paragraph '{want}'")
+    for p in paras:
+        if not _text(p.get("body")):
+            violations.append(f"slide 2 paragraph '{p.get('heading') or '?'}' has no body")
+    sentiment = _text(next(
+        (p.get("body") for p in paras if str(p.get("heading") or "").startswith("3.")), ""
+    )).lower()
+    leaked = sorted(
+        {t for t in SENTIMENT_FORBIDDEN_TERMS if re.search(rf"\b{re.escape(t)}\b", sentiment)}
+    )
+    leaked += sorted({m for pat in SENTIMENT_FORBIDDEN_CS for m in re.findall(pat, _text(
+        next((p.get("body") for p in paras if str(p.get("heading") or "").startswith("3.")), "")
+    ))})
+    if leaked:
+        violations.append(
+            "slide 2 paragraph 3 (sentiment) carries valuation language: " + ", ".join(leaked)
+        )
+    return violations
+
+
 def audit_copy_budget(bodies: Iterable[Any]) -> list[str]:
     total = sum(len(_text(b)) for b in bodies)
     if total > COVER_COPY_BUDGET:
@@ -242,11 +292,13 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             (slide2.get("valuasi") or {}).get("body", ""),
         ])
         violations += audit_key_financials(slide2.get("key_financials") or {})
+    # Slide 2 of the deck is audited regardless of the cover spread: it is its own page.
+    violations += audit_industry_page(payload.get("industry_page"))
     return {
         "ok": not violations,
         "applicable": applicable,
         "violations": violations,
-        "sections": ["7-cover", "8-paragraphs", "9-key-financials"],
+        "sections": ["7-cover", "8-paragraphs", "9-key-financials", "slide2-industry"],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
             (slide2.get("katalis") or {}).get("body", ""),

@@ -377,6 +377,17 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         build_slide2(payload, assum if _has_assump else {})
     except Exception as exc:
         build_errors.append(f"slide2 builder failed: {type(exc).__name__}: {exc}")
+    # Deck page 2 (the owner's "slide 2"): Kondisi Industri / Katalis Emiten / Sentimen — three
+    # narrative paragraphs, no mandatory object. NOTE the naming: `cover.slide1/slide2` above are
+    # the cover's two COLUMNS, while the slide numbers in docs/ammn-slides are PAGES. Built after
+    # the fills so it reads the filled catalysts/sentiment blocks; a crash is recorded, never
+    # swallowed — a page that silently vanished would take the §7-§9 audit with it.
+    try:
+        from server.report.industry_page import build_industry_page
+
+        payload["industry_page"] = build_industry_page(payload, assum if _has_assump else {})
+    except Exception as exc:
+        build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:
         payload.setdefault("cover", {})["build_errors"] = build_errors
 

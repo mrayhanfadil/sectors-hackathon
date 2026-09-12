@@ -514,6 +514,18 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
         "the shipped PDF breaks the house format:\n  " + "\n  ".join(result["fails"])
     )
 
+    # Deck page 2 is the industry / catalysts / sentiment page (docs/ammn-slides/
+    # slide2-industry-spec.md): three narrative paragraphs, no mandatory object. This is checked
+    # on the PHYSICAL page, because the ordering guard in test_slide_rules_adoption can pass on
+    # HTML while the page still overflows on paper and drops a paragraph with it.
+    import pymupdf
+
+    doc = pymupdf.open(out)
+    page2 = doc[1].get_text()
+    for heading in ("1. Kondisi Industri", "2. Katalis Spesifik Emiten", "3. Sentimen Pasar"):
+        assert heading in page2, f"deck page 2 lost {heading!r} on paper"
+    assert "Ringkasan Investasi" in doc[2].get_text(), "the summary page is no longer page 3"
+
 
 # --------------------------------------------- template call-site hygiene
 # These three guards used to live in tests/test_exhibit_convention.py, which policed the

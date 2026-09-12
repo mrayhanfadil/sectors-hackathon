@@ -106,6 +106,39 @@ Agents do not lay out pages. They supply data and narrative; the renderer owns
 every element in the tables above. An agent that emits its own header, footer, page
 number, or `Exhibit N` string is producing a duplicate that will drift.
 
+## 6. Deck page order
+
+The deck is generated from the owner's slide numbering. One slide is one page, and the physical
+page index is the slide number, so a page cannot be inserted without renumbering what follows.
+
+| Page | Slide | Content | Spec | Contract |
+|---|---|---|---|---|
+| 1 | 1 | Cover one-pager | `docs/ammn-slides/slide1-cover-spec.md` | §7-§9 below |
+| 2 | 2 | Kondisi industri, katalis emiten, sentimen pasar (three narrative paragraphs, **no mandatory object**) | `docs/ammn-slides/slide2-industry-spec.md` | §6.1 below |
+| 3 | 3 | Performance visualisation and forecasting | `docs/ammn-slides/slide3-visual-spec.md` | pending |
+| 4 | 4 | Valuation methods and assumptions | `docs/ammn-slides/slide4-valuation-spec.md` | pending |
+| 5 | 5 | Peer and relative valuation | `docs/ammn-slides/slide5-peer-spec.md` | pending |
+| 6-7 | 6-7 | Financial statements and disclosures | `docs/ammn-slides/slide6-statements-spec.md` | §3-§4 furniture |
+
+Pages 3 and later still render in the order the single archetype had before the deck was numbered (Ringkasan Investasi, Tesis, Valuasi, Financials 6Y, Peers, Risiko, Disklaimer); each is realigned when its slide rules are wired.
+
+Page 2 is the only page whose content is built outside the templates: `server/report/industry_page.py`
+assembles the three paragraphs from the payload and the assumptions file, and
+`server/report/house_rules.py::audit_industry_page` gates them. The page is narrative, so §1-§2
+(exhibit labeling and numbering) do not apply to the page itself — an optional supporting object
+added here still carries `exhibit_auto`, a descriptive title and the constant source line, and the
+document-wide figure counter treats it like any other object.
+
+### 6.1 Page 2 — three paragraphs, no forced numbers
+
+| Rule | Enforced by | Mechanism |
+|---|---|---|
+| Exactly three paragraphs, in order: Kondisi Industri, Katalis Spesifik Emiten, Sentimen Pasar | `server/report/house_rules.py::audit_industry_page` | the Critic gate and the render gate run the same audit; a missing paragraph is a violation, an absent page is not applicable |
+| Every paragraph carries its data basis on the page | `server/report/industry_page.py` | each paragraph ships a `basis` string; the page prints its outlets under `Basis data:` |
+| Sentiment stays out of valuation | `audit_industry_page` | paragraph 3 is scanned for target price, fair value, multiple and WACC language; a hit is a violation |
+| No forced number when the data has no basis | agent instructions (`SLIDE_PAGES_RULE`) + `industry_page.py` | a missing input is written as unavailable or qualitative in the copy, never estimated |
+| Optional objects obey the exhibit rules | `templates/macros.html` | `exhibit_auto` + constant source line, global counter |
+
 ## 7. Cover slide — the one-pager
 
 The cover is **one physical page**. Sidebar (~30%, left) and main column (~70%, right)
