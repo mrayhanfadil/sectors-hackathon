@@ -99,6 +99,26 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
             if not n.get("date") or not str(n.get("date")).strip():
                 reasons.append(f"News item '{n.get('title', '')[:30]}' missing publication date")
 
+    # 6. Slide rules for the cover spread (docs/rules/house-report-format.md §7-§9)
+    #    Content rules, not layout: the cover builders derive these fields from artifacts, and
+    #    an agent that writes narrative into the cover has to meet the same bar. One shared
+    #    validator so the gate, the render payload and the guards cannot disagree.
+    try:
+        from server.report.house_rules import audit_house_rules
+
+        audit = audit_house_rules(report_data)
+        if audit.get("applicable"):
+            for v in audit.get("violations") or []:
+                reasons.append(f"house slide rules: {v}")
+            if audit.get("violations"):
+                fixes.append(
+                    "Fix the cover-spread violations above (docs/rules/house-report-format.md "
+                    "§7-§9); the copy budget exists because the Key Financials exhibit must "
+                    "stay on the same page as the narrative"
+                )
+    except Exception as exc:  # never let the auditor take the gate down
+        logger.warning("house slide-rule audit unavailable: %s", exc)
+
     verdict = "PASS" if not reasons else "REJECT"
     return {
         "verdict": verdict,

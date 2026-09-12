@@ -162,7 +162,7 @@
       #let kf = data.at("key_financials", default: (:))
       #let kf_title = kf.at("title", default: "Key Financials (2024A-2028F)")
       #let kf_src = kf.at("source", default: "Sectors (pending)")
-      #let kf_headers = kf.at("headers", default: ("Metrik Finansial", "2024A", "2025A", "2026F", "2027F", "2028F"))
+      #let kf_headers = kf.at("headers", default: ("Year to 31 Dec", "2024A", "2025A", "2026F", "2027F", "2028F"))
       #let kf_rows = if kf.at("rows", default: ()).len() > 0 {
         kf.rows.map(r => r.map(c => if c == none { "—" } else if type(c) == str { c } else { str(c) }))
       } else {

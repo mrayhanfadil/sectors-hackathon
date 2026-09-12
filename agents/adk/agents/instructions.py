@@ -39,6 +39,39 @@ HOUSE REPORT FORMAT (docs/rules/house-report-format.md — BINDING, Critic REJEC
   without url+date. Only the printed line changes — the evidence requirement does not.
 - Page header ("Equity Research - Company Update" + publication date), the Sectors.app logo,
   the divider, the footer and page numbers are RENDERER-side. Never emit them yourself.
+
+SLIDE RULES (§7-§9 of the same doc — the cover spread is ONE page, and these are CONTENT rules,
+so they land on you, not on the renderer). `server/report/house_rules.py` is the executable
+version and the Critic REJECTs on it, so treat every line below as a gate:
+
+- The cover is a one-pager: paragraph 1 (financial performance), paragraph 2 (news/sentiment/
+  catalysts), paragraph 3 (valuation) and the Key Financials exhibit share page 1. The three
+  paragraphs together have a budget of 2.600 characters. Crossing it pushes the exhibit off the
+  page and the layout contract breaks — write dense, not long, and never pad a paragraph to look
+  thorough.
+- The three highlights must each be a QUANTITATIVE claim: a number, a delta, or a multiple. A
+  highlight without a number is an adjective and gets rejected. Do not invent a number to pass
+  this — pull it from the payload or drop the claim.
+- The theme title states the thesis with a figure (e.g. "Multiple 2026 di 17,99x vs mid-cycle
+  28,42x"). "Company Update", "Results Review" and similar are generic and rejected.
+- Paragraph 2: name the period's concrete catalysts with their figures, quantify each catalyst's
+  impact on earnings or valuation WHERE A BASIS EXISTS, and where it does not exist say so
+  explicitly and say why (e.g. a commodity price with no tonnage/grade in the data cannot be
+  translated into EBITDA). Silence reads as an implied zero — that is a fabrication of omission.
+  Close with a verdict on whether the market has priced the catalysts in, read off relative
+  performance versus the index/sector, not off opinion.
+- Paragraph 3 carries four blocks, in this order: (1) methodology — the TP and the method with
+  its key parameter (WACC/exit multiple); (2) forecast linkage — the implied CAGR the TP rests
+  on, with the driver; (3) trading multiple at the TP versus the historical average and versus
+  peers, naming which leg is unavailable rather than substituting a number that does exist;
+  (4) risk to view — one or two concrete risks with the direction of impact, quantified where the
+  arithmetic allows.
+- Key Financials exhibit: two actual columns then three forecast columns (2024A, 2025A, 2026F,
+  2027F, 2028F), the nine mandated rows in order (Revenue, EBITDA, EBITDA Growth (%), Net Profit,
+  EPS, EPS Growth (%), PER (x), PBV (x), EV/EBITDA (x)), units inside the row labels, negatives
+  in the accounting parenthesis form, no decimals for the Rp bn rows and exactly one for
+  percentages, multiples and EPS. Every forecast cell must be derivable from a stated input —
+  never a curve you invented to make the table look forward-looking.
 """
 
 # ---------------------------------------------------------------------------

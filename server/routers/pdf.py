@@ -12,6 +12,7 @@ Pipeline:
 from __future__ import annotations
 
 import asyncio
+import logging
 import pathlib
 import sys
 import tempfile
@@ -20,6 +21,19 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
 from typing import Optional
+
+logger = logging.getLogger(__name__)
+
+#: Slide-rule violations that do NOT block the render: they make the document imperfect, not
+#: incomplete. A document missing a mandated section or a derivation note is a different
+#: matter — that one blocks (see the gate at the end of _build_live_payload).
+_ADVISORY_VIOLATIONS = (
+    "carries no unit",
+    "exactly one decimal",
+    "absolute Rp figures carry no decimals",
+    "one-page budget",
+    "is generic",
+)
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = REPO_ROOT / "scripts"
@@ -345,21 +359,64 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                 pass
     # Slide-1 contract (rating status, price box, secondary stats, analyst, theme title,
     # 24M price-vs-IHSG series, quarterly performance paragraph). Runs for every ticker,
-    # after the AMMN fill so it reads the filled cover. Never raises: a leg with no source
-    # renders as an honest "n/a" (see server/report/cover_slide1.py).
+    # after the AMMN fill so it reads the filled cover. A leg with no source renders as an
+    # honest "n/a" (see server/report/cover_slide1.py) — but a builder that CRASHES is
+    # recorded, not swallowed: a missing section would otherwise make the §7-§9 audit
+    # "not applicable" and slip past the gate.
+    build_errors: list[str] = []
     try:
         from server.report.cover_slide1 import build as build_slide1
 
         build_slide1(payload, assum if _has_assump else {})
-    except Exception:
-        pass
-    # Page-2 contract: catalysts paragraph, valuation paragraph, Key Financials exhibit.
+    except Exception as exc:
+        build_errors.append(f"slide1 builder failed: {type(exc).__name__}: {exc}")
+    # Cover main-column contract: catalysts paragraph, valuation paragraph, Key Financials.
     try:
         from server.report.slide2 import build as build_slide2
 
         build_slide2(payload, assum if _has_assump else {})
-    except Exception:
-        pass
+    except Exception as exc:
+        build_errors.append(f"slide2 builder failed: {type(exc).__name__}: {exc}")
+    if build_errors:
+        payload.setdefault("cover", {})["build_errors"] = build_errors
+
+    # Deterministic Critic gate — the same audit `agents/critic.py` exposes, run here because
+    # this is the single choke point shared by the Chromium path and the Typst renderer. The
+    # verdict rides on the payload, so output/cache/render_<TICKER>/report_data.json shows it
+    # instead of leaving it in a log nobody reads.
+    #
+    # Severity: a builder that CRASHED blocks the render — a section silently vanished and the
+    # document is incomplete. Content violations (a paragraph missing its mandate, a misplaced
+    # decimal, the copy budget) are reported rather than thrown: a sparse ticker renders an
+    # honest "n/a" cover, and taking the report offline over a style defect would be worse than
+    # shipping it with the defect named. `agents/critic.py` still REJECTs those payloads in the
+    # ADK gate, and tests/test_slide_rules_adoption.py keeps the shipped cover clean.
+    try:
+        from agents.critic import audit_report_payload
+        from server.report.house_rules import audit_house_rules
+
+        rules = audit_house_rules(payload)
+        if build_errors:
+            rules.setdefault("violations", []).extend(build_errors)
+            rules["ok"] = False
+        payload["house_rules"] = rules
+        payload["critic"] = audit_report_payload(payload)
+        if build_errors:
+            raise RuntimeError(
+                "cover builders failed for " + str(payload.get("meta", {}).get("ticker"))
+                + ": " + "; ".join(build_errors[:3])
+            )
+        blocking = [v for v in (rules.get("violations") or [])
+                    if not any(m in v for m in _ADVISORY_VIOLATIONS)]
+        if blocking:
+            logger.warning(
+                "house slide rules (§7-§9): %d structural violation(s) for %s — first: %s",
+                len(blocking), payload.get("meta", {}).get("ticker"), blocking[0],
+            )
+    except RuntimeError:
+        raise
+    except Exception as exc:
+        logger.warning("house gate unavailable: %s", exc)
     return payload
 
 

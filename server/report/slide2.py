@@ -32,6 +32,14 @@ def _num(x: Any, digits: int) -> str:
     return _n(x, digits) if isinstance(x, (int, float)) else "n/a"
 
 
+def _div(a: Any, b: Any) -> Optional[float]:
+    """None-safe division. A builder that raises takes the whole render down (the pipeline
+    records the failure and blocks), so every derived display degrades to "n/a" instead."""
+    if not isinstance(a, (int, float)) or not isinstance(b, (int, float)) or not b:
+        return None
+    return a / b
+
+
 def _num_acct(x: Any, digits: int) -> str:
     """Table convention from the benchmark cover: negatives read (28,8), not -28,8."""
     s = _num(x, digits)
@@ -164,8 +172,8 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     )
     note2 = (
         f"Multiple pada harga Rp {_num(price, 0)} untuk semua kolom: PER = harga/EPS; PBV = "
-        f"harga/BVPS (ekuitas Rp {_num(equity / 1000, 2)} tn Q1-2026, konstan); EV/EBITDA = "
-        f"(mcap Rp {_num(mcap / 1000, 1)} tn + net debt Rp {_num(net_debt / 1000, 1)} tn)/EBITDA "
+        f"harga/BVPS (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan); EV/EBITDA = "
+        f"(mcap Rp {_num(_div(mcap, 1000), 1)} tn + net debt Rp {_num(_div(net_debt, 1000), 1)} tn)/EBITDA "
         f"tahun itu."
     )
     return {
@@ -300,7 +308,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     wacc_pct = as_pct(wacc)
     parts.append(
         f"Kami menetapkan TP Rp {_num(fv, 0)} menggunakan {method} dengan exit multiple "
-        f"{_num(multiple, 2)}x atas EBITDA mid-cycle Rp {_num(mid_eb / 1000, 2)} tn; leg DCF "
+        f"{_num(multiple, 2)}x atas EBITDA mid-cycle Rp {_num(_div(mid_eb, 1000), 2)} tn; leg DCF "
         f"(WACC {_num(wacc_pct, 2)}%, g {_num((g or 0) * 100, 1)}%) dihitung sebagai pembanding."
     )
     # 2. forecast linkage
@@ -312,7 +320,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         parts.append(
             f"TP ini mengimplikasikan CAGR EBITDA FY26F-FY28F {_num(0.0, 1)}% (jalur mid-cycle "
             f"flat), setara {_pct(cagr_25_28)}/tahun dari EBITDA FY25A "
-            f"Rp {_num(eb[1] / 1000, 2)} tn; revenue {_pct(rev_cagr)}/tahun."
+            f"Rp {_num(_div(eb[1], 1000), 2)} tn; revenue {_pct(rev_cagr)}/tahun."
         )
     # 3. trading multiple at TP
     per_f = None
@@ -323,7 +331,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
     parts.append(
         f"Pada TP, saham dihargai EV/EBITDA 2028F "
-        f"{_num((ev_at_tp / mid_eb) if (ev_at_tp and mid_eb) else None, 1)}x dibandingkan "
+        f"{_num(_div(ev_at_tp, mid_eb), 1)}x dibandingkan "
         f"rata-rata historis 4 tahun {_num(multiple, 2)}x (band {_num(sens.get('low'), 2)}x-"
         f"{_num(sens.get('high'), 2)}x) atau PER 2026F {_num(per_f, 1)}x vs PE subsector "
         f"{_num(peer_pe, 2)}x — peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
@@ -370,4 +378,12 @@ def build(payload: dict, assum: Optional[dict] = None) -> dict:
         "valuasi": build_valuasi(payload, assum, kf),
     }
     payload.setdefault("cover", {})["slide2"] = slide2
+    # Leave the §7-§9 verdict on the payload itself: the Critic gate, the guard tests and a
+    # human reading /api/report/{ticker}/json all read the same audit instead of re-deriving it.
+    try:
+        from .house_rules import audit_house_rules
+
+        payload["house_rules"] = audit_house_rules(payload)
+    except Exception:
+        pass
     return slide2
