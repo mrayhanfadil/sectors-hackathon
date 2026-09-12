@@ -775,6 +775,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         filled.append("valuation.midcycle")
     except Exception:
         pass
+    wacc_rows: list = []
     try:
         rf, beta, erp = float(assum["rf"]), float(assum["beta"]), float(assum["erp"])
         cod = float(assum["cod"])
@@ -784,25 +785,305 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         wacc = float(assum.get("wacc") or wacc_val)
         kd_at = cod * (1 - taxr)
         pc = lambda v: f"{v * 100:.2f}%".replace(".", ",")
+        wacc_rows = [
+            ["Risk-Free Rate (Rf)", pc(rf), "SBN 10Y (AsianBondsOnline 4 Sep 2026)"],
+            ["Equity Risk Premium (ERP)", pc(erp), "Damodaran Indonesia (5 Jan 2026)"],
+            ["Beta relevered (sektor Metals & Mining)", f"{beta:.3f}".replace(".", ","),
+             "Damodaran Betas Global → D/E pasar 31,43%"],
+            ["Biaya Ekuitas (CoE)", pc(coe), "CoE = Rf + Beta × ERP"],
+            ["Biaya Utang Sebelum Pajak (Kd)", pc(cod), "Beban bunga TTM / utang Q1-2026"],
+            ["Tarif Pajak", pc(taxr), "UU HPP"],
+            ["Biaya Utang Setelah Pajak", pc(kd_at), "Kd × (1 − Tax)"],
+            ["Bobot Ekuitas / Utang", f"{pc(we)} / {pc(wd)}",
+             "Spot: mcap 11 Sep 2026 vs utang Q1-2026"],
+            ["WACC Final Diterapkan", pc(wacc), "We×CoE + Wd×Kd_aftertax"],
+        ]
         payload["dcf_deep_dive"] = {
+            "section_sub": ("Menjawab: Bagaimana kalkulasi biaya modal (WACC), sensitivitas "
+                            "WACC × g, skenario EBITDA, dan jembatan EV → ekuitas AMMN?"),
+            "intro": ("Cost of Capital Build, Sensitivitas 5×5, Skenario dan Jembatan EV→Ekuitas "
+                      "dihitung ulang oleh mesin deterministik (scripts/dcf_engine) dari "
+                      "data/assumptions/AMMN.json + hasil harvest Sectors — tanpa angka fallback."),
             "wacc_build": {
                 "headers": ["Komponen WACC", "Nilai", "Metodologi / Sumber"],
-                "rows": [
-                    ["Risk-Free Rate (Rf)", pc(rf), "SBN 10Y (AsianBondsOnline 4 Sep 2026)"],
-                    ["Equity Risk Premium (ERP)", pc(erp), "Damodaran Indonesia (5 Jan 2026)"],
-                    ["Beta relevered (sektor Metals & Mining)", f"{beta:.3f}".replace(".", ","),
-                     "Damodaran Betas Global → D/E pasar 31,43%"],
-                    ["Biaya Ekuitas (CoE)", pc(coe), "CoE = Rf + Beta × ERP"],
-                    ["Biaya Utang Sebelum Pajak (Kd)", pc(cod), "Beban bunga TTM / utang Q1-2026"],
-                    ["Tarif Pajak", pc(taxr), "UU HPP"],
-                    ["Biaya Utang Setelah Pajak", pc(kd_at), "Kd × (1 − Tax)"],
-                    ["Bobot Ekuitas / Utang", f"{pc(we)} / {pc(wd)}",
-                     "Spot: mcap 11 Sep 2026 vs utang Q1-2026"],
-                    ["WACC Final Diterapkan", pc(wacc), "We×CoE + Wd×Kd_aftertax"],
-                ],
+                "rows": wacc_rows,
             },
         }
         filled.append("dcf_deep_dive.wacc_build")
+    except Exception:
+        wacc_rows = []
+
+    # ==== dcf_deep_dive: sensitivity 5x5 / scenarios / bridge (LIVE engine) ===
+    # Every number below is output of scripts/dcf_engine.dcf()/ev_ebitda() — the
+    # same year-end Gordon math the live /api/report engine uses — recomputed
+    # from data/assumptions/AMMN.json + the Sectors harvest. No baked fallback
+    # table can fire while these keys exist (they are always set when the
+    # harvested fcf series is present).
+    try:
+        from scripts.dcf_engine import dcf as _eng_dcf, ev_ebitda as _eng_ev
+    except Exception:  # pragma: no cover - import guard
+        _eng_dcf = _eng_ev = None
+    try:
+        if _eng_dcf is None or _eng_ev is None or not wacc_rows:
+            raise RuntimeError("engine or WACC rows unavailable")
+        fcf_bn = [float(x) for x in (assum.get("fcf") or [])]
+        if not fcf_bn:
+            raise RuntimeError("no harvested fcf series")
+        fcf_idr = [x * 1e9 for x in fcf_bn]          # fcf[] is IDR bn (AMMN.json)
+        shares = float(assum["shares_out"])
+        cash_idr = float(assum["cash"])
+        debt_idr = float(assum["net_debt"])          # GROSS debt bridge leg (net_debt_semantics)
+        g_base = float(assum["g"])
+        mult = float(assum["ev_multiple"])
+        wacc_applied = (float(wacc_val)
+                        if isinstance(wacc_val, (int, float)) and wacc_val
+                        else float(assum["wacc"]))
+        price = float(last_price or assum.get("last_price") or 0)
+
+        base = _eng_dcf(fcf_idr, wacc_applied, g_base, shares_out=shares,
+                        cash=cash_idr, net_debt=debt_idr)
+        pv_exp = float(sum(base["pv_fcfs"]))
+        pv_tv = float(base["terminal_pv"])
+        ev_idr = float(base["firm_value"])
+        eq_idr = float(base["equity_value"])
+        fv_dcf = float(base["fv_per_share"])
+
+        def _n(x: Any, digits: int = 0) -> str:
+            """Indonesian formatting: '.' thousands, ',' decimals — dash if unparseable."""
+            try:
+                s = f"{float(x):,.{digits}f}"
+            except Exception:
+                return "—"
+            if digits:
+                return s.replace(",", "\x00").replace(".", ",").replace("\x00", ".")
+            return s.replace(",", ".")
+
+        def _p2(x: Any, digits: int = 2) -> str:
+            try:
+                return f"{float(x) * 100:.{digits}f}".replace(".", ",") + "%"
+            except Exception:
+                return "—"
+
+        def _up(x: Any) -> str:
+            try:
+                return ("+" if float(x) > 0 else "") + f"{float(x):.1f}".replace(".", ",") + "%"
+            except Exception:
+                return "—"
+
+        def _rating_id(up_pct: Any) -> str:
+            """Report rating bands (mirrors server/routers/pdf.py:214-225)."""
+            if up_pct is None:
+                return "HOLD"
+            if up_pct >= 15:
+                return "BUY"
+            if up_pct >= 5:
+                return "TRADING BUY"
+            if up_pct <= -15:
+                return "SELL"
+            if up_pct <= -5:
+                return "TRADING SELL"
+            return "HOLD"
+
+        # --- Sensitivity: WACC base ±1% (2×0,5pp) × g base ±0,5pp (2×0,25pp)
+        wacc_axis = [round(wacc_applied + i * 0.005, 6) for i in (-2, -1, 0, 1, 2)]
+        g_axis = [round(g_base + j * 0.0025, 6) for j in (-2, -1, 0, 1, 2)]
+        matrix: list = []
+        up_matrix: list = []
+        for w in wacc_axis:
+            row_fv: list = []
+            row_up: list = []
+            for g in g_axis:
+                try:
+                    r = _eng_dcf(fcf_idr, w, g, shares_out=shares,
+                                 cash=cash_idr, net_debt=debt_idr)
+                    f = round(float(r["fv_per_share"]), 2)
+                    row_fv.append(f)
+                    row_up.append(round((f / price - 1.0) * 100, 1) if price else None)
+                except Exception:
+                    row_fv.append(None)
+                    row_up.append(None)
+            matrix.append(row_fv)
+            up_matrix.append(row_up)
+
+        sens_headers = ["WACC \\ g", *[_p2(g) + (" (Base)" if j == 2 else "")
+                                       for j, g in enumerate(g_axis)]]
+        sens_rows = []
+        for i in range(len(wacc_axis)):
+            cells = [_p2(wacc_axis[i]) + (" (Base)" if i == 2 else "")]
+            for j in range(len(g_axis)):
+                f = matrix[i][j]
+                if f is None:
+                    cells.append("—")
+                elif up_matrix[i][j] is None:
+                    cells.append((f"−Rp {_n(abs(f))}" if f < 0 else f"Rp {_n(f)}"))
+                else:
+                    cells.append((f"−Rp {_n(abs(f))}" if f < 0 else f"Rp {_n(f)}")
+                                 + f" ({_up(up_matrix[i][j])})")
+            sens_rows.append(cells)
+        valid = [x for row in matrix for x in row if x is not None]
+
+        # --- Scenarios: harvested EBITDA band × AMMN.json mid-cycle multiple.
+        # Leg = EV/EBITDA, AMMN's gate-primary (AMMN.json gate_primary;
+        # dcf_role: "DCF comparison-only / punitive by construction"), so the
+        # base row ties to the published mid-cycle cross-check.
+        cons_bn = {str(k): float(v) / 1e9
+                   for k, v in (assum.get("ebitda_midcycle_constituents") or {}).items()}
+        mid_bn = (sum(cons_bn.values()) / len(cons_bn)) if cons_bn else None
+        try:
+            q_eb_bn = float(q0.get("ebitda")) / 1e9
+        except Exception:
+            q_eb_bn = None
+        scen_rows: list = []
+        scen_out: dict = {}
+        specs: list = []
+        if cons_bn:
+            weak = min(cons_bn, key=lambda k: cons_bn[k])
+            specs.append(("BEAR", cons_bn[weak],
+                          f"EBITDA {weak} Rp {_n(cons_bn[weak])} tn (terlemah)",
+                          f"EBITDA {weak} Rp {_n(cons_bn[weak], 2)} tn — konstituen siklus "
+                          "terlemah (Sectors annual, AMMN.json ebitda_midcycle_constituents)"))
+        if mid_bn is not None:
+            specs.append(("BASE", mid_bn,
+                          f"EBITDA mid-cycle 3Y Rp {_n(mid_bn)} tn",
+                          f"EBITDA mid-cycle (rata-rata 3 tahun) Rp {_n(mid_bn, 2)} tn — "
+                          "konstituen FY2023/FY2024/FY2025 disitir (MID-EBITDA-PROVENANCE)"))
+        if q_eb_bn and q_eb_bn > 0:
+            specs.append(("BULL", q_eb_bn * 4.0,
+                          f"EBITDA Q1-2026 x4 Rp {_n(q_eb_bn * 4.0)} tn (run-rate)",
+                          f"run-rate EBITDA Q1-2026 Rp {_n(q_eb_bn, 2)} tn x 4 kuartal = "
+                          f"Rp {_n(q_eb_bn * 4.0, 2)} tn (Sectors quarterly 8Q to 2026-03-31)"))
+        mult_id = f"{mult:.2f}".replace(".", ",")
+        for name, eb_bn, short_basis, full_basis in specs:
+            r = _eng_ev(eb_bn * 1e9, mult, net_debt=debt_idr,
+                        shares_out=shares, cash=cash_idr)
+            fv = float(r["fv_per_share"])
+            up_pct = round((fv / price - 1.0) * 100, 1) if price else None
+            rate = _rating_id(up_pct)
+            scen_rows.append([
+                f"{name} — {short_basis}",
+                f"Rp {_n(fv)}",
+                f"{rate} ({_up(up_pct)})" if up_pct is not None else rate,
+            ])
+            scen_out[name] = {
+                "scenario": name,
+                "basis": full_basis,
+                "ebitda_idr": eb_bn * 1e9,
+                "multiple": mult,
+                "fair_value_per_share": fv,
+                "upside": (round(up_pct / 100.0, 6) if up_pct is not None else None),
+                "rating": rate,
+                "leg": "EV/EBITDA",
+            }
+
+        # --- EV → equity bridge (real gross debt / cash, Q1-2026) -------------
+        bridge_rows = [
+            ["PV Explicit + PV Terminal", _n(ev_idr / 1e9),
+             f"Enterprise Value = PV FCFF {_n(pv_exp / 1e9)} + PV TV {_n(pv_tv / 1e9)}"],
+            ["(+) Kas & Setara Kas", "+" + _n(cash_idr / 1e9),
+             "Q1-2026 cash_only (Sectors 2026-03-31)"],
+            ["(−) Total Utang Berbunga", "−" + _n(debt_idr / 1e9),
+             "Utang bruto Q1-2026, bukan nol (net_debt_semantics)"],
+            ["Implied Equity Value", _n(eq_idr / 1e9),
+             f"Rp {_n(fv_dcf)}/saham = FV engine DCF (WACC {_p2(wacc_applied)}, g {_p2(g_base)})"],
+        ]
+
+        ddd = payload.setdefault("dcf_deep_dive", {})
+        ddd["sensitivity"] = {
+            "title": ("Sensitivity Analysis — FV DCF 5×5 (WACC %s ±1%% × g %s ±0,5pp)"
+                      % (_p2(wacc_applied), _p2(g_base))),
+            "headers": sens_headers,
+            "rows": sens_rows,
+            "note": ("Sel dihitung ulang per kombinasi oleh dcf() (25 FV live); tidak ada FV "
+                     "fallback. Basis = mid-cycle FCFF flat Rp "
+                     f"{_n(float(fcf_bn[0]), 1)} bn/thn (AMMN.json fcf_basis)."),
+        }
+        ddd["scenarios"] = {
+            "headers": ["Scenario — basis EBITDA", f"Nilai Wajar (EV/EBITDA {mult_id}×)",
+                        "Investment Recommendation"],
+            "rows": scen_rows,
+            "note": ("Band EBITDA dari hasil harvest (annual Sectors + run-rate kuartalan) × "
+                     f"multiple mid-cycle {mult_id}× (AMMN.json ev_multiple, asumsi eksplisit ±2×). "
+                     f"Kaki DCF (Rp {_n(fv_dcf)}) bersifat pembanding saja "
+                     "(gate_primary = EV/EBITDA)."),
+        }
+        ddd["bridge"] = {
+            "headers": ["Komponen Jembatan", "Nilai (Rp bn)", "Keterangan"],
+            "rows": bridge_rows,
+        }
+        filled.append("dcf_deep_dive.sensitivity[5x5]+scenarios[3]+bridge[4]")
+
+        # --- Exhibit-8 card (page 4) + FCFF table on the DCF method ----------
+        payload.setdefault("valuation", {})["dcf_grid"] = {
+            "pv_explicit": _n(pv_exp / 1e9),
+            "pv_tv": _n(pv_tv / 1e9),
+            "ev": _n(ev_idr / 1e9),
+            "net_cash": ("−" if (cash_idr - debt_idr) < 0 else "")
+                        + _n(abs(cash_idr - debt_idr) / 1e9),
+            "unit": "Rp bn",
+            "source": "scripts/dcf_engine.dcf — PV FCFF + PV TV ± kas − utang bruto (Rp bn, IDR)",
+        }
+        for m in (payload.get("valuation", {}).get("methods") or []):
+            if m.get("method") == "DCF":
+                m["table"] = {
+                    "headers": ["Komponen DCF (Rp bn)",
+                                *[f"FY{2026 + i}F" for i in range(len(fcf_bn))]],
+                    "rows": [
+                        ["Free Cash Flow (FCFF)", *[_n(x, 1) for x in fcf_bn]],
+                        ["Discount Factor",
+                         *[f"{d:.3f}".replace(".", ",") for d in base["discount_factors"]]],
+                        ["Present Value FCFF", *[_n(p / 1e9, 1) for p in base["pv_fcfs"]]],
+                    ],
+                }
+                break
+        filled.append("valuation.dcf_grid + methods[DCF].table(FCFF/DF/PV)")
+
+        # --- cDcf: friend-style block consumed by BOTH renderers -------------
+        # HTML: templates/report_single.html dcf_friend block (svg macros).
+        # Typst: scripts/render_typst.generate_charts (wacc/sens/scenario/waterfall PNGs).
+        payload["cDcf"] = {
+            "wacc_table": [{"label": r[0], "value": r[1]} for r in wacc_rows],
+            "sensitivity": {
+                "fair_value": matrix,
+                "upside": up_matrix,
+                "wacc_axis": wacc_axis,
+                "g_axis": g_axis,
+                "stats": {
+                    "base": round(fv_dcf, 2),
+                    "min": round(min(valid), 2) if valid else None,
+                    "max": round(max(valid), 2) if valid else None,
+                    "n_valid": len(valid),
+                    "n_cells": len(wacc_axis) * len(g_axis),
+                },
+            },
+            "scenarios": scen_out,
+            "valuation": {
+                "pv_explicit": pv_exp,
+                "pv_terminal": pv_tv,
+                "enterprise_value": ev_idr,
+                "cash": cash_idr,
+                "total_debt": debt_idr,
+                "minority": 0.0,
+                "equity_value": eq_idr,
+                "fair_value_per_share": fv_dcf,
+                "market_price": price,
+                "upside": (round(fv_dcf / price - 1.0, 6) if price else None),
+                "wacc": wacc_applied,
+                "g": g_base,
+                "shares_outstanding": shares,
+            },
+            "recommendation": {
+                "rating": rating,
+                "upside": (round(float(upside) / 100.0, 6)
+                           if isinstance(upside, (int, float)) else None),
+                "label": ("Undervalued" if (isinstance(upside, (int, float)) and upside > 0)
+                          else "Overvalued"),
+                "note": (f"FV DCF Rp {_n(fv_dcf)} vs harga Rp {_n(price)} "
+                         f"(WACC {_p2(wacc_applied)}, g {_p2(g_base)}); rating {rating}."),
+            },
+            "provenance": ("scripts/dcf_engine.dcf/ev_ebitda on data/assumptions/AMMN.json "
+                           "+ Sectors harvest — 0 kredit, deterministik."),
+        }
+        filled.append("cDcf(wacc_table/sensitivity/scenarios/valuation)")
     except Exception:
         pass
 
