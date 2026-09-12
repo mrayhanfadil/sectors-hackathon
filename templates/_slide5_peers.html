@@ -1,20 +1,24 @@
-{# ===== SLIDE 5 — Peer Valuation (cross-sectional) + Relative Valuation (time-series) =====
-   Partial for templates/report_single.html. Expects `peers_page` in the render context and the
-   house `m` macros + `ns` exhibit namespace. Rules: docs/ammn-slides/slide5-peer-spec.md
-   Two methodologies, one page, hard visual break, and the disagreement is stated out loud. #}
+{# ===== SLIDE 5A + 5B ============================================================================
+   5A (section 6): Peer Valuation — cross-sectional. Exhibit 11.
+   5B (section 7): Relative Valuation — Own History — time-series. Exhibits 12-13 + implied price.
+
+   The owner's rule puts two philosophies on one slide and demands a hard visual break between them;
+   splitting them into two consecutive pages IS that break, taken to its logical end: the reader
+   physically cannot read one as confirmation of the other. Both halves carry the same page furniture
+   (running head, footer) and the disclaimer stays on 5B. Rules: docs/ammn-slides/slide5-peer-spec.md
+   Expects `peers_page` in the render context plus the house `m` macros and the `ns` exhibit namespace. #}
 {% if peers_page and peers_page.available %}
 {% set A = peers_page.part_a %}
 {% set B = peers_page.part_b %}
 
+{# ------------------------------------------------ 5A — cross-sectional #}
 <div class="page">
 <div class="slide5">
   {{ m.running() }}
-  {{ m.section(6, "Peer Valuation & Valuasi Relatif Historis") }}
-
-  <div class="method-band method-band-a">
-    <span class="method-tag">BAGIAN A — CROSS-SECTIONAL</span>
-    <span class="method-desc">Posisi emiten terhadap <b>peer set</b> pada satu tanggal harga</span>
-  </div>
+  {{ m.section(6, "Peer Valuation — Cross-Sectional") }}
+  <p class="small method-note">Bagian A dari dua metodologi berbeda filosofi. Halaman ini membandingkan
+  emiten dengan <b>peer set</b> pada satu tanggal harga; halaman berikutnya (5B) membandingkannya dengan
+  <b>sejarah dirinya sendiri</b> — keduanya tidak saling mengonfirmasi satu kesimpulan.</p>
 
   {{ m.exhibit_auto(ns, A.title, A.sources[0] if A.sources else "") }}
   <table class="fin-table peer-table">
@@ -57,15 +61,17 @@
   <p class="peer-narr">{{ A.narrative_text }}</p>
   {{ m.pagefoot(6, ns) }}
 </div>
+</div>
 
+{# ------------------------------------------------ 5B — time-series #}
 <div class="page">
 <div class="slide5">
   {{ m.running() }}
   <div class="method-divider">
-    <span>BAGIAN B — TIME-SERIES (own history) · metodologi berbeda filosofi dari tabel peer di atas;
-    keduanya <b>tidak</b> saling mengonfirmasi satu kesimpulan</span>
+    <span>Slide 5B · Relative Valuation — Own History · metodologi time-series, berbeda filosofi dari
+    tabel peer di slide 5A</span>
   </div>
-
+  {{ m.section(7, "Valuasi Relatif Historis — Own History") }}
   <p class="small method-note">{{ B.methodology }}</p>
 
   <table class="band-grid"><tr>

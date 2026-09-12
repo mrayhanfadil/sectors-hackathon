@@ -202,8 +202,13 @@ def test_template_renders_slide_5_and_drops_the_old_peer_table():
     partial = PARTIAL.read_text()
     assert '_slide5_peers.html' in single
     assert "Peer Comparison —" not in single, "the superseded peer table is still in the deck"
-    assert 'class="method-divider"' in partial and "BAGIAN B — TIME-SERIES" in partial
-    for marker in ("MEDIAN", "AVERAGE", "Implied Price Judgement", "peer-self", "band_svg"):
+    # two consecutive pages: 5A cross-sectional (section 6), 5B time-series (section 7)
+    assert partial.count('<div class="page">') == 2, "slide 5A and 5B must be separate pages"
+    assert '{{ m.section(6, "Peer Valuation — Cross-Sectional") }}' in partial
+    assert '{{ m.section(7, "Valuasi Relatif Historis — Own History") }}' in partial
+    assert 'class="method-divider"' in partial and "Slide 5B · Relative Valuation" in partial
+    for marker in ("MEDIAN", "AVERAGE", "Implied Price Judgement", "peer-self", "band_svg",
+                   "keduanya tidak saling mengonfirmasi"):
         assert marker in partial, f"slide-5 partial lost: {marker}"
 
 

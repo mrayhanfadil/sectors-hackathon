@@ -320,7 +320,7 @@
 {# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(7, "Financials 6Y + Rasio") }}
+  {{ m.section(8, "Financials 6Y + Rasio") }}
   {% if exhibits %}
     {% for ex in exhibits %}
     {% if ex.chart %}
@@ -341,7 +341,7 @@
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(8, "Faktor Risiko") }}
+  {{ m.section(9, "Faktor Risiko") }}
   {% for r in risks %}
   <div class="risk-bucket">
     <b>{{ r.bucket }}</b>
@@ -353,7 +353,7 @@
   {# rule 1: flush the pending exhibit before the closing blocks, so the source line
      lands directly under its object instead of after the disclaimer. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(9, "Disklaimer") }}
+  {{ m.section(10, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
   {{ m.pagefoot(9, ns) }}
