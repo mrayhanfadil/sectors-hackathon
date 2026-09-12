@@ -29,6 +29,8 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                                    chart_pbv_bands, chart_wacc_breakdown, chart_sensitivity_heatmap,
                                    chart_scenario_bars, chart_ev_equity_waterfall, chart_index_trend,
                                    chart_margin_trajectory, chart_production_cost,
+                                   chart_revenue_combo, chart_ebitda_combo, chart_netprofit_combo,
+                                   chart_pe_band_1y, chart_pbv_band_1y,
                                    peer_pe_bar, peer_evebitda_bar, peer_pb_scatter, relval_bars)
     except ImportError:
         print(f"[warn] report_charts not importable, skipping charts for {ticker}")
@@ -183,6 +185,38 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
             )
         except Exception as e:
             print(f"[warn] production_cost: {e}")
+    # Slide-3 canonical combos (Ex4-6): payload-driven specs under
+    # data["chart_combos"] (or top-level data["<name>"]); absent -> skipped,
+    # so a keyless honest-empty run emits no exhibit and never crashes.
+    combos = data.get("chart_combos") or {}
+    for _key, _fn in (("revenue_combo", chart_revenue_combo),
+                      ("ebitda_combo", chart_ebitda_combo),
+                      ("netprofit_combo", chart_netprofit_combo)):
+        _spec = combos.get(_key) or data.get(_key) or {}
+        if _spec.get("years") and _spec.get("bars") is not None:
+            try:
+                _fn(palette,
+                    _spec["years"], _spec["bars"], _spec.get("line") or [],
+                    cache / f"{_key}.png",
+                    actual_periods=int(_spec.get("actual_periods", 0) or 0),
+                    source=_spec.get("source", ""))
+            except Exception as e:
+                print(f"[warn] {_key}: {e}")
+    # Slide-5 own-history bands (Ex12-13): trailing series + 1Y mean/median.
+    for _key, _fn in (("pe_hist_band", chart_pe_band_1y),
+                      ("pbv_hist_band", chart_pbv_band_1y)):
+        _spec = data.get(_key) or {}
+        if _spec.get("dates") and _spec.get("values") is not None:
+            try:
+                _fn(palette,
+                    _spec["dates"], _spec["values"],
+                    float(_spec.get("mean", 0) or 0),
+                    float(_spec.get("median", 0) or 0),
+                    float(_spec.get("current", 0) or 0),
+                    cache / f"{_key}.png",
+                    source=_spec.get("source", ""))
+            except Exception as e:
+                print(f"[warn] {_key}: {e}")
     if data.get("peers"):
         try:
             peers_data = data["peers"]
@@ -207,6 +241,27 @@ def generate_charts(ticker: str, data: dict, palette: dict) -> Path:
                 relval_bars(peer_list, cache / "relval_bars.png", ticker=ticker, palette=palette)
         except Exception as e:
             print(f"[warn] peer charts: {e}")
+    # Placeholder fallback (mirrors typst_renderer._generate_charts): every
+    # chart name the template can image() must exist on disk, so a keyless
+    # honest-empty run never crashes typst with "file not found".
+    chart_names = [
+        "vs_jci.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
+        "wacc_breakdown.png", "sensitivity_heatmap.png", "scenario_bars.png",
+        "ev_equity_waterfall.png", "margin_trajectory.png", "production_cost.png",
+        "revenue_combo.png", "ebitda_combo.png", "netprofit_combo.png",
+        "pe_hist_band.png", "pbv_hist_band.png",
+        "index_trend.png",
+        "relval_bars.png", "peer_pe.png", "peer_evebitda.png", "peer_pb.png",
+    ]
+    try:
+        from PIL import Image
+        for _name in chart_names:
+            _p = cache / _name
+            if not _p.exists():
+                _img = Image.new("RGB", (600, 300), color=(249, 250, 251))
+                _img.save(_p)
+    except Exception:
+        pass
     if CACHE_ROOT != Path("/tmp"):
         tmp_cache = Path(f"/tmp/render_{ticker.lower()}/charts")
         try:
@@ -266,6 +321,8 @@ def render(report_data_path: Path, out_pdf: Path) -> str:
     for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
                   "ev_equity_waterfall", "margin_trajectory", "production_cost",
+                  "revenue_combo", "ebitda_combo", "netprofit_combo",
+                  "pe_hist_band", "pbv_hist_band",
                   "index_trend",
                   "relval_bars", "peer_pe", "peer_evebitda", "peer_pb"]:
         _p = charts_dir / f"{_name}.png"

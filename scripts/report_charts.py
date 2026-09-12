@@ -11,9 +11,17 @@ Generates minimalist, publication-grade PNG charts for research reports:
 8. chart_ev_equity_waterfall: EV to Equity valuation waterfall bridge
 9. chart_index_trend: Macro trend line with shaded area
 10. chart_margin_trajectory: Revenue bars + multi-margin trajectory time-series
-11. chart_production_cost: Mining Exhibit-7 — production volume bars (actual vs
-    forecast) + cash-cost line (C1/AISC), both unit-parameterized
-"""
+#11. chart_production_cost: Mining Exhibit-7 — production volume bars (actual vs
+#    forecast) + cash-cost line (C1/AISC), both unit-parameterized
+#12. chart_fin_combo: generic Slide-3 combo — bars actual-solid vs forecast-tinted/hatched
+#    + line on a secondary axis (one visual grammar for Revenue/EBITDA/Net Profit)
+#13. chart_revenue_combo / chart_ebitda_combo / chart_netprofit_combo: thin wrappers
+#    binding the canonical Slide-3 labels/units onto chart_fin_combo
+#14. chart_history_band: generic own-history band — trailing line + 1Y mean (dashed) +
+#    1Y median (dotted) + current-level marker at the right edge
+#15. chart_pe_band_1y / chart_pbv_band_1y: thin wrappers binding the P/E and P/BV
+#    trailing-band titles onto chart_history_band
+#"""
 
 from __future__ import annotations
 
@@ -1530,6 +1538,270 @@ def relval_bars(
     return _save_fig(fig, target_out)
 
 
+# ---------------------------------------------------------------------------
+# 15. chart_fin_combo: generic Slide-3 financial combo (bars + secondary line)
+# ---------------------------------------------------------------------------
+def chart_fin_combo(
+    palette,
+    years,
+    bars,
+    line_vals,
+    out,
+    *,
+    bar_label="Revenue",
+    line_label="Growth",
+    bar_unit="Rpbn",
+    line_unit="yoy %",
+    actual_periods=0,
+    source="",
+    figsize=(6.8, 3.0),
+):
+    """Bars actual-solid vs forecast-tinted/hatched + line on a secondary axis.
+
+    One visual grammar for the three Slide-3 financial combos (Revenue, EBITDA,
+    Net Profit), mirroring chart_production_cost styling: actual bars solid,
+    forecast bars tinted + hatched, with an actual|forecast boundary marker.
+    Returns None on empty/mismatched input so the caller skips the exhibit
+    instead of rendering an empty frame.
+    """
+    if not years or not bars:
+        print("[warn] chart_fin_combo: missing years or bar data")
+        return None
+    try:
+        year_labels = [str(y) for y in years]
+        bar_vals = [float(v) for v in bars]
+        line_list = [float(v) for v in line_vals] if line_vals else []
+    except (TypeError, ValueError) as exc:
+        print(f"[warn] chart_fin_combo: invalid numeric data: {exc}")
+        return None
+    if len(year_labels) != len(bar_vals):
+        print("[warn] chart_fin_combo: years and bars length mismatch")
+        return None
+    if line_list and len(line_list) != len(year_labels):
+        print("[warn] chart_fin_combo: line length mismatch, dropping line")
+        line_list = []
+
+    p = _get_palette(palette)
+    n = len(year_labels)
+    x = np.arange(n)
+    n_actual = max(0, min(int(actual_periods or 0), n))
+
+    fig, ax1 = plt.subplots(figsize=figsize, dpi=200)
+    _apply_style(ax1, p, horizontal_grid=True)
+
+    bar_w = 0.52
+    if n_actual > 0:
+        bars_a = ax1.bar(
+            x[:n_actual], bar_vals[:n_actual], width=bar_w,
+            color=p["brand_dark"], edgecolor="none",
+            label=f"{bar_label} (Aktual)", zorder=3,
+        )
+    else:
+        bars_a = []
+    if n_actual < n:
+        bars_f = ax1.bar(
+            x[n_actual:], bar_vals[n_actual:], width=bar_w,
+            color=p.get("accent", "#ecfdf3"), edgecolor=p["brand_dark"],
+            linewidth=0.8, hatch="//",
+            label=f"{bar_label} (Proyeksi)", zorder=3,
+        )
+    else:
+        bars_f = []
+
+    for _bars, _is_actual in ((bars_a, True), (bars_f, False)):
+        _vals = bar_vals[:n_actual] if _is_actual else bar_vals[n_actual:]
+        for _bar, _val in zip(_bars, _vals):
+            ax1.annotate(
+                f"{_val:,.1f}",
+                xy=(_bar.get_x() + _bar.get_width() / 2, _bar.get_height()),
+                xytext=(0, 3), textcoords="offset points",
+                ha="center", va="bottom", fontsize=6.8,
+                fontweight="bold" if _is_actual else "normal",
+                color=p["ink"] if _is_actual else p["muted"], zorder=5,
+            )
+
+    if 0 < n_actual < n:
+        ax1.axvline(n_actual - 0.5, color=p["line"], linestyle="--", linewidth=0.8, zorder=1)
+        ax1.annotate(
+            "aktual | proyeksi",
+            xy=(n_actual - 0.5, 0.0), xycoords=("data", "axes fraction"),
+            xytext=(0, 3), textcoords="offset points",
+            ha="center", va="bottom", fontsize=6.2, style="italic", color=p["muted"],
+            bbox=dict(facecolor=p["paper"], edgecolor="none", pad=0.8),
+        )
+
+    max_bar = max(bar_vals) if bar_vals else 1.0
+    bar_top = max_bar * 1.30 if max_bar > 0 else 1.0
+    ax1.set_ylim(0, bar_top)
+    ax1.set_xticks(x)
+    ax1.set_xticklabels(year_labels, fontsize=7.5, fontweight="semibold", color=p["ink"])
+    ax1.set_xlim(-0.6, n - 0.4)
+    ax1.set_ylabel(f"{bar_label} ({bar_unit})", fontsize=7.5, color=p["muted"], labelpad=6)
+    ax1.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:,.0f}"))
+
+    ax2 = ax1.twinx()
+    ax2.spines["top"].set_visible(False)
+    ax2.spines["left"].set_visible(False)
+    ax2.spines["right"].set_color(p.get("line", "#e4e7ec"))
+    ax2.spines["right"].set_linewidth(0.75)
+    ax2.tick_params(colors=p.get("muted", "#475467"), labelsize=7.0, length=3, width=0.75)
+    ax2.yaxis.grid(False)
+
+    color_line = "#0e7490"  # institutional slate cyan, parallels the margin chart
+    if line_list:
+        ax2.plot(
+            x, line_list, color=color_line, linewidth=2.0,
+            marker="o", markersize=3.8,
+            label=f"{line_label} ({line_unit})", zorder=6,
+        )
+        lo, hi = min(line_list), max(line_list)
+        pad = (hi - lo) * 0.35 if hi > lo else max(abs(hi) * 0.05, 0.5)
+        ax2.set_ylim(lo - pad, hi + pad)
+        for xi, val in zip(x, line_list):
+            ax2.annotate(
+                f"{val:,.1f}",
+                xy=(xi, val), xytext=(0, 4), textcoords="offset points",
+                ha="center", va="bottom", fontsize=6.4,
+                fontweight="bold", color=color_line, zorder=7,
+            )
+        ax2.set_ylabel(f"{line_label} ({line_unit})", fontsize=7.5, color=p["muted"], labelpad=6)
+    else:
+        ax2.set_visible(False)
+
+    handles1, labels1 = ax1.get_legend_handles_labels()
+    handles2, labels2 = ax2.get_legend_handles_labels()
+    if handles1 or handles2:
+        ax1.legend(handles1 + handles2, labels1 + labels2,
+                   loc="upper center", bbox_to_anchor=(0.5, -0.16),
+                   frameon=False, fontsize=6.8, ncol=max(1, len(handles1 + handles2)))
+
+    ax1.set_title(
+        f"{bar_label} & {line_label}",
+        loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8,
+    )
+    if source:
+        fig.text(0.99, -0.02, f"Source: {source}", fontsize=6.8, color=p["muted"],
+                 ha="right", style="italic")
+
+    return _save_fig(fig, out)
+
+
+def chart_revenue_combo(palette, years, revenue, growth, out, actual_periods=0, source=""):
+    """Slide-3 Exhibit 4: Revenue bars + Revenue growth line."""
+    return chart_fin_combo(
+        palette, years, revenue, growth or [], out,
+        bar_label="Revenue", line_label="Revenue Growth",
+        bar_unit="Rpbn", line_unit="yoy %",
+        actual_periods=actual_periods, source=source,
+    )
+
+
+def chart_ebitda_combo(palette, years, ebitda, margin, out, actual_periods=0, source=""):
+    """Slide-3 Exhibit 5: EBITDA bars + EBITDA margin line."""
+    return chart_fin_combo(
+        palette, years, ebitda, margin or [], out,
+        bar_label="EBITDA", line_label="EBITDA Margin",
+        bar_unit="Rpbn", line_unit="%",
+        actual_periods=actual_periods, source=source,
+    )
+
+
+def chart_netprofit_combo(palette, years, net_profit, eps_growth, out, actual_periods=0, source=""):
+    """Slide-3 Exhibit 6: Net Profit bars + EPS growth line."""
+    return chart_fin_combo(
+        palette, years, net_profit, eps_growth or [], out,
+        bar_label="Net Profit", line_label="EPS Growth",
+        bar_unit="Rpbn", line_unit="yoy %",
+        actual_periods=actual_periods, source=source,
+    )
+
+
+# ---------------------------------------------------------------------------
+# 16. chart_history_band: generic own-history trailing band (Slide-5 tool)
+# ---------------------------------------------------------------------------
+def chart_history_band(
+    palette,
+    dates,
+    values,
+    mean,
+    median,
+    current,
+    out,
+    *,
+    title,
+    ylabel="Multiple (x)",
+    source="",
+    figsize=(6.8, 3.0),
+):
+    """Trailing multiple line + 1Y mean (dashed) + 1Y median (dotted) + current marker.
+
+    Returns None on empty/mismatched input so the caller skips the exhibit.
+    """
+    if not dates or not values:
+        print("[warn] chart_history_band: missing dates or values")
+        return None
+    try:
+        date_labels = [str(d) for d in dates]
+        vals = [float(v) for v in values]
+        mean_f, median_f, current_f = float(mean), float(median), float(current)
+    except (TypeError, ValueError) as exc:
+        print(f"[warn] chart_history_band: invalid numeric data: {exc}")
+        return None
+    if len(date_labels) != len(vals):
+        print("[warn] chart_history_band: dates and values length mismatch")
+        return None
+
+    p = _get_palette(palette)
+    fig, ax = plt.subplots(figsize=figsize, dpi=200)
+    _apply_style(ax, p, horizontal_grid=True)
+
+    x = np.arange(len(date_labels))
+    vals_arr = np.array(vals, dtype=float)
+
+    ax.plot(x, vals_arr, color=p["brand_dark"], linewidth=2.0, label="Trailing", zorder=4)
+    ax.axhline(mean_f, color=p["muted"], linestyle="--", linewidth=1.1, label="Mean (1Y)", zorder=2)
+    ax.axhline(median_f, color=p["muted"], linestyle=":", linewidth=1.1, label="Median (1Y)", zorder=2)
+    ax.plot(
+        x[-1], current_f if current_f else vals_arr[-1],
+        marker="D", markersize=6.0, color=p["brand"],
+        markeredgecolor=p["brand_dark"], markeredgewidth=0.8,
+        label="Current", zorder=5,
+    )
+
+    step = max(1, len(date_labels) // 6)
+    ax.set_xticks(x[::step])
+    ax.set_xticklabels(date_labels[::step], fontsize=7.5, color=p["muted"])
+    ax.set_xlim(-0.3, len(date_labels) - 1 + 0.5)
+    ax.set_ylabel(ylabel, fontsize=7.5, color=p["muted"], labelpad=6)
+    ax.yaxis.set_major_formatter(mticker.FuncFormatter(lambda val, pos: f"{val:.1f}x"))
+    ax.legend(frameon=False, fontsize=7.2, loc="upper left")
+
+    ax.set_title(title, loc="left", fontsize=8.8, fontweight="bold", color=p["ink"], pad=8)
+    if source:
+        fig.text(0.99, -0.01, f"Source: {source}", fontsize=6.8, color=p["muted"],
+                 ha="right", style="italic")
+
+    return _save_fig(fig, out)
+
+
+def chart_pe_band_1y(palette, dates, values, mean, median, current, out, source=""):
+    """Slide-5 Exhibit 12: P/E trailing band vs 1-year history."""
+    return chart_history_band(
+        palette, dates, values, mean, median, current, out,
+        title="P/E Trailing Band vs 1-Year History (mean, median and current level)",
+        ylabel="P/E (x)", source=source,
+    )
+
+
+def chart_pbv_band_1y(palette, dates, values, mean, median, current, out, source=""):
+    """Slide-5 Exhibit 13: P/BV trailing band vs 1-year history."""
+    return chart_history_band(
+        palette, dates, values, mean, median, current, out,
+        title="P/BV Trailing Band vs 1-Year History (mean, median and current level)",
+        ylabel="P/BV (x)", source=source,
+    )
+
+
 __all__ = [
     "DEFAULT_PALETTE",
     "chart_vs_jci",
@@ -1543,6 +1815,13 @@ __all__ = [
     "chart_index_trend",
     "chart_margin_trajectory",
     "chart_production_cost",
+    "chart_fin_combo",
+    "chart_revenue_combo",
+    "chart_ebitda_combo",
+    "chart_netprofit_combo",
+    "chart_history_band",
+    "chart_pe_band_1y",
+    "chart_pbv_band_1y",
     "peer_pe_bar",
     "peer_evebitda_bar",
     "peer_pb_scatter",

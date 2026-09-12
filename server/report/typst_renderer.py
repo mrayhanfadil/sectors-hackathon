@@ -383,6 +383,8 @@ def _generate_charts(ticker: str, data: dict, palette: dict) -> Path:
         "vs_jci.png", "segment_donut.png", "kpi_bars.png", "pbv_bands.png",
         "wacc_breakdown.png", "sensitivity_heatmap.png", "scenario_bars.png",
         "ev_equity_waterfall.png", "margin_trajectory.png", "production_cost.png",
+        "revenue_combo.png", "ebitda_combo.png", "netprofit_combo.png",
+        "pe_hist_band.png", "pbv_hist_band.png",
         "index_trend.png",
         "relval_bars.png", "peer_pe.png", "peer_evebitda.png", "peer_pb.png",
     ]
@@ -475,6 +477,8 @@ def render_report(ticker: str, archetype: str = "auto", out_path: str | Path | N
     for _name in ["vs_jci", "segment_donut", "kpi_bars", "pbv_bands",
                   "wacc_breakdown", "sensitivity_heatmap", "scenario_bars",
                   "ev_equity_waterfall", "margin_trajectory", "production_cost",
+                  "revenue_combo", "ebitda_combo", "netprofit_combo",
+                  "pe_hist_band", "pbv_hist_band",
                   "index_trend",
                   "relval_bars", "peer_pe", "peer_evebitda", "peer_pb"]:
         _p = charts_dir / f"{_name}.png"

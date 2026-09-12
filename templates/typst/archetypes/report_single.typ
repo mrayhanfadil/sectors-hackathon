@@ -84,8 +84,7 @@
       ]
 
       #v(8pt)
-      #let sh_src = data.at("cover", default: (:)).at("shareholders_src", default: "KSEI & IDX")
-      #exhibit-header("Struktur Kepemilikan Saham", sh_src)
+      #text(weight: "bold", fill: PALETTE.brand_dark)[Struktur Kepemilikan Saham]
       #v(2pt)
       #let default_sh = (
         ("PT Ratu Energi Tuban Jaya (RETJ)", "45,0%", "Pengendali"),
@@ -142,6 +141,34 @@
       } else {
         chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE);
       }
+
+      #v(8pt)
+      #let kf = data.at("key_financials", default: (:))
+      #let kf_title = kf.at("title", default: "Key Financials (2024A-2028F)")
+      #let kf_src = kf.at("source", default: "Sectors (pending)")
+      #let kf_headers = kf.at("headers", default: ("Metrik Finansial", "2024A", "2025A", "2026F", "2027F", "2028F"))
+      #let kf_rows = if kf.at("rows", default: ()).len() > 0 {
+        kf.rows.map(r => r.map(c => if c == none { "—" } else if type(c) == str { c } else { str(c) }))
+      } else {
+        (
+          ("Revenue", "—", "—", "—", "—", "—"),
+          ("EBITDA", "—", "—", "—", "—", "—"),
+          ("EBITDA Growth %", "—", "—", "—", "—", "—"),
+          ("Net Profit", "—", "—", "—", "—", "—"),
+          ("EPS", "—", "—", "—", "—", "—"),
+          ("EPS Growth %", "—", "—", "—", "—", "—"),
+          ("PER (x)", "—", "—", "—", "—", "—"),
+          ("PBV (x)", "—", "—", "—", "—", "—"),
+          ("EV/EBITDA (x)", "—", "—", "—", "—", "—"),
+        )
+      }
+      #exhibit-header(kf_title, kf_src)
+      #v(2pt)
+      #fin-table(
+        kf_headers,
+        kf_rows,
+        palette: PALETTE,
+      )
     ],
     [
       #rating-box(
@@ -157,7 +184,7 @@
       #method-selection-panel(gate-verdict, palette: PALETTE)
 
       #v(4pt)
-      #exhibit-header("Informasi Pasar & Saham " + m.ticker, data.at("cover", default: (:)).at("market_src", default: "-"))
+      #text(weight: "bold", fill: PALETTE.brand_dark)[#("Informasi Pasar & Saham " + m.ticker)]
       #card(PALETTE)[
         #v(1pt)
         #text(size: 5.5pt, style: "italic", fill: PALETTE.muted)[Market trading metrics, liquidity statistics, and shareholding structure profile.]
@@ -241,7 +268,7 @@
     (("Parameter Operasional Utama", "-", "-", "-", "-"),)
   })
 
-  #exhibit-header(ex3_title, ex3_src)
+  #text(size: T_H3, weight: "bold", fill: PALETTE.brand_dark)[#ex3_title]
   #v(2pt)
   #fin-table(
     ex3_headers,
@@ -260,7 +287,7 @@
     ("Tata Kelola & Kepatuhan", "Standar kepatuhan industri dan keandalan operasional prima", "Kepatuhan penuh regulasi"),
   ))
 
-  #exhibit-header(ex4_title, ex4_src)
+  #text(size: T_H3, weight: "bold", fill: PALETTE.brand_dark)[#ex4_title]
   #v(2pt)
   #fin-table(
     ex4_headers,
@@ -304,7 +331,7 @@
     default_fh_rows
   }
 
-  #exhibit-header(fh_title, fh_src)
+  #text(size: T_H3, weight: "bold", fill: PALETTE.brand_dark)[#fh_title]
   #v(2pt)
   #fin-table(
     ("Metrik Finansial", ..fh_years),
@@ -314,25 +341,48 @@
 
   #if data.at("charts", default: (:)).at("margin_trajectory", default: false) {
     v(4pt);
-    exhibit-header("Lintasan Pendapatan & Marjin", fh_src);
+    text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Lintasan Pendapatan & Marjin];
     v(2pt);
     image(chart-dir + "/margin_trajectory.png", width: 100%);
   }
 
-  // Exhibit-7 sector switch (mining / E&P upstream): production volume bars
-  // (actual vs forecast) against the cash-cost line (C1/AISC). Title and units
-  // come from the payload because the same chart serves Cu-eq and concentrate
-  // builds; the renderer owns the number.
-  #if data.at("charts", default: (:)).at("production_cost", default: false) {
-    let pc = data.at("production_cost", default: (:))
-    v(4pt);
-    exhibit-header(
-      pc.at("title", default: "Volume Produksi & Biaya Kas (C1/AISC)"),
-      pc.at("source", default: fh_src),
-    );
-    v(2pt);
-    image(chart-dir + "/production_cost.png", width: 100%);
-  }
+  // Slide-3 2x2 grid (canonical Ex4-7): three financial combos + the mining
+  // volume/cost chart. Each cell is payload-driven (title/source) with a
+  // conditional image, so a keyless honest-empty run emits no exhibit here
+  // and never crashes on a missing PNG. The renderer owns the numbers.
+  #v(4pt)
+  #grid(
+    columns: (1fr, 1fr),
+    column-gutter: 8pt,
+    row-gutter: 6pt,
+    [#if data.at("charts", default: (:)).at("revenue_combo", default: false) {
+      let rc = data.at("revenue_combo", default: (:));
+      exhibit-header(rc.at("title", default: "Revenue & Revenue Growth (2024A-2028F)"), rc.at("source", default: fh_src));
+      v(2pt);
+      image(chart-dir + "/revenue_combo.png", width: 100%);
+    }],
+    [#if data.at("charts", default: (:)).at("ebitda_combo", default: false) {
+      let ec = data.at("ebitda_combo", default: (:));
+      exhibit-header(ec.at("title", default: "EBITDA & EBITDA Margin (2024A-2028F)"), ec.at("source", default: fh_src));
+      v(2pt);
+      image(chart-dir + "/ebitda_combo.png", width: 100%);
+    }],
+    [#if data.at("charts", default: (:)).at("netprofit_combo", default: false) {
+      let nc = data.at("netprofit_combo", default: (:));
+      exhibit-header(nc.at("title", default: "Net Profit & EPS Growth (2024A-2028F)"), nc.at("source", default: fh_src));
+      v(2pt);
+      image(chart-dir + "/netprofit_combo.png", width: 100%);
+    }],
+    [#if data.at("charts", default: (:)).at("production_cost", default: false) {
+      let pc = data.at("production_cost", default: (:));
+      exhibit-header(
+        pc.at("title", default: "Volume Produksi & Biaya Kas (C1/AISC)"),
+        pc.at("source", default: fh_src),
+      );
+      v(2pt);
+      image(chart-dir + "/production_cost.png", width: 100%);
+    }],
+  )
 
   #v(8pt)
   #let thesis_list = data.at("thesis", default: ())
@@ -500,6 +550,58 @@
   )
 
   #v(8pt)
+  #let rnav = val.at("rnav", default: (:))
+  #exhibit-header(rnav.at("title", default: "RNAV Bridge — Attributable NAV ke Target Price"), rnav.at("source", default: "Engine RNAV (Sectors pending)"))
+  #v(2pt)
+  #fin-table(
+    rnav.at("headers", default: ("Aset / Komponen", "Kepemilikan %", "NAV Atrib. (Rp bn)", "Keterangan")),
+    if rnav.at("rows", default: ()).len() > 0 {
+      rnav.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+    } else {
+      (
+        ("Aset produksi (100% basis)", "—", "—", "Project DCF / appraisal"),
+        ("Aset pengembangan (100% basis)", "—", "—", "Higher discount rate vs produksi"),
+        ("Eksplorasi / tenemen lain", "—", "—", "Option / appraisal value"),
+        ("Smelter / hilirisasi interest", "—", "—", "Attributable project NAV"),
+        ("(+) Kas & setara kas", "—", "—", "Valuation-date balance"),
+        ("(-) Total utang berbunga", "—", "—", "Valuation-date balance"),
+        ("(-) PV overhead korporat", "—", "—", "Unallocated G&A at WACC"),
+      )
+    },
+    footers: rnav.at("footers", default: (
+      ("Total RNAV", "—", "—", "Bold total"),
+      ("RNAV per saham", "—", "—", "Total RNAV / shares"),
+      ("Diskon ke RNAV", "—", "—", "Peer comps or pure judgment"),
+      ("Target Price (RNAV)", "—", "—", "RNAV/share x (1 - discount)"),
+    )),
+    palette: PALETTE,
+  )
+
+  #v(6pt)
+  #let mcev = val.at("midcycle", default: (:))
+  #exhibit-header(mcev.at("title", default: "EV/EBITDA Mid-Cycle Cross-Check (3Y Average)"), mcev.at("source", default: "Engine Multiple (Sectors pending)"))
+  #v(2pt)
+  #fin-table(
+    mcev.at("headers", default: ("Komponen Mid-Cycle", "Nilai", "Keterangan")),
+    if mcev.at("rows", default: ()).len() > 0 {
+      mcev.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+    } else {
+      (
+        ("EBITDA tahun-1 (constituent)", "—", "3Y constituent year 1"),
+        ("EBITDA tahun-2 (constituent)", "—", "3Y constituent year 2"),
+        ("EBITDA tahun-3 (constituent)", "—", "3Y constituent year 3"),
+        ("Rata-rata EBITDA 3Y (mid-cycle)", "—", "Average of 3 constituents"),
+        ("Target EV/EBITDA", "—", "Min 2 peer prints or assumption + sensitivity leg"),
+        ("Implied EV", "—", "Mid-cycle EBITDA x multiple"),
+        ("(-) Net Debt (same valuation date)", "—", "Same figure as DCF bridge"),
+        ("Implied equity", "—", "Implied EV - Net Debt"),
+        ("Implied per saham (cross-check)", "—", "Own upside, NOT headline TP"),
+      )
+    },
+    palette: PALETTE,
+  )
+
+  #v(8pt)
   #let bands = val.at("bands", default: none)
   #let bands_rows = if bands != none and bands.at("rows", default: ()).len() > 0 {
     bands.rows.map(r => r.map(c => str(c)))
@@ -513,8 +615,7 @@
       ("Posisi Harga Kini", "-", "Rp " + nstr(cover.price), "Valuasi Wajar"),
     )
   }
-  #exhibit-mark("IDX & Analisis Data")
-    #exhibit-figure("Pita Valuasi Historis P/BV 3-Tahun (STD±2)") <ex-pbv>
+  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Pita Valuasi Historis P/BV 3-Tahun (STD±2)]
   #v(2pt)
   #if bands != none and bands.at("rows", default: ()).len() > 0 {
     fin-table(
@@ -523,7 +624,7 @@
       palette: PALETTE,
     );
   } else {
-    text(size: 7.2pt, fill: PALETTE.muted)[Pita historis tidak disajikan — riwayat book value tidak komparabel pasca-akuisisi Aster (ekuitas USD 2,93 miliar menjadi USD 4,66 miliar). Lihat P/B spot 2,10x pada @ex-pbv.];
+    text(size: 7.2pt, fill: PALETTE.muted)[Pita historis tidak disajikan — riwayat book value tidak komparabel. Lihat tabel di atas.];
   }
 
   #v(6pt)
@@ -589,7 +690,7 @@
     columns: (1fr, 1.15fr),
     column-gutter: 8pt,
     [
-      #exhibit-header("Scenario Analysis (Bear / Base / Bull)", "Engine Skenario")
+      #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Scenario Analysis (Bear / Base / Bull)]
       #v(2pt)
       #let scen = ddd.at("scenarios", default: (:))
       #fin-table(
@@ -603,7 +704,7 @@
       )
     ],
     [
-      #exhibit-header("Jembatan Nilai EV ke Ekuitas", "Bridge Waterfall")
+      #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Jembatan Nilai EV ke Ekuitas]
       #v(2pt)
       #let brg = ddd.at("bridge", default: (:))
       #fin-table(
@@ -624,136 +725,19 @@
 #pagebreak(weak: true)
 
 // =====================================================================
-// PAGE 6 — FINANCIAL STATEMENTS 6Y (INCOME, BALANCE & CASHFLOW)
+// PAGE 6 — PEERS & HISTORICAL VALUATION (SLIDE 5)
 // =====================================================================
 #page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 6, PALETTE, [
-  #let fs = data.at("financial_statements", default: (:))
-  #section-header(5, fs.at("section_title", default: "Laporan Keuangan & Rasio Finansial 6 Tahun"), PALETTE, sub: fs.at("section_sub", default: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 6 tahun?"))
-
-  #let inc = fs.at("income", default: (:))
-  #exhibit-header(inc.at("title", default: "Laporan Laba Rugi Komprehensif (Rp Miliar)"), inc.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
-  #v(2pt)
-  #fin-table(
-    inc.at("headers", default: ("Akun Laba Rugi", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F")),
-    inc.at("rows", default: (
-      ("Pendapatan Bersih", "1.290", "1.122", "1.180", "1.245", "1.310", "1.375"),
-      ("Beban Pokok Pendapatan (COGS)", "-520", "-470", "-492", "-516", "-540", "-565"),
-      ("Laba Kotor", "770", "652", "688", "729", "770", "810"),
-      ("Beban Penjualan & Administrasi", "-160", "-112", "-103", "-109", "-112", "-116"),
-      ("EBITDA", "610", "540", "585", "620", "658", "694"),
-      ("Depresiasi & Amortisasi", "-125", "-118", "-132", "-144", "-154", "-162"),
-      ("Laba Usaha (EBIT)", "485", "422", "453", "476", "504", "532"),
-      ("Penghasilan Bunga Bersih", "+18", "+22", "+25", "+28", "+31", "+34"),
-      ("Laba Sebelum Pajak (EBT)", "503", "444", "478", "504", "535", "566"),
-      ("Beban Pajak Penghasilan", "-101", "-89", "-88", "-79", "-73", "-68"),
-      ("Laba Bersih Tahun Berjalan", "402", "355", "390", "425", "462", "498"),
-    )).map(r => r.map(c => str(c))),
-    palette: PALETTE,
-  )
-
-  #v(6pt)
-  #let bal = fs.at("balance", default: (:))
-  #exhibit-header(bal.at("title", default: "Neraca Keuangan Ringkas 6 Tahun (FY24A - FY29F)"), bal.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
-  #v(2pt)
-  #fin-table(
-    bal.at("headers", default: ("Pos Neraca", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F")),
-    bal.at("rows", default: (
-      ("Kas & Setara Kas", "410", "465", "500", "560", "640", "725"),
-      ("Piutang Usaha & Lancar Lain", "208", "184", "194", "203", "212", "221"),
-      ("Total Aset Lancar", "618", "649", "694", "763", "852", "946"),
-      ("Aset Tetap & Hulu Migas", "1.080", "1.020", "1.086", "1.157", "1.228", "1.295"),
-      ("Aset Tidak Lancar Lainnya", "192", "195", "200", "205", "210", "215"),
-      ("Total Aset", "1.890", "1.864", "1.980", "2.125", "2.290", "2.456"),
-      ("Liabilitas Jangka Pendek", "185", "162", "170", "178", "186", "194"),
-      ("Total Liabilitas", "275", "247", "258", "269", "280", "291"),
-      ("Total Ekuitas", "1.615", "1.617", "1.722", "1.856", "2.010", "2.165"),
-    )).map(r => r.map(c => str(c))),
-    palette: PALETTE,
-  )
-
-  #v(6pt)
-  #let cf = fs.at("cashflow", default: (:))
-  #exhibit-header(cf.at("title", default: "Laporan Arus Kas 6 Tahun (FY24A - FY29F)"), cf.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
-  #v(2pt)
-  // House Slide-7 row order: Operating -> Investing -> Financing -> closing
-  // balances. Section labels and subtotals are bolded IN PLACE via
-  // fin-table(bold-rows:), so the sub-total hierarchy is legible without colour,
-  // and the three closing balances close the table through `footers`. Rows are
-  // payload-driven; the default below is honest-empty (dashes), never fabricated.
-  #let cf_headers = cf.at("headers", default: ("Arus Kas", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F"))
-  #let cf_has_data = cf.at("rows", default: ()).len() > 0
-  #let cf_rows = if cf_has_data {
-    cf.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
-  } else {
-    (
-      ("ARUS KAS DARI OPERASI", "", "", "", "", "", ""),
-      ("Laba Bersih Tahun Berjalan", "—", "—", "—", "—", "—", "—"),
-      ("(+) Depresiasi & Amortisasi", "—", "—", "—", "—", "—", "—"),
-      ("(-)/(+) Perubahan Modal Kerja", "—", "—", "—", "—", "—", "—"),
-      ("Pos Operasional Lainnya", "—", "—", "—", "—", "—", "—"),
-      ("Arus Kas Bersih dari Operasi", "—", "—", "—", "—", "—", "—"),
-      ("ARUS KAS DARI INVESTASI", "", "", "", "", "", ""),
-      ("(-) Belanja Modal (Capex)", "—", "—", "—", "—", "—", "—"),
-      ("Pos Investasi Lainnya", "—", "—", "—", "—", "—", "—"),
-      ("Arus Kas Bersih dari Investasi", "—", "—", "—", "—", "—", "—"),
-      ("ARUS KAS DARI PENDANAAN", "", "", "", "", "", ""),
-      ("Utang Ditarik / (Dibayar)", "—", "—", "—", "—", "—", "—"),
-      ("Dividen Dibayarkan", "—", "—", "—", "—", "—", "—"),
-      ("Ekuitas Diterbitkan / (Buyback)", "—", "—", "—", "—", "—", "—"),
-      ("Arus Kas Bersih dari Pendanaan", "—", "—", "—", "—", "—", "—"),
-    )
-  }
-  #let cf_bold = if cf_has_data {
-    cf.at("bold_rows", default: ())
-  } else {
-    (0, 5, 6, 9, 10, 14)
-  }
-  #let cf_footers = cf.at("footers", default: (
-    ("Perubahan Kas Bersih", "—", "—", "—", "—", "—", "—"),
-    ("Saldo Kas Awal", "—", "—", "—", "—", "—", "—"),
-    ("Saldo Kas Akhir (tie-out ke Neraca)", "—", "—", "—", "—", "—", "—"),
-  ))
-  #fin-table(
-    cf_headers,
-    cf_rows,
-    footers: cf_footers,
-    bold-rows: cf_bold,
-    palette: PALETTE,
-  )
-
-  #v(6pt)
-  #let rat = fs.at("ratios", default: (:))
-  #exhibit-header(rat.at("title", default: "Rasio Keuangan & Efisiensi 6 Tahun vs Peer Median"), rat.at("source", default: "Perhitungan Analis & IDX"))
-  #v(2pt)
-  #fin-table(
-    rat.at("headers", default: ("Rasio Kunci", "FY24A", "FY25A", "FY26F", "FY27F", "FY28F", "FY29F", "Peer Median")),
-    rat.at("rows", default: (
-      ("Marjin Laba Kotor (%)", "59,7%", "58,1%", "58,3%", "58,6%", "58,8%", "59,0%", "45,2%"),
-      ("Marjin EBITDA (%)", "47,3%", "48,1%", "49,6%", "49,8%", "50,2%", "50,5%", "32,5%"),
-      ("Marjin Laba Bersih (%)", "31,2%", "31,6%", "33,1%", "34,1%", "35,3%", "36,2%", "18,4%"),
-      ("Imbal Hasil Ekuitas (ROE)", "88,0%", "41,0%", "30,0%", "28,5%", "27,2%", "26,0%", "15,0%"),
-      ("Imbal Hasil Aset (ROA)", "21,3%", "19,0%", "19,7%", "20,0%", "20,2%", "20,5%", "8,5%"),
-      ("Price to Earnings (P/E)", "55,2x", "47,3x", "42,7x", "38,5x", "35,2x", "32,4x", "12,4x"),
-      ("Current Ratio (x)", "3,34x", "4,01x", "4,08x", "4,29x", "4,58x", "4,88x", "1,85x"),
-    )).map(r => r.map(c => str(c))),
-    palette: PALETTE,
-  )
-])
-
-#pagebreak(weak: true)
-
-// =====================================================================
-// PAGE 7 — PEERS, RISKS, RATING GUIDE & DISCLAIMER
-// =====================================================================
-#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 7, PALETTE, [
-  #section-header(6, "Peer Comparison & Investment Risks", PALETTE, sub: "Menjawab: Bagaimana posisi valuasi relatif terhadap kompetitor sejenis dan apa risiko investasi utama?")
+  #section-header(5, "Peer Comparison & Historical Valuation", PALETTE, sub: "Menjawab: Bagaimana posisi valuasi relatif terhadap kompetitor sejenis dan terhadap sejarah multiple emiten sendiri?")
 
   #let peer_data = data.at("peers", default: (:))
   #let peer_tables = peer_data.at("tables", default: ())
   #let peer_tab = if peer_tables.len() > 0 { peer_tables.at(0) } else { (:) }
   #let default_peer_headers = ("Ticker", "Market Cap", "P/E (x)", "EV/EBITDA", "P/BV (x)", "ROE (%)", "Gearing")
-  // LOUD policy: RATU/MEDC/ENRG/ELSA/PGAS peer multiples were baked demo
-  // comparables. Peer rows come from Sectors peers only; absent -> dashes.
+  // LOUD policy: legacy peer multiples were baked demo comparables. Peer rows
+  // come from Sectors peers only; absent -> dashes. Median/Average are bold
+  // summary rows over peer rows only (subject row excluded by the modeler);
+  // absent -> dashes, never fabricated.
   #let default_peer_rows = ((m.ticker, "-", "-", "-", "-", "-", "-"),)
   #let peer_title = if peer_tab.at("pillar", default: none) != none { "Peer Comparison — " + peer_tab.pillar } else { "Peer Comparison — Emiten Sektor " + m.sector }
   #let peer_src = peer_tab.at("source", default: "Sectors (pending)")
@@ -763,19 +747,41 @@
   } else {
     default_peer_rows
   }
+  #let peer_median = peer_tab.at("median", default: ("Median", "-", "-", "-", "-", "-", "-")).map(c => if type(c) == str or type(c) == content { c } else { str(c) })
+  #let peer_average = peer_tab.at("average", default: ("Average", "-", "-", "-", "-", "-", "-")).map(c => if type(c) == str or type(c) == content { c } else { str(c) })
+  #let peer_all = (..peer_rows, peer_median, peer_average)
 
   #exhibit-header(peer_title, peer_src)
   #v(2pt)
   #fin-table(
     peer_headers,
-    peer_rows,
+    peer_all,
+    bold-rows: (peer_rows.len(), peer_rows.len() + 1),
     palette: PALETTE,
   )
+
+  #v(6pt)
+  #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Historical Relative Valuation — Own-History Tool (Time-Series)]
+  #v(2pt)
+  #if data.at("charts", default: (:)).at("pe_hist_band", default: false) {
+    let peb = data.at("pe_hist_band", default: (:));
+    exhibit-header(peb.at("title", default: m.ticker + " — P/E Trailing Band vs 1-Year History (mean, median and current level)"), peb.at("source", default: peer_src));
+    v(2pt);
+    image(chart-dir + "/pe_hist_band.png", width: 100%);
+  }
+  #if data.at("charts", default: (:)).at("pbv_hist_band", default: false) {
+    let pbb = data.at("pbv_hist_band", default: (:));
+    exhibit-header(pbb.at("title", default: m.ticker + " — P/BV Trailing Band vs 1-Year History (mean, median and current level)"), pbb.at("source", default: peer_src));
+    v(2pt);
+    image(chart-dir + "/pbv_hist_band.png", width: 100%);
+  }
+  #v(4pt)
+  #text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Implied prices from this own-history tool are mean-reversion cross-checks that hold fundamental drivers constant at their current TTM/forward level and revert only the multiple to its 1-year historical mean/median. They are a snapshot, not a forecast, and are NOT the official Target Price established in Slide 4 (DCF-shortened / RNAV).]
 
   #v(4pt)
   #let relval_title = "Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)"
   #let relval_src = "Sectors (pending)"
-  #if not data.at("charts", default: (:)).at("peer_evebitda", default: false) {
+  #if data.at("charts", default: (:)).at("relval_bars", default: false) {
     exhibit-header(relval_title, relval_src);
     v(2pt);
     image(chart-dir + "/relval_bars.png", width: 100%);
@@ -792,7 +798,165 @@
     v(2pt);
     text(size: 6.5pt, fill: PALETTE.muted, style: "italic")[Grafik P/E tidak disajikan — P/E trailing tak bermakna di trough siklikal (TPIA 139x, peers terdistorsi).];
   }
+])
 
+#pagebreak(weak: true)
+
+// =====================================================================
+// PAGE 7 — FINANCIAL STATEMENTS 5Y (SLIDE 6: IS+BS / SLIDE 7: CF+RATIOS)
+// =====================================================================
+#page-wrap(m.at("prepared_by", default: "RESEARCH — Equity Report"), m.date, m.ticker, 7, PALETTE, [
+  #let fs = data.at("financial_statements", default: (:))
+  #section-header(6, fs.at("section_title", default: "Laporan Keuangan & Rasio Finansial 5 Tahun (2024A-2028F)"), PALETTE, sub: fs.at("section_sub", default: "Menjawab: Bagaimana proyeksi menyeluruh laba rugi, neraca keuangan, likuiditas, dan profitabilitas 5 tahun?"))
+
+  #let inc = fs.at("income", default: (:))
+  #exhibit-header(inc.at("title", default: "Laporan Laba Rugi Komprehensif (2024A-2028F)"), inc.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #v(2pt)
+  #let inc_headers = inc.at("headers", default: ("Akun Laba Rugi", "2024A", "2025A", "2026F", "2027F", "2028F"))
+  #let inc_rows = if inc.at("rows", default: ()).len() > 0 {
+    inc.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+  } else {
+    (
+      ("Revenue/Sales", "—", "—", "—", "—", "—"),
+      ("Cost of Goods Sold (COGS)", "—", "—", "—", "—", "—"),
+      ("Gross Profit", "—", "—", "—", "—", "—"),
+      ("SG&A / Operating Expenses", "—", "—", "—", "—", "—"),
+      ("EBIT", "—", "—", "—", "—", "—"),
+      ("Interest Income", "—", "—", "—", "—", "—"),
+      ("Interest Expense", "—", "—", "—", "—", "—"),
+      ("Other Non-Operating Income / (Expense)", "—", "—", "—", "—", "—"),
+      ("Pre-tax Profit", "—", "—", "—", "—", "—"),
+      ("Income Tax", "—", "—", "—", "—", "—"),
+      ("Minority Interest", "—", "—", "—", "—", "—"),
+      ("Net Profit", "—", "—", "—", "—", "—"),
+    )
+  }
+  #fin-table(
+    inc_headers,
+    inc_rows,
+    bold-rows: (2, 4, 8, 11),
+    palette: PALETTE,
+  )
+
+  #v(6pt)
+  #let bal = fs.at("balance", default: (:))
+  #exhibit-header(bal.at("title", default: "Neraca Keuangan Ringkas (2024A-2028F)"), bal.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #v(2pt)
+  #let bal_headers = bal.at("headers", default: ("Pos Neraca", "2024A", "2025A", "2026F", "2027F", "2028F"))
+  #let bal_rows = if bal.at("rows", default: ()).len() > 0 {
+    bal.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+  } else {
+    (
+      ("Cash & Equivalents", "—", "—", "—", "—", "—"),
+      ("Trade Receivables", "—", "—", "—", "—", "—"),
+      ("Inventory", "—", "—", "—", "—", "—"),
+      ("Other Current Assets", "—", "—", "—", "—", "—"),
+      ("Total Current Assets", "—", "—", "—", "—", "—"),
+      ("Net Fixed Assets", "—", "—", "—", "—", "—"),
+      ("Other Non-Current Assets", "—", "—", "—", "—", "—"),
+      ("Total Assets", "—", "—", "—", "—", "—"),
+      ("Short-term Debt", "—", "—", "—", "—", "—"),
+      ("Trade Payables", "—", "—", "—", "—", "—"),
+      ("Other Current Liabilities", "—", "—", "—", "—", "—"),
+      ("Total Current Liabilities", "—", "—", "—", "—", "—"),
+      ("Long-term Debt", "—", "—", "—", "—", "—"),
+      ("Other Non-Current Liabilities", "—", "—", "—", "—", "—"),
+      ("Total Liabilities", "—", "—", "—", "—", "—"),
+      ("Shareholders' Equity", "—", "—", "—", "—", "—"),
+      ("Total Liabilities & Equity", "—", "—", "—", "—", "—"),
+    )
+  }
+  #fin-table(
+    bal_headers,
+    bal_rows,
+    bold-rows: (4, 7, 11, 14, 16),
+    palette: PALETTE,
+  )
+
+  #pagebreak(weak: true)
+
+  #v(6pt)
+  #let cf = fs.at("cashflow", default: (:))
+  #exhibit-header(cf.at("title", default: "Laporan Arus Kas (2024A-2028F)"), cf.at("source", default: "Laporan Keuangan IDX & Proyeksi"))
+  #v(2pt)
+  // House Slide-7 row order: Operating -> Investing -> Financing -> closing
+  // balances. Section labels and subtotals are bolded IN PLACE via
+  // fin-table(bold-rows:), so the sub-total hierarchy is legible without colour,
+  // and the three closing balances close the table through `footers`. Rows are
+  // payload-driven; the default below is honest-empty (dashes), never fabricated.
+  #let cf_headers = cf.at("headers", default: ("Arus Kas", "2024A", "2025A", "2026F", "2027F", "2028F"))
+  #let cf_has_data = cf.at("rows", default: ()).len() > 0
+  #let cf_rows = if cf_has_data {
+    cf.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+  } else {
+    (
+      ("ARUS KAS DARI OPERASI", "", "", "", "", ""),
+      ("Laba Bersih Tahun Berjalan", "—", "—", "—", "—", "—"),
+      ("(+) Depresiasi & Amortisasi", "—", "—", "—", "—", "—"),
+      ("(-)/(+) Perubahan Modal Kerja", "—", "—", "—", "—", "—"),
+      ("Pos Operasional Lainnya", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Operasi", "—", "—", "—", "—", "—"),
+      ("ARUS KAS DARI INVESTASI", "", "", "", "", ""),
+      ("(-) Belanja Modal (Capex)", "—", "—", "—", "—", "—"),
+      ("Pos Investasi Lainnya", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Investasi", "—", "—", "—", "—", "—"),
+      ("ARUS KAS DARI PENDANAAN", "", "", "", "", ""),
+      ("Utang Ditarik / (Dibayar)", "—", "—", "—", "—", "—"),
+      ("Dividen Dibayarkan", "—", "—", "—", "—", "—"),
+      ("Ekuitas Diterbitkan / (Buyback)", "—", "—", "—", "—", "—"),
+      ("Arus Kas Bersih dari Pendanaan", "—", "—", "—", "—", "—"),
+    )
+  }
+  #let cf_bold = if cf_has_data {
+    cf.at("bold_rows", default: ())
+  } else {
+    (0, 5, 6, 9, 10, 14)
+  }
+  #let cf_footers = cf.at("footers", default: (
+    ("Perubahan Kas Bersih", "—", "—", "—", "—", "—"),
+    ("Saldo Kas Awal", "—", "—", "—", "—", "—"),
+    ("Saldo Kas Akhir (tie-out ke Neraca)", "—", "—", "—", "—", "—"),
+  ))
+  #fin-table(
+    cf_headers,
+    cf_rows,
+    footers: cf_footers,
+    bold-rows: cf_bold,
+    palette: PALETTE,
+  )
+
+  #v(6pt)
+  #let rat = fs.at("ratios", default: (:))
+  #exhibit-header(rat.at("title", default: "Rasio Keuangan & Efisiensi (2024A-2028F)"), rat.at("source", default: "Perhitungan Analis & IDX"))
+  #v(2pt)
+  #let rat_headers = rat.at("headers", default: ("Rasio Kunci", "2024A", "2025A", "2026F", "2027F", "2028F"))
+  #let rat_rows = if rat.at("rows", default: ()).len() > 0 {
+    rat.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
+  } else {
+    (
+      ("GROWTH (% yoy)", "", "", "", "", ""),
+      ("Sales Growth", "—", "—", "—", "—", "—"),
+      ("EBITDA Growth", "—", "—", "—", "—", "—"),
+      ("Operating Profit (EBIT) Growth", "—", "—", "—", "—", "—"),
+      ("Net Profit Growth", "—", "—", "—", "—", "—"),
+      ("PROFITABILITY (%)", "", "", "", "", ""),
+      ("Gross Margin", "—", "—", "—", "—", "—"),
+      ("EBITDA Margin", "—", "—", "—", "—", "—"),
+      ("Operating Margin", "—", "—", "—", "—", "—"),
+      ("Net Margin", "—", "—", "—", "—", "—"),
+      ("Return on Average Assets (ROAA)", "—", "—", "—", "—", "—"),
+      ("Return on Average Equity (ROAE)", "—", "—", "—", "—", "—"),
+      ("LEVERAGE & COVERAGE (x)", "", "", "", "", ""),
+      ("Net Gearing", "—", "—", "—", "—", "—"),
+      ("Interest Coverage", "—", "—", "—", "—", "—"),
+    )
+  }
+  #fin-table(
+    rat_headers,
+    rat_rows,
+    bold-rows: (0, 5, 12),
+    palette: PALETTE,
+  )
 ])
 
 #pagebreak(weak: true)
