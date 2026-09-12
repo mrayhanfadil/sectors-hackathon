@@ -109,7 +109,10 @@ function ChallengePage() {
             q: questionText,
             verdict: data.verdict || "defend",
             evidence: data.evidence || "Model mempertahankan asumsi berdasarkan konsistensi laporan audited.",
-            exhibit_ref: data.exhibit_ref || "Exhibit 3.1 - Sensitivity & DCF Audit",
+            // House format (docs/rules/house-report-format.md): exhibits are numbered by
+            // the renderer's global counter, so a user-facing string must cite the
+            // exhibit by TITLE. A literal number here drifts the moment a chart moves.
+            exhibit_ref: data.exhibit_ref || "Sensitivity & DCF Audit",
             correction: data.correction,
             debate_id: data.debate_id,
           },

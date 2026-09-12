@@ -293,6 +293,30 @@ def test_challenge_engine_does_not_hand_number_exhibits() -> None:
     )
 
 
+def test_front_end_never_hand_numbers_exhibits() -> None:
+    """Same rule, one surface further out: the FE is user-facing too.
+
+    The challenge form falls back to a hard-coded reference when the backend does not
+    return one. A literal `Exhibit 3.1` there keeps pointing at a chart that has moved
+    (or no longer exists) the moment the report is revised — the PDF counter is owned by
+    the renderer and the FE cannot see it. Cite the exhibit by title instead.
+    """
+    fe_src = REPO_ROOT / "src" / "fe" / "src"
+    if not fe_src.exists():  # FE not checked out (backend-only test run)
+        pytest.skip("src/fe not present")
+    offenders: list[str] = []
+    for path in list(fe_src.rglob("*.ts")) + list(fe_src.rglob("*.tsx")):
+        if "node_modules" in path.parts:
+            continue
+        src = path.read_text(encoding="utf-8")
+        for m in re.finditer(r"""["'`][^"'`]*?Exhibit\s+\d[^"'`]*["'`]""", src):
+            offenders.append(f"{path.relative_to(REPO_ROOT)}: {m.group(0)}")
+    assert not offenders, (
+        "the front end hand-numbers exhibits (drifts from the PDF counter) — cite by title:\n  "
+        + "\n  ".join(offenders)
+    )
+
+
 def test_any_agent_that_mentions_exhibits_carries_the_rule() -> None:
     """Self-maintaining invariant. The rule is bound to WHAT an agent produces, not to a
     hard-coded roster: the moment someone adds an agent that talks about exhibits, this
