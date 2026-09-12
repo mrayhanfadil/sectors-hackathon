@@ -62,7 +62,7 @@ package.json
 package-lock.json
 node_modules/
 
-# Typst fonts (downloaded once)
+# Report font assets (downloaded once)
 assets/fonts/*.ttf
 output/cache/
 

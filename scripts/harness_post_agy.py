@@ -2,7 +2,7 @@
 r"""scripts/harness_post_agy.py — Post-AGY dispatch recovery harness.
 
 Validates any post-AGY change against public API, behavioral, test,
-typst, naming, and font invariants in under 10 seconds.
+naming, and font invariants in under 10 seconds.
 Exits 0 on PASS, exits non-zero on any failure.
 """
 
@@ -11,10 +11,8 @@ from __future__ import annotations
 import inspect
 import os
 import re
-import shutil
 import subprocess
 import sys
-import tempfile
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parent.parent
@@ -183,88 +181,11 @@ def check_tests() -> tuple[bool, str, list[str]]:
     return True, f"tests: PASS ({collected} collected, {failed_count} failed)", []
 
 
-def check_typst() -> tuple[bool, str, list[str]]:
-    """Verify typst invariants:
-    1. 4 archetype templates compile with typst compile --root /
-    2. templates/typst/common/cover.typ defines `#let method-selection-panel(...)`
-    3. templates/typst/common/theme.typ references Source Serif 4 + Inter
-    """
-    errors: list[str] = []
-    archetypes = ["single", "sotp", "infra", "strategy"]
-    fonts_dir = REPO_ROOT / "assets" / "fonts"
-
-    typst_bin = shutil.which("typst") or "/home/fadil/.local/bin/typst"
-    if not Path(typst_bin).is_file():
-        errors.append(f"typst binary not found: {typst_bin}")
-        return False, f"typst: FAIL ({'; '.join(errors)})", errors
-
-    compiled_count = 0
-    with tempfile.TemporaryDirectory() as tmpdir:
-        for arch in archetypes:
-            tmpl_path = (
-                REPO_ROOT / "templates" / "typst" / "archetypes" / f"report_{arch}.typ"
-            )
-            if not tmpl_path.exists():
-                errors.append(f"Template not found: {tmpl_path.relative_to(REPO_ROOT)}")
-                continue
-
-            out_pdf = Path(tmpdir) / f"{arch}.pdf"
-            cmd = [typst_bin, "compile", "--root", "/"]
-            if fonts_dir.is_dir():
-                cmd.extend(["--font-path", str(fonts_dir)])
-            cmd.extend([str(tmpl_path), str(out_pdf)])
-
-            try:
-                res = subprocess.run(
-                    cmd, capture_output=True, text=True, timeout=20, check=False
-                )
-                if (
-                    res.returncode != 0
-                    or not out_pdf.exists()
-                    or out_pdf.stat().st_size == 0
-                ):
-                    err_snippet = res.stderr.strip().replace("\n", " ")[:160]
-                    errors.append(f"{arch} compilation failed: {err_snippet}")
-                else:
-                    compiled_count += 1
-            except (subprocess.SubprocessError, OSError) as e:
-                errors.append(f"{arch} compilation exception: {e}")
-
-    # Check cover.typ
-    cover_file = REPO_ROOT / "templates" / "typst" / "common" / "cover.typ"
-    if not cover_file.exists():
-        errors.append("templates/typst/common/cover.typ missing")
-    else:
-        cover_text = cover_file.read_text(encoding="utf-8")
-        if "#let method-selection-panel(" not in cover_text and not re.search(
-            r"#let\s+method-selection-panel\b", cover_text
-        ):
-            errors.append("cover.typ does not define #let method-selection-panel(...)")
-
-    # Check theme.typ
-    theme_file = REPO_ROOT / "templates" / "typst" / "common" / "theme.typ"
-    if not theme_file.exists():
-        errors.append("templates/typst/common/theme.typ missing")
-    else:
-        theme_text = theme_file.read_text(encoding="utf-8")
-        if "Source Serif 4" not in theme_text:
-            errors.append("theme.typ does not reference Source Serif 4")
-        if "Inter" not in theme_text:
-            errors.append("theme.typ does not reference Inter")
-
-    if errors:
-        return False, f"typst: FAIL ({'; '.join(errors)})", errors
-    return (
-        True,
-        f"typst: PASS ({compiled_count}/4 archetypes compile, cover.typ method-selection-panel defined)",
-        [],
-    )
-
-
 def check_naming() -> tuple[bool, str, list[str]]:
     r"""Verify naming invariants:
     1. grep -rn "\.IJ\b" templates/ server/routers/ docs/ references/ src/ must be empty
-    2. grep -rn "Risks and Catalysts\|Key Takeaways" templates/typst/ must be empty
+    2. no <h1..h4> heading in templates/*.html uses the retired section wording
+       ("Risks and Catalysts", "Key Takeaways")
     """
     errors: list[str] = []
 
@@ -291,11 +212,20 @@ def check_naming() -> tuple[bool, str, list[str]]:
                     ".ico",
                     ".woff",
                     ".woff2",
+                    ".db",
+                    ".sqlite",
+                    ".sqlite3",
+                    ".webp",
+                    ".zip",
+                    ".gz",
                 }
             ):
                 continue
             try:
-                content = f.read_text(encoding="utf-8", errors="ignore")
+                raw = f.read_bytes()
+                if b"\x00" in raw[:4096]:
+                    continue
+                content = raw.decode("utf-8", errors="ignore")
                 for line_idx, line in enumerate(content.splitlines(), start=1):
                     if ij_regex.search(line):
                         rel = f.relative_to(REPO_ROOT)
@@ -306,19 +236,22 @@ def check_naming() -> tuple[bool, str, list[str]]:
     if ij_matches:
         errors.append(f"found .IJ suffix in: {', '.join(ij_matches[:5])}")
 
-    # 2. No old section wording in templates/typst/
-    old_wording_regex = re.compile(r"Risks and Catalysts|Key Takeaways")
+    # 2. Retired section wording must not survive as a HEADING in the report templates.
+    #    Matching headings (not any occurrence) keeps this honest: the phrases are legitimate
+    #    inside an inline Jinja comment or in templates/DATA_CONTRACT.md, which documents which
+    #    archetype adds which block, and neither is a printed section title.
+    retired_heading_regex = re.compile(
+        r"<h[1-4][^>]*>[^<]*\b(?:Risks and Catalysts|Key Takeaways)\b", re.IGNORECASE
+    )
     wording_matches: list[str] = []
-    typst_root = REPO_ROOT / "templates" / "typst"
+    template_root = REPO_ROOT / "templates"
 
-    if typst_root.exists():
-        for f in typst_root.rglob("*"):
-            if not f.is_file() or f.suffix in {".png", ".jpg", ".ttf", ".pdf"}:
-                continue
+    if template_root.exists():
+        for f in sorted(template_root.rglob("*.html")):
             try:
                 content = f.read_text(encoding="utf-8", errors="ignore")
                 for line_idx, line in enumerate(content.splitlines(), start=1):
-                    if old_wording_regex.search(line):
+                    if retired_heading_regex.search(line):
                         rel = f.relative_to(REPO_ROOT)
                         wording_matches.append(f"{rel}:{line_idx}")
             except OSError:
@@ -329,7 +262,7 @@ def check_naming() -> tuple[bool, str, list[str]]:
 
     if errors:
         return False, f"naming: FAIL ({'; '.join(errors)})", errors
-    return True, "naming: PASS (0 .IJ, 0 old section wording)", []
+    return True, "naming: PASS (0 .IJ, 0 retired section headings)", []
 
 
 def check_fonts() -> tuple[bool, str, list[str]]:
@@ -361,7 +294,6 @@ def main() -> int:
     checks = [
         ("python_api", check_python_api),
         ("tests", check_tests),
-        ("typst", check_typst),
         ("naming", check_naming),
         ("fonts", check_fonts),
     ]

@@ -1,4 +1,4 @@
-"""Matplotlib Institutional Chart Engine for Typst Equity Research Reports.
+"""Matplotlib Institutional Chart Engine for Equity Research Reports.
 
 Generates minimalist, publication-grade PNG charts for research reports:
 1. chart_vs_jci: Relative performance vs IHSG

@@ -1,22 +1,11 @@
 """AMMN-R2D regression guard: Gate-0..5 inputs are read from the assumptions file.
 
-Baseline (docs/ammn-slides/verify-report-v2.md §1.1, CHK-01): unassisted
-``render_report('AMMN')`` reached the gate stage and halted with
-
-    ValueError: gate inputs absent for AMMN: missing ['filing_history_years',
-    'ebit_positive_count', 'd_de_ratio', 'net_debt_to_ebitda',
-    'interest_coverage', 'shareholders_equity', 'nci_pct', 'revenue_drivers',
-    'has_steady_state_3y', 'life_cycle_stage'] — refusing fabricated gate params
-
-Root cause: ``server/routers/pdf.py:_build_live_payload`` never put a
-``gate_inputs`` block on the payload, while
-``server/report/typst_renderer.py:_get_ticker_gate_params`` requires one.
-
 This file pins the wiring: gate inputs are READ from ``data/assumptions/{T}.json``
 (nested ``gate_inputs`` block, the same key at top level, or a restatement of a
-quantity the file already declares). Keys the file does not support stay ABSENT —
-the renderer must keep halting loudly and naming them rather than being handed an
-invented filing history / equity base / coverage ratio (LOUD policy).
+quantity the file already declares) and passed through to the payload that
+``agents/valuation/gates.py::evaluate`` consumes. Keys the file does not support stay
+ABSENT — nothing may be handed an invented filing history / equity base / coverage
+ratio (LOUD policy).
 """
 from __future__ import annotations
 
@@ -29,7 +18,7 @@ import pytest
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 AMMN = REPO_ROOT / "data" / "assumptions" / "AMMN.json"
 
-# server/report/typst_renderer.py:_GATE_REQUIRED_KEYS — the keys the gate stage needs.
+# agents/valuation/gates.py:evaluate — the keyword arguments the gate stage needs.
 GATE_KEYS = (
     "filing_history_years",
     "ebit_positive_count",
@@ -160,67 +149,58 @@ def test_ammn_live_payload_gate_inputs_are_file_backed(ammn: dict):
             float(ammn["net_debt_after_cash"]) / float(ammn["ebitda"]), rel=1e-4)
 
 
-def test_ammn_gate_stage_is_loud_about_the_keys_the_file_lacks(ammn: dict):
-    """Current AMMN state: the gate stage must either clear (file supplies all 10) or
-    halt loudly naming exactly the keys the file does not support. Self-clearing when
-    the data lane extends AMMN.json."""
-    from server.report.typst_renderer import _get_ticker_gate_params
+def test_payload_gate_inputs_are_never_invented(ammn: dict):
+    """Every gate input on the payload must trace back to the assumptions file.
+
+    Keys the file does not carry stay ABSENT: the gate stage is then handed only what the
+    filing supports. A defaulted value here would be an invented filing history / equity base /
+    coverage ratio, which is exactly what the LOUD policy forbids.
+    """
     from server.routers.pdf import _build_live_payload
 
     gi = _build_live_payload("AMMN", None)["gate_inputs"]
     nested: dict = dict(ammn.get("gate_inputs") or {})
-    unsupported = [k for k in GATE_KEYS
-                   if k not in gi and k not in nested and ammn.get(k) is None]
-    assert not [k for k in unsupported if k in gi], "loader invented a gate input"
 
-    try:
-        params = _get_ticker_gate_params("AMMN", dict(_build_live_payload("AMMN", None)))
-    except ValueError as exc:
-        assert unsupported, "renderer halted although the file supplied every gate input"
-        named = str(exc)
-        assert all(k in named for k in unsupported), named
-    else:
-        assert all(k in params for k in GATE_KEYS)
-        assert params["domain"]
+    # 1. nothing invented: each carried key is declared by the file (or restated from a
+    #    quantity the file already declares).
+    for key in gi:
+        if key in _RESTATED:
+            continue
+        assert key in nested or ammn.get(key) is not None, f"payload invented gate input {key}"
+
+    # 2. nothing defaulted: a key the file does not support must be absent from the payload,
+    #    not filled with a plausible placeholder.
+    for key in GATE_KEYS:
+        if key in nested or ammn.get(key) is not None or key in _RESTATED:
+            continue
+        assert key not in gi, f"payload defaulted a gate input the file never declares: {key}"
 
 
 # ------------------------------------------------- file -> gate passthrough (end-to-end)
 
-def test_unassisted_render_clears_gate_evaluation_when_the_file_supplies_inputs(
-    tmp_path, monkeypatch
-):
-    """The production entrypoint, unassisted: no gate_inputs injected into the payload.
+def test_unassisted_render_passes_the_files_gate_inputs_through(tmp_path, monkeypatch):
+    """The production loader, unassisted — no gate_inputs injected into the payload.
 
-    The assumptions file (a tmp `data/assumptions/TESTX.json` — the loader's real
-    source) carries the 10 keys, so render_report() must get PAST gate evaluation and
-    publish the gate verdict. Only the later compile stage is stubbed.
+    The assumptions file (a tmp ``data/assumptions/TESTX.json``, the loader's real source)
+    carries the ten keys, so the payload must carry them verbatim and the gate engine must
+    clear with NAV primary: mining domain (Gate 0), 8y filing history (Gate 1, not thin).
     """
-    from server.report import typst_renderer as tr
-
-    (tmp_path / "TESTX.json").write_text(
-        json.dumps(_assumptions(gate_inputs=dict(_DECLARED_GATE_INPUTS))), encoding="utf-8")
-
+    from agents.valuation import gates as gate_engine
     from server.routers import pdf as pdf_router
 
+    (tmp_path / "TESTX.json").write_text(
+        json.dumps(_assumptions(gate_inputs=dict(_DECLARED_GATE_INPUTS))), encoding="utf-8"
+    )
     monkeypatch.setattr(pdf_router, "ASSUMPTIONS_DIR", tmp_path)
-    cache = tmp_path / "cache"
-    monkeypatch.setattr(tr, "CACHE_ROOT", cache)
 
-    def _stub_compile(input_typ, output_pdf, data_path=None, ticker=None):  # noqa: ANN001
-        pathlib.Path(output_pdf).write_bytes(b"%PDF-1.4\n%stub\n")
-        return True
+    _template, _html, data = pdf_router.render_html_for_ticker("TESTX")
+    assert data["gate_inputs"] == _DECLARED_GATE_INPUTS
 
-    monkeypatch.setattr(tr, "compile_typst", _stub_compile)
-
-    out = tr.render_report("TESTX", archetype="single", out_path=tmp_path / "out.pdf")
-    assert pathlib.Path(out).read_bytes().startswith(b"%PDF")
-
-    rendered = json.loads((cache / "render_testx" / "report_data.json").read_text(encoding="utf-8"))
-    assert rendered["gate_inputs"] == _DECLARED_GATE_INPUTS
-    gate_verdict = rendered["gate-verdict"]
-    # Gate 0 mining domain -> NAV primary, DCF secondary; 8y filing history -> not thin.
-    assert gate_verdict["primary"] == "NAV"
-    assert gate_verdict["secondary"] == "DCF"
-    assert gate_verdict["thin_data"] is False
-    assert len(gate_verdict["gates"]) == 6
-    assert gate_verdict["gates"][0]["passed"] is True
+    verdict = gate_engine.evaluate("TESTX", **data["gate_inputs"])
+    # Gate 0 mining -> NAV (reserve-based) primary; Gate 1 passes on an 8y filing history so the
+    # DCF runs as the cross-check rather than as the thin-data fallback.
+    assert verdict.primary.startswith("NAV"), verdict.primary
+    assert "DCF" in verdict.secondary, verdict.secondary
+    assert verdict.thin_data is False
+    assert not verdict.gates_failed
+    assert len(verdict.gates_passed) == 9

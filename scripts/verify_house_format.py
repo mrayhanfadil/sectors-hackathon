@@ -117,8 +117,8 @@ def check(pdf: Path) -> dict:
 
         # Rule 3: the Sectors.app mark, same size and position on every page. Chromium
         # paints an SVG logo as VECTOR PATHS (4 bars, ~32 path items) and a raster logo as
-        # an image XObject, and the Typst header draws it as vector too — so accept either,
-        # but require something SMALL in the top-right corner, otherwise the full-width
+        # an image XObject — so accept either, but require something SMALL in the
+        # top-right corner, otherwise the full-width
         # header divider (height 0.8pt) counts as a logo. Detecting with get_images() alone
         # reports a perfectly rendered vector logo as MISSING.
         mark_band = pymupdf.Rect(page.rect.width * 0.6, 0, page.rect.width, height * 0.12)

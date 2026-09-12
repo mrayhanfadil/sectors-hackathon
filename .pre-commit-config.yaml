@@ -1,5 +1,5 @@
 # .pre-commit-config.yaml — Pre-commit hooks for institutional report pipeline
-# Run order: lint -> format -> tests -> harness -> typst. Stop on first fail.
+# Run order: lint -> format -> tests -> harness. Stop on first fail.
 fail_fast: true
 
 repos:
@@ -29,13 +29,6 @@ repos:
       - id: harness-post-agy
         name: 4. post-agy recovery harness
         entry: .venv/bin/python scripts/harness_post_agy.py
-        language: system
-        pass_filenames: false
-        always_run: true
-
-      - id: typst-compile-archetypes
-        name: 5. typst compile-check 4 archetypes
-        entry: bash -c 'for arch in single sotp infra strategy; do typst compile --font-path assets/fonts --root / templates/typst/archetypes/report_${arch}.typ /tmp/typst_precommit_${arch}.pdf || exit 1; rm -f /tmp/typst_precommit_${arch}.pdf; done'
         language: system
         pass_filenames: false
         always_run: true

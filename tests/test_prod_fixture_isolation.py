@@ -10,8 +10,8 @@ return honest-empty skeletons without Sectors-backed inputs.
 - scripts/report_fixtures.py does not exist; zero references under server/.
 - no `_load_fixture` symbol anywhere under server/ (dead canary removed).
 - collector synthetic path neutered: agents/collector.py::_synthetic raises.
-- pdf-route (render_html_for_ticker) + typst-renderer
-  (_load_or_build_report_data) 422 keyless without data/assumptions files.
+- prod loaders (render_html_for_ticker / _build_live_payload) 422 keyless
+  without data/assumptions files.
 - no 'Sectors (' provenance strings on honest prod payloads.
 
 Run: .venv/bin/python -m pytest tests/test_prod_fixture_isolation.py -q
@@ -178,12 +178,11 @@ def test_load_fixture_helper_deleted():
 
 
 def test_prod_loader_sources_import_no_fixtures():
-    """render_html_for_ticker / _load_or_build_report_data import no fixtures."""
-    from server.routers.pdf import render_html_for_ticker
-    from server.report.typst_renderer import _load_or_build_report_data
+    """render_html_for_ticker / _build_live_payload import no fixtures."""
+    from server.routers.pdf import _build_live_payload, render_html_for_ticker
 
     pat = re.compile(r"^\s*(import|from)\s+\S*report_fixtures", re.M)
-    for fn in (render_html_for_ticker, _load_or_build_report_data):
+    for fn in (render_html_for_ticker, _build_live_payload):
         src = inspect.getsource(fn)
         assert not pat.search(src), f"{fn.__name__} imports report_fixtures"
 
@@ -227,57 +226,31 @@ def test_pdf_route_serves_no_fixture_implicitly(ticker):
     assert ticker in str(ei.value.detail)
 
 
-# ---------------------------------------------------------------- 6. typst renderer
+# ---------------------------------------------------------------- 6. LOUD prod loader
 
-def test_typst_renderer_honest_empty_for_bbca_adro():
-    prod = __import__(
-        "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
-    )
-    for ticker in ("BBCA", "ADRO"):
-        data = prod._load_or_build_report_data(ticker, "auto")
-        rb = (data.get("cover") or {}).get("rating_box") or {}
-        assert rb.get("action") is None and rb.get("tp") is None, (
-            f"{ticker} prod payload carries invented rating/tp"
-        )
-        assert not is_fixture_shaped(data), f"{ticker} prod payload is fixture-shaped"
-        assert_no_fixture_provenance(data, f"typst {ticker}")
+@pytest.mark.parametrize("ticker", ["BBCA", "ADRO", "RATU", "MTEL", "ZZZQ"])
+def test_prod_loader_refuses_without_verified_assumptions(ticker):
+    """LOUD policy: no verified assumptions file -> 422 naming the ticker, never a skeleton.
 
+    The removed Typst loader answered these with an honest-empty skeleton. The served path
+    refuses instead, which is the stronger guarantee: nothing is rendered, so nothing can be
+    fabricated. The skeleton shape is therefore deliberately absent from the codebase.
+    """
+    from server.routers.pdf import _build_live_payload
 
-@pytest.mark.parametrize("ticker", ["RATU", "MTEL", "ZZZQ"])
-def test_typst_renderer_no_implicit_fixture(ticker):
-    prod = __import__(
-        "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
-    )
     with pytest.raises(HTTPException) as ei:
-        prod._load_or_build_report_data(ticker, "auto")
+        _build_live_payload(ticker, None)
     assert ei.value.status_code == 422
-
-
-# ---------------------------------------------------------------- 7. provenance
-
-def test_no_sectors_paren_provenance_on_fixture_shaped_payloads():
-    # Positive control: the retired demo stub serves nothing, so no payload
-    # can carry a fake live-Sectors marker from fixtures anymore...
-    for ticker in ("RATU", "CDIA", "MTEL", "POWR", "JCI", "ACES"):
-        assert load_demo_fixture(ticker) is None, f"demo stub must stay retired for {ticker}"
-
-    # ...and neither may prod loader outputs for honest tickers.
-    prod = __import__(
-        "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
-    )
-    for ticker in ("BBCA", "ADRO"):
-        assert_no_fixture_provenance(
-            prod._load_or_build_report_data(ticker, "auto"), f"prod {ticker}"
-        )
+    assert ticker in str(ei.value.detail)
 
 
 def test_fixture_shape_detector_calibrated():
-    """is_fixture_shaped() separates demo-shaped dicts from honest-empty prod output."""
-    prod = __import__(
-        "server.report.typst_renderer", fromlist=["_load_or_build_report_data"]
-    )
+    """is_fixture_shaped() separates demo-shaped dicts from honest-empty output."""
     demo_shaped = {"cover": {"rating_box": {"tp": 7880, "price": 6200}},
                    "valuation": {"methods": [{"method": "DCF"}]},
                    "financial_highlights": {"rows": [["x"]]}}
+    honest_empty = {"cover": {"rating_box": {"action": None, "tp": None, "price": None}},
+                    "valuation": {"methods": []},
+                    "financial_highlights": {"rows": [], "source": "sectors_missing_key"}}
     assert is_fixture_shaped(demo_shaped)
-    assert not is_fixture_shaped(prod._load_or_build_report_data("BBCA", "auto"))
+    assert not is_fixture_shaped(honest_empty)

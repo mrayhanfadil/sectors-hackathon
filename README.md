@@ -65,7 +65,9 @@ sectors-hackathon/
 Project code will live under `experiment/<track-slug>/` once we commit code (see "Branching & commits" below).
 
 ### Institutional Typography & PDF Engine
-Research publication reports are compiled via Typst using formal corporate research typography tokens:
+Research publication reports are rendered to PDF by a headless Chromium pass over the
+Jinja/HTML templates (`server/routers/pdf.py`), using formal corporate research typography
+tokens:
 - **Serif Body:** Source Serif 4 (`assets/fonts/SourceSerif4-VF.ttf`)
 - **Sans-Serif UI / Headings:** Inter (`assets/fonts/Inter-VF.ttf`)
 - **Monospace / Numerics:** JetBrains Mono (`assets/fonts/JetBrainsMono-VF.ttf`)

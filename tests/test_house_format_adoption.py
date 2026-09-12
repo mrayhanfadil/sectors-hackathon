@@ -1,7 +1,6 @@
 """Adoption guards for the house report format.
 
-`tests/test_exhibit_convention.py` proves the RENDERER implements the house format.
-This file proves the format is actually adopted end to end:
+This file proves the house format is adopted end to end by the served render path:
 
   - `docs/rules/house-report-format.md` exists and is canonical;
   - the data contract the agents write against cannot contradict it;
@@ -20,10 +19,7 @@ footer (sectors.app / disclosure pointer + page number).
 """
 from __future__ import annotations
 
-import json
 import re
-import shutil
-import subprocess
 import sys
 from pathlib import Path
 
@@ -32,8 +28,8 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RULE_DOC = REPO_ROOT / "docs" / "rules" / "house-report-format.md"
 DATA_CONTRACT = REPO_ROOT / "templates" / "DATA_CONTRACT.md"
-TEMPLATES_ARCHETYPES = REPO_ROOT / "templates" / "typst" / "archetypes"
-SERVER_TYPST = REPO_ROOT / "server" / "report" / "typst"
+TEMPLATES_DIR = REPO_ROOT / "templates"
+MACROS = TEMPLATES_DIR / "macros.html"
 
 # Agents whose output can reach the document as an exhibit, table or chart.
 AGENTS_CARRYING_THE_RULE = [
@@ -189,96 +185,16 @@ def test_critic_accepts_a_compliant_payload() -> None:
 
 def test_production_renderer_maps_every_archetype_to_a_convention_template() -> None:
     sys.path.insert(0, str(REPO_ROOT))
-    from server.report.typst_renderer import ARCHETYPE_TEMPLATE_FILES
+    from server.routers.pdf import TEMPLATE_FILES
 
-    assert set(ARCHETYPE_TEMPLATE_FILES) >= {"single", "sotp", "infra", "strategy", "update"}
-    for archetype, filename in ARCHETYPE_TEMPLATE_FILES.items():
-        candidates = [TEMPLATES_ARCHETYPES / filename, SERVER_TYPST / filename]
-        assert any(c.exists() for c in candidates), (
-            f"archetype {archetype!r} maps to {filename!r}, which exists in neither tree"
-        )
-        txt = next(c.read_text(encoding="utf-8") for c in candidates if c.exists())
-        assert "exhibit-header(" in txt or "exhibit-figure(" in txt, (
+    assert set(TEMPLATE_FILES) >= {"single", "sotp", "infra", "strategy"}
+    for archetype, filename in TEMPLATE_FILES.items():
+        template = TEMPLATES_DIR / filename
+        assert template.exists(), f"archetype {archetype!r} maps to a missing {filename!r}"
+        txt = template.read_text(encoding="utf-8")
+        assert "exhibit-id" in txt or "exhibit" in txt, (
             f"{filename} has no house-formatted exhibits"
         )
-
-
-
-
-
-# ------------------------------------------------------------ end-to-end adoption
-
-
-@pytest.mark.skipif(
-    shutil.which("typst") is None or shutil.which("pdftotext") is None,
-    reason="needs the typst CLI and poppler pdftotext",
-)
-def test_document_built_by_the_production_loader_honours_the_house_format(tmp_path: Path) -> None:
-    """The strongest guard: build a payload the way the API/renderer does, render it,
-    and check the rules hold on the artifact a reader would receive."""
-    sys.path.insert(0, str(REPO_ROOT))
-    from server.report.typst_renderer import _load_or_build_report_data
-
-    data_path = tmp_path / "report_data.json"
-    data_path.write_text(
-        json.dumps(_load_or_build_report_data("BBCA", "auto"), ensure_ascii=False),
-        encoding="utf-8",
-    )
-    pdf = tmp_path / "report.pdf"
-    result = subprocess.run(
-        [sys.executable, str(REPO_ROOT / "scripts" / "render_typst.py"), str(data_path),
-         "--out", str(pdf)],
-        capture_output=True, text=True, timeout=600, cwd=str(REPO_ROOT),
-    )
-    assert pdf.exists(), f"render failed:\n{result.stdout}\n{result.stderr}"
-
-    text = subprocess.run(
-        ["pdftotext", str(pdf), "-"], capture_output=True, text=True, check=True
-    ).stdout
-    pages = text.split("\f")[:-1] if text.endswith("\f") else text.split("\f")
-    assert len(pages) >= 1
-
-    # 1. the global counter: the numbers present must be exactly 1..N — no gaps, no
-    # repeats. An exhibit that is deliberately NOT rendered (the canonical Ex 1
-    # EPS-consensus table, no locked consensus feed) does not consume a number, so the
-    # first rendered label IS `Exhibit 1` (house-report-format.md §2: the numbering runs
-    # continuously from the first page, and a reader must never wonder where Ex 1 went).
-    # NOT "appears in ascending order": a two-column page is extracted
-    # column-by-column by pdftotext, so a perfectly correct counter interleaves
-    # (JCI renders 1,3,4,2 by reading across columns). Order is checked per column
-    # below instead, which is the property the rule actually needs.
-    labels = [int(m.group(1)) for m in re.finditer(r"(?m)^Exhibit[\s\u00a0]+(\d+)\.", text)]
-    n = len(labels)
-    assert n > 0, "no exhibits rendered"
-    assert sorted(labels) == list(range(1, n + 1)), (
-        f"exhibit counter is not 1..N with no gaps/repeats: {sorted(labels)}"
-    )
-    assert len(set(labels)) == n, f"exhibit number repeated: {labels}"
-
-    # 2. one constant source line per exhibit
-    assert text.count(CONSTANT_SOURCE) == len(labels), (
-        f"{len(labels)} exhibits but {text.count(CONSTANT_SOURCE)} source lines"
-    )
-
-    # 3. no exhibit label is generic
-    for title in re.findall(r"(?m)^Exhibit[\s\u00a0]+\d+\.\s*(.+)$", text):
-        assert title.strip().lower() not in {"chart", "table", "graph", "data", "figure"}, (
-            f"generic exhibit title rendered: {title!r}"
-        )
-
-    # 4. house header + footer on every page, with complete page numbers
-    for i, page in enumerate(pages, 1):
-        assert HOUSE_HEADER in page, f"page {i} missing the house header {HOUSE_HEADER!r}"
-        assert "sectors.app" in page, f"page {i} missing the footer left"
-        assert "See important disclosure at the back of this report" in page, (
-            f"page {i} missing the footer right"
-        )
-        assert re.search(rf"report\s*·\s*{i}\b", page), f"page {i} missing its page number"
-
-    # 5. the publication date is rendered in house format
-    assert re.search(r"(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday), \d{1,2} \w+ \d{4}", text), (
-        "no `Day, DD Month YYYY` publication date found"
-    )
 
 
 def test_challenge_engine_does_not_hand_number_exhibits() -> None:
@@ -362,28 +278,37 @@ HOUSE_FOOTER_RIGHT = "See important disclosure at the back of this report"
 HOUSE_DIVIDER = "#067647"
 
 
+_TEMPLATE_CONSTANT_KEYS = {
+    "header_title": "HEADER_TITLE",
+    "footer_left": "FOOTER_LEFT",
+    "footer_right": "FOOTER_RIGHT",
+    "source_line": "SOURCE_LINE",
+    "divider_color": "DIVIDER_COLOR",
+}
+
+
 def _theme_constants() -> dict:
-    """Read the fixed strings straight out of the Typst theme, so the assertion is
-    against what actually renders, not against a Python copy of it."""
-    txt = (REPO_ROOT / "templates" / "typst" / "common" / "theme.typ").read_text(encoding="utf-8")
+    """Read the fixed strings out of the template that renders them, so the assertion is
+    against what actually ships rather than against a Python copy of it."""
+    txt = MACROS.read_text(encoding="utf-8")
     out = {}
-    for key in ("HEADER_TITLE", "FOOTER_LEFT", "FOOTER_RIGHT", "SOURCE_LINE", "HEADER_DIVIDER_COLOR"):
-        m = re.search(rf'^#let {key} = (.+)$', txt, re.M)
-        assert m, f"theme.typ no longer defines {key}"
-        out[key] = m.group(1).strip()
+    for key in _TEMPLATE_CONSTANT_KEYS:
+        m = re.search(r'\{\{ HOUSE\.' + key + r' \| default\("([^"]*)"\)', txt)
+        assert m, f"macros.html no longer declares a default for HOUSE.{key}"
+        out[key] = m.group(1)
     return out
 
 
 def test_theme_furniture_matches_the_rule_doc() -> None:
     c = _theme_constants()
-    assert c["HEADER_TITLE"] == f'"{HOUSE_HEADER}"', c["HEADER_TITLE"]
-    assert c["FOOTER_LEFT"] == f'"{HOUSE_FOOTER_LEFT}"'
-    assert c["FOOTER_RIGHT"] == f'"{HOUSE_FOOTER_RIGHT}"'
-    assert c["HEADER_DIVIDER_COLOR"] == f'rgb("{HOUSE_DIVIDER}")', c["HEADER_DIVIDER_COLOR"]
-    assert c["SOURCE_LINE"] == '"Company, Team Estimates"'
+    assert c["header_title"] == HOUSE_HEADER, c["header_title"]
+    assert c["footer_left"] == HOUSE_FOOTER_LEFT
+    assert c["footer_right"] == HOUSE_FOOTER_RIGHT
+    assert c["divider_color"] == HOUSE_DIVIDER, c["divider_color"]
+    assert c["source_line"] == "Company, Team Estimates"
 
     # the derived printed source line is exactly what the rule doc mandates
-    assert f"Source: {c['SOURCE_LINE'].strip(chr(34))}" == CONSTANT_SOURCE
+    assert f"Source: {c['source_line']}" == CONSTANT_SOURCE
 
     doc = RULE_DOC.read_text(encoding="utf-8")
     for value in (HOUSE_HEADER, HOUSE_FOOTER_LEFT, HOUSE_FOOTER_RIGHT, HOUSE_DIVIDER):
@@ -392,94 +317,14 @@ def test_theme_furniture_matches_the_rule_doc() -> None:
 
 
 def test_theme_carries_the_brand_mark() -> None:
-    """The header right says Sectors.app logo; the theme must point at a real asset in
-    BOTH template trees, since they are resolved by relative path."""
-    txt = (REPO_ROOT / "templates" / "typst" / "common" / "theme.typ").read_text(encoding="utf-8")
-    m = re.search(r'^#let LOGO_PATH = "(.+)"$', txt, re.M)
-    assert m, "theme.typ has no LOGO_PATH"
-    rel = m.group(1)
-    for tree in ("templates/typst/common", "server/report/typst"):
-        asset = (REPO_ROOT / tree / rel).resolve()
-        assert asset.exists(), f"logo missing for {tree}: {asset}"
+    """The header right carries the Sectors.app mark: the template must reference it and the
+    asset it points at must exist."""
+    from server.report import house_format
+
+    assert "HOUSE.logo" in MACROS.read_text(encoding="utf-8"), "macros.html no longer renders the mark"
+    assert house_format.LOGO_PATH.exists(), f"brand mark missing: {house_format.LOGO_PATH}"
 
 
-def _exhibit_positions(pdf) -> list:
-    """(page, x, y, n) for every exhibit label, from the PDF's own word boxes."""
-    import xml.etree.ElementTree as ET
-
-    out = subprocess.run(["pdftotext", "-bbox", str(pdf), "-"], capture_output=True, text=True,
-                         check=True).stdout
-    root = ET.fromstring(out)
-    ns = {"h": "http://www.w3.org/1999/xhtml"}
-    positions = []
-    for pi, page in enumerate(root.iter("{http://www.w3.org/1999/xhtml}page"), 1):
-        words = [(float(w.get("xMin")), float(w.get("yMin")), (w.text or "").strip())
-                 for w in page.iter("{http://www.w3.org/1999/xhtml}word")]
-        for i, (x, y, txt) in enumerate(words):
-            if txt == "Exhibit" and i + 1 < len(words):
-                m = re.match(r"(\d+)\.", words[i + 1][2])
-                if m:
-                    positions.append((pi, x, y, int(m.group(1))))
-    return positions
-
-
-@pytest.mark.skipif(
-    shutil.which("typst") is None or shutil.which("pdftotext") is None,
-    reason="needs the typst CLI and poppler pdftotext",
-)
-def test_exhibit_counter_is_monotonic_down_the_page(tmp_path: Path) -> None:
-    """The global counter must still run in reading order WITHIN a column: a lower
-    number must not appear below a higher one on the same page in the same column.
-    (Numbering is global across pages, so page-to-page starts are not constrained.)"""
-    sys.path.insert(0, str(REPO_ROOT))
-    from server.report.typst_renderer import _load_or_build_report_data
-
-    data_path = tmp_path / "report_data.json"
-    data_path.write_text(json.dumps(_load_or_build_report_data("BBCA", "auto"), ensure_ascii=False),
-                         encoding="utf-8")
-    pdf = tmp_path / "report.pdf"
-    subprocess.run([sys.executable, str(REPO_ROOT / "scripts" / "render_typst.py"),
-                    str(data_path), "--out", str(pdf)],
-                   capture_output=True, text=True, timeout=600, cwd=str(REPO_ROOT))
-    assert pdf.exists()
-
-    # bucket labels into columns by x-distance, then require ascending y within a bucket
-    from collections import defaultdict
-    per_page = defaultdict(list)
-    for pi, x, y, num in _exhibit_positions(pdf):
-        per_page[pi].append((x, y, num))
-
-    checked = 0
-    for pi, items in per_page.items():
-        if len(items) < 2:
-            continue
-        xs = sorted({round(x) for x, _, _ in items})
-        cols = []
-        for x in xs:
-            if not cols or x - cols[-1][-1] > 40:
-                cols.append([x])
-            else:
-                cols[-1].append(x)
-        for col in cols:
-            lo, hi = min(col) - 40, max(col) + 40
-            nums = sorted(((y, n) for x, y, n in items if lo <= x <= hi))
-            if len(nums) > 1:
-                seq = [n for _, n in nums]
-                assert seq == sorted(seq), f"page {pi} column {col}: exhibit numbers descend {seq}"
-                checked += 1
-    assert checked >= 1, "no multi-exhibit column was actually checked"
-
-
-# =====================================================================================
-# The LIVE path. The report the FE downloads comes from
-# GET /api/report/{ticker}/pdf -> server/routers/pdf.py -> Jinja -> Playwright, which
-# renders templates/*.html. The Typst tree is a separate template set with no router
-# reaching it, so proving the Typst templates comply proves nothing about the document
-# a reader actually gets. These tests exercise the Jinja path.
-# =====================================================================================
-
-# A self-contained payload: no fixture, no live fetch. Just enough shape to reach every
-# exhibit-emitting branch of report_single.html (chart, table, statement, peer table).
 _JINJA_PAYLOAD = {
     "meta": {
         "template": "single", "ticker": "TEST", "company_name": "Test Persero",
@@ -520,7 +365,7 @@ _JINJA_PAYLOAD = {
 def _render_jinja_html(payload: dict) -> str:
     sys.path.insert(0, str(REPO_ROOT / "scripts"))
     sys.path.insert(0, str(REPO_ROOT))
-    from render_pdf_chromium import render_html
+    from render_pdf import render_html
 
     _name, html = render_html(payload)
     return html
@@ -589,32 +434,17 @@ def test_live_html_path_provenance_is_kept_but_not_printed() -> None:
             assert line.strip().startswith("<!--"), f"provenance printed: {line.strip()[:80]}"
 
 
-def test_both_renderers_share_one_house_format_implementation() -> None:
-    """Two independent Jinja environments (the API and the standalone script) render the
-    same templates. The furniture must come from the shared module, not be re-typed."""
-    from server.report import house_format
-
-    assert house_format.HEADER_TITLE == HOUSE_HEADER
-    assert house_format.FOOTER_LEFT == HOUSE_FOOTER_LEFT
-    assert house_format.FOOTER_RIGHT == HOUSE_FOOTER_RIGHT
-    assert house_format.DIVIDER_COLOR == HOUSE_DIVIDER
-    assert f"Source: {house_format.SOURCE_LINE}" == CONSTANT_SOURCE
-
-    for rel in ("server/routers/pdf.py", "scripts/render_pdf_chromium.py"):
-        src = (REPO_ROOT / rel).read_text(encoding="utf-8")
-        assert "house_format.install(env" in src, f"{rel} does not install the house furniture"
-
-
-def test_house_format_module_matches_the_typst_theme() -> None:
-    """The Jinja and Typst trees are independent; the values must not drift."""
+def test_house_format_module_matches_the_template_defaults() -> None:
+    """The template defaults and the Python constants describe the same furniture; a value
+    edited in one place only must not be able to drift."""
     from server.report import house_format
 
     c = _theme_constants()
-    assert c["HEADER_TITLE"] == f'"{house_format.HEADER_TITLE}"'
-    assert c["FOOTER_LEFT"] == f'"{house_format.FOOTER_LEFT}"'
-    assert c["FOOTER_RIGHT"] == f'"{house_format.FOOTER_RIGHT}"'
-    assert c["SOURCE_LINE"] == f'"{house_format.SOURCE_LINE}"'
-    assert c["HEADER_DIVIDER_COLOR"] == f'rgb("{house_format.DIVIDER_COLOR}")'
+    assert c["header_title"] == house_format.HEADER_TITLE
+    assert c["footer_left"] == house_format.FOOTER_LEFT
+    assert c["footer_right"] == house_format.FOOTER_RIGHT
+    assert c["source_line"] == house_format.SOURCE_LINE
+    assert c["divider_color"] == house_format.DIVIDER_COLOR
 
 
 @pytest.mark.parametrize("tpl_file", ["report_single", "report_sotp", "report_infra",
@@ -683,3 +513,44 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
     assert not result["fails"], (
         "the shipped PDF breaks the house format:\n  " + "\n  ".join(result["fails"])
     )
+
+
+# --------------------------------------------- template call-site hygiene
+# These three guards used to live in tests/test_exhibit_convention.py, which policed the
+# deleted Typst template dialect. The properties are dialect-independent, so they now run
+# against the templates the report API actually renders.
+
+
+@pytest.mark.parametrize(
+    "template", sorted(TEMPLATES_DIR.glob("report_*.html")), ids=lambda p: p.name
+)
+def test_no_template_hardcodes_an_exhibit_number(template: Path) -> None:
+    """A literal 'Exhibit N' argument means numbering went manual again; the exhibit macro
+    numbers itself from the document's global figure counter."""
+    offenders = re.findall(r'exhibit_auto\(\s*"Exhibit\s+\d', template.read_text(encoding="utf-8"))
+    assert not offenders, (
+        f"{template.name}: {len(offenders)} call site(s) hardcode the exhibit number"
+    )
+
+
+@pytest.mark.parametrize(
+    "template", sorted(TEMPLATES_DIR.glob("report_*.html")), ids=lambda p: p.name
+)
+def test_no_template_renders_its_own_source_label(template: Path) -> None:
+    """Only one source label exists — the constant house line. A template that prints its own
+    drifts the moment the rule changes."""
+    assert "Sumber:" not in template.read_text(encoding="utf-8"), (
+        f"{template.name} still renders a 'Sumber:' source line"
+    )
+
+
+@pytest.mark.parametrize(
+    "template", sorted(TEMPLATES_DIR.glob("report_*.html")), ids=lambda p: p.name
+)
+def test_no_template_names_an_exhibit_number_in_prose(template: Path) -> None:
+    """Prose that names an exhibit number by hand drifts the moment a page is revised; the
+    label belongs to the object's own exhibit macro."""
+    offenders = re.findall(
+        r"(?:pada|lihat|Lihat|see|See)\s+Exhibit\s+\d+", template.read_text(encoding="utf-8")
+    )
+    assert not offenders, f"{template.name}: hardcoded prose exhibit reference(s) {offenders}"

@@ -1,7 +1,8 @@
 """Shared test-only gate inputs for render-path tests (LOUD policy, Sep 2026).
 
-`server/report/typst_renderer.py::_get_ticker_gate_params` refuses to invent
-gate params: render tests must supply explicit `data["gate_inputs"]`.
+The gate stage refuses to invent gate params, so the payload must carry an explicit
+`gate_inputs` block; `server/routers/pdf.py::_gate_inputs_from_assumptions` is where the
+production loader reads it from.
 These are DECLARED TEST SCENARIOS for typography/layout + gate-logic
 assertions only — never market facts, never served in prod. Each scenario is
 chosen to exercise a documented gate path in agents/valuation/gates.py:
@@ -110,8 +111,8 @@ def assert_no_fixture_provenance(payload: dict[str, Any], where: str = "") -> No
 def is_fixture_shaped(payload: dict[str, Any]) -> bool:
     """True when a payload carries demo numbers (vs honest-empty LOUD output).
 
-    Honest-empty prod payloads (BBCA/ADRO typst skeletons) have
-    rating_box.tp/price None, zero valuation methods and zero highlight rows.
+    An honest-empty payload carries rating_box.tp/price None, zero valuation methods and
+    zero highlight rows; demo numbers in any of those three is the signal.
     """
     if not isinstance(payload, dict):
         return False

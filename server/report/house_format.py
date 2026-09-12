@@ -1,12 +1,11 @@
 """House document furniture — single source of truth for the Jinja/HTML report path.
 
 The house rules are specified in `docs/rules/house-report-format.md` and implemented
-for the Typst path as constants in `templates/typst/common/theme.typ`. The HTML path
-(the one the report API and the FE actually serve) is a second, independent template
-tree, so it needs the same values. Duplicating them by hand is how the two trees
-drifted apart in the first place, so this module holds them once, next to nothing
-else, and `tests/test_house_format_adoption.py` asserts they match the Typst theme
-and the rule doc.
+by the Jinja/HTML template tree that the report API and the FE serve. Template
+constants and Python constants describing the same furniture drifted apart before, so
+this module holds the shared values once, next to nothing else, and
+`tests/test_house_format_adoption.py` asserts they still match the templates and the
+rule doc.
 
 Values that must be COMPUTED (the formatted publication date, the inline logo) live
 here because Jinja cannot derive them: macros are imported without context, so the
@@ -21,7 +20,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 
-# --- Fixed strings (must equal templates/typst/common/theme.typ) -----------------
+# --- Fixed strings (must equal the strings used by templates/macros.html) --------
 HEADER_TITLE = "Equity Research \u2013 Company Update"  # en dash, per the rule
 FOOTER_LEFT = "sectors.app"
 FOOTER_RIGHT = "See important disclosure at the back of this report"

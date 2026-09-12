@@ -73,7 +73,7 @@ def test_sensitivity_matrix_is_25_live_dcf_cells():
                             cash=float(a["cash"]),
                             net_debt=float(a["net_debt"]))["fv_per_share"], 2)
             assert c["fair_value"][i][j] == exp, (i, j, w, g)
-    # base cell == headline FV engine; the Typst row carries the same number
+    # base cell == headline FV engine; the printed sensitivity row carries the same number
     base_cell = c["fair_value"][2][2]
     assert base_cell == d["cDcf"]["valuation"]["fair_value_per_share"]
     assert base_cell == pytest.approx(d["valuation"]["methods"][0]["fv"], abs=1.0)
@@ -195,25 +195,3 @@ def test_html_path_kills_mocks_and_shows_live_engine():
     assert "IDR 238" in html          # live matrix cell (12,77% / 2,00%)
     assert "Rp 4,831" in html         # live BEAR FV
     assert "Rp 11,004" in html        # live BULL FV
-
-
-@needs_fill
-@pytest.mark.slow
-def test_typst_pdf_p7_p8_show_engine_numbers(tmp_path):
-    if not shutil.which("typst") or not shutil.which("pdftotext"):
-        pytest.skip("needs typst + pdftotext binaries")
-    from server.report.typst_renderer import render_report
-
-    pdf = render_report("AMMN", archetype="auto", out_path=tmp_path / "ammn_synt.pdf")
-    text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
-                          capture_output=True, text=True, check=True).stdout
-    for mock in MOCKS:
-        assert mock not in text, mock
-    # WACC block + 5x5 sensitivity + scenarios + bridge (live values)
-    assert "13,77% (Base)" in text and "2,50% (Base)" in text
-    assert "12,77%" in text and "14,77%" in text
-    assert "Rp 147" in text
-    assert "Rp 4.831" in text and "Rp 5.873" in text and "Rp 11.004" in text
-    assert "107.602" in text and "+13.846" in text and "−110.786" in text
-    assert "45.180" in text and "−96.940" in text
-    assert "Exhibit 11." in text and "Exhibit 12." in text

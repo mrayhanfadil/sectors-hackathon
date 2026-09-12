@@ -1,10 +1,9 @@
 """AMMN-FILLT pins (Spark 1.3, 12 Sep 2026).
 
 Verifies the Sectors-harvested fill (output/cache/ammn_fill, sibling lane
-t_2c5f420e) is wired into _build_live_payload for AMMN and renders on BOTH
-paths (server HTML + Typst CLI) with real numbers, honest-empty GAPs and
-holding tie-outs. Keyless: needs only the local harvest dir (0 credits);
-skips honestly when it is absent.
+t_2c5f420e) is wired into _build_live_payload for AMMN and reaches the served
+renderer with real numbers, honest-empty GAPs and holding tie-outs. Keyless:
+needs only the local harvest dir (0 credits); skips honestly when it is absent.
 """
 from __future__ import annotations
 
@@ -120,14 +119,11 @@ def test_peers_news_risks_catalysts():
 
 
 @needs_fill
-def test_single_archetype_both_paths():
+def test_single_archetype_selection():
     d = _payload()
     from scripts.select_template import select_template
 
     assert select_template(d)[0] == "single"
-    from server.report.typst_renderer import _resolve_archetype
-
-    assert _resolve_archetype("AMMN", d, "auto") == "single"
 
 
 @needs_fill
@@ -139,30 +135,3 @@ def test_server_html_has_no_placeholders():
     assert "lengkapi fixture" not in html
     assert "Bauran emas menyalip tembaga" in html
     assert str(data["cover"]["rating_box"]["tp"]) in html
-
-
-@needs_fill
-@pytest.mark.slow
-def test_typst_renders_clean_with_contiguous_numbering(tmp_path):
-    if not shutil.which("typst") or not shutil.which("pdftotext"):
-        pytest.skip("needs typst + pdftotext binaries")
-    from server.report.typst_renderer import render_report
-
-    out = tmp_path / "ammn_fillt.pdf"
-    pdf = render_report("AMMN", archetype="auto", out_path=out)
-    assert Path(pdf).exists()
-    assert Path(pdf).stat().st_size > 20_000
-    text = subprocess.run(["pdftotext", "-layout", str(pdf), "-"],
-                          capture_output=True, text=True, check=True).stdout
-    assert "lengkapi fixture" not in text
-    assert "4 Pilar Tesis Investasi" in text
-    nums = [int(m.group(1)) for m in re.finditer(r"Exhibit\s+(\d+)\.", text)]
-    assert nums, "no exhibits found in AMMN pdf"
-    # House rule §2: the global counter starts at Exhibit 1 and runs continuously. An
-    # exhibit that is deliberately not rendered does not consume a number, so there is
-    # never a gap where Exhibit 1 should be.
-    assert nums == list(range(1, max(nums) + 1)), nums
-    sources = text.count("Source: Company, Team Estimates")
-    assert sources == len(nums), (sources, len(nums))
-    assert "Equity Research" in text
-    assert "sectors.app" in text

@@ -2,10 +2,10 @@
 
 Validates:
 1. Whole-repo suffix correctness: 0 occurrences of `.IJ` in tracked files / docs / code.
-2. Rendered PDF suffix correctness: RATU and ACES PDFs rendered via typst_renderer have zero `.IJ`
-   (live-Sectors render; skipped keyless without data/assumptions files).
-3. Cross-ticker isolation: zero RATU content in ACES PDF and zero ACES content in RATU PDF
-   (live-Sectors render; skipped keyless).
+2. Rendered-output suffix correctness: the RATU and ACES reports the HTML renderer produces
+   carry zero `.IJ` (live-Sectors render; skipped keyless without data/assumptions files).
+3. Cross-ticker isolation: zero RATU content in the ACES report and zero ACES content in the
+   RATU report (live-Sectors render; skipped keyless).
 4. Company-name correctness for engine tickers served live (skipped keyless).
 5. Sector labels in rendered reports derive from live metadata (skipped keyless).
 
@@ -18,10 +18,8 @@ from __future__ import annotations
 
 import os
 import re
-import subprocess
 import sys
 from pathlib import Path
-from typing import Any, Dict
 
 import pytest
 
@@ -29,41 +27,35 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from server.report.typst_renderer import render_report
 from fastapi import HTTPException
+from server.routers.pdf import _build_live_payload, render_html_for_ticker
 
 
-def _render_or_skip(ticker: str, archetype: str, out_path: str) -> str:
-    """Render via the live loader; skip honestly when Sectors data is absent."""
+def _render_html_or_skip(ticker: str) -> str:
+    """Render the served HTML via the live loader; skip honestly when Sectors data is absent."""
     try:
-        return render_report(ticker, archetype=archetype, out_path=out_path)
+        _template, html, _data = render_html_for_ticker(ticker)
     except HTTPException as exc:
         if exc.status_code == 422:
             pytest.skip(f"needs Sectors data for {ticker} (keyless, no data/assumptions file)")
         raise
+    return html
 
 
 @pytest.fixture(autouse=True)
 def _loud_gate_inputs(monkeypatch):
-    """LOUD policy: renderer refuses invented gate params — inject explicit
-    test-owned inputs into whatever the loader returns (see
-    tests/_loud_test_inputs.py). Typography assertions only."""
-    import server.report.typst_renderer as TR
+    """LOUD policy: the loader refuses invented gate params — inject explicit
+    test-owned inputs into whatever it returns (see tests/_loud_test_inputs.py).
+    Text assertions only."""
+    import server.routers.pdf as PDF
     from tests._loud_test_inputs import inject_gate_inputs
 
-    _orig = TR._load_or_build_report_data
+    _orig = PDF._build_live_payload
 
-    def _wrapped(ticker, archetype="auto"):
-        return inject_gate_inputs(_orig(ticker, archetype))
+    def _wrapped(ticker, template_override=None):
+        return inject_gate_inputs(_orig(ticker, template_override))
 
-    monkeypatch.setattr(TR, "_load_or_build_report_data", _wrapped)
-
-
-def _extract_pdf_text(pdf_path: str | Path) -> str:
-    """Extract full layout text from PDF using pdftotext."""
-    cmd = ["pdftotext", "-layout", str(pdf_path), "-"]
-    res = subprocess.run(cmd, capture_output=True, text=True, check=True)
-    return res.stdout
+    monkeypatch.setattr(PDF, "_build_live_payload", _wrapped)
 
 
 def test_whole_repo_no_ij_suffix():
@@ -116,19 +108,12 @@ def test_whole_repo_no_ij_suffix():
     assert not hits, f"Found .IJ ticker suffix in repository:\n" + "\n".join(hits[:10])
 
 
-def test_rendered_ratu_and_aces_no_ij(tmp_path: Path):
-    """Render RATU and ACES PDFs via typst_renderer and assert zero .IJ in extracted text."""
-    ratu_pdf = tmp_path / "ratu_test.pdf"
-    aces_pdf = tmp_path / "aces_test.pdf"
+def test_rendered_ratu_and_aces_no_ij():
+    """Render RATU and ACES via the served renderer and assert zero .IJ in the output."""
+    txt_ratu = _render_html_or_skip("RATU")
+    txt_aces = _render_html_or_skip("ACES")
 
-    p_ratu = _render_or_skip("RATU", archetype="single", out_path=str(ratu_pdf))
-    p_aces = _render_or_skip("ACES", archetype="single", out_path=str(aces_pdf))
-
-    assert Path(p_ratu).exists() and Path(p_ratu).stat().st_size > 0
-    assert Path(p_aces).exists() and Path(p_aces).stat().st_size > 0
-
-    txt_ratu = _extract_pdf_text(p_ratu)
-    txt_aces = _extract_pdf_text(p_aces)
+    assert len(txt_ratu) > 500 and len(txt_aces) > 500, "rendered report unexpectedly short"
 
     ij_ratu = re.findall(r"\b\w+\.IJ\b|\.IJ\b", txt_ratu)
     ij_aces = re.findall(r"\b\w+\.IJ\b|\.IJ\b", txt_aces)
@@ -137,16 +122,10 @@ def test_rendered_ratu_and_aces_no_ij(tmp_path: Path):
     assert not ij_aces, f"Found .IJ suffix in ACES PDF: {ij_aces}"
 
 
-def test_cross_ticker_isolation_ratu_and_aces(tmp_path: Path):
-    """Assert zero RATU content in ACES PDF and zero ACES content in RATU PDF."""
-    ratu_pdf = tmp_path / "ratu_iso.pdf"
-    aces_pdf = tmp_path / "aces_iso.pdf"
-
-    p_ratu = _render_or_skip("RATU", archetype="single", out_path=str(ratu_pdf))
-    p_aces = _render_or_skip("ACES", archetype="single", out_path=str(aces_pdf))
-
-    txt_ratu = _extract_pdf_text(p_ratu)
-    txt_aces = _extract_pdf_text(p_aces)
+def test_cross_ticker_isolation_ratu_and_aces():
+    """Assert zero RATU content in the ACES report and zero ACES content in the RATU report."""
+    txt_ratu = _render_html_or_skip("RATU")
+    txt_aces = _render_html_or_skip("ACES")
 
     # Keywords specific to RATU that must NOT appear in ACES report
     ratu_specific = [
@@ -177,8 +156,6 @@ def test_cross_ticker_isolation_ratu_and_aces(tmp_path: Path):
 
 def test_six_engine_tickers_company_names():
     """Verify company names for engine tickers served live match official names."""
-    from server.report.typst_renderer import _load_or_build_report_data
-
     expected_names = {
         "ADRO": "Alamtri Resources",
         "BBCA": "Bank Central Asia",
@@ -187,7 +164,7 @@ def test_six_engine_tickers_company_names():
     # Live loader only: skip honestly when Sectors data is absent.
     for ticker, exp in expected_names.items():
         try:
-            data = _load_or_build_report_data(ticker, "auto")
+            data = _build_live_payload(ticker, None)
         except HTTPException as exc:
             if exc.status_code == 422:
                 pytest.skip(f"needs Sectors data for {ticker} (keyless, no data/assumptions file)")
@@ -196,10 +173,8 @@ def test_six_engine_tickers_company_names():
         assert exp in comp, f"Ticker {ticker} company_name '{comp}' does not contain expected '{exp}'"
 
 
-def test_sector_labels_from_live_meta(tmp_path: Path):
+def test_sector_labels_from_live_meta():
     """Verify sector labels in rendered reports derive from live metadata."""
-    for ticker, archetype in [("RATU", "single"), ("BBCA", "single")]:
-        pdf_path = tmp_path / f"{ticker.lower()}_sec.pdf"
-        p = _render_or_skip(ticker, archetype=archetype, out_path=str(pdf_path))
-        txt = _extract_pdf_text(p)
-        assert len(txt) > 500, f"rendered {ticker} PDF text unexpectedly short"
+    for ticker in ("RATU", "BBCA"):
+        txt = _render_html_or_skip(ticker)
+        assert len(txt) > 500, f"rendered {ticker} report text unexpectedly short"

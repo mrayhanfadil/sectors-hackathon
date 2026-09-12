@@ -529,7 +529,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     ]
     filled.append("thesis[4 pillars]")
 
-    # ================= financials (HTML) + financial_statements (typst) ====
+    # ================= financials + financial_statements ==================
     H = ["Akun", *ylabels]
     SRC = "Sectors company/report financials.historical_financials (IDR bn)"
     IS = [["Revenue", *rev], ["Cost of Revenue", *cost], ["Gross Profit", *gross],
@@ -719,7 +719,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                                  "dilabeli eksplisit (tanpa tenant-karangan).")
     filled.append("catalysts[4 quantified]")
 
-    # ================= exhibits (HTML) + combos (typst charts) ==============
+    # ================= exhibits + chart combos ==============================
     rev_tn = [round(float(v) / 1000, 2) if isinstance(v, (int, float)) else 0.0 for v in rev]
     earn_tn = [round(float(v) / 1000, 2) if isinstance(v, (int, float)) else 0.0 for v in earn]
     payload["exhibits"] = [
@@ -1053,7 +1053,6 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
 
         # --- cDcf: friend-style block consumed by BOTH renderers -------------
         # HTML: templates/report_single.html dcf_friend block (svg macros).
-        # Typst: scripts/render_typst.generate_charts (wacc/sens/scenario/waterfall PNGs).
         payload["cDcf"] = {
             "wacc_table": [{"label": r[0], "value": r[1]} for r in wacc_rows],
             "sensitivity": {

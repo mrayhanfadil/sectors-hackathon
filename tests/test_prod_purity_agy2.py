@@ -6,7 +6,7 @@ Context (purge, Sep 2026):
 - scripts/report_fixtures.py + scripts/fixtures/*.json DELETED; zero references under server/ and src/fe/
 - pdf._load_fixture helper REMOVED (was dead canary, now gone)
 - agents/collector.py synthetic path neutered to raise RuntimeError(sectors_missing_key)
-- pdf-route + typst-renderer prod loaders 422 keyless without data/assumptions files
+- prod loaders 422 keyless without data/assumptions files
 - no 'Sectors (' provenance strings on honest prod skeletons
 """
 
@@ -30,8 +30,7 @@ if str(REPO_ROOT) not in sys.path:
 
 from agents.collector import _synthetic, _peers_for, collect, QUINTET
 from server.main import app
-from server.report.typst_renderer import _load_or_build_report_data
-from server.routers.pdf import render_html_for_ticker
+from server.routers.pdf import _build_live_payload, render_html_for_ticker
 from tests._loud_test_inputs import load_demo_fixture
 
 
@@ -198,30 +197,25 @@ def test_collector_peers_for_returns_honest_missing_key_source():
 
 
 # ---------------------------------------------------------------------------
-# 5. pdf-route + typst-renderer prod loaders serve no fixture payload
+# 5. prod loaders serve no fixture payload
 #    without explicit load_demo_fixture()
 # ---------------------------------------------------------------------------
 
-def test_typst_renderer_prod_loader_no_fixture_interception():
-    """Assert _load_or_build_report_data does not serve rich demo fixtures automatically."""
-    # 1. BBCA & ADRO return honest-empty skeleton (refusing fabricated exhibits)
-    for ticker in ("BBCA", "ADRO"):
-        data = _load_or_build_report_data(ticker, "auto")
-        assert data["financial_highlights"]["rows"] == []
-        assert "no fixture/builder" in data["financial_highlights"]["source"]
-        assert "refusing fabricated exhibits" in data["financial_highlights"]["source"]
+def test_prod_loader_no_fixture_interception():
+    """Assert _build_live_payload never serves rich demo fixtures automatically.
 
-    # 2. RATU / CDIA / MTEL in keyless/unverified environment raise 422 or return live empty highlights, NOT fixture
-    for ticker in ("RATU", "CDIA", "MTEL"):
-        try:
-            prod_data = _load_or_build_report_data(ticker, "auto")
-            assert prod_data["financial_highlights"]["rows"] == [], f"Prod loader must not return fixture rows for {ticker}"
-            assert prod_data["financial_highlights"]["source"] == "sectors_missing_key"
-        except HTTPException as exc:
-            assert exc.status_code == 422
-            assert "refusing generic fallback" in str(exc.detail)
+    LOUD policy: without a verified assumptions file the loader refuses with a 422 naming the
+    ticker instead of returning a skeleton, so no fabricated exhibit can reach a render. The
+    honest-empty skeleton belonged to the removed Typst loader; nothing is served now, which is
+    the stronger guarantee. `load_demo_fixture` stays the only demo source, and it is retired.
+    """
+    for ticker in ("BBCA", "ADRO", "RATU", "CDIA", "MTEL", "ZZZQ"):
+        with pytest.raises(HTTPException) as ei:
+            _build_live_payload(ticker, None)
+        assert ei.value.status_code == 422
+        assert ticker in str(ei.value.detail)
 
-    # 3. Retired demo stub serves nothing (fixtures purged Sep 2026)
+    # Retired demo stub serves nothing (fixtures purged Sep 2026)
     assert load_demo_fixture("RATU") is None, "demo stub must stay retired"
 
 
@@ -284,9 +278,14 @@ def test_demo_stub_serves_nothing():
         assert load_demo_fixture(ticker) is None, f"demo stub must stay retired for {ticker}"
 
 
-def test_no_sectors_open_paren_provenance_in_honest_skeletons():
-    """Assert honest skeletons for BBCA and ADRO contain zero 'Sectors (' strings."""
+def test_no_sectors_open_paren_provenance_on_prod_refusals():
+    """Assert prod refusals carry no live-Sectors provenance marker.
+
+    The honest-empty skeleton that the removed Typst loader returned is gone; with nothing
+    served, the refusal itself is the only artefact left to police.
+    """
     for ticker in ("BBCA", "ADRO"):
-        data = _load_or_build_report_data(ticker, "auto")
-        for s in _collect_all_strings(data):
-            assert "Sectors (" not in s, f"Found 'Sectors (' in {ticker} honest skeleton: {s}"
+        with pytest.raises(HTTPException) as ei:
+            _build_live_payload(ticker, None)
+        for txt in _collect_all_strings({"detail": ei.value.detail}):
+            assert "Sectors (" not in txt, f"Found 'Sectors (' in {ticker} refusal: {txt}"

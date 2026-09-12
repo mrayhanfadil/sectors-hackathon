@@ -87,6 +87,6 @@ The research publication engine adheres to formal sell-side corporate research t
 | **Sans-serif UI & Labels** | **Inter** | Liberation Sans, DejaVu Sans | `assets/fonts/Inter-VF.ttf` |
 | **Monospace / Numerics** | **JetBrains Mono** | Liberation Mono, DejaVu Sans Mono | `assets/fonts/JetBrainsMono-VF.ttf` |
 
-Design tokens and page layouts are defined in [`templates/typst/common/theme.typ`](file:///home/fadil/projects/sectors-hackathon/templates/typst/common/theme.typ).
+Design tokens and page furniture are defined once in `server/report/house_format.py` and applied by `templates/macros.html`.
 
 

@@ -70,9 +70,9 @@ def _pct(value, dec: int = 1) -> str:
     except Exception:
         return str(value)
 
-# Gate-0..5 inputs consumed by server/report/typst_renderer.py:_get_ticker_gate_params
-# (evaluated by agents/valuation/gates.py). The assumptions file is the ONLY
-# permitted source for them — read the file, never invent values.
+# Gate-0..5 inputs passed through to the payload for agents/valuation/gates.py.
+# The assumptions file is the ONLY permitted source for them — read the file,
+# never invent values.
 _GATE_INPUT_KEYS = (
     "filing_history_years",
     "ebit_positive_count",
@@ -106,7 +106,7 @@ def _gate_inputs_from_assumptions(assum: dict) -> dict:
            cash back against — so the gross leg is NOT used here).
 
     Nothing else is inferred. A key the file does not support is left absent on
-    purpose: typst_renderer raises ValueError naming it rather than being handed
+    purpose: the gate stage raises ValueError naming it rather than being handed
     an invented filing history, coverage ratio or equity base (LOUD policy).
     ``archetype`` is deliberately NOT mapped to ``revenue_drivers``: the repo
     bucket ("coal" for anything Basic Materials) is inferred from the subsector
@@ -260,8 +260,8 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
 
     # Gate-0..5 inputs: assumptions file -> payload passthrough (see
     # _gate_inputs_from_assumptions). Keys the file does not carry stay OUT of
-    # the block on purpose: server/report/typst_renderer.py:_get_ticker_gate_params
-    # then halts loudly and names them instead of evaluating fabricated params.
+    # the block on purpose: the gate stage then halts loudly and names them
+    # instead of evaluating fabricated params.
     # NOTE for test authors: tests/_loud_test_inputs.inject_gate_inputs() uses
     # setdefault, so a payload that already carries this block must be
     # overwritten explicitly when a declared test scenario is required.
@@ -381,7 +381,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         payload.setdefault("cover", {})["build_errors"] = build_errors
 
     # Deterministic Critic gate — the same audit `agents/critic.py` exposes, run here because
-    # this is the single choke point shared by the Chromium path and the Typst renderer. The
+    # this is the single choke point every render path goes through. The
     # verdict rides on the payload, so output/cache/render_<TICKER>/report_data.json shows it
     # instead of leaving it in a log nobody reads.
     #
