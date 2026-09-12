@@ -10,6 +10,8 @@ import json
 import os
 from typing import Any, Optional
 
+from markupsafe import Markup
+
 CACHE_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           "output", "cache", "sectors")
 
@@ -181,7 +183,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
                          "b": "Relative Valuation — Own History (time-series)"}}
 
 
-def render_band_svg(block: dict, width: int = 430, height: int = 104) -> str:
+def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
     """Inline SVG line for a band block: series + dashed mean + dotted median + current marker."""
     pts = block["series"]
     if len(pts) < 5:
@@ -215,7 +217,8 @@ def render_band_svg(block: dict, width: int = 430, height: int = 104) -> str:
            f'<text x="6" y="{height-3}" font-size="9" fill="#475569">{pts[0]["date"]}</text>',
            f'<text x="{width-70}" y="{height-3}" font-size="9" fill="#475569">{cur["date"]}</text>',
            "</svg>"]
-    return "".join(out)
+    # Jinja autoescapes html by default: without Markup the chart reaches the page as escaped text
+    return Markup("".join(out))
 
 
 if __name__ == "__main__":

@@ -79,7 +79,7 @@
       {% if blk.key in ("pe", "pbv") %}
       <td class="band-card">
         {{ m.exhibit_auto(ns, blk.label ~ " Historical Band (1-Year)", B.sources[0] if B.sources else "") }}
-        {{ band_svg(blk) }}
+        <div class="chart-wrap band-wrap">{{ band_svg(blk) }}</div>
         <p class="small band-narr">{{ blk.narrative }}</p>
       </td>
       {% endif %}

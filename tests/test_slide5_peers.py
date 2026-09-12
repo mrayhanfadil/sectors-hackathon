@@ -130,6 +130,9 @@ def test_page_payload_splits_the_two_methodologies():
     assert [blk["key"] for blk in b["bands"]][:2] == ["pe", "pbv"]
     assert {r["key"] for r in b["implied"]} >= {"pe", "pbv"}
     assert "bukan Target Price" in b["disclaimer"]
+    from server.report.peers_page import render_band_svg
+    svg = str(render_band_svg(b["bands"][0]))
+    assert svg.lstrip().startswith("<svg"), "the band chart must be raw svg, not escaped markup"
     assert any("n.m." in s for s in a["narrative"])
 
 

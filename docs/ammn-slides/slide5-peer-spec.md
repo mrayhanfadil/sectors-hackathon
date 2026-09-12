@@ -348,3 +348,5 @@ that finds them on disk makes **zero billed calls** (verified: `billed calls: 0 
 **Known data gap (disclosed on the page, not hidden):** Sectors' latest quarter for AMMN is Q1-2026
 (2026-03-31), so the 129 sessions after that date reuse the same TTM driver — the page states the driver
 as-of date and the number of frozen sessions rather than implying a fresh TTM at every point.
+
+**Exhibit numbering note (12 Sep 2026):** the owner's rule text names Exhibit 11/12/13 for this slide. The deck now carries the slide-4 relative anchor ('Metode pembanding') as Exhibit 11, so the peer table is Exhibit 12 and the two bands are Exhibits 13-14. House rule §Exhibit labeling requires numbering to run continuously from the first slide with no reset, so the shift is the rule being followed, not broken. Renumbering the slide back to 11/12/13 would mean removing or folding the anchor exhibit.
