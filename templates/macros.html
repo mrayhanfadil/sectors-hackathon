@@ -127,11 +127,11 @@
   .section-no { font-size: 8pt; color: #fff; background: var(--brand); border-radius: 2pt;
                 padding: 1pt 5pt; letter-spacing: .05em; font-weight: 700; }
 
-  .fin-table { width: 100%; border-collapse: collapse; font-size: 8pt; margin: 6pt 0; }
-  .fin-table th { background: var(--brand-dark); color: #fff; padding: 3.5pt 5pt; text-align: right;
+  .fin-table { width: 100%; border-collapse: collapse; font-size: 7.3pt; margin: 3pt 0; }
+  .fin-table th { background: var(--brand-dark); color: #fff; padding: 2.2pt 5pt; text-align: right;
                   font-weight: 600; }
   .fin-table th:first-child { text-align: left; }
-  .fin-table td { padding: 3pt 5pt; border-bottom: .5pt solid var(--line); text-align: left; }
+  .fin-table td { padding: 1.6pt 5pt; border-bottom: .5pt solid var(--line); text-align: left; }
   .fin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .fin-table tbody tr:nth-child(even) { background: var(--band); }
   .fin-table tfoot td { font-weight: 700; border-top: 1pt solid var(--ink); }
@@ -140,7 +140,7 @@
   .exhibit-id { font-size: 7.5pt; font-weight: 700; color: var(--ink); }
   .exhibit-name { font-size: 8.5pt; font-weight: 600; }
   /* Constant source line, below the object (house-report-format.md §1). */
-  .exhibit-src { font-size: 6.8pt; color: var(--muted); font-style: italic; margin: 2pt 0 9pt; }
+  .exhibit-src { font-size: 6.6pt; color: var(--muted); font-style: italic; margin: 1pt 0 3pt; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
   .chart-svg { display: block; margin-bottom: 8pt; width: 100%; height: auto; }
   /* Chart.js canvas is shown in browser, hidden in print+PDF (Playwright page.pdf()
@@ -171,9 +171,9 @@
   .side-rule { border: none; border-top: .5pt solid var(--line); margin: 7pt 0 6pt; }
   /* Key-highlights callout: tinted box, bold bullets (benchmark cover). */
   .hl-box { background: var(--band); border-left: 2.5pt solid var(--brand); border-radius: 0 4pt 4pt 0;
-            padding: 7pt 9pt 7pt 11pt; margin: 8pt 0 2pt; }
+            padding: 5pt 8pt 5pt 10pt; margin: 5pt 0 1pt; }
   .hl-box ul { margin: 0; padding-left: 11pt; }
-  .hl-box li { font-size: 8.6pt; font-weight: 700; margin: 3.5pt 0; line-height: 1.42; }
+  .hl-box li { font-size: 8.2pt; font-weight: 700; margin: 2.6pt 0; line-height: 1.34; }
   .rate-big { font-size: 25pt; font-weight: 800; line-height: 1; color: var(--brand-dark);
               letter-spacing: .01em; }
   .rate-status { font-style: italic; font-size: 8.8pt; color: var(--muted); margin-top: 2.5pt; }
@@ -186,13 +186,13 @@
   .analyst { border-top: 1.5pt solid var(--brand); padding-top: 5pt; margin-top: 2pt; }
   .analyst-name { font-weight: 800; font-size: 9pt; }
   .analyst-title { font-size: 7.6pt; color: var(--muted); }
-  .co-name { font-size: 21pt; color: var(--brand-dark); line-height: 1.08; margin: 3pt 0 2pt;
+  .co-name { font-size: 19pt; color: var(--brand-dark); line-height: 1.05; margin: 2pt 0 1pt;
              font-weight: 800; }
   .theme-title { font-style: italic; font-size: 10.5pt; color: var(--muted); margin-top: 2pt; }
   .hl-list { margin: 8pt 0 0; padding-left: 12pt; }
   .hl-list li { font-size: 8.9pt; margin: 4pt 0; }
-  .para-h { font-weight: 800; font-size: 9.6pt; color: var(--brand-dark); margin: 11pt 0 3pt; }
-  .para-b { font-size: 8.7pt; line-height: 1.5; text-align: justify; }
+  .para-h { font-weight: 800; font-size: 9.0pt; color: var(--brand-dark); margin: 4pt 0 1.5pt; }
+  .para-b { font-size: 7.9pt; line-height: 1.32; text-align: justify; }
   /* A subheading must never end a page with its paragraph on the next one, and a paragraph
      must never be cut in half by a page break (cover spreads flow across pages when the copy
      is long — the benchmark fits everything on one page only because its copy is half ours). */

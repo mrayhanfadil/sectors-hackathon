@@ -157,20 +157,16 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     ]
 
     note = (
-        f"Asumsi kolom F: revenue FY26F = FY25A x (1 {_pct((g_rev or 0) * 100)}) dari "
-        f"forecast subsector Sectors 2026; laba & EPS FY26F = FY25A x "
-        f"(1 {_pct((g_eps or 0) * 100)}) dari sumber yang sama; EBITDA FY26F = rata-rata 3 tahun "
-        f"aktual Sectors (Rp {_num(mid_eb / 1000, 2)} tn, basis mid-cycle yang sama dengan anchor "
-        f"valuasi); FY27F-FY28F flat mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi "
-        f"(tanpa kurva pertumbuhan). EPS = laba bersih / {_num(shares / 1e6, 1)} mn saham beredar."
+        f"Asumsi kolom F: revenue & EPS FY26F = FY25A x (1 {_pct((g_rev or 0) * 100)}) / "
+        f"(1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector Sectors 2026; EBITDA FY26F = "
+        f"rata-rata 3 tahun aktual Sectors; FY27F-FY28F flat mengikuti jalur FCFF FLAT "
+        f"FY2026F-FY2030F di file asumsi."
     )
     note2 = (
-        f"Multiple dihitung pada harga Rp {_num(price, 0)} untuk SEMUA kolom agar "
-        f"sebanding: PER = harga/EPS; PBV = harga/BVPS (ekuitas Rp {_num(equity / 1000, 2)} tn "
-        f"Q1-2026, dijaga konstan — tidak ada proyeksi ekuitas); EV/EBITDA = (mcap Rp "
-        f"{_num(mcap / 1000, 1)} tn + net debt Rp {_num(net_debt / 1000, 1)} tn)/EBITDA tahun itu. "
-        f"File asumsi punya print historis dengan basis berbeda (dihitung pada harga masanya): "
-        f"EV/EBITDA 2024 29,19x / 2025 34,31x / 2026 17,99x."
+        f"Multiple pada harga Rp {_num(price, 0)} untuk semua kolom: PER = harga/EPS; PBV = "
+        f"harga/BVPS (ekuitas Rp {_num(equity / 1000, 2)} tn Q1-2026, konstan); EV/EBITDA = "
+        f"(mcap Rp {_num(mcap / 1000, 1)} tn + net debt Rp {_num(net_debt / 1000, 1)} tn)/EBITDA "
+        f"tahun itu."
     )
     return {
         "exhibit_title": f"Key Financials ({_yr(y0)}–2028F)" if y0 else "Key Financials",
@@ -191,22 +187,28 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
 QKEY_LABEL = {
     "shares": "{} saham",
     "avg_price": "harga rata-rata {}",
-    "by": "{}",
     "copper": "tembaga {}",
     "broker": "arus beli broker {}",
-    "capex_q1": "belanja modal Q1-2026 {}",
-    "fcf_q1": "arus kas bebas Q1-2026 {}",
     "note": "{}",
 }
+#: keys deliberately NOT printed in the catalyst list — capex/FCF are stated in the impact
+#: sentence instead, and the "by" date already appears in the catalyst name.
+QKEY_SKIP = {"capex_q1", "fcf_q1", "by"}
 
 
 def _quant_phrase(q: dict) -> str:
     bits = []
     for k, v in (q or {}).items():
+        if k in QKEY_SKIP:
+            continue
         label = QKEY_LABEL.get(k)
         if label is None:
             continue
-        bits.append(label.format(str(v).strip()))
+        val = str(v).strip()
+        if k == "note":
+            # the note chains several statements; keep the one about this ticker
+            val = val.split(";")[0].strip()
+        bits.append(label.format(val))
     return ", ".join(bits)
 
 
@@ -221,56 +223,37 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     listed = []
     for i, c in enumerate(cats[:4], 1):
         name = str(c.get("name") or "").strip().rstrip(".")
-        effect = re.sub(r"[()]", "", str(c.get("effect") or "").strip())
         q = _quant_phrase(c.get("quantified") or {})
-        seg = f"({i}) {name}"
-        if effect:
-            seg += f" — {effect}"
-        if q:
-            seg += f": {q}"
-        listed.append(seg)
+        listed.append(f"({i}) {name}" + (f" — {q}" if q else ""))
     if listed:
-        parts.append("Katalis terverifikasi periode ini: " + "; ".join(listed) + ".")
+        parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
 
-    # Quantified impact where a basis exists; explicit "no basis" where it does not. The
-    # catalyst list above already carries the raw figures, so this block only adds the
-    # derived ones (qoq deltas, the position's mark-to-market, and the sensitivity pointer).
     parts.append(
-        "Dampak terkuantifikasi: belanja modal turun 69,6% qoq (Rp 5,26 tn Q4-2025 ke Rp 1,60 tn) "
-        "dan arus kas bebas berbalik ke +Rp 1,69 tn, yang mengonfirmasi asumsi belanja modal "
-        "sustaining Rp 6,39 tn/tahun — bukan upside baru; posisi direksi kini +37,0% di harga "
-        "Rp 4.860. Dampak harga tembaga rekor TIDAK dapat dikuantifikasi ke laba karena pipeline "
-        "tidak membawa tonase/grade/C1 (GAP G10) — yang tersedia hanya sensitivitas terhadap "
-        "EBITDA itu sendiri, lihat paragraf Valuasi."
+        "Dampak: capex Q1-2026 turun 69,6% qoq (Rp 5,26 tn ke Rp 1,60 tn) dan arus kas bebas "
+        "berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal sustaining Rp 6,39 tn/tahun — "
+        "bukan upside baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
+        "rekor tidak dapat dikuantifikasi ke laba (pipeline tanpa tonase/grade/C1, GAP G10) — "
+        "yang tersedia hanya sensitivitas EBITDA di paragraf Valuasi."
     )
-
-    if news:
-        heads = [str(n.get("title")) for n in news[:2] if n.get("title")]
-        if heads:
-            parts.append("Berita pendukung: " + "; ".join(heads) + ".")
 
     rel24 = chart.get("rel_pct")
     priced: list[str] = []
     if isinstance(rel24, list) and rel24:
-        priced.append(f"relatif vs IHSG 24 bulan {_pct(rel24[-1])} (harga {_pct(chart.get('abs_chg_pct'))} "
-                      f"vs IHSG {_pct(chart.get('idx_chg_pct'))})")
+        priced.append(f"24 bulan {_pct(rel24[-1])} relatif vs IHSG (harga {_pct(chart.get('abs_chg_pct'))} "
+                      f"vs {_pct(chart.get('idx_chg_pct'))})")
     # Pull the 90-day relative print out of the fill note rather than pasting the note: the
     # note also carries pipeline housekeeping ("YTD tak terjangkau, cap API 90 hari") which is
     # provenance for us, not copy for a reader.
     m = re.search(r"90d\s+\S+\s+([+\-0-9.,]+%)\s+vs\s+IHSG\s+([+\-0-9.,]+%)\s*\(rel\s+([+\-0-9.,]+\s*pp)\)",
                   str(jci.get("note") or ""))
     if m:
-        # the fill note carries English decimal separators; the report is id-ID throughout
-        dec = lambda s: re.sub(r"(\d)\.(\d)", r"\1,\2", s)
-        priced.append(f"90 hari terakhir {dec(m.group(1))} vs IHSG {dec(m.group(2))} "
-                      f"(relatif {dec(m.group(3))})")
+        dec = lambda t: re.sub(r"(\d)\.(\d)", r"\1,\2", t)
+        priced.append(f"90 hari {dec(m.group(1))} vs IHSG {dec(m.group(2))} (rel {dec(m.group(3))})")
     if priced:
         parts.append(
-            "Apakah sudah di-price-in: sebagian sudah, sebagian belum. " + "; ".join(priced) +
-            " — katalis kuartal ini sudah mulai tercermin, namun de-rating 24 bulan belum pulih "
-            "dan EV/EBITDA TTM 17,99x masih sekitar 37% di bawah rata-rata 4 tahun 28,42x; "
-            "selama re-rating belum terjadi, penilaian pasar belum sepenuhnya mengikuti "
-            "perbaikan operasional."
+            "Priced-in: " + "; ".join(priced) +
+            " — katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99x masih ~37% "
+            "di bawah rata-rata 4 tahun 28,42x."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
 
@@ -305,28 +288,31 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     parts: list[str] = []
     # 1. methodology
     anchor_leg = val.get("anchor")
-    method = "EV/EBITDA mid-cycle (relative valuation)" if anchor_leg == "ev_ebitda" else "DCF"
+    method = "EV/EBITDA mid-cycle" if anchor_leg == "ev_ebitda" else "DCF"
+
+    def as_pct(v):
+        """wacc arrives as a fraction from the assumptions file and as a percent from the render
+        payload — normalize instead of printing 1.377,00%."""
+        if not isinstance(v, (int, float)):
+            return None
+        return v * 100.0 if abs(v) <= 1.5 else v
+
+    wacc_pct = as_pct(wacc)
     parts.append(
         f"Kami menetapkan TP Rp {_num(fv, 0)} menggunakan {method} dengan exit multiple "
-        f"{_num(multiple, 2)}x atas EBITDA mid-cycle Rp {_num(mid_eb / 1000, 2)} tn (rata-rata 3 tahun "
-        f"aktual Sectors); leg DCF dihitung sebagai pembanding dengan WACC "
-        f"{_n(wacc * 100, 2) if isinstance(wacc, (int, float)) else 'n/a'}% dan g "
-        f"{_n((g or 0) * 100, 1)}%, sesuai peran masing-masing leg di file asumsi."
+        f"{_num(multiple, 2)}x atas EBITDA mid-cycle Rp {_num(mid_eb / 1000, 2)} tn; leg DCF "
+        f"(WACC {_num(wacc_pct, 2)}%, g {_num((g or 0) * 100, 1)}%) dihitung sebagai pembanding."
     )
     # 2. forecast linkage
     eb = [v for v in (raw.get("ebitda") or []) if isinstance(v, (int, float))]
     rev = [v for v in (raw.get("rev") or []) if isinstance(v, (int, float))]
     if len(eb) == 5 and eb[2]:
-        cagr_f = 0.0  # FY26F-FY28F flat by construction
         cagr_25_28 = ((eb[4] / eb[1]) ** (1 / 3) - 1) * 100 if eb[1] else None
         rev_cagr = ((rev[4] / rev[1]) ** (1 / 3) - 1) * 100 if len(rev) == 5 and rev[1] else None
         parts.append(
-            f"TP ini mengimplikasikan CAGR EBITDA FY26F-FY28F {_num(cagr_f, 1)}% karena jalur "
-            f"mid-cycle dijaga flat, setara {_pct(cagr_25_28)} per tahun dari EBITDA aktual FY25A "
-            f"Rp {_num(eb[1] / 1000, 2)} tn ke Rp {_num(eb[4] / 1000, 2)} tn; revenue bergerak "
-            f"{_pct(rev_cagr)}/tahun dari FY25A karena forecast subsector Sectors memproyeksikan "
-            f"pendapatan 2026 turun, dan belanja modal turun pasca-smelter adalah driver utama "
-            f"perbaikan arus kas."
+            f"TP ini mengimplikasikan CAGR EBITDA FY26F-FY28F {_num(0.0, 1)}% (jalur mid-cycle "
+            f"flat), setara {_pct(cagr_25_28)}/tahun dari EBITDA FY25A "
+            f"Rp {_num(eb[1] / 1000, 2)} tn; revenue {_pct(rev_cagr)}/tahun."
         )
     # 3. trading multiple at TP
     per_f = None
@@ -336,35 +322,38 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     peer_pe = (assum.get("sector_context") or {}).get("sectors_subsector_pe_2026")
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
     parts.append(
-        f"Pada TP tersebut, saham diperdagangkan pada EV/EBITDA 2028F "
+        f"Pada TP, saham dihargai EV/EBITDA 2028F "
         f"{_num((ev_at_tp / mid_eb) if (ev_at_tp and mid_eb) else None, 1)}x dibandingkan "
-        f"rata-rata historis 4 tahun {_num(multiple, 2)}x (rentang sensitivitas "
-        f"{_num(sens.get('low'), 2)}x-{_num(sens.get('high'), 2)}x) atau PER 2026F "
-        f"{_num(per_f, 1)}x versus rata-rata PE subsector Sectors "
-        f"{_num(peer_pe, 2)}x — peer EV/EBITDA tidak tersedia (payload peers tidak membawa "
-        f"EBITDA/utang/kas), sehingga TP ini bergantung pada re-rating EV/EBITDA, bukan pada PER, "
-        f"dan valuasi pada PER tetap mahal terhadap subsector."
+        f"rata-rata historis 4 tahun {_num(multiple, 2)}x (band {_num(sens.get('low'), 2)}x-"
+        f"{_num(sens.get('high'), 2)}x) atau PER 2026F {_num(per_f, 1)}x vs PE subsector "
+        f"{_num(peer_pe, 2)}x — peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
+        f"re-rating EV/EBITDA, bukan PER."
     )
     # 4. risks to the view
     down_eb = mid_eb * 0.9 if isinstance(mid_eb, (int, float)) else None
     fv_down = fv_at(down_eb, multiple) if (down_eb and multiple) else None
     fv_print = fv_at(mid_eb, assum.get("ev_multiple_latest_print")) if mid_eb else None
     r1 = payload.get("risks") or []
-    risk_tail = "."
+    risk_tail = ""
     if r1 and isinstance(r1[0], dict):
-        bucket = str(r1[0].get("bucket") or "").strip()
+        bucket = str(r1[0].get("bucket") or "").strip().rstrip(".")
         detail = re.split(r"(?<=[.;])\s", str(r1[0].get("detail") or "").strip())
-        first = (detail[0] if detail else "").strip()
+        first = (detail[0] if detail else "").strip().rstrip(".;")
+        # one concrete instance, not the whole insider-selling ledger
+        first = re.split(r"\s+dan\s+", first)[0].strip()
+        first = re.sub(r"([\d.]+)\.(\d{3})\b", lambda m: f"{m.group(1)}.{m.group(2)[:1]} juta",
+                       first)
         if bucket:
-            risk_tail = (f"; (c) risiko operasional — {bucket}"
-                         + (f": {first}" if first else "") + ".")
+            bucket = {"Distribusi insider": "insider selling", "Insider distribution": "insider selling"}.get(
+                bucket, bucket)
+            risk_tail = f"; (c) {bucket}: {first}" if first else f"; (c) {bucket}"
     parts.append(
-        f"Risiko terhadap pandangan ini: (a) downside — harga tembaga atau emas turun 10% "
-        f"menekan EBITDA mid-cycle 10%, dan karena utang bersih dikurangkan, TP turun ke Rp "
-        f"{_num(fv_down, 0)} ({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); "
-        f"(b) downside — multiple tidak kembali ke rata-rata dan bertahan di print 2026 "
-        f"{_num(assum.get('ev_multiple_latest_print'), 2)}x, membuat TP jatuh ke Rp "
-        f"{_num(fv_print, 0)}" + risk_tail
+        f"Risiko terhadap pandangan ini: (a) downside — tembaga atau emas turun 10% menekan "
+        f"EBITDA mid-cycle 10%, TP turun ke Rp {_num(fv_down, 0)} "
+        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) downside — "
+        f"multiple bertahan di print 2026 "
+        f"{_num(assum.get('ev_multiple_latest_print'), 2)}x, TP jatuh ke Rp "
+        f"{_num(fv_print, 0)}{risk_tail}."
     )
     return {"heading": "Valuasi", "body": " ".join(parts)}
 

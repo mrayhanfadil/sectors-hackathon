@@ -105,7 +105,7 @@ def test_multiples_are_computed_at_todays_price(payload):
 def test_katalis_paragraph_carries_a_priced_in_verdict(payload):
     body = (payload["cover"]["slide2"]["katalis"])["body"]
     assert "Katalis terverifikasi" in body
-    assert "di-price-in" in body
+    assert "Priced-in" in body
     assert "relatif vs IHSG" in body or "relatif" in body
     # the raw pipeline housekeeping note must not leak into reader copy
     assert "cap API 90 hari" not in body
@@ -117,3 +117,17 @@ def test_valuasi_paragraph_has_the_four_mandated_blocks(payload):
     assert "CAGR" in body and "FY26F-FY28F" in body           # 2. forecast linkage
     assert "dibandingkan" in body and "rata-rata historis" in body  # 3. trading multiple
     assert "Risiko terhadap pandangan ini" in body            # 4. risk to view
+
+
+def test_cover_copy_stays_within_the_one_pager_budget(payload):
+    """The cover is a one-page spread (benchmark layout): paragraphs 1-3 plus the Key
+    Financials exhibit have to share one page, so the generated copy has a hard length budget.
+    Crossing it silently pushes the exhibit to the next page and breaks the layout."""
+    s1 = payload["cover"]["slide1"]
+    s2 = payload["cover"]["slide2"]
+    budget = 2600  # chars of body copy, measured at 7.9pt in the 70% column
+    total = (len(s1["financial_para"]["body"]) + len(s2["katalis"]["body"])
+             + len(s2["valuasi"]["body"]))
+    assert total <= budget, f"cover copy {total} chars exceeds the {budget} budget"
+    for part in (s1["financial_para"]["body"], s2["katalis"]["body"], s2["valuasi"]["body"]):
+        assert len(part) < 1500, len(part)

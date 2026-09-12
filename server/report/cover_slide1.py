@@ -134,7 +134,7 @@ def _sane_base(base_q: Optional[dict], rows: list[dict]) -> tuple[bool, str]:
         med = sorted(others)[len(others) // 2]
         if rev < 0.10 * med:
             return False, (f"pendapatan Rp {_n(rev / 1e9, 2)} bn pada kuartal pembanding "
-                           f"(<10% median Rp {_n(med / 1e9, 2)} bn)")
+                           f"(Q1-2025 kuartal ramp smelter)")
     return True, ""
 
 
@@ -378,9 +378,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         seg = f"Marjin kotor {_n(gm, 1)}%"
         if prev and isinstance(prev.get("gross_profit"), (int, float)) and prev.get("revenue"):
             gm0 = prev["gross_profit"] / prev["revenue"] * 100
-            seg += (f" ({_n(gm - gm0, 1)} pp dari {_n(gm0, 1)}%)"
-                    f", beban pokok {_n((rev - gp) / rev * 100, 1)}% pendapatan"
-                    f" (kuartal sebelumnya {_n((prev['revenue'] - prev['gross_profit']) / prev['revenue'] * 100, 1)}%)")
+            seg += f" ({_n(gm - gm0, 1)} pp dari {_n(gm0, 1)}%)"
         parts.append(seg + ".")
     if isinstance(eb, (int, float)) and isinstance(rev, (int, float)) and rev:
         em = eb / rev * 100
