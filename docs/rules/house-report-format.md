@@ -112,6 +112,11 @@ number, or `Exhibit N` string is producing a duplicate that will drift.
 
 # adoption guards (data contract, agent instructions, critic gate, render path)
 .venv/bin/python -m pytest tests/test_house_format_adoption.py -q
+
+# artifact check — the only layer that sees PHYSICAL pages. Source-level guards pass
+# even when per-page furniture got lost to a page overflow, when an exhibit label is
+# orphaned from its object by a page break, or when footer page numbers repeat.
+.venv/bin/python scripts/verify_house_format.py output/<ticker>_report_typst.pdf
 ```
 
 Render-level evidence for a generated document:
@@ -123,3 +128,9 @@ Render-level evidence for a generated document:
 Check on the produced PDF: label sequence is `1..N` with no gaps, source lines equal
 the exhibit count, header/divider/logo/footer present on 100% of pages, footer page
 numbers complete.
+
+> `scripts/render_typst.py` compiles with the template directory as the working
+> directory, so a RELATIVE `report_data.json` path fails with
+> `error: file not found (searched at templates/typst/archetypes/...)`. Pass an
+> absolute path (or `$PWD/...`).
+
