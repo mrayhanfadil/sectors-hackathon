@@ -188,6 +188,55 @@ Every number on any page must trace to an engine output, a Sectors field or a na
 date. "Kualitatif" is an acceptable answer; an invented figure is not.
 """
 
+SLIDE5_RULE = """SLIDE 5 — PEER VALUATION (cross-sectional) + HISTORICAL RELATIVE VALUATION (time-series).
+Two different philosophies on ONE page, separated by a hard visual break (divider or section header). The
+reader must never read them as two confirmations of one conclusion: the peer table says where the name sits
+against its comparables, the own-history tool says where it sits against itself. They can disagree, and when
+they do you REPORT THE DISAGREEMENT — never average the two into one story.
+
+PART A — Peer Valuation Table (Exhibit 11, top ~50%)
+  Columns: company name + ticker, P/E (x), PBV (x), EV/EBITDA (x); ROE (%) and market cap optional when
+  space allows. ONE consistent period on every row (LTM by default). Below the peer rows, two separate
+  closing rows — Median and Average — bold, visually detached from the individual names. The covered issuer's
+  row is shaded so its position against median/average is visible without scanning. Peer-selection criteria
+  must be explicit and defensible in a source line or footnote: same sector/sub-sector, comparable market-cap
+  range, and the price "as of" date. 2-3 sentence narrative: state the position vs median AND average, then
+  justify the premium/discount with a concrete fundamental differential (earnings quality, relative growth,
+  ROE gap, different risk profile) — never just the gap.
+
+PART B — Own-History Relative Valuation (Exhibits 12-13 + implied price)
+  Short methodology block in print: four trailing multiples (P/E, P/BV, EV/EBITDA, EV/Sales) over a one-year
+  window, compared against that multiple's own distribution (average, median, percentile). Rolling TTM drivers
+  with layered fallbacks. Exhibit 12 = P/E band 1Y, Exhibit 13 = P/BV band 1Y: line of the trailing multiple,
+  dashed mean line, dotted median line, distinct marker on the current level at the right edge. Implied Price
+  Judgement must show at least TWO methods as explicit numbers — reversion to the 1Y mean and reversion to the
+  1Y median — for at least P/E and P/BV (plus EV/EBITDA or EV/Sales when the rule-based scorer picks them).
+  Every implied price holds the fundamental driver flat at its current TTM level; only the multiple reverts.
+  Narrate per chart, not in one merged paragraph: the current percentile, then the mean-reversion and
+  median-reversion prices separately. When the two differ materially, print a RANGE, not a single number.
+  MANDATORY disclaimer: these implied prices are a historical-multiple mean-reversion cross-check, NOT the
+  target price set on slide 4, and they assume a constant fundamental driver — a snapshot, not a forecast.
+
+DATA TECHNIQUE (use exactly this; it is the only path that keeps the page Sectors-only and credit-safe)
+  1. Cache first: `server/report/peers_data.py` owns this slide's data. A rebuild that finds
+     `output/cache/sectors/<TICKER>/peer_table.json` and `bands_1y.json` spends ZERO credits — read the cache,
+     never re-pull. `python -m server.report.peers_data <TICKER>` prints the billed-vs-cache tally; `--refresh`
+     is the only switch that may spend.
+  2. Peer ratios: `company_report(ticker, 'peers')` gives published `pe_ttm` (LTM) and `pb_mrq` (MRQ) for the
+     whole set, one as-of — use them as the P/E and P/BV columns. Do NOT blend the peers payload's
+     `market_cap` (a prior fiscal year's snapshot) with LTM earnings; that produced TBMS 2.31x against
+     Sectors' own 12.51x.
+  3. Market cap on the published basis: `pb_mrq x latest equity`.
+  4. Peer statements: `quarterly(symbol)`. The `financials` section of `company_report` is ANNUAL only, so
+     using it for peers while using quarters for the covered name breaks the one-period rule.
+  5. TTM = sum of the last four quarters. Balance-sheet items (equity, net debt) take the latest quarter.
+     Quarterly rows have no `net_debt`: compute `total_debt - cash_and_short_term_investments`.
+  6. `/daily/` caps at 90 days per call: one year = four windows.
+  7. Negative or near-zero earnings -> print `n.m.` and exclude the row from median and average, and say so.
+  8. EV-multiple implied prices: convert per-share EV back to equity by subtracting net debt PER SHARE.
+  9. Label the driver as-of date and how many sessions reuse a frozen TTM when the latest quarter predates
+     the window end."""
+
 # ---------------------------------------------------------------------------
 # News Harvester — Sectors news feed (parallel lane 1)
 # ---------------------------------------------------------------------------
@@ -416,7 +465,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -526,7 +575,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -665,4 +714,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE

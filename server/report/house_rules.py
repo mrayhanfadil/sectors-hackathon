@@ -605,6 +605,8 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     # Slide 3 of the deck is its own page as well.
     violations += audit_performance_page(payload.get("performance_page"), payload)
     violations += audit_valuation_page(payload.get("valuation_page"), payload)
+    # Slide 5 of the deck is its own page as well.
+    violations += audit_peer_page(payload.get("peers_page"), payload)
     return {
         "ok": not violations,
         "applicable": applicable,
@@ -614,7 +616,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation",
+            "slide3-performance", "slide4-valuation", "slide5-peers",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
@@ -623,3 +625,124 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
         )),
         "copy_budget": COVER_COPY_BUDGET,
     }
+
+
+def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]:
+    """Deck slide 5 (docs/ammn-slides/slide5-peer-spec.md).
+
+    The rules put two methodologies on one page and demand they stay distinguishable, so this gate
+    checks each half against its own contract and then checks the ONE thing that keeps them honest:
+    when the cross-sectional read and the time-series read point in different directions, the page has
+    to say so instead of letting the reader assume they confirm each other.
+    """
+    if page is None or page == {}:
+        # not applicable: a ticker whose deck has no slide-5 data never had this page
+        return []
+    if not isinstance(page, dict) or not page.get("available"):
+        return ["slide 5 has no peers page available — the page cannot be silently dropped"]
+    violations: list[str] = []
+    a = page.get("part_a") or {}
+    b = page.get("part_b") or {}
+
+    # ---- Part A: the peer table -------------------------------------------
+    cols = [str(c).lower() for c in (a.get("columns") or [])]
+    for required in ("p/e", "p/bv", "ev/ebitda"):
+        if not any(required in c for c in cols):
+            violations.append(f"slide 5 peer table is missing the '{required}' column the rules require")
+    rows = a.get("rows") or []
+    if len(rows) < 3:
+        violations.append(f"slide 5 peer table carries only {len(rows)} rows — a peer set needs comparables")
+    covered = [r for r in rows if r.get("is_covered")]
+    if not covered:
+        violations.append("slide 5 peer table does not flag the covered issuer's row (rules: highlight)")
+    for key in ("median", "average"):
+        stat = a.get(key) or {}
+        if not stat:
+            violations.append(f"slide 5 peer table is missing the {key.upper()} closing row (rules: dua baris terpisah)")
+    if a.get("median") and a.get("average") and a["median"].get("pe") == a["average"].get("pe"):
+        violations.append("slide 5 median and average rows are identical — they must be two separate rows")
+    # the statistics must be reproducible from the printed rows
+    pe_vals = sorted(r["pe"] for r in rows if not r.get("is_covered") and r.get("pe") is not None)
+    med = a.get("median") or {}
+    if pe_vals and med.get("pe") is not None:
+        n = len(pe_vals)
+        expect = pe_vals[n // 2] if n % 2 else (pe_vals[n // 2 - 1] + pe_vals[n // 2]) / 2
+        if abs(expect - med["pe"]) > 0.02:
+            violations.append(f"slide 5 median P/E {med['pe']:.2f} does not match the printed peer rows "
+                              f"(recomputed {expect:.2f})")
+    if not str(a.get("as_of") or "").strip():
+        violations.append("slide 5 peer table states no 'as of' date for the price data it uses")
+    if not (a.get("sources") or []):
+        violations.append("slide 5 peer table records no data provenance (the rules require a source line)")
+    if not (b.get("sources") or []):
+        violations.append("slide 5 relative-valuation half records no data provenance")
+    criteria = str(a.get("criteria") or "").lower()
+    if len(criteria) < 40 or "market cap" not in criteria:
+        violations.append("slide 5 peer-selection criteria are not stated (rules: sector + market-cap range + as-of)")
+    if not (a.get("narrative") or a.get("narrative_text")):
+        violations.append("slide 5 peer table has no narrative positioning the issuer against median/average")
+    if any(r.get("pe_nm") for r in rows if not r.get("is_covered")) and "n.m." not in str(a.get("narrative_text", "")):
+        violations.append("slide 5 prints an n.m. P/E without disclosing why or that it left the median")
+
+    # ---- Part B: bands + implied price ------------------------------------
+    bands = b.get("bands") or []
+    if len(bands) < 2:
+        violations.append(f"slide 5 shows {len(bands)} band charts — the rules require at least P/E and P/BV")
+    have = {blk.get("key") for blk in bands}
+    for key, exhibit in (("pe", 12), ("pbv", 13)):
+        if key not in have:
+            violations.append(f"slide 5 is missing the {key.upper()} band chart (rules: Exhibit {exhibit})")
+    for blk in bands:
+        label = blk.get("label", "?")
+        if not blk.get("series"):
+            violations.append(f"slide 5 {label} band has no series")
+        for field, why in (("mean", "mean line"), ("median", "median line"), ("current", "current marker")):
+            if blk.get(field) is None:
+                violations.append(f"slide 5 {label} band is missing its {why}")
+        if blk.get("series"):
+            last = blk["series"][-1]["value"]
+            if blk.get("current") is not None and abs(last - blk["current"]) > 1e-6:
+                violations.append(f"slide 5 {label} band current marker is not the last observation")
+        narr = str(blk.get("narrative") or "")
+        if not narr:
+            violations.append(f"slide 5 {label} has no narrative (rules: narasi per chart, bukan satu paragraf)")
+        elif "persentil" not in narr.lower():
+            violations.append(f"slide 5 {label} narrative does not state the current percentile")
+    implied = b.get("implied") or []
+    covered_keys = {i["key"]: i for i in implied}
+    for key in ("pe", "pbv"):
+        row = covered_keys.get(key)
+        if not row:
+            violations.append(f"slide 5 implied price omits {key.upper()} (rules: minimal P/E dan P/BV)")
+            continue
+        if row.get("to_mean") is None or row.get("to_median") is None:
+            violations.append(f"slide 5 implied {key.upper()} must show both reversion methods as numbers")
+        if row.get("is_range") is not True and (row.get("high") or 0) and                 abs(row["high"] - row["low"]) > 0.10 * abs(row["high"]):
+            violations.append(f"slide 5 implied {key.upper()} mean and median differ materially but are "
+                              f"not presented as a range")
+    if not bands:
+        pass
+    elif not any("persentil" in str(blk.get("narrative", "")).lower() for blk in bands):
+        violations.append("slide 5 band narratives never state a percentile")
+    disclaimer = str(b.get("disclaimer") or "")
+    low = disclaimer.lower()
+    if len(disclaimer) < 80:
+        violations.append("slide 5 has no implied-price disclaimer (rules: disclaimer eksplisit wajib)")
+    elif not any(k in low for k in ("bukan target price", "not the target price", "bukan target harga")):
+        violations.append("slide 5 disclaimer does not say the implied prices are NOT the slide-4 target price")
+
+    # ---- the one rule that keeps the two halves honest --------------------
+    pe_a = (a.get("median") or {}).get("pe")
+    pe_cov = (covered[0].get("pe") if covered else None)
+    band_pe = next((blk for blk in bands if blk.get("key") == "pe"), None)
+    premium_vs_peers = (pe_cov is not None and pe_a and pe_cov > pe_a * 1.10)
+    cheap_vs_self = (band_pe is not None and band_pe.get("percentile") is not None
+                     and band_pe["percentile"] < 45)
+    if premium_vs_peers and cheap_vs_self:
+        joined = (str(a.get("narrative_text", "")) + " " + " ".join(
+            str(blk.get("narrative", "")) for blk in bands)).lower()
+        if not any(k in joined for k in ("bertentangan", "berbeda arah", "tidak saling mengonfirmasi",
+                                         "disagree", "opposite", "berlawanan")):
+            violations.append("slide 5 shows a peer premium while its own history reads cheap — the page "
+                              "must state that the two readings disagree instead of implying confirmation")
+    return violations

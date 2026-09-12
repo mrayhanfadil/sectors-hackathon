@@ -1,0 +1,104 @@
+{# ===== SLIDE 5 — Peer Valuation (cross-sectional) + Relative Valuation (time-series) =====
+   Partial for templates/report_single.html. Expects `peers_page` in the render context and the
+   house `m` macros + `ns` exhibit namespace. Rules: docs/ammn-slides/slide5-peer-spec.md
+   Two methodologies, one page, hard visual break, and the disagreement is stated out loud. #}
+{% if peers_page and peers_page.available %}
+{% set A = peers_page.part_a %}
+{% set B = peers_page.part_b %}
+
+<div class="page">
+<div class="slide5">
+  {{ m.running() }}
+  {{ m.section(6, "Peer Valuation & Valuasi Relatif Historis") }}
+
+  <div class="method-band method-band-a">
+    <span class="method-tag">BAGIAN A — CROSS-SECTIONAL</span>
+    <span class="method-desc">Posisi emiten terhadap <b>peer set</b> pada satu tanggal harga</span>
+  </div>
+
+  {{ m.exhibit_auto(ns, A.title, A.sources[0] if A.sources else "") }}
+  <table class="fin-table peer-table">
+    <thead>
+      <tr>{% for c in A.columns %}<th>{{ c }}</th>{% endfor %}</tr>
+    </thead>
+    <tbody>
+      {% for r in A.rows %}
+      <tr class="{{ 'peer-self' if r.is_covered else '' }}">
+        <td class="tk">{{ r.symbol }}</td>
+        <td>{{ r.name }}</td>
+        <td class="num">{{ "n.m." if r.pe_nm else (r.pe|round(2)) }}</td>
+        <td class="num">{{ r.pbv|round(2) if r.pbv else "—" }}</td>
+        <td class="num">{{ "n.m." if r.ev_ebitda_nm else (r.ev_ebitda|round(2)) }}</td>
+        <td class="num">{{ (r.roe * 100)|round(1) if r.roe else "—" }}</td>
+        <td class="num">{{ "%.2f tn"|format(r.market_cap / 1e12) if r.market_cap else "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+    <tfoot>
+      <tr class="peer-stat">
+        <td class="tk">MEDIAN</td><td>Peer set ({{ A.counts.pe_ttm }} nama ber-P/E valid)</td>
+        <td class="num">{{ A.median.pe|round(2) }}</td>
+        <td class="num">{{ A.median.pbv|round(2) }}</td>
+        <td class="num">{{ A.median.ev_ebitda|round(2) }}</td>
+        <td class="num">{{ (A.median.roe * 100)|round(1) }}</td>
+        <td class="num">—</td>
+      </tr>
+      <tr class="peer-stat peer-average">
+        <td class="tk">AVERAGE</td><td>Peer set</td>
+        <td class="num">{{ A.average.pe|round(2) }}</td>
+        <td class="num">{{ A.average.pbv|round(2) }}</td>
+        <td class="num">{{ A.average.ev_ebitda|round(2) }}</td>
+        <td class="num">{{ (A.average.roe * 100)|round(1) }}</td>
+        <td class="num">—</td>
+      </tr>
+    </tfoot>
+  </table>
+  <p class="small muted">{{ A.criteria }} Basis: {{ A.basis }}. Baris ber-shading = emiten yang dicover.</p>
+  <p class="peer-narr">{{ A.narrative_text }}</p>
+  {{ m.pagefoot(6, ns) }}
+</div>
+
+<div class="page">
+<div class="slide5">
+  {{ m.running() }}
+  <div class="method-divider">
+    <span>BAGIAN B — TIME-SERIES (own history) · metodologi berbeda filosofi dari tabel peer di atas;
+    keduanya <b>tidak</b> saling mengonfirmasi satu kesimpulan</span>
+  </div>
+
+  <p class="small">{{ B.methodology }}</p>
+
+  <div class="band-grid">
+    {% for blk in B.bands %}
+      {% if blk.key in ("pe", "pbv") %}
+      <div class="band-card">
+        {{ m.exhibit_auto(ns, blk.label ~ " Historical Band (1-Year)", B.sources[0] if B.sources else "") }}
+        {{ band_svg(blk) }}
+        <p class="small band-narr">{{ blk.narrative }}</p>
+      </div>
+      {% endif %}
+    {% endfor %}
+  </div>
+
+  <h3>Implied Price Judgement</h3>
+  <table class="fin-table">
+    <thead><tr><th>Multiple</th><th>Reversion ke Mean (Rp)</th><th>Reversion ke Median (Rp)</th>
+      <th>Rentang</th><th>Selisih</th></tr></thead>
+    <tbody>
+      {% for r in B.implied %}
+      <tr>
+        <td class="tk">{{ r.label }}</td>
+        <td class="num">{{ "{:,.0f}".format(r.to_mean) }}</td>
+        <td class="num">{{ "{:,.0f}".format(r.to_median) }}</td>
+        <td class="num">{{ "{:,.0f}–{:,.0f}".format(r.low, r.high) if r.is_range else "konvergen" }}</td>
+        <td class="num">{{ "%.0f%%"|format(r.delta_pct) if r.delta_pct else "—" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  <p class="small muted">Harga terakhir {{ B.last_close }} · {{ B.driver_note }}</p>
+  <p class="disclaim-inline"><b>Catatan:</b> {{ B.disclaimer }}</p>
+  {{ m.pagefoot(7, ns) }}
+</div>
+</div>
+{% endif %}

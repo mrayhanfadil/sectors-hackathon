@@ -314,10 +314,13 @@
   {{ m.pagefoot(5, ns) }}
 </div>
 
+{# ================= SLIDE 5 — PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
+{% include "_slide5_peers.html" %}
+
 {# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(6, "Financials 6Y + Rasio") }}
+  {{ m.section(7, "Financials 6Y + Rasio") }}
   {% if exhibits %}
     {% for ex in exhibits %}
     {% if ex.chart %}
@@ -332,21 +335,12 @@
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
   {% endfor %}
-  {{ m.pagefoot(6, ns) }}
+  {{ m.pagefoot(8, ns) }}
 </div>
 
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(7, "Perbandingan Peers") }}
-  {% if peers and peers.tables %}
-    {% for pt in peers.tables %}
-    <h3>{{ pt.pillar }}</h3>
-    {{ m.exhibit_auto(ns, "Peer Comparison — " ~ (meta.sector or pt.pillar), pt.source) }}
-    {{ m.table(pt.headers, pt.rows) }}
-    {% endfor %}
-  {% endif %}
-
   {{ m.section(8, "Faktor Risiko") }}
   {% for r in risks %}
   <div class="risk-bucket">
@@ -362,9 +356,28 @@
   {{ m.section(9, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(7, ns) }}
+  {{ m.pagefoot(9, ns) }}
 </div>
 
+
+<style>
+  .slide5 .peer-table td.tk { font-weight: 600; }
+  .slide5 .peer-table tr.peer-self td { background: #eef6ff; box-shadow: inset 3px 0 0 #1d4ed8; }
+  .slide5 .peer-table tr.peer-stat td { font-weight: 700; background: #f8fafc; border-top: 1.4pt solid #0f172a; }
+  .slide5 .peer-table tr.peer-average td { border-top: 0; border-bottom: 1.4pt solid #0f172a; }
+  .slide5 .method-band { display: flex; align-items: baseline; gap: 8pt; margin: 2pt 0 6pt; }
+  .slide5 .method-tag { font-size: 7.5pt; letter-spacing: .09em; font-weight: 700; color: #12395b; }
+  .slide5 .method-desc { font-size: 8pt; color: #64748b; }
+  .slide5 .method-divider { margin: 10pt 0 6pt; padding: 4pt 0; border-top: 1.6pt solid #0f172a;
+    border-bottom: 1.6pt solid #0f172a; text-align: center; font-size: 7.8pt; letter-spacing: .05em;
+    text-transform: uppercase; color: #0f172a; }
+  .slide5 .band-grid { display: flex; gap: 10pt; }
+  .slide5 .band-card { flex: 1; }
+  .slide5 .band-svg { width: 100%; height: auto; }
+  .slide5 .band-narr, .slide5 .peer-narr { font-size: 8.2pt; color: #1e293b; }
+  .slide5 .disclaim-inline { font-size: 8pt; background: #fff7ed; border-left: 2.5pt solid #b45309;
+    padding: 5pt 7pt; color: #3f2b12; }
+</style>
 {{ m.chartjs() }}
 <script>
 document.addEventListener("DOMContentLoaded", () => {

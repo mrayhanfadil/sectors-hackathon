@@ -396,6 +396,12 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         from server.report.valuation_page import build_valuation_page
 
         payload["valuation_page"] = build_valuation_page(payload, assum if _has_assump else {})
+
+        # Deck slide 5: peer table + own-history bands. Cache-only — the builder performs no network
+        # call, so a render never spends a Sectors credit (see server/report/peers_data.py).
+        from server.report.peers_page import build_peers_page
+
+        payload["peers_page"] = build_peers_page(t)
     except Exception as exc:
         build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:
@@ -504,6 +510,8 @@ def render_html_for_ticker(
         lstrip_blocks=True,
     )
     env.filters["idr"] = _idr
+    from server.report.peers_page import render_band_svg as _band_svg
+    env.globals["band_svg"] = _band_svg
     env.filters["pct"] = _pct
     # House furniture (docs/rules/house-report-format.md). Macros are imported without
     # context, so the computed date and the inline logo can only reach them as globals.

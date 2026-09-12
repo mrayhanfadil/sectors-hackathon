@@ -7,6 +7,52 @@ Applies to AMMN ONLY. Mining IDX peer set. Global house rules binding: docs/rule
 
 ---
 
+## 0. Binding rule text (owner, 12 Sep 2026)
+
+The owner's wording is the contract. Anything below that contradicts it loses.
+
+> SLIDE 5 — Peer Valuation & Historical Relative Valuation
+>
+> Slide ini terbagi dua metodologi berbeda filosofi (cross-sectional vs time-series), wajib dipisah
+> tegas secara visual dengan divider atau section header, supaya reader tidak salah interpretasi bahwa
+> keduanya saling mengonfirmasi satu kesimpulan yang sama.
+>
+> **Bagian Atas (~50%) — Peer Valuation Table**
+> Exhibit 11. Peer Valuation Table. Kolom: nama perusahaan + ticker, P/E (x), PBV (x), EV/EBITDA (x),
+> opsional ROE (%) dan Market Cap sebagai kolom konteks tambahan kalau ruang memungkinkan. Periode data:
+> FY26F dan/atau LTM, harus konsisten dipakai di semua baris. Baris penutup di bawah daftar peers:
+> Median dan Average dari seluruh peer set (dua baris terpisah, bold, dengan sedikit spasi/garis
+> pemisah dari baris peer individual). Baris emiten yang dicover di-highlight beda warna/shading supaya
+> langsung terlihat posisinya relatif terhadap median/average tanpa perlu scanning manual.
+> Kriteria pemilihan peer set harus eksplisit dan defensible, dicantumkan minimal di source line
+> tambahan atau footnote: kesamaan sektor/sub-sektor, rentang market cap yang sebanding, dan "as of"
+> date data harga yang dipakai. Narasi (2-3 kalimat): state posisi emiten relatif ke median dan average
+> peer set, lalu justifikasi kenapa premium atau discount tersebut wajar atau tidak wajar, dikaitkan ke
+> fundamental differential yang konkret (kualitas earnings, growth rate relatif, ROE gap, atau risk
+> profile berbeda), bukan sekadar menyatakan angka gap tanpa penjelasan.
+>
+> **Bagian Bawah (~50%) — Relative Valuation Historical (Own-History Tool)**
+> Blok deskripsi metodologi ditampilkan sebagai teks pendek: tool ini own-history relative valuation,
+> menghitung empat trailing multiple (P/E, P/BV, EV/EBITDA, EV/Sales) sepanjang window satu tahun,
+> membandingkan level saat ini terhadap distribusi historisnya sendiri (average, median, persentil).
+> Item laporan keuangan dikonversi ke mata uang harga, driver fundamental dibangun dengan rolling TTM
+> plus fallback berlapis, dan sistem scoring rule-based memilih multiple mana yang paling relevan
+> ditampilkan berdasarkan karakteristik sektor, stabilitas historis multiple tersebut, dan validitas
+> driver fundamentalnya.
+> Exhibit 12. P/E Historical Band (1-Year): chart line P/E trailing 1 tahun, garis horizontal mean
+> (dashed) dan median (dotted), marker khusus menandai level P/E saat ini di titik paling kanan.
+> Exhibit 13. P/BV Historical Band (1-Year): format serupa.
+> Implied Price Judgement: minimal dua metode implied price secara eksplisit dalam bentuk angka —
+> (1) reversion ke mean 1-tahun, dan (2) reversion ke median 1-tahun — untuk minimal dua multiple
+> (P/E dan P/BV default, ditambah EV/EBITDA atau EV/Sales kalau scoring rule-based memilihnya). Semua
+> implied price dihitung dengan asumsi driver fundamental tetap konstan di level TTM/forward saat ini,
+> hanya multiple yang direversi. Narasi per chart/metode (bukan satu paragraf gabungan): sebutkan
+> persentil posisi multiple saat ini, lalu angka implied price dari reversion ke mean dan ke median
+> secara terpisah; kalau kedua angka berbeda material, presentasikan sebagai range bukan angka tunggal.
+> Disclaimer eksplisit wajib: implied price dari tool ini adalah cross-check mean-reversion berbasis
+> multiple historis, bukan Target Price resmi di Slide 4, dan berbasis asumsi driver fundamental
+> konstan, sehingga sifatnya snapshot bukan proyeksi.
+
 ## 1. Layout — two methodologies, one slide, hard visual break
 
 - Top ~50%: Section header "Peer Valuation (Cross-Sectional)" + divider line (renderer-owned colour #067647 or muted grey, full-width). This is the peer table block.
@@ -281,3 +327,23 @@ Rules (from end-to-end discipline):
 - [ ] No synthetic numbers; `sectors_missing_key` → loud STOP recorded with note; empty 200 billed honestly; no web magic numbers in price/driver fields.
 - [ ] Internal provenance (outlet, url, date, engine path) retained as audit field per object — visible line stays constant.
 - [ ] Cross-exhibit tie-outs verified (peer medians recomputed, EV bridges use Slide 4 Net Debt/Cash/shares, TTM drivers match Slide 3 source).
+
+## 7. Decision log — data basis (12 Sep 2026)
+
+| Decision | Why | Alternatives rejected |
+|---|---|---|
+| P/E and P/BV columns print Sectors' published `pe_ttm` / `pb_mrq` | One source, one as-of, identical basis on every row; verified against our own LTM rebuild (TBMS 12.5 vs 12.51, ANTM 8.9 vs 8.64, INCO 19.3 vs 19.29, TINS 9.2 vs 9.19, AMMN 39.3 vs 38.62) | Recomputing both columns from the peers payload's `market_cap`: that cap is a *prior fiscal year's* snapshot, so TBMS came out 2.31x against Sectors' own published 12.51x |
+| Peer financials pulled from `quarterly(sym)`, not `company_report(sym,'financials')` | The financials section is **annual** (rows keyed by `year`); the quarterly endpoint gives dated per-quarter rows. Mixing them breaks the rule's "one consistent period" requirement | Annual rows for peers + quarterly for the covered name: cheaper, but the table would compare FY2025 EBITDA against Q1-2026 equity |
+| Market cap recovered as `pb_mrq x latest equity` | Keeps the EV bridge on the same basis as the published ratios without a second cap source | Re-deriving shares outstanding: not published in the payloads we hold |
+| Net debt = `total_debt - cash_and_short_term_investments` | Quarterly rows carry no `net_debt` field, but carry both components | Leaving EV/EBITDA blank (the previous page's `—` / GAP G8) |
+| Rows with negative or near-zero earnings print `n.m.` and leave the median/average | A negative P/E is not a comparison; a near-zero denominator produces 9,141x noise | Printing them: pushes the average to nonsense (the old page showed EMAS -368.61) |
+| Implied prices shown as a range when mean- and median-reversion differ by >10% | The rule forbids presenting a materially different pair as one number (false precision) | Averaging the two reversion targets |
+
+**Data-layer contract:** `server/report/peers_data.py` is cache-first and Sectors-only. Artifacts live at
+`output/cache/sectors/<TICKER>/peer_table.json` and `bands_1y.json`, raw responses under `raw/`. A rebuild
+that finds them on disk makes **zero billed calls** (verified: `billed calls: 0 | cache hits: 11`); only
+`--refresh` can spend. The renderer reads the JSON, so a PDF render performs no network calls at all.
+
+**Known data gap (disclosed on the page, not hidden):** Sectors' latest quarter for AMMN is Q1-2026
+(2026-03-31), so the 129 sessions after that date reuse the same TTM driver — the page states the driver
+as-of date and the number of frozen sessions rather than implying a fresh TTM at every point.
