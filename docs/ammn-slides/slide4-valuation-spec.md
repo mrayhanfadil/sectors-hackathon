@@ -120,6 +120,26 @@ against 9 sells worth Rp 5,442 bn between 2025-08-15 and 2026-07-22 — each car
 `source`, and nothing else: no annual report, no reserve statement, no per-asset production. Asset-level
 NAV has to come from the issuer's annual report (amman.co.id/annual-report) or from the analyst.
 
+## 3.1 Decision log — RNAV stays dormant for AMMN
+
+**Decision (owner, 12 Sep 2026):** do not populate AMMN's RNAV page. Keep Opsi A (DCF) as the intrinsic
+branch and the relative leg as the anchor; Opsi C remains implemented and generic, but no AMMN asset
+table is built.
+
+**Why:** the project uses Sectors data only. Sectors carries no reserve tonnage, no per-asset production
+and no NAV per asset — verified against both the live endpoint and the cached pull (see §4.1). The other
+candidate sources (the annual report at amman.co.id/annual-report, technical reports, KJPP appraisals)
+are outside that boundary, so an AMMN RNAV would be built on inputs the project has ruled out.
+
+**Alternatives rejected:** (a) pulling the annual report and extracting reserves — cheap to do, but it
+breaks the Sectors-only rule and would put non-Sectors numbers in a deck whose every other figure traces
+to Sectors; (b) filling the asset table with analyst judgment NAVs — the gate would pass but the number
+would not be reproducible from data.
+
+**Consequence, enforced in code:** `valuation_rnav.py` now refuses any asset whose `nav_source` does not
+cite Sectors, and `_audit_rnav_page` flags an outside-Sectors NAV as a violation. A ticker whose asset
+data does live in Sectors can still activate `valuation_method: "rnav"`.
+
 ## 4. Activating an option
 
 `valuation_method` in `data/assumptions/<ticker>.json` selects the option (`dcf`, `ddm` or `rnav`). With no key

@@ -40,6 +40,16 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         reasons.append("discount to RNAV belum ditetapkan analis (assumptions.rnav_discount)")
     if not shares_bn:
         reasons.append("jumlah saham beredar tidak tersedia")
+    external = [
+        str(a.get("name") or "?")
+        for a in asset_input
+        if "sectors" not in str(a.get("nav_source") or a.get("source") or "").lower()
+    ]
+    if external and not reasons:
+        reasons.append(
+            "aturan proyek: hanya data Sectors yang boleh dipakai. NAV aset berikut bersumber dari luar "
+            "Sectors sehingga halaman ini menolak menampilkannya: " + ", ".join(external[:5])
+        )
     if reasons:
         return {
             "available": False,
@@ -64,6 +74,7 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
             "ownership": own,
             "nav_attributable": (nav * own) if (nav is not None and own is not None) else None,
             "nav_source": str(raw.get("nav_source") or raw.get("source") or "sumber tidak dicantumkan"),
+            "nav_source_is_sectors": "sectors" in str(raw.get("nav_source") or raw.get("source") or "").lower(),
             "discount_rate": _num(raw.get("discount_rate")),
         })
 
@@ -159,6 +170,7 @@ def _rnav_parameter_rows(assum: dict, debt: float, cash: float, overhead: float)
 def _rnav_notes(assum: dict, assets: list, discount, rnav_per_share) -> list[str]:
     notes = []
     unsourced = [a["name"] for a in assets if a["nav_source"] == "sumber tidak dicantumkan"]
+    outside = [a["name"] for a in assets if not a.get("nav_source_is_sectors")]
     if unsourced:
         notes.append(
             "NAV per aset berikut belum mencantumkan sumber (wajib diisi sebelum dipublikasikan): "
@@ -176,6 +188,11 @@ def _rnav_notes(assum: dict, assets: list, discount, rnav_per_share) -> list[str
         notes.append(
             "Discount rate per aset belum tersedia, jadi Exhibit 9 menampilkan parameter bridge dan grid "
             "memakai rentang discount rate indikatif — bukan WACC hasil perhitungan per proyek."
+        )
+    if outside:
+        notes.append(
+            "NAV dari luar Sectors terdeteksi pada: " + ", ".join(outside) + " — aturan proyek hanya "
+            "mengizinkan data Sectors, jadi baris ini harus diganti sumber Sectors atau dihapus."
         )
     notes.append(
         "RNAV tidak memakai terminal growth: aset dinilai satu per satu, jadi tidak ada klaim cadangan abadi."

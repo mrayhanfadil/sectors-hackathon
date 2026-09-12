@@ -971,11 +971,11 @@ def _synthetic_property_assumptions(assum: dict) -> dict:
         "corporate_overhead_pv_bn": 620.0,
         "assets": [
             {"name": "Landbank Bogor (mature)", "size": 210, "size_unit": "ha", "nav_bn": 6_400,
-             "ownership_pct": 100, "nav_source": "DCF per proyek, WACC 11%", "discount_rate": 0.11},
+             "ownership_pct": 100, "nav_source": "Sectors /company/get-segments + subsector report", "discount_rate": 0.11},
             {"name": "Landbank Karawang (development)", "size": 640, "size_unit": "ha", "nav_bn": 4_100,
-             "ownership_pct": 70, "nav_source": "appraisal KJPP, Jun 2026", "discount_rate": 0.145},
+             "ownership_pct": 70, "nav_source": "Sectors /company/report (segments)", "discount_rate": 0.145},
             {"name": "Proyek mixed-use (JV)", "size": 3.2, "size_unit": "ha", "nav_bn": 1_800,
-             "ownership_pct": 45, "nav_source": "DCF per proyek, WACC 13%", "discount_rate": 0.13},
+             "ownership_pct": 45, "nav_source": "Sectors /companies (subsector)", "discount_rate": 0.13},
         ],
     })
     return prop
@@ -1039,10 +1039,18 @@ def test_rnav_gate_demands_a_sourced_nav_and_a_justified_discount() -> None:
     page = build_valuation_page(payload, assum)
     assert audit_valuation_page(page, payload) == []
 
-    unsourced = build_valuation_page(payload, {**assum, "assets": [
-        {**assum["assets"][0], "nav_source": None}] + assum["assets"][1:]})
-    caught = audit_valuation_page(unsourced, payload)
-    assert any("where its NAV comes from" in v for v in caught), caught
+    # project rule: an unsourced NAV, or one taken from outside Sectors, is refused at the builder —
+    # the page never reaches the renderer, so there is nothing for the gate to flag.
+    for bad_source in (None, "appraisal KJPP, Jun 2026"):
+        refused = build_valuation_page(payload, {**assum, "assets": [
+            {**assum["assets"][0], "nav_source": bad_source}] + assum["assets"][1:]})
+        assert refused["available"] is False, bad_source
+        assert any("luar Sectors" in m or "outside Sectors" in m for m in refused["missing"]), bad_source
+
+    # and if a page somehow reaches the gate with an outside-Sectors NAV, the gate still catches it
+    tampered = build_valuation_page(payload, assum)
+    tampered["assets"][0] = {**tampered["assets"][0], "nav_source": "broker estimate"}
+    assert any("outside Sectors" in v for v in audit_valuation_page(tampered, payload))
 
     unjustified = build_valuation_page(payload, {**assum, "rnav_discount_comparables": None})
     unjustified["notes"] = [n for n in unjustified["notes"] if "judgment" not in n.lower()]

@@ -166,6 +166,8 @@ an unexplained method choice is a REJECT.
   the bridge (NAV + cash - debt - overhead) to RNAV per share and a target price after the discount. The
   discount must either cite a comparable level or be declared a pure judgment assumption. Never invent a
   NAV: with no asset-level data the page reports what is missing instead of filling the table.
+  Every NAV must cite a Sectors source — the project uses Sectors data only, so an appraisal, broker
+  estimate or annual-report figure is not admissible, and the page refuses rather than showing it.
 
 Page 3 — Visualisasi Kinerja Keuangan dan Forecasting (docs/ammn-slides/slide3-visual-spec.md).
 A 2x2 grid, four combo charts (bars = absolute, line = ratio on the secondary axis), and the

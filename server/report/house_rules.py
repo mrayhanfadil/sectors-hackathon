@@ -463,6 +463,11 @@ def _audit_rnav_page(page: dict) -> list[str]:
         source = str(asset.get("nav_source") or "").strip()
         if not source or source == "sumber tidak dicantumkan":
             violations.append(f"slide 4 (RNAV) asset '{name}' does not name where its NAV comes from")
+        elif "sectors" not in source.lower():
+            violations.append(
+                f"slide 4 (RNAV) asset '{name}' takes its NAV from outside Sectors ('{source[:40]}'); the "
+                "project rule allows Sectors data only"
+            )
     bridge = page.get("bridge") or {}
     for key, label in (("sum_nav", "sum of NAV"), ("total_rnav", "total RNAV"),
                        ("rnav_per_share", "RNAV per share"), ("target_price", "target price")):

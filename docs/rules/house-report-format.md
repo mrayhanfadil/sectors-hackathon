@@ -163,6 +163,7 @@ document-wide figure counter treats it like any other object.
 | A material terminal gap is an unresolved assumption | `audit_valuation_page` | a gap of 2x or more requires an "UNRESOLVED" note in the disclosure block |
 | Method choice is auditable | `audit_valuation_page` | the page must say which option is active and why DDM and RNAV were excluded |
 | Numbers tie out with the rest of the deck | builder + gate | the projection columns are the cover's own Key Financials columns, and the bridge reproduces the cover's DCF leg |
+| Valuation inputs are Sectors-sourced only | `audit_valuation_page` (RNAV arm) + `valuation_rnav.py` | an asset NAV without a Sectors citation is refused, and the page states which asset broke the rule |
 
 ## 7. Cover slide — the one-pager
 
