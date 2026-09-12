@@ -353,6 +353,13 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         build_slide1(payload, assum if _has_assump else {})
     except Exception:
         pass
+    # Page-2 contract: catalysts paragraph, valuation paragraph, Key Financials exhibit.
+    try:
+        from server.report.slide2 import build as build_slide2
+
+        build_slide2(payload, assum if _has_assump else {})
+    except Exception:
+        pass
     return payload
 
 

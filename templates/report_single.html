@@ -107,7 +107,36 @@
   {{ m.pagefoot(1, ns) }}
 </div>
 
-{# ================= PAGE 2 — SUMMARY + THESIS ================= #}
+{# ================= PAGE 2 — KATALIS, VALUASI, KEY FINANCIALS ================= #}
+{# Continues the cover spread: paragraph 2 (news/sentiment/catalysts), paragraph 3
+   (valuation, four mandated sentence blocks), then the Key Financials exhibit. All copy and
+   numbers come from cover.slide2 (server/report/slide2.py) — the template only lays it out. #}
+{% set s2 = cover.slide2 or {} %}
+<div class="page">
+  {{ m.running() }}
+  {% if s2.katalis %}
+  <div class="para-h" style="margin-top:2pt;">{{ s2.katalis.heading }}</div>
+  <div class="para-b">{{ s2.katalis.body }}</div>
+  {% endif %}
+
+  {% if s2.valuasi %}
+  <div class="para-h">{{ s2.valuasi.heading }}</div>
+  <div class="para-b">{{ s2.valuasi.body }}</div>
+  {% endif %}
+
+  {% if s2.key_financials %}
+  <div style="margin-top:12pt;">
+    {{ m.exhibit_auto(ns, s2.key_financials.exhibit_title, s2.key_financials.source) }}
+    {{ m.table(s2.key_financials.headers, s2.key_financials.rows) }}
+    <div class="small muted" style="font-size:6.6pt; line-height:1.4; margin-top:2pt;">
+      {% for nt in s2.key_financials.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+    </div>
+  </div>
+  {% endif %}
+  {{ m.pagefoot(2, ns) }}
+</div>
+
+{# ================= PAGE 3 — SUMMARY + THESIS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(1, "Ringkasan Investasi") }}
@@ -126,10 +155,10 @@
     {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(2, ns) }}
+  {{ m.pagefoot(3, ns) }}
 </div>
 
-{# ================= PAGE 3 — VALUATION ================= #}
+{# ================= PAGE 4 — VALUATION ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(3, "Valuasi") }}
@@ -211,10 +240,10 @@
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
-  {{ m.pagefoot(3, ns) }}
+  {{ m.pagefoot(4, ns) }}
 </div>
 
-{# ================= PAGE 4 — FINANCIALS ================= #}
+{# ================= PAGE 5 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(4, "Financials 6Y + Rasio") }}
@@ -232,10 +261,10 @@
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
   {% endfor %}
-  {{ m.pagefoot(4, ns) }}
+  {{ m.pagefoot(5, ns) }}
 </div>
 
-{# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
+{# ================= PAGE 6 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(5, "Perbandingan Peers") }}
@@ -262,7 +291,7 @@
   {{ m.section(7, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(5, ns) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
 {{ m.chartjs() }}
