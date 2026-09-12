@@ -142,8 +142,14 @@ def test_report_single_debaked_peer_rows_to_dashes():
         assert 'relval_src = "Sectors (pending)"' in src, (
             f"{base_dir.name}/report_single.typ: missing relval_src Sectors (pending) marker"
         )
-        assert 'caption: "Engine Chart Renderer (Sectors pending)"' in src, (
-            f"{base_dir.name}/report_single.typ: missing chart-placeholder Sectors pending caption"
+        # AMMN-TMPL: chart-placeholder default caption is the honest-empty
+        # muted note (audit rec 3) — the "Engine Chart Renderer" literal must
+        # not appear in either copy or in rendered output.
+        assert 'caption: "Grafik tidak disajikan — deret historis Sectors belum tersedia."' in src, (
+            f"{base_dir.name}/report_single.typ: missing honest-empty chart-placeholder caption"
+        )
+        assert "Engine Chart Renderer (Sectors pending)" not in src, (
+            f"{base_dir.name}/report_single.typ: stale 'Engine Chart Renderer' literal still present"
         )
 
     # Server report_single must not have baked aggregate rows

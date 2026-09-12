@@ -28,7 +28,9 @@
 )
 
 // Helper: visual placeholder for chart rendering
-#let chart-placeholder(label, caption: "Engine Chart Renderer (Sectors pending)", height: 80pt, palette: PALETTE) = {
+// Audit rec 3 (AMMN-TMPL): honest-empty caption — no "Engine Chart Renderer"
+// literal in output; muted static note in Exhibit 10/11 style, no numbering impact.
+#let chart-placeholder(label, caption: "Grafik tidak disajikan — deret historis Sectors belum tersedia.", height: 80pt, palette: PALETTE) = {
   block(
     width: 100%,
     height: height,
@@ -525,17 +527,26 @@
         palette: PALETTE,
       )
       #v(4pt)
+      // AMMN-TMPL (audit rec 2 / Ex 8): dcf_grid stays a table — the SYNT lane
+      // populates its values. When all four bridge keys are absent, the dashes
+      // below render with an honest muted note instead of bare contextless "-".
+      #let dcf_grid = val.at("dcf_grid", default: (:))
+      #let dcf_grid_empty = dcf_grid.at("pv_explicit", default: none) == none and dcf_grid.at("pv_tv", default: none) == none and dcf_grid.at("ev", default: none) == none and dcf_grid.at("net_cash", default: none) == none
       #card(PALETTE)[
         #grid(
           columns: (1fr, auto),
           row-gutter: 3pt,
-          text(size: 7pt)[PV Arus Kas Eksplisit], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("pv_explicit", default: "-")],
-          text(size: 7pt)[PV Nilai Terminal (TV)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("pv_tv", default: "-")],
-          text(size: 7pt)[Enterprise Value (EV)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("ev", default: "-")],
-          text(size: 7pt)[Kas Bersih / (Utang)], text(size: 7pt, weight: "bold")[#val.at("dcf_grid", default: (:)).at("net_cash", default: "-")],
+          text(size: 7pt)[PV Arus Kas Eksplisit], text(size: 7pt, weight: "bold")[#dcf_grid.at("pv_explicit", default: "-")],
+          text(size: 7pt)[PV Nilai Terminal (TV)], text(size: 7pt, weight: "bold")[#dcf_grid.at("pv_tv", default: "-")],
+          text(size: 7pt)[Enterprise Value (EV)], text(size: 7pt, weight: "bold")[#dcf_grid.at("ev", default: "-")],
+          text(size: 7pt)[Kas Bersih / (Utang)], text(size: 7pt, weight: "bold")[#dcf_grid.at("net_cash", default: "-")],
           text(size: 7.5pt, weight: "bold")[Nilai Wajar DCF per Saham], text(size: 7.5pt, weight: "black", fill: PALETTE.brand_dark)[#if dcf_fv == none { "Excluded (Gate 3+5)" } else { "Rp " + str(dcf_fv) }],
         )
       ]
+      #if dcf_grid_empty {
+        v(2pt);
+        text(size: 7.2pt, fill: PALETTE.muted)[Rincian bridge DCF menunggu kalkulasi engine — nilai wajar DCF pada kartu di atas.];
+      }
     ],
     [
       #text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[Metode 2: Multiple EV/EBITDA]
@@ -567,32 +578,33 @@
   )
 
   #v(8pt)
+  // AMMN-TMPL (audit rec 3 / Ex 9): when payload RNAV rows are all-empty
+  // (AMMN unmapped — no mine-level asset split in Sectors), the block demotes
+  // to a plain bold title + one honest line and consumes NO exhibit number
+  // (page-wrap flushes the pending source line at page end). Populated rows
+  // render normally with an exhibit number, same conditional idea as R2T-R3.
   #let rnav = val.at("rnav", default: (:))
-  #exhibit-header(rnav.at("title", default: "RNAV Bridge — Attributable NAV ke Target Price"), rnav.at("source", default: "Engine RNAV (Sectors pending)"))
-  #v(2pt)
-  #fin-table(
-    rnav.at("headers", default: ("Aset / Komponen", "Kepemilikan %", "NAV Atrib. (Rp bn)", "Keterangan")),
-    if rnav.at("rows", default: ()).len() > 0 {
-      rnav.rows.map(r => r.map(c => if c == none { "—" } else { str(c) }))
-    } else {
-      (
-        ("Aset produksi (100% basis)", "—", "—", "Project DCF / appraisal"),
-        ("Aset pengembangan (100% basis)", "—", "—", "Higher discount rate vs produksi"),
-        ("Eksplorasi / tenemen lain", "—", "—", "Option / appraisal value"),
-        ("Smelter / hilirisasi interest", "—", "—", "Attributable project NAV"),
-        ("(+) Kas & setara kas", "—", "—", "Valuation-date balance"),
-        ("(-) Total utang berbunga", "—", "—", "Valuation-date balance"),
-        ("(-) PV overhead korporat", "—", "—", "Unallocated G&A at WACC"),
-      )
-    },
-    footers: rnav.at("footers", default: (
-      ("Total RNAV", "—", "—", "Bold total"),
-      ("RNAV per saham", "—", "—", "Total RNAV / shares"),
-      ("Diskon ke RNAV", "—", "—", "Peer comps or pure judgment"),
-      ("Target Price (RNAV)", "—", "—", "RNAV/share x (1 - discount)"),
-    )),
-    palette: PALETTE,
-  )
+  #let rnav_title = rnav.at("title", default: "RNAV Bridge — Attributable NAV ke Target Price")
+  #let rnav_has_rows = rnav.at("rows", default: ()).len() > 0
+  #if rnav_has_rows {
+    exhibit-header(rnav_title, rnav.at("source", default: "Engine RNAV (Sectors pending)"));
+    v(2pt);
+    fin-table(
+      rnav.at("headers", default: ("Aset / Komponen", "Kepemilikan %", "NAV Atrib. (Rp bn)", "Keterangan")),
+      rnav.rows.map(r => r.map(c => if c == none { "—" } else { str(c) })),
+      footers: rnav.at("footers", default: (
+        ("Total RNAV", "—", "—", "Bold total"),
+        ("RNAV per saham", "—", "—", "Total RNAV / shares"),
+        ("Diskon ke RNAV", "—", "—", "Peer comps or pure judgment"),
+        ("Target Price (RNAV)", "—", "—", "RNAV/share x (1 - discount)"),
+      )),
+      palette: PALETTE,
+    );
+  } else {
+    text(size: 9.5pt, weight: "bold", fill: PALETTE.brand_dark)[#rnav_title];
+    v(2pt);
+    text(size: 7.2pt, fill: PALETTE.muted)[RNAV bridge menunggu split aset tambang — valuasi berjangkar DCF-shortened + mid-cycle EV/EBITDA.];
+  }
 
   #v(6pt)
   // R2T-R5: the Mid-Cycle EV/EBITDA cross-check lived here and spilled Page 4
