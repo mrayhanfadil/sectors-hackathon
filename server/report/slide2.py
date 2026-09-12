@@ -32,6 +32,12 @@ def _num(x: Any, digits: int) -> str:
     return _n(x, digits) if isinstance(x, (int, float)) else "n/a"
 
 
+def _num_acct(x: Any, digits: int) -> str:
+    """Table convention from the benchmark cover: negatives read (28,8), not -28,8."""
+    s = _num(x, digits)
+    return f"({s[1:]})" if s.startswith("-") else s
+
+
 def _growth(cur: Any, prev: Any) -> Optional[float]:
     try:
         cur, prev = float(cur), float(prev)
@@ -135,14 +141,16 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     def ev_eb(i):
         return (ev / ebis[i]) if (ev is not None and ebis[i]) else None
 
-    headers = ["(Rp bn)", _yr(y0) or "2024A", _yr(y1) or "2025A", "2026F", "2027F", "2028F"]
+    # Header first cell + unit-in-label follow the benchmark cover table ("Year to 31 Dec" /
+    # "Revenue (US$mn)"), so the units are readable without a shared column caption.
+    headers = ["Year to 31 Dec", _yr(y0) or "2024A", _yr(y1) or "2025A", "2026F", "2027F", "2028F"]
     rows = [
-        _row("Revenue", [_num(v, 0) for v in revs]),
-        _row("EBITDA", [_num(v, 0) for v in ebis]),
-        _row("EBITDA Growth (%)", [_num(v, 1) for v in eb_g]),
-        _row("Net Profit", [_num(v, 0) for v in nis]),
+        _row("Revenue (Rpbn)", [_num(v, 0) for v in revs]),
+        _row("EBITDA (Rpbn)", [_num(v, 0) for v in ebis]),
+        _row("EBITDA Growth (%)", [_num_acct(v, 1) for v in eb_g]),
+        _row("Net Profit (Rpbn)", [_num(v, 0) for v in nis]),
         _row("EPS (Rp)", [_num(v, 1) for v in epss]),
-        _row("EPS Growth (%)", [_num(v, 1) for v in eps_g]),
+        _row("EPS Growth (%)", [_num_acct(v, 1) for v in eps_g]),
         _row("PER (x)", [_num(per(i), 1) for i in range(5)]),
         _row("PBV (x)", [_num(pbv(i), 1) for i in range(5)]),
         _row("EV/EBITDA (x)", [_num(ev_eb(i), 1) for i in range(5)]),

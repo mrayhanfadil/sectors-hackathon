@@ -12,81 +12,127 @@
 </head>
 <body>
 
-{# ================= PAGE 1 — COVER ================= #}
-{# Layout follows the house slide-1 spec: sidebar ~30% on the LEFT (rating, price box,
-   secondary stats, analyst), main content ~70% on the right (company header + theme title,
-   3 quantitative highlights, paragraph 1 financial performance), one full-width exhibit
-   underneath. Values come from cover.slide1 (server/report/cover_slide1.py) — the template
-   never formats a number itself, so the PDF cannot drift from the artifact. #}
+{# ================= PAGE 1 — COVER (one-pager layout) ================= #}
+{# Structure follows the benchmark cover (BRI Danareksa Sekuritas, AMMN page 1): the left
+   sidebar (~30%) carries ONE tinted panel (rating → status → price box incl. Previous TP →
+   secondary stats → major shareholders), then the relative-performance chart in white with its
+   source directly beneath it, then the analyst block; the right column (~70%) carries the
+   company name + ticker, theme title, a tinted key-highlights callout, all three body
+   paragraphs, and the Key Financials exhibit at the bottom.
+   Values come from cover.slide1 / cover.slide2 (server/report/cover_slide1.py + slide2.py) —
+   the template never formats a number itself, so the PDF cannot drift from the artifacts. #}
 {% set s1 = cover.slide1 or {} %}
+{% set s2 = cover.slide2 or {} %}
 <div class="page">
   {{ m.running() }}
-  <div class="grid-2" style="grid-template-columns: 32% 68%; gap: 14pt; margin-top: 6pt;">
+  <div class="grid-2" style="grid-template-columns: 30% 70%; gap: 15pt; margin-top: 5pt;">
 
     {# ---------------- sidebar (left, ~30%) ---------------- #}
     <div>
-      {% if s1.rating %}
-      <div class="side-block">
+      <div class="side-panel">
+        {% if s1.rating %}
         <div class="rate-big">{{ s1.rating.action }}</div>
         <div class="rate-status">{{ s1.rating.action_status }}</div>
-      </div>
-      {% endif %}
+        {% endif %}
 
-      {% if s1.price_box %}
-      <div class="side-block">
-        <div class="side-h">Harga &amp; Target</div>
+        {% if s1.price_box %}
+        <hr class="side-rule">
         <table class="ptable">
           {% for row in s1.price_box.rows %}
-          <tr><td class="l">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
+          <tr>
+            <td class="l">{{ row[0] }}</td>
+            <td class="v"{% if row|length > 2 and row[2] %} style="font-style:italic; font-weight:400; color:var(--muted);"{% endif %}>{{ row[1] }}</td>
+          </tr>
           {% endfor %}
         </table>
         <!-- provenance (audit only, never printed; house-report-format.md §1)
              FV anchor: {{ s1.price_box.anchor }} — {{ s1.price_box.anchor_basis }} -->
-      </div>
-      {% endif %}
+        {% endif %}
 
-      {% if s1.stats and s1.stats.rows %}
-      <div class="side-block">
-        <div class="side-h">Statistik Sekunder</div>
+        {% if s1.stats and s1.stats.rows %}
+        <hr class="side-rule">
         <table class="ptable">
           {% for row in s1.stats.rows %}
           <tr><td class="l">{{ row[0] }}</td><td class="v">{{ row[1] }}</td></tr>
           {% endfor %}
+        </table>
+        {% endif %}
+
+        {% if s1.stats and s1.stats.major_shareholders %}
+        <hr class="side-rule">
+        <div class="side-h">Major Shareholder (%)</div>
+        <table class="ptable">
           {% for h in s1.stats.major_shareholders %}
           <tr><td class="l">{{ h.name }}</td><td class="v">{{ h.pct_str | default("%.2f%%"|format(h.pct)) }}</td></tr>
           {% endfor %}
         </table>
-        {% if s1.stats.notes %}<div class="small muted" style="margin-top:4pt; font-size:6.6pt; line-height:1.35;">{% for nt in s1.stats.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}</div>{% endif %}
+        {% endif %}
+      </div>
+
+      {% if s1.jci_chart %}
+      <div style="margin:2pt 0 9pt;">
+        {{ m.exhibit_auto(ns, meta.ticker ~ " relative to JCI Index (" ~ s1.jci_chart.months ~ "M, " ~ s1.jci_chart.window ~ ")", s1.jci_chart.source or "yfinance") }}
+        {{ m.svg_price_vs_jci(s1.jci_chart.labels or [], s1.jci_chart.price or [], s1.jci_chart.rel_pct or [], meta.ticker, 340, 250, true) }}
+        {{ m.exhibit_source(ns) }}
         <!-- provenance (audit only, never printed; house-report-format.md §1)
-             {% for k, v in s1.stats.sources.items() %}{{ k }}: {{ v }} | {% endfor %} -->
+             harga {{ "%.2f"|format(s1.jci_chart.abs_chg_pct) }}% vs IHSG {{ "%.2f"|format(s1.jci_chart.idx_chg_pct) }}%
+             ({{ s1.jci_chart.source }}) -->
       </div>
       {% endif %}
 
       {% if s1.analyst %}
       <div class="analyst">
+        <div class="side-h">Sectors.app Analysts</div>
         <div class="analyst-name">{{ s1.analyst.name }}</div>
         <div class="analyst-title">{{ s1.analyst.title }}</div>
       </div>
       {% endif %}
     </div>
 
-    {# ---------------- main content (right, ~70%) ---------------- #}
+    {# ---------------- main column (right, ~70%) ---------------- #}
     <div>
-      <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
       <div class="co-name">{{ meta.company_name }} <span style="color:var(--muted);">({{ meta.ticker }} IJ)</span></div>
       {% if s1.theme_title %}<div class="theme-title">{{ s1.theme_title }}</div>{% endif %}
 
       {% if s1.highlights %}
-      <ul class="hl-list">
-        {% for h in s1.highlights %}<li>{{ h }}</li>{% endfor %}
-      </ul>
+      <div class="hl-box">
+        <ul>
+          {% for h in s1.highlights %}<li>{{ h }}</li>{% endfor %}
+        </ul>
+      </div>
       {% endif %}
 
       {% if s1.financial_para %}
-      <div class="para-h">{{ s1.financial_para.heading }}</div>
-      <div class="para-b">{{ s1.financial_para.body }}</div>
+      <div class="para-wrap">
+        <div class="para-h">{{ s1.financial_para.heading }}</div>
+        <div class="para-b">{{ s1.financial_para.body }}</div>
+      </div>
       <!-- provenance (audit only, never printed; house-report-format.md §1)
            paragraf kinerja: {{ s1.financial_para.source | default("n/a") }} -->
+      {% endif %}
+
+      {% if s2.katalis %}
+      <div class="para-wrap">
+        <div class="para-h">{{ s2.katalis.heading }}</div>
+        <div class="para-b">{{ s2.katalis.body }}</div>
+      </div>
+      {% endif %}
+
+      {% if s2.valuasi %}
+      <div class="para-wrap">
+        <div class="para-h">{{ s2.valuasi.heading }}</div>
+        <div class="para-b">{{ s2.valuasi.body }}</div>
+      </div>
+      {% endif %}
+
+      {% if s2.key_financials %}
+      <div style="margin-top:10pt;">
+        {{ m.exhibit_auto(ns, s2.key_financials.exhibit_title, s2.key_financials.source) }}
+        {{ m.table(s2.key_financials.headers, s2.key_financials.rows) }}
+        <div class="small muted" style="font-size:6.5pt; line-height:1.38; margin-top:2pt;">
+          {% for nt in s2.key_financials.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}
+        </div>
+      </div>
       {% endif %}
 
       {% if cover.summary and not s1.financial_para %}
@@ -94,49 +140,10 @@
       {% endif %}
     </div>
   </div>
-
-  {% if s1.jci_chart %}
-  <div style="margin-top:12pt;">
-    {{ m.exhibit_auto(ns, meta.ticker ~ " relative to JCI Index (" ~ s1.jci_chart.months ~ "M, " ~ s1.jci_chart.window ~ ")", s1.jci_chart.source or "yfinance") }}
-    {{ m.svg_price_vs_jci(s1.jci_chart.labels or [], s1.jci_chart.price or [], s1.jci_chart.rel_pct or [], meta.ticker) }}
-    <!-- provenance (audit only, never printed; house-report-format.md §1)
-         harga {{ "%.2f"|format(s1.jci_chart.abs_chg_pct) }}% vs IHSG {{ "%.2f"|format(s1.jci_chart.idx_chg_pct) }}%
-         ({{ s1.jci_chart.source }}) -->
-  </div>
-  {% endif %}
   {{ m.pagefoot(1, ns) }}
 </div>
 
-{# ================= PAGE 2 — KATALIS, VALUASI, KEY FINANCIALS ================= #}
-{# Continues the cover spread: paragraph 2 (news/sentiment/catalysts), paragraph 3
-   (valuation, four mandated sentence blocks), then the Key Financials exhibit. All copy and
-   numbers come from cover.slide2 (server/report/slide2.py) — the template only lays it out. #}
-{% set s2 = cover.slide2 or {} %}
-<div class="page">
-  {{ m.running() }}
-  {% if s2.katalis %}
-  <div class="para-h" style="margin-top:2pt;">{{ s2.katalis.heading }}</div>
-  <div class="para-b">{{ s2.katalis.body }}</div>
-  {% endif %}
-
-  {% if s2.valuasi %}
-  <div class="para-h">{{ s2.valuasi.heading }}</div>
-  <div class="para-b">{{ s2.valuasi.body }}</div>
-  {% endif %}
-
-  {% if s2.key_financials %}
-  <div style="margin-top:12pt;">
-    {{ m.exhibit_auto(ns, s2.key_financials.exhibit_title, s2.key_financials.source) }}
-    {{ m.table(s2.key_financials.headers, s2.key_financials.rows) }}
-    <div class="small muted" style="font-size:6.6pt; line-height:1.4; margin-top:2pt;">
-      {% for nt in s2.key_financials.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}
-    </div>
-  </div>
-  {% endif %}
-  {{ m.pagefoot(2, ns) }}
-</div>
-
-{# ================= PAGE 3 — SUMMARY + THESIS ================= #}
+{# ================= PAGE 2 — SUMMARY + THESIS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(1, "Ringkasan Investasi") }}
@@ -155,10 +162,10 @@
     {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
   </div>
   {% endfor %}
-  {{ m.pagefoot(3, ns) }}
+  {{ m.pagefoot(2, ns) }}
 </div>
 
-{# ================= PAGE 4 — VALUATION ================= #}
+{# ================= PAGE 3 — VALUATION ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(3, "Valuasi") }}
@@ -240,10 +247,10 @@
     <p class="disclaimer">Bukan saran investasi - untuk riset dan edukasi saja.</p>
   </section>
   {% endif %}
-  {{ m.pagefoot(4, ns) }}
+  {{ m.pagefoot(3, ns) }}
 </div>
 
-{# ================= PAGE 5 — FINANCIALS ================= #}
+{# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(4, "Financials 6Y + Rasio") }}
@@ -261,10 +268,10 @@
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
   {% endfor %}
-  {{ m.pagefoot(5, ns) }}
+  {{ m.pagefoot(4, ns) }}
 </div>
 
-{# ================= PAGE 6 — PEERS + RISKS + DISCLAIMER ================= #}
+{# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section(5, "Perbandingan Peers") }}
@@ -291,7 +298,7 @@
   {{ m.section(7, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(6, ns) }}
+  {{ m.pagefoot(5, ns) }}
 </div>
 
 {{ m.chartjs() }}

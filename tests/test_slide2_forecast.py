@@ -47,16 +47,26 @@ def _num(s):
 
 def test_header_is_two_actual_three_forecast(payload):
     kf = _kf(payload)
-    assert kf.get("headers") == ["(Rp bn)", "2024A", "2025A", "2026F", "2027F", "2028F"], kf.get("headers")
+    assert kf.get("headers") == ["Year to 31 Dec", "2024A", "2025A", "2026F", "2027F", "2028F"], kf.get("headers")
     assert kf.get("exhibit_title") == "Key Financials (2024A–2028F)", kf.get("exhibit_title")
 
 
 def test_all_mandated_rows_present_in_order(payload):
     labels = [str(r[0]) for r in _kf(payload).get("rows") or []]
     assert labels == [
-        "Revenue", "EBITDA", "EBITDA Growth (%)", "Net Profit", "EPS (Rp)",
-        "EPS Growth (%)", "PER (x)", "PBV (x)", "EV/EBITDA (x)",
+        "Revenue (Rpbn)", "EBITDA (Rpbn)", "EBITDA Growth (%)", "Net Profit (Rpbn)",
+        "EPS (Rp)", "EPS Growth (%)", "PER (x)", "PBV (x)", "EV/EBITDA (x)",
     ], labels
+
+
+def test_negatives_use_the_accounting_parenthesis_convention(payload):
+    """Benchmark cover table prints (28,8) for a decline, never -28,8."""
+    kf = _kf(payload)
+    for r in kf.get("rows") or []:
+        for cell in r[1:]:
+            assert not str(cell).startswith("-"), (r[0], cell)
+    eb_g = [cell for r in kf["rows"] if r[0] == "EBITDA Growth (%)" for cell in r[1:]]
+    assert any(str(c).startswith("(") for c in eb_g), eb_g
 
 
 def test_revenue_and_eps_forecast_come_from_the_sectors_subsector_print(payload, assum):

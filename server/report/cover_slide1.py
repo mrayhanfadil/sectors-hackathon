@@ -207,11 +207,17 @@ def _rating_block(payload: dict) -> dict:
 def _price_box(payload: dict) -> dict:
     rbox = (payload.get("cover") or {}).get("rating_box") or {}
     price, tp, up = rbox.get("price"), rbox.get("tp"), rbox.get("upside_pct")
+    prev_tp = rbox.get("prev_tp")
     val = payload.get("valuation") or {}
+    # Previous TP sits between Target Price and Upside/Downside on the benchmark cover, and
+    # prints an italic "NA" on initiation rather than being dropped (the reader still wants to
+    # see that there is no prior target to compare against).
+    prev_row = ["Previous TP (Rp)", _n(prev_tp, 0) if prev_tp else "NA", not prev_tp]
     return {
         "rows": [
             ["Last Price (Rp)", _n(price, 0)],
             ["Target Price (Rp)", _n(tp, 0)],
+            prev_row,
             ["Upside/Downside (%)", _pct(up)],
         ],
         "anchor": val.get("anchor") or "n/a",

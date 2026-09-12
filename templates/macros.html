@@ -142,7 +142,7 @@
   /* Constant source line, below the object (house-report-format.md §1). */
   .exhibit-src { font-size: 6.8pt; color: var(--muted); font-style: italic; margin: 2pt 0 9pt; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
-  .chart-svg { display: block; margin-bottom: 8pt; }
+  .chart-svg { display: block; margin-bottom: 8pt; width: 100%; height: auto; }
   /* Chart.js canvas is shown in browser, hidden in print+PDF (Playwright page.pdf()
      uses print stylesheet so @media print applies here). */
   @media print {
@@ -163,6 +163,17 @@
             text-transform: uppercase; margin: 0 0 3pt; }
   .side-block { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt;
                 background: #fff; margin-bottom: 8pt; }
+  /* One shaded panel holding rating → prices → stats → shareholders, split by hairlines:
+     the benchmark cover (BRIDS AMMN, page 1) wraps those blocks in a single tinted card
+     instead of four separate bordered boxes. */
+  .side-panel { background: var(--band); border: .75pt solid var(--line); border-radius: 4pt;
+                padding: 9pt 9pt 7pt; margin-bottom: 9pt; }
+  .side-rule { border: none; border-top: .5pt solid var(--line); margin: 7pt 0 6pt; }
+  /* Key-highlights callout: tinted box, bold bullets (benchmark cover). */
+  .hl-box { background: var(--band); border-left: 2.5pt solid var(--brand); border-radius: 0 4pt 4pt 0;
+            padding: 7pt 9pt 7pt 11pt; margin: 8pt 0 2pt; }
+  .hl-box ul { margin: 0; padding-left: 11pt; }
+  .hl-box li { font-size: 8.6pt; font-weight: 700; margin: 3.5pt 0; line-height: 1.42; }
   .rate-big { font-size: 25pt; font-weight: 800; line-height: 1; color: var(--brand-dark);
               letter-spacing: .01em; }
   .rate-status { font-style: italic; font-size: 8.8pt; color: var(--muted); margin-top: 2.5pt; }
@@ -182,6 +193,10 @@
   .hl-list li { font-size: 8.9pt; margin: 4pt 0; }
   .para-h { font-weight: 800; font-size: 9.6pt; color: var(--brand-dark); margin: 11pt 0 3pt; }
   .para-b { font-size: 8.7pt; line-height: 1.5; text-align: justify; }
+  /* A subheading must never end a page with its paragraph on the next one, and a paragraph
+     must never be cut in half by a page break (cover spreads flow across pages when the copy
+     is long — the benchmark fits everything on one page only because its copy is half ours). */
+  .para-wrap { break-inside: avoid; }
 
   .rating-box { border: 1.5pt solid var(--brand); border-radius: 5pt; padding: 10pt; text-align: center; }
   .rating-action { font-size: 20pt; font-weight: 800; color: var(--brand-dark); letter-spacing: .04em; }
@@ -319,12 +334,26 @@
   </svg>
 {%- endmacro %}
 
-{% macro svg_price_vs_jci(labels, price, rel_pct, ticker_label) -%}
+{% macro svg_price_vs_jci(labels, price, rel_pct, ticker_label, w=680, h=200, narrow=false) -%}
   {#- Cover Exhibit 1: dual axis. LHS = absolute close (navy, solid), RHS = performance vs the
       index in percent (grey). Two independent scales: the whole point of the chart is to read
-      the relative line against the zero gridline, so mixing the scales would destroy it. -#}
-  {% set W = 680 %}{% set H = 200 %}
-  {% set pad_l = 42 %}{% set pad_r = 44 %}{% set pad_t = 16 %}{% set pad_b = 20 %}
+      the relative line against the zero gridline, so mixing the scales would destroy it.
+
+      `narrow` draws the sidebar variant used by the cover layout (chart sits in the ~30% rail,
+      so the SVG is displayed at roughly 155pt): its pads, fonts and stroke widths are given in
+      SVG units sized for that display scale, otherwise every glyph renders at ~2.5pt. -#}
+  {% set W = w %}{% set H = h %}
+  {% if narrow %}
+    {% set pad_l, pad_r, pad_t, pad_b = 30, 36, 30, 26 %}
+    {% set fs, lfs = 11.0, 11.5 %}
+    {% set sw_p, sw_r, sw_g = 3.4, 2.8, 1.0 %}
+    {% set lbl_every = 3 %}
+  {% else %}
+    {% set pad_l, pad_r, pad_t, pad_b = 42, 44, 20, 20 %}
+    {% set fs, lfs = 6.5, 7.0 %}
+    {% set sw_p, sw_r, sw_g = 1.8, 1.4, 0.5 %}
+    {% set lbl_every = 2 %}
+  {% endif %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
   {% set n = labels|length if labels else 0 %}
   {% set step = chart_w / ((n - 1) if n > 1 else 1) %}
@@ -344,37 +373,45 @@
     {% set ns.pts_r = ns.pts_r + ("%0.1f,%0.1f " % (x, y)) %}
   {% endfor %}
   {% set y0 = pad_t + chart_h - ((0 - rmin) / (rmax - rmin) * chart_h) %}
-  {% set y0r = pad_t + chart_h - ((0 - pmin) / (pmax - pmin) * chart_h) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga {{ ticker_label }} vs IHSG">
-    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#f9fafb" stroke="#e4e7ec" stroke-width="0.5" rx="3"/>
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#f9fafb" stroke="#e4e7ec" stroke-width="{{ sw_g }}" rx="3"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#e4e7ec" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#e4e7ec" stroke-width="{{ sw_g }}" stroke-dasharray="{{ '4 4' if narrow else '3 3' }}"/>
     {% endfor %}
     {#- zero line for the relative axis: above it the stock beat the index -#}
     {% if y0 >= pad_t and y0 <= pad_t + chart_h %}
-      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#98a2b3" stroke-width="0.7"/>
+      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#98a2b3" stroke-width="{{ sw_g * 2 }}"/>
     {% endif %}
-    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#98a2b3" stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#1d4ed8" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#98a2b3" stroke-width="{{ sw_r }}" stroke-linejoin="round" stroke-linecap="round"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
       {% set pv = pmax - (i * (pmax - pmin) / 3) %}
       {% set rv = rmax - (i * (rmax - rmin) / 3) %}
-      <text x="{{ pad_l - 4 }}" y="{{ y + 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#1d4ed8" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
-      <text x="{{ W - pad_r + 4 }}" y="{{ y + 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#667085">{{ "%+0.0f"|format(rv) }}%</text>
+      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#1d4ed8" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
+      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#667085">{{ "%+0.0f"|format(rv) }}%</text>
     {% endfor %}
     {% for lbl in labels or [] %}
-      {% if loop.index0 % 2 == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 6 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
+      {% if loop.index0 % lbl_every == 0 %}
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
-    <g font-size="7" font-family="Helvetica Neue, Arial, sans-serif">
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#1d4ed8" stroke-width="1.8"/>
+    {% if narrow %}
+    <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#1d4ed8" stroke-width="{{ sw_p }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#101828">Harga (Rp, kiri)</text>
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#98a2b3" stroke-width="{{ sw_r }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#101828">Relatif vs IHSG (%, kanan)</text>
+    </g>
+    {% else %}
+    <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#1d4ed8" stroke-width="{{ sw_p }}"/>
       <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#101828">Harga (Rp, kiri)</text>
-      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#98a2b3" stroke-width="1.6"/>
+      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#98a2b3" stroke-width="{{ sw_r }}"/>
       <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#101828">Relatif vs IHSG (%, kanan)</text>
     </g>
+    {% endif %}
   </svg>
 {%- endmacro %}
 
