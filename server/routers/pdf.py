@@ -24,6 +24,8 @@ from typing import Optional
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPTS_DIR = REPO_ROOT / "scripts"
 TEMPLATES_DIR = REPO_ROOT / "templates"
+#: Authoritative per-ticker input store (loud-failure policy: no generic fallback).
+ASSUMPTIONS_DIR = REPO_ROOT / "data" / "assumptions"
 
 # Make scripts importable for select_template
 if str(SCRIPTS_DIR) not in sys.path:
@@ -54,6 +56,68 @@ def _pct(value, dec: int = 1) -> str:
     except Exception:
         return str(value)
 
+# Gate-0..5 inputs consumed by server/report/typst_renderer.py:_get_ticker_gate_params
+# (evaluated by agents/valuation/gates.py). The assumptions file is the ONLY
+# permitted source for them — read the file, never invent values.
+_GATE_INPUT_KEYS = (
+    "filing_history_years",
+    "ebit_positive_count",
+    "d_de_ratio",
+    "net_debt_to_ebitda",
+    "interest_coverage",
+    "shareholders_equity",
+    "nci_pct",
+    "revenue_drivers",
+    "has_steady_state_3y",
+    "life_cycle_stage",
+)
+
+#: Optional for the renderer (Gate-0 domain override); passed through when declared.
+_GATE_DOMAIN_KEY = "domain"
+
+
+def _gate_inputs_from_assumptions(assum: dict) -> dict:
+    """Read-or-restate the Gate-0..5 inputs from data/assumptions/{T}.json.
+
+    Sources, in order:
+      1. ``assum["gate_inputs"]`` — the file's own gate block (authoritative,
+         may also carry ``domain``);
+      2. the same keys at the file's top level;
+      3. restatements of a quantity the file *already* declares, so the file's
+         own numbers are what reaches the gate:
+         - ``wd`` is documented spot gearing D/(D+E) -> gate 1c ``d_de_ratio``;
+         - ``net_debt_after_cash`` / ``ebitda`` -> gate 1c ``net_debt_to_ebitda``
+           (the file labels ``net_debt_after_cash`` the economically net figure
+           and ``net_debt`` the gross bridge leg, which dcf()/ev_ebitda() add
+           cash back against — so the gross leg is NOT used here).
+
+    Nothing else is inferred. A key the file does not support is left absent on
+    purpose: typst_renderer raises ValueError naming it rather than being handed
+    an invented filing history, coverage ratio or equity base (LOUD policy).
+    ``archetype`` is deliberately NOT mapped to ``revenue_drivers``: the repo
+    bucket ("coal" for anything Basic Materials) is inferred from the subsector
+    and would mislabel a copper/gold miner as coal-driven.
+    """
+    gi: dict = {}
+    nested = assum.get("gate_inputs")
+    if isinstance(nested, dict):
+        gi.update({k: v for k, v in nested.items() if v is not None})
+    for key in (*_GATE_INPUT_KEYS, _GATE_DOMAIN_KEY):
+        if assum.get(key) is not None:
+            gi[key] = assum[key]
+
+    wd = assum.get("wd")
+    if "d_de_ratio" not in gi and isinstance(wd, (int, float)) and not isinstance(wd, bool):
+        gi["d_de_ratio"] = float(wd)
+    if "net_debt_to_ebitda" not in gi:
+        nd, eb = assum.get("net_debt_after_cash"), assum.get("ebitda")
+        if (isinstance(nd, (int, float)) and not isinstance(nd, bool)
+                and isinstance(eb, (int, float)) and not isinstance(eb, bool)
+                and float(eb) != 0.0):
+            gi["net_debt_to_ebitda"] = round(float(nd) / float(eb), 4)
+    return gi
+
+
 def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     """Build minimal DATA_CONTRACT payload via assumptions+engines when no fixture."""
     # import helpers from endpoints to reuse
@@ -68,8 +132,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     t = ticker.upper().strip()
     # Loud failure: no silent generic numbers. A ticker without a verified
     # assumptions file must 422, mirroring endpoints.py:583-592.
-    _repo = Path(__file__).resolve().parents[2]
-    _has_assump = (_repo / "data" / "assumptions" / f"{t}.json").exists()
+    _has_assump = (ASSUMPTIONS_DIR / f"{t}.json").exists()
     _required = ("rf", "beta", "erp", "cod", "g", "payout", "fcf", "shares_out",
                  "net_debt", "cash", "ebitda", "ev_multiple", "last_price", "we", "wd")
     if not _has_assump:
@@ -94,8 +157,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     def _assumptions_for_inner(ticker: str) -> dict:
         tt = ticker.upper().strip()
         base: dict = {}
-        p = os.path.join(os.path.dirname(__file__), "..", "..", "data", "assumptions", f"{tt}.json")
-        p = os.path.normpath(p)
+        p = str(ASSUMPTIONS_DIR / f"{tt}.json")
         if os.path.exists(p):
             try:
                 loaded = json.loads(open(p, encoding="utf-8").read())
@@ -165,6 +227,15 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     rating = _rating(upside)
     chosen = template_override or _template_for_inline(t, None)
 
+    # Gate-0..5 inputs: assumptions file -> payload passthrough (see
+    # _gate_inputs_from_assumptions). Keys the file does not carry stay OUT of
+    # the block on purpose: server/report/typst_renderer.py:_get_ticker_gate_params
+    # then halts loudly and names them instead of evaluating fabricated params.
+    # NOTE for test authors: tests/_loud_test_inputs.inject_gate_inputs() uses
+    # setdefault, so a payload that already carries this block must be
+    # overwritten explicitly when a declared test scenario is required.
+    gate_inputs = _gate_inputs_from_assumptions(assum)
+
     # Build minimal contract that all templates can render without crashing
     is_infra = chosen == "infra"
     payload = {
@@ -224,6 +295,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "catalysts": [],
         "catalysts_note": "katalis menunggu filings/keterbukaan (tidak ada tenant-kuantifikasi karangan)" if is_infra else "",
         "exhibits": [],
+        "gate_inputs": gate_inputs,
     }
     # 2A+4F forecast expansion RETIRED (LOUD policy): it projected FY26F-FY29F
     # from placeholder actuals [1000, 1100] — fabricated trend presented as IDX
