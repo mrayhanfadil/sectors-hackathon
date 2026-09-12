@@ -64,7 +64,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
             "title": "Valuasi Intrinsik — DDM",
             "missing": reasons,
             "subtitle": "Opsi B dipilih tetapi datanya tidak cukup; halaman sengaja tidak diisi angka pengganti.",
-            "sources": ["Sectors API", f"data/assumptions/{payload.get('ticker', '?')}.json"],
+            "sources": ["Sectors API", f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json"],
         }
 
     scale = 1e9
@@ -186,7 +186,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         "block3_headers": None,
         "sources": [
             "Sectors API: company_report, financials, ownership",
-            f"data/assumptions/{payload.get('ticker', '?')}.json (payout, cost of equity, g, shares)",
+            f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json (payout, cost of equity, g, shares)",
             "Engine valuasi internal: server/report/engines/ddm_engine",
         ],
     }

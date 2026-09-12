@@ -150,7 +150,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "title": "Valuasi Intrinsik",
             "missing": missing,
             "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
-        "sources": [f"data/assumptions/{payload.get('ticker', '?')}.json", "payload financial_statements"],
+        "sources": [f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json", "payload financial_statements"],
         }
 
     # ---------- Blok 1: the explicit five-year build-up ----------
@@ -364,7 +364,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         },
         "sources": [
             "Sectors API: company_report, financials (income statement, balance sheet, cash flow), valuation",
-            f"data/assumptions/{payload.get('ticker', '?')}.json (rf, beta, ERP, Kd, WACC, FCFF, net debt, shares)",
+            f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json (rf, beta, ERP, Kd, WACC, FCFF, net debt, shares)",
             "Engine valuasi internal: server/report/engines/dcf_engine",
         ],
     }
