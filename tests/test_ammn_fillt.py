@@ -155,7 +155,10 @@ def test_typst_renders_clean_with_contiguous_numbering(tmp_path):
     assert "4 Pilar Tesis Investasi" in text
     nums = [int(m.group(1)) for m in re.finditer(r"Exhibit\s+(\d+)\.", text)]
     assert nums, "no exhibits found in AMMN pdf"
-    assert nums == list(range(2, max(nums) + 1)), nums
+    # House rule §2: the global counter starts at Exhibit 1 and runs continuously. An
+    # exhibit that is deliberately not rendered does not consume a number, so there is
+    # never a gap where Exhibit 1 should be.
+    assert nums == list(range(1, max(nums) + 1)), nums
     sources = text.count("Source: Company, Team Estimates")
     assert sources == len(nums), (sources, len(nums))
     assert "Equity Research" in text

@@ -3,7 +3,9 @@
 Guards the five template fixes against regression in BOTH report_single.typ
 mirrors (templates/typst/archetypes <-> server/report/typst, modulo the two
 import rewrites):
-  R1: one-time exhibit-counter offset so Ex 1 is skipped (first header = Ex 2).
+  R1: NO exhibit-counter offset — the global counter starts at Exhibit 1 (house rule
+      §2: numbering run continuously from the first page, so a deliberately skipped
+      exhibit must not consume a number). This pin used to assert the opposite.
   R2: Financial-Highlights defaults are honest dashes (tie-out with Slide-1).
   R3: Slide-3 combo + Slide-5 band headers fire unconditionally with a
       chart-placeholder fallback (no numbering shift keyless vs keyed).
@@ -45,12 +47,23 @@ def _src(path: Path) -> str:
 
 
 @pytest.mark.parametrize("path", COPIES, ids=lambda p: p.parent.parent.name)
-def test_r1_counter_offset_once_before_first_header(path: Path) -> None:
+def test_r1_no_counter_offset_before_first_header(path: Path) -> None:
+    """House rule §2: the first rendered exhibit is `Exhibit 1`.
+
+    A one-time `counter(...).update(1)` used to shift the whole document so the cover
+    chart numbered as Exhibit 2 (the canonical Ex 1 EPS-consensus table is skipped). That
+    leaves a visible gap — a reader sees `Exhibit 2.` first and hunts for a missing
+    Exhibit 1. An exhibit that is deliberately not rendered simply does not consume a
+    number.
+    """
     txt = _src(path)
-    assert txt.count(COUNTER_OFFSET) == 1, "R1 offset must appear exactly once"
-    assert txt.index(COUNTER_OFFSET) < txt.index("#exhibit-header("), (
-        "R1 offset must precede the first exhibit header"
+    assert COUNTER_OFFSET not in txt, (
+        "R1: the exhibit counter is offset again — the document would start at Exhibit 2 "
+        "and break house-report-format.md §2 (continuous numbering from Exhibit 1)"
     )
+    # the first label must come from the lazy theme figure, with no manual numbering
+    first = txt.index("#exhibit-header(")
+    assert "update(1)" not in txt[:first], "R1: a counter offset still precedes the first header"
 
 
 @pytest.mark.parametrize("path", COPIES, ids=lambda p: p.parent.parent.name)

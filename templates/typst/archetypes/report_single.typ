@@ -124,10 +124,18 @@
       #let pc = data.at("cover", default: (:)).at("price_chart", default: (:))
       #let vj = data.at("cover", default: (:)).at("vs_jci", default: (:))
       #let pc_src = vj.at("source", default: "Sectors pending (" + m.ticker + " vs IHSG)")
-      // R2T-R1: canonical Ex 1 (EPS consensus) is skipped per spec — offset the
-      // document-global exhibit counter once so Kinerja Harga vs IHSG numbers
-      // as Exhibit 2. theme.typ owns the counter; this is a one-time offset.
-      #counter(figure.where(kind: "exhibit")).update(1)
+      // House rule (docs/rules/house-report-format.md §2): the exhibit counter runs
+      // continuously from Exhibit 1 to the last exhibit, with NO gap — a reader who sees
+      // the first label as `Exhibit 2.` has to wonder where Exhibit 1 went. An exhibit
+      // that is deliberately not rendered (the canonical Ex 1 EPS-consensus table, which
+      // has no locked consensus feed) simply does not consume a number: the counter is
+      // never offset, so the first rendered exhibit IS Exhibit 1.
+      // Label + object + source in ONE unbreakable unit: a page break between the label
+      // and its chart leaves a dangling `Exhibit 1.` at the bottom of one page and an
+      // unlabelled chart at the top of the next (house-report-format.md §1: the label sits
+      // ABOVE its object, the source line directly BELOW it). Typst has no
+      // keep-with-next, so the three statements are wrapped in `block(breakable: false)`.
+      #block(breakable: false)[
       #exhibit-header(pc.at("title", default: "Kinerja Harga vs IHSG (YTD)"), pc_src)
       #v(2pt)
       #let pc_label = pc.at("label", default: if m.ticker == "RATU" {
@@ -147,6 +155,8 @@
       } else {
         chart-placeholder(pc_label, caption: pc_caption, height: 75pt, palette: PALETTE);
       }
+      #exhibit-source()
+      ]
 
       #v(8pt)
       #let kf = data.at("key_financials", default: (:))
