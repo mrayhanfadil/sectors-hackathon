@@ -303,15 +303,81 @@
   </p>
   {{ m.exhibit_source(ns) }}
 
-  {# ---- the integrated narrative the rules ask for ---- #}
+  {# ---- the integrated narrative the rules ask for, read as components ---- #}
+  {# Every figure below is read from valuation_page: the block cannot drift from the model, and the prose still
+     carries the reasoning. Only the presentation changed. #}
+  {% set br = valuation_page.bridge %}
+  {% set sens = valuation_page.sensitivity %}
   <div class="card-tint" style="margin-top:7pt;">
-    <p class="small" style="font-weight:700; margin-bottom:2pt;">Analisa sensitivitas dan keterkaitan asumsi</p>
-    {% for para in valuation_page.narrative %}
-    <p class="small" style="margin:2pt 0;">{{ para }}</p>
-    {% endfor %}
-    <ul class="small" style="margin:3pt 0 0 10pt;">
-      {% for note in valuation_page.notes %}<li>{{ note }}</li>{% endfor %}
-    </ul>
+    <p class="sens-title">Analisa sensitivitas dan keterkaitan asumsi</p>
+
+    <div class="sens-strip">
+      <div class="sens-chip">
+        <div class="k">PV terminal / EV</div>
+        <div class="v">{{ (br.tv_share * 100) | pct(1) }}</div>
+        <div class="n">nilai wajar bertumpu di luar periode proyeksi</div>
+      </div>
+      <div class="sens-chip">
+        <div class="k">Net debt / EV</div>
+        <div class="v">{{ (br.net_debt / br.ev_gordon * 100) | pct(1) }}</div>
+        <div class="n">sisa untuk pemegang saham Rp {{ (br.equity_gordon / 1e12) | idn(2) }} tn</div>
+      </div>
+      <div class="sens-chip">
+        <div class="k">Rentang grid WACC × g</div>
+        <div class="v">Rp {{ sens.swing.min | idn(0) }} – {{ sens.swing.max | idn(0) }}</div>
+        <div class="n">dasar Rp {{ sens.base_fv | idn(0) }} (WACC {{ sens.base_wacc }} · g {{ sens.base_g }})</div>
+      </div>
+    </div>
+
+    <div class="sens-two">
+      <div>
+        <p class="sens-h">Enterprise value → ekuitas (basis Gordon)</p>
+        <div class="bridge-bar">
+          <div class="seg-eq" style="width: {{ (br.equity_gordon / br.ev_gordon * 100) | round(2) }}%;"></div>
+          <div class="seg-nd" style="width: {{ (br.net_debt / br.ev_gordon * 100) | round(2) }}%;"></div>
+        </div>
+        <table class="bridge-tbl">
+          <tr><td>Enterprise value</td><td class="num">{{ (br.ev_gordon / 1e12) | idn(2) }} tn</td></tr>
+          <tr><td>Net debt</td><td class="num">−{{ (br.net_debt / 1e12) | idn(2) }} tn</td></tr>
+          <tr class="tot"><td>Equity value</td><td class="num">{{ (br.equity_gordon / 1e12) | idn(2) }} tn</td></tr>
+        </table>
+      </div>
+      <div>
+        <p class="sens-h">Sebaran metode (Rp/saham)</p>
+        <div class="field">
+          <div class="axis"></div>
+          {% for mlabel, mval, mcls in [("Gordon · g " ~ sens.base_g, br.fv_gordon, ""), ("Exit multiple", br.fv_exit, ""), ("TP gate-primary", valuation_page.legs.ev_ebitda, "gate")] %}
+          {% set pct_l = (mval / valuation_page.legs.ev_ebitda * 100) | round(2) %}
+          <div class="mark {{ mcls }}" style="left: {{ pct_l }}%;"></div>
+          <div class="lbl {{ mcls }} {{ 'row-b' if loop.index == 2 else '' }} {{ 'end' if pct_l > 80 else '' }}" style="left: {{ pct_l }}%;">{{ mlabel }} · {{ mval | idn(0) }}</div>
+          {% endfor %}
+          <div class="axis-end">0</div>
+          <div class="axis-end right">{{ valuation_page.legs.ev_ebitda | idn(0) }}</div>
+        </div>
+        <p class="sens-cap">Gap Gordon vs exit multiple {{ (br.fv_exit / br.fv_gordon) | idn(1) }}× pada basis FCFF yang sama —
+          dibaca sebagai asumsi belum tuntas, bukan dirata-rata.</p>
+      </div>
+    </div>
+
+    <div class="sens-narr">
+      {% for para in valuation_page.narrative %}
+      <p class="small">{{ para }}</p>
+      {% endfor %}
+    </div>
+
+    <div class="note-list">
+      {% for note in valuation_page.notes %}
+      {% set head, _sep, body = note.partition(" — ") %}
+      <div class="note">
+        {% if body and head and head == head|upper and head|length < 64 %}
+        {# the label keeps its capitals: the disclosure rule checks the paper for the term itself #}
+        <span class="note-k">{{ head }}</span><span class="note-b">{{ body }}</span>
+        {% else %}
+        <span class="note-b note-b-wide">{{ note }}</span>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
   </div>
 
   {% if valuation.methods %}

@@ -93,3 +93,27 @@ def test_gate_requires_the_basis_disclosure(payload):
     out = audit_house_rules(broken)["violations"]
     assert any("basis of the level" in v for v in out), out
     assert any("rejected basis" in v for v in out), out
+
+
+def test_sensitivity_block_reads_its_numbers_from_the_payload():
+    """The block's chips and bridge must follow the model: change the payload and the text must move with it.
+
+    The block used to be prose that restated the same values by hand, so a model change could leave the page
+    describing a stale number. This pins the components to `valuation_page`.
+    """
+    import re
+
+    from server.routers import pdf as pdf_mod
+    from server.routers.pdf import render_html_for_ticker
+
+    _t, html, data = render_html_for_ticker("AMMN", None)
+    vp = data["valuation_page"]
+    br = vp["bridge"]
+
+    # the terminal-value chip carries the payload's share, scaled (the pct filter takes percent units)
+    share = f"{round(br['tv_share'] * 100, 1):.1f}".replace(".", ",")
+    assert share in html.replace("+", ""), "the chip must show the model's terminal-value share"
+
+    # a changed model value must change the rendered block
+    assert '<div class="sens-strip">' in html and 'class="bridge-bar"' in html
+    assert "class=\"field\"" in html

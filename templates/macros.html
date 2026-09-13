@@ -145,6 +145,48 @@
   h2 { font-size: 14pt; color: var(--brand-dark); }
   h3 { font-size: 10.5pt; margin: 10pt 0 4pt; color: var(--ink); }
   p { margin: 4pt 0; }
+  /* Sensitivity components: the reviewer called the old block a wall of text — every value it narrated was
+     already in the payload, so the page now shows them as a strip, a bridge and a method spread, and keeps the
+     prose for the reasoning. */
+  .sens-title { font-size: 8.4pt; font-weight: 700; color: var(--ink); margin: 0 0 2.5pt; }
+  .sens-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5pt; margin-bottom: 4.5pt; }
+  .sens-chip { border: .5pt solid var(--line); border-radius: 2pt; padding: 3pt 5pt 3.5pt; }
+  .sens-chip .k { font-size: 6.4pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+                  color: var(--muted); }
+  .sens-chip .v { font-size: 10.8pt; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
+                  margin-top: .5pt; }
+  .sens-chip .n { font-size: 6.3pt; color: var(--muted); line-height: 1.24; margin-top: .5pt; }
+  .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 9pt; }
+  .sens-h { font-size: 6.6pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+            color: var(--ink); margin: 0 0 3pt; }
+  .bridge-bar { display: flex; height: 7pt; border-radius: 1.5pt; overflow: hidden; margin-bottom: 3pt; }
+  .bridge-bar .seg-eq { background: var(--brand); }
+  .bridge-bar .seg-nd { background: #E4E7EC; }
+  .bridge-tbl { width: 100%; font-size: 7pt; border-collapse: collapse; }
+  .bridge-tbl td { padding: 1.1pt 0; border-top: .5pt solid var(--line); }
+  .bridge-tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .bridge-tbl tr.tot td { font-weight: 700; border-top: .75pt solid var(--ink); }
+  .field { position: relative; height: 29pt; margin: 0 0 1pt; }
+  .field .axis { position: absolute; top: 18pt; left: 0; right: 0; border-top: .5pt solid var(--line); }
+  .field .mark { position: absolute; top: 15.5pt; width: 1.2pt; height: 9pt; background: var(--ink); }
+  .field .mark.gate { background: var(--brand); width: 1.8pt; }
+  .field .lbl { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; font-size: 6.4pt;
+                color: var(--muted); }
+  .field .lbl.row-b { top: 7.6pt; }
+  .field .lbl.end { transform: translateX(-100%); }
+  .field .lbl.gate { color: var(--brand); font-weight: 700; }
+  .field .axis-end { position: absolute; top: 25pt; font-size: 6.2pt; color: var(--muted); }
+  .field .axis-end.right { right: 0; }
+  .sens-cap { font-size: 6.4pt; color: var(--muted); line-height: 1.26; margin: 0; }
+  .sens-narr { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5pt 12pt; margin-top: 4pt; }
+  .sens-narr p { font-size: 6.9pt; line-height: 1.3; margin: 0 0 2pt; }
+  .note-list { margin-top: 3pt; }
+  .note { display: grid; grid-template-columns: 60pt 1fr; gap: 7pt; border-top: .5pt solid var(--line);
+          padding: 2pt 0; font-size: 6.8pt; line-height: 1.28; }
+  .note-k { font-weight: 700; color: var(--ink); }
+  .note-k-plain { color: var(--muted); font-weight: 400; }
+  .note-b { color: var(--ink); }
+  .note-b-wide { grid-column: 1 / -1; }
   .muted { color: var(--muted); }
   .small { font-size: 7.5pt; }
   .neg { color: var(--neg); } .pos { color: var(--pos); }
