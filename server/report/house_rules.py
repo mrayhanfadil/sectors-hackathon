@@ -627,6 +627,9 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_peer_page(payload.get("peers_page"), payload)
     # Slide 6 of the deck is its own page as well.
     violations += audit_statements_page(payload.get("statements_page"), payload)
+    # Slide 7: the cash flow and the ratio block, with their tie-outs.
+    violations += audit_cashflow_page(payload.get("cashflow_page"), payload)
+    violations += audit_key_ratio_page(payload.get("key_ratio_page"), payload)
     # Slide 4: a priced leg must state which level and which multiple produced it, and what was rejected.
     # The instruction rule says so; this makes it enforced rather than optional.
     vnotes = " ".join(str(n) for n in ((payload.get("valuation_page") or {}).get("notes") or []))
@@ -648,7 +651,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements",
+            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
@@ -890,4 +893,216 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
                         ("dipublikasikan", "unpublished rows must be disclosed as such")):
         if needed not in notes:
             violations.append(f"slide 6 notes are missing the disclosure that: {why}")
+    return violations
+
+
+def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[str]:
+    """Deck slide 7 (docs/ammn-slides/slide7-cashflow-ratio-spec.md): Exhibit 16 cash flow.
+
+    Structure first, then the tie-outs — this page exists to prove the model's sheets are linked, so a
+    mismatch here is a defect, not a rounding difference.
+    """
+    if page is None or page == {}:
+        return []
+    if not isinstance(page, dict) or not page.get("available"):
+        return ["slide 7 has no cash-flow page available — the page cannot be silently dropped"]
+    violations: list[str] = []
+    years = [str(y) for y in (page.get("years") or [])]
+    if years != ["2024A", "2025A", "2026F", "2027F", "2028F"]:
+        violations.append(f"slide 7 columns must be 2024A-2028F, got {years}")
+
+    want = {
+        "Cash Flow from Operations": ("Net Profit", "(+) Depreciation & Amortization",
+                                      "Increase/Decrease in Working Capital", "Other Operating Items",
+                                      "Net Cash from Operations"),
+        "Cash Flow from Investing": ("Capital Expenditure", "Other Investing Items",
+                                     "Net Cash from Investing"),
+        "Cash Flow from Financing": ("Debt Raised/(Repaid)", "Dividends Paid", "Equity Raised/(Buyback)",
+                                     "Net Cash from Financing"),
+    }
+    got_sections = {str(sec.get("title")): [str(r.get("label")) for r in (sec.get("rows") or [])]
+                    for sec in (page.get("sections") or [])}
+    for title, rows in want.items():
+        labels = got_sections.get(title)
+        if labels is None:
+            violations.append(f"slide 7 is missing the '{title}' section")
+            continue
+        for needle in rows:
+            if not any(needle.lower() in l.lower() for l in labels):
+                violations.append(f"{title} is missing the '{needle}' row the rules require")
+    for needle in ("Net Change in Cash", "Beginning Cash Balance", "Ending Cash Balance"):
+        if not any(needle.lower() in str(r.get("label", "")).lower() for r in (page.get("closing") or [])):
+            violations.append(f"slide 7 closing block is missing '{needle}'")
+    if not page.get("memo"):
+        violations.append("slide 7 has no Free Cash Flow memo line below the divider")
+
+    def find(rows: list, needle: str) -> dict:
+        return next((r for r in rows if needle.lower() in str(r.get("label", "")).lower()), {})
+
+    def block(title: str) -> list:
+        return next((sec.get("rows") or [] for sec in (page.get("sections") or [])
+                     if str(sec.get("title")) == title), [])
+
+    # every subtotal must foot across all five columns
+    for title, subtotal, parts in (
+            ("Cash Flow from Operations", "Net Cash from Operations",
+             ("Net Profit", "Depreciation", "Working Capital", "Other Operating")),
+            ("Cash Flow from Investing", "Net Cash from Investing", ("Capital Expenditure", "Other Investing")),
+            ("Cash Flow from Financing", "Net Cash from Financing",
+             ("Debt Raised", "Dividends Paid", "Equity Raised"))):
+        rows = block(title)
+        sub = find(rows, subtotal)
+        for i in range(len(years)):
+            total = sub.get("cells", [None] * 5)[i] if sub else None
+            if total is None:
+                continue
+            parts_sum = 0.0
+            present = False
+            for needle in parts:
+                r = find(rows, needle)
+                if r and i < len(r.get("cells") or []):
+                    v = r["cells"][i]
+                    if isinstance(v, (int, float)):
+                        parts_sum += -abs(v) if r.get("kind") == "deduction" else v
+                        present = True
+            if present and abs(total - parts_sum) > 1.0:
+                violations.append(f"{title} does not foot in {years[i]}: subtotal {total:,.0f} vs parts "
+                                  f"{parts_sum:,.0f}")
+
+    # the source's own sections may not foot; if they do not, the reconciliation row must be visible
+    net_change = find(page.get("closing") or [], "Net Change")
+    begin = find(page.get("closing") or [], "Beginning")
+    end = find(page.get("closing") or [], "Ending Cash")
+    if net_change and begin and end:
+        for i in range(len(years)):
+            try:
+                left = float(begin["cells"][i]) + float(net_change["cells"][i])
+                right = float(end["cells"][i])
+            except (TypeError, ValueError, IndexError):
+                continue
+            gap = right - left
+            disclosed = any("selisih" in str(r.get("label", "")).lower() for r in (page.get("closing") or []))
+            if abs(gap) > 1.0 and not disclosed:
+                violations.append(f"slide 7 closing cash does not reconcile in {years[i]} (gap {gap:,.0f}) "
+                                  f"and no reconciliation row says why")
+
+    # TIE-OUT 1: the starting line must be the income statement's net profit, and the cover's
+    if payload:
+        cf_net = find(block("Cash Flow from Operations"), "Net Profit")
+        is_net = next((r for r in (((payload.get("statements_page") or {}).get("income") or {}).get("rows")
+                                   or []) if str(r.get("label", "")).startswith("Net Profit")), {})
+        for i, y in enumerate(years):
+            a = (cf_net.get("cells") or [None] * 5)[i] if cf_net else None
+            b = (is_net.get("cells") or [None] * 5)[i] if is_net else None
+            if isinstance(a, (int, float)) and isinstance(b, (int, float)) and abs(a - b) > 1.0:
+                violations.append(f"slide 7 starts from net profit {a:,.0f} in {y} while the income "
+                                  f"statement prints {b:,.0f} — the sheets are not linked")
+        # TIE-OUT 2: ending cash == balance-sheet cash, same period
+        bs_cash = next((r for r in (((payload.get("statements_page") or {}).get("balance") or {}).get("rows")
+                                    or []) if str(r.get("label", "")).startswith("Cash & Cash")), {})
+        for i, y in enumerate(years):
+            a = (end.get("cells") or [None] * 5)[i] if end else None
+            b = (bs_cash.get("cells") or [None] * 5)[i] if bs_cash else None
+            if isinstance(a, (int, float)) and isinstance(b, (int, float)):
+                if abs(a - b) > max(1.0, abs(b) * 0.001):
+                    violations.append(f"slide 7 ending cash {a:,.0f} vs balance-sheet cash {b:,.0f} in {y} — "
+                                      f"above the 0.1% the rules allow, so the sheets are not linked")
+    # TIE-OUT 3: the FCF memo must be OCF minus capex, and the FCFF gap must be explained
+    memo = (page.get("memo") or [{}])[0]
+    ocf = find(block("Cash Flow from Operations"), "Net Cash from Operations")
+    capex = find(block("Cash Flow from Investing"), "Capital Expenditure")
+    for i in range(len(years)):
+        try:
+            want = float(ocf["cells"][i]) + float(capex["cells"][i])
+            got = float(memo["cells"][i])
+        except (KeyError, TypeError, ValueError, IndexError):
+            continue
+        if abs(want - got) > 1.0:
+            violations.append(f"slide 7 FCF memo does not equal OCF - capex in {years[i]} "
+                              f"({got:,.0f} vs {want:,.0f})")
+    fcff = page.get("fcff_exhibit8")
+    if fcff:
+        fcf26 = memo["cells"][2] if len(memo.get("cells") or []) > 2 else None
+        if isinstance(fcf26, (int, float)) and abs(fcf26 - fcff) / abs(fcff) > 0.6:
+            if not any("cross-check fcff" in str(n).lower() for n in (page.get("notes") or [])):
+                violations.append("slide 7 FCF is more than 60% away from the FCFF the DCF leg uses and "
+                                  "the page does not investigate it in print")
+    if not (page.get("notes") or []):
+        violations.append("slide 7 prints no tie-out notes")
+    return violations
+
+
+def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list[str]:
+    """Deck slide 7 (Exhibit 17): the ratio block, recomputed from the exhibits on the same page."""
+    if page is None or page == {}:
+        return []
+    if not isinstance(page, dict) or not page.get("available"):
+        return ["slide 7 has no key-ratio page available — the page cannot be silently dropped"]
+    violations: list[str] = []
+    want = {
+        "Growth (%)": ("Sales", "EBITDA", "Operating Profit", "Net Profit"),
+        "Profitability (%)": ("Gross Margin", "EBITDA Margin", "Operating Margin", "Net Margin", "ROAA",
+                              "ROAE"),
+        "Leverage": ("Net Gearing (x)", "Interest Coverage (x)"),
+    }
+    sections = {str(sec.get("title")): sec.get("rows") or [] for sec in (page.get("sections") or [])}
+    for title, rows in want.items():
+        got = [str(r.get("label")) for r in sections.get(title, [])]
+        if not got:
+            violations.append(f"Exhibit 17 is missing the '{title}' section")
+            continue
+        for needle in rows:
+            if not any(needle.lower() in l.lower() for l in got):
+                violations.append(f"{title} is missing the '{needle}' row")
+    for title, rows in sections.items():
+        for r in rows:
+            cells = r.get("cells") or []
+            if not any(isinstance(c, (int, float)) for c in cells):
+                violations.append(f"Exhibit 17 row '{r.get('label')}' is n/a in every column — an exhibit "
+                                  f"of blanks is not an exhibit")
+    if payload:
+        is_rows = {str(r.get("label", "")).split(" /")[0].split(" (")[0].strip(): r.get("cells") or []
+                   for block in ("income", "balance")
+                   for r in (((payload.get("statements_page") or {}).get(block) or {}).get("rows") or [])}
+
+        def sheet(needle: str, i: int):
+            row = next((v for k, v in is_rows.items() if k.lower().startswith(needle.lower())), None)
+            return row[i] if row and i < len(row) and isinstance(row[i], (int, float)) else None
+
+        def printed(title: str, needle: str, i: int):
+            for r in sections.get(title, []):
+                if needle.lower() in str(r.get("label")).lower():
+                    cells = r.get("cells") or []
+                    return cells[i] if i < len(cells) else None
+            return None
+
+        for i, y in enumerate(page.get("years") or []):
+            rev, ebitda, op, net = (sheet("Revenue", i), sheet("EBITDA", i), sheet("EBIT", i),
+                                    sheet("Net Profit", i))
+            checks = (
+                ("Gross Margin", sheet("Gross Profit", i), rev),
+                ("EBITDA Margin", ebitda, rev),
+                ("Operating Margin", op, rev),
+                ("Net Margin", net, rev),
+            )
+            for label, num, den in checks:
+                got = printed("Profitability (%)", label, i)
+                want_v = (num / den * 100) if (isinstance(num, (int, float)) and den) else None
+                if got is not None and want_v is not None and abs(got - want_v) > 0.15:
+                    violations.append(f"Exhibit 17 {label} prints {got:.1f}% in {y} but the income statement "
+                                      f"implies {want_v:.1f}%")
+            got_cov = printed("Leverage", "Interest Coverage", i)
+            eb, intr = sheet("EBIT", i), sheet("Interest Expense", i)
+            if got_cov is not None and isinstance(eb, (int, float)) and intr:
+                if abs(got_cov - eb / intr) > 0.05:
+                    violations.append(f"Exhibit 17 interest coverage {got_cov:.2f}x in {y} does not equal "
+                                      f"EBIT/interest {eb / intr:.2f}x")
+            got_gear = printed("Leverage", "Net Gearing", i)
+            st, lt, cash, eq = (sheet("Short-term Debt", i), sheet("Long-term Debt", i),
+                                sheet("Cash & Cash", i), sheet("Shareholders'", i))
+            if got_gear is not None and None not in (st, lt, cash, eq) and eq:
+                want_g = ((st + lt) - cash) / eq
+                if abs(got_gear - want_g) > 0.02:
+                    violations.append(f"Exhibit 17 net gearing {got_gear:.2f}x in {y} does not equal "
+                                      f"(debt - cash)/equity {want_g:.2f}x")
     return violations

@@ -96,6 +96,15 @@
       ],
       "source": "BRIDS Exhibit 24 (DCF), FCF row",
       "note": "free cash flow after tax, capex and working capital, as published"
+    },
+    "working_capital": {
+      "path": [
+        -212,
+        -101,
+        -115
+      ],
+      "source": "BRIDS Exhibit 43, Change in Working Capital (cash effect as published; negative = outflow)",
+      "note": "dipakai apa adanya sebagai dampak kas, bukan diubah tandanya"
     }
   },
   "cross_check": {

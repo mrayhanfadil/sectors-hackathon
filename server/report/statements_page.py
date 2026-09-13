@@ -67,7 +67,8 @@ def _sources(ticker: str) -> dict:
 
 
 def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
-                          driver_path: Optional[dict] = None) -> dict:
+                          driver_path: Optional[dict] = None,
+                          cashflow: Optional[dict] = None) -> dict:
     """`spine` is the deck's Key Financials (revenue/EBITDA/net profit per year) so this page ties to it."""
     tk = ticker.upper()
     src = _sources(tk)
@@ -217,6 +218,9 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     gap_txt = "; ".join(f"{y} {v:+,.0f} bn" for y, v in opex_gaps.items() if abs(v) > 1)
 
     # --- balance sheet assembly: other-buckets held at FY2025A residual, cash is the plug
+    cf_cash = None
+    if cashflow and cashflow.get("end_cash"):
+        cf_cash = cashflow["end_cash"][2:]          # the three forecast years, in order
     b25 = acts["2025A"]
     # forecast columns hold the FY2025A levels of the residual buckets; each actual year derives its own
     other_ca_25 = (b25["tca"] or 0.0) - (b25["cash"] or 0.0) - (b25["inv"] or 0.0)
@@ -224,7 +228,8 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     other_cl_25 = (b25["tcl"] or 0.0) - b25["st"]
     other_ncl_25 = (b25["tl"] or 0.0) - (b25["tcl"] or 0.0) - b25["lt"]
 
-    def bs_from(r: dict, prev_cash: Optional[float], is_forecast: bool) -> dict:
+    def bs_from(r: dict, prev_cash: Optional[float], is_forecast: bool,
+                cf_cash: Optional[float] = None) -> dict:
         inv = r["inv"]
         if is_forecast:
             other_ca, other_nca, other_cl, other_ncl = other_ca_25, other_nca_25, other_cl_25, other_ncl_25
@@ -235,7 +240,8 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             other_ncl = (r["tl"] or 0.0) - (r["tcl"] or 0.0) - r["lt"]
         tca = (r["cash"] if not is_forecast else 0.0) + inv + other_ca
         if is_forecast:
-            # cash is the plug: solve it so assets equal liabilities + equity
+            # cash comes from the cash-flow statement (Exhibit 16) when it is available, so the two
+            # exhibits tie by construction; the residual current-asset bucket absorbs the difference
             tcl = r["st"] + other_cl
             tl = tcl + r["lt"] + other_ncl
             tle_ex_cash = tl + r["eq"]
@@ -243,6 +249,11 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             tca = cash + inv + other_ca
             r["cash"] = cash
             r["tca"], r["tcl"], r["tl"] = tca, tcl, tl
+        if is_forecast and cf_cash is not None:
+            r["cash"] = cf_cash
+            other_ca = (r["tl"] + r["eq"]) - cf_cash - (inv or 0.0) - (r["fixed"] or 0.0) - other_nca
+        elif is_forecast:
+            other_ca = (r["tl"] + r["eq"]) - (r["cash"] or 0.0) - (inv or 0.0) - (r["fixed"] or 0.0) - other_nca
         r["other_ca"], r["other_nca"] = other_ca, other_nca
         r["other_cl"], r["other_ncl"] = other_cl, other_ncl
         r["ta"] = (r["cash"] or 0.0) + (inv or 0.0) + other_ca + (r["fixed"] or 0.0) + other_nca
@@ -253,7 +264,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
 
     rows = {**acts}
     for i, r in enumerate(fc):
-        rows[FORECAST_YEARS[i]] = bs_from(r, None, True)
+        rows[FORECAST_YEARS[i]] = bs_from(r, None, True, cf_cash[i] if (cf_cash and True) else None)
     for y in ACTUAL_YEARS:
         rows[y] = bs_from(rows[y], None, False)
 

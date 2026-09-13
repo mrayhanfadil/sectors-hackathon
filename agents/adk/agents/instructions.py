@@ -348,6 +348,48 @@ Nothing downstream catches it — the arithmetic is clean, the exhibit foots, an
      conviction.
 """
 
+
+SLIDE7_RULE = """SLIDE 7 — CASH FLOW (Exhibit 16) + KEY RATIO (Exhibit 17), non-bank variant.
+
+Exhibit 16 columns are the same five years as Exhibit 14/15, three labelled sections:
+  OPERATIONS — Net Profit, (+) Depreciation & Amortization, (-)/(+) Increase/Decrease in Working Capital,
+  Other Operating Items, then Net Cash from Operations (bold subtotal).
+  INVESTING — (-) Capital Expenditure, Other Investing Items, Net Cash from Investing (bold subtotal,
+  normally negative).
+  FINANCING — Debt Raised/(Repaid), Dividends Paid (in brackets), Equity Raised/(Buyback), Net Cash from
+  Financing (bold subtotal).
+  CLOSING — Net Change in Cash, Beginning Cash Balance, Ending Cash Balance. The ending balance MUST equal
+  Cash & Cash Equivalents on the balance sheet for the same period.
+  MEMO below a divider — Free Cash Flow = Net Cash from Operations - Capital Expenditure, cross-checked to
+  the FCFF the DCF leg actually uses. They are not identical (FCFF starts from NOPAT, not net profit), so
+  they belong in the same ballpark; a large gap must be investigated in print, not averaged away.
+
+Exhibit 17, three sections, one decimal on every row, negatives in brackets, section headers bold with extra
+space before them:
+  GROWTH (%) — Sales, EBITDA, Operating Profit, Net Profit, each year-on-year (the first column is actual
+  growth, the rest forecast).
+  PROFITABILITY (%) — Gross Margin, EBITDA Margin, Operating Margin, Net Margin, ROAA, ROAE.
+  LEVERAGE — Net Gearing (x) = (Total Debt - Cash) / Total Equity; Interest Coverage (x) = EBIT / Interest
+  Expense.
+
+Bank issuers switch the whole page to the bank pattern (Yield on Earning Assets, Cost of Funds, Interest
+Spread, Net Interest Margin, Cost/Income, Gross NPL, LLP coverage, Cost of Credit, LDR, CASA, ROAE, ROAA,
+CAR, plus the DuPont breakdown as a separate exhibit when it does not fit beside the cash flow).
+
+TIE-OUTS ARE THE POINT OF THIS PAGE (a mismatch here means the model's sheets are not linked, not that
+rounding happened):
+  1. Net Profit in Exhibit 16 must be the Net Profit of Exhibit 14 AND of the cover's Key Financials.
+  2. Ending Cash in Exhibit 16 must equal Cash & Cash Equivalents in Exhibit 15, same period. A difference
+     above 0.1% is a broken link, not a rounding difference.
+  3. If the licensed data's own sections do not foot to its published cash balance, print its sections
+     unchanged and put the difference in a NAMED reconciliation row. Never fold it into a section, and never
+     silently restate the source.
+  4. Working capital excludes cash. Cash sits inside current assets; leaving it in counts the cash movement
+     twice.
+  5. Ratios are recomputed from the exhibits on the same page, never carried in from another file. Averages
+     (ROAA/ROAE) use (opening + closing)/2 and need the prior-year balance, which must be a published figure.
+"""
+
 # ---------------------------------------------------------------------------
 # Social Sentiment — Sectors crowd proxy (parallel lane 1)
 # ---------------------------------------------------------------------------
@@ -541,7 +583,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -651,7 +693,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -790,4 +832,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE

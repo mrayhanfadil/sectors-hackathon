@@ -407,10 +407,16 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         from server.report.statements_page import build_statements_page
 
         from server.report.forecast_path import resolve_forecast_path
+        from server.report.slide7_page import build_cashflow_page, build_key_ratio_page
 
+        # Exhibit 16 first: slide 6's forecast cash must equal the cash the statement produces.
+        _spine = ((payload.get("cover") or {}).get("slide2") or {}).get("key_financials")
+        _path = resolve_forecast_path(t)
+        payload["cashflow_page"] = build_cashflow_page(t, _spine, _path)
         payload["statements_page"] = build_statements_page(
-            t, ((payload.get("cover") or {}).get("slide2") or {}).get("key_financials"),
-            driver_path=resolve_forecast_path(t))
+            t, _spine, driver_path=_path, cashflow=payload["cashflow_page"])
+        payload["key_ratio_page"] = build_key_ratio_page(
+            t, _spine, payload["cashflow_page"], statements=payload["statements_page"], driver_path=_path)
     except Exception as exc:
         build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:

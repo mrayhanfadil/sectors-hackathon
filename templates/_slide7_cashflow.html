@@ -1,0 +1,61 @@
+{# ===== SLIDE 7 — Cash Flow (Exhibit 16) + Key Ratio (Exhibit 17) =================
+   Rules: docs/ammn-slides/slide7-cashflow-ratio-spec.md #}
+{% if cashflow_page and cashflow_page.available %}
+<div class="page">
+<div class="slide7">
+  {{ m.running() }}
+  {{ m.section(9, "Arus Kas & Rasio Kunci") }}
+
+  {{ m.exhibit_auto(ns, "Cash Flow Statement", cashflow_page.sources[0] if cashflow_page.sources else "") }}
+  <table class="fin-table stmt-table">
+    <thead><tr>{% for h in cashflow_page.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for sec in cashflow_page.sections %}
+      <tr class="stmt-section"><td colspan="{{ cashflow_page.headers|length }}">{{ sec.title }}</td></tr>
+      {% for r in sec.rows %}
+      <tr class="{{ 'stmt-subtotal' if r.kind == 'subtotal' else '' }}{{ ' stmt-highlight' if r.kind == 'highlight' else '' }}">
+        <td class="stmt-label">{{ r.label }}{% if r.note %} <span class="stmt-inline">{{ r.note }}</span>{% endif %}</td>
+        {% for v in r.cells %}<td class="num">{{ "({:,.0f})".format(v|abs) if (v is number and v < 0) else ("{:,.0f}".format(v) if v is number else "n/a") }}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+      {% endfor %}
+      {% for r in cashflow_page.closing %}
+      <tr class="{{ 'stmt-subtotal' if r.kind == 'subtotal' else '' }}{{ ' stmt-highlight' if r.kind == 'highlight' else '' }}">
+        <td class="stmt-label">{{ r.label }}{% if r.note %} <span class="stmt-inline">{{ r.note }}</span>{% endif %}</td>
+        {% for v in r.cells %}<td class="num">{{ "({:,.0f})".format(v|abs) if (v is number and v < 0) else ("{:,.0f}".format(v) if v is number else "n/a") }}</td>{% endfor %}
+      </tr>
+      {% endfor %}
+      {% for r in cashflow_page.memo %}
+      <tr class="stmt-memo"><td class="stmt-label">{{ r.label }}</td>
+        {% for v in r.cells %}<td class="num">{{ "({:,.0f})".format(v|abs) if (v is number and v < 0) else ("{:,.0f}".format(v) if v is number else "n/a") }}</td>{% endfor %}</tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  {% if key_ratio_page and key_ratio_page.available %}
+  {{ m.exhibit_auto(ns, key_ratio_page.exhibit_title, key_ratio_page.sources[0]) }}
+  <table class="fin-table ratio-table">
+    <thead><tr>{% for h in key_ratio_page.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for sec in key_ratio_page.sections %}
+      <tr class="ratio-section"><td colspan="{{ key_ratio_page.headers|length }}">{{ sec.title }}</td></tr>
+      {% for r in sec.rows %}
+      <tr><td class="stmt-label">{{ r.label }}</td>
+        {% for v in r.cells %}<td class="num">{{ "({:,.1f})".format(v|abs) if (v is number and v < 0) else ("{:,.1f}".format(v) if v is number else "n/a") }}</td>{% endfor %}</tr>
+      {% endfor %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <div class="stmt-notes">
+    <div class="para-h">Catatan tie-out &amp; keterbatasan data</div>
+    <ul class="stmt-note-cols">
+      {% for n in cashflow_page.notes %}<li class="small">{{ n }}</li>{% endfor %}
+      {% for n in (key_ratio_page.notes if key_ratio_page else []) %}<li class="small">{{ n }}</li>{% endfor %}
+    </ul>
+  </div>
+  {{ m.pagefoot(9, ns) }}
+</div>
+</div>
+{% endif %}

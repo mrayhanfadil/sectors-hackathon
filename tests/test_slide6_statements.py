@@ -249,4 +249,5 @@ def test_template_and_router_wire_slide_six():
         assert marker in partial, f"slide-6 partial lost: {marker}"
     assert '_slide6_statements.html' in single
     assert 'payload["statements_page"] = build_statements_page(' in pdf
-    assert "Cash Flow" in single, "the cash-flow table must survive on the following page"
+    # the cash-flow table moved to slide 7 (Exhibit 16) when the owner's slide-7 rules landed
+    assert "Cash Flow" in (ROOT / "templates" / "_slide7_cashflow.html").read_text()
