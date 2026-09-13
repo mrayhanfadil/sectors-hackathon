@@ -1061,3 +1061,24 @@ def test_rnav_gate_demands_a_sourced_nav_and_a_justified_discount() -> None:
     unjustified = build_valuation_page(payload, {**assum, "rnav_discount_comparables": None})
     unjustified["notes"] = [n for n in unjustified["notes"] if "judgment" not in n.lower()]
     assert any("pure judgment" in v or "comparable" in v for v in audit_valuation_page(unjustified, payload))
+
+
+def test_the_target_price_basis_is_reconciled_when_the_dcf_and_the_anchor_differ():
+    """A page may carry two prices on two bases; the reader must be told which one the target price uses.
+
+    Ticker-agnostic on purpose: the guard is about the behaviour (the note fires on the gap), not about any one
+    issuer's numbers, so it runs on invented prices.
+    """
+    from server.report.valuation_page import _notes
+
+    def notes_for(gordon, anchor):
+        primary = {"fv_gordon": gordon, "fv_exit": gordon * 7}
+        return " ".join(_notes(primary, {"equity_gordon": 5.0e12}, 15.0, 9.0e13, 0.025, 0.1377,
+                              {"ev_multiple_basis": "stub"}, anchor_fv=anchor))
+
+    far = notes_for(100.0, 3000.0)
+    assert "BASIS TARGET PRICE" in far, "a 30x gap between the DCF and the anchor is left unexplained"
+    assert "3.000" in far and "100" in far, "the reconciliation does not name both prices"
+
+    near = notes_for(3000.0, 3100.0)
+    assert "BASIS TARGET PRICE" not in near, "the note fires even when the two bases agree"

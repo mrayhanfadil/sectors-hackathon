@@ -351,7 +351,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "effective_tax": tax_eff * 100, "da_fy25": da_bn, "capex_sustaining": sustain_capex_bn,
             "multiple": multiple, "price": price, "revenue_basis": revenue_basis,
         },
-        "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc, assum),
+        "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc, assum,
+                         anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda")),
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
         "block2_headers": None,
         "block3_headers": None,
@@ -374,7 +375,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
 
 def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float, wacc: float,
-           assum: dict | None = None) -> list[str]:
+           assum: dict | None = None, anchor_fv: float | None = None) -> list[str]:
     """The disclosures the rules require: finite reserve, the terminal gap, and what was not modelled."""
     notes: list[str] = []
     # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
@@ -390,6 +391,18 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
                      f"pulih (memberi Rp 13.559/saham, 2,8× harga).")
         notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
                      str(assum.get("ebitda_leg_level_note") or ""))
+    # A reader who meets Rp 148 and Rp 5.667 on the same page has to be told why they differ and which one the
+    # target price uses. Fires on the gap, not on a ticker: it stays silent when the two bases agree.
+    if anchor_fv and primary.get("fv_gordon") and primary["fv_gordon"] > 0 and float(anchor_fv) > 0:
+        _gap = max(float(anchor_fv), primary["fv_gordon"]) / min(float(anchor_fv), primary["fv_gordon"])
+        if _gap > 1.5:
+            notes.append(
+                f"BASIS TARGET PRICE — DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
+                f"{_rp(primary['fv_gordon'])} sementara anchor EV/EBITDA {_fmt(multiple, 2)}× "
+                f"(basis gate-primary) memberi Rp "
+                f"{_rp(float(anchor_fv))}: selisih {_nf.dec(_gap, digits=1)}×. Keduanya tidak dirata-rata; "
+                "anchor dipakai sebagai target price dan DCF tetap menjadi cross-check intrinsik."
+            )
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
