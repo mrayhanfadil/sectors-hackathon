@@ -645,9 +645,21 @@ def list_agent_runs(ticker: str | None = Query(None), limit: int = Query(20, le=
 
 @router_agent.get("/api/agent/runs/summary", summary="Summary of agent runs per-ticker and interrupt reason distribution")
 def get_agent_runs_summary():
-    """Returns total runs, per-ticker latest run and status counts, and interrupt reason distribution."""
+    """Returns total runs, per-ticker latest run and status counts, and interrupt reason distribution.
+
+    Each ticker also carries `report_ready`: whether data/assumptions/<TICKER>.json exists. That is the same condition
+    that makes /api/report/<TICKER> answer 422, so the hub can refuse to list a report a reader cannot open. Deriving it
+    here means the frontend needs no per-ticker probe, which otherwise showed up as one console error per unavailable
+    ticker.
+    """
+    from server.routers.pdf import ASSUMPTIONS_DIR
     from server.storage import AgentRunStore
-    return AgentRunStore().get_runs_summary()
+
+    summary = AgentRunStore().get_runs_summary()
+    for ticker, info in (summary.get("tickers") or {}).items():
+        if isinstance(info, dict):
+            info["report_ready"] = (ASSUMPTIONS_DIR / f"{str(ticker).upper()}.json").exists()
+    return summary
 
 
 @router_agent.get("/api/agent/runs/latest", summary="Get latest completed/terminal ADK run + event trace")

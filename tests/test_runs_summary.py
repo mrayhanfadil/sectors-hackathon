@@ -132,3 +132,37 @@ def test_runs_summary_and_ticker_filtering(tmp_store: AgentRunStore) -> None:
     assert res_latest_any.status_code == 200
     latest_any = res_latest_any.json()
     assert latest_any["run_id"] == "bbca-run-failed"  # Chronologically latest terminal run overall
+
+
+def test_runs_summary_carries_report_availability(
+    tmp_store: AgentRunStore, tmp_path: pathlib.Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """`report_ready` must mirror the assumptions file, because it is what makes /api/report answer 422.
+
+    The hub lists a ticker only when its pipeline finished AND this flag is true, so a drift between the flag and the
+    422 rule would either hide a readable report or list one that opens on an error. Both tickers here have a completed
+    run; only one has an assumptions file.
+    """
+    client = TestClient(app)
+
+    for ticker in ("AMMN", "VKTR"):
+        tmp_store.start_run(f"{ticker.lower()}-run", ticker, f"{ticker} prompt", provider="minimax", model="MiniMax-M3")
+        tmp_store.finish_run(f"{ticker.lower()}-run", status="completed", last_text="ok", state={})
+
+    assumptions = tmp_path / "assumptions"
+    assumptions.mkdir()
+    (assumptions / "AMMN.json").write_text("{}", encoding="utf-8")
+    monkeypatch.setattr("server.routers.pdf.ASSUMPTIONS_DIR", assumptions)
+
+    res = client.get("/api/agent/runs/summary")
+    assert res.status_code == 200
+    tickers = res.json()["tickers"]
+
+    assert tickers["AMMN"]["latest_run"]["status"] == "completed"
+    assert tickers["AMMN"]["report_ready"] is True
+    assert tickers["VKTR"]["latest_run"]["status"] == "completed"
+    assert tickers["VKTR"]["report_ready"] is False
+
+    # A ticker the store has never seen has nothing to report, so it must not claim readiness either.
+    assert "NOPE" not in tickers
+

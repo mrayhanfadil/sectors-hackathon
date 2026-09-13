@@ -17,12 +17,35 @@ import {
   ArrowUpRight,
   HelpCircle,
 } from "lucide-react"
-import { fetchReport, fetchDcfFull, type Report, type DcfFriendPayload } from "@/lib/api"
+import {
+  fetchReport,
+  fetchDcfFull,
+  fetchRunsSummary,
+  type Report,
+  type DcfFriendPayload,
+  type RunsSummary,
+  type RunsSummaryTicker,
+} from "@/lib/api"
 
 export const Route = (createFileRoute as any)("/")({ component: MarketMonitorHub })
 
-const QUINTET = ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"] as const
-type QuintetTicker = (typeof QUINTET)[number]
+// The hub lists only what has actually run. A ticker whose pipeline never ran, or whose last attempt failed, has no
+// report behind it — listing it just hands the reader an error page.
+const VISIBLE_STATUS = new Set(["running", "completed"])
+// Four uppercase letters, IDX-style. The run store also holds rows from the test suite (DT1ABD957, LOCK69786C,
+// OTH5F0F99) which are not emiten anything and would otherwise flood the list.
+const REAL_CODE = /^[A-Z]{4}$/
+
+function visibleTickers(summary: RunsSummary | undefined): RunsSummaryTicker[] {
+  if (!summary?.tickers) return []
+  return Object.values(summary.tickers)
+    .filter((t) => REAL_CODE.test(String(t.ticker)) && VISIBLE_STATUS.has(String(t.latest_run?.status)))
+    .sort((a, b) => {
+      const rank = (s?: string | null) => (s === "running" ? 0 : 1)
+      const byStatus = rank(a.latest_run?.status) - rank(b.latest_run?.status)
+      return byStatus !== 0 ? byStatus : (b.latest_run?.started_at ?? 0) - (a.latest_run?.started_at ?? 0)
+    })
+}
 
 function formatIDR(n: number | null | undefined): string {
   if (n === null || n === undefined || Number.isNaN(Number(n))) return "MENUNGGU"
@@ -83,7 +106,7 @@ function TerminalRatingBadge({ rating }: { rating: string | null | undefined }) 
   )
 }
 
-function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
+function QuintetMonitorCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSummaryTicker }) {
   const reportQuery = useQuery({
     queryKey: ["report", ticker],
     queryFn: () => fetchReport(ticker),
@@ -115,6 +138,15 @@ function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
 
   const upsideInfo = parseUpside(upsideRaw)
 
+  // The reason this ticker is on the page at all is that its pipeline ran. Say which state it is in, and fall back to
+  // the audit timestamp for a card whose ticker has no run in the summary.
+  const runStatus = String(pipeline?.latest_run?.status ?? "")
+  const pipelineLine = runStatus
+    ? `${runStatus === "running" ? "PIPELINE: BERJALAN" : "PIPELINE: SELESAI"} · ${pipeline?.total_runs ?? 0} RUN`
+    : report?.updatedAt
+      ? `AUDITED: ${report.updatedAt}`
+      : "LIVE DATA"
+
   return (
     <div className="flex flex-col justify-between rounded-lg border border-neutral-200 bg-white font-sans shadow-xs transition-all hover:border-neutral-300 dark:border-[#262930] dark:bg-[#121418] dark:hover:border-[#3a3f4b] overflow-hidden">
       {/* 1. Header Strip */}
@@ -144,7 +176,7 @@ function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
 
         <div className="mt-1.5 flex items-center justify-between text-[11px] font-mono text-neutral-500 dark:text-neutral-400">
           <span>MODEL: {archetype}</span>
-          <span>{report?.updatedAt ? `AUDITED: ${report.updatedAt}` : "LIVE DATA"}</span>
+          <span>{pipelineLine}</span>
         </div>
       </div>
 
@@ -251,7 +283,7 @@ function QuintetMonitorCard({ ticker }: { ticker: QuintetTicker }) {
   )
 }
 
-function QuintetMatrixRow({ ticker }: { ticker: QuintetTicker }) {
+function QuintetMatrixRow({ ticker }: { ticker: string }) {
   const reportQuery = useQuery({
     queryKey: ["report", ticker],
     queryFn: () => fetchReport(ticker),
@@ -314,6 +346,27 @@ function QuintetMatrixRow({ ticker }: { ticker: QuintetTicker }) {
 }
 
 function MarketMonitorHub() {
+  // One call tells us which tickers have a pipeline that actually ran, and in what state. Polled so a live run shows up.
+  const runsQuery = useQuery({
+    queryKey: ["runs-summary"],
+    queryFn: fetchRunsSummary,
+    refetchInterval: 15000,
+  })
+  const summary = runsQuery.data as RunsSummary | undefined
+  const listed = visibleTickers(summary)
+  const listedCount = listed.length
+  // A finished pipeline is not a readable report: 8 of the 9 tickers whose run completed answer 422 because their
+  // assumptions file does not exist. The backend marks that per ticker (`report_ready`), so no per-ticker probe is
+  // needed here — probing used to leave one console error per unavailable ticker.
+  const readyKnown = listed.some((t) => typeof t.report_ready === "boolean")
+  const shown = listed.filter((t) => t.report_ready === true)
+  const shownCount = shown.length
+  const runningCount = shown.filter((t) => t.latest_run?.status === "running").length
+  const completedCount = shownCount - runningCount
+  const pendingReportCount = listedCount - shownCount
+  const hiddenCount = Math.max(0, Object.keys(summary?.tickers ?? {}).length - listedCount)
+  const jumpTicker = shown[0] ? String(shown[0].ticker) : null
+
   return (
     <div className="space-y-6">
       {/* 1. Market Monitor Header & Live Protocol Status */}
@@ -325,18 +378,24 @@ function MarketMonitorHub() {
                 PANTAU PASAR
               </span>
               <h1 className="text-base sm:text-lg font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-                Pantau 5 Saham Unggulan IDX
+                {runsQuery.isLoading
+                  ? "Menyiapkan daftar emiten…"
+                  : shownCount > 0
+                    ? `Pantau ${shownCount} Emiten Siap Dibaca`
+                    : "Pantau Emiten"}
               </h1>
             </div>
             <p className="font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-2xl">
-              Terminal pemantauan valuasi deterministik dan penalaran multi-agen untuk 5 emiten tier-1 Bursa Efek Indonesia.
+              Hanya emiten yang pipeline-nya sudah selesai (atau sedang berjalan) dan laporannya siap dibuka yang muncul di sini — supaya tidak ada tautan yang berujung halaman kosong.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <div className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-mono text-amber-600 dark:text-amber-400" title="Cakupan pantau — status koneksi per kartu">
+            <div className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-mono text-amber-600 dark:text-amber-400" title="Cakupan pantau — hanya emiten yang pipeline-nya berjalan atau selesai">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
-              <span className="font-bold">5 EMITEN · DATA TERAKHIR</span>
+              <span className="font-bold">
+                {runningCount} BERJALAN · {completedCount} SELESAI
+              </span>
             </div>
             <div className="rounded-md border border-neutral-200 bg-neutral-100 px-3 py-1 font-mono text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
               ZERO-FABRICATION PROTOCOL
@@ -351,17 +410,21 @@ function MarketMonitorHub() {
             <span>Sumber data: snapshot laporan keuangan IDX terverifikasi · DCF WACC · Red-Team Audit</span>
           </div>
           <div className="font-mono text-[11px] font-medium text-neutral-600 dark:text-neutral-400">
-            [PINTASAN: KETIK KODE SAHAM + ENTER DI ATAS]
+            {runsQuery.isLoading
+              ? "MEMUAT STATUS PIPELINE…"
+              : runsQuery.isError
+                ? "STATUS PIPELINE TIDAK TERBACA — DAFTAR BELUM TENTU LENGKAP"
+                : `${pendingReportCount} EMITEN PIPELINE SELESAI TAPI LAPORAN BELUM ADA · ${hiddenCount} BELUM SELESAI`}
           </div>
         </div>
       </div>
 
-      {/* 2. Quintet Market Monitor Cards Grid (The 5 Covered Equities) */}
-      <section aria-label="Quintet Equities Coverage" className="space-y-3.5">
+      {/* 2. Listed Equities Cards Grid — derived from the run store, not a fixed list */}
+      <section aria-label="Emiten yang pipeline-nya siap dibaca" className="space-y-3.5">
         <div className="flex items-center justify-between font-mono text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
           <div className="flex items-center gap-2">
             <Layers className="h-4 w-4 text-amber-500" />
-            <span>01 // NILAI WAJAR 5 EMITEN</span>
+            <span>01 // NILAI WAJAR {shownCount} EMITEN</span>
           </div>
           <span className="text-[11px] text-neutral-400 font-normal">
             DATA TERVALIDASI · TANPA SINTETIK
@@ -369,9 +432,25 @@ function MarketMonitorHub() {
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {QUINTET.map((ticker) => (
-            <QuintetMonitorCard key={ticker} ticker={ticker} />
-          ))}
+          {runsQuery.isLoading ? (
+            <div className="rounded-lg border border-dashed border-neutral-300 p-5 font-mono text-xs text-neutral-500 dark:border-[#262930] sm:col-span-2 lg:col-span-3">
+              MEMUAT STATUS PIPELINE…
+            </div>
+          ) : runsQuery.isError ? (
+            <div className="rounded-lg border border-rose-500/40 bg-rose-500/5 p-5 font-mono text-xs leading-relaxed text-rose-600 dark:text-rose-400 sm:col-span-2 lg:col-span-3">
+              Status pipeline tidak terbaca dari /api/agent/runs/summary. Daftar dibiarkan kosong daripada menampilkan emiten yang belum tentu punya laporan.
+            </div>
+          ) : shown.length === 0 ? (
+            <div className="rounded-lg border border-dashed border-neutral-300 p-5 font-mono text-xs leading-relaxed text-neutral-500 dark:border-[#262930] sm:col-span-2 lg:col-span-3">
+              {listedCount > 0 && !readyKnown
+                ? "Backend belum mengirim status ketersediaan laporan (report_ready). Restart BE ke versi terbaru — daftar sengaja dibiarkan kosong daripada menampilkan laporan yang belum tentu bisa dibuka."
+                : listedCount === 0
+                  ? "Belum ada pipeline yang berjalan atau selesai. Jalankan dulu dari halaman [F2] MESIN — daftar ini terisi sendiri begitu sebuah run selesai."
+                  : `${listedCount} emiten pipeline-nya sudah selesai, tapi laporannya belum bisa dibuka karena asumsinya belum dibuat. Daftar terisi sendiri begitu laporan tersedia.`}
+            </div>
+          ) : (
+            shown.map((t) => <QuintetMonitorCard key={String(t.ticker)} ticker={String(t.ticker)} pipeline={t} />)
+          )}
 
           {/* Quick-Jump Helper Card */}
           <div className="flex flex-col justify-between rounded-lg border border-dashed border-neutral-300 bg-neutral-50/70 p-5 font-sans dark:border-[#262930] dark:bg-[#121418]/60">
@@ -384,14 +463,20 @@ function MarketMonitorHub() {
                 Jalankan atau pantau belasan mesin AI yang mengaudit laporan keuangan, menghitung valuasi DCF, dan menganalisis risiko secara mandiri.
               </p>
             </div>
-            <Link
-              to="/agent"
-              search={{ ticker: "BBCA" } as any}
-              className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-neutral-900 py-2.5 px-4 font-mono text-xs font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
-            >
-              <span>BUKA RUANG MESIN</span>
-              <ChevronRight className="h-3.5 w-3.5" />
-            </Link>
+            {jumpTicker ? (
+              <Link
+                to="/agent"
+                search={{ ticker: jumpTicker } as any}
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-md bg-neutral-900 py-2.5 px-4 font-mono text-xs font-bold text-white transition-colors hover:bg-neutral-800 dark:bg-neutral-100 dark:text-neutral-950 dark:hover:bg-neutral-200"
+              >
+                <span>BUKA RUANG MESIN</span>
+                <ChevronRight className="h-3.5 w-3.5" />
+              </Link>
+            ) : (
+              <div className="mt-4 rounded-md border border-dashed border-neutral-300 px-4 py-2.5 text-center font-mono text-[11px] text-neutral-500 dark:border-[#262930]">
+                BELUM ADA EMITEN UNTUK DIBUKA
+              </div>
+            )}
           </div>
         </div>
       </section>
@@ -401,7 +486,7 @@ function MarketMonitorHub() {
         <div className="flex items-center justify-between font-mono text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-amber-500" />
-            <span>02 // PERBANDINGAN NILAI 5 EMITEN</span>
+            <span>02 // PERBANDINGAN NILAI {shownCount} EMITEN</span>
           </div>
           <span className="text-[11px] text-neutral-400 font-normal">
             KLIK BARIS UNTUK MEMBUKA DETAIL LAPORAN
@@ -420,8 +505,8 @@ function MarketMonitorHub() {
             </div>
 
             {/* Table Rows */}
-            {QUINTET.map((ticker) => (
-              <QuintetMatrixRow key={ticker} ticker={ticker} />
+            {shown.map((t) => (
+              <QuintetMatrixRow key={String(t.ticker)} ticker={String(t.ticker)} />
             ))}
           </div>
         </div>

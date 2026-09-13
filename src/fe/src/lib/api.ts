@@ -373,6 +373,39 @@ export async function fetchReportLog(ticker: string): Promise<ReportLogResponse>
 }
 
 // ---------------------------------------------------------------------------
+// Agent pipeline runs — the hub lists only what has actually run
+
+export type RunsSummaryTicker = {
+  ticker: string
+  total_runs: number
+  /** Whether data/assumptions/<TICKER>.json exists — the same condition that makes /api/report answer 422. */
+  report_ready?: boolean
+  latest_run?: {
+    run_id?: string
+    status?: string
+    reason?: string | null
+    started_at?: number
+    finished_at?: number | null
+    provider?: string
+    model?: string
+  } | null
+}
+
+export type RunsSummary = {
+  total_runs: number
+  status_counts: Record<string, number>
+  tickers: Record<string, RunsSummaryTicker>
+}
+
+/** Throws on failure on purpose: an empty list here would read as "nothing has finished yet", which is a different fact. */
+export async function fetchRunsSummary(): Promise<RunsSummary> {
+  const base = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/$/, "") || ""
+  const res = await fetch(`${base}/api/agent/runs/summary`)
+  if (!res.ok) throw new Error(`runs summary ${res.status}`)
+  return await res.json()
+}
+
+// ---------------------------------------------------------------------------
 // Sectors API v2 — single data gateway (see server/sectors.py)
 // ---------------------------------------------------------------------------
 
