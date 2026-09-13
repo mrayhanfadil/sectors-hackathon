@@ -150,9 +150,21 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
             else:
                 narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
                          f"{_fmt_rp(implied['to_median'])} — kedua metode konvergen.")
+        # The distribution band the tool shades (P10-P90) is not in the payload's summary, so it is derived from
+        # the same sessions the chart plots — nothing is authored.
+        _vals = sorted(x["value"] for x in series if isinstance(x.get("value"), (int, float)))
+
+        def _pctile(pct: float):
+            if not _vals:
+                return None
+            k = (len(_vals) - 1) * pct / 100.0
+            lo_i, hi_i = int(k), min(int(k) + 1, len(_vals) - 1)
+            return _vals[lo_i] + (_vals[hi_i] - _vals[lo_i]) * (k - lo_i)
+
         band_blocks.append({
             "key": key, "label": BAND_LABELS[key], "n": s["n"], "mean": s["mean"], "median": s["median"],
             "current": s["current"], "percentile": s["percentile"], "min": s["min"], "max": s["max"],
+            "p10": _pctile(10), "p90": _pctile(90),
             "series": series, "implied": implied, "narrative": narr,
         })
 
@@ -186,39 +198,68 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
 
 
 def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
-    """Inline SVG line for a band block: series + dashed mean + dotted median + current marker."""
+    """One multiple's own history, drawn the way the valuation tool draws its panels.
+
+    Shaded P10-P90 distribution band, the series line over it, the median as a dashed line pinned to the left and
+    the average as a dotted line pinned to the right (so two benchmarks that sit close together cannot collide),
+    and today's value as a marker with a label. Same colour meanings as the deck's tables and heatmap: navy is the
+    subject, ice is its historical distribution, and the reference lines borrow the buy/sell tokens.
+    """
+    NAVY, ICE, RULE, MUTED, BUY, SELL = "#0B1F3A", "#A9C9E8", "#D6E2EE", "#63748A", "#1E8F5F", "#C0392B"
     pts = block["series"]
     if len(pts) < 5:
         return ""
     vals = [p["value"] for p in pts]
-    lo, hi = min(vals + [block["mean"], block["median"]]), max(vals + [block["mean"], block["median"]])
-    pad = (hi - lo) * 0.08 or 1.0
+    p10, p90 = block.get("p10"), block.get("p90")
+    refs = [v for v in (block["mean"], block["median"], p10, p90) if isinstance(v, (int, float))]
+    lo, hi = min(vals + refs), max(vals + refs)
+    pad = (hi - lo) * 0.10 or 1.0
     lo, hi = lo - pad, hi + pad
     n = len(pts)
 
     def x(i: int) -> float:
-        return 4 + (width - 8) * i / max(1, n - 1)
+        return 4 + (width - 14) * i / max(1, n - 1)
 
     def y(v: float) -> float:
-        return height - 16 - (height - 26) * (v - lo) / (hi - lo)
+        return height - 22 - (height - 40) * (v - lo) / (hi - lo)
 
-    line = " ".join(f"{_nf.dec(x(i), digits=1)},{_nf.dec(y(p['value']), digits=1)}" for i, p in enumerate(pts))
+    def d(v: float) -> str:
+        # Geometry must be locale-independent: "34,2" is not a number to an SVG renderer, and the whole plot
+        # collapsed to a flat strip while the labels looked fine. Text keeps the house convention below.
+        return f"{v:.1f}"
+
+    out = [f'<svg viewBox="0 0 {width} {height}" class="band-svg" role="img">']
+    # the distribution band, exactly the tool's shading
+    if isinstance(p10, (int, float)) and isinstance(p90, (int, float)):
+        y10, y90 = y(p10), y(p90)
+        out.append(f'<rect x="4" y="{d(y90)}" width="{width - 8}" height="{d(max(y10 - y90, 0.5))}" '
+                   f'fill="rgba(169,201,232,0.30)"/>')
+        out.append(f'<line x1="4" y1="{d(y90)}" x2="{width - 4}" y2="{d(y90)}" stroke="{ICE}" stroke-width="0.7"/>')
+        out.append(f'<line x1="4" y1="{d(y10)}" x2="{width - 4}" y2="{d(y10)}" stroke="{ICE}" stroke-width="0.7"/>')
+    # references: average pinned right, median pinned left
+    for val, colour, dash, txt, anchor_x, anchor, dy in (
+            (block["mean"], SELL, "5 3", f"rata-rata {_nf.dec(block['mean'], digits=1)}×", width - 6, "end", -4),
+            (block["median"], BUY, "2 3", f"median {_nf.dec(block['median'], digits=1)}×", 6, "start", -4)):
+        if not isinstance(val, (int, float)):
+            continue
+        yy = d(y(val))
+        out.append(f'<line x1="4" y1="{yy}" x2="{width - 4}" y2="{yy}" stroke="{colour}" stroke-width="1" '
+                   f'stroke-dasharray="{dash}"/>')
+        out.append(f'<text x="{anchor_x}" y="{d(y(val) + dy)}" font-size="8" font-weight="700" fill="{colour}" '
+                   f'text-anchor="{anchor}">{txt}</text>')
+    line = " ".join(f"{d(x(i))},{d(y(v))}" for i, v in enumerate(vals))
+    out.append(f'<polyline points="{line}" fill="none" stroke="{NAVY}" stroke-width="1.8" '
+               f'stroke-linejoin="round" stroke-linecap="round"/>')
     cur = pts[-1]
-    out = [f'<svg viewBox="0 0 {width} {height}" class="band-svg" role="img">',
-           f'<polyline points="{line}" fill="none" stroke="#12395b" stroke-width="1.6"/>',
-           f'<line x1="4" y1="{_nf.dec(y(block["mean"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["mean"]), digits=1)}" '
-           f'stroke="#b45309" stroke-width="1" stroke-dasharray="6,3"/>',
-           f'<line x1="4" y1="{_nf.dec(y(block["median"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["median"]), digits=1)}" '
-           f'stroke="#0f766e" stroke-width="1" stroke-dasharray="2,3"/>',
-           f'<line x1="4" y1="{_nf.dec(y(block["min"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["min"]), digits=1)}" '
-           f'stroke="#cbd5e1" stroke-width="0.8"/>',
-           f'<line x1="4" y1="{_nf.dec(y(block["max"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["max"]), digits=1)}" '
-           f'stroke="#cbd5e1" stroke-width="0.8"/>',
-           f'<circle cx="{_nf.dec(x(n-1), digits=1)}" cy="{_nf.dec(y(cur["value"]), digits=1)}" r="3.6" fill="#b91c1c"/>',
-           f'<text x="6" y="12" font-size="9" fill="#475569">mean {_nf.dec(block["mean"], digits=1)}×</text>',
-           f'<text x="6" y="{height-3}" font-size="9" fill="#475569">{pts[0]["date"]}</text>',
-           f'<text x="{width-70}" y="{height-3}" font-size="9" fill="#475569">{cur["date"]}</text>',
-           "</svg>"]
+    cx, cy = x(n - 1), y(cur["value"])
+    out.append(f'<circle cx="{d(cx)}" cy="{d(cy)}" r="3.4" fill="{NAVY}" stroke="#ffffff" stroke-width="1.2"/>')
+    out.append(f'<text x="{width - 6}" y="{d(cy - 6)}" font-size="8.5" font-weight="700" fill="{NAVY}" '
+               f'text-anchor="end">{_nf.dec(cur["value"], digits=1)}× · p{_nf.dec(block["percentile"], digits=0)}</text>')
+    out.append(f'<line x1="4" y1="{height - 12}" x2="{width - 4}" y2="{height - 12}" stroke="{RULE}" stroke-width="0.7"/>')
+    out.append(f'<text x="6" y="{height - 3}" font-size="8" fill="{MUTED}">{pts[0]["date"]}</text>')
+    out.append(f'<text x="{width - 6}" y="{height - 3}" font-size="8" fill="{MUTED}" text-anchor="end">'
+               f'{cur["date"]} · P10-P90 {_nf.dec(p10, digits=0)}×-{_nf.dec(p90, digits=0)}×</text>')
+    out.append("</svg>")
     # Jinja autoescapes html by default: without Markup the chart reaches the page as escaped text
     return Markup("".join(out))
 
