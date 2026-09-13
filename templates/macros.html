@@ -149,10 +149,18 @@
   .small { font-size: 7.5pt; }
   .neg { color: var(--neg); } .pos { color: var(--pos); }
 
-  .section-head { display: flex; align-items: baseline; gap: 8pt; border-bottom: 1pt solid var(--brand);
-                  margin: 14pt 0 8pt; padding-bottom: 3pt; }
-  .section-no { font-size: 8pt; color: #fff; background: var(--brand); border-radius: 2pt;
-                padding: 1pt 5pt; letter-spacing: .05em; font-weight: 700; }
+  /* Section header: the number is a kicker, the title carries the weight. A filled badge competed with the
+     title (the reviewer called it heavy) and put a third colour in the band; the rule is now neutral with a
+     short brand tick at the left, which is the same accent vocabulary as the thesis and risk rails. */
+  .section-head { display: flex; align-items: baseline; gap: 9pt; position: relative;
+                  border-bottom: .75pt solid var(--line);
+                  margin: 13pt 0 7.5pt; padding: 6pt 0 3.5pt; }
+  /* the accent sits ABOVE the header, not under it: a rule below crossed the title mid-word (reviewer) */
+  .section-head::before { content: ""; position: absolute; top: 0; left: 0; width: 30pt;
+                          border-top: 2pt solid var(--brand); }
+  .section-no { font-size: 10pt; font-weight: 700; color: var(--brand); letter-spacing: .06em;
+                font-variant-numeric: tabular-nums; }
+  .section-head h2 { font-size: 13.5pt; font-weight: 700; color: var(--ink); letter-spacing: -.25pt; }
 
   .fin-table { width: 100%; border-collapse: collapse; font-size: 7.3pt; margin: 3pt 0; }
   .fin-table th { background: var(--brand-dark); color: #fff; padding: 2.2pt 5pt; text-align: right;
