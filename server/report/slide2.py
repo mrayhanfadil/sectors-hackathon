@@ -313,6 +313,19 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
 
 
+def _shares_to_juta(match: "re.Match") -> str:
+    """Share counts read as `646,46 juta sh`; a price (`Rp 4.950`) is left alone.
+
+    The ledger arrives grouped Indonesian, so the dots are thousands separators: strip them, scale to millions,
+    then print once through the deck's formatter. Rewriting the string by pattern (as this did) produced
+    `646.464.6 juta`, which is neither a share count nor a valid number.
+    """
+    digits = match.group(1).replace(".", "")
+    if not digits.isdigit():
+        return match.group(0)
+    return f"{_num(float(digits) / 1e6, 2)} juta"
+
+
 def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     """Paragraph 3 — Valuasi, in the four mandated sentence blocks."""
     raw = kf.get("raw") or {}
@@ -396,8 +409,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         first = (detail[0] if detail else "").strip().rstrip(".;")
         # one concrete instance, not the whole insider-selling ledger
         first = re.split(r"\s+dan\s+", first)[0].strip()
-        first = re.sub(r"([\d.]+)\.(\d{3})\b", lambda m: f"{m.group(1)}.{m.group(2)[:1]} juta",
-                       first)
+        first = re.sub(r"([\d.]{7,})(?=\s*sh)", _shares_to_juta, first)
         if bucket:
             bucket = {"Distribusi insider": "insider selling", "Insider distribution": "insider selling"}.get(
                 bucket, bucket)

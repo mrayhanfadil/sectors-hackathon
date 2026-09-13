@@ -253,7 +253,7 @@
 
   <table class="fin-table" style="margin-top:5pt;">
     <thead>
-      <tr>{% for h in (valuation_page.block2_headers or ["Blok 2 — Terminal value", "Gordon Growth", "Exit Multiple " ~ (valuation_page.drivers.multiple or 0) ~ "x"]) %}<th>{{ h }}</th>{% endfor %}</tr>
+      <tr>{% for h in (valuation_page.block2_headers or ["Blok 2 — Terminal value", "Gordon Growth", "Exit Multiple " ~ ((valuation_page.drivers.multiple or 0) | dec(1)) ~ "×"]) %}<th>{{ h }}</th>{% endfor %}</tr>
     </thead>
     <tbody>
       {% for label, a, b in valuation_page.block2_rows %}

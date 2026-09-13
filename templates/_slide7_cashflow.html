@@ -41,7 +41,7 @@
       <tr class="ratio-section"><td colspan="{{ key_ratio_page.headers|length }}">{{ sec.title }}</td></tr>
       {% for r in sec.rows %}
       <tr><td class="stmt-label">{{ r.label }}</td>
-        {% for v in r.cells %}<td class="num">{{ "({:,.1f})".format(v|abs) if (v is number and v < 0) else (v|idn(1) if v is number else "n/a") }}</td>{% endfor %}</tr>
+        {% for v in r.cells %}<td class="num">{{ ("(" ~ (v|abs|dec(1)) ~ ")") if (v is number and v < 0) else (v|idn(1) if v is number else "n/a") }}</td>{% endfor %}</tr>
       {% endfor %}
       {% endfor %}
     </tbody>

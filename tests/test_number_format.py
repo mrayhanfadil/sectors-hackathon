@@ -20,12 +20,6 @@ def _visible_text(html: str) -> str:
     return " ".join(re.findall(r">([^<]*)<", stripped))
 
 
-@pytest.mark.xfail(
-    reason="Residue: quoted source text (news headlines, filing summaries) keeps its original formatting on "
-           "purpose, and a handful of prose narratives still interpolate raw floats. Tracked, not yet zero — "
-           "the payload-level gate audit_number_format is clean.",
-    strict=False,
-)
 def test_no_english_decimal_reaches_the_reader(payload):
     """Read the page the way a reader does: rendered visible text, not the markup.
 
