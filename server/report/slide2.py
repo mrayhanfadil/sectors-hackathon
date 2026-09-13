@@ -307,8 +307,8 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     if priced:
         parts.append(
             "Priced-in: " + "; ".join(priced) +
-            " — katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99x masih ~37% "
-            "di bawah rata-rata 4 tahun 28,42x."
+            " — katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99× masih ~37% "
+            "di bawah rata-rata 4 tahun 28,42×."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
 
@@ -368,7 +368,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     wacc_pct = as_pct(wacc)
     parts.append(
         f"Kami menetapkan TP Rp {_num(fv, 0)} menggunakan {method} dengan exit multiple "
-        f"{_num(multiple, 2)}x atas EBITDA mid-cycle Rp {_num(_div(mid_eb, 1000), 2)} tn; leg DCF "
+        f"{_num(multiple, 2)}× atas EBITDA mid-cycle Rp {_num(_div(mid_eb, 1000), 2)} tn; leg DCF "
         f"(WACC {_num(wacc_pct, 2)}%, g {_num((g or 0) * 100, 1)}%) dihitung sebagai pembanding."
     )
     # 2. forecast linkage
@@ -391,10 +391,10 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
     parts.append(
         f"Pada TP, saham dihargai EV/EBITDA 2028F "
-        f"{_num(_div(ev_at_tp, mid_eb), 1)}x dibandingkan "
-        f"rata-rata historis 4 tahun {_num(multiple, 2)}x (band {_num(sens.get('low'), 2)}x-"
-        f"{_num(sens.get('high'), 2)}x) atau PER 2026F {_num(per_f, 1)}x vs PE subsector "
-        f"{_num(peer_pe, 2)}x — peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
+        f"{_num(_div(ev_at_tp, mid_eb), 1)}× dibandingkan "
+        f"rata-rata historis 4 tahun {_num(multiple, 2)}× (band {_num(sens.get('low'), 2)}×-"
+        f"{_num(sens.get('high'), 2)}×) atau PER 2026F {_num(per_f, 1)}× vs PE subsector "
+        f"{_num(peer_pe, 2)}× — peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
         f"re-rating EV/EBITDA, bukan PER."
     )
     # 4. risks to the view
@@ -419,7 +419,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         f"EBITDA mid-cycle 10%, TP turun ke Rp {_num(fv_down, 0)} "
         f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) downside — "
         f"multiple bertahan di print 2026 "
-        f"{_num(assum.get('ev_multiple_latest_print'), 2)}x, TP jatuh ke Rp "
+        f"{_num(assum.get('ev_multiple_latest_print'), 2)}×, TP jatuh ke Rp "
         f"{_num(fv_print, 0)}{risk_tail}."
     )
     return {"heading": "Valuasi", "body": " ".join(parts)}

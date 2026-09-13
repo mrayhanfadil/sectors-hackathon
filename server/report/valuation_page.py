@@ -383,18 +383,18 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         own = assum.get("ev_multiple_own_history") or {}
         extra = ""
         if own and own.get("usable_as_anchor") is False:
-            extra = (f" Own-history multiple ({_nf.dec(own.get('trailing_mean', 0), digits=2)}x trailing / "
-                     f"{_nf.dec(own.get('normalised_mean', 0), digits=2)}x normalised) DITOLAK sebagai anchor: EV bertahan "
-                     f"Rp 506-672 tn saat EBITDA naik-turun 2x, jadi multiple itu menghukum level yang sudah "
-                     f"pulih (memberi Rp 13.559/saham, 2,8x harga).")
+            extra = (f" Own-history multiple ({_nf.dec(own.get('trailing_mean', 0), digits=2)}× trailing / "
+                     f"{_nf.dec(own.get('normalised_mean', 0), digits=2)}× normalised) DITOLAK sebagai anchor: EV bertahan "
+                     f"Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple itu menghukum level yang sudah "
+                     f"pulih (memberi Rp 13.559/saham, 2,8× harga).")
         notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
                      str(assum.get("ebitda_leg_level_note") or ""))
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
             f"UNRESOLVED ASSUMPTION — terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
-            f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}x memberi Rp {_rp(primary['fv_exit'])}: selisih "
-            f"{_nf.dec(ratio, digits=1)}x pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
+            f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}× memberi Rp {_rp(primary['fv_exit'])}: selisih "
+            f"{_nf.dec(ratio, digits=1)}× pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
         )
     if build_up["equity_gordon"] is not None and build_up["equity_gordon"] <= 0:
         notes.append(
@@ -468,8 +468,8 @@ def _view(page: dict) -> dict:
         ("Terminal Value (undiscounted)", _fmt(b["tv_gordon"] / 1e9), _fmt((b["tv_exit"] or 0) / 1e9)),
         ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), _fmt(tv_df_exit, 3)),
         ("PV of Terminal Value", _fmt(b["pv_tv_gordon"] / 1e9), _fmt((b["pv_tv_exit"] or 0) / 1e9)),
-        ("Implied exit multiple dari TV Gordon", _fmt(b["implied_exit_multiple"], 2) + "x",
-         _fmt(page["drivers"]["multiple"], 2) + "x"),
+        ("Implied exit multiple dari TV Gordon", _fmt(b["implied_exit_multiple"], 2) + "×",
+         _fmt(page["drivers"]["multiple"], 2) + "×"),
     ]
     page["block3_rows"] = [
         ("Sum PV of FCFF (periode eksplisit)", _fmt(b["pv_explicit"] / 1e9), "\u2014"),
@@ -501,7 +501,7 @@ def _view(page: dict) -> dict:
     page["crosscheck_rows"] = [
         ("DCF (leg kedua, halaman ini)", _fmt0(b["fv_gordon"]), "Cross-check intrinsik"),
         ("DCF + terminal exit multiple", _fmt0(b["fv_exit"]), "Batas atas skenario multiple"),
-        ("EV/EBITDA mid-cycle " + _fmt(page["drivers"]["multiple"], 2) + "x",
+        ("EV/EBITDA mid-cycle " + _fmt(page["drivers"]["multiple"], 2) + "×",
          _fmt0(legs.get("ev_ebitda")), "ANCHOR target price (halaman 1 & 5)"),
         ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
     ]
@@ -541,7 +541,7 @@ def _narrative(page: dict) -> list[str]:
         ),
         (
             "Gap antar metode dibaca sebagai unresolved assumption, bukan dirata-rata: terminal Gordon dan terminal "
-            f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}x "
+            f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
             f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis build-up "
             f"EBIT-based menghasilkan equity value negatif (Rp {_fmt0(page['alternatives']['build_up']['equity_gordon'] / 1e9)} bn). "
             "Target price laporan berdiri di leg relative (EV/EBITDA mid-cycle); halaman ini memperlihatkan seberapa "

@@ -72,7 +72,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0x pada EBITDA FY26F \u2014 multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke estimasi pihak ketiga yang TP-nya mengimplikasikan 15,7× FY26F. Bukan mean own-history.",
+  "ev_multiple_basis": "Target 15,0× pada EBITDA FY26F \u2014 multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke estimasi pihak ketiga yang TP-nya mengimplikasikan 15,7× FY26F. Bukan mean own-history.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -160,7 +160,7 @@
       "outlet": "Sectors API v2 \u2014 valuation.historical_valuation[].enterprise_to_ebitda",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2023-2026 prints (payload 2026-09-11)",
-      "note": "Mean of the four own-history prints; explicit assumption (no live peer EV/EBITDA prints available). Sensitivity +/-2x published."
+      "note": "Mean of the four own-history prints; explicit assumption (no live peer EV/EBITDA prints available). Sensitivity +/-2× published."
     },
     "payout": {
       "value": 0.0,
@@ -192,7 +192,7 @@
       "outlet": "Damodaran, Betas by Sector (Global) \u2014 Metals & Mining; relevered to AMMN's market gearing",
       "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/BetasGlobal.html",
       "as_of": "page updated 2026-01 (January); accessed 2026-09-12",
-      "note": "Observed AMMN 5Y spot betas are unusable/negative (stockanalysis.com -0.42; investing.com -1.24), so beta is a relevered peer-sector beta: unlevered beta corrected for cash 1.13 (Metals & Mining, 1,874 firms; levered 1.24; D/E 23.04%) relevered to AMMN market D/E 31.43% at the 22% Indonesian tax rate: 1.13 x (1 + 0.78 x 0.3143) = 1.4071. Sensitivity: the un-relevered sector print 1.24 gives WACC ~11.6% vs 13.8% here."
+      "note": "Observed AMMN 5Y spot betas are unusable/negative (stockanalysis.com -0.42; investing.com -1.24), so beta is a relevered peer-sector beta: unlevered beta corrected for cash 1.13 (Metals & Mining, 1,874 firms; levered 1.24; D/E 23.04%) relevered to AMMN market D/E 31.43% at the 22% Indonesian tax rate: 1.13× (1 + 0.78× 0.3143) = 1.4071. Sensitivity: the un-relevered sector print 1.24 gives WACC ~11.6% vs 13.8% here."
     },
     "cod": {
       "value": 0.0649,
@@ -249,12 +249,12 @@
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
     },
     "theme_title": {
-      "value": "Multiple 2026 di 17,99x vs mid-cycle 28,42x \u2014 re-rating belum tercermin dalam harga",
+      "value": "Multiple 2026 di 17,99× vs mid-cycle 28,42× \u2014 re-rating belum tercermin dalam harga",
       "kind": "derived_editorial",
       "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
       "url": "internal://data/assumptions/AMMN.json",
       "as_of": "2026-09-12",
-      "note": "Membandingkan ev_multiple_latest_print (17,99x, Sectors historical_valuation 2026) dengan ev_multiple (28,42x, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section."
+      "note": "Membandingkan ev_multiple_latest_print (17,99×, Sectors historical_valuation 2026) dengan ev_multiple (28,42×, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section."
     }
   },
   "pending": {
@@ -370,7 +370,7 @@
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
   },
-  "theme_title": "Multiple 2026 di 17,99x vs mid-cycle 28,42x \u2014 re-rating belum tercermin dalam harga",
+  "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42× \u2014 re-rating belum tercermin dalam harga",
   "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,
@@ -385,8 +385,8 @@
     "normalised_mean": 31.48,
     "normalised_median": 31.79,
     "usable_as_anchor": false,
-    "why": "EV bertahan Rp 506-672 tn sepanjang siklus sementara EBITDA naik-turun 2x: market menghargai asset base, bukan laba trailing. Menerapkan multiple ini ke level yang sudah pulih memberi Rp 13.362-20.564/saham (2,7-4,2x harga). Rekonstruksi diverifikasi exact (gap 0,00x) di server/valuation/normalised_multiple.py; diuji di tests/test_normalised_multiple.py."
+    "why": "EV bertahan Rp 506-672 tn sepanjang siklus sementara EBITDA naik-turun 2×: market menghargai asset base, bukan laba trailing. Menerapkan multiple ini ke level yang sudah pulih memberi Rp 13.362-20.564/saham (2,7-4,2× harga). Rekonstruksi diverifikasi exact (gap 0,00×) di server/valuation/normalised_multiple.py; diuji di tests/test_normalised_multiple.py."
   },
   "mid_cycle_ebitda_note": "Mid-cycle historis = rata-rata 3Y EBITDA Sectors (FY2023 15.738, FY2024 23.040, FY2025 16.410 -> 18.396 tn) tetap dihitung sebagai cross-check, TIDAK dipakai sebagai basis TP sejak 12 Sep 2026: level TP memakai EBITDA FY26F dari jalur proyeksi (lihat ebitda_leg_level_note).",
-  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) \u2014 basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86x dan gate harus dievaluasi ulang \u2014 itu keputusan owner, bukan perubahan diam-diam."
+  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) \u2014 basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86× dan gate harus dievaluasi ulang \u2014 itu keputusan owner, bukan perubahan diam-diam."
 }

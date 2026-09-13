@@ -80,7 +80,7 @@ def _compliant_payload() -> dict:
                 },
                 "jci_chart": {"price": [1, 2, 3]},
                 "analyst": {"name": "RESEARCH", "title": "Equity Analyst"},
-                "theme_title": "Multiple 2026 di 17,99x vs mid-cycle 28,42x",
+                "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42×",
                 "highlights": ["Laba Rp 2,72 tn (-61,95% qoq)", "Tembaga US$ 14.708/ton",
                                "TP Rp 5.873 (+20,84%)"],
                 "financial_para": {"body": "Pendapatan Q1-2026 Rp 13,73 tn, -36,94% qoq."},
@@ -93,7 +93,7 @@ def _compliant_payload() -> dict:
                 )},
                 "valuasi": {"body": (
                     "Kami menetapkan TP Rp 5.873 menggunakan EV/EBITDA. CAGR 0,0%. Pada TP, "
-                    "saham dihargai 28,4x dibandingkan rata-rata historis 4 tahun 28,42x vs "
+                    "saham dihargai 28,4× dibandingkan rata-rata historis 4 tahun 28,42× vs "
                     "subsector. Risiko terhadap pandangan ini: tembaga -10%."
                 )},
                 "key_financials": {
@@ -380,7 +380,7 @@ def test_house_gate_catches_each_slide2_violation_class() -> None:
     assert any("has no body" in v for v in audit_industry_page(empty))
 
     leaky = copy.deepcopy(clean)
-    leaky["paragraphs"][2]["body"] = "Kami menetapkan TP Rp 5.873 dari EV/EBITDA 28,42x (WACC 13,77%)."
+    leaky["paragraphs"][2]["body"] = "Kami menetapkan TP Rp 5.873 dari EV/EBITDA 28,42× (WACC 13,77%)."
     caught = audit_industry_page(leaky)
     assert any("valuation language" in v for v in caught), caught
     assert "tp" in caught[0] and "ev/ebitda" in caught[0]

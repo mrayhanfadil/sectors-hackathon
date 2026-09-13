@@ -412,7 +412,7 @@ def build_performance_page(payload: dict, assumptions: Optional[dict] = None) ->
             "line": roe,
             "labels": ratio_headers,
             "actual_n": len(ratio_headers),
-            "bar_unit": "x",
+            "bar_unit": "×",
             "line_unit": "% ROE",
             "bar_fmt": [_num(v, 2) for v in de],
             "line_fmt": [_num(v, 1) if v is not None else "" for v in roe],

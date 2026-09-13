@@ -95,11 +95,11 @@ def terminal_value(fcff_final, ebitda_final, wacc, terminal_g=None, flags=None):
         result["implied_exit_multiple"] = mult
         if flags and mult > 20:
             flags.warn("Implied exit EV/EBITDA",
-                       f"{_nf.dec(mult, digits=1)}x. Too high for a typical IDX issuer. "
+                       f"{_nf.dec(mult, digits=1)}×. Too high for a typical IDX issuer. "
                        f"Check the terminal growth and WACC assumptions.")
         elif flags and mult < 2:
             flags.warn("Implied exit EV/EBITDA",
-                       f"{_nf.dec(mult, digits=1)}x. Very low, check whether final-year FCFF "
+                       f"{_nf.dec(mult, digits=1)}×. Very low, check whether final-year FCFF "
                        f"is depressed by abnormal capex.")
 
     return result

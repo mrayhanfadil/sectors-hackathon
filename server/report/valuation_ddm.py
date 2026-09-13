@@ -229,7 +229,7 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
     if pbv_rows:
         notes.append(
             f"Jalur alternatif Inverse Cost of Equity dipakai sebagai kolom kedua: forward ROE "
-            f"{_nf.dec(pbv_rows['forward_roe']*100, digits=1)}%, fair P/BV {_nf.dec(pbv_rows['fair_pbv'], digits=2)}x, BVPS "
+            f"{_nf.dec(pbv_rows['forward_roe']*100, digits=1)}%, fair P/BV {_nf.dec(pbv_rows['fair_pbv'], digits=2)}×, BVPS "
             f"Rp {_nf.idn(pbv_rows['bvps'], digits=0)} -> nilai wajar Rp {_nf.idn(pbv_rows['fair'], digits=0)}."
         )
     notes.append(
@@ -343,7 +343,7 @@ def _narrative_ddm(page: dict) -> list[str]:
         ),
         (
             "Dua metode di halaman ini "
-            + (f"berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=2)}x "
+            + (f"berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=2)}× "
                f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) dan selisih itu dibiarkan terbuka "
                "sebagai unresolved assumption, bukan dirata-rata."
                if b.get("fv_exit") else

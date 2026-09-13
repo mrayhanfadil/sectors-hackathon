@@ -584,7 +584,7 @@ def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list
     if gap is not None and gap >= 2.0:
         if not any("UNRESOLVED" in str(n).upper() for n in notes):
             violations.append(
-                f"the two terminal methods differ {_nf.dec(gap, digits=1)}x and the page does not flag it as an "
+                f"the two terminal methods differ {_nf.dec(gap, digits=1)}× and the page does not flag it as an "
                 "unresolved assumption (rules: wajib di-flag eksplisit, bukan dirata-rata diam-diam)"
             )
     if not any("reserve" in str(n).lower() or "perpetual" in str(n).lower() for n in notes):
@@ -1102,16 +1102,16 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
             eb, intr = sheet("EBIT", i), sheet("Interest Expense", i)
             if got_cov is not None and isinstance(eb, (int, float)) and intr:
                 if abs(got_cov - eb / intr) > 0.05:
-                    violations.append(f"Exhibit 17 interest coverage {_nf.dec(got_cov, digits=2)}x in {y} does not equal "
-                                      f"EBIT/interest {_nf.dec(eb / intr, digits=2)}x")
+                    violations.append(f"Exhibit 17 interest coverage {_nf.dec(got_cov, digits=2)}× in {y} does not equal "
+                                      f"EBIT/interest {_nf.dec(eb / intr, digits=2)}×")
             got_gear = printed("Leverage", "Net Gearing", i)
             st, lt, cash, eq = (sheet("Short-term Debt", i), sheet("Long-term Debt", i),
                                 sheet("Cash & Cash", i), sheet("Shareholders'", i))
             if got_gear is not None and None not in (st, lt, cash, eq) and eq:
                 want_g = ((st + lt) - cash) / eq
                 if abs(got_gear - want_g) > 0.02:
-                    violations.append(f"Exhibit 17 net gearing {_nf.dec(got_gear, digits=2)}x in {y} does not equal "
-                                      f"(debt - cash)/equity {_nf.dec(want_g, digits=2)}x")
+                    violations.append(f"Exhibit 17 net gearing {_nf.dec(got_gear, digits=2)}× in {y} does not equal "
+                                      f"(debt - cash)/equity {_nf.dec(want_g, digits=2)}×")
     return violations
 
 
@@ -1171,6 +1171,9 @@ def audit_number_format(payload: dict | None) -> list[str]:
     import re as _re
 
     english_decimal = _re.compile(r"(?<![\d.])\d+\.\d{1,2}(?![\d])")
+    # `17,99x` reads as a typo next to `17,99×`; the letter x is also how a unit is spelled ("x (bar)"), so the
+    # rule only fires when a figure sits directly in front of it.
+    ascii_multiple = _re.compile(r"(?<![\w,.])\d+(?:[.,]\d+)?\s?x(?![a-zA-Z0-9(])")
     allowed = _re.compile(r"(sectors\.app|sectors\.|www\.|@|^\(?\d{1,2}\.\d{1,2}\)?$)")
     out: list[str] = []
 
@@ -1196,6 +1199,10 @@ def audit_number_format(payload: dict | None) -> list[str]:
             if m:
                 out.append(f"a printed figure uses an English decimal separator ({m.group(0)!r} at {path}) — "
                            f"the deck prints dot thousands and comma decimals")
+            m = ascii_multiple.search(text)
+            if m:
+                out.append(f"a printed figure uses the ASCII letter x as a multiplication sign ({m.group(0)!r} at "
+                           f"{path}) — the deck writes ×")
 
     walk(payload, "")
     return out[:10]

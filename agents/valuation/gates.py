@@ -127,7 +127,7 @@ def _gate1_data_eligibility(
     else:
         failed.append("1c_capital_structure")
         reasons.append(
-            f"1c capital structure breach (D/(D+E)={_nf.dec(d_de_ratio, digits=2)}, ND/EBITDA={_nf.dec(net_debt_to_ebitda, digits=2)}x, IC={_nf.dec(interest_coverage, digits=2)}x) → DCF proceeds with mandatory Relative cross-check"
+            f"1c capital structure breach (D/(D+E)={_nf.dec(d_de_ratio, digits=2)}, ND/EBITDA={_nf.dec(net_debt_to_ebitda, digits=2)}×, IC={_nf.dec(interest_coverage, digits=2)}×) → DCF proceeds with mandatory Relative cross-check"
         )
 
     # 1d — equity base
@@ -285,8 +285,8 @@ def _gate5_output_sanity(
         if not (peer_exit_low <= implied_exit_ev_ebitda <= peer_exit_high):
             failed.append("5_exit_multiple_out_of_range")
             reasons.append(
-                f"5 implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}x outside peer range "
-                f"{_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}x → WACC/g out of sync with market "
+                f"5 implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}× outside peer range "
+                f"{_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}× → WACC/g out of sync with market "
                 "pricing, cross-check vs EV/EBITDA relative valuation"
             )
         else:

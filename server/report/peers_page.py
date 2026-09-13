@@ -50,7 +50,7 @@ def _pct(a: Optional[float], b: Optional[float]) -> Optional[float]:
 
 
 def _fmt(v: Optional[float], d: int = 2) -> str:
-    """Indonesian grouping, so a peer multiple reads 12,51x like the rest of the deck."""
+    """Indonesian grouping, so a peer multiple reads 12,51× like the rest of the deck."""
     return _nf.idn(v, d) if isinstance(v, (int, float)) else "n.m."
 
 
@@ -94,15 +94,15 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
 
     parts_a_narr = []
     parts_a_narr.append(
-        f"{tk} diperdagangkan pada P/E {_fmt(covered['pe_ttm'])}x dan P/BV {_fmt(covered['pb_mrq'])}x — "
-        f"vs median peer {_fmt(stats['pe_ttm']['median'])}x / {_fmt(stats['pb_mrq']['median'])}x "
+        f"{tk} diperdagangkan pada P/E {_fmt(covered['pe_ttm'])}× dan P/BV {_fmt(covered['pb_mrq'])}× — "
+        f"vs median peer {_fmt(stats['pe_ttm']['median'])}× / {_fmt(stats['pb_mrq']['median'])}× "
         f"({_nf.dec(gaps['pe_ttm'], digits=0, signed=True)}% / {_nf.dec(gaps['pb_mrq'], digits=0, signed=True)}%) dan average "
-        f"{_fmt(stats['pe_ttm']['average'])}x / {_fmt(stats['pb_mrq']['average'])}x."
+        f"{_fmt(stats['pe_ttm']['average'])}× / {_fmt(stats['pb_mrq']['average'])}×."
         if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. — earnings TTM negatif.")
     if covered.get("ev_ebitda_ttm") and stats["ev_ebitda_ttm"]["median"]:
         parts_a_narr.append(
-            f"Pada multiple berbasis kas, EV/EBITDA {_fmt(covered['ev_ebitda_ttm'])}x vs median "
-            f"{_fmt(stats['ev_ebitda_ttm']['median'])}x ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
+            f"Pada multiple berbasis kas, EV/EBITDA {_fmt(covered['ev_ebitda_ttm'])}× vs median "
+            f"{_fmt(stats['ev_ebitda_ttm']['median'])}× ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
             f"{_nf.dec(covered['roe_ttm']*100, digits=1)}% vs median {_nf.dec(stats['roe_ttm']['median']*100, digits=1)}% "
             f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) — jadi premium P/E bukan semata efek basis earnings.")
     if peers.get("pe_excluded"):
@@ -140,8 +140,8 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
             continue
         series = [{"date": x["date"], "value": x[key]} for x in bands["sessions"] if x[key] is not None]
         implied = bands["implied_price"].get(key)
-        narr = (f"Sekarang {_nf.dec(s['current'], digits=2)}x — persentil {_nf.dec(s['percentile'], digits=0)} dari {s['n']} sesi "
-                f"(mean {_nf.dec(s['mean'], digits=2)}x, median {_nf.dec(s['median'], digits=2)}x).")
+        narr = (f"Sekarang {_nf.dec(s['current'], digits=2)}× — persentil {_nf.dec(s['percentile'], digits=0)} dari {s['n']} sesi "
+                f"(mean {_nf.dec(s['mean'], digits=2)}×, median {_nf.dec(s['median'], digits=2)}×).")
         if implied:
             if implied.get("is_range"):
                 narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
@@ -215,7 +215,7 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
            f'<line x1="4" y1="{_nf.dec(y(block["max"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["max"]), digits=1)}" '
            f'stroke="#cbd5e1" stroke-width="0.8"/>',
            f'<circle cx="{_nf.dec(x(n-1), digits=1)}" cy="{_nf.dec(y(cur["value"]), digits=1)}" r="3.6" fill="#b91c1c"/>',
-           f'<text x="6" y="12" font-size="9" fill="#475569">mean {_nf.dec(block["mean"], digits=1)}x</text>',
+           f'<text x="6" y="12" font-size="9" fill="#475569">mean {_nf.dec(block["mean"], digits=1)}×</text>',
            f'<text x="6" y="{height-3}" font-size="9" fill="#475569">{pts[0]["date"]}</text>',
            f'<text x="{width-70}" y="{height-3}" font-size="9" fill="#475569">{cur["date"]}</text>',
            "</svg>"]

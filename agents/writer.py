@@ -147,7 +147,7 @@ def catalyst_narrative(company: dict[str, Any]) -> list[dict[str, Any]]:
             )
             entry["quantified_struct"] = q
         elif "tenancy_ratio_target" in q:
-            entry["quantified"] = f"tenancy ratio toward >{q['tenancy_ratio_target']}x"
+            entry["quantified"] = f"tenancy ratio toward >{q['tenancy_ratio_target']}×"
             entry["quantified_struct"] = q
         elif "aadi_equity_usd_mn" in q:
             entry["quantified"] = (
@@ -169,7 +169,7 @@ def kpi_highlights(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "kpi": "tenancy_ratio",
             "value": tenancy,
-            "display": f"{_nf.dec(tenancy, digits=2)}x (tenants {_nf.idn(kpi.get('tenants', '?'), 0)} / towers {_nf.idn(kpi.get('towers', '?'), 0)})",
+            "display": f"{_nf.dec(tenancy, digits=2)}× (tenants {_nf.idn(kpi.get('tenants', '?'), 0)} / towers {_nf.idn(kpi.get('towers', '?'), 0)})",
             "source": kpi.get("kpi_period", source_label(company)),
         })
     fiber = kpi.get("fiber_km")
@@ -202,7 +202,7 @@ def risk_summary(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "id": "R2",
             "title": "Elevated Debt/EBITDA",
-            "detail": f"Debt/EBITDA reached {_nf.dec(max(debteb), digits=0)}x — refinancing and rate sensitivity are key risks.",
+            "detail": f"Debt/EBITDA reached {_nf.dec(max(debteb), digits=0)}× — refinancing and rate sensitivity are key risks.",
             "severity": "high",
         })
     one = company.get("one_offs")

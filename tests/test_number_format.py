@@ -42,6 +42,8 @@ def test_no_english_decimal_reaches_the_reader(payload):
         b.close()
     hits = re.findall(r"(?<![\d.])\d+\.\d{1,2}(?![\d])", text)
     assert not hits, f"English decimals still on the page: {sorted(set(hits))[:12]}"
+    signs = re.findall(r"(?<![\w,.])\d+(?:[.,]\d+)?\s?x(?![a-zA-Z0-9(])", text)
+    assert not signs, f"ASCII multiplication signs still on the page: {sorted(set(signs))[:12]}"
 
 
 def test_gate_flags_an_english_decimal_and_allows_a_thousands_group():

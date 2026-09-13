@@ -382,7 +382,7 @@ def fixture_from_archetype(
                     tenants_added=(3000, 3500),
                     revenue_idr_bn_annualized=(360, 420),
                     by_fy="FY27-29",
-                    opex_efficiency="opex/capex efficiency, tenancy >1.6x, FWA/fiberization/IoT/power",
+                    opex_efficiency="opex/capex efficiency, tenancy >1.6×, FWA/fiberization/IoT/power",
                     source=source_label,
                 ),
                 CatalystQuant(

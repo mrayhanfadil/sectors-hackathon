@@ -81,7 +81,7 @@ def fair_pbv(roe, ke, g, bvps, flags=None):
 
     if pbv <= 0 and flags:
         flags.warn("Fair P/BV",
-                   f"Fair P/BV is negative ({_nf.dec(pbv, digits=2)}x) because ROE of "
+                   f"Fair P/BV is negative ({_nf.dec(pbv, digits=2)}×) because ROE of "
                    f"{_nf.dec(roe*100, digits=1)}% is below terminal growth of {_nf.dec(g*100, digits=2)}%. "
                    f"The company cannot grow faster than its own return on "
                    f"capital.")
@@ -172,7 +172,7 @@ def compare_methods(ddm_value, pbv_result, ri_result, drv, price, flags=None):
     add("DDM Gordon Growth", ddm_value, "uses the actual payout ratio")
     if pbv_result["valid"]:
         add("Fair P/BV (ROE-g)/(Ke-g)", pbv_result["fair_value"],
-            f"fair P/BV {_nf.dec(pbv_result['fair_pbv'], digits=2)}x, forces a consistent payout")
+            f"fair P/BV {_nf.dec(pbv_result['fair_pbv'], digits=2)}×, forces a consistent payout")
     else:
         rows.append({"Method": "Fair P/BV (ROE-g)/(Ke-g)", "Fair value (IDR)": np.nan,
                      "Upside": "n/a", "Note": pbv_result["reason"][:60]})

@@ -53,7 +53,7 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
         if towers and tenants and tenancy:
             calc_ratio = float(tenants) / float(towers)
             if abs(calc_ratio - float(tenancy)) > 0.05:
-                reasons.append(f"Tenancy ratio mismatch: reported {tenancy} vs calculated {_nf.dec(calc_ratio, digits=2)}x")
+                reasons.append(f"Tenancy ratio mismatch: reported {tenancy} vs calculated {_nf.dec(calc_ratio, digits=2)}×")
                 fixes.append("Update tenancy ratio to match tenants / towers")
 
     # 4. Exhibit house-format checks (docs/rules/house-report-format.md)

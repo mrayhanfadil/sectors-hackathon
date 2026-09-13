@@ -178,4 +178,4 @@ def fmt_pct(value, dp=2):
 def fmt_x(value, dp=2):
     if value is None or not np.isfinite(value):
         return "n/a"
-    return f"{value:.{dp}f}x"
+    return f"{value:.{dp}f}×"

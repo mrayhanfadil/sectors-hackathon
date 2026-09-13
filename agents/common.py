@@ -155,4 +155,4 @@ def pct(value: float, digits: int = 1) -> str:
 
 
 def x_pct(value: float, digits: int = 1) -> str:
-    return f"{value:.{digits}f}x"
+    return f"{value:.{digits}f}×"

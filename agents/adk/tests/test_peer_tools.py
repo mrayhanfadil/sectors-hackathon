@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Tests for peer tools — bounded inter-agent communication (max 3x)."""
+"""Tests for peer tools — bounded inter-agent communication (max 3×)."""
 
 import pytest
 from agents.adk.tools.peer_tools import (

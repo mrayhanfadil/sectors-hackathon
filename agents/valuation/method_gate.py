@@ -407,8 +407,8 @@ def apply_output_sanity(
             and peer_exit_high is not None:
         if not (peer_exit_low <= implied_exit_ev_ebitda <= peer_exit_high):
             flags.append(
-                f"Gate 5: implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}x outside "
-                f"peer range {_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}x -> WACC/g out of sync "
+                f"Gate 5: implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}× outside "
+                f"peer range {_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}× -> WACC/g out of sync "
                 "with market pricing, cross-check vs EV/EBITDA relative valuation"
             )
     return {"rating_override": rating_override, "flags": flags, "ticker": gate.ticker}

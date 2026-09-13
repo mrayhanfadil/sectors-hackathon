@@ -172,7 +172,7 @@ def chart_leverage(company: dict, outdir: str) -> dict:
     ax1.legend(h1 + h2, l1 + l2, frameon=False, loc="upper right")
     ax1.set_title(
         f"{company['ticker']} — Leverage & Liquidity "
-        f"(Gearing {_nf.dec(gear[0], digits=0)}→{_nf.dec(gear[-1], digits=0)}% · D/EBITDA {_nf.dec(debt_eb[0], digits=0)}→{_nf.dec(debt_eb[-1], digits=0)}x · Current {_nf.dec(cur[0], digits=1)}→{_nf.dec(cur[-1], digits=1)})",
+        f"(Gearing {_nf.dec(gear[0], digits=0)}→{_nf.dec(gear[-1], digits=0)}% · D/EBITDA {_nf.dec(debt_eb[0], digits=0)}→{_nf.dec(debt_eb[-1], digits=0)}× · Current {_nf.dec(cur[0], digits=1)}→{_nf.dec(cur[-1], digits=1)})",
         fontsize=11, fontweight="bold",
     )
     _foot(fig, company, f"trajectory {years[0]}→{years[-1]} (de-lever + liquidity recovery)")
@@ -258,7 +258,7 @@ def chart_kpi(company: dict, outdir: str) -> dict:
     fig, ax = _new_ax()
     tenancy = kpi.get("tenancy_ratio")
     if tenancy is not None:
-        ax.text(0.5, 0.55, f"Tenancy ratio {_nf.dec(tenancy, digits=2)}x", ha="center", fontsize=20, color=PALETTE[0], fontweight="bold", transform=ax.transAxes)
+        ax.text(0.5, 0.55, f"Tenancy ratio {_nf.dec(tenancy, digits=2)}×", ha="center", fontsize=20, color=PALETTE[0], fontweight="bold", transform=ax.transAxes)
         ax.text(0.5, 0.40, f"tenants {_nf.idn(kpi.get('tenants', 0), digits=0)} / towers {_nf.idn(kpi.get('towers', 0), digits=0)}", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
         ax.text(0.5, 0.28, f"colocation {_nf.idn(kpi.get('colocation', 0), digits=0)} · fiber {_nf.idn(kpi.get('fiber_km', 0), digits=0)} km", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
         ax.set_title(f"{company['ticker']} — Operational KPI (infra hero)", fontsize=13, fontweight="bold")
@@ -297,7 +297,7 @@ def chart_bands(company: dict, outdir: str) -> dict:
                 ax.axhline(mean + sgn * std, color="#bf8700", linestyle=":", linewidth=0.9)
             cur = vals[-1]
             pos = "ABOVE" if cur > mean + std else ("BELOW" if cur < mean - std else "within")
-            ax.set_title(f"{name} — {pos} AVG ({_nf.dec(cur, digits=2)}x)", fontsize=11, fontweight="bold")
+            ax.set_title(f"{name} — {pos} AVG ({_nf.dec(cur, digits=2)}×)", fontsize=11, fontweight="bold")
         else:
             ax.set_title(f"{name} — historical", fontsize=11, fontweight="bold")
         ax.legend(frameon=False, fontsize=8)
