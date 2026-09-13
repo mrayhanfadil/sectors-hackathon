@@ -241,6 +241,9 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "fv_exit": (exit_equity / (shares_bn * 1e9)) if exit_equity is not None else None,
             "tv_share": val["tv_share_of_ev"],
             "net_debt": net_debt,
+            # the ratio is stated as payload data rather than computed in the template, so the PDF and the web page
+            # cannot round it differently; None when the enterprise value is missing (never a substituted 0)
+            "net_debt_share": (net_debt / val["enterprise_value"]) if val.get("enterprise_value") else None,
             "implied_exit_multiple": val["implied_exit_multiple"],
             "flags": flags.messages,
         }

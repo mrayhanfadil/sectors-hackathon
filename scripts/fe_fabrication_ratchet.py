@@ -27,6 +27,12 @@ REASONS = {
     "PeersCharts.tsx:251:RULE_B_NUMERIC_ARRAY":
         "axis tick fractions (1.0 / 0.5 / 0.0 of the plot height) — the same fractions the PDF's SVG macro draws; "
         "no series is invented from them",
+    "HistoryCharts.tsx:123:RULE_B_NUMERIC_ARRAY":
+        "left-axis gridline fractions (0 / 0.5 / 1 of the plot height) for the revenue panel; every plotted value is "
+        "read from payload.revenue_combo (falling back to payload.financial_highlights) at render time",
+    "HistoryCharts.tsx:158:RULE_B_NUMERIC_ARRAY":
+        "right-axis tick fractions for the growth line on the same panel; the percentages come from the payload, these "
+        "three numbers only place the ticks",
     "PerformanceQuadrants.tsx:103:RULE_B_NUMERIC_ARRAY":
         "axis tick fractions for the growth panel; the plotted values come from the payload",
     "PerformanceQuadrants.tsx:138:RULE_B_NUMERIC_ARRAY":

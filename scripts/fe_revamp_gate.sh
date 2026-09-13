@@ -139,6 +139,23 @@ else
   bad "the FE reads a payload path the payload does not carry (it renders empty or crashes on .toFixed)"
 fi
 
+say "5c. per-page parity with the shipped PDF"
+# Figures, not layout: a page can be present and half-empty, which is exactly what the section list cannot see.
+FE_DUMP="${FE_DUMP:-/tmp/fe-public/public.txt}"
+if [ -f "$FE_DUMP" ] && [ -f "${PDF_FOR_PARITY:-/tmp/AMMN_abida.pdf}" ]; then
+  PARITY=$(timeout 300 .venv/bin/python scripts/fe_pdf_parity.py --pdf "${PDF_FOR_PARITY:-/tmp/AMMN_abida.pdf}" \
+             --fe-text "$FE_DUMP" --show-missing 0 2>&1)
+  echo "$PARITY" | sed 's/^/        /'
+  SHORT=$(echo "$PARITY" | grep -c "<-- short" || true)
+  if [ "${SHORT:-0}" -eq 0 ]; then
+    ok "every page of the PDF is represented on the page"
+  else
+    bad "$SHORT PDF page(s) below 90% coverage on the web page — content is missing, not layout"
+  fi
+else
+  note "no rendered frontend text at $FE_DUMP — render the page first, then re-run (this step measures the painted page)"
+fi
+
 say "6. frontend bundle: no fabrication markers, honest states present"
 JS=$(cat src/fe/dist/assets/*.js 2>/dev/null)
 if [ -z "$JS" ]; then

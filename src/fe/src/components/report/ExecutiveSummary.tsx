@@ -2,6 +2,8 @@ import React from "react"
 import { Users, LineChart, Target, Hash, Building2, UserCheck, TrendingUp, Info } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { RecommendationBadge } from "./RecommendationBadge"
+import { HistoryCharts } from "./charts/HistoryCharts"
+import { formatIdn } from "./charts/tokens"
 import type {
   FullReportPayload,
   CoverSection,
@@ -20,6 +22,18 @@ export interface ExecutiveSummaryProps {
 function fmtIDR(n: number | null | undefined): string {
   if (n == null || Number.isNaN(Number(n))) return "—"
   return Number(n).toLocaleString("id-ID")
+}
+
+function formatHighlightCell(c: unknown): string {
+  if (c == null) return "—"
+  if (typeof c === "number") {
+    if (!Number.isFinite(c)) return "—"
+    const hasDecimals = !Number.isInteger(c)
+    const decStr = String(c).split(".")[1] || ""
+    const digits = Math.min(Math.max(decStr.length, hasDecimals ? 1 : 0), 2)
+    return formatIdn(c, digits)
+  }
+  return String(c)
 }
 
 function PendingCard({ label }: { label: string }) {
@@ -584,7 +598,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                               key={cIdx}
                               className={`py-1.5 px-3 tabular-nums ${cIdx === 0 ? "text-left font-medium" : "text-right"}`}
                             >
-                              {cell != null ? String(cell) : "—"}
+                              {cIdx === 0 ? (cell != null ? String(cell) : "—") : formatHighlightCell(cell)}
                             </td>
                           ))}
                         </tr>
@@ -646,7 +660,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                             key={cIdx}
                             className={`py-1.5 px-3 tabular-nums ${cIdx === 0 ? "text-left font-medium text-[#0B1F3A]" : "text-right"}`}
                           >
-                            {c != null ? String(c) : "—"}
+                            {cIdx === 0 ? (c != null ? String(c) : "—") : formatHighlightCell(c)}
                           </td>
                         ))}
                       </tr>
@@ -657,6 +671,9 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
             </CardContent>
           </Card>
         )}
+
+        {/* Visualisasi Tren Historis Kinerja (6 Tahun) */}
+        <HistoryCharts payload={payload} />
 
         {/* Kondisi Industri, Katalis & Sentimen (PDF Page 2) */}
         {industryPage && industryPage.paragraphs && industryPage.paragraphs.length > 0 && (

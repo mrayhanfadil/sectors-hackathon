@@ -215,6 +215,8 @@ export type ValuationPage = {
     fv_exit?: number
     tv_share?: number
     net_debt?: number
+    /** net debt as a share of enterprise value, stated by the payload so both surfaces print one number */
+    net_debt_share?: number | null
     implied_exit_multiple?: number
     flags?: string[]
   }

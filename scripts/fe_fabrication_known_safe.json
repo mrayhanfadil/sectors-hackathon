@@ -19,6 +19,26 @@
     "line_content": "price ?? 0,",
     "remediation": "Render honest pending block (PendingBlock) or format null as '\u2014'"
   },
+  "HistoryCharts.tsx:123:RULE_B_NUMERIC_ARRAY": {
+    "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
+    "file": "src/fe/src/components/report/charts/HistoryCharts.tsx",
+    "line": 123,
+    "rule": "RULE_B_NUMERIC_ARRAY",
+    "pattern": "Hardcoded Numeric Literal Array (3+ elements)",
+    "matched_text": "[0, 0.5, 1]",
+    "line_content": "{[0, 0.5, 1].map((frac, idx) => {",
+    "remediation": "Derive series dynamically from payload arrays or pass file to --allow if static axis"
+  },
+  "HistoryCharts.tsx:158:RULE_B_NUMERIC_ARRAY": {
+    "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
+    "file": "src/fe/src/components/report/charts/HistoryCharts.tsx",
+    "line": 158,
+    "rule": "RULE_B_NUMERIC_ARRAY",
+    "pattern": "Hardcoded Numeric Literal Array (3+ elements)",
+    "matched_text": "[0, 0.5, 1]",
+    "line_content": "{[0, 0.5, 1].map((frac, idx) => {",
+    "remediation": "Derive series dynamically from payload arrays or pass file to --allow if static axis"
+  },
   "PeersCharts.tsx:251:RULE_B_NUMERIC_ARRAY": {
     "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
     "file": "src/fe/src/components/report/charts/PeersCharts.tsx",

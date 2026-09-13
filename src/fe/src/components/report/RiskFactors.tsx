@@ -19,26 +19,84 @@ import type {
   RiskItem,
   ExhibitItem,
   SectorData,
+  StatementRow,
 } from "@/lib/reportTypes"
+import { KeyRatioCharts } from "./charts/KeyRatioCharts"
 
 export interface RiskFactorsProps {
   ticker: string
   payload?: FullReportPayload | null
 }
 
-function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
-  return Number(n).toLocaleString("id-ID")
+type NormalizedRow = {
+  label: string
+  cells: (number | string | null)[]
+  kind?: string
+  note?: string
 }
 
-function fmtAcct(v: number | string | null | undefined): string {
-  if (v == null || v === "") return "—"
+function fmtStatementNumber(v: number | string | null | undefined): string {
+  if (v == null || v === "" || v === "—" || v === "-") return "—"
+  if (typeof v === "string") {
+    const lower = v.trim().toLowerCase()
+    if (lower === "n/a" || lower === "na") return "n/a"
+    const num = Number(v.replace(/\./g, "").replace(",", "."))
+    if (Number.isNaN(num)) return v
+    v = num
+  }
   if (typeof v === "number") {
-    if (v === 0) return "0"
-    if (v < 0) return `(${Math.abs(v).toLocaleString("id-ID")})`
-    return v.toLocaleString("id-ID")
+    if (Number.isNaN(v)) return "—"
+    if (Math.abs(v) < 1e-6) return "0"
+    const rounded = Math.round(Math.abs(v))
+    const formatted = rounded.toLocaleString("id-ID")
+    return v < 0 ? `(${formatted})` : formatted
   }
   return String(v)
+}
+
+function fmtRatioNumber(v: number | string | null | undefined, digits: number = 1): string {
+  if (v == null || v === "" || v === "—" || v === "-") return "—"
+  if (typeof v === "string") {
+    const lower = v.trim().toLowerCase()
+    if (lower === "n/a" || lower === "na") return "n/a"
+    const num = Number(v.replace(/\./g, "").replace(",", "."))
+    if (Number.isNaN(num)) return v
+    v = num
+  }
+  if (typeof v === "number") {
+    if (Number.isNaN(v)) return "—"
+    const isZero = Math.abs(v) < 1e-6
+    const fixed = (isZero ? 0 : Math.abs(v)).toFixed(digits).replace(".", ",")
+    return v < 0 ? `(${fixed})` : fixed
+  }
+  return String(v)
+}
+
+function normalizeRows(
+  rawRows?: (StatementRow | (string | number | null)[])[] | null,
+  boldRows?: number[]
+): NormalizedRow[] {
+  if (!rawRows || !Array.isArray(rawRows)) return []
+  return rawRows.map((r, idx) => {
+    if (Array.isArray(r)) {
+      const label = String(r[0] ?? "")
+      const cells = r.slice(1)
+      const isBold = boldRows?.includes(idx)
+      const isAllEmpty = cells.every((c) => c === null || c === "" || c === undefined)
+      return {
+        label,
+        cells,
+        kind: isAllEmpty ? "section" : isBold ? "subtotal" : "",
+      }
+    }
+    const isBold = boldRows?.includes(idx)
+    return {
+      label: r.label,
+      cells: r.cells || [],
+      kind: r.kind || (isBold ? "subtotal" : ""),
+      note: r.note,
+    }
+  })
 }
 
 function PendingCard({ label }: { label: string }) {
@@ -52,12 +110,35 @@ function PendingCard({ label }: { label: string }) {
 export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
   const tk = ticker.toUpperCase()
   const stmts: StatementsPage | undefined = payload?.statements_page
+  const finStmts = payload?.financial_statements
   const cf: CashflowPage | undefined = payload?.cashflow_page
   const keyRatio: KeyRatioPage | undefined = payload?.key_ratio_page
   const risks: RiskItem[] = payload?.risks || []
   const exhibits: ExhibitItem[] = payload?.exhibits || []
   const sectorData: SectorData | undefined = payload?.sector_data
   const meta = payload?.meta
+
+  // Resolve Income Statement data (statements_page or financial_statements)
+  const incomeBlock = stmts?.income || finStmts?.income
+  const hasIncome = Boolean(incomeBlock && (stmts?.available !== false))
+  const incomeHeaders = stmts?.income?.headers || finStmts?.income?.headers || ["Pos (Rp bn)", ...(stmts?.years || [])]
+  const incomeRows = normalizeRows(stmts?.income?.rows || finStmts?.income?.rows)
+  const incomeSource = stmts?.sources?.[0] || finStmts?.income?.source || "Laporan Keuangan IDX"
+
+  // Resolve Balance Sheet data (statements_page or financial_statements)
+  const balanceBlock = stmts?.balance || finStmts?.balance
+  const hasBalance = Boolean(balanceBlock && (stmts?.available !== false))
+  const balanceHeaders = stmts?.balance?.headers || finStmts?.balance?.headers || ["Pos (Rp bn)", ...(stmts?.years || [])]
+  const balanceRows = normalizeRows(stmts?.balance?.rows || finStmts?.balance?.rows)
+  const balanceSource = stmts?.balance?.source || stmts?.sources?.[0] || finStmts?.balance?.source || "Laporan Keuangan IDX"
+
+  // Resolve Cash Flow data
+  const finCf = finStmts?.cashflow
+  const hasCashflow = Boolean(cf && cf.available !== false) || Boolean(finCf)
+
+  // Resolve Key Ratios data
+  const finRatios = finStmts?.ratios
+  const hasKeyRatio = Boolean(keyRatio && keyRatio.available !== false) || Boolean(finRatios)
 
   return (
     <div className="space-y-6">
@@ -75,22 +156,22 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            {stmts?.balance?.source || ""}
+            {balanceSource}
           </span>
         </div>
 
-        {stmts && stmts.available !== false && (stmts.income || stmts.balance) ? (
+        {hasIncome || hasBalance ? (
           <div className="space-y-4">
             {/* Income Statement Table */}
-            {stmts.income && (
+            {hasIncome && (
               <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
                 <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {stmts.income.title || "Laporan Laba Rugi (Income Statement)"}
+                      {stmts?.income?.title || finStmts?.income?.title || "Laporan Laba Rugi (Income Statement)"}
                     </CardTitle>
                     <span className="font-mono text-[10px] text-[#63748A]">
-                      {stmts.sources?.[0] || "Laporan Keuangan IDX"}
+                      {incomeSource}
                     </span>
                   </div>
                 </CardHeader>
@@ -99,7 +180,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                          {(stmts.income.headers || ["Pos (Rp bn)", ...(stmts.years || [])]).map((h, i) => (
+                          {incomeHeaders.map((h, i) => (
                             <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
                               {h}
                             </th>
@@ -107,21 +188,21 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {stmts.income.rows?.map((r, rIdx) => {
+                        {incomeRows.map((r, rIdx) => {
                           if (r.kind === "section") {
                             return (
                               <tr
                                 key={rIdx}
                                 className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
                               >
-                                <td colSpan={(stmts.income?.headers?.length || stmts.years?.length || 5) + 1} className="py-2 px-3">
+                                <td colSpan={incomeHeaders.length} className="py-2 px-3">
                                   {r.label}
                                 </td>
                               </tr>
                             )
                           }
-                          const isSubtotal = r.kind === "subtotal";
-                          const isHighlight = r.kind === "highlight" || r.label.includes("Net Profit");
+                          const isSubtotal = r.kind === "subtotal"
+                          const isHighlight = r.kind === "highlight" || r.label.toLowerCase().includes("net profit")
                           return (
                             <tr
                               key={rIdx}
@@ -136,13 +217,15 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                               }`}
                             >
                               <td className="py-1.5 px-3 text-left">
-                                {r.label}
+                                <span className={isSubtotal || isHighlight ? "font-bold" : "font-normal"}>
+                                  {r.label}
+                                </span>
                                 {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
                                 {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
                               </td>
-                              {r.cells?.map((c, cIdx) => (
+                              {r.cells.map((c, cIdx) => (
                                 <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                                  {fmtAcct(c)}
+                                  {fmtStatementNumber(c)}
                                 </td>
                               ))}
                             </tr>
@@ -156,15 +239,15 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             )}
 
             {/* Balance Sheet Table */}
-            {stmts.balance && (
+            {hasBalance && (
               <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
                 <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {stmts.balance.title || "Neraca Keuangan (Balance Sheet)"}
+                      {stmts?.balance?.title || finStmts?.balance?.title || "Neraca Keuangan (Balance Sheet)"}
                     </CardTitle>
                     <span className="font-mono text-[10px] text-[#63748A]">
-                      {stmts.sources?.[0] || "Laporan Keuangan IDX"}
+                      {balanceSource}
                     </span>
                   </div>
                 </CardHeader>
@@ -173,7 +256,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                          {(stmts.balance.headers || ["Pos (Rp bn)", ...(stmts.years || [])]).map((h, i) => (
+                          {balanceHeaders.map((h, i) => (
                             <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
                               {h}
                             </th>
@@ -181,20 +264,20 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {stmts.balance.rows?.map((r, rIdx) => {
+                        {balanceRows.map((r, rIdx) => {
                           if (r.kind === "section") {
                             return (
                               <tr
                                 key={rIdx}
                                 className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
                               >
-                                <td colSpan={(stmts.balance?.headers?.length || stmts.years?.length || 5) + 1} className="py-2 px-3">
+                                <td colSpan={balanceHeaders.length} className="py-2 px-3">
                                   {r.label}
                                 </td>
                               </tr>
                             )
                           }
-                          const isSubtotal = r.kind === "subtotal";
+                          const isSubtotal = r.kind === "subtotal"
                           return (
                             <tr
                               key={rIdx}
@@ -207,12 +290,15 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                               }`}
                             >
                               <td className="py-1.5 px-3 text-left">
-                                {r.label}
+                                <span className={isSubtotal ? "font-bold" : "font-normal"}>
+                                  {r.label}
+                                </span>
+                                {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
                                 {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
                               </td>
-                              {r.cells?.map((c, cIdx) => (
+                              {r.cells.map((c, cIdx) => (
                                 <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                                  {fmtAcct(c)}
+                                  {fmtStatementNumber(c)}
                                 </td>
                               ))}
                             </tr>
@@ -223,12 +309,12 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                   </div>
 
                   {/* Balance Check Tie-out Note */}
-                  {stmts.tie_out && (
+                  {stmts?.tie_out && (
                     <div className="rounded border-l-2 border-[#1E8F5F] bg-[#F4F8FC] p-2.5 font-mono text-xs text-[#0B1F3A] dark:border-[#1E8F5F] dark:bg-[#181a1f] dark:text-neutral-200">
                       <strong>Balance check:</strong> Total Liabilities &amp; Equity − Total Assets ={" "}
                       {stmts.years?.map((y, i) => (
                         <span key={y}>
-                          {y}: {stmts.tie_out?.[y] != null ? stmts.tie_out[y] : 0}
+                          {y}: {fmtStatementNumber(stmts.tie_out?.[y])}
                           {i < (stmts.years?.length || 1) - 1 ? " · " : ""}
                         </span>
                       ))}{" "}
@@ -237,7 +323,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                   )}
 
                   {/* Notes */}
-                  {stmts.notes && stmts.notes.length > 0 && (
+                  {stmts?.notes && stmts.notes.length > 0 && (
                     <div className="space-y-1 text-[11px] text-[#63748A] border-t border-[#D6E2EE] pt-2.5 dark:border-[#262930]">
                       <div className="font-bold uppercase text-[#0B1F3A] dark:text-neutral-300">
                         Catatan metode &amp; keterbatasan data:
@@ -270,115 +356,22 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            {cf?.sources?.[0] || ""}
+            {cf?.sources?.[0] || keyRatio?.sources?.[0] || "Laporan Keuangan & Rasio IDX"}
           </span>
         </div>
 
-        {cf && cf.available !== false ? (
+        {hasCashflow || hasKeyRatio ? (
           <div className="space-y-4">
-            {/* Cash Flow Statement */}
-            <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-              <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                    Cash Flow Statement
-                  </CardTitle>
-                  <span className="font-mono text-[10px] text-[#63748A]">
-                    {cf.sources?.[0] || "Laporan Keuangan IDX"}
-                  </span>
-                </div>
-              </CardHeader>
-              <CardContent className="p-4 space-y-3">
-                <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                        {(cf.headers || ["Pos Arus Kas (Rp bn)", ...(cf.years || [])]).map((h, i) => (
-                          <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
-                            {h}
-                          </th>
-                        ))}
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {cf.sections?.map((sec, sIdx) => (
-                        <React.Fragment key={sIdx}>
-                          <tr className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
-                            <td colSpan={(cf.headers?.length || 5) + 1} className="py-2 px-3">
-                              {sec.title}
-                            </td>
-                          </tr>
-                          {sec.rows.map((r, rIdx) => {
-                            const isSubtotal = r.kind === "subtotal";
-                            return (
-                              <tr
-                                key={rIdx}
-                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
-                                  isSubtotal
-                                    ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
-                                    : "text-[#0B1F3A] dark:text-neutral-300"
-                                }`}
-                              >
-                                <td className="py-1.5 px-3 text-left">
-                                  {r.label}
-                                  {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
-                                </td>
-                                {r.cells?.map((c, cIdx) => (
-                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                                    {fmtAcct(c)}
-                                  </td>
-                                ))}
-                              </tr>
-                            )
-                          })}
-                        </React.Fragment>
-                      ))}
-
-                      {/* Closing Rows */}
-                      {cf.closing?.map((r, idx) => (
-                        <tr
-                          key={`closing-${idx}`}
-                          className="border-b border-[#D6E2EE]/60 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-100"
-                        >
-                          <td className="py-1.5 px-3 text-left">{r.label}</td>
-                          {r.cells?.map((c, cIdx) => (
-                            <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                              {fmtAcct(c)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-
-                      {/* Memo Rows */}
-                      {cf.memo?.map((r, idx) => (
-                        <tr
-                          key={`memo-${idx}`}
-                          className="border-t border-[#0B1F3A] italic font-semibold text-[#0B1F3A] bg-[#E4EEF7]/50 dark:bg-[#0B1F3A]/20 dark:text-[#A9C9E8]"
-                        >
-                          <td className="py-1.5 px-3 text-left">{r.label}</td>
-                          {r.cells?.map((c, cIdx) => (
-                            <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                              {fmtAcct(c)}
-                            </td>
-                          ))}
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Key Ratios Table */}
-            {keyRatio && keyRatio.available !== false && (
+            {/* 1. Cash Flow Statement */}
+            {hasCashflow && (
               <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
                 <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {keyRatio.exhibit_title || "Rasio Kunci & Efisiensi"}
+                      {finCf?.title || "Cash Flow Statement"}
                     </CardTitle>
                     <span className="font-mono text-[10px] text-[#63748A]">
-                      {keyRatio.sources?.[0] || "Calculated Metrics"}
+                      {cf?.sources?.[0] || finCf?.source || "Laporan Keuangan IDX"}
                     </span>
                   </div>
                 </CardHeader>
@@ -387,7 +380,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                     <table className="w-full">
                       <thead>
                         <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                          {(keyRatio.headers || ["Rasio Kunci", ...(keyRatio.years || [])]).map((h, i) => (
+                          {(cf?.headers || finCf?.headers || ["Pos Arus Kas (Rp bn)", ...(cf?.years || [])]).map((h, i) => (
                             <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
                               {h}
                             </th>
@@ -395,7 +388,147 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                         </tr>
                       </thead>
                       <tbody>
-                        {keyRatio.sections?.map((sec, sIdx) => (
+                        {/* Sections from cashflow_page */}
+                        {cf?.sections?.map((sec, sIdx) => (
+                          <React.Fragment key={sIdx}>
+                            <tr className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
+                              <td colSpan={(cf.headers?.length || 5) + 1} className="py-2 px-3">
+                                {sec.title}
+                              </td>
+                            </tr>
+                            {sec.rows.map((r, rIdx) => {
+                              const isSubtotal = r.kind === "subtotal"
+                              return (
+                                <tr
+                                  key={rIdx}
+                                  className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                    isSubtotal
+                                      ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
+                                      : "text-[#0B1F3A] dark:text-neutral-300"
+                                  }`}
+                                >
+                                  <td className="py-1.5 px-3 text-left">
+                                    <span className={isSubtotal ? "font-bold" : "font-normal"}>{r.label}</span>
+                                    {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
+                                    {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
+                                  </td>
+                                  {r.cells?.map((c, cIdx) => (
+                                    <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                      {fmtStatementNumber(c)}
+                                    </td>
+                                  ))}
+                                </tr>
+                              )
+                            })}
+                          </React.Fragment>
+                        ))}
+
+                        {/* Closing Rows from cashflow_page */}
+                        {cf?.closing?.map((r, idx) => (
+                          <tr
+                            key={`closing-${idx}`}
+                            className="border-b border-[#D6E2EE]/60 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-100"
+                          >
+                            <td className="py-1.5 px-3 text-left">
+                              {r.label}
+                              {r.note && <span className="ml-1.5 text-[10px] italic font-normal text-[#63748A]">{r.note}</span>}
+                            </td>
+                            {r.cells?.map((c, cIdx) => (
+                              <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                {fmtStatementNumber(c)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+
+                        {/* Memo Rows from cashflow_page */}
+                        {cf?.memo?.map((r, idx) => (
+                          <tr
+                            key={`memo-${idx}`}
+                            className="border-t border-[#0B1F3A] italic font-semibold text-[#0B1F3A] bg-[#E4EEF7]/50 dark:bg-[#0B1F3A]/20 dark:text-[#A9C9E8]"
+                          >
+                            <td className="py-1.5 px-3 text-left">
+                              {r.label}
+                              {r.note && <span className="ml-1.5 text-[10px] italic font-normal text-[#63748A]">{r.note}</span>}
+                            </td>
+                            {r.cells?.map((c, cIdx) => (
+                              <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                {fmtStatementNumber(c)}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+
+                        {/* Fallback rows from financial_statements.cashflow */}
+                        {!cf?.sections && finCf?.rows && (
+                          <>
+                            {normalizeRows(finCf.rows, finCf.bold_rows).map((r, rIdx) => (
+                              <tr
+                                key={`fin-cf-${rIdx}`}
+                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  r.kind === "subtotal"
+                                    ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
+                                    : "text-[#0B1F3A] dark:text-neutral-300"
+                                }`}
+                              >
+                                <td className="py-1.5 px-3 text-left font-medium">{r.label}</td>
+                                {r.cells.map((c, cIdx) => (
+                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                    {fmtStatementNumber(c)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                            {normalizeRows(finCf.footers).map((r, rIdx) => (
+                              <tr
+                                key={`fin-cf-foot-${rIdx}`}
+                                className="border-b border-[#D6E2EE]/60 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-100"
+                              >
+                                <td className="py-1.5 px-3 text-left font-medium">{r.label}</td>
+                                {r.cells.map((c, cIdx) => (
+                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                    {fmtStatementNumber(c)}
+                                  </td>
+                                ))}
+                              </tr>
+                            ))}
+                          </>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* 2. Key Ratios Table & Visualisation */}
+            {hasKeyRatio && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                      {keyRatio?.exhibit_title || finRatios?.title || "Key Ratio (Rasio Kunci & Efisiensi)"}
+                    </CardTitle>
+                    <span className="font-mono text-[10px] text-[#63748A]">
+                      {keyRatio?.sources?.[0] || finRatios?.source || "Sectors — data historis & proyeksi"}
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3">
+                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                          {(keyRatio?.headers || finRatios?.headers || ["Rasio Kunci", ...(keyRatio?.years || [])]).map((h, i) => (
+                            <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
+                              {h}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {/* Sections from key_ratio_page */}
+                        {keyRatio?.sections?.map((sec, sIdx) => (
                           <React.Fragment key={sIdx}>
                             <tr className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
                               <td colSpan={(keyRatio.headers?.length || 5) + 1} className="py-2 px-3">
@@ -411,36 +544,79 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                               >
                                 <td className="py-1.5 px-3 text-left font-medium text-[#0B1F3A] dark:text-neutral-200">
                                   {r.label}
+                                  {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
                                 </td>
                                 {r.cells?.map((c, cIdx) => (
                                   <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                                    {typeof c === "number"
-                                      ? c < 0
-                                        ? `(${Math.abs(c).toFixed(1)})`
-                                        : c.toFixed(1)
-                                      : c != null
-                                      ? String(c)
-                                      : "—"}
+                                    {fmtRatioNumber(c, 1)}
                                   </td>
                                 ))}
                               </tr>
                             ))}
                           </React.Fragment>
                         ))}
+
+                        {/* Fallback rows from financial_statements.ratios */}
+                        {!keyRatio?.sections && finRatios?.rows && (
+                          normalizeRows(finRatios.rows).map((r, rIdx) => {
+                            if (r.kind === "section") {
+                              return (
+                                <tr
+                                  key={`fin-ratio-${rIdx}`}
+                                  className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
+                                >
+                                  <td colSpan={(finRatios.headers?.length || 5) + 1} className="py-2 px-3">
+                                    {r.label}
+                                  </td>
+                                </tr>
+                              )
+                            }
+                            return (
+                              <tr
+                                key={`fin-ratio-${rIdx}`}
+                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  rIdx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                                }`}
+                              >
+                                <td className="py-1.5 px-3 text-left font-medium text-[#0B1F3A] dark:text-neutral-200">
+                                  {r.label}
+                                </td>
+                                {r.cells.map((c, cIdx) => (
+                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                    {fmtRatioNumber(c, 1)}
+                                  </td>
+                                ))}
+                              </tr>
+                            )
+                          })
+                        )}
                       </tbody>
                     </table>
                   </div>
 
-                  {/* Notes */}
-                  {(cf.notes?.length || keyRatio.notes?.length) && (
+                  {/* Growth Basis Callout Line */}
+                  {keyRatio?.growth_basis && Object.keys(keyRatio.growth_basis).length > 0 && (
+                    <div className="rounded border-l-2 border-[#0B1F3A] bg-[#F4F8FC] p-2.5 font-mono text-xs text-[#0B1F3A] dark:border-[#A9C9E8] dark:bg-[#181a1f] dark:text-neutral-200">
+                      <strong>Basis pertumbuhan tahun awal (FY2024A vs FY2023A):</strong>{" "}
+                      {Object.entries(keyRatio.growth_basis)
+                        .map(([k, v]) => `${k.toUpperCase()}: ${fmtRatioNumber(v, 1)}%`)
+                        .join(" · ")}
+                    </div>
+                  )}
+
+                  {/* Structured Visual Cards */}
+                  {keyRatio && <KeyRatioCharts keyRatio={keyRatio} />}
+
+                  {/* Notes for Cash Flow and Key Ratios */}
+                  {((cf?.notes && cf.notes.length > 0) || (keyRatio?.notes && keyRatio.notes.length > 0)) && (
                     <div className="space-y-1 text-[11px] text-[#63748A] border-t border-[#D6E2EE] pt-2.5 dark:border-[#262930]">
                       <div className="font-bold uppercase text-[#0B1F3A] dark:text-neutral-300">
                         Catatan tie-out &amp; keterbatasan data:
                       </div>
-                      {cf.notes?.map((n, idx) => (
+                      {cf?.notes?.map((n, idx) => (
                         <p key={`cf-n-${idx}`}>· {n}</p>
                       ))}
-                      {keyRatio.notes?.map((n, idx) => (
+                      {keyRatio?.notes?.map((n, idx) => (
                         <p key={`kr-n-${idx}`}>· {n}</p>
                       ))}
                     </div>
