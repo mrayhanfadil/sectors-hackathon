@@ -30,7 +30,7 @@ Credit rule: universe feeds > per-symbol loops, minimal `sections=`, quintet onl
 |---|---|---|---|---|
 | 1 | `server/routers/endpoints.py:172-235` `_infer_archetype` yfinance fallback | `yf.Ticker.info.sector` | `sectors.company_report(sym, "overview")` → sector field | Kills a runtime yfinance import in the hot path |
 | 2 | `server/stockdata.py` whole module | IDX Postgres `stockdata:15437` + yfinance fallback | `sectors.universe_close(date)` for breadth, `sectors.daily(sym,…)` for depth | Docstring already says "Sectors P2 gated" — this IS P2 |
-| 3 | `agents/adk/tools/web_tools.py` `web_search` | Tavily key | `sectors.news(symbols)` | Tavily becomes backup/removed; kills external cost entirely |
+| 3 | `agents/adk/tools/web_tools.py` `web_search` | Tavily key | `sectors.news(symbols)` | **Done.** Tavily is gone from every runtime path: no code reads `TAVILY_API_KEY(S)`, the key is out of `.env` and `.env.example`, and `web_tools.py` is now a Sectors-gateway wrapper. The remaining mentions are this record and test docstrings that assert a third-party key has no effect. |
 | 4 | `server/routers/mock_sectors.py` (758 lines) | yfinance/IDX harvester mimicking v2 schemas | Thin proxy to real v2 (`quarterly`, `news`, `filings`, `corporate_actions`) + cache | File keeps its routes/tests; only the fetch layer changes |
 | 5 | `agents/collector.py` (27 ext refs) | yfinance statements | `sectors.quarterly(sym, 8)` (+ bank extras free) | Check bank field mapping: `net_interest_income`, `gross_loan`, `total_deposit` |
 | 6 | `scripts/yfinance_fallback.py` | yfinance batch | `sectors.daily` / `universe_close` | Rename file to `sectors_backfill.py` when wired |

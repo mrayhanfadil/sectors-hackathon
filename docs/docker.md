@@ -49,7 +49,7 @@ Check what the container actually received without printing values:
 
 ```bash
 docker compose exec api python -c "import os; print({k: bool(os.environ.get(k)) for k in \
-  ('SECTORS_API_KEY','TAVILY_API_KEYS','ADK_PROVIDER','SPARK13_MAX_TOKENS','MINIMAX_API_KEY')})"
+  ('SECTORS_API_KEY','ADK_PROVIDER','SPARK13_MAX_TOKENS','MINIMAX_API_KEY')})"
 ```
 
 Without `SECTORS_API_KEY` the report endpoints still answer, but any path that needs fresh market data fails loudly
