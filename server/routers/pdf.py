@@ -666,7 +666,7 @@ async def render_pdf_bytes_for_ticker(
     pdf, engine = await _html_to_pdf_bytes(
         html,
         title,
-        header_html=house_format.header_template(date_str),
+        header_html=house_format.header_template(date_str, house_format.header_identity(data)),
         footer_html=house_format.footer_template(),
         margin=dict(house_format.PDF_MARGIN),
     )

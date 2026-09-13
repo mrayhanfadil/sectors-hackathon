@@ -132,8 +132,10 @@
   .rhdr { display: flex; justify-content: space-between; align-items: flex-start;
           margin-bottom: 3pt; }
   .rhdr-title { font-size: 8.5pt; font-weight: 700; color: var(--ink); }
+  .rhdr-issuer { font-size: 8.6pt; font-weight: 700; color: var(--ink); letter-spacing: -.1pt; }
+  .rhdr-status { font-size: 7.6pt; font-weight: 700; color: var(--ink); margin-bottom: 1pt; }
   .rhdr-date { font-size: 7pt; color: var(--muted); margin-top: 1pt; }
-  .rhdr-logo { height: 13pt; }
+  .rhdr-logo { height: 12pt; margin-bottom: 2.5pt; }
   .rhdr-rule { border-bottom: 1.2pt solid {{ HOUSE.divider_color | default("#067647") }};
                margin-bottom: 14pt; }
   .rftr { position: absolute; bottom: 18pt; left: 40pt; right: 40pt; display: flex;
@@ -307,10 +309,12 @@
 {% if not HOUSE.native_furniture %}
 <div class="rhdr">
   <div class="rhdr-l">
-    <div class="rhdr-title">{{ HOUSE.header_title | default("Equity Research – Company Update") }}</div>
-    <div class="rhdr-date">{{ HOUSE.date | default(date) }}</div>
+    {% if HOUSE.identity.issuer %}<div class="rhdr-issuer">{{ HOUSE.identity.issuer }}</div>
+    <div class="rhdr-date">{{ HOUSE.header_title | default("Equity Research – Company Update") }} · {{ HOUSE.date | default(date) }}</div>
+    {% else %}<div class="rhdr-title">{{ HOUSE.header_title | default("Equity Research – Company Update") }}</div>
+    <div class="rhdr-date">{{ HOUSE.date | default(date) }}</div>{% endif %}
   </div>
-  <div class="rhdr-r">{% if HOUSE.logo %}<img class="rhdr-logo" src="{{ HOUSE.logo }}" alt="Sectors.app">{% endif %}</div>
+  <div class="rhdr-r" style="text-align:right;">{% if HOUSE.logo %}<img class="rhdr-logo" src="{{ HOUSE.logo }}" alt="Sectors.app">{% endif %}{% if HOUSE.identity.status %}<div class="rhdr-status">{{ HOUSE.identity.status }}</div>{% endif %}</div>
 </div>
 <div class="rhdr-rule"></div>
 {% endif %}

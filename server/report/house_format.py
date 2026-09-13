@@ -164,6 +164,7 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
         "source_line": SOURCE_LINE,
         "divider_color": DIVIDER_COLOR,
         "logo": logo_data_uri(),
+        "identity": header_identity(report_data or {}),
         "date": date_str,
         "native_furniture": native_furniture,
     }
@@ -189,7 +190,32 @@ PAGE_SIDE_PAD = "40pt"
 PDF_MARGIN = {"top": "77px", "bottom": "61px", "left": "0px", "right": "0px"}
 
 
-def header_template(date_str: str | None = None) -> str:
+def header_identity(data: dict) -> dict:
+    """The issuer line and the rating/target line for the running header.
+
+    Both come from the payload that is already on the page: nothing here is authored for the furniture, and a
+    missing piece simply drops out of the line rather than being invented.
+    """
+    from server.report import numfmt as _n
+
+    meta = (data or {}).get("meta") or {}
+    cover = (data or {}).get("cover") or {}
+    box = cover.get("rating_box") or {}
+    ticker = (meta.get("ticker") or "").upper().strip()
+    company = (meta.get("company_name") or "").strip()
+    issuer = " · ".join([x for x in (f"{ticker} IJ" if ticker else "", company) if x])
+
+    rating = str(box.get("action") or cover.get("rating") or "").strip()
+    target = box.get("tp")
+    bits = []
+    if rating:
+        bits.append(rating if rating.isupper() else rating.upper())
+    if isinstance(target, (int, float)):
+        bits.append(f"TP Rp {_n.idn(target, 0)}")
+    return {"issuer": issuer, "status": " · ".join(bits)}
+
+
+def header_template(date_str: str | None = None, identity: dict | None = None) -> str:
     """Top of every page: house title + publication date left, Sectors mark right, divider."""
     date_html = ""
     if date_str:
@@ -198,15 +224,27 @@ def header_template(date_str: str | None = None) -> str:
         )
     logo = logo_data_uri()
     logo_html = (
-        f'<img src="{logo}" style="height:13pt;display:block;" alt="Sectors.app">' if logo else ""
+        f'<img src="{logo}" style="height:12pt;display:block;margin:0 0 2.5pt;" alt="Sectors.app">' if logo else ""
+    )
+    identity = identity or {}
+    issuer = identity.get("issuer") or ""
+    issuer_html = (
+        f'<div style="font:700 8.6pt {FONT_STACK};color:#101828;letter-spacing:-0.1pt;">{issuer}</div>'
+        if issuer else f'<div style="font:700 8.6pt {FONT_STACK};color:#101828;">{HEADER_TITLE}</div>'
+    )
+    house_line = " · ".join([x for x in (HEADER_TITLE if issuer else "", date_str or "") if x])
+    status = identity.get("status") or ""
+    status_html = (
+        f'<div style="font:700 7.6pt {FONT_STACK};color:#101828;margin-bottom:1pt;">{status}</div>'
+        if status else ""
     )
     return (
         f'<div style="width:100%;padding:0 {PAGE_SIDE_PAD};box-sizing:border-box;'
         f'-webkit-print-color-adjust:exact;print-color-adjust:exact;">'
         f'<div style="display:flex;justify-content:space-between;align-items:flex-start;">'
-        f'<div><div style="font:700 8.5pt {FONT_STACK};color:#101828;">{HEADER_TITLE}</div>'
-        f"{date_html}</div>"
-        f'<div style="flex:0 0 auto;">{logo_html}</div>'
+        f"<div>{issuer_html}"
+        f'<div style="font:6.9pt {FONT_STACK};color:#475467;margin-top:0.5pt;">{house_line}</div></div>'
+        f'<div style="flex:0 0 auto;text-align:right;">{logo_html}{status_html}</div>'
         f"</div>"
         f'<div style="border-bottom:1.2pt solid {DIVIDER_COLOR};margin-top:3pt;"></div>'
         f"</div>"
