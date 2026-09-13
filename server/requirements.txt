@@ -7,6 +7,16 @@ python-multipart>=0.0.9
 cachetools>=5.3
 anyio>=4.4
 weasyprint>=69.0
+# The deck is rendered by Chromium through Playwright; without the pinned library the PDF path fails at import time.
+# Keep the version in step with the base image in docker/api.Dockerfile.
+playwright==1.60.0
 jinja2>=3.1
+# The valuation engines and the chart helpers compute on frames; a clean environment fails without these, which is how
+# the gap surfaced (the host venv had them, so nothing here noticed).
+pandas>=2.2
+numpy>=1.26
+matplotlib>=3.8
+# Reading back the PDF in tests and in scripts/verify_house_format.py
+pymupdf>=1.24
 pytest>=8.0
 # Sectors v2 is the single market-data gateway (IDX Postgres + Camoufox killed Sep 2026)

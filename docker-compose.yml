@@ -1,0 +1,71 @@
+# Two services, one origin: nginx serves the built front-end and proxies /api to the API container, so the browser
+# never makes a cross-origin request and the same build works behind any hostname.
+#
+# Caching notes (this is the part that makes rebuilds cheap):
+#   * every Dockerfile copies manifests before source, so a code change reuses the dependency layer;
+#   * pip and npm get BuildKit cache mounts, so even a manifest change keeps the downloads;
+#   * .dockerignore keeps ~1.8 GB of .venv/node_modules/.git out of the build context entirely.
+#   Rebuild after a source edit: seconds. Rebuild after a manifest edit: install only.
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      args:
+        # false = report/PDF only, no Google ADK stack (smaller, faster to build; /agent routes stop working)
+        WITH_ADK: "true"
+    image: sectors-api:local
+    # Optional so the stack still runs without a .env (the app reports the missing provider keys honestly).
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PYTHONUNBUFFERED: "1"
+    # Assumptions and harvest cache live on the host: editable without a rebuild, and they survive one.
+    volumes:
+      - ./data:/app/data
+      - ./output:/app/output
+    # 18777 on purpose: the host already runs the production service on 8777, and two listeners on one port is a
+    # silent "which one answered?" bug.
+    ports:
+      - "127.0.0.1:18777:8777"
+    restart: unless-stopped
+
+  web:
+    build:
+      context: .
+      dockerfile: docker/web.Dockerfile
+      args:
+        # empty = relative API base = nginx proxies /api to the api service
+        VITE_API_URL: ""
+    image: sectors-web:local
+    ports:
+      - "127.0.0.1:8080:80"
+    depends_on:
+      api:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # Hot-reload variant for development: `docker compose --profile dev up api-dev`.
+  # Source is bind-mounted and uvicorn reloads on save; the image is the same one, so nothing drifts.
+  api-dev:
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: docker/api.Dockerfile
+      args:
+        WITH_ADK: "true"
+    image: sectors-api:local
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      PYTHONUNBUFFERED: "1"
+    volumes:
+      - .:/app
+      - ./data:/app/data
+      - ./output:/app/output
+    ports:
+      - "127.0.0.1:18778:8777"
+    command: ["python", "-m", "uvicorn", "server.main:app", "--host", "0.0.0.0", "--port", "8777", "--reload"]

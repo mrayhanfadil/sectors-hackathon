@@ -6,6 +6,7 @@ the team's own estimates. The calibration trail for the forecast inputs stays in
 """
 from __future__ import annotations
 
+import asyncio
 import copy
 import re
 
@@ -14,7 +15,7 @@ import pytest
 
 from server.report.forecast_path import display_attribution
 from server.report.house_rules import audit_source_independence
-from server.routers.pdf import render_html_for_ticker
+from server.routers.pdf import render_html_for_ticker, render_pdf_bytes_for_ticker
 
 NAMES = ["BRIDS", "BRI Danareksa", "Danareksa Sekuritas", "Bahana Sekuritas", "Mandiri Sekuritas",
          "BCA Sekuritas", "BNI Sekuritas", "Trimegah Sekuritas", "Samuel Sekuritas", "Maybank Sekuritas",
@@ -31,7 +32,10 @@ def test_no_research_house_is_named_in_the_rendered_deck(payload):
     """A news wire naming which broker was buying is published flow data, not a citation — so this looks for
     the attribution form ('<house> Equity Research', '<house> Sekuritas', '<house> initiation')."""
     html = render_html_for_ticker("AMMN", None)[1]
-    text = html + "\n" + "\n".join(p.get_text() for p in pymupdf.open("/tmp/AMMN_slide7.pdf"))
+    # Render the document here instead of reading a leftover /tmp file: a stale artifact made this guard pass on one
+    # machine and fail on a clean one, which is the opposite of what it is for.
+    pdf, _engine, _template, _data = asyncio.run(render_pdf_bytes_for_ticker("AMMN"))
+    text = html + "\n" + "\n".join(str(page.get_text()) for page in pymupdf.open(stream=pdf, filetype="pdf"))
     for name in ("BRIDS", "BRI Danareksa", "Danareksa"):
         assert name.lower() not in text.lower(), f"{name} still reaches the page"
     for name in NAMES:

@@ -1,0 +1,39 @@
+# Build context hygiene. Everything here is either regenerable, huge, or a local secret.
+# Without this file the context is ~1.8 GB and every build re-uploads it.
+
+# local environments and build output (installed inside the image instead)
+.venv/
+src/fe/node_modules/
+src/fe/dist/
+src/fe/dist-verify/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# git and tooling state
+.git/
+.github/
+.wrangler/
+.wrangler-docs/
+node_modules/
+
+# runtime output: regenerable, and mounted as a volume instead
+output/
+tmp/
+logs/
+*.log
+
+# secrets and host state that must never enter an image
+.env
+.env.*
+!.env.example
+data/secrets/
+*.key
+*.pem
+
+# editor and OS noise
+.vscode/
+.idea/
+.DS_Store
