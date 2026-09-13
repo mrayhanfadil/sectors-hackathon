@@ -468,7 +468,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            Standar PDF Slide 8 · Severity &amp; Sensitivitas
+            Severity &amp; Sensitivitas
           </span>
         </div>
 

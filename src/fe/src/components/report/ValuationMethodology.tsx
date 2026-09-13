@@ -50,7 +50,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            Standar PDF Slide 4 · Model Deterministik
+            Model Deterministik
           </span>
         </div>
 
@@ -450,7 +450,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            Standar PDF Slide 5A · Komparasi Satu Tanggal
+            Komparasi Satu Tanggal
           </span>
         </div>
 
@@ -594,7 +594,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            Standar PDF Slide 5B · Time-Series Bands &amp; Implied
+            Time-Series Bands &amp; Implied
           </span>
         </div>
 

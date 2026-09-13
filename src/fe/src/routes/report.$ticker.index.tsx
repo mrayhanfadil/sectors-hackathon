@@ -319,7 +319,7 @@ function ReportPage() {
                 </h2>
               </div>
               <span className="font-mono text-[11px] text-[#63748A]">
-                Standar PDF Slide 3 · 4 Kuadran Combo Chart
+                4 Kuadran Combo Chart
               </span>
             </div>
 

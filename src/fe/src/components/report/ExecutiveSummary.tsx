@@ -310,7 +310,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
-            Standar PDF Slide 1 · One-Pager Institusional
+            One-Pager Institusional
           </span>
         </div>
 

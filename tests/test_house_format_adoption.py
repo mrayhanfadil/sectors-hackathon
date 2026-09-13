@@ -226,7 +226,8 @@ def test_front_end_never_hand_numbers_exhibits() -> None:
         if "node_modules" in path.parts:
             continue
         src = path.read_text(encoding="utf-8")
-        for m in re.finditer(r"""["'`][^"'`]*?Exhibit\s+\d[^"'`]*["'`]""", src):
+        # "Ekshibit" is the Indonesian spelling a frontend author reaches for, and it slipped past this guard
+        for m in re.finditer(r"""["'`][^"'`]*?(?:Exhibit|Ekshibit)\s+\d[^"'`]*["'`]""", src):
             offenders.append(f"{path.relative_to(REPO_ROOT)}: {m.group(0)}")
     assert not offenders, (
         "the front end hand-numbers exhibits (drifts from the PDF counter) — cite by title:\n  "
