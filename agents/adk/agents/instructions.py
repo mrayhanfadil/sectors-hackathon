@@ -536,7 +536,7 @@ Operational specs by archetype:
 # Example for banking/financials: NPL, NIM, CASA ratio, LDR, CAR (see data/assumptions/BBCA.json)
 
 Read ticker-specific operational parameters from collector_output and `data/assumptions/{ticker}.json`.
-Cite sources per exhibit (Bloomberg, SKK Migas, BPS, FactSet, idx.co.id).
+Cite url+date per exhibit from Sectors data only (news feed urls, filings IDX PDF links, company-report sections) — outlet-name-drops without url+date are fabrication and Critic will reject.
 Do NOT repeat valuation math — reference valuation.json.
 Emit company_analysis with {history, business_model, ops_specs, management, exhibits: [{title, source}]}.
 
@@ -558,10 +558,10 @@ Objective: thematic outlook tailored to ticker {ticker}'s sector archetype and I
 - Foreign-flow posture from fetch-foreign-flow + fetch-broker-summary-top.
 
 # Sector focus by archetype:
-# - Energy/Resources: commodity price trajectories (Brent/IEA/coal), regulatory PSC/DMO rules, ESDM quotas
-# - Banking/Financials: BI interest rate cycle, credit growth trends, OJK regulations, loan demand
-# - Telecom/Infra: 5G rollout/capex cycles, telco consolidation, fiberization demand
-# - Diversified/Holding: cross-sector synergy, regulatory reforms, infrastructure spending
+# - Energy/Resources: commodity price trajectories, regulatory PSC/DMO rules, ESDM quotas (all from Sectors news feed + filings — never browse external commodity/statistics sites)
+# - Banking/Financials: BI interest rate cycle, credit growth trends, OJK regulations, loan demand (Sectors news feed only)
+# - Telecom/Infra: 5G rollout/capex cycles, telco consolidation, fiberization demand (Sectors news feed only)
+# - Diversified/Holding: cross-sector synergy, regulatory reforms, infrastructure spending (Sectors news feed only)
 # - Mining/copper-gold: ESDM/DMO/royalty policy shifts, smelter economics (commissioning ramp, tolling/TC-RC), development-pipeline timeline (permitting → construction → commissioning for the next deposit phase), Cu/Au price-deck cycle
 
 HOW TO SEARCH (Sectors fetch-* tools PRIMARY, web backup for color):
@@ -577,7 +577,7 @@ HOW TO CALL TOOLS:
 Structure: {commodity_cycle, regulatory, thematics: [5 bullets], flows_broker_risk, danantara_catalyst}
 Cite url+date per claim; drop claims without provenance — never synthetic.
 
-FLOAT/MSCI RULE (AGY audit 2026-09-06, SSMS R2 — critic REJECT): free-float % and index-inclusion/exclusion (MSCI/FTSE) claims MUST come from collector_output in state. If collector marks float UNVERIFIED or absent, emit "UNVERIFIED — requires IDX fact sheet/KSEI" and NEVER invent a % or assert exclusion as fact. Critic REJECTs unsourced float/exclusion claims.
+FLOAT/MSCI RULE (AGY audit 2026-09-06, SSMS R2 — critic REJECT): free-float % and index-inclusion/exclusion (MSCI/FTSE) claims MUST come from collector_output in state. If collector marks float UNVERIFIED or absent, emit "UNVERIFIED — requires Sectors screener/disclosure feed" and NEVER invent a % or assert exclusion as fact. No external fact-sheet/KSEI browsing — Sectors only. Critic REJECTs unsourced float/exclusion claims.
 
 Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
