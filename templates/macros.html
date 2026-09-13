@@ -101,9 +101,9 @@
 {% macro styles(palette) -%}
 <style>
   :root {
-    --ink: #101828; --muted: #475467; --line: #e4e7ec; --paper: #ffffff;
+    --ink: #1A2733; --muted: #63748A; --line: #D6E2EE; --paper: #ffffff;
     --brand: {{ palette.brand }}; --brand-dark: {{ palette.brand_dark }};
-    --accent: {{ palette.accent }}; --pos: #067647; --neg: #b42318; --band: #f9fafb;
+    --accent: {{ palette.accent }}; --pos: #067647; --neg: #b42318; --band: #F4F8FC;
     /* Abida tool language: the same token set the relativepeers / ddm_tool valuation apps use, so the deck's
        charts, tables and chips read as one family with them. */
     --ab-navy: #0B1F3A; --ab-navy-mid: #14304F; --ab-navy-soft: #2C4A6B;
@@ -461,39 +461,44 @@
 
 {# ------------------------------------------------------------------ SVG fallbacks for PDF (WeasyPrint has no JS) -- shown only in print #}
 {% macro svg_segment_mix(segments) -%}
-  {% set palette = ["#1d4ed8","#98a2b3","#f2994a","#12b76a","#7a5af8","#e31b54"] %}
+  {# the tools' series order, so a segment keeps the same colour family across the deck #}
+  {% set palette = ["#0B1F3A","#A9C9E8","#2C4A6B","#B08D57","#1E8F5F","#C0392B"] %}
   {% set W = 680 %}{% set H = 22 %}
   {% set ns = namespace(x=0) %}
   <svg width="{{ W }}" height="{{ H + 22 }}" viewBox="0 0 {{ W }} {{ H + 22 }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Segment mix">
     {% for s in segments %}
       {% set w = ((s.share_pct if s.share_pct is not none else s.pct) | float) * W / 100 %}
-      <rect x="{{ ns.x }}" y="0" width="{{ w }}" height="{{ H }}" rx="3" fill="{{ palette[loop.index0 % palette|length] }}" />
+      <rect x="{{ ns.x }}" y="0" width="{{ w }}" height="{{ H }}" rx="2" fill="{{ palette[loop.index0 % palette|length] }}"
+            stroke="#ffffff" stroke-width="0.8" />
       {% set ns.x = ns.x + w %}
     {% endfor %}
     {% for s in segments %}
       <g>
-        <rect x="{{ (loop.index0 * (W // (segments|length))) }}" y="{{ H + 6 }}" width="10" height="10" rx="2" fill="{{ palette[loop.index0 % palette|length] }}" />
-        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
+        <rect x="{{ (loop.index0 * (W // (segments|length))) }}" y="{{ H + 6 }}" width="10" height="10" rx="2" fill="{{ palette[loop.index0 % palette|length] }}" rx="2" />
+        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
       </g>
     {% endfor %}
   </svg>
 {%- endmacro %}
 
 {% macro svg_vs_jci(labels, series_ticker, series_ihsg, ticker_label) -%}
-  {% set W = 680 %}{% set H = 160 %}{% set pad_l = 36 %}{% set pad_r = 12 %}{% set pad_t = 10 %}{% set pad_b = 18 %}
+  {% set W = 680 %}{% set H = 160 %}{% set pad_l = 36 %}{% set pad_r = 12 %}{% set pad_t = 24 %}{% set pad_b = 28 %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
   {# find min/max across both series #}
   {% set all_vals = (series_ticker or []) + (series_ihsg or []) %}
   {% set vmin = all_vals | min if all_vals else 0 %}{% set vmax = all_vals | max if all_vals else 1 %}
   {% if vmax == vmin %}{% set vmax = vmin + 1 %}{% endif %}
+  {#- headroom, and the legend moves above the plot: it used to sit inside it with the series crossing it -#}
+  {% set head = (vmax - vmin) * 0.06 %}{% set vmin = vmin - head %}{% set vmax = vmax + head %}
+  {% set W = 680 %}{% set H = 184 %}
   {% set n = labels|length if labels else (series_ticker|length) %}
   {% set step = chart_w / ((n - 1) if n > 1 else 1) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga vs IHSG">
-    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#f9fafb" stroke="#e4e7ec" stroke-width="0.5" rx="3"/>
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.5" rx="2"/>
     {# grid #}
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#e4e7ec" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
     {% endfor %}
     {# helper to build polyline points #}
     {% set ns = namespace(pts_t="", pts_i="") %}
@@ -505,19 +510,21 @@
       {% set x = pad_l + loop.index0 * step %}{% set y = pad_t + chart_h - ((v - vmin) / (vmax - vmin) * chart_h) %}
       {% set ns.pts_i = ns.pts_i + ("%0.1f,%0.1f " % (x, y)) %}
     {% endfor %}
-    <polyline points="{{ ns.pts_t | trim }}" fill="none" stroke="#1d4ed8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="{{ ns.pts_i | trim }}" fill="none" stroke="#98a2b3" stroke-width="1.2" stroke-dasharray="4 3" stroke-linejoin="round" stroke-linecap="round"/>
+    <polygon points="{{ pad_l }},{{ pad_t + chart_h }} {{ ns.pts_t | trim }} {{ pad_l + (n - 1) * step if n > 1 else pad_l }},{{ pad_t + chart_h }}" fill="rgba(11,31,58,0.06)"/>
+    <polyline points="{{ ns.pts_t | trim }}" fill="none" stroke="#0B1F3A" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_i | trim }}" fill="none" stroke="#A9C9E8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
     {# labels #}
     {% for lbl in labels or [] %}
       {% if loop.index0 % 2 == 0 %}
         <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
-    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#475467">{{ vmax|dec(1) }}</text>
-    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 1 }}" font-size="6.5" fill="#475467">{{ vmin|dec(1) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#63748A">{{ vmax|dec(1) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 8 }}" font-size="6.5" fill="#63748A">{{ vmin|dec(1) }}</text>
     <g font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif">
-      <rect x="{{ W - 140 }}" y="{{ pad_t }}" width="8" height="8" fill="#1d4ed8" rx="1"/><text x="{{ W - 128 }}" y="{{ pad_t + 7 }}" fill="#101828">{{ ticker_label }}</text>
-      <rect x="{{ W - 70 }}" y="{{ pad_t }}" width="8" height="8" fill="#98a2b3" rx="1"/><text x="{{ W - 58 }}" y="{{ pad_t + 7 }}" fill="#101828">IHSG</text>
+      <rect x="{{ pad_l }}" y="1" width="8" height="8" fill="#0B1F3A" rx="1"/><text x="{{ pad_l + 12 }}" y="8" fill="#1A2733">{{ ticker_label }}</text>
+      <rect x="{{ pad_l + 70 }}" y="1" width="8" height="8" fill="#A9C9E8" rx="1"/><text x="{{ pad_l + 82 }}" y="8" fill="#1A2733">IHSG</text>
+      <text x="{{ pad_l + 130 }}" y="8" fill="#63748A">Rp (indeks 100 = awal periode)</text>
     </g>
   </svg>
 {%- endmacro %}
@@ -634,7 +641,7 @@
       {% set val = r.value if r.value is defined else (r[1] if r is sequence else '') %}
       {% set is_last = loop.last %}
       {% if is_last %}
-        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#E1ECF6"/>
+        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#E4EEF7"/>
       {% elif loop.index0 % 2 == 1 %}
         <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#F4F8FC"/>
       {% endif %}
@@ -683,15 +690,15 @@
         {% if val is none %}
           {% set bg = "#F4F8FC" %}{% set fg = "#63748A" %}{% set txt = "N/A" %}
         {% elif up is none %}
-          {% set bg = "#E1ECF6" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#F2E9DC" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
         {% elif up < -10 %}
-          {% set bg = "#FADBD8" %}{% set fg = "#78281F" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#C0392B" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% elif up < 0 %}
-          {% set bg = "#FCEAE8" %}{% set fg = "#C0392B" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#E8B4AE" %}{% set fg = "#5C1F18" %}{% set txt = val|idr if val is defined else val %}
         {% elif up <= 10 %}
-          {% set bg = "#E1ECF6" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#F2E9DC" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
         {% elif up <= 25 %}
-          {% set bg = "#A9C9E8" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#DCEBF7" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
         {% else %}
           {% set bg = "#0B1F3A" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% endif %}
@@ -723,11 +730,15 @@
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Skenario Bear / Base / Bull vs Harga Pasar">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
     <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Skenario Bear / Base / Bull vs Harga Pasar</text>
-    <!-- Background Grid -->
+    <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#E4EEF7" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Poppins, Arial, sans-serif"
+            fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Poppins, Arial, sans-serif"
+          fill="#63748A" text-anchor="end">Rp/saham</text>
     <!-- Market Price line -->
     {% if px > 0 %}
       {% set y_px = pad_t + chart_h - (px / vmax * chart_h) %}
@@ -736,7 +747,7 @@
     {% endif %}
     <!-- 3 Bars -->
     {% set items = [
-      {"name": "BEAR", "val": bear_v, "rat": bear.rating if bear.rating is defined else "", "fill": "#E1ECF6", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"},
+      {"name": "BEAR", "val": bear_v, "rat": bear.rating if bear.rating is defined else "", "fill": "#E4EEF7", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"},
       {"name": "BASE", "val": base_v, "rat": base.rating if base.rating is defined else "", "fill": "#0B1F3A", "stroke": "#0B1F3A", "text_fg": "#0B1F3A"},
       {"name": "BULL", "val": bull_v, "rat": bull.rating if bull.rating is defined else "", "fill": "#A9C9E8", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"}
     ] %}
@@ -774,11 +785,15 @@
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Bridge: PV FCFF -> Equity Value (IDR bn)">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
     <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
-    <!-- Background Grid -->
+    <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#E4EEF7" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Poppins, Arial, sans-serif"
+            fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Poppins, Arial, sans-serif"
+          fill="#63748A" text-anchor="end">Rp bn</text>
     {% set bars = [
       {"l1": "PV", "l2": "Explicit", "bot": 0, "top": pv_exp, "val": pv_exp, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
       {"l1": "PV", "l2": "Terminal", "bot": pv_exp, "top": pv_exp + pv_term, "val": pv_term, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
@@ -797,8 +812,14 @@
       {% set y_top = pad_t + chart_h - (b.top / vmax * chart_h) %}
       {% set y_bot = pad_t + chart_h - (b.bot / vmax * chart_h) %}
       {% set bh = [y_bot - y_top, 2] | max %}
+      {% if (b.val | abs) > 0 %}
       <rect x="{{ bx }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ b.fill }}" stroke="{{ b.stroke }}" stroke-width="1"/>
-      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ b.val|dec(0) }}</text>
+      {% else %}
+      {#- a zero line item is drawn as a flat marker, not a red sliver that reads as a small charge -#}
+      <line x1="{{ bx }}" y1="{{ y_bot }}" x2="{{ bx + bar_w }}" y2="{{ y_bot }}" stroke="#D6E2EE" stroke-width="1.6"/>
+      {% endif %}
+      {% set vabs = b.val | abs %}
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
       <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
       {% if b.l2 %}
       <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
