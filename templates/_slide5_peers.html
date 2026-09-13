@@ -83,6 +83,10 @@
   </tr></table>
 
   <h3>Implied Price Judgement</h3>
+  {{ m.svg_implied_bars(B.implied, cover.rating_box.price | float,
+       (valuation.anchor if valuation is defined and valuation.anchor is defined else "")) }}
+  <p class="small muted">Batang = harga implisit bila kelipatan kembali ke rata-rata (navy) atau median (ice)
+    1 tahun; garis putus-putus merah = harga pasar. Tanda * menandai kelipatan yang jadi basis anchor gate.</p>
   <table class="fin-table">
     <thead><tr><th>Multiple</th><th>Reversion ke Mean (Rp)</th><th>Reversion ke Median (Rp)</th>
       <th>Rentang</th><th>Selisih</th></tr></thead>

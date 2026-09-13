@@ -346,7 +346,7 @@
         </div>
         <table class="bridge-tbl">
           <tr><td>Enterprise value</td><td class="num">{{ (br.ev_gordon / 1e12) | idn(2) }} tn</td></tr>
-          <tr><td>Net debt</td><td class="num">−{{ (br.net_debt / 1e12) | idn(2) }} tn</td></tr>
+          <tr><td>(−) Net debt</td><td class="num">{{ (br.net_debt / 1e12) | idn(2) }} tn</td></tr>
           <tr class="tot"><td>Equity value</td><td class="num">{{ (br.equity_gordon / 1e12) | idn(2) }} tn</td></tr>
         </table>
       </div>

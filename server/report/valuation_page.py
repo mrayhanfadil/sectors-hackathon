@@ -476,7 +476,7 @@ def _view(page: dict) -> dict:
         ("Sum PV of FCFF (periode eksplisit)", _fmt(b["pv_explicit"] / 1e9), "\u2014"),
         ("(+) PV of Terminal Value (Gordon)", _fmt(b["pv_tv_gordon"] / 1e9), "\u2014"),
         ("Enterprise Value", _fmt(b["ev_gordon"] / 1e9), "\u2014"),
-        ("(-) Net Debt (Total Debt - Cash)", _fmt(-b["net_debt"] / 1e9), "\u2014"),
+        ("(-) Net Debt (Total Debt - Cash)", _fmt(b["net_debt"] / 1e9), "\u2014"),
         ("(+/-) Minority Interest / Non-Operating Assets", _fmt(0.0), "\u2014"),
         ("Equity Value", _fmt(b["equity_gordon"] / 1e9), "\u2014"),
         ("Jumlah saham beredar (bn saham)", _fmt(av["shares_bn"], 2), "\u2014"),

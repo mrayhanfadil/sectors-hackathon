@@ -765,6 +765,75 @@
   </svg>
 {%- endmacro %}
 
+{% macro svg_implied_bars(rows, price, headline="") -%}
+{#- Implied price per multiple: grouped bars (1Y average in navy, 1Y median in ice) against the price now, drawn the
+    way the peers tool draws it. Geometry uses dot decimals — a comma decimal is not a number to an SVG renderer. -#}
+  {% set W = 660 %}{% set H = 206 %}
+  {% set pad_l = 54 %}{% set pad_r = 16 %}{% set pad_t = 30 %}{% set pad_b = 46 %}
+  {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
+  {% set NAVY = "#0B1F3A" %}{% set ICE = "#A9C9E8" %}{% set ICE_SOFT = "#2C4A6B" %}
+  {% set RULE = "#D6E2EE" %}{% set MUTED = "#63748A" %}{% set SELL = "#C0392B" %}
+  {% set vals = [] %}
+  {% for r in rows %}{% if r.to_mean is not none %}{% set _ = vals.append(r.to_mean) %}{% endif %}
+    {% if r.to_median is not none %}{% set _ = vals.append(r.to_median) %}{% endif %}{% endfor %}
+  {% if price %}{% set _ = vals.append(price) %}{% endif %}
+  {% set top = (vals | max) * 1.22 if vals else 1 %}
+  {% set n = rows | length %}
+  {% set gw = chart_w / n %}
+  {% set bw = (gw * 0.26) | round(1) %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg"
+       class="chart-svg" role="img" aria-label="Implied price per multiple versus the price now (IDR per share)">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="{{ RULE }}" stroke-width="0.75"/>
+    <!-- scale: three gridlines, labelled, so the bars can be sized without a caption -->
+    {% for frac in [1.0, 0.5, 0.0] %}
+    {% set gy = pad_t + chart_h - (chart_h * frac) %}
+    <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(gy) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(gy) }}"
+          stroke="{{ RULE }}" stroke-width="0.7"/>
+    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="8" fill="{{ MUTED }}"
+          text-anchor="end">{{ (top * frac) | idn(0) }}</text>
+    {% endfor %}
+    <text x="{{ pad_l - 6 }}" y="{{ pad_t - 12 }}" font-size="7.5" font-weight="700" fill="{{ MUTED }}"
+          text-anchor="end">Rp/saham</text>
+    <!-- the price line sits behind the bars: a dashed line running through a value label is unreadable. Its value
+         is carried by the legend, which swatches the same dashed red line, so no in-plot label can collide. -->
+    {% if price %}
+    {% set py = pad_t + chart_h - chart_h * (price / top) %}
+    <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(py) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(py) }}"
+          stroke="{{ SELL }}" stroke-width="1.5" stroke-dasharray="5 3"/>
+    {% endif %}
+    <!-- legend -->
+    <rect x="{{ pad_l }}" y="8" width="8" height="8" rx="1.5" fill="{{ NAVY }}"/>
+    <text x="{{ pad_l + 12 }}" y="15.5" font-size="8" fill="{{ MUTED }}">reversion ke 1Y mean</text>
+    <rect x="{{ pad_l + 122 }}" y="8" width="8" height="8" rx="1.5" fill="{{ ICE }}" stroke="{{ ICE_SOFT }}" stroke-width="0.8"/>
+    <text x="{{ pad_l + 134 }}" y="15.5" font-size="8" fill="{{ MUTED }}">reversion ke 1Y median</text>
+    {% if price %}
+    <line x1="{{ pad_l + 246 }}" y1="12" x2="{{ pad_l + 268 }}" y2="12" stroke="{{ SELL }}" stroke-width="1.4" stroke-dasharray="4 3"/>
+    <text x="{{ pad_l + 274 }}" y="15.5" font-size="8" fill="{{ SELL }}" font-weight="700">harga pasar {{ price | idn(0) }}</text>
+    {% endif %}
+    {% for r in rows %}
+    {% set cx = pad_l + gw * loop.index0 + gw / 2 %}
+    {% for val, fill, stroke_w, dx in [(r.to_mean, NAVY, 0, -1), (r.to_median, ICE, 0.8, 1)] %}
+    {% if val %}
+      {% set bh = chart_h * (val / top) %}
+      {% set bx = cx + (dx * (bw / 2 + 1)) - bw / 2 %}
+      <rect x="{{ '%.1f'|format(bx) }}" y="{{ '%.1f'|format(pad_t + chart_h - bh) }}" width="{{ bw }}"
+            height="{{ '%.1f'|format(bh) }}" fill="{{ fill }}"
+            {% if stroke_w %}stroke="{{ ICE_SOFT }}" stroke-width="{{ stroke_w }}"{% endif %}/>
+      <text x="{{ '%.1f'|format(bx + bw / 2) }}" y="{{ '%.1f'|format(pad_t + chart_h - bh - 3) }}" font-size="7.5"
+            font-weight="700" fill="{{ NAVY if fill == NAVY else MUTED }}" text-anchor="middle"
+            stroke="#ffffff" stroke-width="2.2" paint-order="stroke">{{ val | idn(0) }}</text>
+    {% endif %}
+    {% endfor %}
+    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 30 }}" font-size="8.5" font-weight="700" fill="{{ NAVY }}"
+          text-anchor="middle">{{ r.label }}{{ " *" if headline and r.key == headline else "" }}</text>
+    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 18 }}" font-size="7.5" fill="{{ MUTED }}" text-anchor="middle">
+      {{ ("%.0f%%"|format(r.delta_pct)) if r.delta_pct else "—" }}</text>
+    {% endfor %}
+    <line x1="{{ pad_l }}" y1="{{ pad_t + chart_h }}" x2="{{ W - pad_r }}" y2="{{ pad_t + chart_h }}"
+          stroke="{{ ICE_SOFT }}" stroke-width="0.9"/>
+  </svg>
+{%- endmacro %}
+
 {% macro svg_ev_equity_waterfall(valuation) -%}
   {% set W = 680 %}{% set H = 220 %}
   {% set pad_l = 40 %}{% set pad_r = 20 %}{% set pad_t = 45 %}{% set pad_b = 42 %}
