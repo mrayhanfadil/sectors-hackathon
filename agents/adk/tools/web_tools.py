@@ -202,9 +202,17 @@ async def web_search(
           "source": "sectors" | "sectors_missing_key" | "sectors_error",
           "fetched_at": ISO timestamp,
           "results": [
-            {"url": str, "title": str, "content": str, "score": float, "tier": "t1"|"t2"|"t3"|""}
+            {"url": str, "title": str, "content": str, "score": float,
+             "tier": "t1"|"t2"|"t3"|"", "date": str, "symbols": list[str]}
           ],
-        }
+        },
+
+    Sectors v2 news shape (GET /v2/news/news/): each row carries the article
+    link in `source` (no separate `url` key), prose in `body`, publish time
+    in `timestamp`, tickers in `symbols`, and a per-article `dimension` map
+    (future/dividend/ownership/technical/valuation/financials/management/
+    sustainability, each 0-2). `score` is the dimension sum (0-16) so callers
+    can rank by signal density instead of a hardcoded 0.0.
 
     Honest behavior: without SECTORS_API_KEY returns empty results with
     source='sectors_missing_key' (legacy removed — no third-party search).
@@ -244,13 +252,24 @@ async def web_search(
         for it in items[: min(max(1, n_results), 20)]:
             if not isinstance(it, dict):
                 continue
-            url = it.get("url") or it.get("link") or ""
+            # Sectors v2 news shape: link lives in `source` (no `url` key),
+            # prose in `body`, publish time in `timestamp`, tickers in
+            # `symbols`; legacy `url`/`link`/`summary`/`content` keys kept as
+            # fallbacks so other feeds don't break.
+            url = it.get("source") or it.get("url") or it.get("link") or ""
+            body = it.get("body") or it.get("summary") or it.get("content") or ""
+            dim = it.get("dimension") or {}
+            score = (sum(float(v) for v in dim.values()
+                         if isinstance(v, (int, float)))
+                     if isinstance(dim, dict) else 0.0)
             out.append({
                 "url": url,
                 "title": it.get("title", ""),
-                "content": str(it.get("summary") or it.get("content") or "")[:800],
-                "score": 0.0,
+                "content": str(body)[:800],
+                "score": score,
                 "tier": _domain_tier(url),
+                "date": str(it.get("timestamp") or it.get("date") or "")[:10],
+                "symbols": it.get("symbols") or [],
             })
         # Tier filter is advisory — applied post-hoc, never fabricates.
         if tier and tier != "all" and tier in TIER_DOMAINS:

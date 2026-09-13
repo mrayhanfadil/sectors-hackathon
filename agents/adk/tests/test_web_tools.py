@@ -115,6 +115,45 @@ def test_web_search_live_with_real_key():
     assert all(r.get("url") is not None for r in out["results"]), "all results must have url key"
 
 
+def test_web_search_maps_sectors_news_shape():
+    """Sectors v2 news rows carry link in `source`, prose in `body`, time in
+    `timestamp` — the tool must surface all three (plus dimension-sum score),
+    not empty url/content with hardcoded 0.0."""
+    from unittest import mock as _mock
+
+    saved = os.environ.get("SECTORS_API_KEY")
+    os.environ["SECTORS_API_KEY"] = "test_key_mapping_only"
+    row = {
+        "title": "UBS buys AMMN amid copper rally",
+        "body": "UBS Sekuritas net-bought Rp92bn of AMMN shares.",
+        "source": "https://www.bloombergtechnoz.com/detail-news/120995/x",
+        "timestamp": "2026-09-09T09:17:00",
+        "symbols": ["AMMN.JK"],
+        "dimension": {"future": 0, "dividend": 0, "ownership": 1,
+                      "technical": 1, "valuation": 2, "financials": 0,
+                      "management": 0, "sustainability": 0},
+    }
+    fake_raw = {"results": [row],
+                "pagination": {"total_count": 1}}
+    try:
+        with _mock.patch("server.sectors.news", return_value=fake_raw):
+            out = asyncio.run(web_search("AMMN copper", n_results=5))
+        assert out["source"] == "sectors", out["source"]
+        assert len(out["results"]) == 1
+        r = out["results"][0]
+        assert r["url"] == row["source"], r["url"]
+        assert "Rp92bn" in r["content"], r["content"]
+        assert r["date"] == "2026-09-09", r["date"]
+        assert r["symbols"] == ["AMMN.JK"], r["symbols"]
+        assert r["score"] == 4.0, r["score"]
+        assert r["tier"] == "", r["tier"]  # bloombergtechnoz not allowlisted
+    finally:
+        if saved is None:
+            os.environ.pop("SECTORS_API_KEY", None)
+        else:
+            os.environ["SECTORS_API_KEY"] = saved
+
+
 def test_function_tool_wraps_cleanly():
     """Verify web_search (sole survivor, Sectors-only) wraps cleanly."""
     from google.adk.tools.function_tool import FunctionTool
