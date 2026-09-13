@@ -267,7 +267,7 @@ export function ReportHeader({
                 className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D6E2EE] bg-[#F4F8FC] px-2.5 font-sans text-xs font-semibold text-[#0B1F3A] hover:bg-[#E4EEF7] transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#A9C9E8] dark:hover:bg-[#22252c]"
               >
                 <Bot className="h-3 w-3" />
-                <span>[F5] Jejak Mesin</span>
+                <span>Proses analisis</span>
               </Link>
             </div>
           </div>

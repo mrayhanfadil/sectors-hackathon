@@ -54,7 +54,7 @@ export function ADKRunSidebar({
         <Card className="rounded-lg border border-neutral-200 bg-white p-4 shadow-xs dark:border-[#262930] dark:bg-[#121418]">
           <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 font-sans">
             <Loader2 className="h-3.5 w-3.5 animate-spin text-amber-500" />
-            <span>Menghubungkan ke stream eksekusi mesin ADK...</span>
+            <span>Menghubungkan ke proses analisis...</span>
           </div>
         </Card>
       ) : logData ? (

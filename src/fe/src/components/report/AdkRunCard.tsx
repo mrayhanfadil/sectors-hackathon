@@ -116,7 +116,7 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
             <div className="flex items-center gap-2">
               <Bot className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
               <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                Audit Mesin ADK // {tk}
+                Proses analisis // {tk}
               </CardTitle>
             </div>
             <span className="font-mono text-[10px] text-neutral-400">STATUS: SIAGA</span>
@@ -134,7 +134,7 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
                 variant="outline"
                 className="h-7 rounded-md border-neutral-300 font-sans text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
               >
-                <span>&gt; Jalankan Audit Mesin</span>
+                <span>&gt; Jalankan analisis</span>
               </Button>
             </Link>
           </div>
@@ -157,12 +157,12 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
           <div className="flex items-center gap-2">
             <Activity className="h-4 w-4 text-amber-500" />
             <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-              Audit Mesin ADK // {tk}
+              Proses analisis // {tk}
             </CardTitle>
           </div>
           <Link to="/agent" search={{ ticker: tk } as any}>
             <span className="font-sans text-[11px] font-bold text-[#0070f3] hover:underline dark:text-[#3291ff]">
-              [Buka Jejak Mesin &gt;]
+              [Lihat rincian &gt;]
             </span>
           </Link>
         </div>
