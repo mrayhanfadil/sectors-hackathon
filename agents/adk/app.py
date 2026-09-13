@@ -18,9 +18,10 @@ Orchestrator wiring per plan.md §3 + task T05:
           ↓
       Writer → Visualizer → SOTP → Adversarial (LoopAgent max=4) → Critic
 
-GoogleSearch isolation: search-bearing agents get google_search tool in a
-dedicated sub-agent via AgentTool (genai limit: GoogleSearch cannot coexist
-with FunctionTool in the same LlmAgent — see adk-go-skill pitfall section).
+GoogleSearch isolation: search-bearing sub-agents are Sectors-only (Google was
+removed Sep 2026 as an external source). Search sub-agents carry no tools
+and emit honest sectors_missing_key empties keyless (genai limit:
+GoogleSearch cannot coexist with FunctionTool in the same LlmAgent).
 
 Provider: DeepSeek deepseek-chat via LiteLlm (OpenAI-compat) for main agents;
 Gemini gemini-2.0-flash for search-grounded sub-agents. Falls back to LiteLlm
@@ -51,7 +52,6 @@ from google.adk.agents.llm_agent import LlmAgent
 from google.adk.agents.loop_agent import LoopAgent
 from google.adk.agents.parallel_agent import ParallelAgent
 from google.adk.agents.sequential_agent import SequentialAgent
-from google.adk.tools.agent_tool import AgentTool
 from google.adk.tools.exit_loop_tool import exit_loop
 from google.adk.tools.function_tool import FunctionTool
 from .tools.peer_tools import request_peer_data
@@ -73,13 +73,10 @@ from .agents.instructions import (
     collector_instruction,
     critic_instruction,
     industry_instruction,
-    industry_search_sub_instruction,
     kpi_instruction,
     modeler_instruction,
     news_harvester_instruction,
-    news_search_sub_instruction,
     risk_instruction,
-    social_search_sub_instruction,
     social_sentiment_instruction,
     sotp_instruction,
     visualizer_instruction,
@@ -157,25 +154,6 @@ def _has_commandcode_key_on_disk() -> bool:
 
 def _function_tools() -> list[Any]:
     return [FunctionTool(func) for func in DETERMINISTIC_TOOLS] + [FunctionTool(exit_loop)]
-
-
-def _build_search_subagent(
-    name: str,
-    description: str,
-    instruction: str,
-    model=None,
-) -> LlmAgent:
-    """Search-grounded sub-agent isolated from function tools (genai limit).
-
-    Sectors-only rule (Sep 2026): GoogleSearchTool removed (Google = external
-    source, prohibited) along with ADK_ENABLE_GOOGLE_SEARCH. This sub-agent
-    always runs keyless-honest: no tools, Sectors-only suffix forcing
-    source=sectors_missing_key + STOP instead of invention.
-    """
-    logger.info("Search sub-agent %s: Sectors-only (no GoogleSearchTool) — 0-credit mode", name)
-    model = _deepseek_or_gemini()
-    suffix = "\n\nNote: External web grounding is disabled in this run (Sectors-only mode). Do NOT invent results: emit source=sectors_missing_key with an empty list and STOP.\n\nYou will be invoked at most once by the parent agent. Be concise — a single JSON array reply."
-    return LlmAgent(name=name, model=model, description=description, instruction=instruction + suffix, tools=[])
 
 
 def _assumptions_block(ticker: str) -> str:
@@ -258,30 +236,18 @@ def build_graph(
 
     # Free-tier throttling: minimax-m3-free 503s on concurrency. When
     # ADK_PROVIDER indicates minimax and ADK_PARALLEL is unset/"0", run intake
-    # + research sequentially. Also reuse the same minimax model for search
-    # sub-agents (they use _deepseek_or_gemini() which already prefers minimax)
-    # and keep them inside the sequential intake so only 1 minimax call runs
-    # at a time — otherwise AgentTool would fire a parallel sub-call and 503.
+    # + research sequentially so only 1 minimax call runs at a time
+    # (minimax-m3-free 503s on concurrency).
     is_minimax = os.getenv("ADK_PROVIDER", "").lower() in ("minimax", "minimax-m3-free", "minimax/minimax-m3-free")
     _adk_parallel_val = os.getenv("ADK_PARALLEL", "")
     free_tier = bool(is_minimax and (_adk_parallel_val == "" or _adk_parallel_val == "0"))
 
-    # -- Search sub-agents (Sectors-grounded, isolated) -----------------
-    news_search_sub = _build_search_subagent(
-        name="news_search_sub",
-        description="Researches IDX news via Sectors feed.",
-        instruction=_fmt(news_search_sub_instruction),
-    )
-    social_search_sub = _build_search_subagent(
-        name="social_search_sub",
-        description="Researches retail crowd sentiment via Sectors feed proxies.",
-        instruction=_fmt(social_search_sub_instruction),
-    )
-    industry_search_sub = _build_search_subagent(
-        name="industry_search_sub",
-        description="Researches macro/industry context via Sectors feed.",
-        instruction=_fmt(industry_search_sub_instruction),
-    )
+    # -- Search sub-agents REMOVED (Sectors-only cleanup, 13 Sep 2026) --------
+    # _build_search_subagent + news/social/industry_search_sub were orphans:
+    # constructed but never attached to any agent (no AgentTool wiring) and
+    # never in the graph dump. Parents (news_harvester, social_sentiment,
+    # industry) call Sectors web_search directly. Instructions kept in
+    # instructions.py as prompt reference.
 
     # -- MCP toolset (best-effort) -------------------------------------------
     sectors_toolset = maybe_sectors_mcp_toolset(api_key=sectors_api_key)
