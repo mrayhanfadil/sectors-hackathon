@@ -290,16 +290,24 @@
       <tr>
         <td>{{ r.label }}</td>
         {% for c in r.cells %}
-        <td class="num {{ 'sens-base' if c.base else '' }}">{{ c.value}}</td>
+        <td class="num sens-cell {{ c.band }} {{ 'sens-base' if c.base else '' }}">{{ c.value}}</td>
         {% endfor %}
       </tr>
       {% endfor %}
     </tbody>
   </table>
+  <div class="heat-key">
+    <span class="k" style="background: rgba(192,57,43,.86);"></span> &lt; −50%
+    <span class="k" style="background: rgba(192,57,43,.34); margin-left:3pt;"></span> −50%…−10%
+    <span class="k" style="background: #F2E9DC; margin-left:3pt;"></span> ±10%
+    <span class="k" style="background: #DCEBF7; margin-left:3pt;"></span> +10%…+50%
+    <span class="k" style="background: #0B1F3A; margin-left:3pt;"></span> &gt; +50%
+    <span style="margin-left:4pt;">warna sel = posisi vs base case (Rp {{ valuation_page.sensitivity.base_fv | idn(0) }}); grid ini sendiri duduk jauh di bawah harga pasar {{ cover.rating_box.price | idn(0) }}</span>
+  </div>
   <p class="muted" style="font-size:6.6pt; margin-top:2pt;">
     Base case (WACC {{ valuation_page.sensitivity.base_wacc }} · g {{ valuation_page.sensitivity.base_g }})
-    di-highlight; isi sel = Fair Value per saham (Rp). Rentang grid:
-    Rp {{ valuation_page.sensitivity.swing.min}} – Rp {{ valuation_page.sensitivity.swing.max}}.
+    dibingkai; isi sel = Fair Value per saham (Rp). Rentang grid:
+    Rp {{ valuation_page.sensitivity.swing.min | idn(0) }} – Rp {{ valuation_page.sensitivity.swing.max | idn(0) }}.
   </p>
   {{ m.exhibit_source(ns) }}
 
@@ -313,17 +321,17 @@
 
     <div class="sens-strip">
       <div class="sens-chip">
-        <div class="k">PV terminal / EV</div>
+        <div class="k eyebrow">PV terminal / EV</div>
         <div class="v">{{ (br.tv_share * 100) | pct(1) }}</div>
         <div class="n">nilai wajar bertumpu di luar periode proyeksi</div>
       </div>
       <div class="sens-chip">
-        <div class="k">Net debt / EV</div>
+        <div class="k eyebrow">Net debt / EV</div>
         <div class="v">{{ (br.net_debt / br.ev_gordon * 100) | pct(1) }}</div>
         <div class="n">sisa untuk pemegang saham Rp {{ (br.equity_gordon / 1e12) | idn(2) }} tn</div>
       </div>
       <div class="sens-chip">
-        <div class="k">Rentang grid WACC × g</div>
+        <div class="k eyebrow">Rentang grid WACC × g</div>
         <div class="v">Rp {{ sens.swing.min | idn(0) }} – {{ sens.swing.max | idn(0) }}</div>
         <div class="n">dasar Rp {{ sens.base_fv | idn(0) }} (WACC {{ sens.base_wacc }} · g {{ sens.base_g }})</div>
       </div>
@@ -344,15 +352,19 @@
       </div>
       <div>
         <p class="sens-h">Sebaran metode (Rp/saham)</p>
-        <div class="field">
-          <div class="axis"></div>
-          {% for mlabel, mval, mcls in [("Gordon · g " ~ sens.base_g, br.fv_gordon, ""), ("Exit multiple", br.fv_exit, ""), ("TP gate-primary", valuation_page.legs.ev_ebitda, "gate")] %}
-          {% set pct_l = (mval / valuation_page.legs.ev_ebitda * 100) | round(2) %}
-          <div class="mark {{ mcls }}" style="left: {{ pct_l }}%;"></div>
-          <div class="lbl {{ mcls }} {{ 'row-b' if loop.index == 2 else '' }} {{ 'end' if pct_l > 80 else '' }}" style="left: {{ pct_l }}%;">{{ mlabel }} · {{ mval | idn(0) }}</div>
+        {% set price_now = cover.rating_box.price | float %}
+        {% set meth_max = (valuation_page.legs.ev_ebitda if valuation_page.legs.ev_ebitda > price_now else price_now) * 1.18 %}
+        <div class="meth-bars">
+          {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("TP gate-primary", valuation_page.legs.ev_ebitda, "b3")] %}
+          <div class="meth-col">
+            <div class="meth-val">{{ mval | idn(0) }}</div>
+            <div class="meth-bar {{ mcls }}" style="height: {{ (mval / meth_max * 100) | round(1) }}%;"></div>
+            <div class="meth-lbl">{{ mlabel }}</div>
+          </div>
           {% endfor %}
-          <div class="axis-end">0</div>
-          <div class="axis-end right">{{ valuation_page.legs.ev_ebitda | idn(0) }}</div>
+          <div class="meth-ref" style="bottom: {{ (price_now / meth_max * 100) | round(1) }}%;">
+            <span>Harga pasar {{ price_now | idn(0) }}</span>
+          </div>
         </div>
         <p class="sens-cap">Gap Gordon vs exit multiple {{ (br.fv_exit / br.fv_gordon) | idn(1) }}× pada basis FCFF yang sama —
           dibaca sebagai asumsi belum tuntas, bukan dirata-rata.</p>

@@ -116,4 +116,10 @@ def test_sensitivity_block_reads_its_numbers_from_the_payload():
 
     # a changed model value must change the rendered block
     assert '<div class="sens-strip">' in html and 'class="bridge-bar"' in html
-    assert "class=\"field\"" in html
+    assert 'class="meth-bars"' in html, "the method spread is bars, as the tools draw it"
+
+    # the heatmap bands are computed server-side, so every cell carries one
+    import re as _re
+
+    bands = _re.findall(r'class="num sens-cell ([a-z0-9\- ]*)"', html)
+    assert bands and all(b.strip() for b in bands), "every sensitivity cell needs an upside band"

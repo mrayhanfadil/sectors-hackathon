@@ -17,6 +17,7 @@ silently skipped.
 from __future__ import annotations
 
 import json
+import math
 import pathlib
 from types import SimpleNamespace
 
@@ -485,11 +486,37 @@ def _view(page: dict) -> dict:
     grid = page["sensitivity"]["fair_value"]
     base = page["sensitivity"]["base"]
     page["sensitivity"]["columns"] = [str(c) for c in grid.columns]
+    # Colour by upside, the way the tools' sensitivity heatmap does: red where the grid prices below the market,
+    # cream at parity, navy where it prices well above. Computed here rather than in the template so nothing has
+    # to parse a formatted string back into a number.
+    # The reference is the base case, not the market price: this leg's grid sits far below the traded price as a
+    # whole (the method bars carry that point), so reading it against the price turns every cell the same colour
+    # and says nothing about which WACC/g combination moves the value.
+    base_ref = page["sensitivity"].get("base_fv") or 0
+
+    def _band(fv):
+        try:
+            fv = float(fv)
+        except (TypeError, ValueError):
+            return ""
+        if not (base_ref and math.isfinite(fv)):
+            return ""
+        rel = (fv / float(base_ref) - 1) * 100
+        if rel <= -50:
+            return "h-neg2"
+        if rel <= -15:
+            return "h-neg1"
+        if rel < 15:
+            return "h-mid"
+        if rel < 50:
+            return "h-pos1"
+        return "h-pos2"
+
     page["sensitivity"]["rows"] = [
         {
             "label": str(label),
             "cells": [
-                {"value": _fmt0(val), "base": bool(base and r == base[0] and c == base[1])}
+                {"value": _fmt0(val), "base": bool(base and r == base[0] and c == base[1]), "band": _band(val)}
                 for c, val in enumerate(grid.loc[label].tolist())
             ],
         }

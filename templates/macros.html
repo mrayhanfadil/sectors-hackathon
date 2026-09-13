@@ -104,6 +104,13 @@
     --ink: #101828; --muted: #475467; --line: #e4e7ec; --paper: #ffffff;
     --brand: {{ palette.brand }}; --brand-dark: {{ palette.brand_dark }};
     --accent: {{ palette.accent }}; --pos: #067647; --neg: #b42318; --band: #f9fafb;
+    /* Abida tool language: the same token set the relativepeers / ddm_tool valuation apps use, so the deck's
+       charts, tables and chips read as one family with them. */
+    --ab-navy: #0B1F3A; --ab-navy-mid: #14304F; --ab-navy-soft: #2C4A6B;
+    --ab-ice: #A9C9E8; --ab-ice-pale: #E4EEF7; --ab-ice-faint: #F4F8FC;
+    --ab-rule: #D6E2EE; --ab-ink: #1A2733; --ab-ink-muted: #63748A;
+    --ab-buy: #1E8F5F; --ab-sell: #C0392B; --ab-hold: #B08D57; --ab-warn: #D98B2B;
+
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -148,22 +155,23 @@
   /* Sensitivity components: the reviewer called the old block a wall of text — every value it narrated was
      already in the payload, so the page now shows them as a strip, a bridge and a method spread, and keeps the
      prose for the reasoning. */
-  .sens-title { font-size: 8.4pt; font-weight: 700; color: var(--ink); margin: 0 0 2.5pt; }
-  .sens-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5pt; margin-bottom: 4.5pt; }
-  .sens-chip { border: .5pt solid var(--line); border-radius: 2pt; padding: 3pt 5pt 3.5pt; }
-  .sens-chip .k { font-size: 6.4pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-                  color: var(--muted); }
-  .sens-chip .v { font-size: 10.8pt; font-weight: 700; color: var(--ink); font-variant-numeric: tabular-nums;
-                  margin-top: .5pt; }
-  .sens-chip .n { font-size: 6.3pt; color: var(--muted); line-height: 1.24; margin-top: .5pt; }
-  .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 9pt; }
+  .sens-title { font-size: 8pt; font-weight: 700; color: var(--ab-navy); margin: 0 0 2pt; }
+  .sens-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4.5pt; margin-bottom: 3.5pt; }
+  .sens-chip { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 2.4pt 4.5pt 2.8pt;
+               background: var(--ab-ice-faint); }
+  .sens-chip .k { font-size: 6.2pt; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+                  color: var(--ab-ink-muted); }
+  .sens-chip .v { font-size: 10pt; font-weight: 700; color: var(--ab-navy);
+                  font-variant-numeric: tabular-nums; margin-top: .5pt; }
+  .sens-chip .n { font-size: 6.1pt; color: var(--muted); line-height: 1.24; margin-top: .5pt; }
+  .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
   .sens-h { font-size: 6.6pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
             color: var(--ink); margin: 0 0 3pt; }
-  .bridge-bar { display: flex; height: 7pt; border-radius: 1.5pt; overflow: hidden; margin-bottom: 3pt; }
+  .bridge-bar { display: flex; height: 6pt; border-radius: 1.5pt; overflow: hidden; margin-bottom: 2.5pt; }
   .bridge-bar .seg-eq { background: var(--brand); }
   .bridge-bar .seg-nd { background: #E4E7EC; }
   .bridge-tbl { width: 100%; font-size: 7pt; border-collapse: collapse; }
-  .bridge-tbl td { padding: 1.1pt 0; border-top: .5pt solid var(--line); }
+  .bridge-tbl td { padding: .9pt 0; border-top: .5pt solid var(--ab-rule); }
   .bridge-tbl td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .bridge-tbl tr.tot td { font-weight: 700; border-top: .75pt solid var(--ink); }
   .field { position: relative; height: 29pt; margin: 0 0 1pt; }
@@ -179,10 +187,10 @@
   .field .axis-end.right { right: 0; }
   .sens-cap { font-size: 6.4pt; color: var(--muted); line-height: 1.26; margin: 0; }
   .sens-narr { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5pt 12pt; margin-top: 4pt; }
-  .sens-narr p { font-size: 6.9pt; line-height: 1.3; margin: 0 0 2pt; }
+  .sens-narr p { font-size: 6.7pt; line-height: 1.26; margin: 0 0 1.5pt; }
   .note-list { margin-top: 3pt; }
-  .note { display: grid; grid-template-columns: 60pt 1fr; gap: 7pt; border-top: .5pt solid var(--line);
-          padding: 2pt 0; font-size: 6.8pt; line-height: 1.28; }
+  .note { display: grid; grid-template-columns: 58pt 1fr; gap: 6pt; border-top: .5pt solid var(--ab-rule);
+          padding: 1.6pt 0; font-size: 6.6pt; line-height: 1.25; }
   .note-k { font-weight: 700; color: var(--ink); }
   .note-k-plain { color: var(--muted); font-weight: 400; }
   .note-b { color: var(--ink); }
@@ -204,14 +212,62 @@
                 font-variant-numeric: tabular-nums; }
   .section-head h2 { font-size: 13.5pt; font-weight: 700; color: var(--ink); letter-spacing: -.25pt; }
 
-  .fin-table { width: 100%; border-collapse: collapse; font-size: 7.3pt; margin: 3pt 0; }
-  .fin-table th { background: var(--brand-dark); color: #fff; padding: 2.2pt 5pt; text-align: right;
-                  font-weight: 600; }
+  /* Tables follow the tools: navy header band in small letterspaced capitals, ice-faint zebra, hairline rules,
+     tabular numerals right-aligned, rounded container. */
+  .fin-table { width: 100%; border-collapse: collapse; font-size: 7pt; margin: 2.5pt 0;
+               border: .6pt solid var(--ab-rule); border-radius: 2pt; overflow: hidden; }
+  /* Letterspaced small caps were the tool look, but `text-transform: uppercase` rewrites the PDF text layer, and
+     the house gates read that layer to check the labels the rules require verbatim. Tracking and size carry the
+     style without touching the characters. */
+  .fin-table th { background: var(--ab-navy); color: #fff; padding: 2.1pt 4.5pt; text-align: right;
+                  font-weight: 600; font-size: 6.8pt; letter-spacing: .06em; white-space: nowrap; }
   .fin-table th:first-child { text-align: left; }
-  .fin-table td { padding: 1.6pt 5pt; border-bottom: .5pt solid var(--line); text-align: left; }
+  .fin-table td { padding: 1.3pt 4.5pt; border-top: .5pt solid var(--ab-rule); text-align: left;
+                  color: var(--ab-ink); }
   .fin-table td.num { text-align: right; font-variant-numeric: tabular-nums; }
-  .fin-table tbody tr:nth-child(even) { background: var(--band); }
-  .fin-table tfoot td { font-weight: 700; border-top: 1pt solid var(--ink); }
+  .fin-table tbody tr:nth-child(even) { background: var(--ab-ice-faint); }
+  .fin-table tfoot td { font-weight: 700; border-top: 1pt solid var(--ab-navy); }
+
+  /* Sensitivity heatmap: colour encodes upside, the same reading as the tools' heatmap — red where the grid
+     prices below the market, cream at parity, navy where it prices well above. */
+  .fin-table.sens td.sens-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  .fin-table.sens td.h-neg2 { background: rgba(192,57,43,.86); color: #fff; }
+  .fin-table.sens td.h-neg1 { background: rgba(192,57,43,.34); color: var(--ab-ink); }
+  .fin-table.sens td.h-mid  { background: #F2E9DC; color: var(--ab-ink); }
+  .fin-table.sens td.h-pos1 { background: #DCEBF7; color: var(--ab-ink); }
+  .fin-table.sens td.h-pos2 { background: var(--ab-navy); color: #fff; }
+  .fin-table.sens td.sens-base { outline: 1.2pt solid var(--ab-navy); outline-offset: -1.2pt; font-weight: 700; }
+  .fin-table.sens thead th:first-child { background: var(--ab-navy-mid); }
+  .heat-key { display: flex; align-items: center; gap: 3.5pt; font-size: 6pt; color: var(--ab-ink-muted);
+              margin-top: 1.2pt; }
+  .heat-key .k { width: 11pt; height: 6pt; border-radius: 1pt; display: inline-block; }
+
+  /* Method comparison, the way the tools draw it: bars in navy / ice / ice-pale with the values outside, and a
+     dashed market-price reference line across them. */
+  .meth-bars { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt;
+               height: 40pt; align-items: end; margin: 1.5pt 0 1pt; }
+  .meth-col { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+  .meth-val { font-size: 6.9pt; font-weight: 700; color: var(--ab-navy); text-align: center;
+              margin-bottom: .8pt; font-variant-numeric: tabular-nums; }
+  .meth-bar { border: .6pt solid var(--ab-navy-soft); border-radius: 1.5pt; }
+  .meth-bar.b1 { background: var(--ab-navy); }
+  .meth-bar.b2 { background: var(--ab-ice); }
+  .meth-bar.b3 { background: var(--ab-ice-pale); }
+  .meth-lbl { font-size: 6.1pt; color: var(--ab-ink-muted); text-align: center; margin-top: 1.4pt;
+              letter-spacing: .02em; }
+  .meth-ref { position: absolute; left: 0; right: 0; border-top: 1pt dashed var(--ab-sell); }
+  .meth-ref span { position: absolute; left: 0; top: -6pt; background: #fff; padding: 0 2.5pt;
+                   font-size: 6pt; font-weight: 700; color: var(--ab-sell); }
+
+  /* Status chips, as the tools render them: rounded pill, tinted ground, small caps label. */
+  .ab-chip { display: inline-block; padding: .5pt 5pt; border-radius: 100px; font-size: 6.3pt; font-weight: 700;
+             letter-spacing: .04em; text-transform: uppercase; }
+  .ab-chip.c-navy { background: var(--ab-ice-pale); color: var(--ab-navy); }
+  .ab-chip.c-buy { background: rgba(30,143,95,.12); color: var(--ab-buy); }
+  .ab-chip.c-hold { background: rgba(176,141,87,.16); color: var(--ab-hold); }
+  .ab-chip.c-sell { background: rgba(192,57,43,.12); color: var(--ab-sell); }
+  .eyebrow { font-size: 6.2pt; font-weight: 600; letter-spacing: .16em; text-transform: uppercase;
+             color: var(--ab-ink-muted); }
 
   .exhibit-head { margin: 10pt 0 3pt; }
   .exhibit-id { font-size: 7.5pt; font-weight: 700; color: var(--ink); }
@@ -229,8 +285,10 @@
   .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12pt; }
   .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; }
   .card { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; background: #fff; }
-  .card-tint { border: .75pt solid var(--line); border-left: 2.5pt solid var(--brand);
-               border-radius: 4pt; padding: 8pt; background: var(--band); }
+  /* Cards follow the tools: ice-faint ground, hairline frame, no coloured spine. The royal-blue left bar the
+     card used to carry was the last colour outside the navy/ice token set. */
+  .card-tint { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 7pt;
+               background: var(--ab-ice-faint); }
   /* Investment thesis as a numbered rail: the numeral is the anchor, hairlines do the separating, and the
      extracted figure sits on the right so each pillar is scannable. No boxes — a stack of tinted cards
      reads as one grey block and gives every point the same weight. */
@@ -343,7 +401,8 @@
   .fin-table tr.bold td { font-weight: 700; }
   .fin-table tr.hl td { background: #fde68a; }
   .sens th, .sens td { font-size: 6.8pt; }
-  .sens td.sens-base { background: #fde68a; font-weight: 700; }
+  /* the base case is framed, not filled: an amber cell was a colour outside the tool palette */
+  .sens td.sens-base { font-weight: 700; }
 </style>
 {%- endmacro %}
 
@@ -744,13 +803,32 @@
   Chart.defaults.animation = false;          // PDF: no waiting for easing
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
   Chart.defaults.plugins.tooltip.enabled = false;
-  const PALETTE = ["#1d4ed8", "#98a2b3", "#f2994a", "#12b76a", "#7a5af8", "#e31b54"];
+  // Same order the valuation tools use (navy, ice, ice-pale, then the rating colours), so a series reads the
+  // same way here and in the tools.
+  const PALETTE = ["#0B1F3A", "#A9C9E8", "#E4EEF7", "#B08D57", "#1E8F5F", "#C0392B"];
+  Chart.defaults.color = "#1A2733";
+  Chart.defaults.borderColor = "#D6E2EE";
+  Chart.defaults.font.family = "Poppins, Helvetica Neue, Arial, sans-serif";
+  Chart.defaults.scales = Chart.defaults.scales || {};
   function mkChart(id, cfg) {
     const el = document.getElementById(id); if (!el) return;
     cfg.options = Object.assign({responsive: false, devicePixelRatio: 2}, cfg.options || {});
     cfg.options.plugins = Object.assign({tooltip: {enabled: false}}, cfg.options.plugins || {});
     if (cfg.type === "line" && cfg.data.datasets) {
-      cfg.data.datasets.forEach(d => { d.tension = .25; d.borderWidth = d.borderWidth || 1.6; d.pointRadius = d.pointRadius || 0; });
+      cfg.data.datasets.forEach(d => {
+        d.tension = .25; d.borderWidth = d.borderWidth || 2; d.pointRadius = d.pointRadius || 0;
+        // the tools fill softly under a line instead of leaving it floating
+        if (d.fill === undefined && !d.hidden) {
+          const hex = (d.borderColor || "#0B1F3A");
+          const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
+          if (m) d.backgroundColor = d.backgroundColor || "rgba(" +
+            [m[1], m[2], m[3]].map(x => parseInt(x, 16)).join(",") + ",0.07)";
+          d.fill = true;
+        }
+      });
+    }
+    if (cfg.type === "bar" && cfg.data && cfg.data.datasets) {
+      cfg.data.datasets.forEach(d => { d.borderWidth = d.borderWidth || 1; d.borderColor = d.borderColor || "#2C4A6B"; });
     }
     if (cfg.data && cfg.data.datasets) cfg.data.datasets.forEach((d, i) => {
       if (!d.backgroundColor && !d.borderColor) {
