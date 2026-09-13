@@ -350,3 +350,13 @@ that finds them on disk makes **zero billed calls** (verified: `billed calls: 0 
 as-of date and the number of frozen sessions rather than implying a fresh TTM at every point.
 
 **Exhibit numbering note (12 Sep 2026):** the owner's rule text names Exhibit 11/12/13 for this slide. The deck now carries the slide-4 relative anchor ('Metode pembanding') as Exhibit 11, so the peer table is Exhibit 12 and the two bands are Exhibits 13-14. House rule §Exhibit labeling requires numbering to run continuously from the first slide with no reset, so the shift is the rule being followed, not broken. Renumbering the slide back to 11/12/13 would mean removing or folding the anchor exhibit. **Owner decision (12 Sep 2026): keep continuous numbering — the peer table stays Exhibit 12 and the bands 13-14.** The 11/12/13 in the rule text was written against a deck without the slide-4 anchor; do not renumber this slide, and do not drop the anchor exhibit to make the numbers match.
+
+## Amendment — 13 Sep 2026 (owner)
+
+> "gua ngga mau ini muncul 'SLIDE 5B · RELATIVE VALUATION — OWN HISTORY · METODOLOGI TIME-SERIES, BERBEDA
+> FILOSOFI DARI TABEL PEER DI SLIDE 5A'"
+
+The banner is deleted. The separation the spec requires still holds through the 5B section header
+("Valuasi Relatif Historis — Own History") and the fact that each half lives on its own page. The prose
+requirement stays in force; the scaffolding label was the part the owner rejected, because it narrated the
+deck's own structure to the reader instead of saying anything about the company.
