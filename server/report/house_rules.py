@@ -607,6 +607,8 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_valuation_page(payload.get("valuation_page"), payload)
     # Slide 5 of the deck is its own page as well.
     violations += audit_peer_page(payload.get("peers_page"), payload)
+    # Slide 6 of the deck is its own page as well.
+    violations += audit_statements_page(payload.get("statements_page"), payload)
     return {
         "ok": not violations,
         "applicable": applicable,
@@ -616,7 +618,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation", "slide5-peers",
+            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
@@ -745,4 +747,117 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
                                          "disagree", "opposite", "berlawanan")):
             violations.append("slide 5 shows a peer premium while its own history reads cheap — the page "
                               "must state that the two readings disagree instead of implying confirmation")
+    return violations
+
+
+def audit_statements_page(page: dict | None, payload: dict | None = None) -> list[str]:
+    """Deck slide 6 (docs/ammn-slides/slide6-statements-spec.md): Exhibit 14 + 15.
+
+    The rules fix the row list and the column set, so this gate checks structure; then it checks the two
+    things that make the statements trustworthy — that the balance sheet ties EXACTLY, and that every
+    figure the model could not source is disclosed rather than printed as a number.
+    """
+    if page is None or page == {}:
+        return []
+    if not isinstance(page, dict) or not page.get("available"):
+        return ["slide 6 has no statements page available — the page cannot be silently dropped"]
+    violations: list[str] = []
+    years = [str(y) for y in (page.get("years") or [])]
+    if years != ["2024A", "2025A", "2026F", "2027F", "2028F"]:
+        violations.append(f"slide 6 columns must be 2024A-2028F, got {years}")
+
+    if str(page.get("variant") or "corporate") == "bank":
+        want_in = ("Interest Income", "Interest Expense", "Net Interest Income", "Non-Interest Income",
+                   "PPOP", "Provisions")
+        want_bs = ("Gross Loans", "Net Loans", "Customer Deposits", "Shareholders' Funds")
+    else:
+        want_in = ("Revenue / Sales", "Cost of Goods Sold", "Gross Profit", "Operating Expenses",
+                   "EBIT", "Interest Income", "Interest Expense", "Other Income", "Pre-tax Profit",
+                   "Income Tax", "Minority Interest", "Net Profit")
+        want_bs = ("Cash & Cash Equivalents", "Trade Receivables", "Inventory", "Other Current Assets",
+                   "Total Current Assets", "Fixed Assets", "Other Non-Current Assets", "Total Assets",
+                   "Short-term Debt", "Trade Payables", "Other Current Liabilities",
+                   "Total Current Liabilities", "Long-term Debt", "Other Non-Current Liabilities",
+                   "Total Liabilities", "Shareholders' Equity", "Total Liabilities & Equity")
+
+    for block_key, wanted, label in (("income", want_in, "Exhibit 14 income statement"),
+                                     ("balance", want_bs, "Exhibit 15 balance sheet")):
+        block = page.get(block_key) or {}
+        rows = [str(r.get("label", "")) for r in (block.get("rows") or [])]
+        for name in wanted:
+            if not any(r.startswith(name) for r in rows):
+                violations.append(f"{label} is missing the '{name}' row the rules require")
+        seen: list = []
+        for r in rows:
+            match = max((i for i, w in enumerate(wanted) if r.startswith(w)),
+                        key=lambda i: len(wanted[i]), default=None)
+            if match is not None:
+                if not seen or seen[-1] != match:
+                    seen.append(match)
+        if seen != sorted(set(seen)) or sorted(set(seen)) != list(range(len(wanted))):
+            got = [wanted[i] for i in seen]
+            violations.append(f"{label} rows are out of the order the rules specify (got {got})")
+        headers = [str(h) for h in (block.get("headers") or [])]
+        if headers[1:] != years:
+            violations.append(f"{label} header row does not carry the five year columns")
+        for r in block.get("rows") or []:
+            vals = r.get("cells") or []
+            if len(vals) != len(years):
+                violations.append(f"{label} row '{r.get('label')}' has {len(vals)} values against "
+                                  f"{len(years)} years")
+            if r.get("kind") in ("na",) and not r.get("note"):
+                violations.append(f"{label} prints 'n/a' for '{r.get('label')}' without saying why")
+
+    # subtotals must actually foot, and the balance sheet must tie exactly
+    def find(block_key: str, label: str) -> dict:
+        return next((r for r in ((page.get(block_key) or {}).get("rows") or [])
+                     if str(r.get("label", "")).startswith(label)), {})
+
+    for label, kind in (("Gross Profit", "subtotal"), ("EBIT", "subtotal"), ("Pre-tax Profit", "subtotal"),
+                        ("Net Profit", "highlight"), ("Total Assets", "subtotal"),
+                        ("Total Liabilities & Equity", "subtotal")):
+        block_key = "income" if label in ("Gross Profit", "EBIT", "Pre-tax Profit", "Net Profit") else "balance"
+        r = find(block_key, label)
+        if r and r.get("kind") != kind:
+            violations.append(f"slide 6 row '{label}' must be flagged {kind}, got '{r.get('kind') or 'plain'}'")
+    for label in ("Cost of Goods Sold", "Operating Expenses", "Interest Expense", "Income Tax"):
+        r = find("income", label)
+        if r and r.get("kind") != "deduction":
+            violations.append(f"slide 6 row '{label}' is a deduction and must be flagged as one")
+    # recompute the tie from the rows as printed — a reported tie-out the page could contradict is worthless
+    bs_rows = {str(r.get("label", "")): (r.get("cells") or [])
+               for r in ((page.get("balance") or {}).get("rows") or [])}
+    def longest(prefix: str):
+        hits = [(len(k), v) for k, v in bs_rows.items() if k.startswith(prefix)]
+        return max(hits)[1] if hits else None
+
+    ta_row = longest("Total Assets")
+    tle_row = max([(len(k), v) for k, v in bs_rows.items()
+                   if k.startswith("Total Liabilities")], default=None)
+    tle_row = tle_row[1] if tle_row else None
+    if ta_row and tle_row and len(ta_row) == len(tle_row) == len(years):
+        for i, y in enumerate(years):
+            if isinstance(ta_row[i], (int, float)) and isinstance(tle_row[i], (int, float)):
+                if abs(float(tle_row[i]) - float(ta_row[i])) > 1.0:
+                    violations.append(f"slide 6 printed balance sheet does not tie in {y}: "
+                                      f"final liabilities+equity row {float(tle_row[i]):,.0f} vs "
+                                      f"Total Assets {float(ta_row[i]):,.0f}")
+    tie = page.get("tie_out") or {}
+    for y in years:
+        gap = tie.get(y)
+        if gap is None:
+            violations.append(f"slide 6 reports no balance tie-out for {y}")
+        elif abs(float(gap)) > 1.0:
+            violations.append(f"slide 6 balance sheet does not tie in {y}: Total L&E - Total Assets = "
+                              f"{float(gap):,.0f}")
+    if not page.get("tied"):
+        violations.append("slide 6 balance check failed (rules: Total Liabilities & Equity must equal Total Assets)")
+    if not (page.get("notes") or []):
+        violations.append("slide 6 prints no notes — the reconciling lines and the cash plug must be disclosed")
+    notes = " ".join(str(n) for n in (page.get("notes") or [])).lower()
+    for needed, why in (("rekonsiliasi", "the residual 'Other income' line must be named as a reconciling item"),
+                        ("penyeimbang", "cash as the balance-sheet plug must be stated"),
+                        ("dipublikasikan", "unpublished rows must be disclosed as such")):
+        if needed not in notes:
+            violations.append(f"slide 6 notes are missing the disclosure that: {why}")
     return violations

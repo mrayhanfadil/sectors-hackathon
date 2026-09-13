@@ -189,7 +189,7 @@ date. "Kualitatif" is an acceptable answer; an invented figure is not.
 """
 
 SLIDE5_RULE = """SLIDE 5 — PEER VALUATION (cross-sectional) + HISTORICAL RELATIVE VALUATION (time-series).
-Two different philosophies on ONE page, separated by a hard visual break (divider or section header). The
+Two different philosophies, printed as two consecutive pages (5A peer table, 5B own history) so the hard visual break between them is unavoidable: The
 reader must never read them as two confirmations of one conclusion: the peer table says where the name sits
 against its comparables, the own-history tool says where it sits against itself. They can disagree, and when
 they do you REPORT THE DISAGREEMENT — never average the two into one story.
@@ -270,6 +270,47 @@ If source is "sectors_missing_key" → emit source=sectors_missing_key with an e
 
 Prefer T1 sources (idx.co.id, kontan, bisnis, idxchannel) over T2 (reuters, bloomberg).
 Always include url and date.
+"""
+
+
+SLIDE6_RULE = """SLIDE 6 — INCOME STATEMENT + BALANCE SHEET (Exhibit 14 and Exhibit 15), stacked on one page.
+Columns 2024A, 2025A, 2026F, 2027F, 2028F on BOTH exhibits — identical header row, year labels in the header,
+numbers right-aligned, subtotals bold, and a shaded navy header row with white text (house table style).
+
+Exhibit 14 row order (do not reorder, do not drop): Revenue/Sales, Cost of Goods Sold (in brackets, a
+deduction), Gross Profit (bold subtotal), Operating Expenses/SG&A (in brackets), EBIT (bold subtotal),
+Interest Income, Interest Expense (in brackets), Other Income/(Expense) non-operating, Pre-tax Profit
+(bold subtotal), Income Tax (in brackets), Minority Interest, Net Profit (bold AND highlighted — the most
+important row on the page).
+Exhibit 15 row order: Assets — Cash & Cash Equivalents, Trade Receivables, Inventory, Other Current Assets,
+Total Current Assets (subtotal), Fixed Assets (Net), Other Non-Current Assets, Total Assets (bold); then
+Liabilities & Equity — Short-term Debt, Trade Payables, Other Current Liabilities, Total Current Liabilities
+(subtotal), Long-term Debt, Other Non-Current Liabilities, Total Liabilities (bold subtotal),
+Shareholders' Equity, Total Liabilities & Equity (bold) which MUST equal Total Assets exactly.
+
+Bank issuers switch the whole structure to the BBTN pattern (Interest Income, Interest Expense, Net Interest
+Income, Non-Interest Income, PPOP, Provisions & Allowances replacing the corporate income statement; Gross
+Loans, Provisions, Net Loans, Govt Bonds, Securities, Total Earning Assets, Customer Deposits, Shareholders'
+Funds on the balance sheet). The switch is explicit — never a silent mix of the two structures.
+
+MODEL DISCIPLINE (these are the rules the Critic enforces, and the reasons they exist)
+  1. Actuals come from Sectors ANNUAL rows (financials.historical_financials). Do NOT build them from the
+     quarterly payload: its revenue field does not reconcile to the annual figures, and mixing the two
+     bases misstates every ratio on the page.
+  2. The forecast columns must tie to the deck's own forecast spine (cover.slide2.key_financials: revenue,
+     EBITDA, net profit). If the statements disagree with the valuation page, the deck contradicts itself.
+     Beware: a row labelled "EBITDA Growth (%)" is a percentage, not EBITDA — never parse it as a level.
+  3. Every line between the anchors is built from a NAMED driver (D&A, cost of debt, tax rate, capex, payout)
+     and the page states the driver set. No undocumented plug, ever.
+  4. Rows Sectors does not publish (trade receivables, trade payables, interest income for many names) are
+     printed as n/a WITH the reason, and the amount they would carry lives in the matching "Other" row so
+     the statement still foots. Never invent a number, never silently drop the row.
+  5. "Other income/(expense)" is the RECONCILING line. Say so in print — a residual presented as a
+     discovered figure is a lie, and the Critic rejects it.
+  6. Cash is the balance-sheet plug in the forecast columns (state it). Without a plug, assets and
+     liabilities+equity cannot meet exactly, because Sectors has no capex/repayment schedule.
+  7. The balance check is not prose: Total Assets minus (Total Liabilities + Equity) must be 0 to the
+     rupiah in every column, and the page prints the tie-out.
 """
 
 # ---------------------------------------------------------------------------
@@ -465,7 +506,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -575,7 +616,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -714,4 +755,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE

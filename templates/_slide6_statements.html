@@ -1,0 +1,44 @@
+{# ===== SLIDE 6 — Income Statement + Balance Sheet (Exhibit 14 & 15) ============================
+   Rules: docs/ammn-slides/slide6-statements-spec.md. Header row shaded navy with white text, numbers
+   right-aligned, subtotals bold, Net Profit highlighted, and the tie-out printed under the balance sheet. #}
+{% if statements_page and statements_page.available %}
+<div class="page">
+<div class="slide6">
+  {{ m.running() }}
+  {{ m.section(8, "Laporan Keuangan — Laba Rugi & Neraca") }}
+
+  {% for block_key in ("income", "balance") %}
+  {% set B = statements_page[block_key] %}
+  {{ m.exhibit_auto(ns, B.title, statements_page.sources[0] if statements_page.sources else "") }}
+  <table class="fin-table stmt-table">
+    <thead><tr>{% for h in B.headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+    <tbody>
+      {% for r in B.rows %}
+      {% if r.kind == "section" %}
+      <tr class="stmt-section"><td colspan="{{ B.headers|length }}">{{ r.label }}</td></tr>
+      {% else %}
+      <tr class="{{ 'stmt-subtotal' if r.kind == 'subtotal' else '' }}{{ ' stmt-highlight' if r.kind == 'highlight' else '' }}{{ ' stmt-na' if r.kind == 'na' else '' }}">
+        <td class="stmt-label">{{ r.label }}{% if r.kind == "deduction" %} <span class="stmt-ded">(-)</span>{% endif %}{% if r.note %} <span class="stmt-inline">{{ r.note }}</span>{% endif %}</td>
+        {% for v in r.cells %}
+        <td class="num">{{ "({:,.0f})".format(v|abs) if (r.kind == "deduction" and v is number) else ("{:,.0f}".format(v) if v is number else "n/a") }}</td>
+        {% endfor %}
+      </tr>
+      {% endif %}
+      {% endfor %}
+    </tbody>
+  </table>
+  {% if block_key == "balance" %}
+  <p class="small stmt-tie"><b>Balance check:</b> Total Liabilities &amp; Equity − Total Assets =
+  {% for y in statements_page.years %}{{ "{:,.0f}".format(statements_page.tie_out[y]) }}{% if not loop.last %} · {% endif %}{% endfor %}
+  (Rp bn) — {{ "neraca seimbang persis di semua kolom" if statements_page.tied else "TIDAK seimbang" }}.</p>
+  {% endif %}
+  {% endfor %}
+
+  <div class="stmt-notes">
+    <div class="para-h">Catatan metode &amp; keterbatasan data</div>
+    <ul class="stmt-note-cols">{% for n in statements_page.notes %}<li class="small">{{ n }}</li>{% endfor %}</ul>
+  </div>
+  {{ m.pagefoot(8, ns) }}
+</div>
+</div>
+{% endif %}

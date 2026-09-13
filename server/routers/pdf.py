@@ -402,6 +402,12 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         from server.report.peers_page import build_peers_page
 
         payload["peers_page"] = build_peers_page(t)
+
+        # Deck slide 6: income statement + balance sheet, tied to the deck's own forecast spine.
+        from server.report.statements_page import build_statements_page
+
+        payload["statements_page"] = build_statements_page(
+            t, ((payload.get("cover") or {}).get("slide2") or {}).get("key_financials"))
     except Exception as exc:
         build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:

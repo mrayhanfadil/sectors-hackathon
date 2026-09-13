@@ -5,6 +5,31 @@ Archetype: Non-bank capital-intensive resources / mining (Batu Hijau open pit Ph
 
 ---
 
+## 0. Binding rule text (owner, 12 Sep 2026)
+
+> SLIDE 6 — Income Statement & Balance Sheet
+> Dua exhibit di-stack dalam satu slide, format tabel konsisten dengan pola BBTN Exhibit 7-8 di project
+> (header row shading navy dengan teks putih, angka rata kanan, kolom tahun di header row).
+>
+> **Exhibit 14. Income Statement** — Kolom: 2024A, 2025A, 2026F, 2027F, 2028F. Baris berurutan:
+> Revenue/Sales, Cost of Goods Sold (dalam kurung sebagai deduction), Gross Profit (bold subtotal),
+> Operating Expenses/SG&A (dalam kurung), EBIT (bold subtotal), Interest Income, Interest Expense
+> (dalam kurung), Other Income/(Expense) non-operating, Pre-tax Profit (bold subtotal), Income Tax
+> (dalam kurung), Minority Interest, Net Profit (bold, highlight sebagai baris paling penting).
+>
+> **Exhibit 15. Balance Sheet** — Kolom sama. Bagian Assets: Cash & Cash Equivalents, Trade Receivables,
+> Inventory, Other Current Assets, Total Current Assets (subtotal), Fixed Assets (Net), Other Non-Current
+> Assets, Total Assets (bold). Bagian Liabilities & Equity: Short-term Debt, Trade Payables, Other Current
+> Liabilities, Total Current Liabilities (subtotal), Long-term Debt, Other Non-Current Liabilities, Total
+> Liabilities (bold subtotal), Shareholders' Equity, Total Liabilities & Equity (bold, harus sama persis
+> dengan Total Assets sebagai balance check).
+>
+> Format ini untuk emiten non-bank/general corporate. Untuk emiten bank, struktur ini diganti total
+> mengikuti pola BBTN (Interest Income, Interest Expense, Net Interest Income, Non-Interest Income, PPOP,
+> Provisions & Allowances menggantikan struktur Income Statement di atas; dan struktur Balance Sheet bank
+> pakai Gross Loans, Provisions, Net Loans, Govt Bonds, Securities, Total Earning Assets, Customer
+> Deposits, Shareholders' Funds, sesuai pola Exhibit 7-8 BBTN persis).
+
 ## 1. Purpose
 
 Slides 6 and 7 provide the comprehensive, full-length 5-year financial statement projections (2024A–2028F) and structural financial ratio analysis for institutional readers (portfolio managers, credit analysts, investment committee members, and model auditors).
@@ -340,3 +365,18 @@ Before emitting the document or approving the model output, the Critic gate vali
   - `EBITDA (Ex 14/17) == EBITDA (Ex 3) == EBITDA (Ex 5)`.
   - Capex aligns between Exhibit 16 and Slide 4 DCF.
 - [ ] **Sector Switch Verification**: Bank variant is documented as a dormant switch; AMMN cleanly uses the non-bank mining general corporate schema.
+
+## 6. Decision log — statement build (12 Sep 2026)
+
+| Decision | Why | Alternative rejected |
+|---|---|---|
+| Actuals from Sectors annual rows, never from the quarterly payload | The quarterly revenue field does not reconcile to the annual figures (four quarters ≈ Rp 44 tn vs FY2025A Rp 30.9 tn). Mixing bases misstates every ratio | Quarterly TTM actuals: fresher, but they contradict the annual audited numbers |
+| Forecast columns tie to the deck's Key Financials spine (revenue 27,236 · EBITDA 18,396 · net profit 7,004, flat FY26F-28F) | The valuation page is built on those anchors; statements that disagree would make the deck contradict itself | Re-deriving revenue/EBITDA from the FY2025A cost structure: gives ≈ Rp 11.7 tn EBITDA, contradicting the TP |
+| Opex held at the FY2025A run-rate; **COGS is the balancing line** | The only chain that both foots vertically and lands on the spine's EBITDA. It implies a gross margin of 59.6% vs 45.3% actual — the page states that, because the improvement belongs to the mid-cycle assumption, not to a new finding | Holding the FY2025A COGS ratio: EBIT goes negative and the statements stop footing |
+| `Other income/(expense)` is the reconciling line, named as such in print | Actuals: it is what makes pre-tax foot (= pre-tax − EBIT + interest; Rp −780 bn in FY2024A, Rp 0 in FY2025A). Forecasts: it reconciles to the mid-cycle net-profit path (Rp 1,753 bn/yr) | Printing Sectors' `non_operating_income_or_loss` (−6,212 bn in FY2025A): it does not enter the bridge, so pre-tax would not foot |
+| Cash is the balance-sheet plug in forecast columns | With no capex/repayment schedule from Sectors, assets and L+E cannot meet exactly any other way; the page names the plug | Plugging a hidden line: the tie-out would be cosmetic |
+| Trade receivables, trade payables and interest income print `n/a` with the reason | Sectors publishes no such fields for AMMN (checked across every cached payload). The amount they carry sits in the matching "Other" row so the statement still foots | Inventing percentages of revenue for them |
+| Minority interest derived as pre-tax − tax − net | Sectors annual rows carry no minorities field; the derivation is exact on the actuals (Rp 77 bn FY2024A, Rp 152 bn FY2025A) | Assuming zero |
+| Bank variant switched by an explicit `variant` flag, not built for AMMN | The rule names the BBTN structure; AMMN is non-bank, and the spec records the row set so a bank ticker switches structure instead of mixing | Silent partial switching |
+
+**Tie-out verified:** Total L&E − Total Assets = 0 in all five columns (printed on the page).

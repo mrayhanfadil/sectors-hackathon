@@ -317,10 +317,13 @@
 {# ================= SLIDE 5 — PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
 {% include "_slide5_peers.html" %}
 
+{# ================= SLIDE 6 — STATEMENTS ================= #}
+{% include "_slide6_statements.html" %}
+
 {# ================= PAGE 4 — FINANCIALS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(8, "Financials 6Y + Rasio") }}
+  {{ m.section(9, "Financials 6Y + Rasio") }}
   {% if exhibits %}
     {% for ex in exhibits %}
     {% if ex.chart %}
@@ -330,18 +333,20 @@
     {% endfor %}
   {% endif %}
 
+  {# income statement + balance sheet now live on slide 6 in the owner's format; cash flow stays here #}
   {% for stmt in financials %}
+  {% if "Cash Flow" in stmt.title %}
   <h3>{{ stmt.title }}</h3>
   {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
   {{ m.table(stmt.headers, stmt.rows) }}
+  {% endif %}
   {% endfor %}
-  {{ m.pagefoot(8, ns) }}
-</div>
+  {{ m.pagefoot(9, ns) }}\n</div>
 
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(9, "Faktor Risiko") }}
+  {{ m.section(10, "Faktor Risiko") }}
   {% for r in risks %}
   <div class="risk-bucket">
     <b>{{ r.bucket }}</b>
@@ -356,8 +361,7 @@
   {{ m.section(10, "Disklaimer") }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(9, ns) }}
-</div>
+  {{ m.pagefoot(10, ns) }}\n</div>
 
 
 <style>
@@ -382,6 +386,27 @@
   .slide5 table.fin-table th, .slide5 table.fin-table td { padding-top: 1.6pt; padding-bottom: 1.6pt; }
   .slide5 .disclaim-inline { font-size: 7.4pt; background: #fff7ed; border-left: 2.5pt solid #b45309;
     padding: 5pt 7pt; color: #3f2b12; }
+</style>
+
+<style>
+  .slide6 .stmt-table thead th { background: #152c6e; color: #fff; font-weight: 600; }
+  .slide6 .stmt-table td.stmt-label { text-align: left; }
+  .slide6 .stmt-table tr.stmt-subtotal td { font-weight: 700; border-top: 1px solid #0f172a; }
+  .slide6 .stmt-table tr.stmt-highlight td { font-weight: 700; background: #fff7ed;
+    box-shadow: inset 3px 0 0 #b45309; }
+  .slide6 .stmt-table tr.stmt-section td { font-weight: 700; letter-spacing: .06em; background: #f1f5f9;
+    text-transform: uppercase; font-size: 7.5pt; }
+  .slide6 .stmt-table tr.stmt-na td { color: #64748b; font-style: italic; }
+  .slide6 .stmt-ded { color: #64748b; font-size: 7pt; }
+  .slide6 .stmt-inline { color: #64748b; font-size: 6pt; font-style: italic; }
+  .slide6 .stmt-tie { margin-top: 3pt; padding: 3pt 6pt; font-size: 6.6pt; background: #f8fafc;
+    border-left: 2.5pt solid #0f766e; }
+  .slide6 .stmt-notes ul.stmt-note-cols { margin: 2pt 0 0 0; padding: 0; list-style: none;
+    column-count: 2; column-gap: 14pt; }
+  .slide6 .stmt-notes li { font-size: 6.1pt; line-height: 1.28; margin-bottom: 2.5pt;
+    break-inside: avoid; }
+  .slide6 table.fin-table { font-size: 6.7pt; }
+  .slide6 table.fin-table th, .slide6 table.fin-table td { padding: 0.6pt 3pt; }
 </style>
 {{ m.chartjs() }}
 <script>
