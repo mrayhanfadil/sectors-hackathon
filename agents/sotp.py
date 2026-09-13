@@ -34,6 +34,15 @@ from common import (  # noqa: E402
     write_json,
 )
 
+try:  # the agents are also run as standalone scripts from their own directory
+    from server.report import numfmt as _nf
+except ImportError:  # pragma: no cover
+    import pathlib as _p
+    import sys as _s
+
+    _s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+    from server.report import numfmt as _nf
+
 
 def implied_equity(pillar: dict[str, Any], company: dict[str, Any]) -> float:
     """Pillar equity proxy: peer-avg P/E x (revenue x net margin proxy).
@@ -127,8 +136,8 @@ def run(ticker: str) -> dict[str, Any]:
         status = "OK" if sc["ok"] else "MISMATCH"
         print(
             f"[sotp] {ticker}: {sotp['pillar_count']} pillars | pct_sum={sc['pct_sum']}% "
-            f"| weights={sc['equity_weight_sum']}% | holdco discount {sotp['holdco_discount_pct']:.0%} "
-            f"| pre {sotp['pre_discount_total_mn']:,.0f} -> post {sotp['post_discount_equity_mn']:,.0f} | {status}"
+            f"| weights={sc['equity_weight_sum']}% | holdco discount {_nf.pcfrac(sotp['holdco_discount_pct'], 0)} "
+            f"| pre {_nf.idn(sotp['pre_discount_total_mn'], digits=0)} -> post {_nf.idn(sotp['post_discount_equity_mn'], digits=0)} | {status}"
         )
     else:
         print(f"[sotp] {ticker}: not a conglomerate — skipped ({sotp.get('reason')})")

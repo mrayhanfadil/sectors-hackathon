@@ -17,6 +17,7 @@ from google.adk.models.llm_request import LlmRequest
 from google.genai import types
 
 from agents.adk.providers.opencode_responses import spark13_model
+from server.report import numfmt as _nf
 
 
 async def _pong() -> str:
@@ -41,4 +42,4 @@ def test_4x_parallel_pong_live():
     wall = time.time() - t0
     assert len(texts) == 4, f"Expected 4 responses, got {len(texts)}"
     assert all("PONG" in t.upper() for t in texts), texts
-    print(f"\n4 parallel took {wall:.1f}s")
+    print(f"\n4 parallel took {_nf.dec(wall, digits=1)}s")

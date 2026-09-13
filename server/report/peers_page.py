@@ -11,6 +11,7 @@ import os
 from typing import Any, Optional
 
 from markupsafe import Markup
+from server.report import numfmt as _nf
 
 CACHE_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           "output", "cache", "sectors")
@@ -49,11 +50,12 @@ def _pct(a: Optional[float], b: Optional[float]) -> Optional[float]:
 
 
 def _fmt(v: Optional[float], d: int = 2) -> str:
-    return f"{v:,.{d}f}" if isinstance(v, (int, float)) else "n.m."
+    """Indonesian grouping, so a peer multiple reads 12,51x like the rest of the deck."""
+    return _nf.idn(v, d) if isinstance(v, (int, float)) else "n.m."
 
 
 def _fmt_rp(v: Optional[float]) -> str:
-    return f"Rp {v:,.0f}" if isinstance(v, (int, float)) else "n/a"
+    return f"Rp {_nf.idn(v, digits=0)}" if isinstance(v, (int, float)) else "n/a"
 
 
 def build_peers_page(ticker: str = "AMMN") -> dict:
@@ -94,15 +96,15 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
     parts_a_narr.append(
         f"{tk} diperdagangkan pada P/E {_fmt(covered['pe_ttm'])}x dan P/BV {_fmt(covered['pb_mrq'])}x — "
         f"vs median peer {_fmt(stats['pe_ttm']['median'])}x / {_fmt(stats['pb_mrq']['median'])}x "
-        f"({gaps['pe_ttm']:+.0f}% / {gaps['pb_mrq']:+.0f}%) dan average "
+        f"({_nf.dec(gaps['pe_ttm'], digits=0, signed=True)}% / {_nf.dec(gaps['pb_mrq'], digits=0, signed=True)}%) dan average "
         f"{_fmt(stats['pe_ttm']['average'])}x / {_fmt(stats['pb_mrq']['average'])}x."
         if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. — earnings TTM negatif.")
     if covered.get("ev_ebitda_ttm") and stats["ev_ebitda_ttm"]["median"]:
         parts_a_narr.append(
             f"Pada multiple berbasis kas, EV/EBITDA {_fmt(covered['ev_ebitda_ttm'])}x vs median "
-            f"{_fmt(stats['ev_ebitda_ttm']['median'])}x ({gaps['ev_ebitda_ttm']:+.0f}%), sementara ROE TTM "
-            f"{covered['roe_ttm']*100:.1f}% vs median {stats['roe_ttm']['median']*100:.1f}% "
-            f"({gaps['roe_ttm']:+.0f}%) — jadi premium P/E bukan semata efek basis earnings.")
+            f"{_fmt(stats['ev_ebitda_ttm']['median'])}x ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
+            f"{_nf.dec(covered['roe_ttm']*100, digits=1)}% vs median {_nf.dec(stats['roe_ttm']['median']*100, digits=1)}% "
+            f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) — jadi premium P/E bukan semata efek basis earnings.")
     if peers.get("pe_excluded"):
         parts_a_narr.append(
             f"P/E {', '.join(peers['pe_excluded'])} dinyatakan n.m. (earnings negatif/near-zero) dan "
@@ -138,8 +140,8 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
             continue
         series = [{"date": x["date"], "value": x[key]} for x in bands["sessions"] if x[key] is not None]
         implied = bands["implied_price"].get(key)
-        narr = (f"Sekarang {s['current']:.2f}x — persentil {s['percentile']:.0f} dari {s['n']} sesi "
-                f"(mean {s['mean']:.2f}x, median {s['median']:.2f}x).")
+        narr = (f"Sekarang {_nf.dec(s['current'], digits=2)}x — persentil {_nf.dec(s['percentile'], digits=0)} dari {s['n']} sesi "
+                f"(mean {_nf.dec(s['mean'], digits=2)}x, median {_nf.dec(s['median'], digits=2)}x).")
         if implied:
             if implied.get("is_range"):
                 narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
@@ -200,20 +202,20 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
     def y(v: float) -> float:
         return height - 16 - (height - 26) * (v - lo) / (hi - lo)
 
-    line = " ".join(f"{x(i):.1f},{y(p['value']):.1f}" for i, p in enumerate(pts))
+    line = " ".join(f"{_nf.dec(x(i), digits=1)},{_nf.dec(y(p['value']), digits=1)}" for i, p in enumerate(pts))
     cur = pts[-1]
     out = [f'<svg viewBox="0 0 {width} {height}" class="band-svg" role="img">',
            f'<polyline points="{line}" fill="none" stroke="#12395b" stroke-width="1.6"/>',
-           f'<line x1="4" y1="{y(block["mean"]):.1f}" x2="{width-4}" y2="{y(block["mean"]):.1f}" '
+           f'<line x1="4" y1="{_nf.dec(y(block["mean"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["mean"]), digits=1)}" '
            f'stroke="#b45309" stroke-width="1" stroke-dasharray="6,3"/>',
-           f'<line x1="4" y1="{y(block["median"]):.1f}" x2="{width-4}" y2="{y(block["median"]):.1f}" '
+           f'<line x1="4" y1="{_nf.dec(y(block["median"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["median"]), digits=1)}" '
            f'stroke="#0f766e" stroke-width="1" stroke-dasharray="2,3"/>',
-           f'<line x1="4" y1="{y(block["min"]):.1f}" x2="{width-4}" y2="{y(block["min"]):.1f}" '
+           f'<line x1="4" y1="{_nf.dec(y(block["min"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["min"]), digits=1)}" '
            f'stroke="#cbd5e1" stroke-width="0.8"/>',
-           f'<line x1="4" y1="{y(block["max"]):.1f}" x2="{width-4}" y2="{y(block["max"]):.1f}" '
+           f'<line x1="4" y1="{_nf.dec(y(block["max"]), digits=1)}" x2="{width-4}" y2="{_nf.dec(y(block["max"]), digits=1)}" '
            f'stroke="#cbd5e1" stroke-width="0.8"/>',
-           f'<circle cx="{x(n-1):.1f}" cy="{y(cur["value"]):.1f}" r="3.6" fill="#b91c1c"/>',
-           f'<text x="6" y="12" font-size="9" fill="#475569">mean {block["mean"]:.1f}x</text>',
+           f'<circle cx="{_nf.dec(x(n-1), digits=1)}" cy="{_nf.dec(y(cur["value"]), digits=1)}" r="3.6" fill="#b91c1c"/>',
+           f'<text x="6" y="12" font-size="9" fill="#475569">mean {_nf.dec(block["mean"], digits=1)}x</text>',
            f'<text x="6" y="{height-3}" font-size="9" fill="#475569">{pts[0]["date"]}</text>',
            f'<text x="{width-70}" y="{height-3}" font-size="9" fill="#475569">{cur["date"]}</text>',
            "</svg>"]
@@ -232,9 +234,9 @@ if __name__ == "__main__":
     print(f"Exhibit {a['exhibit']}: {len(a['rows'])} rows + median/average | narrative {len(a['narrative'])} sentences")
     print("  " + a["narrative_text"][:300])
     for blk in b["bands"]:
-        print(f"  {blk['label']:10s} n={blk['n']:>3d} now={blk['current']:>7.2f} pct={blk['percentile']:>3.0f} "
-              f"mean={blk['mean']:>7.2f} median={blk['median']:>7.2f}")
+        print(f"  {blk['label']:10s} n={blk['n']:>3d} now={_nf.dec(blk['current'], digits=2, width=7)} pct={_nf.dec(blk['percentile'], digits=0, width=3)} "
+              f"mean={_nf.dec(blk['mean'], digits=2, width=7)} median={_nf.dec(blk['median'], digits=2, width=7)}")
     for r in b["implied"]:
-        print(f"  implied {r['label']:10s} mean {r['to_mean']:>9,.0f} median {r['to_median']:>9,.0f} "
+        print(f"  implied {r['label']:10s} mean {_nf.idn(r['to_mean'], digits=0, width=9)} median {_nf.idn(r['to_median'], digits=0, width=9)} "
               f"range={r['is_range']}")
     print(f"  disclaimer: {len(b['disclaimer'])} chars | driver note: {b['driver_note'][:90]}")

@@ -51,11 +51,11 @@
 <table class="fin-table">
   <thead><tr>{% for h in headers %}<th>{{ h }}</th>{% endfor %}</tr></thead>
   <tbody>
-    {% for r in rows %}<tr>{% for c in r %}<td class="{{ 'num' if not loop.first else '' }}">{{ c }}</td>{% endfor %}</tr>{% endfor %}
+    {% for r in rows %}<tr>{% for c in r %}<td class="{{ 'num' if not loop.first else '' }}">{{ c|auto }}</td>{% endfor %}</tr>{% endfor %}
   </tbody>
   {% if footers %}
   <tfoot>
-    {% for r in footers %}<tr>{% for c in r %}<td class="{{ 'num' if not loop.first else '' }}">{{ c }}</td>{% endfor %}</tr>{% endfor %}
+    {% for r in footers %}<tr>{% for c in r %}<td class="{{ 'num' if not loop.first else '' }}">{{ c|auto }}</td>{% endfor %}</tr>{% endfor %}
   </tfoot>
   {% endif %}
 </table>
@@ -357,8 +357,8 @@
         <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
-    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#475467">{{ "%.1f"|format(vmax) }}</text>
-    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 1 }}" font-size="6.5" fill="#475467">{{ "%.1f"|format(vmin) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#475467">{{ vmax|dec(1) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 1 }}" font-size="6.5" fill="#475467">{{ vmin|dec(1) }}</text>
     <g font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif">
       <rect x="{{ W - 140 }}" y="{{ pad_t }}" width="8" height="8" fill="#1d4ed8" rx="1"/><text x="{{ W - 128 }}" y="{{ pad_t + 7 }}" fill="#101828">{{ ticker_label }}</text>
       <rect x="{{ W - 70 }}" y="{{ pad_t }}" width="8" height="8" fill="#98a2b3" rx="1"/><text x="{{ W - 58 }}" y="{{ pad_t + 7 }}" fill="#101828">IHSG</text>
@@ -470,7 +470,7 @@
       {% endif %}
       <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D6E2EE" stroke-width="0.5"/>
       <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0B1F3A">{{ lbl }}</text>
-      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val }}</text>
+      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val|auto }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -628,7 +628,7 @@
       {% set y_bot = pad_t + chart_h - (b.bot / vmax * chart_h) %}
       {% set bh = [y_bot - y_top, 2] | max %}
       <rect x="{{ bx }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ b.fill }}" stroke="{{ b.stroke }}" stroke-width="1"/>
-      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.0f"|format(b.val) }}</text>
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ b.val|dec(0) }}</text>
       <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
       {% if b.l2 %}
       <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
@@ -642,6 +642,7 @@
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
   Chart.defaults.font.family = "Helvetica Neue, Arial, sans-serif";
+  Chart.defaults.locale = "id-ID";      // tick labels group thousands the way the tables do
   Chart.defaults.font.size = 8;
   Chart.defaults.animation = false;          // PDF: no waiting for easing
   Chart.defaults.plugins.legend.labels.boxWidth = 8;

@@ -12,6 +12,7 @@ OUTPUT  : pick_row, safe_div, clip_flag functions, and the FlagLog class.
 
 import numpy as np
 import pandas as pd
+from server.report import numfmt as _nf
 
 
 # -----------------------------------------------------------------------
@@ -84,10 +85,10 @@ def clip_flag(value, low, high, name, flags, unit="x"):
         flags.warn(name, f"Invalid value, floor {low}{unit} used instead")
         return low
     if value < low:
-        flags.warn(name, f"Computed {value:.4f} below the floor, clipped to {low}")
+        flags.warn(name, f"Computed {_nf.dec(value, digits=4)} below the floor, clipped to {low}")
         return low
     if value > high:
-        flags.warn(name, f"Computed {value:.4f} above the cap, clipped to {high}")
+        flags.warn(name, f"Computed {_nf.dec(value, digits=4)} above the cap, clipped to {high}")
         return high
     return value
 
@@ -164,8 +165,8 @@ def fmt_idr(value, unit="bn"):
     if value is None or not np.isfinite(value):
         return "n/a"
     if unit == "tn":
-        return f"IDR {value/1e12:,.2f} tn"
-    return f"IDR {value/1e9:,.1f} bn"
+        return f"IDR {_nf.idn(value/1e12, digits=2)} tn"
+    return f"IDR {_nf.idn(value/1e9, digits=1)} bn"
 
 
 def fmt_pct(value, dp=2):

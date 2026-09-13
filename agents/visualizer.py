@@ -49,6 +49,15 @@ from common import (  # noqa: E402
     write_json,
 )
 
+try:  # the agents are also run as standalone scripts from their own directory
+    from server.report import numfmt as _nf
+except ImportError:  # pragma: no cover
+    import pathlib as _p
+    import sys as _s
+
+    _s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+    from server.report import numfmt as _nf
+
 FIGW, FIGH = 9.0, 5.4
 DPI = 150
 PALETTE = ["#1f6feb", "#2da44e", "#bf8700", "#cf222e", "#8250df", "#57606a"]
@@ -91,14 +100,14 @@ def chart_revenue_mix(company: dict, outdir: str) -> dict:
     growth = [s.get("growth_yoy", 0) for s in segs]
     fig, ax = plt.subplots(figsize=(9, 5.4), dpi=DPI)
     wedges, _texts, _autotexts = ax.pie(
-        sizes, labels=None, autopct=lambda p: f"{p:.0f}%",
+        sizes, labels=None, autopct=lambda p: f"{_nf.dec(p, digits=0)}%",
         startangle=90, counterclock=False,
         colors=PALETTE[: len(sizes)], pctdistance=0.72,
         wedgeprops=dict(width=0.42, edgecolor="white"),
     )
     for w, g in zip(wedges, growth):
         w.set_label("")
-    legend = [f"{l}  {s:.0f}%  (y/y {g*100:+.1f}%)" for l, s, g in zip(labels, sizes, growth)]
+    legend = [f"{l}  {_nf.dec(s, digits=0)}%  (y/y {_nf.dec(g*100, digits=1, signed=True)}%)" for l, s, g in zip(labels, sizes, growth)]
     ax.legend(wedges, legend, loc="center left", bbox_to_anchor=(1.0, 0.5), fontsize=9, frameon=False)
     ax.set_title(f"{company['ticker']} — Revenue Mix by Segment", fontsize=13, fontweight="bold", pad=14)
     ax.axis("equal")
@@ -116,7 +125,7 @@ def chart_trend(company: dict, outdir: str) -> dict:
     ax.plot(x, ebitda, color=PALETTE[3], marker="o", linewidth=2, label="EBITDA")
     for xi, r in zip(x, rev):
         rtn = r / 1e6 if abs(r) >= 1e6 else r / 1e3
-        ax.text(float(xi), r, f"{rtn:,.0f}" + ("tn" if abs(r) >= 1e6 else "bn"), ha="center", va="bottom", fontsize=8.5)
+        ax.text(float(xi), r, f"{_nf.idn(rtn, digits=0)}" + ("tn" if abs(r) >= 1e6 else "bn"), ha="center", va="bottom", fontsize=8.5)
     ax.set_xticks(x, years)
     ax.set_ylabel("IDR mn")
     ax.set_title(f"{company['ticker']} — Revenue & EBITDA Trend", fontsize=13, fontweight="bold")
@@ -163,7 +172,7 @@ def chart_leverage(company: dict, outdir: str) -> dict:
     ax1.legend(h1 + h2, l1 + l2, frameon=False, loc="upper right")
     ax1.set_title(
         f"{company['ticker']} — Leverage & Liquidity "
-        f"(Gearing {gear[0]:.0f}→{gear[-1]:.0f}% · D/EBITDA {debt_eb[0]:.0f}→{debt_eb[-1]:.0f}x · Current {cur[0]:.1f}→{cur[-1]:.1f})",
+        f"(Gearing {_nf.dec(gear[0], digits=0)}→{_nf.dec(gear[-1], digits=0)}% · D/EBITDA {_nf.dec(debt_eb[0], digits=0)}→{_nf.dec(debt_eb[-1], digits=0)}x · Current {_nf.dec(cur[0], digits=1)}→{_nf.dec(cur[-1], digits=1)})",
         fontsize=11, fontweight="bold",
     )
     _foot(fig, company, f"trajectory {years[0]}→{years[-1]} (de-lever + liquidity recovery)")
@@ -181,9 +190,9 @@ def chart_roe_roa(company: dict, outdir: str) -> dict:
     ax.bar(x - w / 2, [v * 100 for v in roe], w, color=PALETTE[0], label="ROE")
     ax.bar(x + w / 2, [v * 100 for v in roa], w, color=PALETTE[5], label="ROA")
     for xi, v in zip(x - w / 2, roe):
-        ax.text(xi, v * 100 + 0.4, f"{v*100:.1f}", ha="center", fontsize=8.5)
+        ax.text(xi, v * 100 + 0.4, f"{_nf.dec(v*100, digits=1)}", ha="center", fontsize=8.5)
     for xi, v in zip(x + w / 2, roa):
-        ax.text(xi, v * 100 + 0.4, f"{v*100:.1f}", ha="center", fontsize=8.5)
+        ax.text(xi, v * 100 + 0.4, f"{_nf.dec(v*100, digits=1)}", ha="center", fontsize=8.5)
     ax.set_xticks(x, years)
     ax.set_ylabel("%")
     ax.set_title(f"{company['ticker']} — ROE / ROA", fontsize=13, fontweight="bold")
@@ -209,7 +218,7 @@ def chart_vs_jci(company: dict, outdir: str) -> dict:
         ax.plot(dates, [c / j0 * 100 for c in j_close], marker="s", color=JCI_COLOR, linewidth=2, label="JCI (indexed)")
     ytd = ph.get("ytd_perf", {})
     if ytd:
-        ax.text(0.02, 0.95, f"YTD: {company['ticker']} {ytd.get('ticker_pct', 0):+.1f}% vs JCI {ytd.get('jci_pct', 0):+.1f}% (rel {ytd.get('relative_pct', 0):+.1f}pp)",
+        ax.text(0.02, 0.95, f"YTD: {company['ticker']} {_nf.dec(ytd.get('ticker_pct', 0), digits=1, signed=True)}% vs JCI {_nf.dec(ytd.get('jci_pct', 0), digits=1, signed=True)}% (rel {_nf.dec(ytd.get('relative_pct', 0), digits=1, signed=True)}pp)",
                 transform=ax.transAxes, fontsize=9, color="#24292f",
                 bbox=dict(boxstyle="round,pad=0.4", fc="#f6f8fa", ec="#d0d7de"))
     ax.set_ylabel("Indexed (100 = first point)")
@@ -232,9 +241,9 @@ def chart_peer_multiples(company: dict, outdir: str) -> dict:
         ax.bar(x - w / 2, [p.get("pe", 0) for p in peers], w, color=PALETTE[0], label="P/E")
         ax.bar(x + w / 2, [p.get("ev_ebitda", 0) for p in peers], w, color=PALETTE[1], label="EV/EBITDA")
         for xi, p in zip(x - w / 2, peers):
-            ax.text(xi, p.get("pe", 0) + 0.2, f"{p.get('pe', 0):.1f}", ha="center", fontsize=8)
+            ax.text(xi, p.get("pe", 0) + 0.2, f"{_nf.dec(p.get('pe', 0), digits=1)}", ha="center", fontsize=8)
         for xi, p in zip(x + w / 2, peers):
-            ax.text(xi, p.get("ev_ebitda", 0) + 0.2, f"{p.get('ev_ebitda', 0):.1f}", ha="center", fontsize=8)
+            ax.text(xi, p.get("ev_ebitda", 0) + 0.2, f"{_nf.dec(p.get('ev_ebitda', 0), digits=1)}", ha="center", fontsize=8)
         ax.set_xticks(x, labels)
         ax.set_ylabel("x")
         ax.legend(frameon=False)
@@ -249,9 +258,9 @@ def chart_kpi(company: dict, outdir: str) -> dict:
     fig, ax = _new_ax()
     tenancy = kpi.get("tenancy_ratio")
     if tenancy is not None:
-        ax.text(0.5, 0.55, f"Tenancy ratio {tenancy:.2f}x", ha="center", fontsize=20, color=PALETTE[0], fontweight="bold", transform=ax.transAxes)
-        ax.text(0.5, 0.40, f"tenants {kpi.get('tenants', 0):,.0f} / towers {kpi.get('towers', 0):,.0f}", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
-        ax.text(0.5, 0.28, f"colocation {kpi.get('colocation', 0):,.0f} · fiber {kpi.get('fiber_km', 0):,.0f} km", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
+        ax.text(0.5, 0.55, f"Tenancy ratio {_nf.dec(tenancy, digits=2)}x", ha="center", fontsize=20, color=PALETTE[0], fontweight="bold", transform=ax.transAxes)
+        ax.text(0.5, 0.40, f"tenants {_nf.idn(kpi.get('tenants', 0), digits=0)} / towers {_nf.idn(kpi.get('towers', 0), digits=0)}", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
+        ax.text(0.5, 0.28, f"colocation {_nf.idn(kpi.get('colocation', 0), digits=0)} · fiber {_nf.idn(kpi.get('fiber_km', 0), digits=0)} km", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
         ax.set_title(f"{company['ticker']} — Operational KPI (infra hero)", fontsize=13, fontweight="bold")
         ax.axis("off")
     else:
@@ -283,12 +292,12 @@ def chart_bands(company: dict, outdir: str) -> dict:
         mean, std = b.get("mean"), b.get("std")
         ax.plot(dates, vals, marker="o", color=TICKER_COLOR, linewidth=2, label=name)
         if mean and std:
-            ax.axhline(mean, color="#57606a", linestyle="--", linewidth=1, label=f"mean {mean:.2f}")
+            ax.axhline(mean, color="#57606a", linestyle="--", linewidth=1, label=f"mean {_nf.dec(mean, digits=2)}")
             for sgn, lab in ((-2, "-2σ"), (-1, "-1σ"), (1, "+1σ"), (2, "+2σ")):
                 ax.axhline(mean + sgn * std, color="#bf8700", linestyle=":", linewidth=0.9)
             cur = vals[-1]
             pos = "ABOVE" if cur > mean + std else ("BELOW" if cur < mean - std else "within")
-            ax.set_title(f"{name} — {pos} AVG ({cur:.2f}x)", fontsize=11, fontweight="bold")
+            ax.set_title(f"{name} — {pos} AVG ({_nf.dec(cur, digits=2)}x)", fontsize=11, fontweight="bold")
         else:
             ax.set_title(f"{name} — historical", fontsize=11, fontweight="bold")
         ax.legend(frameon=False, fontsize=8)

@@ -30,10 +30,10 @@
       <tr class="{{ 'peer-self' if r.is_covered else '' }}">
         <td class="tk">{{ r.symbol }}</td>
         <td>{{ r.name }}</td>
-        <td class="num">{{ "n.m." if r.pe_nm else (r.pe|round(2)) }}</td>
-        <td class="num">{{ r.pbv|round(2) if r.pbv else "—" }}</td>
-        <td class="num">{{ "n.m." if r.ev_ebitda_nm else (r.ev_ebitda|round(2)) }}</td>
-        <td class="num">{{ (r.roe * 100)|round(1) if r.roe else "—" }}</td>
+        <td class="num">{{ "n.m." if r.pe_nm else (r.pe|dec(2)) }}</td>
+        <td class="num">{{ r.pbv|dec(2) if r.pbv else "—" }}</td>
+        <td class="num">{{ "n.m." if r.ev_ebitda_nm else (r.ev_ebitda|dec(2)) }}</td>
+        <td class="num">{{ (r.roe * 100)|dec(1) if r.roe else "—" }}</td>
         <td class="num">{{ "%.2f tn"|format(r.market_cap / 1e12) if r.market_cap else "—" }}</td>
       </tr>
       {% endfor %}
@@ -41,18 +41,18 @@
     <tfoot>
       <tr class="peer-stat">
         <td class="tk">MEDIAN</td><td>Peer set ({{ A.counts.pe_ttm }} nama ber-P/E valid)</td>
-        <td class="num">{{ A.median.pe|round(2) }}</td>
-        <td class="num">{{ A.median.pbv|round(2) }}</td>
-        <td class="num">{{ A.median.ev_ebitda|round(2) }}</td>
-        <td class="num">{{ (A.median.roe * 100)|round(1) }}</td>
+        <td class="num">{{ A.median.pe|dec(2) }}</td>
+        <td class="num">{{ A.median.pbv|dec(2) }}</td>
+        <td class="num">{{ A.median.ev_ebitda|dec(2) }}</td>
+        <td class="num">{{ (A.median.roe * 100)|dec(1) }}</td>
         <td class="num">—</td>
       </tr>
       <tr class="peer-stat peer-average">
         <td class="tk">AVERAGE</td><td>Peer set</td>
-        <td class="num">{{ A.average.pe|round(2) }}</td>
-        <td class="num">{{ A.average.pbv|round(2) }}</td>
-        <td class="num">{{ A.average.ev_ebitda|round(2) }}</td>
-        <td class="num">{{ (A.average.roe * 100)|round(1) }}</td>
+        <td class="num">{{ A.average.pe|dec(2) }}</td>
+        <td class="num">{{ A.average.pbv|dec(2) }}</td>
+        <td class="num">{{ A.average.ev_ebitda|dec(2) }}</td>
+        <td class="num">{{ (A.average.roe * 100)|dec(1) }}</td>
         <td class="num">—</td>
       </tr>
     </tfoot>
@@ -90,8 +90,8 @@
       {% for r in B.implied %}
       <tr>
         <td class="tk">{{ r.label }}</td>
-        <td class="num">{{ "{:,.0f}".format(r.to_mean) }}</td>
-        <td class="num">{{ "{:,.0f}".format(r.to_median) }}</td>
+        <td class="num">{{ r.to_mean|idn(0) }}</td>
+        <td class="num">{{ r.to_median|idn(0) }}</td>
         <td class="num">{{ "{:,.0f}–{:,.0f}".format(r.low, r.high) if r.is_range else "konvergen" }}</td>
         <td class="num">{{ "%.0f%%"|format(r.delta_pct) if r.delta_pct else "—" }}</td>
       </tr>

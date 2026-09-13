@@ -33,6 +33,7 @@ import pandas as pd
 from config import ASSUMPTIONS
 from s08_terminal import terminal_value
 from s09_valuation import discount_and_value
+from server.report import numfmt as _nf
 
 
 def sensitivity_grid(proj, wacc_base, g_base, snapshot, data, flags):
@@ -47,8 +48,8 @@ def sensitivity_grid(proj, wacc_base, g_base, snapshot, data, flags):
     wacc_axis = [wacc_base + i * wacc_step for i in range(-steps, steps + 1)]
     g_axis = [g_base + j * g_step for j in range(-steps, steps + 1)]
 
-    fv_grid = pd.DataFrame(index=[f"{w*100:.2f}%" for w in wacc_axis],
-                           columns=[f"{g*100:.2f}%" for g in g_axis],
+    fv_grid = pd.DataFrame(index=[f"{_nf.dec(w*100, digits=2)}%" for w in wacc_axis],
+                           columns=[f"{_nf.dec(g*100, digits=2)}%" for g in g_axis],
                            dtype=float)
     up_grid = fv_grid.copy()
 
@@ -65,8 +66,8 @@ def sensitivity_grid(proj, wacc_base, g_base, snapshot, data, flags):
             if not v["valid"]:
                 continue
             fv = v["fair_value_per_share"]
-            fv_grid.loc[f"{w*100:.2f}%", f"{g*100:.2f}%"] = fv
-            up_grid.loc[f"{w*100:.2f}%", f"{g*100:.2f}%"] = v["upside"]
+            fv_grid.loc[f"{_nf.dec(w*100, digits=2)}%", f"{_nf.dec(g*100, digits=2)}%"] = fv
+            up_grid.loc[f"{_nf.dec(w*100, digits=2)}%", f"{_nf.dec(g*100, digits=2)}%"] = v["upside"]
 
     fv_grid.index.name = "WACC \\ Terminal g"
     up_grid.index.name = "WACC \\ Terminal g"

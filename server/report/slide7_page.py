@@ -19,6 +19,7 @@ from __future__ import annotations
 import json
 import pathlib
 from typing import Any, Optional
+from server.report import numfmt as _nf
 
 CACHE_DIRS = (
     pathlib.Path("output/cache/ammn_fill/raw_cache"),
@@ -119,9 +120,9 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             values[key].append(val)
         if abs(residual or 0.0) > 1.0:
             notes.append(
-                f"FY{y}A: section arus kas Sectors tidak foot ke saldo kasnya — OCF {ocf:,.0f} + investasi "
-                f"{icf:,.0f} + pendanaan {fcf_fin:,.0f} = {net_change:,.0f}, sedangkan kas tercatat berubah "
-                f"{cash - begin:,.0f}. Selisih {residual:,.0f} dinyatakan sebagai baris rekonsiliasi supaya "
+                f"FY{y}A: section arus kas Sectors tidak foot ke saldo kasnya — OCF {_nf.idn(ocf, digits=0)} + investasi "
+                f"{_nf.idn(icf, digits=0)} + pendanaan {_nf.idn(fcf_fin, digits=0)} = {_nf.idn(net_change, digits=0)}, sedangkan kas tercatat berubah "
+                f"{_nf.idn(cash - begin, digits=0)}. Selisih {_nf.idn(residual, digits=0)} dinyatakan sebagai baris rekonsiliasi supaya "
                 f"Ending Cash identik dengan neraca; angka section-nya tidak diubah.")
         prev_cash = cash
 
@@ -205,8 +206,8 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             fcf_bn = values["fcf_memo"][2]
             gap = (fcf_bn - fcff) / abs(fcff)
             notes.append(
-                f"Cross-check FCFF: Free Cash Flow FY26F dari exhibit ini Rp {fcf_bn:,.0f} bn vs FCFF "
-                f"normalised di Exhibit 8 Rp {fcff:,.0f} bn (selisih {gap:+.0%}). Keduanya tidak identik "
+                f"Cross-check FCFF: Free Cash Flow FY26F dari exhibit ini Rp {_nf.idn(fcf_bn, digits=0)} bn vs FCFF "
+                f"normalised di Exhibit 8 Rp {_nf.idn(fcff, digits=0)} bn (selisih {_nf.pcfrac(gap, 0)}). Keduanya tidak identik "
                 f"karena FCFF memakai NOPAT sementara baris ini mulai dari laba bersih dan beban bunga "
                 f"diperlakukan berbeda"
                 + ("; selisih sebesar ini perlu dicek ulang sebelum publish." if abs(gap) > 0.6 else

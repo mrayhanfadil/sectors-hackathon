@@ -10,6 +10,7 @@ from typing import Any, Callable, Optional
 from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.requests import Request
 from starlette.responses import JSONResponse, Response
+from server.report import numfmt as _nf
 
 logger = logging.getLogger("sectors.api")
 
@@ -103,7 +104,7 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
             if not allowed:
                 latency_ms = (time.perf_counter() - start_time) * 1000.0
                 logger.warning(
-                    f"[RATE_LIMIT_EXCEEDED] {method} {path} ip={client_ip} status=429 latency_ms={latency_ms:.2f}ms"
+                    f"[RATE_LIMIT_EXCEEDED] {method} {path} ip={client_ip} status=429 latency_ms={_nf.dec(latency_ms, digits=2)}ms"
                 )
                 return JSONResponse(
                     status_code=429,
@@ -135,11 +136,11 @@ class ProductionHardeningMiddleware(BaseHTTPMiddleware):
 
         if path.startswith("/api/mock"):
             logger.info(
-                f"[MOCK_API] {method} {path} ticker={ticker} status={response.status_code} latency_ms={latency_ms:.2f}ms ip={client_ip}"
+                f"[MOCK_API] {method} {path} ticker={ticker} status={response.status_code} latency_ms={_nf.dec(latency_ms, digits=2)}ms ip={client_ip}"
             )
         elif path.startswith("/api/"):
             logger.info(
-                f"[API] {method} {path} status={response.status_code} latency_ms={latency_ms:.2f}ms ip={client_ip}"
+                f"[API] {method} {path} status={response.status_code} latency_ms={_nf.dec(latency_ms, digits=2)}ms ip={client_ip}"
             )
 
         return response

@@ -32,6 +32,7 @@ import os
 import statistics as st
 from datetime import date, timedelta
 from typing import Any, Optional
+from server.report import numfmt as _nf
 
 TICKERS = ("AMMN",)
 PEER_SET = ("TBMS", "EMAS", "BRMS", "ANTM", "MDKA", "NCKL", "MBMA", "INCO", "TINS")
@@ -370,6 +371,6 @@ if __name__ == "__main__":
     tk = (args[0] if args else "AMMN").upper()
     pt = build_peer_table(tk, ref)
     bd = build_bands(tk, ref)
-    print(f"\n{tk} peer table: {len(pt['rows'])} rows | median P/E {pt['stats']['pe_ttm']['median']:.2f} "
+    print(f"\n{tk} peer table: {len(pt['rows'])} rows | median P/E {_nf.dec(pt['stats']['pe_ttm']['median'], digits=2)} "
           f"| {pt['credit_log']}")
     print(f"{tk} bands: {bd['window']['sessions']} sessions | {bd['credit_log']}")

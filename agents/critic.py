@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any, Dict, List, Optional
+from server.report import numfmt as _nf
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +41,7 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
     if isinstance(segments, list) and len(segments) > 1:
         seg_sum = sum(float(s.get("share_pct") or s.get("pct") or 0) for s in segments)
         if abs(seg_sum - 100.0) > 0.5:
-            reasons.append(f"Segment share_pct sums to {seg_sum:.1f}%, expected 100±0.5%")
+            reasons.append(f"Segment share_pct sums to {_nf.dec(seg_sum, digits=1)}%, expected 100±0.5%")
             fixes.append("Rebalance segment percentages to sum to 100%")
 
     # 3. KPI tenancy ratio check
@@ -52,7 +53,7 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
         if towers and tenants and tenancy:
             calc_ratio = float(tenants) / float(towers)
             if abs(calc_ratio - float(tenancy)) > 0.05:
-                reasons.append(f"Tenancy ratio mismatch: reported {tenancy} vs calculated {calc_ratio:.2f}x")
+                reasons.append(f"Tenancy ratio mismatch: reported {tenancy} vs calculated {_nf.dec(calc_ratio, digits=2)}x")
                 fixes.append("Update tenancy ratio to match tenants / towers")
 
     # 4. Exhibit house-format checks (docs/rules/house-report-format.md)

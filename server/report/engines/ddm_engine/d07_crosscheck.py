@@ -49,6 +49,7 @@ import numpy as np
 import pandas as pd
 
 from ddm_config import DDM_ASSUMPTIONS as A
+from server.report import numfmt as _nf
 
 
 # -----------------------------------------------------------------------
@@ -69,8 +70,8 @@ def fair_pbv(roe, ke, g, bvps, flags=None):
 
     spread = ke - g
     if spread < A["min_ke_g_spread"]:
-        out["reason"] = (f"The Ke minus g spread is only {spread*100:.2f}%, "
-                         f"below the minimum {A['min_ke_g_spread']*10000:.0f}bps.")
+        out["reason"] = (f"The Ke minus g spread is only {_nf.dec(spread*100, digits=2)}%, "
+                         f"below the minimum {_nf.dec(A['min_ke_g_spread']*10000, digits=0)}bps.")
         return out
 
     pbv = (roe - g) / spread
@@ -80,8 +81,8 @@ def fair_pbv(roe, ke, g, bvps, flags=None):
 
     if pbv <= 0 and flags:
         flags.warn("Fair P/BV",
-                   f"Fair P/BV is negative ({pbv:.2f}x) because ROE of "
-                   f"{roe*100:.1f}% is below terminal growth of {g*100:.2f}%. "
+                   f"Fair P/BV is negative ({_nf.dec(pbv, digits=2)}x) because ROE of "
+                   f"{_nf.dec(roe*100, digits=1)}% is below terminal growth of {_nf.dec(g*100, digits=2)}%. "
                    f"The company cannot grow faster than its own return on "
                    f"capital.")
     return out
@@ -106,7 +107,7 @@ def residual_income(bvps, roe, ke, g, retention, years=None, flags=None):
 
     spread_ke_g = ke - g
     if spread_ke_g < A["min_ke_g_spread"]:
-        out["reason"] = (f"The Ke minus g spread is only {spread_ke_g*100:.2f}%, "
+        out["reason"] = (f"The Ke minus g spread is only {_nf.dec(spread_ke_g*100, digits=2)}%, "
                          f"below the minimum.")
         return out
 
@@ -144,8 +145,8 @@ def residual_income(bvps, roe, ke, g, retention, years=None, flags=None):
 
     if flags and (roe - ke) < 0:
         flags.warn("Residual income",
-                   f"ROE of {roe*100:.1f}% is below the Cost of Equity of "
-                   f"{ke*100:.1f}%. The company destroys value relative to its "
+                   f"ROE of {_nf.dec(roe*100, digits=1)}% is below the Cost of Equity of "
+                   f"{_nf.dec(ke*100, digits=1)}%. The company destroys value relative to its "
                    f"cost of capital, so fair value sits below book value.")
     return out
 
@@ -164,20 +165,20 @@ def compare_methods(ddm_value, pbv_result, ri_result, drv, price, flags=None):
         rows.append({
             "Method": name,
             "Fair value (IDR)": round(val, 0) if np.isfinite(val) else np.nan,
-            "Upside": f"{up*100:+.1f}%" if np.isfinite(up) else "n/a",
+            "Upside": f"{_nf.dec(up*100, digits=1, signed=True)}%" if np.isfinite(up) else "n/a",
             "Note": note,
         })
 
     add("DDM Gordon Growth", ddm_value, "uses the actual payout ratio")
     if pbv_result["valid"]:
         add("Fair P/BV (ROE-g)/(Ke-g)", pbv_result["fair_value"],
-            f"fair P/BV {pbv_result['fair_pbv']:.2f}x, forces a consistent payout")
+            f"fair P/BV {_nf.dec(pbv_result['fair_pbv'], digits=2)}x, forces a consistent payout")
     else:
         rows.append({"Method": "Fair P/BV (ROE-g)/(Ke-g)", "Fair value (IDR)": np.nan,
                      "Upside": "n/a", "Note": pbv_result["reason"][:60]})
     if ri_result["valid"]:
         add("Residual Income", ri_result["fair_value"],
-            f"excess return {ri_result['excess_return']*100:+.1f}% above Ke")
+            f"excess return {_nf.dec(ri_result['excess_return']*100, digits=1, signed=True)}% above Ke")
     else:
         rows.append({"Method": "Residual Income", "Fair value (IDR)": np.nan,
                      "Upside": "n/a", "Note": ri_result["reason"][:60]})
@@ -196,10 +197,10 @@ def compare_methods(ddm_value, pbv_result, ri_result, drv, price, flags=None):
         if abs(ratio - 1.0) > 0.20 and np.isfinite(payout_star):
             direction = "lower" if ratio < 1 else "higher"
             diagnosis = (
-                f"DDM produces a value {abs(ratio-1)*100:.0f}% {direction} than "
+                f"DDM produces a value {_nf.dec(abs(ratio-1)*100, digits=0)}% {direction} than "
                 f"Fair P/BV. The cause is that the actual payout ratio of "
-                f"{payout_actual*100:.1f}% deviates from the payout consistent "
-                f"with stable growth ({payout_star*100:.1f}% = 1 - g/ROE). DDM "
+                f"{_nf.dec(payout_actual*100, digits=1)}% deviates from the payout consistent "
+                f"with stable growth ({_nf.dec(payout_star*100, digits=1)}% = 1 - g/ROE). DDM "
                 f"uses the actual payout, Fair P/BV forces a consistent one. "
                 f"This gap is not a disagreement between methods, but an "
                 f"arithmetic consequence of a dividend policy that differs from "

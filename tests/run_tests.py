@@ -74,7 +74,8 @@ def test_writer() -> None:
         qs = q["quantified_struct"]
         check("MTEL tenants 3,000-3,500", qs["tenants_added_min"] == 3000 and qs["tenants_added_max"] == 3500)
         check("MTEL revenue 360,000-420,000 mn", qs["annualized_revenue_min_mn"] == 360000.0 and qs["annualized_revenue_max_mn"] == 420000.0)
-        check("MTEL quantified string carries both", "3,000-3,500" in q["quantified"] and "360.0bn" in q["quantified"])
+        check("MTEL quantified string carries both",
+              "3.000-3.500" in q["quantified"] and "360,0bn" in q["quantified"])
     kpi = m["kpi_highlights"]
     check("MTEL tenancy KPI 1.57x", any(k["kpi"] == "tenancy_ratio" and abs(k["value"] - 1.57) < 1e-9 for k in kpi))
 

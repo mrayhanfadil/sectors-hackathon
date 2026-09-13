@@ -62,9 +62,9 @@
       {% if cover.esg and cover.esg.found %}
       <div class="card" style="margin-top:8pt; border-left:2.5pt solid var(--brand);">
         <div class="small muted" style="margin-bottom:2pt;">ESG</div>
-        {{ m.kv("Environmental", "%.2f"|format(cover.esg.scores.e)) }}
-        {{ m.kv("Social", "%.2f"|format(cover.esg.scores.s)) }}
-        {{ m.kv("Governance", "%.2f"|format(cover.esg.scores.g)) }}
+        {{ m.kv("Environmental", cover.esg.scores.e|dec(2)) }}
+        {{ m.kv("Social", cover.esg.scores.s|dec(2)) }}
+        {{ m.kv("Governance", cover.esg.scores.g|dec(2)) }}
         <!-- provenance (audit only, never printed; house-report-format.md §1) {{ cover.esg.source }} ({{ cover.esg.date }}) -->
       </div>
       {% endif %}

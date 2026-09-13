@@ -16,6 +16,7 @@ import json
 from pathlib import Path
 from typing import Any, Optional
 from urllib.parse import urlsplit
+from server.report import numfmt as _nf
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 FILL_DIR = REPO_ROOT / "output" / "cache" / "ammn_fill"
@@ -96,7 +97,7 @@ def _yoy(cur: Any, prev: Any, digits: int = 1) -> Any:
 def _idr_t(x: Any) -> str:
     """IDR -> 'Rp xxx,xx T' for prose."""
     try:
-        return f"Rp {float(x) / 1e12:,.2f} tn"
+        return f"Rp {_nf.idn(float(x) / 1e12, digits=2)} tn"
     except Exception:
         return "—"
 
@@ -380,8 +381,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     except Exception:
         q0_emgn, q0_gmgn = None, None
 
-    f2 = lambda x: f"{x:,.2f}" if isinstance(x, (int, float)) else "—"
-    f1 = lambda x: f"{x:,.1f}" if isinstance(x, (int, float)) else "—"
+    f2 = lambda x: f"{_nf.idn(x, digits=2)}" if isinstance(x, (int, float)) else "—"
+    f1 = lambda x: f"{_nf.idn(x, digits=1)}" if isinstance(x, (int, float)) else "—"
 
     # ================= meta =================
     meta = payload.setdefault("meta", {})
@@ -455,13 +456,13 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             "ytd_rel": None,
             "source": "Sectors /daily/AMMN + /index-daily/ihsg (90d, 62 sesi 15 Jun–11 Sep 2026)",
             "note": (f"YTD tak terjangkau (cap API 90 hari < jendela YTD 253 hari); tersedia 90d "
-                     f"AMMN {a_chg:+.2f}% vs IHSG {i_chg:+.2f}% (rel {rel:+.2f} pp) — tanpa deret sintetik"),
+                     f"AMMN {_nf.dec(a_chg, digits=2, signed=True)}% vs IHSG {_nf.dec(i_chg, digits=2, signed=True)}% (rel {_nf.dec(rel, digits=2, signed=True)} pp) — tanpa deret sintetik"),
             "chart": {"labels": labels, "series": [s_ammn, s_ihsg]},
         }
         cover["price_chart"] = {
             "title": "Kinerja Harga vs IHSG (90D, 15 Jun–11 Sep 2026)",
-            "label": f"Kinerja Harga AMMN ({a_chg:+.1f}% 90D) vs IHSG ({i_chg:+.1f}% 90D)",
-            "caption": f"Performa Relatif 90D: Outperform {rel:+.1f} pp (YTD tak tersedia — cap API 90 hari)",
+            "label": f"Kinerja Harga AMMN ({_nf.dec(a_chg, digits=1, signed=True)}% 90D) vs IHSG ({_nf.dec(i_chg, digits=1, signed=True)}% 90D)",
+            "caption": f"Performa Relatif 90D: Outperform {_nf.dec(rel, digits=1, signed=True)} pp (YTD tak tersedia — cap API 90 hari)",
         }
         filled.append("cover.vs_jci.series+price_chart")
     cover["market"] = {
@@ -473,7 +474,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         lo = list((atp.get("52_w_low") or {}).values())
         hi = list((atp.get("52_w_high") or {}).values())
         if lo and hi:
-            cover["market"]["range_52w"] = f"Rp {min(lo):,}–{max(hi):,}"
+            cover["market"]["range_52w"] = f"Rp {_nf.idn(min(lo), 0)}–{_nf.idn(max(hi), 0)}"
     except Exception:
         pass
     filled.append("cover.market")
@@ -596,10 +597,10 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         i4, i5 = years.index(2024), years.index(2025)
         payload["kpis"] = [
             {"name": "Pendapatan FY2025", "value": rev[i5], "prev": rev[i4], "unit": "Rp bn",
-             "formula": f"yoy {_yoy(rev[i5], rev[i4])}% FY2025A vs FY2024A",
+             "formula": f"yoy {_idn(_yoy(rev[i5], rev[i4]), 1)}% FY2025A vs FY2024A",
              "source": "Sectors annual"},
             {"name": "EBITDA FY2025", "value": ebitda[i5], "prev": ebitda[i4], "unit": "Rp bn",
-             "formula": f"yoy {_yoy(ebitda[i5], ebitda[i4])}% FY2025A vs FY2024A",
+             "formula": f"yoy {_idn(_yoy(ebitda[i5], ebitda[i4]), 1)}% FY2025A vs FY2024A",
              "source": "Sectors annual"},
             {"name": "D/E FY2025", "value": der[i5], "prev": der[i4], "unit": "x",
              "formula": "utang 108,37 tn vs ekuitas 90,90 tn (FY2025A)",
@@ -617,7 +618,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     tot24t = (s24.get("Copper", 0) + s24.get("Gold", 0)) / 1e12 if s24 else 0
     payload["thesis"] = [
         {"headline": "Bauran emas menyalip tembaga (FY2024)",
-         "detail": (f"Pendapatan FY2024 Rp {tot24t:,.2f} tn: emas 55,0% (Rp 23,67 tn) vs tembaga 45,0% "
+         "detail": (f"Pendapatan FY2024 Rp {_nf.idn(tot24t, digits=2)} tn: emas 55,0% (Rp 23,67 tn) vs tembaga 45,0% "
                     f"(Rp 19,36 tn); FY2023 masih 43,5%/56,5% (emas Rp 13,67 tn, tembaga Rp 17,72 tn). "
                     f"Marjin bruto FY2024 50,5%, operasi 44,5%."),
          "stat": "55,0%", "stat_label": "Porsi emas FY2024",
@@ -746,7 +747,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             pe_l.append(pe)
             pb_l.append(pb)
             prows.append([(c.get("symbol") or "").replace(".JK", ""),
-                          f"{float(c.get('market_cap') or 0) / 1e12:,.2f} tn",
+                          f"{_nf.idn(float(c.get('market_cap') or 0) / 1e12, digits=2)} tn",
                           pe, "—", pb, "—", "—"])
         except Exception:
             continue
@@ -914,27 +915,27 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                        "AMMN.json ev_multiple (asumsi eksplisit); cross-check historis dari Sectors"),
             "headers": ["Komponen", "Nilai", "Keterangan"],
             "rows": [
-                ["EBITDA FY26F (basis TP)", f"Rp {fwd_ebitda_bn / 1e3:,.2f} tn",
+                ["EBITDA FY26F (basis TP)", f"Rp {_nf.idn(fwd_ebitda_bn / 1e3, digits=2)} tn",
                  "Jalur proyeksi yang dikutip — level forward"],
-                ["Target EV/EBITDA (basis TP)", f"{mult:.2f}×",
+                ["Target EV/EBITDA (basis TP)", f"{_nf.dec(mult, digits=2)}×",
                  "Multiple forward: pasar 13,3× FY26F + ramp belum tercetak; cross-check pihak ketiga 15,7×"],
-                ["Implied EV", f"Rp {fwd_ev_bn / 1e3:,.2f} tn", "EBITDA FY26F × multiple target"],
-                ["(−) Total utang bruto", f"Rp {float(assum['net_debt']) / 1e12:,.2f} tn",
+                ["Implied EV", f"Rp {_nf.idn(fwd_ev_bn / 1e3, digits=2)} tn", "EBITDA FY26F × multiple target"],
+                ["(−) Total utang bruto", f"Rp {_nf.idn(float(assum['net_debt']) / 1e12, digits=2)} tn",
                  "Q1-2026 (leg bruto bridge)"],
-                ["(+) Kas", f"Rp {float(assum['cash']) / 1e12:,.2f} tn", "Q1-2026"],
-                ["Implied equity", f"Rp {fwd_eq_bn / 1e3:,.2f} tn", "EV − utang + kas"],
-                ["Implied per saham (TP headline)", f"Rp {fwd_ps:,.0f}",
+                ["(+) Kas", f"Rp {_nf.idn(float(assum['cash']) / 1e12, digits=2)} tn", "Q1-2026"],
+                ["Implied equity", f"Rp {_nf.idn(fwd_eq_bn / 1e3, digits=2)} tn", "EV − utang + kas"],
+                ["Implied per saham (TP headline)", f"Rp {_nf.idn(fwd_ps, digits=0)}",
                  "Leg gate-primary, dipakai sebagai TP"],
                 ["— cross-check historis (tidak dipakai) —", "", ""],
-                *[(f"EBITDA {k} (constituent)", f"Rp {v / 1e12:,.2f} tn", "Sectors annual")
+                *[(f"EBITDA {k} (constituent)", f"Rp {_nf.idn(v / 1e12, digits=2)} tn", "Sectors annual")
                   for k, v in sorted(consts.items())],
-                ["Rata-rata EBITDA 3Y historis", f"Rp {mid_avg / 1e12:,.2f} tn",
+                ["Rata-rata EBITDA 3Y historis", f"Rp {_nf.idn(mid_avg / 1e12, digits=2)} tn",
                  "Mean 3 constituents — hanya pembanding"],
-                ["Own-history multiple (trailing / normalised)", f"{own_trailing:.2f}× / {own_norm:.2f}×",
+                ["Own-history multiple (trailing / normalised)", f"{_nf.dec(own_trailing, digits=2)}× / {_nf.dec(own_norm, digits=2)}×",
                  "Tidak dipakai: EV stabil Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple ini "
                  "menghukum level yang sudah pulih"],
                 ["Own-history multiple pada level FY26F (double-count)",
-                 f"Rp {own_mult_ps:,.0f}",
+                 f"Rp {_nf.idn(own_mult_ps, digits=0)}",
                  "2,7-4,2× harga pasar — di luar batas, karena itu ditolak sebagai basis"],
             ],
         }
@@ -950,11 +951,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         coe = float(assum.get("cost_of_equity") or (rf + beta * erp))
         wacc = float(assum.get("wacc") or wacc_val)
         kd_at = cod * (1 - taxr)
-        pc = lambda v: f"{v * 100:.2f}%".replace(".", ",")
+        pc = lambda v: f"{_nf.dec(v * 100, digits=2)}%".replace(".", ",")
         wacc_rows = [
             ["Risk-Free Rate (Rf)", pc(rf), "SBN 10Y (AsianBondsOnline 4 Sep 2026)"],
             ["Equity Risk Premium (ERP)", pc(erp), "Damodaran Indonesia (5 Jan 2026)"],
-            ["Beta relevered (sektor Metals & Mining)", f"{beta:.3f}".replace(".", ","),
+            ["Beta relevered (sektor Metals & Mining)", f"{_nf.dec(beta, digits=3)}".replace(".", ","),
              "Damodaran Betas Global → D/E pasar 31,43%"],
             ["Biaya Ekuitas (CoE)", pc(coe), "CoE = Rf + Beta × ERP"],
             ["Biaya Utang Sebelum Pajak (Kd)", pc(cod), "Beban bunga TTM / utang Q1-2026"],
@@ -1032,7 +1033,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
 
         def _up(x: Any) -> str:
             try:
-                return ("+" if float(x) > 0 else "") + f"{float(x):.1f}".replace(".", ",") + "%"
+                return ("+" if float(x) > 0 else "") + f"{_nf.dec(float(x), digits=1)}".replace(".", ",") + "%"
             except Exception:
                 return "—"
 
@@ -1118,7 +1119,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                           f"EBITDA Q1-2026 x4 Rp {_n(q_eb_bn * 4.0)} tn (run-rate)",
                           f"run-rate EBITDA Q1-2026 Rp {_n(q_eb_bn, 2)} tn x 4 kuartal = "
                           f"Rp {_n(q_eb_bn * 4.0, 2)} tn (Sectors quarterly 8Q to 2026-03-31)"))
-        mult_id = f"{mult:.2f}".replace(".", ",")
+        mult_id = f"{_nf.dec(mult, digits=2)}".replace(".", ",")
         for name, eb_bn, short_basis, full_basis in specs:
             r = _eng_ev(eb_bn * 1e9, mult, net_debt=debt_idr,
                         shares_out=shares, cash=cash_idr)
@@ -1196,7 +1197,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     "rows": [
                         ["Free Cash Flow (FCFF)", *[_n(x, 1) for x in fcf_bn]],
                         ["Discount Factor",
-                         *[f"{d:.3f}".replace(".", ",") for d in base["discount_factors"]]],
+                         *[f"{_nf.dec(d, digits=3)}".replace(".", ",") for d in base["discount_factors"]]],
                         ["Present Value FCFF", *[_n(p / 1e9, 1) for p in base["pv_fcfs"]]],
                     ],
                 }

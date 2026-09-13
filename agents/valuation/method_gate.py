@@ -47,6 +47,7 @@ from .gates import (
     GateVerdict,
     evaluate,
 )
+from server.report import numfmt as _nf
 
 # Engine method keys (map 1:1 onto calc_* tools).
 DCF = "DCF"
@@ -393,21 +394,21 @@ def apply_output_sanity(
     if upside_pct is not None:
         if upside_pct > 100.0:
             rating_override = "Review Required"
-            flags.append(f"Gate 5: upside {upside_pct:+.1f}% > 100% -> Review Required")
+            flags.append(f"Gate 5: upside {_nf.dec(upside_pct, digits=1, signed=True)}% > 100% -> Review Required")
         elif upside_pct < -50.0:
             rating_override = "Review Required"
-            flags.append(f"Gate 5: downside {upside_pct:+.1f}% < -50% -> Review Required")
+            flags.append(f"Gate 5: downside {_nf.dec(upside_pct, digits=1, signed=True)}% < -50% -> Review Required")
     if terminal_value_pct_of_ev is not None and terminal_value_pct_of_ev > 80.0:
         flags.append(
-            f"Gate 5: terminal value {terminal_value_pct_of_ev:.1f}% > 80% of EV -> "
+            f"Gate 5: terminal value {_nf.dec(terminal_value_pct_of_ev, digits=1)}% > 80% of EV -> "
             "flagged, pair with exit-multiple / Relative cross-check"
         )
     if implied_exit_ev_ebitda is not None and peer_exit_low is not None \
             and peer_exit_high is not None:
         if not (peer_exit_low <= implied_exit_ev_ebitda <= peer_exit_high):
             flags.append(
-                f"Gate 5: implied exit EV/EBITDA {implied_exit_ev_ebitda:.1f}x outside "
-                f"peer range {peer_exit_low:.1f}-{peer_exit_high:.1f}x -> WACC/g out of sync "
+                f"Gate 5: implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}x outside "
+                f"peer range {_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}x -> WACC/g out of sync "
                 "with market pricing, cross-check vs EV/EBITDA relative valuation"
             )
     return {"rating_override": rating_override, "flags": flags, "ticker": gate.ticker}

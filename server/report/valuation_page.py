@@ -23,6 +23,7 @@ from types import SimpleNamespace
 import pandas as pd
 
 from server.report.engines import dcf_engine as engine
+from server.report import numfmt as _nf
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
@@ -250,16 +251,16 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
     # ---------- Exhibit 9: WACC components, each with its source ----------
     wacc_rows = [
-        ("Risk-free rate (Rf)", f"{assum.get('rf', 0) * 100:.2f}%", "INDOGB 10Y (assumptions.rf)"),
-        ("Beta (relevered, sektor)", f"{assum.get('beta', 0):.4f}", "Regresi harian vs IHSG, disesuaikan sektor"),
-        ("Equity Risk Premium (ERP)", f"{assum.get('erp', 0) * 100:.2f}%", "Damodaran (country risk adj.)"),
-        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{assum.get('cost_of_equity', 0) * 100:.2f}%", "Hitung: rf + beta x erp"),
-        ("Cost of Debt pre-tax", f"{assum.get('cod', 0) * 100:.2f}%", "Beban bunga / rata-rata pinjaman (laporan keuangan)"),
-        ("Effective tax rate", f"{assum.get('tax', 0) * 100:.2f}%", "Pajak efektif FY25A = beban pajak / laba sebelum pajak"),
-        ("Cost of Debt after-tax", f"{assum.get('cod', 0) * (1 - assum.get('tax', 0)) * 100:.2f}%", "Hitung: Kd x (1 - t)"),
-        ("Weight of Equity (market value)", f"{assum.get('we', 0) * 100:.2f}%", "Kap. pasar / (kap. pasar + total debt)"),
-        ("Weight of Debt (book value of debt)", f"{assum.get('wd', 0) * 100:.2f}%", "Total debt / (kap. pasar + total debt)"),
-        ("WACC = We x CoE + Wd x Kd x (1-t)", f"{wacc * 100:.2f}%", "Hitung"),
+        ("Risk-free rate (Rf)", f"{_nf.dec(assum.get('rf', 0) * 100, digits=2)}%", "INDOGB 10Y (assumptions.rf)"),
+        ("Beta (relevered, sektor)", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Regresi harian vs IHSG, disesuaikan sektor"),
+        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", "Damodaran (country risk adj.)"),
+        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec(assum.get('cost_of_equity', 0) * 100, digits=2)}%", "Hitung: rf + beta x erp"),
+        ("Cost of Debt pre-tax", f"{_nf.dec(assum.get('cod', 0) * 100, digits=2)}%", "Beban bunga / rata-rata pinjaman (laporan keuangan)"),
+        ("Effective tax rate", f"{_nf.dec(assum.get('tax', 0) * 100, digits=2)}%", "Pajak efektif FY25A = beban pajak / laba sebelum pajak"),
+        ("Cost of Debt after-tax", f"{_nf.dec(assum.get('cod', 0) * (1 - assum.get('tax', 0)) * 100, digits=2)}%", "Hitung: Kd x (1 - t)"),
+        ("Weight of Equity (market value)", f"{_nf.dec(assum.get('we', 0) * 100, digits=2)}%", "Kap. pasar / (kap. pasar + total debt)"),
+        ("Weight of Debt (book value of debt)", f"{_nf.dec(assum.get('wd', 0) * 100, digits=2)}%", "Total debt / (kap. pasar + total debt)"),
+        ("WACC = We x CoE + Wd x Kd x (1-t)", f"{_nf.dec(wacc * 100, digits=2)}%", "Hitung"),
     ]
 
     # ---------- Exhibit 10: the sensitivity grid, straight from the engine ----------
@@ -293,8 +294,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     grid = {
         "fair_value": pd.DataFrame(
             [[row[g_value] for g_value in g_axis] for row in fv_rows],
-            index=[f"{w*100:.2f}%" for w in wacc_axis],
-            columns=[f"{g_value*100:.2f}%" for g_value in g_axis],
+            index=[f"{_nf.dec(w*100, digits=2)}%" for w in wacc_axis],
+            columns=[f"{_nf.dec(g_value*100, digits=2)}%" for g_value in g_axis],
         ),
         "wacc_axis": wacc_axis,
         "g_axis": g_axis,
@@ -382,8 +383,8 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         own = assum.get("ev_multiple_own_history") or {}
         extra = ""
         if own and own.get("usable_as_anchor") is False:
-            extra = (f" Own-history multiple ({own.get('trailing_mean', 0):.2f}x trailing / "
-                     f"{own.get('normalised_mean', 0):.2f}x normalised) DITOLAK sebagai anchor: EV bertahan "
+            extra = (f" Own-history multiple ({_nf.dec(own.get('trailing_mean', 0), digits=2)}x trailing / "
+                     f"{_nf.dec(own.get('normalised_mean', 0), digits=2)}x normalised) DITOLAK sebagai anchor: EV bertahan "
                      f"Rp 506-672 tn saat EBITDA naik-turun 2x, jadi multiple itu menghukum level yang sudah "
                      f"pulih (memberi Rp 13.559/saham, 2,8x harga).")
         notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
@@ -391,9 +392,9 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
-            f"UNRESOLVED ASSUMPTION — terminal Gordon (g {g*100:.1f}%) memberi Rp {_rp(primary['fv_gordon'])} "
-            f"sementara terminal exit multiple {multiple:.2f}x memberi Rp {_rp(primary['fv_exit'])}: selisih "
-            f"{ratio:.1f}x pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
+            f"UNRESOLVED ASSUMPTION — terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
+            f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}x memberi Rp {_rp(primary['fv_exit'])}: selisih "
+            f"{_nf.dec(ratio, digits=1)}x pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
         )
     if build_up["equity_gordon"] is not None and build_up["equity_gordon"] <= 0:
         notes.append(
@@ -426,7 +427,7 @@ def _fmt(value, digits: int = 1) -> str:
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{value:,.0f}".replace(",", ".")
+    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view(page: dict) -> dict:
@@ -540,7 +541,7 @@ def _narrative(page: dict) -> list[str]:
         ),
         (
             "Gap antar metode dibaca sebagai unresolved assumption, bukan dirata-rata: terminal Gordon dan terminal "
-            f"exit multiple berbeda {max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']):.1f}x "
+            f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}x "
             f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis build-up "
             f"EBIT-based menghasilkan equity value negatif (Rp {_fmt0(page['alternatives']['build_up']['equity_gordon'] / 1e9)} bn). "
             "Target price laporan berdiri di leg relative (EV/EBITDA mid-cycle); halaman ini memperlihatkan seberapa "
@@ -550,11 +551,11 @@ def _narrative(page: dict) -> list[str]:
 
 
 def _rp(value: float | None) -> str:
-    return "n/a" if value is None else f"{value:,.0f}".replace(",", ".")
+    return "n/a" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _bn(value: float | None) -> str:
-    return "n/a" if value is None else f"{value:,.0f}".replace(",", ".")
+    return "n/a" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def load_assumptions(ticker: str) -> dict:

@@ -29,6 +29,7 @@ import json
 import re
 import pathlib
 from typing import Any, Optional
+from server.report import numfmt as _nf
 
 PATH_DIR = pathlib.Path(__file__).resolve().parents[2] / "data" / "drivers"
 
@@ -105,7 +106,7 @@ def _validate(doc: dict, ticker: str) -> tuple[list[str], dict]:
         for i, _y in enumerate(years):
             m = out["ebitda"]["rp_bn"][i] / out["revenue"]["rp_bn"][i] if out["revenue"]["rp_bn"][i] else 0
             if not 0.02 <= m <= 0.95:
-                problems.append(f"EBITDA margin reads {m:.1%} in {years[i]} — implausible, refusing the file")
+                problems.append(f"EBITDA margin reads {_nf.pcfrac(m, 1)} in {years[i]} — implausible, refusing the file")
     if out.get("net_profit") and out.get("ebitda"):
         for i, _y in enumerate(years):
             if out["net_profit"]["rp_bn"][i] > out["ebitda"]["rp_bn"][i]:

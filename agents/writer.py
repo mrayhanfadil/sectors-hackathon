@@ -41,6 +41,15 @@ from common import (  # noqa: E402
     x_pct,
 )
 
+try:  # the agents are also run as standalone scripts from their own directory
+    from server.report import numfmt as _nf
+except ImportError:  # pragma: no cover
+    import pathlib as _p
+    import sys as _s
+
+    _s.path.insert(0, str(_p.Path(__file__).resolve().parents[1]))
+    from server.report import numfmt as _nf
+
 # ---------------------------------------------------------------------------
 # Pure helpers (unit-testable)
 # ---------------------------------------------------------------------------
@@ -76,7 +85,7 @@ def normalize_one_offs(company: dict[str, Any]) -> dict[str, Any] | None:
         "reported_net_income_mn": reported,
         "adjusted_net_income_mn": round(adjusted, 2),
         "delta_pct": delta,
-        "method": f"adjusted = reported - one_offs*(1-t) = {reported:,.0f} - {gross:,.0f}*(1-{tax:.0%}) = {adjusted:,.0f}mn",
+        "method": f"adjusted = reported - one_offs*(1-t) = {_nf.idn(reported, digits=0)} - {_nf.idn(gross, digits=0)}*(1-{_nf.pcfrac(tax, 0)}) = {_nf.idn(adjusted, digits=0)}mn",
     }
 
 
@@ -93,7 +102,7 @@ def segment_narrative(company: dict[str, Any]) -> dict[str, Any]:
         args.append({
             "id": "SEG1",
             "point": (
-                f"{largest['pillar']} is the value anchor at {largest['pct']:.0f}% of revenue "
+                f"{largest['pillar']} is the value anchor at {_nf.dec(largest['pct'], digits=0)}% of revenue "
                 f"({fmt_idr(largest['revenue_mn'])}) growing {pct(largest['growth_yoy'])} y/y"
             ),
             "evidence": {"metric": "segment revenue mix", "value": largest["pct"], "source": largest.get("source", source_label(company))},
@@ -103,14 +112,14 @@ def segment_narrative(company: dict[str, Any]) -> dict[str, Any]:
             "id": "SEG2",
             "point": (
                 f"{fastest['pillar']} is the fastest grower at {pct(fastest['growth_yoy'])} y/y "
-                f"({fastest['pct']:.0f}% of mix) — the re-rating engine"
+                f"({_nf.dec(fastest['pct'], digits=0)}% of mix) — the re-rating engine"
             ),
             "evidence": {"metric": "segment growth y/y", "value": fastest["growth_yoy"], "source": fastest.get("source", source_label(company))},
         })
     return {
         "headline": (
-            f"Mix: {largest['pillar']} {largest['pct']:.0f}% / {fastest['pillar']} {fastest['pct']:.0f}% "
-            f"(fastest, {pct(fastest['growth_yoy'])}) y/y — {mix_sum:.1f}% of revenue"
+            f"Mix: {largest['pillar']} {_nf.dec(largest['pct'], digits=0)}% / {fastest['pillar']} {_nf.dec(fastest['pct'], digits=0)}% "
+            f"(fastest, {pct(fastest['growth_yoy'])}) y/y — {_nf.dec(mix_sum, digits=1)}% of revenue"
         ) if largest else None,
         "arguments": args,
         "mix_sum_pct": mix_sum,
@@ -132,7 +141,7 @@ def catalyst_narrative(company: dict[str, Any]) -> list[dict[str, Any]]:
         }
         if "tenants_added_min" in q:
             entry["quantified"] = (
-                f"+{q['tenants_added_min']:,.0f}-{q['tenants_added_max']:,.0f} tenants, "
+                f"+{_nf.idn(q['tenants_added_min'], digits=0)}-{_nf.idn(q['tenants_added_max'], digits=0)} tenants, "
                 f"+{fmt_idr(q['annualized_revenue_min_mn'])}-{fmt_idr(q['annualized_revenue_max_mn'])} "
                 f"annualized by {q.get('by_fy', 'FY')}"
             )
@@ -142,8 +151,8 @@ def catalyst_narrative(company: dict[str, Any]) -> list[dict[str, Any]]:
             entry["quantified_struct"] = q
         elif "aadi_equity_usd_mn" in q:
             entry["quantified"] = (
-                f"AADI equity US${q['aadi_equity_usd_mn']/1000:.1f}bn; ADRO post-spin "
-                f"US${q['adro_post_spin_min_usd_mn']/1000:.1f}-{q['adro_post_spin_max_usd_mn']/1000:.1f}bn"
+                f"AADI equity US${_nf.dec(q['aadi_equity_usd_mn']/1000, digits=1)}bn; ADRO post-spin "
+                f"US${_nf.dec(q['adro_post_spin_min_usd_mn']/1000, digits=1)}-{_nf.dec(q['adro_post_spin_max_usd_mn']/1000, digits=1)}bn"
             )
             entry["quantified_struct"] = q
         if entry["quantified"]:
@@ -160,7 +169,7 @@ def kpi_highlights(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "kpi": "tenancy_ratio",
             "value": tenancy,
-            "display": f"{tenancy:.2f}x (tenants {kpi.get('tenants', '?'):,} / towers {kpi.get('towers', '?'):,})",
+            "display": f"{_nf.dec(tenancy, digits=2)}x (tenants {_nf.idn(kpi.get('tenants', '?'), 0)} / towers {_nf.idn(kpi.get('towers', '?'), 0)})",
             "source": kpi.get("kpi_period", source_label(company)),
         })
     fiber = kpi.get("fiber_km")
@@ -168,7 +177,7 @@ def kpi_highlights(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "kpi": "fiber_km",
             "value": fiber,
-            "display": f"{fiber:,.0f} km",
+            "display": f"{_nf.idn(fiber, digits=0)} km",
             "source": kpi.get("kpi_period", source_label(company)),
         })
     return out
@@ -185,7 +194,7 @@ def risk_summary(company: dict[str, Any]) -> list[dict[str, Any]]:
             out.append({
                 "id": "R1",
                 "title": "High leverage",
-                "detail": f"Gearing peaked at {peak:.0f}% in the series (target: de-lever to current-ratio 0.3→0.8 trajectory).",
+                "detail": f"Gearing peaked at {_nf.dec(peak, digits=0)}% in the series (target: de-lever to current-ratio 0.3→0.8 trajectory).",
                 "severity": "high",
             })
     debteb = fin.get("debt_ebitda", [])
@@ -193,7 +202,7 @@ def risk_summary(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "id": "R2",
             "title": "Elevated Debt/EBITDA",
-            "detail": f"Debt/EBITDA reached {max(debteb):.0f}x — refinancing and rate sensitivity are key risks.",
+            "detail": f"Debt/EBITDA reached {_nf.dec(max(debteb), digits=0)}x — refinancing and rate sensitivity are key risks.",
             "severity": "high",
         })
     one = company.get("one_offs")
@@ -230,7 +239,7 @@ def build_thesis(ticker: str) -> dict[str, Any]:
         headline_parts.append(seg["headline"])
     if norm:
         headline_parts.append(
-            f"one-off adj {fmt_idr(norm['gross_one_off_mn'])} → net {norm['delta_pct']:.0f}%"
+            f"one-off adj {fmt_idr(norm['gross_one_off_mn'])} → net {_nf.dec(norm['delta_pct'], digits=0)}%"
         )
     if cats:
         c0 = cats[0]
@@ -247,7 +256,7 @@ def build_thesis(ticker: str) -> dict[str, Any]:
             "id": "T0",
             "point": (
                 f"Revenue {years[0]}→{years[-1]}: {fmt_idr(rev[0])} → {fmt_idr(rev[-1])} "
-                f"({pct_delta(rev[-1], rev[0]):+.0f}% cumulative) — growth optionality across pillars"
+                f"({_nf.dec(pct_delta(rev[-1], rev[0]), digits=0, signed=True)}% cumulative) — growth optionality across pillars"
             ),
             "evidence": {"metric": "revenue CAGR proxy", "value": pct_delta(rev[-1], rev[0]), "source": source_label(company)},
         })
@@ -304,8 +313,8 @@ def thesis_markdown(thesis: dict[str, Any]) -> str:
             lines.append(f"  - {i['label']}: {fmt_idr(i['amount_mn'])}")
         lines += [
             f"- Reported net income: {fmt_idr(n['reported_net_income_mn'])}",
-            f"- One-offs gross: {fmt_idr(n['gross_one_off_mn'])} @ tax {n['tax_rate']:.0%} → net-of-tax {fmt_idr(n['net_one_off_after_tax_mn'])}",
-            f"- **Adjusted net income: {fmt_idr(n['adjusted_net_income_mn'])} → Δ {n['delta_pct']:.1f}%**",
+            f"- One-offs gross: {fmt_idr(n['gross_one_off_mn'])} @ tax {_nf.pcfrac(n['tax_rate'], 0)} → net-of-tax {fmt_idr(n['net_one_off_after_tax_mn'])}",
+            f"- **Adjusted net income: {fmt_idr(n['adjusted_net_income_mn'])} → Δ {_nf.dec(n['delta_pct'], digits=1)}%**",
             f"- Method: {n['method']}",
         ]
     if t.get("kpi_highlights"):

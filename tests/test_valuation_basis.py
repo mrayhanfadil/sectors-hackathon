@@ -62,7 +62,9 @@ def test_a_rejected_basis_row_computes_the_rejected_multiple(payload):
     rows = ((payload.get("valuation") or {}).get("midcycle") or {}).get("rows") or []
     row = next((r for r in rows if "Own-history multiple pada level FY26F" in str(r[0])), None)
     assert row, "the rejected-basis row disappeared"
-    shown = float(str(row[1]).replace("Rp ", "").replace(",", ""))
+    from tests.idn_number import to_float
+
+    shown = to_float(row[1])
     shares_bn = float(a["shares_out"]) / 1e9
     want = ((a["ev_multiple_own_history"]["trailing_mean"] * float(a["ebitda"]) / 1e9
              + float(a["cash"]) / 1e9 - float(a["net_debt"]) / 1e9) / shares_bn)

@@ -35,6 +35,7 @@ import pandas as pd
 from ddm_config import DDM_ASSUMPTIONS as A
 from d05_terminal import terminal_value
 from d06_valuation import discount_dividends
+from server.report import numfmt as _nf
 
 
 class _NullFlags:
@@ -51,8 +52,8 @@ def sensitivity_grid(proj, ke_base, g_base, drv, data):
     ke_axis = [ke_base + i * A["sens_ke_step"] for i in range(-steps, steps + 1)]
     g_axis = [g_base + j * A["sens_g_step"] for j in range(-steps, steps + 1)]
 
-    fv_grid = pd.DataFrame(index=[f"{k*100:.2f}%" for k in ke_axis],
-                           columns=[f"{g*100:.2f}%" for g in g_axis],
+    fv_grid = pd.DataFrame(index=[f"{_nf.dec(k*100, digits=2)}%" for k in ke_axis],
+                           columns=[f"{_nf.dec(g*100, digits=2)}%" for g in g_axis],
                            dtype=float)
     up_grid = fv_grid.copy()
 
@@ -72,8 +73,8 @@ def sensitivity_grid(proj, ke_base, g_base, drv, data):
             v = discount_dividends(proj, tv, k, data, flags=null)
             if not v["valid"]:
                 continue
-            fv_grid.loc[f"{k*100:.2f}%", f"{g*100:.2f}%"] = v["fair_value_per_share"]
-            up_grid.loc[f"{k*100:.2f}%", f"{g*100:.2f}%"] = v["upside"]
+            fv_grid.loc[f"{_nf.dec(k*100, digits=2)}%", f"{_nf.dec(g*100, digits=2)}%"] = v["fair_value_per_share"]
+            up_grid.loc[f"{_nf.dec(k*100, digits=2)}%", f"{_nf.dec(g*100, digits=2)}%"] = v["upside"]
 
     fv_grid.index.name = "Ke \\ Terminal g"
     up_grid.index.name = "Ke \\ Terminal g"

@@ -24,6 +24,7 @@ from __future__ import annotations
 import json
 import os
 from typing import Any, Optional
+from server.report import numfmt as _nf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CACHE = os.path.join(ROOT, "output", "cache", "sectors")
@@ -317,14 +318,14 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     notes = [
         f"Basis aktual: Sectors annual (FY2024A, FY2025A). Baris kuartalan tidak dipakai — revenue kuartalan "
         f"tidak rekonsiliasi ke angka tahunan (jumlah 4 kuartal ±Rp 44 tn vs FY2025A Rp 30,9 tn).",
-        f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {rev_f[0]:,.0f} bn, EBITDA "
-        f"Rp {ebitda_f[0]:,.0f} bn, laba bersih Rp {net_f[0]:,.0f} bn — "
+        f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {_nf.idn(rev_f[0], digits=0)} bn, EBITDA "
+        f"Rp {_nf.idn(ebitda_f[0], digits=0)} bn, laba bersih Rp {_nf.idn(net_f[0], digits=0)} bn — "
         f"basis kolom F: {(spine or {}).get('forecast_basis') or 'lihat catatan Key Financials'}"
         f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}, "
         f"dan angka ini identik dengan "
         f"yang dipakai halaman valuasi.",
-        f"Driver proyeksi: D&A Rp {dna_25:,.0f} bn (FY2025A: EBITDA - EBIT), beban bunga Rp {gross_debt:,.0f} bn "
-        f"x {cod:.2%} (cost of debt asumsi), pajak {tax_rate:.0%}, capex Rp {capex:,.0f} bn/tahun, payout {payout:.0%}.",
+        f"Driver proyeksi: D&A Rp {_nf.idn(dna_25, digits=0)} bn (FY2025A: EBITDA - EBIT), beban bunga Rp {_nf.idn(gross_debt, digits=0)} bn "
+        f"x {_nf.pcfrac(cod, 2)} (cost of debt asumsi), pajak {_nf.pcfrac(tax_rate, 0)}, capex Rp {_nf.idn(capex, digits=0)} bn/tahun, payout {_nf.pcfrac(payout, 0)}.",
         "Other Income/(Expense) adalah baris REKONSILIASI, bukan angka hasil temuan: pada kolom aktual nilainya "
         "dibuat agar pre-tax foot, pada kolom proyeksi agar pre-tax konsisten dengan jalur laba bersih mid-cycle. "
         "Dinyatakan eksplisit supaya pembaca tidak membacanya sebagai temuan analis.",
@@ -333,7 +334,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
          "Tidak ada jadwal capex/utang/D&A dari sumber — D&A, utang, dan beban bunga ditahan di level "
          "FY2025A dan itu dinyatakan sebagai keterbatasan, bukan sebagai proyeksi."),
         ("Utang dibagi short-term/long-term memakai proporsi FY2025A "
-         f"({st_debt_25:,.0f} / {st_debt_25 + lt_debt_25:,.0f}) karena sumber hanya mempublikasikan total; "
+         f"({_nf.idn(st_debt_25, digits=0)} / {_nf.idn(st_debt_25 + lt_debt_25, digits=0)}) karena sumber hanya mempublikasikan total; "
          "jadwal per tenor tidak dikarang.")
         if driver_rows.get("interest_expense") else "",
         "Neraca: kas adalah item penyeimbang pada kolom proyeksi (dinyatakan). Tanpa itu aset dan liabilitas+ekuitas "
@@ -342,9 +343,9 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
          f"= Gross Profit - EBIT supaya barisnya menyambung. Selisih terhadap operating_expense yang dilaporkan "
          f"Sectors ({gap_txt}) berarti item itu di luar definisi EBIT mereka; dinyatakan supaya nilainya tidak "
          f"terbaca sebagai temuan baru."),
-        (f"Implikasi margin: untuk mencapai EBITDA spine Rp {ebitda_f[0]:,.0f} bn, rantai biaya memakai opex "
-         f"FY2025A (Rp {opex_25_abs:,.0f} bn) dan COGS sebagai baris penyeimbang — gross margin proyeksi "
-         f"{implied_gm:.1%} vs aktual FY2025A {actual_gm:.1%}. Perbaikan margin itu milik asumsi mid-cycle "
+        (f"Implikasi margin: untuk mencapai EBITDA spine Rp {_nf.idn(ebitda_f[0], digits=0)} bn, rantai biaya memakai opex "
+         f"FY2025A (Rp {_nf.idn(opex_25_abs, digits=0)} bn) dan COGS sebagai baris penyeimbang — gross margin proyeksi "
+         f"{_nf.pcfrac(implied_gm, 1)} vs aktual FY2025A {_nf.pcfrac(actual_gm, 1)}. Perbaikan margin itu milik asumsi mid-cycle "
          f"deck, bukan temuan baru; dinyatakan supaya tidak terbaca sebagai proyeksi analis independen."),
         "Interest Income tidak dipublikasikan Sectors untuk AMMN, jadi barisnya kosong dengan keterangan — "
         "bukan nol, bukan angka karangan.",
@@ -389,7 +390,7 @@ if __name__ == "__main__":
             if r["kind"] == "section":
                 print(f"  -- {r['label']} " + "-" * 20)
                 continue
-            cells = "".join((f"{v:,.0f}".rjust(12) if isinstance(v, (int, float)) else "n/a".rjust(12))
+            cells = "".join((f"{_nf.idn(v, digits=0)}".rjust(12) if isinstance(v, (int, float)) else "n/a".rjust(12))
                             for v in r["values"])
             flag = {"subtotal": " [bold]", "deduction": " (-)", "highlight": " [HIGHLIGHT]", "na": " [n/a]"}.get(r["kind"], "")
             print(f"  {r['label'][:32]:32s}{cells}{flag}")

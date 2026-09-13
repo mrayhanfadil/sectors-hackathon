@@ -275,9 +275,9 @@ def _narrative_profit(headers: list[str], net: list, ebitda: list, eps_growth: l
         de, cov = kpis.get("D/E FY2025"), kpis.get("Interest Coverage FY2025")
         drivers = []
         if de:
-            drivers.append(f"D/E {de.get('prev')}× → {de.get('value')}×")
+            drivers.append(f"D/E {_num(de.get('prev'))}× → {_num(de.get('value'))}×")
         if cov:
-            drivers.append(f"interest coverage {cov.get('prev')}× → {cov.get('value')}×")
+            drivers.append(f"interest coverage {_num(cov.get('prev'))}× → {_num(cov.get('value'))}×")
         if drivers:
             parts.append(
                 "Penyebab eksplisitnya beban di bawah EBITDA: " + " dan ".join(drivers)

@@ -35,6 +35,7 @@ OUTPUT  : dict {tv_nominal, implied_exit_multiple, valid, reason}
 import numpy as np
 
 from config import ASSUMPTIONS
+from server.report import numfmt as _nf
 
 
 def terminal_value(fcff_final, ebitda_final, wacc, terminal_g=None, flags=None):
@@ -60,8 +61,8 @@ def terminal_value(fcff_final, ebitda_final, wacc, terminal_g=None, flags=None):
     min_spread = A["min_wacc_g_spread"]
     if spread < min_spread:
         result["reason"] = (
-            f"WACC ({wacc*100:.2f}%) is only {spread*100:.2f}% above terminal "
-            f"growth ({g*100:.2f}%). A minimum spread of {min_spread*10000:.0f}bps "
+            f"WACC ({_nf.dec(wacc*100, digits=2)}%) is only {_nf.dec(spread*100, digits=2)}% above terminal "
+            f"growth ({_nf.dec(g*100, digits=2)}%). A minimum spread of {_nf.dec(min_spread*10000, digits=0)}bps "
             f"is needed for Gordon Growth to stay stable. Below that, terminal "
             f"value dominates the valuation and the result becomes highly "
             f"sensitive to small assumption changes. Lower the terminal growth."
@@ -73,7 +74,7 @@ def terminal_value(fcff_final, ebitda_final, wacc, terminal_g=None, flags=None):
     # --- final year FCFF must be positive ---
     if not np.isfinite(fcff_final) or fcff_final <= 0:
         result["reason"] = (
-            f"Final year FCFF is not positive ({fcff_final/1e9:,.1f} bn). "
+            f"Final year FCFF is not positive ({_nf.idn(fcff_final/1e9, digits=1)} bn). "
             f"The Gordon Growth terminal value is not meaningful. The company "
             f"is likely still in a heavy investment phase or margins are too thin."
         )
@@ -94,11 +95,11 @@ def terminal_value(fcff_final, ebitda_final, wacc, terminal_g=None, flags=None):
         result["implied_exit_multiple"] = mult
         if flags and mult > 20:
             flags.warn("Implied exit EV/EBITDA",
-                       f"{mult:.1f}x. Too high for a typical IDX issuer. "
+                       f"{_nf.dec(mult, digits=1)}x. Too high for a typical IDX issuer. "
                        f"Check the terminal growth and WACC assumptions.")
         elif flags and mult < 2:
             flags.warn("Implied exit EV/EBITDA",
-                       f"{mult:.1f}x. Very low, check whether final-year FCFF "
+                       f"{_nf.dec(mult, digits=1)}x. Very low, check whether final-year FCFF "
                        f"is depressed by abnormal capex.")
 
     return result
@@ -111,7 +112,7 @@ def check_tv_dependency(pv_tv, enterprise_value, flags=None):
     share = pv_tv / enterprise_value
     if flags and share > 0.80:
         flags.warn("Terminal value dependency",
-                   f"{share*100:.1f}% of Enterprise Value comes from the terminal "
+                   f"{_nf.dec(share*100, digits=1)}% of Enterprise Value comes from the terminal "
                    f"value. The valuation rests almost entirely on the perpetuity "
                    f"assumption rather than on verifiable projections.")
     return share

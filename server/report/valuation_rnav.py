@@ -11,6 +11,7 @@ Sectors API has no reserve tonnage, no per-asset production and no NAV per asset
 """
 
 from __future__ import annotations
+from server.report import numfmt as _nf
 
 PERIOD_UNIT_LABELS = {
     "ton": "cadangan (ton)", "tonne": "cadangan (ton)", "oz": "cadangan (oz)",
@@ -154,16 +155,16 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
 
 def _rnav_parameter_rows(assum: dict, debt: float, cash: float, overhead: float) -> list[tuple[str, str, str]]:
     def f(v):
-        return f"{v:,.1f}".replace(",", ".")
+        return f"{_nf.idn(v, digits=1)}".replace(",", ".")
     return [
-        ("Discount to RNAV yang dipakai", f"{(assum.get('rnav_discount') or 0) * 100:.1f}%",
+        ("Discount to RNAV yang dipakai", f"{_nf.dec((assum.get('rnav_discount') or 0) * 100, digits=1)}%",
          assum.get("rnav_discount_basis") or "judgment call analis (basis belum dicantumkan)"),
         ("Basis pembanding discount", assum.get("rnav_discount_comparables") or "tidak ada basis pembanding",
          "discount historis emiten sejenis / rata-rata sektor"),
         ("Cash & Equivalents", f(bn_cash := cash) + " bn", "neraca Sectors tanggal valuasi"),
         ("Total Debt", f(debt) + " bn", "neraca Sectors tanggal valuasi"),
         ("Corporate overhead (PV)", f(overhead) + " bn", "assumptions.corporate_overhead_pv_bn"),
-        ("Jumlah saham beredar (bn)", f"{(assum.get('shares_out') or 0) / 1e9:,.4f}", "Sectors company_report"),
+        ("Jumlah saham beredar (bn)", f"{_nf.idn((assum.get('shares_out') or 0) / 1e9, digits=4)}", "Sectors company_report"),
     ]
 
 
@@ -178,10 +179,10 @@ def _rnav_notes(assum: dict, assets: list, discount, rnav_per_share) -> list[str
         )
     comparables = assum.get("rnav_discount_comparables")
     if comparables:
-        notes.append(f"Discount to RNAV {(discount or 0) * 100:.1f}% punya basis pembanding: {comparables}.")
+        notes.append(f"Discount to RNAV {_nf.dec((discount or 0) * 100, digits=1)}% punya basis pembanding: {comparables}.")
     else:
         notes.append(
-            f"Discount to RNAV {(discount or 0) * 100:.1f}% adalah PURE JUDGMENT: tidak ada basis pembanding "
+            f"Discount to RNAV {_nf.dec((discount or 0) * 100, digits=1)}% adalah PURE JUDGMENT: tidak ada basis pembanding "
             "di data, jadi dinyatakan sebagai asumsi analis dan bukan angka final yang punya dasar pasar."
         )
     if not any(a["discount_rate"] is not None for a in assets):
@@ -212,7 +213,7 @@ def _fmt(value, digits: int = 1) -> str:
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{value:,.0f}".replace(",", ".")
+    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view_rnav(page: dict) -> dict:
@@ -225,7 +226,7 @@ def _view_rnav(page: dict) -> dict:
             [
                 _fmt(a["size"], 0) + (" " + a["size_unit"] if a["size_unit"] else ""),
                 _fmt(a["nav"]),
-                f"{a['ownership'] * 100:.1f}%" if a["ownership"] is not None else "\u2014",
+                f"{_nf.dec(a['ownership'] * 100, digits=1)}%" if a["ownership"] is not None else "\u2014",
                 _fmt(a["nav_attributable"]),
                 a["nav_source"],
             ],
@@ -249,10 +250,10 @@ def _view_rnav(page: dict) -> dict:
         ("Target Price = RNAV per share x (1 - discount)", _fmt0(b["target_price"]), "highlight: angka yang dipakai laporan"),
         ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
     ]
-    page["sensitivity"]["columns"] = [f"{d * 100:.0f}%" for d in page["sensitivity"]["cols_axis"]]
+    page["sensitivity"]["columns"] = [f"{_nf.dec(d * 100, digits=0)}%" for d in page["sensitivity"]["cols_axis"]]
     page["sensitivity"]["rows"] = [
         {
-            "label": f"rate {r * 100:.1f}%" if page["sensitivity"]["wacc_axis"][0] < 1 else f"{r:.1f}%",
+            "label": f"rate {_nf.dec(r * 100, digits=1)}%" if page["sensitivity"]["wacc_axis"][0] < 1 else f"{_nf.dec(r, digits=1)}%",
             "cells": [
                 {"value": _fmt0(v), "base": (i == page["sensitivity"]["base"][0]
                                              and j == page["sensitivity"]["base"][1])}

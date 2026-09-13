@@ -21,6 +21,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional, Tuple
 
 from .assumptions import adjust_assumptions
+from server.report import numfmt as _nf
 
 N_ACTUAL = 2
 N_FORECAST = 4
@@ -139,7 +140,7 @@ def build_trend_forecast(
                 t = i - N_ACTUAL + 1
                 cells.append({"metric": metric, "year": yr, "kind": "F", "value": v,
                               "base": base, "g": round(g, 6), "t": t,
-                              "formula": f"{base} x (1+{g:.4f})^{t}",
+                              "formula": f"{base} x (1+{_nf.dec(g, digits=4)})^{t}",
                               "source": src})
         out_series[metric] = series
         out_traces[metric] = cells
@@ -148,5 +149,5 @@ def build_trend_forecast(
 
 def describe_g_source(g: float, provenance: str) -> str:
     """One-line source fragment for fixture/template source strings."""
-    pct = f"{g * 100:+.1f}%".replace(".", ",")
+    pct = f"{_nf.dec(g * 100, digits=1, signed=True)}%".replace(".", ",")
     return f"g={pct} ({provenance})"

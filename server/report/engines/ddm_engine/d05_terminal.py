@@ -41,6 +41,7 @@ OUTPUT  : dict {tv_nominal, valid, reason, payout konsisten, dan uji}
 import numpy as np
 
 from ddm_config import DDM_ASSUMPTIONS as A
+from server.report import numfmt as _nf
 
 
 def terminal_value(dps_final, ke, terminal_g=None, roe_terminal=None,
@@ -69,9 +70,9 @@ def terminal_value(dps_final, ke, terminal_g=None, roe_terminal=None,
     min_spread = A["min_ke_g_spread"]
     if spread < min_spread:
         result["reason"] = (
-            f"Cost of Equity ({ke*100:.2f}%) is only {spread*100:.2f}% above "
-            f"terminal growth ({g*100:.2f}%). A minimum spread of "
-            f"{min_spread*10000:.0f}bps is needed for Gordon Growth to stay "
+            f"Cost of Equity ({_nf.dec(ke*100, digits=2)}%) is only {_nf.dec(spread*100, digits=2)}% above "
+            f"terminal growth ({_nf.dec(g*100, digits=2)}%). A minimum spread of "
+            f"{_nf.dec(min_spread*10000, digits=0)}bps is needed for Gordon Growth to stay "
             f"stable. Below that, value becomes highly sensitive to small "
             f"assumption changes. Lower the terminal growth rate."
         )
@@ -113,16 +114,16 @@ def terminal_value(dps_final, ke, terminal_g=None, roe_terminal=None,
                           "model")
                 flags.warn(
                     "Terminal payout consistency",
-                    f"The final projected payout of {payout_final*100:.1f}% is "
-                    f"{abs(gap)*100:.1f} percentage points {direction} than the "
+                    f"The final projected payout of {_nf.dec(payout_final*100, digits=1)}% is "
+                    f"{_nf.dec(abs(gap)*100, digits=1)} percentage points {direction} than the "
                     f"payout consistent with the stable phase "
-                    f"({payout_star*100:.1f}% = 1 - g/ROE). As a result, {effect}."
+                    f"({_nf.dec(payout_star*100, digits=1)}% = 1 - g/ROE). As a result, {effect}."
                 )
 
         if payout_star <= 0 and flags:
             flags.warn("Terminal payout consistency",
-                       f"Terminal growth of {g*100:.2f}% exceeds the terminal "
-                       f"ROE of {roe_terminal*100:.1f}%. A company cannot grow "
+                       f"Terminal growth of {_nf.dec(g*100, digits=2)}% exceeds the terminal "
+                       f"ROE of {_nf.dec(roe_terminal*100, digits=1)}%. A company cannot grow "
                        f"sustainably faster than its own return on capital. "
                        f"Lower the terminal growth rate.")
 
@@ -140,7 +141,7 @@ def check_tv_dependency(pv_tv, total_value, flags=None):
     share = pv_tv / total_value
     if flags and share > 0.80:
         flags.warn("Terminal value dependency",
-                   f"{share*100:.1f}% of value comes from the terminal value. "
+                   f"{_nf.dec(share*100, digits=1)}% of value comes from the terminal value. "
                    f"The valuation rests almost entirely on the perpetuity "
                    f"assumption, not on dividends that can be verified.")
     return share

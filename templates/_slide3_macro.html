@@ -32,7 +32,7 @@
     {% for g in [0, 1, 2] %}
       {% set gy = pad_t + ch - (g / 2) * ch %}
       <line x1="{{ pad_l }}" y1="{{ gy }}" x2="{{ w - pad_r }}" y2="{{ gy }}" stroke="#e6e8ee" stroke-width="0.7"/>
-      <text x="{{ pad_l - 3 }}" y="{{ gy + 2.4 }}" font-size="6" fill="#6b7280" text-anchor="end">{{ "%.0f" | format(bmax * g / 2) }}</text>
+      <text x="{{ pad_l - 3 }}" y="{{ gy + 2.4 }}" font-size="6" fill="#6b7280" text-anchor="end">{{ (bmax * (g / 2)) |dec(0) }}</text>
     {% endfor %}
     {# bars #}
     {% for lab in labels %}

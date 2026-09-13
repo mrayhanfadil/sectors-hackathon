@@ -158,7 +158,9 @@ def test_ebitda_implied_by_the_statement_matches_the_deck_number(page_payload):
     dna = None
     for note in page["notes"]:
         if "D&A" in note:
-            dna = float(note.split("D&A Rp ")[1].split(" bn")[0].replace(",", ""))
+            from tests.idn_number import to_float
+
+            dna = to_float(note.split("D&A Rp ")[1].split(" bn")[0])
     assert dna, "the page must state the D&A driver it uses"
     assert (r["EBIT"]["cells"][2] + dna) == pytest.approx(ebitda_spine, rel=0.01)
 

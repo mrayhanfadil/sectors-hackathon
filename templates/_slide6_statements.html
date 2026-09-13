@@ -20,7 +20,7 @@
       <tr class="{{ 'stmt-subtotal' if r.kind == 'subtotal' else '' }}{{ ' stmt-highlight' if r.kind == 'highlight' else '' }}{{ ' stmt-na' if r.kind == 'na' else '' }}">
         <td class="stmt-label">{{ r.label }}{% if r.kind == "deduction" %} <span class="stmt-ded">(-)</span>{% endif %}{% if r.note %} <span class="stmt-inline">{{ r.note }}</span>{% endif %}</td>
         {% for v in r.cells %}
-        <td class="num">{{ "({:,.0f})".format(v|abs) if (r.kind == "deduction" and v is number) else ("{:,.0f}".format(v) if v is number else "n/a") }}</td>
+        <td class="num">{{ acct(v, 0, "n/a") }}</td>
         {% endfor %}
       </tr>
       {% endif %}
@@ -29,7 +29,7 @@
   </table>
   {% if block_key == "balance" %}
   <p class="small stmt-tie"><b>Balance check:</b> Total Liabilities &amp; Equity − Total Assets =
-  {% for y in statements_page.years %}{{ "{:,.0f}".format(statements_page.tie_out[y]) }}{% if not loop.last %} · {% endif %}{% endfor %}
+  {% for y in statements_page.years %}{{ statements_page.tie_out[y]|idn(0) }}{% if not loop.last %} · {% endif %}{% endfor %}
   (Rp bn) — {{ "neraca seimbang persis di semua kolom" if statements_page.tied else "TIDAK seimbang" }}.</p>
   {% endif %}
   {% endfor %}

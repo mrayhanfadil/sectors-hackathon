@@ -59,6 +59,7 @@ import pandas as pd
 
 from ddm_config import DDM_ASSUMPTIONS as A
 from d05_terminal import check_tv_dependency
+from server.report import numfmt as _nf
 
 
 # -----------------------------------------------------------------------
@@ -157,7 +158,7 @@ def make_ddm_recommendation(valuation, flags=None):
         )
         if flags:
             flags.warn("Recommendation",
-                       f"Upside of {upside*100:+.0f}% is outside a defensible "
+                       f"Upside of {_nf.dec(upside*100, digits=0, signed=True)}% is outside a defensible "
                        f"range. Rating changed to Review Required.")
         return {
             "rating": "Review Required",
@@ -179,8 +180,8 @@ def make_ddm_recommendation(valuation, flags=None):
         "rating": rating,
         "upside": float(upside),
         "label": label,
-        "note": (f"Model fair value IDR {fv:,.0f} versus market price "
-                 f"IDR {px:,.0f}, upside {upside*100:+.1f}%."),
+        "note": (f"Model fair value IDR {_nf.idn(fv, digits=0)} versus market price "
+                 f"IDR {_nf.idn(px, digits=0)}, upside {_nf.dec(upside*100, digits=1, signed=True)}%."),
         "review_required": False,
         "reason_override": "",
         "threshold_buy": A["buy_threshold"],

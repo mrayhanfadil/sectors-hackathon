@@ -18,6 +18,7 @@ from __future__ import annotations
 
 import re
 from typing import Any, Iterable, Optional
+from server.report import numfmt as _nf
 
 # --- §7 cover (one-pager) ------------------------------------------------------------------
 #: Paragraph 1 + 2 + 3 must share one page with the Key Financials exhibit. Measured at the
@@ -583,7 +584,7 @@ def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list
     if gap is not None and gap >= 2.0:
         if not any("UNRESOLVED" in str(n).upper() for n in notes):
             violations.append(
-                f"the two terminal methods differ {gap:.1f}x and the page does not flag it as an "
+                f"the two terminal methods differ {_nf.dec(gap, digits=1)}x and the page does not flag it as an "
                 "unresolved assumption (rules: wajib di-flag eksplisit, bukan dirata-rata diam-diam)"
             )
     if not any("reserve" in str(n).lower() or "perpetual" in str(n).lower() for n in notes):
@@ -634,6 +635,8 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_key_ratio_page(payload.get("key_ratio_page"), payload)
     # No third-party research house is named on a printed page.
     violations += audit_source_independence(payload)
+    # One number format across the deck.
+    violations += audit_number_format(payload)
     # Slide 4: a priced leg must state which level and which multiple produced it, and what was rejected.
     # The instruction rule says so; this makes it enforced rather than optional.
     vnotes = " ".join(str(n) for n in ((payload.get("valuation_page") or {}).get("notes") or []))
@@ -655,7 +658,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio", "source-independence",
+            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio", "source-independence", "number-format",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
@@ -707,8 +710,8 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
         n = len(pe_vals)
         expect = pe_vals[n // 2] if n % 2 else (pe_vals[n // 2 - 1] + pe_vals[n // 2]) / 2
         if abs(expect - med["pe"]) > 0.02:
-            violations.append(f"slide 5 median P/E {med['pe']:.2f} does not match the printed peer rows "
-                              f"(recomputed {expect:.2f})")
+            violations.append(f"slide 5 median P/E {_nf.dec(med['pe'], digits=2)} does not match the printed peer rows "
+                              f"(recomputed {_nf.dec(expect, digits=2)})")
     if not str(a.get("as_of") or "").strip():
         violations.append("slide 5 peer table states no 'as of' date for the price data it uses")
     if not (a.get("sources") or []):
@@ -877,8 +880,8 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
             if isinstance(ta_row[i], (int, float)) and isinstance(tle_row[i], (int, float)):
                 if abs(float(tle_row[i]) - float(ta_row[i])) > 1.0:
                     violations.append(f"slide 6 printed balance sheet does not tie in {y}: "
-                                      f"final liabilities+equity row {float(tle_row[i]):,.0f} vs "
-                                      f"Total Assets {float(ta_row[i]):,.0f}")
+                                      f"final liabilities+equity row {_nf.idn(float(tle_row[i]), digits=0)} vs "
+                                      f"Total Assets {_nf.idn(float(ta_row[i]), digits=0)}")
     tie = page.get("tie_out") or {}
     for y in years:
         gap = tie.get(y)
@@ -886,7 +889,7 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
             violations.append(f"slide 6 reports no balance tie-out for {y}")
         elif abs(float(gap)) > 1.0:
             violations.append(f"slide 6 balance sheet does not tie in {y}: Total L&E - Total Assets = "
-                              f"{float(gap):,.0f}")
+                              f"{_nf.idn(float(gap), digits=0)}")
     if not page.get("tied"):
         violations.append("slide 6 balance check failed (rules: Total Liabilities & Equity must equal Total Assets)")
     if not (page.get("notes") or []):
@@ -970,8 +973,8 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
                         parts_sum += -abs(v) if r.get("kind") == "deduction" else v
                         present = True
             if present and abs(total - parts_sum) > 1.0:
-                violations.append(f"{title} does not foot in {years[i]}: subtotal {total:,.0f} vs parts "
-                                  f"{parts_sum:,.0f}")
+                violations.append(f"{title} does not foot in {years[i]}: subtotal {_nf.idn(total, digits=0)} vs parts "
+                                  f"{_nf.idn(parts_sum, digits=0)}")
 
     # the source's own sections may not foot; if they do not, the reconciliation row must be visible
     net_change = find(page.get("closing") or [], "Net Change")
@@ -987,7 +990,7 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             gap = right - left
             disclosed = any("selisih" in str(r.get("label", "")).lower() for r in (page.get("closing") or []))
             if abs(gap) > 1.0 and not disclosed:
-                violations.append(f"slide 7 closing cash does not reconcile in {years[i]} (gap {gap:,.0f}) "
+                violations.append(f"slide 7 closing cash does not reconcile in {years[i]} (gap {_nf.idn(gap, digits=0)}) "
                                   f"and no reconciliation row says why")
 
     # TIE-OUT 1: the starting line must be the income statement's net profit, and the cover's
@@ -999,8 +1002,8 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             a = (cf_net.get("cells") or [None] * 5)[i] if cf_net else None
             b = (is_net.get("cells") or [None] * 5)[i] if is_net else None
             if isinstance(a, (int, float)) and isinstance(b, (int, float)) and abs(a - b) > 1.0:
-                violations.append(f"slide 7 starts from net profit {a:,.0f} in {y} while the income "
-                                  f"statement prints {b:,.0f} — the sheets are not linked")
+                violations.append(f"slide 7 starts from net profit {_nf.idn(a, digits=0)} in {y} while the income "
+                                  f"statement prints {_nf.idn(b, digits=0)} — the sheets are not linked")
         # TIE-OUT 2: ending cash == balance-sheet cash, same period
         bs_cash = next((r for r in (((payload.get("statements_page") or {}).get("balance") or {}).get("rows")
                                     or []) if str(r.get("label", "")).startswith("Cash & Cash")), {})
@@ -1009,7 +1012,7 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             b = (bs_cash.get("cells") or [None] * 5)[i] if bs_cash else None
             if isinstance(a, (int, float)) and isinstance(b, (int, float)):
                 if abs(a - b) > max(1.0, abs(b) * 0.001):
-                    violations.append(f"slide 7 ending cash {a:,.0f} vs balance-sheet cash {b:,.0f} in {y} — "
+                    violations.append(f"slide 7 ending cash {_nf.idn(a, digits=0)} vs balance-sheet cash {_nf.idn(b, digits=0)} in {y} — "
                                       f"above the 0.1% the rules allow, so the sheets are not linked")
     # TIE-OUT 3: the FCF memo must be OCF minus capex, and the FCFF gap must be explained
     memo = (page.get("memo") or [{}])[0]
@@ -1023,7 +1026,7 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             continue
         if abs(want - got) > 1.0:
             violations.append(f"slide 7 FCF memo does not equal OCF - capex in {years[i]} "
-                              f"({got:,.0f} vs {want:,.0f})")
+                              f"({_nf.idn(got, digits=0)} vs {_nf.idn(want, digits=0)})")
     fcff = page.get("fcff_exhibit8")
     if fcff:
         fcf26 = memo["cells"][2] if len(memo.get("cells") or []) > 2 else None
@@ -1093,22 +1096,22 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
                 got = printed("Profitability (%)", label, i)
                 want_v = (num / den * 100) if (isinstance(num, (int, float)) and den) else None
                 if got is not None and want_v is not None and abs(got - want_v) > 0.15:
-                    violations.append(f"Exhibit 17 {label} prints {got:.1f}% in {y} but the income statement "
-                                      f"implies {want_v:.1f}%")
+                    violations.append(f"Exhibit 17 {label} prints {_nf.dec(got, digits=1)}% in {y} but the income statement "
+                                      f"implies {_nf.dec(want_v, digits=1)}%")
             got_cov = printed("Leverage", "Interest Coverage", i)
             eb, intr = sheet("EBIT", i), sheet("Interest Expense", i)
             if got_cov is not None and isinstance(eb, (int, float)) and intr:
                 if abs(got_cov - eb / intr) > 0.05:
-                    violations.append(f"Exhibit 17 interest coverage {got_cov:.2f}x in {y} does not equal "
-                                      f"EBIT/interest {eb / intr:.2f}x")
+                    violations.append(f"Exhibit 17 interest coverage {_nf.dec(got_cov, digits=2)}x in {y} does not equal "
+                                      f"EBIT/interest {_nf.dec(eb / intr, digits=2)}x")
             got_gear = printed("Leverage", "Net Gearing", i)
             st, lt, cash, eq = (sheet("Short-term Debt", i), sheet("Long-term Debt", i),
                                 sheet("Cash & Cash", i), sheet("Shareholders'", i))
             if got_gear is not None and None not in (st, lt, cash, eq) and eq:
                 want_g = ((st + lt) - cash) / eq
                 if abs(got_gear - want_g) > 0.02:
-                    violations.append(f"Exhibit 17 net gearing {got_gear:.2f}x in {y} does not equal "
-                                      f"(debt - cash)/equity {want_g:.2f}x")
+                    violations.append(f"Exhibit 17 net gearing {_nf.dec(got_gear, digits=2)}x in {y} does not equal "
+                                      f"(debt - cash)/equity {_nf.dec(want_g, digits=2)}x")
     return violations
 
 
@@ -1155,3 +1158,44 @@ def audit_source_independence(payload: dict | None) -> list[str]:
 
     walk(payload, "")
     return out[:12]
+
+def audit_number_format(payload: dict | None) -> list[str]:
+    """One number format per deck: dot thousands, comma decimals.
+
+    A dot with one or two digits behind it is an English decimal, and the deck is written in Indonesian — so
+    `43.04` next to `17,99` reads as sloppiness at best and as a hundred-fold error at worst. Three digits after
+    the dot is a thousands group and stays allowed, as do dates and domain names.
+    """
+    if not isinstance(payload, dict):
+        return []
+    import re as _re
+
+    english_decimal = _re.compile(r"(?<![\d.])\d+\.\d{1,2}(?![\d])")
+    allowed = _re.compile(r"(sectors\.app|sectors\.|www\.|@|^\(?\d{1,2}\.\d{1,2}\)?$)")
+    out: list[str] = []
+
+    # Its own violation messages quote the offending figure, and a news headline is quoted source text: the
+    # deck does not restyle what somebody else wrote, so both are skipped here.
+    quoted = ("news", "house_rules")
+
+    def walk(node, path: str) -> None:
+        if isinstance(node, dict):
+            for k, v in node.items():
+                key = str(k)
+                if key.endswith("_internal") or (not path and key in quoted):
+                    continue
+                walk(v, f"{path}.{k}" if path else key)
+        elif isinstance(node, (list, tuple)):
+            for i, v in enumerate(node):
+                walk(v, f"{path}[{i}]")
+        elif isinstance(node, str) and node.strip():
+            text = node.strip()
+            if allowed.search(text):
+                return
+            m = english_decimal.search(text)
+            if m:
+                out.append(f"a printed figure uses an English decimal separator ({m.group(0)!r} at {path}) — "
+                           f"the deck prints dot thousands and comma decimals")
+
+    walk(payload, "")
+    return out[:10]

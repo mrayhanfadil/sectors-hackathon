@@ -50,6 +50,7 @@ import pandas as pd
 
 from config import ASSUMPTIONS
 from utils import clip_flag, nanmean
+from server.report import numfmt as _nf
 
 
 # -----------------------------------------------------------------------
@@ -113,11 +114,11 @@ def cost_of_debt(hist, tax_rate, flags, rf=None):
         floor = max(A["cod_floor"], floor_rel)
         if kd_raw < floor_rel:
             flags.warn("Cost of Debt",
-                       f"Computed {kd_raw*100:.2f}% is BELOW the risk-free "
-                       f"rate + {A['cod_spread_floor']*100:.0f}bps. Economically "
+                       f"Computed {_nf.dec(kd_raw*100, digits=2)}% is BELOW the risk-free "
+                       f"rate + {_nf.dec(A['cod_spread_floor']*100, digits=0)}bps. Economically "
                        f"implausible. Interest expense may be reported net, or "
                        f"Total Debt may include PSAK 73 lease liabilities. "
-                       f"Raised to {floor_rel*100:.2f}%.")
+                       f"Raised to {_nf.dec(floor_rel*100, digits=2)}%.")
             method += " (raised to the Rf + spread floor)"
         kd = clip_flag(kd_raw, floor, A["cod_cap"], "Cost of Debt", flags)
 
@@ -190,18 +191,18 @@ def compute_wacc(data, hist, drv, beta_info, flags,
 def wacc_table(w):
     """WACC breakdown table for output."""
     rows = [
-        ("Risk-free rate (manual input)", f"{w['rf']*100:.2f}%"),
-        ("Equity Risk Premium (manual input)", f"{w['erp']*100:.2f}%"),
-        ("Beta raw (regression vs IHSG)", f"{w['beta_raw']:.3f}" if np.isfinite(w['beta_raw']) else "n/a"),
-        ("Beta adjusted (Blume)", f"{w['beta_adj']:.3f}"),
-        ("Beta regression R-squared", f"{w['beta_r2']:.3f}" if np.isfinite(w['beta_r2']) else "n/a"),
-        ("Size premium", f"{w['size_premium']*100:.2f}%"),
-        ("Cost of Equity (CAPM)", f"{w['ke']*100:.2f}%"),
-        ("Cost of Debt, pre-tax", f"{w['kd_pretax']*100:.2f}%"),
-        ("Effective tax rate", f"{w['tax_rate']*100:.2f}%"),
-        ("Cost of Debt, after-tax", f"{w['kd_aftertax']*100:.2f}%"),
-        ("Equity weight E/(D+E)", f"{w['weight_equity']*100:.1f}%"),
-        ("Debt weight D/(D+E)", f"{w['weight_debt']*100:.1f}%"),
-        ("WACC", f"{w['wacc']*100:.2f}%"),
+        ("Risk-free rate (manual input)", f"{_nf.dec(w['rf']*100, digits=2)}%"),
+        ("Equity Risk Premium (manual input)", f"{_nf.dec(w['erp']*100, digits=2)}%"),
+        ("Beta raw (regression vs IHSG)", f"{_nf.dec(w['beta_raw'], digits=3)}" if np.isfinite(w['beta_raw']) else "n/a"),
+        ("Beta adjusted (Blume)", f"{_nf.dec(w['beta_adj'], digits=3)}"),
+        ("Beta regression R-squared", f"{_nf.dec(w['beta_r2'], digits=3)}" if np.isfinite(w['beta_r2']) else "n/a"),
+        ("Size premium", f"{_nf.dec(w['size_premium']*100, digits=2)}%"),
+        ("Cost of Equity (CAPM)", f"{_nf.dec(w['ke']*100, digits=2)}%"),
+        ("Cost of Debt, pre-tax", f"{_nf.dec(w['kd_pretax']*100, digits=2)}%"),
+        ("Effective tax rate", f"{_nf.dec(w['tax_rate']*100, digits=2)}%"),
+        ("Cost of Debt, after-tax", f"{_nf.dec(w['kd_aftertax']*100, digits=2)}%"),
+        ("Equity weight E/(D+E)", f"{_nf.dec(w['weight_equity']*100, digits=1)}%"),
+        ("Debt weight D/(D+E)", f"{_nf.dec(w['weight_debt']*100, digits=1)}%"),
+        ("WACC", f"{_nf.dec(w['wacc']*100, digits=2)}%"),
     ]
     return pd.DataFrame(rows, columns=["Component", "Value"])

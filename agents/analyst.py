@@ -19,6 +19,7 @@ from typing import Literal, Optional
 import json
 import math
 import os
+from server.report import numfmt as _nf
 
 # ---------------------------------------------------------------------------
 # Provenance helper — every exhibit must carry source
@@ -126,13 +127,13 @@ class CompanyProfile:
         # holder pct should not exceed 100 sum (allow rounding 100.5)
         total_holder = sum(h.pct for h in self.holders)
         if self.holders and total_holder > 100.5:
-            errors.append(f"holders sum {total_holder:.1f}% > 100%")
+            errors.append(f"holders sum {_nf.dec(total_holder, digits=1)}% > 100%")
         # segment pct should sum ~100 when provided (allow 99-101)
         seg_pcts = [s.revenue_share_pct for s in self.segments if s.revenue_share_pct is not None]
         if seg_pcts and not 99 <= sum(seg_pcts) <= 101:
             # only flag if >1 segment and all have pct
             if len(seg_pcts) == len(self.segments):
-                errors.append(f"segment pct sum {sum(seg_pcts):.1f}% != 100%")
+                errors.append(f"segment pct sum {_nf.dec(sum(seg_pcts), digits=1)}% != 100%")
         # PSC participation 0-100
         for p in self.psc:
             if not 0 < p.participation_pct <= 100:

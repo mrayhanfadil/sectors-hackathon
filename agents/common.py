@@ -17,6 +17,7 @@ import json
 import os
 from datetime import datetime, timezone
 from typing import Any
+from server.report import numfmt as _nf
 
 REPO_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 AGENTS_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -141,12 +142,12 @@ def pct_delta(new: float, old: float) -> float:
 def fmt_idr(value: float, unit: str = "mn") -> str:
     """Format IDR values: 420000.0 mn -> 'IDR 420bn' (compact for thesis prose)."""
     if unit == "bn":
-        return f"IDR {value / 1000.0:,.1f}bn"
+        return f"IDR {_nf.idn(value / 1000.0, digits=1)}bn"
     if abs(value) >= 1e6:  # >= IDR 1tn in mn units
-        return f"IDR {value / 1e6:,.1f}tn"
+        return f"IDR {_nf.idn(value / 1e6, digits=1)}tn"
     if abs(value) >= 1e3:  # >= IDR 1bn in mn units
-        return f"IDR {value / 1e3:,.1f}bn"
-    return f"IDR {value:,.0f} mn"
+        return f"IDR {_nf.idn(value / 1e3, digits=1)}bn"
+    return f"IDR {_nf.idn(value, digits=0)} mn"
 
 
 def pct(value: float, digits: int = 1) -> str:

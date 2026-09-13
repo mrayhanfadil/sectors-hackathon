@@ -76,7 +76,7 @@
         {{ m.svg_price_vs_jci(s1.jci_chart.labels or [], s1.jci_chart.price or [], s1.jci_chart.rel_pct or [], meta.ticker, 340, 250, true) }}
         {{ m.exhibit_source(ns) }}
         <!-- provenance (audit only, never printed; house-report-format.md §1)
-             harga {{ "%.2f"|format(s1.jci_chart.abs_chg_pct) }}% vs IHSG {{ "%.2f"|format(s1.jci_chart.idx_chg_pct) }}%
+             harga {{ s1.jci_chart.abs_chg_pct|dec(2) }}% vs IHSG {{ s1.jci_chart.idx_chg_pct|dec(2) }}%
              ({{ s1.jci_chart.source }}) -->
       </div>
       {% endif %}

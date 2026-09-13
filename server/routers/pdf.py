@@ -21,6 +21,7 @@ from pathlib import Path
 from fastapi import APIRouter, HTTPException, Query
 from fastapi.responses import FileResponse, HTMLResponse
 from typing import Optional
+from server.report import numfmt as _nf
 
 logger = logging.getLogger(__name__)
 
@@ -58,15 +59,14 @@ TEMPLATE_FILES = {
 def _idr(value) -> str:
     try:
         v = float(value)
-        return f"{v:,.0f}"
+        return f"{_nf.idn(v, digits=0)}"
     except Exception:
         return str(value)
 
 def _pct(value, dec: int = 1) -> str:
+    """Indonesian percentage with the house sign convention (+ for gains)."""
     try:
-        v = float(value)
-        sign = "+" if v > 0 else ""
-        return f"{sign}{v:.{dec}f}%"
+        return _nf.pct(float(value), dec)
     except Exception:
         return str(value)
 
@@ -304,8 +304,8 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "kpis_src": "sectors_missing_key",
         "kpis_note": "KPI menunggu data emiten terverifikasi (tidak ada tenancy/tower karangan)",
         "thesis": [
-            {"headline": "Valuasi terdorong DCF", "detail": f"WACC {wacc_val*100:.2f}% → FV Rp {fv:,.0f}", "source": "scripts/dcf.py"},
-            {"headline": "Asumsi eksplisit & auditable", "detail": f"Rf {assum['rf']*100:.2f}%, Beta {assum['beta']}, ERP {assum['erp']*100:.2f}%", "source": "assumptions"},
+            {"headline": "Valuasi terdorong DCF", "detail": f"WACC {_nf.dec(wacc_val*100, digits=2)}% → FV Rp {_nf.idn(fv, digits=0)}", "source": "scripts/dcf.py"},
+            {"headline": "Asumsi eksplisit & auditable", "detail": f"Rf {_nf.dec(assum['rf']*100, digits=2)}%, Beta {assum['beta']}, ERP {_nf.dec(assum['erp']*100, digits=2)}%", "source": "assumptions"},
         ],
         "valuation": {
             # Which leg anchors the headline FV (server/engines pick_fv_anchor). Without this

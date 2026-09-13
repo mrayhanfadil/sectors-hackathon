@@ -72,7 +72,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0x pada EBITDA FY26F \u2014 multiple forward market sendiri 13,3x FY26F (harga 11 Sep 2026) plus ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke estimasi pihak ketiga yang TP-nya mengimplikasikan 15,7x FY26F. Bukan mean own-history.",
+  "ev_multiple_basis": "Target 15,0x pada EBITDA FY26F \u2014 multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke estimasi pihak ketiga yang TP-nya mengimplikasikan 15,7× FY26F. Bukan mean own-history.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -371,7 +371,7 @@
     }
   },
   "theme_title": "Multiple 2026 di 17,99x vs mid-cycle 28,42x \u2014 re-rating belum tercermin dalam harga",
-  "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33,862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18.40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
+  "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,
     "ev_ebitda_fy27f": 10.0,

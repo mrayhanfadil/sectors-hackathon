@@ -20,6 +20,7 @@ from __future__ import annotations
 import copy
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional, Union
+from server.report import numfmt as _nf
 
 
 def _clean_ticker(ticker: str) -> str:
@@ -245,13 +246,13 @@ def adjust_assumptions(
     notes = []
     if rev_multiplier > 1.0:
         pct = (rev_multiplier - 1.0) * 100
-        notes.append(f"Bullish sentiment ({sentiment_score:+.2f}) boosted revenue growth by +{pct:.1f}%")
+        notes.append(f"Bullish sentiment ({_nf.dec(sentiment_score, digits=2, signed=True)}) boosted revenue growth by +{_nf.dec(pct, digits=1)}%")
     elif rev_multiplier < 1.0:
         pct = (1.0 - rev_multiplier) * 100
-        notes.append(f"Bearish sentiment ({sentiment_score:+.2f}) cut revenue growth by -{pct:.1f}%")
+        notes.append(f"Bearish sentiment ({_nf.dec(sentiment_score, digits=2, signed=True)}) cut revenue growth by -{_nf.dec(pct, digits=1)}%")
     if capex_multiplier > 1.0:
         pct = (capex_multiplier - 1.0) * 100
-        notes.append(f"High news volume ({news_count_last_30d} items, avg sentiment {avg_news_sentiment:+.2f}) boosted capex by +{pct:.1f}%")
+        notes.append(f"High news volume ({news_count_last_30d} items, avg sentiment {_nf.dec(avg_news_sentiment, digits=2, signed=True)}) boosted capex by +{_nf.dec(pct, digits=1)}%")
     out["notes"] = notes
 
     # 5. News/sentiment -> forward-driver overlays (assumption ledger).

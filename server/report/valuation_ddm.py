@@ -14,6 +14,7 @@ from types import SimpleNamespace
 import pandas as pd
 
 from server.report.engines import ddm_engine as engine
+from server.report import numfmt as _nf
 
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
 
@@ -118,8 +119,8 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
             row[g_value] = cell.get("fair_value_per_share") if cell.get("valid") else None
         fv_rows.append(row)
     grid = pd.DataFrame([[r[gv] for gv in g_axis] for r in fv_rows],
-                        index=[f"{k*100:.2f}%" for k in ke_axis],
-                        columns=[f"{gv*100:.2f}%" for gv in g_axis])
+                        index=[f"{_nf.dec(k*100, digits=2)}%" for k in ke_axis],
+                        columns=[f"{_nf.dec(gv*100, digits=2)}%" for gv in g_axis])
     flat = [v for row in grid.values.tolist() for v in row if v is not None]
 
     page = {
@@ -198,17 +199,17 @@ def _coe_rows(assum: dict, ke: float) -> list[tuple[str, str, str]]:
     band = assum.get("coe_band") or {}
     if band:
         return [
-            ("Cost of Equity rata-rata 5 tahun", f"{band.get('mean', 0) * 100:.2f}%", "band method: rata-rata historis"),
-            ("Standar deviasi 5 tahun", f"{band.get('sd', 0) * 100:.2f}%", "band method: volatilitas CoE"),
+            ("Cost of Equity rata-rata 5 tahun", f"{_nf.dec(band.get('mean', 0) * 100, digits=2)}%", "band method: rata-rata historis"),
+            ("Standar deviasi 5 tahun", f"{_nf.dec(band.get('sd', 0) * 100, digits=2)}%", "band method: volatilitas CoE"),
             ("Jumlah SD yang dipakai dari mean", str(band.get("sd_used", "mean")), "pilihan analis atas risiko"),
-            ("Cost of Equity yang dipakai", f"{ke * 100:.2f}%", "band method (lihat baris di atas)"),
+            ("Cost of Equity yang dipakai", f"{_nf.dec(ke * 100, digits=2)}%", "band method (lihat baris di atas)"),
         ]
     return [
-        ("Risk-free rate (Rf)", f"{assum.get('rf', 0) * 100:.2f}%", "INDOGB 10Y (assumptions.rf)"),
-        ("Beta", f"{assum.get('beta', 0):.4f}", "Regresi harian vs IHSG, disesuaikan sektor"),
-        ("Equity Risk Premium (ERP)", f"{assum.get('erp', 0) * 100:.2f}%", "Damodaran (country risk adj.)"),
-        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{ke * 100:.2f}%", "Hitung: rf + beta x erp"),
-        ("Cost of Equity yang dipakai", f"{ke * 100:.2f}%", "Dipakai untuk mendiskon DPS (bukan WACC)"),
+        ("Risk-free rate (Rf)", f"{_nf.dec(assum.get('rf', 0) * 100, digits=2)}%", "INDOGB 10Y (assumptions.rf)"),
+        ("Beta", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Regresi harian vs IHSG, disesuaikan sektor"),
+        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", "Damodaran (country risk adj.)"),
+        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec(ke * 100, digits=2)}%", "Hitung: rf + beta x erp"),
+        ("Cost of Equity yang dipakai", f"{_nf.dec(ke * 100, digits=2)}%", "Dipakai untuk mendiskon DPS (bukan WACC)"),
     ]
 
 
@@ -217,9 +218,9 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
     gap = tv.get("payout_gap")
     if gap is not None and abs(gap) > 0.05:
         notes.append(
-            f"Uji konsistensi payout fase stabil: payout proyeksi {tv.get('payout_projected', 0)*100:.1f}% "
-            f"vs payout yang konsisten dengan g/ROE ({tv.get('payout_consistent', 0)*100:.1f}%), selisih "
-            f"{abs(gap)*100:.1f}pp — kalau payout lebih tinggi, nilai cenderung overstated."
+            f"Uji konsistensi payout fase stabil: payout proyeksi {_nf.dec(tv.get('payout_projected', 0)*100, digits=1)}% "
+            f"vs payout yang konsisten dengan g/ROE ({_nf.dec(tv.get('payout_consistent', 0)*100, digits=1)}%), selisih "
+            f"{_nf.dec(abs(gap)*100, digits=1)}pp — kalau payout lebih tinggi, nilai cenderung overstated."
         )
     notes.append(
         "DDM menilai ekuitas langsung, jadi discount factor memakai Cost of Equity dan tidak ada bridge "
@@ -228,8 +229,8 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
     if pbv_rows:
         notes.append(
             f"Jalur alternatif Inverse Cost of Equity dipakai sebagai kolom kedua: forward ROE "
-            f"{pbv_rows['forward_roe']*100:.1f}%, fair P/BV {pbv_rows['fair_pbv']:.2f}x, BVPS "
-            f"Rp {pbv_rows['bvps']:,.0f} -> nilai wajar Rp {pbv_rows['fair']:,.0f}."
+            f"{_nf.dec(pbv_rows['forward_roe']*100, digits=1)}%, fair P/BV {_nf.dec(pbv_rows['fair_pbv'], digits=2)}x, BVPS "
+            f"Rp {_nf.idn(pbv_rows['bvps'], digits=0)} -> nilai wajar Rp {_nf.idn(pbv_rows['fair'], digits=0)}."
         )
     notes.append(
         "Basis payout diambil dari assumptions (kebijakan dividen yang diumumkan / payout historis), bukan "
@@ -245,7 +246,7 @@ def _fmt(value, digits: int = 1) -> str:
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{value:,.0f}".replace(",", ".")
+    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view_ddm(page: dict) -> dict:
@@ -342,7 +343,7 @@ def _narrative_ddm(page: dict) -> list[str]:
         ),
         (
             "Dua metode di halaman ini "
-            + (f"berbeda {max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']):.2f}x "
+            + (f"berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=2)}x "
                f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) dan selisih itu dibiarkan terbuka "
                "sebagai unresolved assumption, bukan dirata-rata."
                if b.get("fv_exit") else

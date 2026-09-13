@@ -126,6 +126,36 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
     from server.report.text_figures import hero_stat as _hero_stat
 
     env.filters["hero_stat"] = _hero_stat
+    # One number format for the deck (dot thousands, comma decimals). `acct` is the house accounting
+    # convention: a negative reads (28,8) rather than -28,8.
+    from server.report import numfmt as _nf
+
+    def _f_idn(value, digits=0, na="—"):
+        return _nf.idn(value, digits, na=na)
+
+    def _f_dec(value, digits=1, na="—"):
+        return _nf.dec(value, digits, na=na)
+
+    def _f_auto(value):
+        from server.report import numfmt as _n
+
+        return _n.auto(value, na="—")
+
+    def _f_acct(value, digits=0, na="—"):
+        text = _nf.idn(abs(value) if isinstance(value, (int, float)) else value, digits, na=na)
+        return f"({text})" if isinstance(value, (int, float)) and value < 0 else text
+
+    env.filters["idn"] = _f_idn
+    env.filters["dec"] = _f_dec
+    env.filters["acct"] = _f_acct
+    # the templates call these as functions as well as filters (`acct(v, 0, "n/a")` reads better than a
+    # filter chain when it sits inside a conditional), so both names exist
+    env.globals["idn"] = _f_idn
+    env.globals["dec"] = _f_dec
+    env.globals["acct"] = _f_acct
+    env.filters["auto"] = _f_auto
+    env.globals["auto"] = _f_auto
+
     date_str = format_house_date(meta.get("date"))
     env.globals["HOUSE"] = {
         "header_title": HEADER_TITLE,

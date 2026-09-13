@@ -13,6 +13,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field, asdict
 from typing import Literal, Optional
+from server.report import numfmt as _nf
 
 Method = Literal[
     "FCFF/WACC DCF",
@@ -126,7 +127,7 @@ def _gate1_data_eligibility(
     else:
         failed.append("1c_capital_structure")
         reasons.append(
-            f"1c capital structure breach (D/(D+E)={d_de_ratio:.2f}, ND/EBITDA={net_debt_to_ebitda:.2f}x, IC={interest_coverage:.2f}x) → DCF proceeds with mandatory Relative cross-check"
+            f"1c capital structure breach (D/(D+E)={_nf.dec(d_de_ratio, digits=2)}, ND/EBITDA={_nf.dec(net_debt_to_ebitda, digits=2)}x, IC={_nf.dec(interest_coverage, digits=2)}x) → DCF proceeds with mandatory Relative cross-check"
         )
 
     # 1d — equity base
@@ -154,13 +155,13 @@ def _gate2_ownership_structure(nci_pct: float) -> tuple[list[str], list[str], li
         return (
             ["2_nci"],
             [],
-            [f"2 NCI {nci_pct:.1f}% in 15–40% band → DCF + mandatory SOTP cross-check"],
+            [f"2 NCI {_nf.dec(nci_pct, digits=1)}% in 15–40% band → DCF + mandatory SOTP cross-check"],
             None,  # keep DCF as primary, but SOTP cross-check is logged in reasons
         )
     return (
         [],
         ["2_nci"],
-        [f"2 NCI {nci_pct:.1f}% > 40% → SOTP becomes primary, consolidated DCF is rough reference only"],
+        [f"2 NCI {_nf.dec(nci_pct, digits=1)}% > 40% → SOTP becomes primary, consolidated DCF is rough reference only"],
         "SOTP",
     )
 
@@ -254,13 +255,13 @@ def _gate5_output_sanity(
         if upside_pct > 100.0:
             failed.append("5_upside_extreme")
             reasons.append(
-                f"5 upside {upside_pct:+.1f}% > 100% → rating auto-override to Review Required"
+                f"5 upside {_nf.dec(upside_pct, digits=1, signed=True)}% > 100% → rating auto-override to Review Required"
             )
             rating_override = "Review Required"
         elif upside_pct < -50.0:
             failed.append("5_downside_extreme")
             reasons.append(
-                f"5 downside {upside_pct:+.1f}% < -50% → rating auto-override to Review Required"
+                f"5 downside {_nf.dec(upside_pct, digits=1, signed=True)}% < -50% → rating auto-override to Review Required"
             )
             rating_override = "Review Required"
         else:
@@ -269,7 +270,7 @@ def _gate5_output_sanity(
     if terminal_value_pct_of_ev is not None and terminal_value_pct_of_ev > 80.0:
         failed.append("5_tv_share_high")
         reasons.append(
-            f"5 terminal value {terminal_value_pct_of_ev:.1f}% > 80% of EV → flagged for cross-check (implied exit-multiple or Relative Valuation)"
+            f"5 terminal value {_nf.dec(terminal_value_pct_of_ev, digits=1)}% > 80% of EV → flagged for cross-check (implied exit-multiple or Relative Valuation)"
         )
         # Note: per user decision, do NOT auto-override rating here, just flag
     else:
@@ -284,8 +285,8 @@ def _gate5_output_sanity(
         if not (peer_exit_low <= implied_exit_ev_ebitda <= peer_exit_high):
             failed.append("5_exit_multiple_out_of_range")
             reasons.append(
-                f"5 implied exit EV/EBITDA {implied_exit_ev_ebitda:.1f}x outside peer range "
-                f"{peer_exit_low:.1f}-{peer_exit_high:.1f}x → WACC/g out of sync with market "
+                f"5 implied exit EV/EBITDA {_nf.dec(implied_exit_ev_ebitda, digits=1)}x outside peer range "
+                f"{_nf.dec(peer_exit_low, digits=1)}-{_nf.dec(peer_exit_high, digits=1)}x → WACC/g out of sync with market "
                 "pricing, cross-check vs EV/EBITDA relative valuation"
             )
         else:
