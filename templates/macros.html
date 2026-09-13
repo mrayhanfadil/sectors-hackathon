@@ -318,7 +318,7 @@
 <div class="rhdr">
   <div class="rhdr-l">
     {% if HOUSE.identity.issuer %}<div class="rhdr-issuer">{{ HOUSE.identity.issuer }}</div>
-    <div class="rhdr-date">{{ HOUSE.header_title | default("Equity Research – Company Update") }} · {{ HOUSE.date | default(date) }}</div>
+    <div class="rhdr-date">{{ HOUSE.header_title | default("Equity Research – Company Update") }} · {{ HOUSE.date_short | default(HOUSE.date) | default(date) }}</div>
     {% else %}<div class="rhdr-title">{{ HOUSE.header_title | default("Equity Research – Company Update") }}</div>
     <div class="rhdr-date">{{ HOUSE.date | default(date) }}</div>{% endif %}
   </div>

@@ -49,9 +49,7 @@ SOURCE_FULL = f"Source: {SOURCE_LINE}"
 # them and report the wrapped occurrences separately as a warning.
 SOURCE_RE = re.compile(r"Source:\s+" + r"\s+".join(re.escape(w) for w in SOURCE_LINE.split()))
 DATE_RE = re.compile(
-    r"(Monday|Tuesday|Wednesday|Thursday|Friday|Saturday|Sunday),\s*"
-    r"\d{1,2}\s+(January|February|March|April|May|June|July|August|September|"
-    r"October|November|December)\s+\d{4}"
+    r"\b\d{1,2}\s+(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\s+\d{4}\b"
 )
 EXHIBIT_RE = re.compile(r"Exhibit\s+(\d+)\s*\.")
 PAGENUM_RE = re.compile(re.escape(FOOTER_RIGHT) + r"\s*[\u00b7\u2013-]\s*(\d+)")
@@ -160,7 +158,7 @@ def check(pdf: Path) -> dict:
     if no_header:
         fails.append(f"rule 3 header `{HEADER_TITLE}` missing on physical pages {no_header}")
     if no_date:
-        fails.append(f"rule 3 publication date (Day, DD Month YYYY) missing on pages {no_date}")
+        fails.append(f"rule 3 publication date (DD Mon YYYY) missing on pages {no_date}")
     if no_ftr_l:
         fails.append(f"rule 4 footer-left `{FOOTER_LEFT}` missing on pages {no_ftr_l}")
     if no_ftr_r:

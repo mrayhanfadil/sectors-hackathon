@@ -75,7 +75,7 @@ Prose that refers to an exhibit cites it live (`#exhibit-figure(...) <ex-abcd>` 
 | Position | Content |
 |---|---|
 | Top-left | `Equity Research – Company Update` |
-| Under it | Publication date, format `Day, DD Month YYYY` (e.g. `Monday, 20 July 2026`) |
+| Under it | Publication date, format `DD Mon YYYY` (e.g. `11 Sep 2026`) — amended 13 Sep 2026 from the long `Day, DD Month YYYY` form, which read as noise on every page; `format_house_date(raw, short=False)` still renders the long form where a date is stated in prose |
 | Top-right | Sectors.app logo — same size and position on every page |
 | Below the block | Horizontal divider, `#067647` |
 
@@ -99,7 +99,7 @@ The page number is the real page counter, not a per-page literal.
 | No hand-numbered exhibits in data | `templates/DATA_CONTRACT.md` + Critic | `exhibits[*].id` banned |
 | Header / logo / divider / footer on every page | `server/report/house_format.py` (`header_template()`, `footer_template()`, `PDF_MARGIN`) driven by Chromium `display_header_footer` | repeats on every PHYSICAL page. The per-`<div class="page">` fallback in `templates/macros.html` is used only when Chromium is unavailable, because it cannot survive a page overflow |
 | Footer page number = real page counter | Chromium `<span class="pageNumber">` | resolves to the physical page index; never a per-page literal |
-| Date format | `house_format.format_house_date()` / `format-date-en()` | `Day, DD Month YYYY` from the payload's raw date |
+| Date format | `house_format.format_house_date()` / `format-date-en()` | `DD Mon YYYY` from the payload's raw date (`short=False` for the long form) |
 | Label/object/source not split by a page break | template authoring | `break-after/before: avoid` is a hint Chromium does NOT honour reliably — measure with `scripts/verify_house_format.py` |
 
 Agents do not lay out pages. They supply data and narrative; the renderer owns

@@ -662,7 +662,7 @@ async def render_pdf_bytes_for_ticker(
 
     title = f"{ticker.upper().strip()} — institutional report"
     tpl_name, html, data = render_html_for_ticker(ticker, template_override, native_furniture=True)
-    date_str = house_format.format_house_date((data.get("meta") or {}).get("date"))
+    date_str = house_format.format_house_date((data.get("meta") or {}).get("date"), short=True)
     pdf, engine = await _html_to_pdf_bytes(
         html,
         title,

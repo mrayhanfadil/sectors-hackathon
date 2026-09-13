@@ -420,7 +420,7 @@ def test_live_html_path_carries_the_house_furniture_on_every_page() -> None:
     assert html.count(">sectors.app<") == pages, "footer left missing from some page"
     assert html.count(HOUSE_FOOTER_RIGHT) == pages, "footer right missing from some page"
     # the date is rendered in house format, from the payload's raw date
-    assert "Monday, 31 August 2026" in html, "publication date not in `Day, DD Month YYYY`"
+    assert "31 Aug 2026" in html, "publication date not in `DD Mon YYYY`"
     assert "31 Agt 2026" not in html, "raw date string still rendered"
 
 
@@ -587,3 +587,16 @@ def test_no_template_names_an_exhibit_number_in_prose(template: Path) -> None:
         r"(?:pada|lihat|Lihat|see|See)\s+Exhibit\s+\d+", template.read_text(encoding="utf-8")
     )
     assert not offenders, f"{template.name}: hardcoded prose exhibit reference(s) {offenders}"
+
+
+def test_running_header_keeps_the_short_date():
+    """The header repeats on every page; the owner asked for `11 Sep 2026` there and the long form in the body."""
+    from server.report import house_format as hf
+
+    tpl = hf.header_template(
+        hf.format_house_date("2026-09-11", short=True),
+        {"issuer": "AMMN IJ · PT Amman Mineral Internasional Tbk.", "status": "BUY · TP Rp 5.667"},
+    )
+    assert "11 Sep 2026" in tpl, "running header carries the house date form"
+    assert "Friday" not in tpl, "no weekday in the furniture"
+    assert hf.format_house_date("2026-09-11", short=False) == "Friday, 11 September 2026", "long form stays available"

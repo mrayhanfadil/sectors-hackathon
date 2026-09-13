@@ -50,8 +50,12 @@ _MONTH_NAMES = (
 )
 
 
-def format_house_date(raw: object) -> str:
-    """`Day, DD Month YYYY` (e.g. "Monday, 31 August 2026").
+def format_house_date(raw: object, short: bool = True) -> str:
+    """`DD Mon YYYY` (e.g. "11 Sep 2026"), the convention rule 3 asks for in the page header.
+
+    `short=False` still renders the long `Day, DD Month YYYY` form for any place that states the date in prose.
+    The owner amended the rule on 13 Sep 2026: the header line is read on every page and the weekday was noise in
+    it. Both forms read the same input and fall back to the string they were given.
 
     Accepts the mixed date strings the payloads carry ("31 Agt 2026", "20 Jul 2026",
     ISO). Input that cannot be understood is returned unchanged rather than being
@@ -70,7 +74,7 @@ def format_house_date(raw: object) -> str:
             dt = date(y, m, d)
         except ValueError:
             return s
-        return f"{_DAY_NAMES[dt.weekday()]}, {dt.day} {_MONTH_NAMES[dt.month - 1]} {dt.year}"
+        return _render_house_date(dt, short)
 
     toks = [t for t in re.split(r"[\s,.]+", s) if t]
     if len(toks) < 3:
@@ -85,7 +89,12 @@ def format_house_date(raw: object) -> str:
         dt = date(int(year_tok), mon, int(day_tok))
     except ValueError:
         return s
-    return f"{_DAY_NAMES[dt.weekday()]}, {dt.day} {_MONTH_NAMES[dt.month - 1]} {dt.year}"
+    return _render_house_date(dt, short)
+
+
+def _render_house_date(dt, short: bool) -> str:
+    mon = _MONTH_NAMES[dt.month - 1]
+    return f"{dt.day} {mon[:3]} {dt.year}" if short else f"{_DAY_NAMES[dt.weekday()]}, {dt.day} {mon} {dt.year}"
 
 
 def logo_data_uri() -> str:
@@ -165,6 +174,7 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
         "divider_color": DIVIDER_COLOR,
         "logo": logo_data_uri(),
         "identity": header_identity(report_data or {}),
+        "date_short": format_house_date((report_data or {}).get("meta", {}).get("date"), short=True),
         "date": date_str,
         "native_furniture": native_furniture,
     }
