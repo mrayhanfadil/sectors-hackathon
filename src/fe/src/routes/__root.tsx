@@ -395,10 +395,10 @@ function RootComponent() {
             </div>
             <div className="flex flex-wrap items-center gap-3 font-mono text-[11px]">
               <span className="text-emerald-600 dark:text-emerald-400 font-medium">
-                ● JALUR DATA TERKONEKSI: /api/report · /api/dcf · /api/news · /api/sentiment
+                ● Sumber data tersambung
               </span>
               <span className="text-neutral-400">|</span>
-              <span className="text-neutral-500">OFFLINE: /api/outlook · /api/tickers</span>
+              <span className="text-neutral-500">Sebagian modul belum tersedia</span>
             </div>
           </div>
 

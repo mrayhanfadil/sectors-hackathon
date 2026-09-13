@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import copy
 import json
+import re
 from pathlib import Path
 
 import pytest
@@ -833,7 +834,12 @@ def test_valuation_page_shape_and_disclosures() -> None:
     assert "RESERVE" in notes, "the finite-reserve limitation is not disclosed"
     assert "year-end" in " ".join(page["notes"]).lower() or "konvensi" in " ".join(page["notes"]).lower()
     assert any("Sectors" in s for s in page["sources"])
-    assert any("engines/dcf_engine" in s for s in page["sources"]), "the engine provenance is not stated"
+    # Amended: the engine provenance must still be stated, but it now names the model ("model DCF internal (FCFF)")
+    # rather than the module path, so a reader is not handed an address inside the repository. Revert by restoring the
+    # path form here and removing the engines/* rule from server/report/text_sanitize.py.
+    assert any(re.search(r"model DCF internal|engines/dcf_engine", s) for s in page["sources"]), (
+        "the engine provenance is not stated"
+    )
 
 
 def test_gate_catches_each_slide4_violation_class() -> None:

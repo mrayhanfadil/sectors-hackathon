@@ -290,7 +290,8 @@ function ReportPage() {
         <div>
           <span className="font-bold text-[#0B1F3A] dark:text-[#A9C9E8]">[STANDAR RISET INSTITUSIONAL] </span>
           <span>
-            Seluruh data disusun deterministik dalam 10 bab berurutan mengikuti format dokumen PDF resmi. Market terms: BUY/HOLD/SELL, DCF, WACC, EV/EBITDA, PER, PBV.
+            Seluruh angka berasal dari data berlisensi dan dihitung deterministik. Istilah pasar dipertahankan dalam
+            bentuk aslinya: BUY/HOLD/SELL, DCF, WACC, EV/EBITDA, PER, PBV.
           </span>
         </div>
       </div>

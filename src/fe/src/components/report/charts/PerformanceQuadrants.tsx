@@ -475,7 +475,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
 
             {q.tieOut && (
               <div className="mt-2 text-right font-mono text-[9px] text-neutral-400">
-                Tie-out: {q.tieOut}
+                Angka identik dengan tabel Key Financials
               </div>
             )}
           </div>

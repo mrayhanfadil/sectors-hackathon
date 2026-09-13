@@ -459,6 +459,11 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         raise
     except Exception as exc:
         logger.warning("house gate unavailable: %s", exc)
+    # The strings above were written for maintainers and name repository paths, module paths and API call shapes.
+    # They are rendered, so they are cleaned once here — the funnel the PDF and the frontend payload both pass through.
+    from server.report import text_sanitize
+
+    payload = text_sanitize.clean(payload)
     return payload
 
 
