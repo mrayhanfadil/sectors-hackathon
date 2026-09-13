@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import {
   AlertTriangle,
   RefreshCw,
@@ -60,6 +60,15 @@ function ReportPage() {
     queryKey: ["report-log", tk],
     queryFn: () => fetchReportLog(tk),
   })
+
+  // The tab carried no name at all: index.html had no <title> and nothing set one, so a shared link showed a blank
+  // tab. The ticker is what a reader is looking for, and unlike the company name it exists before the payload lands.
+  useEffect(() => {
+    document.title = `${tk} · Sektoral`
+    return () => {
+      document.title = "Sektoral · Laporan Saham"
+    }
+  }, [tk])
 
   const [pdfState, setPdfState] = useState<"idle" | "loading" | "error">("idle")
   const [pdfMsg, setPdfMsg] = useState("")
