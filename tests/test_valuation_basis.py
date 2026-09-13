@@ -86,8 +86,8 @@ def test_gate_requires_the_basis_disclosure(payload):
     broken = copy.deepcopy(payload)
     broken["valuation_page"]["notes"] = [n for n in broken["valuation_page"]["notes"]
                                          if "BASIS MULTIPLE" not in n]
-    # keep only the priced row: no rejected basis anywhere on the page
-    broken["valuation"]["midcycle"]["rows"] = [["EBITDA FY26F (basis TP)", "Rp 33,86 tn", "level"]]
+    # strip the basis AND the rejection: the page prices a leg without saying what produced it
+    broken["valuation"]["midcycle"]["rows"] = []
     out = audit_house_rules(broken)["violations"]
     assert any("basis of the level" in v for v in out), out
     assert any("rejected basis" in v for v in out), out
