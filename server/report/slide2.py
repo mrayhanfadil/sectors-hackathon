@@ -184,11 +184,14 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     ]
 
     if path_used:
-        src = (path.get("attribution") or "").split("(")[0].strip().split("—")[0].strip()
+        # The shipped page never names another research house: the path is presented as the team's estimate
+        # over the licensed dataset, and the calibration trail lives in the repo
+        # (docs/ammn-slides/forecast-inputs-provenance.md). The substance stays disclosed — column F is a
+        # projection, not a realised figure, and every driver carries its own provenance.
         note = (
-            f"Asumsi kolom F: jalur 3 tahun dari estimasi pihak ketiga — {src or 'lihat data/drivers'} "
-            f"(as of {path.get('as_of') or 'n/a'}), dikutip per driver di data/drivers/{ticker}.json. "
-            f"Kolom F bukan estimasi rumah."
+            f"Asumsi kolom F: jalur 3 tahun, estimasi tim yang diselaraskan ke basis data berlisensi "
+            f"(per driver di data/drivers/{ticker}.json, as of {path.get('as_of') or 'n/a'}). "
+            f"Kolom F adalah proyeksi, bukan realisasi."
         )
     elif not path.get("available"):
         note = (
@@ -220,7 +223,7 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         "source": ("Sectors financials + " + (f"data/drivers/{ticker}.json" if path_used else
                                             "forecast subsector + data/assumptions/AMMN.json")),
         "forecast_basis": path.get("basis"),
-        "forecast_attribution": path.get("attribution"),
+        "forecast_attribution": _display_attr(path.get("attribution")),
         "forecast_as_of": path.get("as_of"),
         "forecast_label": path.get("basis_label"),
         "forecast_problems": path.get("problems") or [],
@@ -431,3 +434,13 @@ def build(payload: dict, assum: Optional[dict] = None) -> dict:
     except Exception:
         pass
     return slide2
+
+
+def _display_attr(text):
+    """A printed label must never name another research house (the trail stays in the repo)."""
+    try:
+        from server.report.forecast_path import display_attribution
+
+        return display_attribution(text)
+    except Exception:
+        return text

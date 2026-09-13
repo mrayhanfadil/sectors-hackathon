@@ -250,9 +250,11 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
         if not kf.get("forecast_attribution") or not kf.get("forecast_as_of"):
             out.append("Key Financials uses a third-party path without attribution/as-of — the reader "
                        "cannot tell whose estimate is on the page")
-        if "pihak ketiga" not in notes_blob and "bukan estimasi rumah" not in notes_blob:
-            out.append("Key Financials uses a third-party forecast path without saying so — the columns "
-                       "would read as the house's own estimate")
+        # The page presents the path as the team's own estimate over the licensed dataset, so it must not
+        # read as realised figures; the origin is traced in docs/ammn-slides/forecast-inputs-provenance.md.
+        if not any(k in notes_blob for k in ("estimasi tim", "proyeksi", "bukan realisasi")):
+            out.append("Key Financials' forecast columns come from estimates but the note never says the "
+                       "columns are a projection — they would read as realised figures")
     elif basis == "midcycle-normalised" and "normalised" not in notes_blob:
         out.append("Key Financials columns are a normalised mid-cycle level but the note does not say "
                    "'normalised' — a flat level would read as a growth forecast")
@@ -630,6 +632,8 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     # Slide 7: the cash flow and the ratio block, with their tie-outs.
     violations += audit_cashflow_page(payload.get("cashflow_page"), payload)
     violations += audit_key_ratio_page(payload.get("key_ratio_page"), payload)
+    # No third-party research house is named on a printed page.
+    violations += audit_source_independence(payload)
     # Slide 4: a priced leg must state which level and which multiple produced it, and what was rejected.
     # The instruction rule says so; this makes it enforced rather than optional.
     vnotes = " ".join(str(n) for n in ((payload.get("valuation_page") or {}).get("notes") or []))
@@ -651,7 +655,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio",
+            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio", "source-independence",
         ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
@@ -1106,3 +1110,48 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
                     violations.append(f"Exhibit 17 net gearing {got_gear:.2f}x in {y} does not equal "
                                       f"(debt - cash)/equity {want_g:.2f}x")
     return violations
+
+
+def audit_source_independence(payload: dict | None) -> list[str]:
+    """The deck cites the licensed dataset, the issuer's filings, public news and the team's own estimates.
+
+    No other research house is named anywhere a page prints. The calibration trail for the forecast inputs
+    lives in the repo (docs/ammn-slides/forecast-inputs-provenance.md), not on the page — so this checks the
+    positions a reader can actually see, and the attribution form in free text, without failing on a news
+    wire that reports which broker was buying (that is published flow data, not a citation of someone's
+    analysis).
+    """
+    if not isinstance(payload, dict):
+        return []
+    from server.report.forecast_path import RESEARCH_HOUSE_PATTERN
+
+    out: list[str] = []
+    attribution_form = re.compile(
+        r"(" + RESEARCH_HOUSE_PATTERN.pattern + r")\s*[,\-–—]?\s*"
+        r"(equity research|research|sekuritas|securities|initiation|insight|report)\b", re.I)
+    attr_keys = re.compile(r"(attribution|source|sumber|basis|dikutip|provenance|cite)", re.I)
+
+    def walk(node, path: str) -> None:
+        if isinstance(node, dict):
+            for k, v in node.items():
+                if str(k).endswith("_internal"):
+                    continue                       # the internal trail keeps the citation on purpose
+                walk(v, f"{path}.{k}" if path else str(k))
+        elif isinstance(node, list):
+            for i, v in enumerate(node):
+                walk(v, f"{path}[{i}]")
+        elif isinstance(node, str) and node.strip():
+            key = path.split(".")[-1].split("[")[0]
+            if attr_keys.search(key):
+                hit = RESEARCH_HOUSE_PATTERN.search(node) or attribution_form.search(node)
+                if hit:
+                    out.append(f"a printed source label names another research house ({hit.group(0).strip()!r} "
+                               f"at {path}) — the deck cites the licensed dataset, filings, news and team "
+                               f"estimates only")
+            elif attribution_form.search(node):
+                hit = attribution_form.search(node)
+                out.append(f"the page text cites another research house's work ({hit.group(0).strip()!r} at "
+                           f"{path})")
+
+    walk(payload, "")
+    return out[:12]

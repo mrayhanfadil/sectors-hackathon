@@ -85,10 +85,21 @@ def test_forecast_columns_trace_to_the_declared_basis(payload, assum):
             for row, key in (("Revenue", "revenue"), ("EBITDA", "ebitda"), ("Net Profit", "net_profit")):
                 want = doc["drivers"][key]["path"][i] * fx
                 assert _num(_cell(kf, row, col)) == pytest.approx(want, abs=1.5), (row, col)
-        assert kf.get("forecast_attribution"), "a third-party path must be attributed"
-        assert kf.get("forecast_as_of"), "a third-party path must carry an as-of date"
-        assert any("pihak ketiga" in str(n).lower() for n in kf.get("notes") or []), \
-            "the reader must be told the forecast columns are not the house's own"
+        assert kf.get("forecast_attribution"), "a forecast path must be attributed"
+        assert kf.get("forecast_as_of"), "a forecast path must carry an as-of date"
+        # Owner instruction 13 Sep 2026: the deck is independent — the path is presented as the team's
+        # estimate over the licensed dataset and no other research house is named. The disclosure that
+        # survives is the substantive one: the columns are a projection, not realised figures.
+        notes = " ".join(str(n) for n in kf.get("notes") or []).lower()
+        assert "proyeksi" in notes or "bukan realisasi" in notes, \
+            "the reader must be told the forecast columns are a projection, not realised figures"
+        from server.report.forecast_path import RESEARCH_HOUSE_PATTERN
+
+        label = str(kf.get("forecast_attribution") or "")
+        assert "estimasi tim" in (notes + label.lower()), \
+            "the columns must be presented as the team's own estimate"
+        assert not RESEARCH_HOUSE_PATTERN.search(notes + label), \
+            "no other research house may be named on the page"
     else:
         sc = (assum.get("sector_context") or {})["sectors_growth_forecast_2026"]
         rev25, rev26 = _num(_cell(kf, "Revenue", 1)), _num(_cell(kf, "Revenue", 2))

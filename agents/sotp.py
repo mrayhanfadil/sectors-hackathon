@@ -6,7 +6,7 @@ Deterministic. For conglomerates (segments >= 2) only:
     unavailable at pillar level (CDIA BCA Sekuritas uses peer tables per pillar).
   - Sum of parts = 100% of pillar weights (pct column of segments) — the Critic
     invariant: `sum(weights) == 100.0` and `sum(pcts) == 100.0`.
-  - Holdco discount (BRIDS ADRO pattern) applied to the pre-discount total when
+  - Holdco discount (the ADRO benchmark pattern) applied to the pre-discount total when
     `company.sotp.holdco_discount_pct` is present; otherwise discount = 0.
 
 Usage:
@@ -81,7 +81,7 @@ def build_sotp(ticker: str) -> dict[str, Any]:
         })
 
     pre_total = round(sum(p["implied_equity_mn"] for p in pillars), 2)
-    # Holdco discount (BRIDS ADRO pattern): explicit input or default 0 for CDIA-style.
+    # Holdco discount (the ADRO benchmark pattern): explicit input or default 0 for CDIA-style.
     holdco = company.get("sotp", {})
     discount = float(holdco.get("holdco_discount_pct", 0.0))
     post_total = round(pre_total * (1.0 - discount), 2)

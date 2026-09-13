@@ -148,7 +148,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
             verdict = "defend"
             evidence = (
                 "ADRO SOTP includes explicit 15% holdco discount bridging pre-discount equity of Rp 4,120/sh "
-                "to post-spin target of Rp 3,502/sh per BRIDS research benchmark."
+                "to post-spin target of Rp 3,502/sh on the team's own benchmark work."
             )
             exhibit_ref = "SOTP Demerger Bridge & Holdco Discount"
             correction = None

@@ -360,6 +360,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         "notes": [n for n in notes if n],
         "driver_basis": driver_rows,
         "forecast_source": (driver_path or {}).get("attribution"),
+        "forecast_source_display": _display_attr((driver_path or {}).get("attribution")),
         "sources": ["Sectors API: company/report financials.historical_financials (annual, IDR)",
                     "data/assumptions/AMMN.json (tax, cost of debt, capex, payout)",
                     "cover.slide2.key_financials — the mid-cycle forecast spine this page must tie to"],
@@ -394,3 +395,13 @@ if __name__ == "__main__":
             print(f"  {r['label'][:32]:32s}{cells}{flag}")
     print("\ntie-out (Total L&E - Total Assets):", {k: round(v, 6) for k, v in page["tie_out"].items()},
           "| tied:", page["tied"])
+
+
+def _display_attr(text):
+    """A printed label must never name another research house (the trail stays in the repo)."""
+    try:
+        from server.report.forecast_path import display_attribution
+
+        return display_attribution(text)
+    except Exception:
+        return text

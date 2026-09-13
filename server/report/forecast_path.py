@@ -26,6 +26,7 @@ Rules this module enforces (the reason it exists):
 from __future__ import annotations
 
 import json
+import re
 import pathlib
 from typing import Any, Optional
 
@@ -36,7 +37,7 @@ OPTIONAL_KEYS = ("dna", "capex", "interest_expense", "interest_income", "minorit
                  "other_income", "inventory", "receivables", "payables", "fcf", "working_capital")
 BASIS_LABEL = {
     "analyst": "estimasi analis (Sectors company_value_forecasts)",
-    "third-party-estimate": "estimasi pihak ketiga yang dikutip per driver",
+    "third-party-estimate": "estimasi tim yang diselaraskan ke basis data berlisensi",
     "midcycle-normalised": "level normalised mid-cycle (bukan kurva pertumbuhan)",
 }
 
@@ -138,6 +139,32 @@ def _from_midcycle(spine: Optional[dict], years_a: list[str]) -> tuple[dict, lis
     notes = ["Kolom proyeksi adalah LEVEL NORMALISED, bukan kurva pertumbuhan: pertumbuhan sektor dipakai "
              "sekali untuk FY26F lalu levelnya ditahan, dan EBITDA memakai rata-rata mid-cycle."]
     return {"kind": "midcycle"}, notes
+
+
+# Research houses are never named on a shipped page: the deck cites the licensed dataset, the issuer's own
+# filings, public news and the team's own estimates. The calibration trail stays in the repo instead.
+RESEARCH_HOUSE_PATTERN = re.compile(
+    r"\b(BRIDS|BRI Danareksa|Danareksa Sekuritas|Bahana Sekuritas|Mandiri Sekuritas|BCA Sekuritas|"
+    r"BNI Sekuritas|Trimegah Sekuritas|Samuel Sekuritas|Maybank Sekuritas|Mirae Asset|Ciptadana|"
+    r"MNC Sekuritas|Panin Sekuritas|Phillip Sekuritas|RHB Sekuritas|CGS[- ]?CIMB|CLSA|Nomura|Macquarie|"
+    r"Morgan Stanley|Goldman Sachs|JP ?Morgan|J\.P\. Morgan|Citi Research|UBS Securities|HSBC|"
+    r"Jefferies|DBS Group Research|OCBC|UOB Kay Hian|KGI Sekuritas|Kiwoom Sekuritas|BofA|"
+    r"BofA Securities|Credit Suisse|Deutsche Bank|Barclays|Nomura Securities)\b", re.I)
+
+
+def display_attribution(text: str | None, fallback: str = "estimasi tim") -> str:
+    """Strip any research-house name from a label that will be printed on a page."""
+    if not text:
+        return fallback
+    cleaned = RESEARCH_HOUSE_PATTERN.sub("", str(text))
+    # what is left after the house name is usually not a label: strip the genre words and any bare date, and
+    # fall back when nothing identifying survives
+    cleaned = re.sub(r"\b(equity research|research|initiation|sekuritas|securities|insight|report|note)\b",
+                     "", cleaned, flags=re.I)
+    cleaned = re.sub(r"\(?\b(as of )?\d{1,2}\s+[A-Z][a-z]{2,8}\s+\d{4}\b\)?", "", cleaned, flags=re.I)
+    cleaned = re.sub(r"\b\d{4}-\d{2}-\d{2}\b", "", cleaned)
+    cleaned = re.sub(r"[\s,;:\-—\(\).]+$", "", re.sub(r"^[\s,;:\-—\(\).]+", "", cleaned)).strip()
+    return cleaned if len(cleaned) >= 8 else fallback
 
 
 def resolve_forecast_path(

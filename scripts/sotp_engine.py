@@ -6,7 +6,7 @@ Mirrors server/engines/__init__.py sotp() + finance_tools.calc_sotp().
 Benchmarks:
   * CDIA (BCA Sekuritas 23 Jun 2026, plan §2.2): 4 pillars
     Energy / Water / Port / Logistics with peer-avg EV/EBITDA & P/E multiples.
-  * ADRO (BRIDS 18 Nov 2024, references/local-global-like/brids-ADRO-GOTO.md):
+  * ADRO (holdco-discount benchmark, see references/local-global-like/):
     AADI equity US$6.1bn + ADRO post-spin US$5.3-7.0bn (holdco discount range).
 
 Per-pillar value methods supported:
