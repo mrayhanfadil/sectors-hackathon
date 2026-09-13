@@ -510,7 +510,7 @@
     {# labels #}
     {% for lbl in labels or [] %}
       {% if loop.index0 % 2 == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
     <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#475467">{{ vmax|dec(1) }}</text>
@@ -549,6 +549,10 @@
   {% if pmax == pmin %}{% set pmax = pmin + 1 %}{% endif %}
   {% set rmin = (rel_pct or [0]) | min %}{% set rmax = (rel_pct or [1]) | max %}
   {% if rmax == rmin %}{% set rmax = rmin + 1 %}{% endif %}
+  {#- Headroom: with the peaks drawn exactly at the scale ends, the top gridline cut through them and the
+      in-plot legend sat on the early peaks. Both scales get 7% of breathing room. -#}
+  {% set p_head = (pmax - pmin) * 0.07 %}{% set pmin = pmin - p_head %}{% set pmax = pmax + p_head %}
+  {% set r_head = (rmax - rmin) * 0.07 %}{% set rmin = rmin - r_head %}{% set rmax = rmax + r_head %}
   {% set ns = namespace(pts_p="", pts_r="") %}
   {% for v in price or [] %}
     {% set x = pad_l + loop.index0 * step %}
@@ -562,42 +566,52 @@
   {% endfor %}
   {% set y0 = pad_t + chart_h - ((0 - rmin) / (rmax - rmin) * chart_h) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga {{ ticker_label }} vs IHSG">
-    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#f9fafb" stroke="#e4e7ec" stroke-width="{{ sw_g }}" rx="3"/>
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D6E2EE" stroke-width="{{ sw_g }}" rx="2"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#e4e7ec" stroke-width="{{ sw_g }}" stroke-dasharray="{{ '4 4' if narrow else '3 3' }}"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="{{ sw_g }}" stroke-dasharray="{{ '4 4' if narrow else '3 3' }}"/>
     {% endfor %}
     {#- zero line for the relative axis: above it the stock beat the index -#}
     {% if y0 >= pad_t and y0 <= pad_t + chart_h %}
-      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#98a2b3" stroke-width="{{ sw_g * 2 }}"/>
+      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#63748A" stroke-width="{{ sw_g * 2 }}"/>
     {% endif %}
-    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#1d4ed8" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#98a2b3" stroke-width="{{ sw_r }}" stroke-linejoin="round" stroke-linecap="round"/>
+    {#- the tools mark a reference level with a dashed line; here it is the last close, read from the series -#}
+    {% if price %}
+      {% set last_p = price[-1] %}
+      {% set y_last = pad_t + chart_h - ((last_p - pmin) / (pmax - pmin) * chart_h) %}
+      <line x1="{{ pad_l }}" y1="{{ y_last }}" x2="{{ W - pad_r }}" y2="{{ y_last }}" stroke="#C0392B" stroke-width="{{ sw_g * 2 }}" stroke-dasharray="4 2.5"/>
+      {% set ref_txt = "Terakhir " ~ (last_p | idn(0)) %}
+      <rect x="{{ pad_l + 2 }}" y="{{ y_last - 9.6 }}" width="{{ ref_txt | length * 3.7 + 4 }}" height="9.6" rx="1.4" fill="#ffffff" opacity="0.92"/>
+      <text x="{{ pad_l + 4.5 }}" y="{{ y_last - 2.4 }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" fill="#C0392B">{{ ref_txt }}</text>
+    {% endif %}
+    <polygon points="{{ pad_l }},{{ pad_t + chart_h }} {{ ns.pts_p | trim }} {{ W - pad_r }},{{ pad_t + chart_h }}" fill="rgba(11,31,58,0.06)"/>
+    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#0B1F3A" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#A9C9E8" stroke-width="{{ sw_r }}" stroke-linejoin="round" stroke-linecap="round"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
       {% set pv = pmax - (i * (pmax - pmin) / 3) %}
       {% set rv = rmax - (i * (rmax - rmin) / 3) %}
-      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#1d4ed8" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
-      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#667085">{{ "%+0.0f"|format(rv) }}%</text>
+      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#0B1F3A" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
+      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A">{{ "%+0.0f"|format(rv) }}%</text>
     {% endfor %}
     {% for lbl in labels or [] %}
       {% if loop.index0 % lbl_every == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#475467" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
     {% if narrow %}
     <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#1d4ed8" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#101828">Harga (Rp, kiri)</text>
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#98a2b3" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#101828">Relatif vs IHSG (%, kanan)</text>
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#1A2733">Harga (Rp, kiri)</text>
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#1A2733">Relatif vs IHSG (%, kanan)</text>
     </g>
     {% else %}
     <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#1d4ed8" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#101828">Harga (Rp, kiri)</text>
-      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#98a2b3" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#101828">Relatif vs IHSG (%, kanan)</text>
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
+      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#1A2733">Harga (Rp, kiri)</text>
+      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
+      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#1A2733">Relatif vs IHSG (%, kanan)</text>
     </g>
     {% endif %}
   </svg>
@@ -806,14 +820,79 @@
   // Same order the valuation tools use (navy, ice, ice-pale, then the rating colours), so a series reads the
   // same way here and in the tools.
   const PALETTE = ["#0B1F3A", "#A9C9E8", "#E4EEF7", "#B08D57", "#1E8F5F", "#C0392B"];
-  Chart.defaults.color = "#1A2733";
-  Chart.defaults.borderColor = "#D6E2EE";
+  const AB = {navy: "#0B1F3A", ice: "#A9C9E8", icePale: "#E4EEF7", rule: "#D6E2EE",
+              ink: "#1A2733", muted: "#63748A", sell: "#C0392B", hold: "#B08D57"};
+  Chart.defaults.color = AB.ink;
+  Chart.defaults.borderColor = AB.rule;
   Chart.defaults.font.family = "Poppins, Helvetica Neue, Arial, sans-serif";
-  Chart.defaults.scales = Chart.defaults.scales || {};
+  Chart.defaults.font.size = 7;
+  Chart.defaults.scale.grid.color = AB.rule;      // hairline rules, as the tools draw them
+  Chart.defaults.scale.grid.drawTicks = false;
+  Chart.defaults.scale.border.color = AB.rule;
+  Chart.defaults.scale.ticks.color = AB.muted;
+
+  // Values printed outside the bars, the way the tools label theirs.
+  const abBarLabels = {
+    id: "abBarLabels",
+    afterDatasetsDraw(chart) {
+      const ds = chart.data.datasets || [];
+      const many = ds.length > 1;
+      chart.ctx.save();
+      chart.ctx.font = "700 6.4px Poppins, Helvetica Neue, Arial, sans-serif";
+      chart.ctx.textAlign = "center";
+      chart.ctx.textBaseline = "bottom";
+      ds.forEach((d, di) => {
+        const meta = chart.getDatasetMeta(di);
+        if (!meta || meta.type !== "bar" || meta.hidden) return;
+        chart.ctx.fillStyle = di === 0 ? AB.navy : AB.ink;
+        meta.data.forEach((el, i) => {
+          const v = d.data[i];
+          if (v === null || v === undefined || isNaN(v)) return;
+          if (many && di > 0) return;               // one label per group, not two stacked
+          chart.ctx.fillText(String(v).replace(".", ","), el.x, el.y - 1.5);
+        });
+      });
+      chart.ctx.restore();
+    }
+  };
+
+  // A reference level, dashed red with a white-backed label, exactly like the tools' market-price line.
+  const abRefLine = {
+    id: "abRefLine",
+    afterDraw(chart) {
+      const r = chart.options.abRefLine;
+      if (!r || r.value === null || r.value === undefined) return;
+      const y = chart.scales.y.getPixelForValue(r.value);
+      if (!isFinite(y)) return;
+      const a = chart.chartArea;
+      chart.ctx.save();
+      chart.ctx.strokeStyle = AB.sell;
+      chart.ctx.lineWidth = 1;
+      chart.ctx.setLineDash([4, 2.5]);
+      chart.ctx.beginPath();
+      chart.ctx.moveTo(a.left, y);
+      chart.ctx.lineTo(a.right, y);
+      chart.ctx.stroke();
+      chart.ctx.setLineDash([]);
+      if (r.label) {
+        chart.ctx.font = "700 6.4px Poppins, Helvetica Neue, Arial, sans-serif";
+        const w = chart.ctx.measureText(r.label).width;
+        chart.ctx.fillStyle = "#ffffff";
+        chart.ctx.fillRect(a.left + 1, y - 8.5, w + 4, 8);
+        chart.ctx.fillStyle = AB.sell;
+        chart.ctx.textAlign = "left";
+        chart.ctx.textBaseline = "bottom";
+        chart.ctx.fillText(r.label, a.left + 3, y - 1.6);
+      }
+      chart.ctx.restore();
+    }
+  };
+  Chart.register(abBarLabels, abRefLine);
   function mkChart(id, cfg) {
     const el = document.getElementById(id); if (!el) return;
     cfg.options = Object.assign({responsive: false, devicePixelRatio: 2}, cfg.options || {});
     cfg.options.plugins = Object.assign({tooltip: {enabled: false}}, cfg.options.plugins || {});
+    if (cfg.refLine) { cfg.options.abRefLine = cfg.refLine; delete cfg.refLine; }
     if (cfg.type === "line" && cfg.data.datasets) {
       cfg.data.datasets.forEach(d => {
         d.tension = .25; d.borderWidth = d.borderWidth || 2; d.pointRadius = d.pointRadius || 0;

@@ -728,8 +728,10 @@ def test_served_html_marks_forecast_bars_and_numbers_the_page_exhibits() -> None
     # titles arrive HTML-escaped ("&" -> "&amp;"), so compare on the escaped form
     for title in SLIDE3_QUADRANTS:
         assert title.replace("&", "&amp;") in html, f"{title} is not rendered"
-    assert 'pattern id="fc-1"' in html, "no forecast hatch pattern in the markup"
-    assert "opacity=\"0.3\"" in html, "forecast bars are not drawn lighter than actual bars"
+    # Spec: "NAVY at reduced opacity (~40%) OR diagonal hatch, consistently one of the two across the whole
+    # slide (renderer picks; the two encodings never mixed)".
+    assert "opacity=\"0.4\"" in html, "forecast bars are not drawn at the spec's reduced opacity"
+    assert 'pattern id="fc-1"' not in html, "both encodings are in use at once; the spec allows one"
     quad = payload["performance_page"]["quadrants"][0]
     assert quad["actual_n"] == 2 and len(quad["labels"]) == 5
     assert "Bentuk: 3 periode proyeksi" not in html  # guard against a stale caption

@@ -854,10 +854,15 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                                          {"label": "Laba bersih (Rp tn)", "data": earn_tn}]}},
          "source": "Sectors annual"},
         {"title": "Harga AMMN vs IHSG (90 hari, 62 sesi)",
-         "chart": {"type": "line",
-                   "data": {"labels": labels,
-                            "datasets": [{"label": "AMMN", "data": s_ammn},
-                                         {"label": "IHSG", "data": s_ihsg}]}} if labels else None,
+         "chart": ({"type": "line",
+                    "data": {"labels": labels,
+                             "datasets": [{"label": "AMMN", "data": s_ammn},
+                                          {"label": "IHSG", "data": s_ihsg}]},
+                    # the tools mark a reference level with a dashed line; here it is the last close, taken
+                    # from the series itself so it can never disagree with the plotted data
+                    "refLine": {"value": s_ammn[-1],
+                                "label": "Terakhir " + _nf.idn(s_ammn[-1], 0)}}
+                   if labels and s_ammn and isinstance(s_ammn[-1], (int, float)) else None),
          "source": "Sectors daily + index-daily"},
     ]
     filled.append("exhibits[2]")

@@ -3,7 +3,7 @@
    line the ratio; the first `actual_n` bars are solid navy and the rest are drawn lighter with a
    hatch overlay, so actual vs projection is readable without reading the axis labels. #}
 {% macro svg_combo(uid, labels, bars, line, actual_n, bars_fmt, line_fmt, bar_unit, line_unit, w=248, h=152) -%}
-  {% set pad_l = 34 %}{% set pad_r = 30 %}{% set pad_t = 14 %}{% set pad_b = 22 %}
+  {% set pad_l = 34 %}{% set pad_r = 38 %}{% set pad_t = 15 %}{% set pad_b = 22 %}
   {% set cw = w - pad_l - pad_r %}{% set ch = h - pad_t - pad_b %}
   {% set n = labels | length %}
   {% set bvals = bars | select('ne', None) | list %}
@@ -11,28 +11,27 @@
   {% set lvals = line | select('ne', None) | list %}
   {% set lmax = (lvals | max) if lvals else 1 %}
   {% set lmin = (lvals | min) if lvals else 0 %}
-  {% set lspan = (lmax - lmin) if (lmax - lmin) > 0 else 1 %}
+  {# The line's scale always contains zero: without that, a negative year draws at the same height as a small
+     positive one and only its label says which is which (the spec forbids exactly that). #}
+  {% set l_lo = [lmin, 0] | min %}
+  {% set l_hi = [lmax, 0] | max %}
+  {% set lspan = (l_hi - l_lo) if (l_hi - l_lo) > 0 else 1 %}
   {% set step = cw / n if n else cw %}
   {% set bw = step * 0.56 %}
   {% if not labels or not bvals %}
     {# No series in the payload: draw the empty frame and say so rather than crash the render. #}
     <svg width="{{ w }}" height="{{ h }}" viewBox="0 0 {{ w }} {{ h }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Combo chart tidak tersedia">
-      <rect x="0" y="0" width="{{ w }}" height="{{ h }}" rx="3" fill="#ffffff" stroke="#e6e8ee"/>
-      <text x="{{ w / 2 }}" y="{{ h / 2 }}" font-size="7" fill="#6b7280" text-anchor="middle">Series tidak tersedia di payload</text>
+      <rect x="0" y="0" width="{{ w }}" height="{{ h }}" rx="3" fill="#ffffff" stroke="#D6E2EE"/>
+      <text x="{{ w / 2 }}" y="{{ h / 2 }}" font-size="7" fill="#63748A" text-anchor="middle">Series tidak tersedia di payload</text>
     </svg>
   {% else %}
   <svg width="{{ w }}" height="{{ h }}" viewBox="0 0 {{ w }} {{ h }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Combo chart {{ labels | join(', ') }}">
-    <defs>
-      <pattern id="fc-{{ uid }}" width="4" height="4" patternTransform="rotate(45)" patternUnits="userSpaceOnUse">
-        <line x1="0" y1="0" x2="0" y2="4" stroke="#152c6e" stroke-width="1.1" opacity="0.55"/>
-      </pattern>
-    </defs>
     <rect x="0" y="0" width="{{ w }}" height="{{ h }}" rx="3" fill="#ffffff"/>
     {# left axis: three gridlines, bar scale in {{ bar_unit }} #}
     {% for g in [0, 1, 2] %}
       {% set gy = pad_t + ch - (g / 2) * ch %}
-      <line x1="{{ pad_l }}" y1="{{ gy }}" x2="{{ w - pad_r }}" y2="{{ gy }}" stroke="#e6e8ee" stroke-width="0.7"/>
-      <text x="{{ pad_l - 3 }}" y="{{ gy + 2.4 }}" font-size="6" fill="#6b7280" text-anchor="end">{{ (bmax * (g / 2)) |dec(0) }}</text>
+      <line x1="{{ pad_l }}" y1="{{ gy }}" x2="{{ w - pad_r }}" y2="{{ gy }}" stroke="#D6E2EE" stroke-width="0.7"/>
+      <text x="{{ pad_l - 3 }}" y="{{ gy + 2.4 }}" font-size="6" fill="#63748A" text-anchor="end">{{ (bmax * (g / 2)) |idn(0) }}</text>
     {% endfor %}
     {# bars #}
     {% for lab in labels %}
@@ -41,11 +40,9 @@
         {% set bh = (v / bmax) * ch if bmax else 0 %}
         {% set bx = pad_l + (loop.index0 * step) + (step - bw) / 2 %}
         {% set by = pad_t + ch - bh %}
-        <rect x="{{ bx }}" y="{{ by }}" width="{{ bw }}" height="{{ bh }}" fill="#152c6e"
-              opacity="{{ 1 if loop.index <= actual_n else 0.3 }}"/>
-        {% if loop.index > actual_n %}
-          <rect x="{{ bx }}" y="{{ by }}" width="{{ bw }}" height="{{ bh }}" fill="url(#fc-{{ uid }})" opacity="0.5"/>
-        {% endif %}
+        {# Spec: forecast bars are navy at reduced opacity OR a hatch — one of the two, never mixed. #}
+        <rect x="{{ bx }}" y="{{ by }}" width="{{ bw }}" height="{{ bh }}" fill="#0B1F3A"
+              opacity="{{ 1 if loop.index <= actual_n else 0.4 }}"/>
       {% endif %}
     {% endfor %}
     {# secondary-axis line #}
@@ -54,36 +51,58 @@
       {% set v = line[loop.index0] %}
       {% if v is not none %}
         {% set lx = pad_l + (loop.index0 * step) + step / 2 %}
-        {% set ly = pad_t + ch - ((v - lmin) / lspan) * ch %}
+        {% set ly = pad_t + ch - ((v - l_lo) / lspan) * ch %}
         {% set _ = pts.append((lx, ly)) %}
       {% endif %}
     {% endfor %}
     {% if pts | length > 1 %}
-      <polyline fill="none" stroke="#067647" stroke-width="1.4"
+      <polyline fill="none" stroke="#B08D57" stroke-width="1.8" stroke-linejoin="round"
                 points="{% for p in pts %}{{ p[0] }},{{ p[1] }} {% endfor %}"/>
     {% endif %}
     {% for p in pts %}
-      <circle cx="{{ p[0] }}" cy="{{ p[1] }}" r="1.9" fill="#067647"/>
+      <circle cx="{{ p[0] }}" cy="{{ p[1] }}" r="2" fill="#B08D57" stroke="#ffffff" stroke-width="0.8"/>
     {% endfor %}
     {% for lab in labels %}
       {% set v = line[loop.index0] %}
       {% if v is not none and line_fmt[loop.index0] %}
         {% set lx = pad_l + (loop.index0 * step) + step / 2 %}
-        {% set ly = pad_t + ch - ((v - lmin) / lspan) * ch %}
-        <text x="{{ lx }}" y="{{ ly - 4 }}" font-size="6" fill="#067647" text-anchor="middle">{{ line_fmt[loop.index0] }}</text>
+        {% set ly = pad_t + ch - ((v - l_lo) / lspan) * ch %}
+        {% set bv = bars[loop.index0] %}
+        {% set bh = ((bv / bmax) * ch) if (bv is not none and bmax) else 0 %}
+        {% set bar_top = pad_t + ch - bh %}
+        {# clear of the bar label when the marker lands inside its own bar #}
+        {% set lbl_y = [(ly + 8) if ly > bar_top - 7 else (ly - 4.5), pad_t + 6.5] | max %}
+        {% set lbl_y = [lbl_y, pad_t + ch - 1.5] | min %}
+        {% set txt = line_fmt[loop.index0] %}
+        <rect x="{{ lx - (txt | length * 1.65) - 1.6 }}" y="{{ lbl_y - 5.4 }}" width="{{ txt | length * 3.3 + 3.2 }}"
+              height="7.6" rx="1.4" fill="#ffffff" opacity="0.92"/>
+        <text x="{{ lx }}" y="{{ lbl_y }}" font-size="6" fill="#B08D57" text-anchor="middle" font-weight="600">{{ txt }}</text>
       {% endif %}
     {% endfor %}
+    {# Right axis: the ratio series' own scale and unit (the spec requires both axes to print a unit). #}
+    {% for g in [0, 1, 2] %}
+      {% set lv = l_lo + (g / 2) * (l_hi - l_lo) %}
+      {% set ly = pad_t + ch - (g / 2) * ch %}
+      <text x="{{ w - pad_r + 3 }}" y="{{ ly + 2.4 }}" font-size="6" fill="#63748A" text-anchor="start">{{ lv |dec(0) }}%</text>
+    {% endfor %}
+    <text x="{{ w - 1.5 }}" y="{{ pad_t - 4 }}" font-size="5.4" fill="#63748A" text-anchor="end">{{ line_unit }}</text>
+    <text x="2" y="{{ pad_t - 4 }}" font-size="5.4" fill="#63748A" text-anchor="start">{{ bar_unit }}</text>
+    {% if l_lo < 0 %}
+      {% set zy = pad_t + ch - ((0 - l_lo) / lspan) * ch %}
+      <line x1="{{ pad_l }}" y1="{{ zy }}" x2="{{ w - pad_r }}" y2="{{ zy }}" stroke="#8A94A6" stroke-width="0.8"
+            stroke-dasharray="2 2"/>
+    {% endif %}
     {# x labels + value labels #}
     {% for lab in labels %}
       {% set lx = pad_l + (loop.index0 * step) + step / 2 %}
-      <text x="{{ lx }}" y="{{ h - 8 }}" font-size="6" fill="#374151" text-anchor="middle">{{ lab }}</text>
+      <text x="{{ lx }}" y="{{ h - 8 }}" font-size="6" fill="#63748A" text-anchor="middle">{{ lab }}</text>
       {% set v = bars[loop.index0] %}
       {% if v is not none and bars_fmt[loop.index0] %}
         {% set bh = (v / bmax) * ch if bmax else 0 %}
-        <text x="{{ lx }}" y="{{ pad_t + ch - bh - 3 }}" font-size="6" fill="#111827" text-anchor="middle">{{ bars_fmt[loop.index0] }}</text>
+        <text x="{{ lx }}" y="{{ pad_t + ch - bh - 3 }}" font-size="6" fill="#0B1F3A" text-anchor="middle">{{ bars_fmt[loop.index0] }}</text>
       {% endif %}
     {% endfor %}
-    <text x="{{ pad_l }}" y="{{ h - 1 }}" font-size="5.6" fill="#9ca3af">{{ bar_unit }} (bar) · {{ line_unit }} (line)</text>
+    <text x="{{ pad_l }}" y="{{ h - 1 }}" font-size="5.6" fill="#63748A">{{ bar_unit }} (bar) · {{ line_unit }} (line)</text>
   </svg>
   {% endif %}
 {%- endmacro %}
