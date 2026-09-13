@@ -144,3 +144,49 @@ the page falls back to the DCF and says so on the page itself; a sector heuristi
 model silently, because the rules make the choice the analyst's. The DDM branch ships with its own
 builder (`server/report/valuation_ddm.py`), its own gate arm (`_audit_ddm_page`) and guard tests on a
 synthetic dividend payer — an issuer that pays nothing gets a loud empty page, not invented dividends.
+
+## 7. Decision log — multiple basis after the earnings path changed (12 Sep 2026)
+
+Adopting a cited 3-year earnings path (Rp 66.9 / 71.7 / 81.4 tn revenue, EBITDA 33.9 / 44.7 / 55.2 tn) made
+the deck's own multiple unusable, because the multiple and the level it multiplies were measured on
+different bases. This section records the measurement, including the fix that did NOT work.
+
+**Why the old pairing broke.** The deck applied a trailing EV/EBITDA mean (**28.42x**, measured in FY2023-25
+when EBITDA was depressed by the smelter build: 15.7 / 23.0 / 16.4 tn) to a mid-cycle level. That
+double-counts the recovery. Both halves come from the same dataset, so the first question was whether the
+multiple itself was wrong.
+
+**Rebasing the multiple does not fix it** (`server/valuation/normalised_multiple.py`, reconstruction
+verified exact against the dataset's own prints, max gap 0.00x):
+
+| Print year | EV (Rp bn) | EBITDA | rolling-3Y level | trailing multiple | normalised multiple |
+|---|---|---|---|---|---|
+| 2023 | 506,661 | 15,738 | 15,939 | 32.19x | 31.79x |
+| 2024 | 672,501 | 23,040 | 20,984 | 29.19x | 32.05x |
+| 2025 | 562,973 | 16,410 | 18,396 | 34.31x | 30.60x |
+
+Trailing mean 31.90x vs normalised mean **31.48x** — the rebase moves nothing. A forward-consistent series
+(EV_t / realised EBITDA_t+1: 22.0x for 2023, 41.0x for 2024) is no better. The reason is visible in the same
+table: **EV has sat between Rp 506-672 tn across the cycle while EBITDA halved and doubled** — the market
+prices the asset base, not trailing earnings, so an earnings-multiple anchor is the wrong instrument for
+this name. Applying the rebased multiple to the new path gives Rp 13,362-20,564 per share, i.e. 2.7-4.2x the
+market price: unusable, and now recorded as such in `tests/test_normalised_multiple.py`.
+
+**What the data does support.**
+
+| Leg | Value | Basis |
+|---|---|---|
+| DCF on the cited FCF path (Rp 11.0/26.1/35.1 tn) | Rp **2,392**/share (g 2.5%) · Rp 1,790 (g 0%) | our WACC 13.77%, our bridge |
+| Market's own multiple today | EV/EBITDA **13.3x** FY26F · 10.0x FY27F · 9.0x mid-cycle | fact, not assumption |
+| BRIDS' published TP | Rp 6,000 | implies **15.7x** FY26F + Elang NAV Rp 4,522/share (75% of their value) |
+| The deck's TP before this change | Rp 5,873 | implies **15.4x** FY26F — same neighbourhood, weaker derivation |
+
+**Reserve-based leg: not buildable from the licence.** A case-insensitive scan of the licensed payload for
+`reserve`, `ore_tonnage`, `grade`, `proven_probable` finds nothing, so an RNAV/EV-per-reserve leg requires an
+externally cited input; it is disclosed as excluded rather than estimated.
+
+**Recommendation (pending owner sign-off, because it is the deck's headline number):** lead with a target
+multiple on a stated basis — 15.0x FY26F EBITDA gives **Rp 5,667**/share, 15.7x gives Rp 5,994 — justified as
+the market's current forward multiple (13.3x) plus the ramp not yet printed, cross-checked against BRIDS'
+implied 15.7x. Then print the DCF (Rp 2,392) and the excluded Elang optionality as the counter-view instead
+of hiding them. What must NOT ship is the 28.42x pairing, or a rebased multiple presented as the fix.
