@@ -349,7 +349,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "effective_tax": tax_eff * 100, "da_fy25": da_bn, "capex_sustaining": sustain_capex_bn,
             "multiple": multiple, "price": price, "revenue_basis": revenue_basis,
         },
-        "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc),
+        "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc, assum),
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
         "block2_headers": None,
         "block3_headers": None,
@@ -371,9 +371,23 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     return _view(page)
 
 
-def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float, wacc: float) -> list[str]:
+def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float, wacc: float,
+           assum: dict | None = None) -> list[str]:
     """The disclosures the rules require: finite reserve, the terminal gap, and what was not modelled."""
     notes: list[str] = []
+    # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
+    # basis named — a target price whose basis is only in the payload is not disclosed to the reader.
+    _basis = assum.get("ev_multiple_basis")
+    if _basis:
+        own = assum.get("ev_multiple_own_history") or {}
+        extra = ""
+        if own and own.get("usable_as_anchor") is False:
+            extra = (f" Own-history multiple ({own.get('trailing_mean', 0):.2f}x trailing / "
+                     f"{own.get('normalised_mean', 0):.2f}x normalised) DITOLAK sebagai anchor: EV bertahan "
+                     f"Rp 506-672 tn saat EBITDA naik-turun 2x, jadi multiple itu menghukum level yang sudah "
+                     f"pulih (memberi Rp 13.559/saham, 2,8x harga).")
+        notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
+                     str(assum.get("ebitda_leg_level_note") or ""))
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(

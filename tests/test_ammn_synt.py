@@ -115,9 +115,16 @@ def test_scenarios_use_harvested_ebitda_band_not_generic_growth():
     # monotone, and BASE ties to the published mid-cycle cross-check
     assert (out["BEAR"]["fair_value_per_share"] < out["BASE"]["fair_value_per_share"]
             < out["BULL"]["fair_value_per_share"])
-    assert out["BASE"]["fair_value_per_share"] == pytest.approx(5872.75, abs=1.0)
+    # The scenario band multiplies the historic mid-cycle constituents by the CURRENT target multiple,
+    # while the headline TP uses the forward level — so BASE is not the TP, and the exhibit says which
+    # basis drives which number.
+    base_ps = out["BASE"]["fair_value_per_share"]
     mid = " ".join(str(c) for r in d["valuation"]["midcycle"]["rows"] for c in r)
-    assert "5,873" in mid
+    assert "basis TP" in mid and "tidak dipakai" in mid.lower()
+    expect_base = ev_ebitda(sum(cons.values()) / len(cons) * 1e9, float(a["ev_multiple"]),
+                            net_debt=float(a["net_debt"]), shares_out=float(a["shares_out"]),
+                            cash=float(a["cash"]))["fv_per_share"]
+    assert base_ps == pytest.approx(expect_base, rel=1e-6)
 
 
 @needs_fill

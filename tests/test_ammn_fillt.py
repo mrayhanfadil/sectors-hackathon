@@ -134,4 +134,5 @@ def test_server_html_has_no_placeholders():
     assert tpl == "single"
     assert "lengkapi fixture" not in html
     assert "Bauran emas menyalip tembaga" in html
-    assert str(data["cover"]["rating_box"]["tp"]) in html
+    tp = data["cover"]["rating_box"]["tp"]
+    assert (f"{tp:,.0f}".replace(",", ".") in html) or (str(tp) in html), tp

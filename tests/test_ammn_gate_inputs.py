@@ -40,7 +40,8 @@ _VALUATION_INPUTS: dict[str, Any] = {
     "rf": 0.071, "beta": 1.4071, "erp": 0.0669, "cod": 0.0649, "g": 0.025,
     "payout": 0.0, "fcf": [13088.9] * 5, "shares_out": 72518217656.0,
     "net_debt": 110786062912260.0, "cash": 13846126732260.0,
-    "ebitda": 18396257972040.0, "ev_multiple": 28.42, "last_price": 4860.0,
+    # forward EBITDA FY26F from the cited path x the target forward multiple (see assumptions file)
+    "ebitda": 33861520000000.0, "ev_multiple": 15.0, "last_price": 4860.0,
     "we": 0.7608, "wd": 0.2392,
 }
 
@@ -145,8 +146,17 @@ def test_ammn_live_payload_gate_inputs_are_file_backed(ammn: dict):
     if gi.get("d_de_ratio") is not None:
         assert gi["d_de_ratio"] == pytest.approx(float(ammn["wd"]))
     if gi.get("net_debt_to_ebitda") is not None:
-        assert gi["net_debt_to_ebitda"] == pytest.approx(
-            float(ammn["net_debt_after_cash"]) / float(ammn["ebitda"]), rel=1e-4)
+        declared = (ammn.get("gate_inputs") or {}).get("net_debt_to_ebitda")
+        if declared is not None:
+            # The leverage gate input is declared, on the historic mid-cycle EBITDA (conservative). The
+            # pricing leg runs on the forward level, so the two denominators differ on purpose and the
+            # file has to say so — otherwise the next reader "corrects" the gate.
+            assert gi["net_debt_to_ebitda"] == pytest.approx(float(declared), rel=1e-4)
+            assert str(ammn.get("gate_inputs_basis_note") or "").strip(), \
+                "a declared gate input on a different basis than the pricing leg must be annotated"
+        else:
+            assert gi["net_debt_to_ebitda"] == pytest.approx(
+                float(ammn["net_debt_after_cash"]) / float(ammn["ebitda"]), rel=1e-4)
 
 
 def test_payload_gate_inputs_are_never_invented(ammn: dict):

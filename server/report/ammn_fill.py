@@ -885,24 +885,53 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         impl_ev = mid_avg * mult
         impl_eq = impl_ev - float(assum.get("net_debt")) + float(assum.get("cash"))
         impl_ps = impl_eq / float(assum.get("shares_out"))
+
+        # The gate-primary leg multiplies the target multiple by the FORWARD level from the cited path —
+        # a forward multiple on a historic average would double count the ramp. The own-history multiple is
+        # carried below as the reason it is not used.
+        _fp = __import__("server.report.forecast_path", fromlist=["resolve_forecast_path"])
+        _path = _fp.resolve_forecast_path(str(assum.get("ticker") or "AMMN"), assum=assum)
+        _drv = (_path.get("drivers") or {}).get("ebitda") or {}
+        fwd_ebitda_bn = (float(_drv.get("rp_bn", [mid_avg / 1e9])[0])
+                         if _drv.get("rp_bn") else mid_avg / 1e9)
+        fwd_ev_bn = fwd_ebitda_bn * mult
+        fwd_eq_bn = (fwd_ev_bn - float(assum.get("net_debt") or 0.0) / 1e9
+                     + float(assum.get("cash") or 0.0) / 1e9)
+        fwd_ps = fwd_eq_bn * 1e9 / float(assum.get("shares_out"))
+        _own = assum.get("ev_multiple_own_history") or {}
+        own_trailing = float(_own.get("trailing_mean") or 0.0)
+        own_norm = float(_own.get("normalised_mean") or 0.0)
+        own_mult_ps = ((own_trailing * fwd_ebitda_bn - float(assum.get("net_debt") or 0.0) / 1e9
+                        + float(assum.get("cash") or 0.0) / 1e9) * 1e9
+                       / float(assum.get("shares_out"))) if own_trailing else 0.0
         payload.setdefault("valuation", {})["midcycle"] = {
-            "title": "EV/EBITDA Mid-Cycle Cross-Check (3Y Average)",
-            "source": "Sectors annual EBITDA + AMMN.json multiple (asumsi eksplisit ±2×)",
-            "headers": ["Komponen Mid-Cycle", "Nilai", "Keterangan"],
+            "title": "EV/EBITDA — Forward Multiple pada Level Jalur (dengan cross-check historis)",
+            "source": ("EBITDA FY26F dari jalur proyeksi yang dikutip (data/drivers/AMMN.json) + "
+                       "AMMN.json ev_multiple (asumsi eksplisit); cross-check historis dari Sectors"),
+            "headers": ["Komponen", "Nilai", "Keterangan"],
             "rows": [
-                *[(f"EBITDA {k} (constituent)", f"Rp {v / 1e12:,.2f} tn", "Sectors annual")
-                  for k, v in sorted(consts.items())],
-                ["Rata-rata EBITDA 3Y (mid-cycle)", f"Rp {mid_avg / 1e12:,.2f} tn",
-                 "Mean 3 constituents"],
-                ["Target EV/EBITDA", f"{mult:.2f}×",
-                 "Mean own-history 2023-26; asumsi eksplisit (tanpa peer print)"],
-                ["Implied EV", f"Rp {impl_ev / 1e12:,.2f} tn", "Mid-cycle EBITDA × multiple"],
+                ["EBITDA FY26F (basis TP)", f"Rp {fwd_ebitda_bn / 1e3:,.2f} tn",
+                 "Jalur proyeksi yang dikutip — level forward"],
+                ["Target EV/EBITDA (basis TP)", f"{mult:.2f}×",
+                 "Multiple forward: pasar 13,3× FY26F + ramp belum tercetak; cross-check pihak ketiga 15,7×"],
+                ["Implied EV", f"Rp {fwd_ev_bn / 1e3:,.2f} tn", "EBITDA FY26F × multiple target"],
                 ["(−) Total utang bruto", f"Rp {float(assum['net_debt']) / 1e12:,.2f} tn",
                  "Q1-2026 (leg bruto bridge)"],
                 ["(+) Kas", f"Rp {float(assum['cash']) / 1e12:,.2f} tn", "Q1-2026"],
-                ["Implied equity", f"Rp {impl_eq / 1e12:,.2f} tn", "EV − utang + kas"],
-                ["Implied per saham (cross-check)", f"Rp {impl_ps:,.0f}",
-                 "Own upside, NOT headline TP"],
+                ["Implied equity", f"Rp {fwd_eq_bn / 1e3:,.2f} tn", "EV − utang + kas"],
+                ["Implied per saham (TP headline)", f"Rp {fwd_ps:,.0f}",
+                 "Leg gate-primary, dipakai sebagai TP"],
+                ["— cross-check historis (tidak dipakai) —", "", ""],
+                *[(f"EBITDA {k} (constituent)", f"Rp {v / 1e12:,.2f} tn", "Sectors annual")
+                  for k, v in sorted(consts.items())],
+                ["Rata-rata EBITDA 3Y historis", f"Rp {mid_avg / 1e12:,.2f} tn",
+                 "Mean 3 constituents — hanya pembanding"],
+                ["Own-history multiple (trailing / normalised)", f"{own_trailing:.2f}× / {own_norm:.2f}×",
+                 "Tidak dipakai: EV stabil Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple ini "
+                 "menghukum level yang sudah pulih"],
+                ["Own-history multiple pada level FY26F (double-count)",
+                 f"Rp {own_mult_ps:,.0f}",
+                 "2,7-4,2× harga pasar — di luar batas, karena itu ditolak sebagai basis"],
             ],
         }
         filled.append("valuation.midcycle")

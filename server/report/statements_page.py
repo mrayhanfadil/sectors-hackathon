@@ -307,7 +307,10 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         f"Basis aktual: Sectors annual (FY2024A, FY2025A). Baris kuartalan tidak dipakai — revenue kuartalan "
         f"tidak rekonsiliasi ke angka tahunan (jumlah 4 kuartal ±Rp 44 tn vs FY2025A Rp 30,9 tn).",
         f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {rev_f[0]:,.0f} bn, EBITDA "
-        f"Rp {ebitda_f[0]:,.0f} bn, laba bersih Rp {net_f[0]:,.0f} bn — jalur mid-cycle flat, sama dengan "
+        f"Rp {ebitda_f[0]:,.0f} bn, laba bersih Rp {net_f[0]:,.0f} bn — "
+        f"basis kolom F: {(spine or {}).get('forecast_basis') or 'lihat catatan Key Financials'}"
+        f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}, "
+        f"dan angka ini identik dengan "
         f"yang dipakai halaman valuasi.",
         f"Driver proyeksi: D&A Rp {dna_25:,.0f} bn (FY2025A: EBITDA - EBIT), beban bunga Rp {gross_debt:,.0f} bn "
         f"x {cod:.2%} (cost of debt asumsi), pajak {tax_rate:.0%}, capex Rp {capex:,.0f} bn/tahun, payout {payout:.0%}.",
