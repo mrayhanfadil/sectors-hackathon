@@ -3,7 +3,7 @@
    Extends single with: segment mix + pie, SOTP bridge, per-pillar peers, forecast note (P0=Initiation: shown as context only).
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
-{% set ns = namespace(ex=0, pending=false) %}
+{% set ns = namespace(ex=0, pending=false, sec=0) %}
 {% set palette = {"brand": "#0e7490", "brand_dark": "#155e63", "accent": "#ecfeff"} %}
 <html lang="id">
 <head>
@@ -75,7 +75,7 @@
 {# ================= PAGE 2 — SEGMENT BREAKDOWN ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(1, "Segment Breakdown — 4 Pilar") }}
+  {{ m.section("Segment Breakdown — 4 Pilar", ns) }}
   {% if segments %}
   {{ m.exhibit_auto(ns, "Pendapatan per Segmen: YoY + QoQ + Bauran", segments_src or "IDX Financial Reports") }}
   {{ m.table(["Segmen", "Pendapatan (Rp bn)", "YoY", "QoQ", "Bauran"],
@@ -85,13 +85,13 @@
   {% endif %}{% endfor %}
   {% endif %}
 
-  {{ m.section(2, "Ringkasan Investasi") }}
+  {{ m.section("Ringkasan Investasi", ns) }}
   {% if financial_highlights %}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
   {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
   {% endif %}
 
-  {{ m.section(3, "Tesis Investasi") }}
+  {{ m.section("Tesis Investasi", ns) }}
   {% for t in thesis %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ loop.index }}. {{ t.headline }}</b>
@@ -105,7 +105,7 @@
 {# ================= PAGE 3 — VALUATION DCF+DDM+SOTP ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(4, "Valuasi — DCF + DDM + SOTP") }}
+  {{ m.section("Valuasi — DCF + DDM + SOTP", ns) }}
 
   {% for vm in valuation.methods %}
   <h3>{{ vm.method }}</h3>
@@ -179,7 +179,7 @@
 {# ================= PAGE 4 — FINANCIALS + EXHIBITS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Financials 6Y + Rasio") }}
+  {{ m.section("Financials 6Y + Rasio", ns) }}
   {% for ex in exhibits if ex.chart %}
     {{ m.exhibit_auto(ns, ex.title, ex.source) }}
     <div class="chart-wrap"><canvas id="ex{{ loop.index }}" width="680" height="{{ ex.chart.height or 200 }}"></canvas></div>
@@ -196,7 +196,7 @@
 {# ================= PAGE 5 — PEERS PER PILAR + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(6, "Peer Comparison — Per Pilar") }}
+  {{ m.section("Peer Comparison — Per Pilar", ns) }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
@@ -205,18 +205,12 @@
     {% endfor %}
   {% endif %}
 
-  {{ m.section(7, "Faktor Risiko — Spesifik Pilar") }}
-  {% for r in risks %}
-  <div class="risk-bucket">
-    <b>{{ r.bucket }}</b>
-    <p class="small">{{ r.detail }}</p>
-    {% if r.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ r.source }} -->{% endif %}
-  </div>
-  {% endfor %}
+  {{ m.section("Faktor Risiko — Spesifik Pilar", ns) }}
+  {{ m.risks(risks, ns) }}
 
   {# rule 1: source line directly under its object, before the closing blocks. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(8, "Disklaimer") }}
+  {{ m.section("Disklaimer", ns) }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
   {{ m.pagefoot(5, ns) }}

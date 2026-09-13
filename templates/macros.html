@@ -39,8 +39,33 @@
 {% set ns.pending = true %}
 {%- endmacro %}
 
-{% macro section(no, title) -%}
-<div class="section-head"><span class="section-no">{{ no }}</span><h2>{{ title }}</h2></div>
+{% macro section(title, ns=none) -%}
+{#- The badge counts itself: a hand-typed number collided twice (two sections both numbered 10, and a gap in
+    single-issuer). Call as m.section("Faktor Risiko", ns). -#}
+{%- if ns %}{% set ns.sec = (ns.sec or 0) + 1 %}{% endif -%}
+<div class="section-head"><span class="section-no">{{ ns.sec if ns else "" }}</span><h2>{{ title }}</h2></div>
+{%- endmacro %}
+
+{% macro risks(items, ns=none) -%}
+{#- One row per risk: the number for scanning, the claim, and one figure taken from the risk's own sentence
+    (never authored for the layout). -#}
+<ol class="risk-rail">
+  {% for r in items %}
+  {#- A row may declare `stat` and `stat_label`; both are checked against the row's own text
+      (tests/test_section_numbering.py), so a declared figure still has to be something the row prints.
+      Without a declaration the first figure outside parentheses wins. -#}
+  {% set anchor, anchor_label = (r.stat or r.detail or r.bucket)|hero_stat(r.detail or r.bucket, true) %}
+  <li>
+    <span class="risk-no">{{ "%02d"|format(loop.index) }}</span>
+    <div class="risk-body">
+      <h3>{{ r.bucket }}</h3>
+      <p>{{ r.detail }}</p>
+      {% if r.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ r.source }} -->{% endif %}
+    </div>
+    {% if anchor %}<span class="risk-anchor">{{ anchor }}<i>{{ r.stat_label or anchor_label or "" }}</i></span>{% endif %}
+  </li>
+  {% endfor %}
+</ol>
 {%- endmacro %}
 
 {% macro kv(label, value) -%}
@@ -232,9 +257,27 @@
   .disc-title { font-weight: 800; letter-spacing: .1em; color: var(--ink); margin-bottom: 3pt; }
 
   .takeaways li { margin: 3pt 0; font-size: 8.6pt; }
-  .risk-bucket { border-left: 2.5pt solid var(--neg); padding: 4pt 8pt; margin: 5pt 0;
-                 background: #fffbfa; border-radius: 0 3pt 3pt 0; }
-  .risk-bucket b { color: var(--neg); font-size: 8.6pt; }
+  /* a section header never takes a rule above it: the blue rule belongs under the title, and the last
+     section of a page was picking up the rail's own top border instead (reviewer: sections 10 vs 11) */
+  .risk-rail + .section-head, ol.risk-rail + .section-head { border-top: 0; }
+  .section-head { border-top: 0; }
+  /* ---- Faktor Risiko: the same rail as the thesis page, so the two sections read as one deck ---- */
+  ol.risk-rail { list-style: none; margin: 5pt 0 0; padding: 0; }
+  ol.risk-rail > li { display: grid; grid-template-columns: 20pt 1fr auto; column-gap: 8pt; align-items: start;
+                      padding: 6pt 0 6.5pt; border-top: .75pt solid var(--line); break-inside: avoid; }
+  ol.risk-rail > li:first-child { border-top: 0; padding-top: 2pt; }
+  ol.risk-rail > li:last-child { border-bottom: .75pt solid var(--line); }
+  ol.risk-rail .risk-no { font-size: 12.5pt; font-weight: 800; color: var(--neg); letter-spacing: -.4pt;
+                          font-variant-numeric: tabular-nums; line-height: 1; }
+  ol.risk-rail .risk-body h3 { font-size: 9.3pt; font-weight: 700; color: var(--ink); margin: 0 0 1.5pt; }
+  ol.risk-rail .risk-body p { color: var(--muted); margin: 0; font-size: 7.4pt; line-height: 1.38; }
+  ol.risk-rail .risk-anchor { text-align: right; white-space: nowrap; padding-left: 8pt;
+                              font-size: 10.5pt; font-weight: 700; color: var(--ink);
+                              font-variant-numeric: tabular-nums; min-width: 64pt; }
+  /* the sub-label is a reserved line, so a row without one keeps the same vertical rhythm (reviewer: row 02) */
+  ol.risk-rail .risk-anchor i { display: block; font-style: normal; font-size: 5.6pt; font-weight: 600;
+                                color: var(--muted); letter-spacing: .35pt; margin-top: 1pt; min-height: 5.6pt; }
+  ol.risk-rail .risk-body p { text-wrap: pretty; }   /* no single-token runt on the last line (row 03) */
 
   /* ---- deck slide 3: 2x2 performance grid, each chart with its own narrative ---- */
   .s3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 10pt; margin-top: 3pt; }

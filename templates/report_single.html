@@ -3,7 +3,7 @@
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
 {% import "_slide3_macro.html" as s3 %}
-{% set ns = namespace(ex=0, pending=false) %}
+{% set ns = namespace(ex=0, pending=false, sec=0) %}
 {% set palette = {"brand": "#1d4ed8", "brand_dark": "#152c6e", "accent": "#eef2ff"} %}
 <html lang="id">
 <head>
@@ -153,7 +153,7 @@
    estimating. #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(1, industry_page.title if industry_page else "Kondisi Industri, Katalis & Sentimen") }}
+  {{ m.section(industry_page.title if industry_page else "Kondisi Industri, Katalis & Sentimen", ns) }}
   {% if industry_page %}
   <p class="muted small">{{ industry_page.subtitle }}</p>
   {% for p in industry_page.paragraphs %}
@@ -171,7 +171,7 @@
 {# ================= PAGE 2 — SUMMARY + THESIS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(2, "Ringkasan Investasi") }}
+  {{ m.section("Ringkasan Investasi", ns) }}
   <p class="muted small">Snapshot {{ meta.company_name }} — seluruh angka hasil engine deterministik, asumsi eksplisit pada halaman valuasi.</p>
 
   {% if financial_highlights %}
@@ -179,7 +179,7 @@
   {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
   {% endif %}
 
-  {{ m.section(3, "Tesis Investasi") }}
+  {{ m.section("Tesis Investasi", ns) }}
   <ol class="thesis-rail">
     {% for t in thesis %}
     {% if t.stat %}
@@ -207,7 +207,7 @@
    Key Financials table prints (house-report-format.md §6, deck page order). #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(4, performance_page.title if performance_page else "Visualisasi Kinerja Keuangan dan Forecasting") }}
+  {{ m.section(performance_page.title if performance_page else "Visualisasi Kinerja Keuangan dan Forecasting", ns) }}
   {% if performance_page %}
   <p class="muted small">{{ performance_page.subtitle }}</p>
   <div class="s3-grid">
@@ -231,7 +231,7 @@
 {# ================= PAGE 3 — VALUATION ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Valuasi") }}
+  {{ m.section("Valuasi", ns) }}
   {% if valuation_page and valuation_page.available %}
   <p class="small muted">{{ valuation_page.subtitle }}</p>
 
@@ -337,19 +337,13 @@
 {# ================= PAGE 5 — PEERS + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(10, "Faktor Risiko") }}
-  {% for r in risks %}
-  <div class="risk-bucket">
-    <b>{{ r.bucket }}</b>
-    <p class="small">{{ r.detail }}</p>
-    {% if r.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ r.source }} -->{% endif %}
-  </div>
-  {% endfor %}
+  {{ m.section("Faktor Risiko", ns) }}
+  {{ m.risks(risks, ns) }}
 
   {# rule 1: flush the pending exhibit before the closing blocks, so the source line
      lands directly under its object instead of after the disclaimer. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(10, "Disklaimer") }}
+  {{ m.section("Disklaimer", ns) }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
   {{ m.pagefoot(10, ns) }}

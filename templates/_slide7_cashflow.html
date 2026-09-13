@@ -4,7 +4,7 @@
 <div class="page">
 <div class="slide7">
   {{ m.running() }}
-  {{ m.section(9, "Arus Kas & Rasio Kunci") }}
+  {{ m.section("Arus Kas & Rasio Kunci", ns) }}
 
   {{ m.exhibit_auto(ns, "Cash Flow Statement", cashflow_page.sources[0] if cashflow_page.sources else "") }}
   <table class="fin-table stmt-table">

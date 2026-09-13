@@ -4,7 +4,7 @@
    Catalyst quantified, Blended valuation 60/40, Historical bands STD±2, Shareholder pie.
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
-{% set ns = namespace(ex=0, pending=false) %}
+{% set ns = namespace(ex=0, pending=false, sec=0) %}
 {% set palette = {"brand": "#067647", "brand_dark": "#054f31", "accent": "#ecfdf3"} %}
 <html lang="id">
 <head>
@@ -91,7 +91,7 @@
 {# ================= PAGE 2 — OPERATIONAL KPIs (HERO) ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(1, "KPI Operasional — Hero Section") }}
+  {{ m.section("KPI Operasional — Hero Section", ns) }}
   <p class="small muted">KPI per subsector (tenancy ratio = tenant/tower, fiber km) adalah tesis utama bisnis recurring infra — bukan hanya P&amp;L.</p>
 
   {% if kpis %}
@@ -101,7 +101,7 @@
   <div class="chart-wrap" style="margin-top:8pt;"><canvas id="cKpi" width="680" height="180"></canvas></div>
   {% else %}{% set kpis = [] %}{% endif %}
 
-  {{ m.section(2, "Katalis Terkuantifikasi") }}
+  {{ m.section("Katalis Terkuantifikasi", ns) }}
   {% for c in catalysts %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ c.name }}</b> — {{ c.effect }}
@@ -122,7 +122,7 @@
 <div class="page">
   {{ m.running() }}
   {% if segments %}
-  {{ m.section(3, "Segment Breakdown + Momentum Kuartalan") }}
+  {{ m.section("Segment Breakdown + Momentum Kuartalan", ns) }}
   {{ m.exhibit_auto(ns, "Pendapatan per Segmen: 1H26 vs 1H25 + Q2-26 vs Q1-26", segments_src or "IDX Financial Reports") }}
   {{ m.table(["Segmen", "1H25", "1H26", "y/y", "Q2-25", "Q1-26", "Q2-26", "y/y", "q/q"],
      segments | map(attribute="row") | list) }}
@@ -139,7 +139,7 @@
 <div class="page">
   {{ m.running() }}
   {% if quarterly_balance %}
-  {{ m.section(4, "Balance Sheet & Rasio Kuartalan") }}
+  {{ m.section("Balance Sheet & Rasio Kuartalan", ns) }}
   {{ m.exhibit_auto(ns, "Balance Sheet Kuartalan", quarterly_balance.source) }}
   {{ m.table(quarterly_balance.headers, quarterly_balance.rows) }}
   {% endif %}
@@ -159,7 +159,7 @@
 {# ================= PAGE 5 — VALUATION: DCF + BLENDED + BANDS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Valuasi — DCF Detail + Blended + Bands") }}
+  {{ m.section("Valuasi — DCF Detail + Blended + Bands", ns) }}
 
   {% for vm in valuation.methods %}
   <h3>{{ vm.method }}</h3>
@@ -246,12 +246,12 @@
 <div class="page">
   {{ m.running() }}
   {% if financial_highlights %}
-  {{ m.section(6, "Ringkasan Investasi — Financial Highlights (6 tahun)") }}
+  {{ m.section("Ringkasan Investasi — Financial Highlights (6 tahun)", ns) }}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
   {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
   {% endif %}
 
-  {{ m.section(7, "Tesis Investasi") }}
+  {{ m.section("Tesis Investasi", ns) }}
   {% for t in thesis %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ loop.index }}. {{ t.headline }}</b>
@@ -266,7 +266,7 @@
 <div class="page">
   {{ m.running() }}
   {% if financials %}
-  {{ m.section(8, "Income Statement, Balance Sheet & Cash Flow") }}
+  {{ m.section("Income Statement, Balance Sheet & Cash Flow", ns) }}
   {% for stmt in financials %}
     {% if stmt.title == "Income Statement" or stmt.title == "Balance Sheet" or stmt.title == "Cash Flow Statement" %}
     <h3>{{ stmt.title }}</h3>
@@ -284,7 +284,7 @@
   {% if financials %}
   {% for stmt in financials %}
     {% if stmt.title and "Financial Ratios" in stmt.title %}
-    {{ m.section(9, stmt.title) }}
+    {{ m.section(stmt.title, ns) }}
     {{ m.exhibit_auto(ns, stmt.title, stmt.source) }}
     {{ m.table(stmt.headers, stmt.rows) }}
     {% endif %}
@@ -296,7 +296,7 @@
 {# ================= PAGE 7 — PEERS + RISKS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(8, "Perbandingan Peers") }}
+  {{ m.section("Perbandingan Peers", ns) }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
@@ -307,21 +307,15 @@
 
   {# rule 1: source line directly under its object, before the risk section. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(9, "Faktor Risiko — Spesifik Infra") }}
-  {% for r in risks %}
-  <div class="risk-bucket">
-    <b>{{ r.bucket }}</b>
-    <p class="small">{{ r.detail }}</p>
-    {% if r.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ r.source }} -->{% endif %}
-  </div>
-  {% endfor %}
+  {{ m.section("Faktor Risiko — Spesifik Infra", ns) }}
+  {{ m.risks(risks, ns) }}
   {{ m.pagefoot(6, ns) }}
 </div>
 
 {# ================= PAGE 7 — RATING GUIDE + DISCLAIMER + CONTACT ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(10, "Rating Guide, Disclaimer & Kontak") }}
+  {{ m.section("Rating Guide, Disclaimer & Kontak", ns) }}
 
   {{ m.rating_guide() }}
 

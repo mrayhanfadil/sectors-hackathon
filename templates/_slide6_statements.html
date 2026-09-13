@@ -5,7 +5,7 @@
 <div class="page">
 <div class="slide6">
   {{ m.running() }}
-  {{ m.section(8, "Laporan Keuangan — Laba Rugi & Neraca") }}
+  {{ m.section("Laporan Keuangan — Laba Rugi & Neraca", ns) }}
 
   {% for block_key in ("income", "balance") %}
   {% set B = statements_page[block_key] %}

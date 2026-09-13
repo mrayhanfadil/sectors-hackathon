@@ -4,7 +4,7 @@
    Sector OW/N/UW + Top Picks, Flows/MSCI + Danantara, Disclosures.
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
-{% set ns = namespace(ex=0, pending=false) %}
+{% set ns = namespace(ex=0, pending=false, sec=0) %}
 {% set palette = {"brand": "#7a2e8e", "brand_dark": "#4a1d5c", "accent": "#fdf4ff"} %}
 <html lang="id">
 <head>
@@ -63,7 +63,7 @@
 {# ================= PAGE 2 — INVESTMENT SUMMARY ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(1, "Investment Summary") }}
+  {{ m.section("Investment Summary", ns) }}
   {% for t in strategy.summary %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>{{ loop.index }}. {{ t.headline }}</b>
@@ -72,7 +72,7 @@
   </div>
   {% endfor %}
 
-  {{ m.section(2, "Lessons & 5 Thematics") }}
+  {{ m.section("Lessons & 5 Thematics", ns) }}
   {% for th in strategy.thematics %}
   <div class="card-tint" style="margin:5pt 0;">
     <b>#{{ loop.index }} {{ th.name }}</b>
@@ -86,7 +86,7 @@
 {# ================= PAGE 3 — SECTOR ALLOCATION + PICKS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(3, "Alokasi Sektor — OW / N / UW") }}
+  {{ m.section("Alokasi Sektor — OW / N / UW", ns) }}
   {% if strategy.sectors %}
   {{ m.exhibit_auto(ns, "Sektor & View", strategy.sectors_src or "IDX-IC, penilaian internal") }}
   <div class="grid-2">
@@ -98,7 +98,7 @@
   {% endif %}
 
   {% if strategy.picks %}
-  {{ m.section(4, "Top Picks") }}
+  {{ m.section("Top Picks", ns) }}
   {{ m.exhibit_auto(ns, "Picks Large-Cap & SMID beserta Rationale", strategy.picks_src or "Sectors") }}
   {% for p in strategy.picks %}
   <div class="pick-row">
@@ -118,14 +118,14 @@
 {# ================= PAGE 4 — FLOWS + DANANTARA ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section(5, "Flows, Kepemilikan Asing & Risiko MSCI") }}
+  {{ m.section("Flows, Kepemilikan Asing & Risiko MSCI", ns) }}
   {% if strategy.flows %}
   <p class="small">{{ strategy.flows.narrative }}</p>
   {{ m.exhibit_auto(ns, "Flows, Kepemilikan Asing & Risiko MSCI", strategy.flows.source) }}
   {% if strategy.flows.table %}{{ m.table(strategy.flows.table.headers, strategy.flows.table.rows) }}{% endif %}
   {% endif %}
 
-  {{ m.section(6, "Danantara & Policy Catalyst") }}
+  {{ m.section("Danantara & Policy Catalyst", ns) }}
   {% if strategy.danantara %}
   <p class="small">{{ strategy.danantara.narrative }}</p>
   {{ m.exhibit_auto(ns, "Danantara & Policy Catalyst", strategy.danantara.source) }}
@@ -134,7 +134,7 @@
 
   {# rule 1: flush the pending exhibit before the closing blocks. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section(7, "Disklaimer") }}
+  {{ m.section("Disklaimer", ns) }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
   {{ m.pagefoot(4, ns) }}
