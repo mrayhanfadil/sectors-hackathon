@@ -66,7 +66,8 @@ def _sources(ticker: str) -> dict:
     return {"report": {}, "dir": LEGACY_CACHE}
 
 
-def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None) -> dict:
+def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
+                          driver_path: Optional[dict] = None) -> dict:
     """`spine` is the deck's Key Financials (revenue/EBITDA/net profit per year) so this page ties to it."""
     tk = ticker.upper()
     src = _sources(tk)
@@ -149,20 +150,51 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None) ->
     fc = []
     fixed = acts["2025A"]["fixed"]
     equity = acts["2025A"]["eq"]
+    # Per-year drivers: anything the cited path provides is used as published; anything it does not is
+    # derived from the FY2025A run-rate and said so. A driver file that carries a debt schedule is the
+    # difference between a real statement and a frozen one.
+    dp = (driver_path or {}).get("drivers") or {}
+
+    def drv(key: str, i: int):
+        block = dp.get(key) or {}
+        vals = block.get("rp_bn") or []
+        return float(vals[i]) if i < len(vals) else None
+
+    driver_rows: dict = {}
     for i in range(3):
         rev, ebitda, net = rev_f[i], ebitda_f[i], net_f[i]
-        ebit = ebitda - dna_25
-        ie = gross_debt * cod
+        dna_i = drv("dna", i) or dna_25
+        ebit = ebitda - dna_i
+        ie = drv("interest_expense", i)
+        if ie is None:
+            ie = gross_debt * cod                     # fallback: flat gross debt at the stated cost of debt
+            driver_rows.setdefault("interest_expense", "derived: gross debt flat x cost of debt")
+        else:
+            driver_rows.setdefault("interest_expense", "dari jalur proyeksi (jadwal utang)")
+        ii = drv("interest_income", i) or 0.0
         ebt = net / (1 - tax_rate)
-        other = ebt - ebit + ie                       # reconciling line, disclosed on the page
+        other = ebt - ebit - ii + ie                  # reconciling line, disclosed on the page
         tax = ebt - net
-        fixed = fixed + capex - dna_25
+        mino = drv("minority", i) or 0.0
+        capex_i = drv("capex", i) or 0.0
+        if capex_i:
+            driver_rows.setdefault("capex", "dari jalur proyeksi")
+        fixed = fixed + capex_i - dna_i
         equity = equity + net * (1 - payout)
-        inv = inv_25 * (rev / rev_25) if rev_25 else inv_25
+        inv_i = drv("inventory", i)
+        inv = inv_i if inv_i is not None else (inv_25 * (rev / rev_25) if rev_25 else inv_25)
+        gd_i = drv("gross_debt", i)
+        if gd_i:
+            # split the gross debt across short/long term on the FY2025A mix, which is the only split the
+            # sources publish; state it rather than inventing a schedule
+            share_st = st_debt_25 / (st_debt_25 + lt_debt_25) if (st_debt_25 + lt_debt_25) else 0.0
+            st_i, lt_i = gd_i * share_st, gd_i * (1 - share_st)
+        else:
+            st_i, lt_i = st_debt_25, lt_debt_25
         fc.append({"rev": rev, "cogs": None, "gp": None, "opex": None, "ebit": ebit, "ebitda": ebitda,
-                   "ii": None, "ie": ie, "other": other, "ebt": ebt, "tax": tax, "mino": 0.0, "net": net,
-                   "cash": None, "inv": inv, "tca": None, "fixed": fixed, "ta": None, "st": st_debt_25,
-                   "tcl": None, "lt": lt_debt_25, "tl": None, "eq": equity})
+                   "ii": ii, "ie": ie, "other": other, "ebt": ebt, "tax": tax, "mino": mino, "net": net,
+                   "cash": None, "inv": inv, "tca": None, "fixed": fixed, "ta": None, "st": st_i,
+                   "tcl": None, "lt": lt_i, "tl": None, "eq": equity})
     # Cost chain: opex is held at the FY2025A run-rate and COGS is the balancing line, which is the only
     # way the statement can both foot vertically AND land on the deck's mid-cycle EBITDA. It implies a
     # lower COGS ratio than FY2025A; the page states that instead of hiding it.
@@ -282,6 +314,14 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None) ->
         "Other Income/(Expense) adalah baris REKONSILIASI, bukan angka hasil temuan: pada kolom aktual nilainya "
         "dibuat agar pre-tax foot, pada kolom proyeksi agar pre-tax konsisten dengan jalur laba bersih mid-cycle. "
         "Dinyatakan eksplisit supaya pembaca tidak membacanya sebagai temuan analis.",
+        ("Driver kolom proyeksi: " + ("; ".join(f"{k} {v}" for k, v in sorted(driver_rows.items())))
+         if driver_rows else
+         "Tidak ada jadwal capex/utang/D&A dari sumber — D&A, utang, dan beban bunga ditahan di level "
+         "FY2025A dan itu dinyatakan sebagai keterbatasan, bukan sebagai proyeksi."),
+        ("Utang dibagi short-term/long-term memakai proporsi FY2025A "
+         f"({st_debt_25:,.0f} / {st_debt_25 + lt_debt_25:,.0f}) karena sumber hanya mempublikasikan total; "
+         "jadwal per tenor tidak dikarang.")
+        if driver_rows.get("interest_expense") else "",
         "Neraca: kas adalah item penyeimbang pada kolom proyeksi (dinyatakan). Tanpa itu aset dan liabilitas+ekuitas "
         "tidak akan pernah bertemu persis, karena Sectors tidak menyediakan jadwal capex/pelunasan utang.",
         (f"Rekonsiliasi beban usaha: baris Sectors tidak foot di blok operasi — Operating Expenses di tabel ini "
@@ -303,7 +343,9 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None) ->
                     "headers": ["Rp bn", *YEARS], "rows": balance},
         "tie_out": gaps,
         "tied": all(abs(g) < 1.0 for g in gaps.values()),
-        "notes": notes,
+        "notes": [n for n in notes if n],
+        "driver_basis": driver_rows,
+        "forecast_source": (driver_path or {}).get("attribution"),
         "sources": ["Sectors API: company/report financials.historical_financials (annual, IDR)",
                     "data/assumptions/AMMN.json (tax, cost of debt, capex, payout)",
                     "cover.slide2.key_financials — the mid-cycle forecast spine this page must tie to"],

@@ -109,7 +109,8 @@ def _compliant_payload() -> dict:
                         ["PBV (x)", "3,8", "3,8", "3,8", "3,8", "3,8"],
                         ["EV/EBITDA (x)", "19,5", "27,4", "24,4", "24,4", "24,4"],
                     ],
-                    "notes": ["Asumsi kolom F: ..."],
+                    "forecast_basis": "midcycle-normalised",
+                    "notes": ["Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan ..."],
                 },
             },
         },
@@ -510,18 +511,21 @@ def test_cli_pipeline_builds_and_audits_the_page() -> None:
     _sys.path.insert(0, str(REPO_ROOT / "scripts"))
     import render_pdf
 
-    payload = json.loads(
-        (REPO_ROOT / "output" / "cache" / "render_ammn" / "report_data.json").read_text(
-            encoding="utf-8"
-        )
-    )
+    # built live rather than read from output/cache/render_ammn/report_data.json: that file is an
+    # untracked snapshot and went stale the moment the forecast basis changed, which made this test
+    # assert about a payload the pipeline no longer produces.
+    from server.routers.pdf import _build_live_payload
+
+    payload = _build_live_payload("AMMN", None)
     payload.pop("industry_page", None)  # a payload that predates the page, whatever the cache holds
     render_pdf.ensure_industry_page(payload)
     assert [p["heading"] for p in payload["industry_page"]["paragraphs"]] == list(SLIDE2_PARAGRAPHS)
     assert render_pdf.validate(payload) == []
 
     # and it must refuse a payload whose page breaks the rules
-    broken = json.loads(json.dumps(payload))
+    import copy
+
+    broken = copy.deepcopy(payload)   # the live payload carries a DataFrame, so deep-copy not JSON round-trip
     broken["industry_page"]["paragraphs"] = broken["industry_page"]["paragraphs"][:2]
     assert any("house rules" in e for e in render_pdf.validate(broken))
 

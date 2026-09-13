@@ -69,30 +69,62 @@ def test_negatives_use_the_accounting_parenthesis_convention(payload):
     assert any(str(c).startswith("(") for c in eb_g), eb_g
 
 
-def test_revenue_and_eps_forecast_come_from_the_sectors_subsector_print(payload, assum):
-    sc = (assum.get("sector_context") or {})["sectors_growth_forecast_2026"]
+DRIVER_PATH = REPO_ROOT / "data" / "drivers" / "AMMN.json"
+
+
+def test_forecast_columns_trace_to_the_declared_basis(payload, assum):
+    """Every forecast column must be traceable to the basis the exhibit declares — a cited path, an
+    analyst series, or the labelled normalised fallback. Nothing else may reach the page."""
     kf = _kf(payload)
-    rev25, rev26 = _num(_cell(kf, "Revenue", 1)), _num(_cell(kf, "Revenue", 2))
-    ni25, ni26 = _num(_cell(kf, "Net Profit", 1)), _num(_cell(kf, "Net Profit", 2))
-    assert rev26 == pytest.approx(rev25 * (1 + sc["revenue_growth"]), abs=1.5)
-    assert ni26 == pytest.approx(ni25 * (1 + sc["eps_growth"]), abs=1.5)
+    basis = kf.get("forecast_basis")
+    assert basis, "the exhibit must declare where its forecast columns came from"
+    if basis == "third-party-estimate":
+        doc = json.loads(DRIVER_PATH.read_text())
+        fx = doc["fx_rp_bn_per_usd_mn"]
+        for col, i in ((2, 0), (3, 1), (4, 2)):
+            for row, key in (("Revenue", "revenue"), ("EBITDA", "ebitda"), ("Net Profit", "net_profit")):
+                want = doc["drivers"][key]["path"][i] * fx
+                assert _num(_cell(kf, row, col)) == pytest.approx(want, abs=1.5), (row, col)
+        assert kf.get("forecast_attribution"), "a third-party path must be attributed"
+        assert kf.get("forecast_as_of"), "a third-party path must carry an as-of date"
+        assert any("pihak ketiga" in str(n).lower() for n in kf.get("notes") or []), \
+            "the reader must be told the forecast columns are not the house's own"
+    else:
+        sc = (assum.get("sector_context") or {})["sectors_growth_forecast_2026"]
+        rev25, rev26 = _num(_cell(kf, "Revenue", 1)), _num(_cell(kf, "Revenue", 2))
+        ni25, ni26 = _num(_cell(kf, "Net Profit", 1)), _num(_cell(kf, "Net Profit", 2))
+        assert rev26 == pytest.approx(rev25 * (1 + sc["revenue_growth"]), abs=1.5)
+        assert ni26 == pytest.approx(ni25 * (1 + sc["eps_growth"]), abs=1.5)
 
 
-def test_forecast_ebitda_is_the_files_own_mid_cycle_average(payload, assum):
-    cons = assum["ebitda_midcycle_constituents"]
-    mid_tn = sum(float(v) for v in cons.values()) / len(cons) / 1e12
+def test_forecast_ebitda_matches_its_basis(payload, assum):
     kf = _kf(payload)
-    for col in (2, 3, 4):
-        assert _num(_cell(kf, "EBITDA", col)) == pytest.approx(mid_tn * 1000, abs=1.5)
+    if kf.get("forecast_basis") == "third-party-estimate":
+        doc = json.loads(DRIVER_PATH.read_text())
+        fx = doc["fx_rp_bn_per_usd_mn"]
+        for col, i in ((2, 0), (3, 1), (4, 2)):
+            assert _num(_cell(kf, "EBITDA", col)) == pytest.approx(
+                doc["drivers"]["ebitda"]["path"][i] * fx, abs=1.5)
+    else:
+        cons = assum["ebitda_midcycle_constituents"]
+        mid_tn = sum(float(v) for v in cons.values()) / len(cons) / 1e12
+        for col in (2, 3, 4):
+            assert _num(_cell(kf, "EBITDA", col)) == pytest.approx(mid_tn * 1000, abs=1.5)
 
 
-def test_forecast_years_are_flat_no_invented_growth_curve(payload):
-    """The assumptions file asserts a FLAT FCFF path FY26F-FY30F; a rising curve here would
-    contradict the file the valuation is priced off."""
+def test_a_flat_column_set_is_only_allowed_when_it_is_labelled(payload):
+    """Flat columns read as a growth forecast unless the exhibit says they are a normalised level.
+    Either the basis is `midcycle-normalised` AND the note says so, or the columns must move."""
     kf = _kf(payload)
-    for row in ("Revenue", "EBITDA", "Net Profit", "EPS (Rp)"):
-        v26, v27, v28 = (_num(_cell(kf, row, c)) for c in (2, 3, 4))
-        assert v26 == v27 == v28, (row, v26, v27, v28)
+    basis = kf.get("forecast_basis")
+    flat = all(_num(_cell(kf, "Revenue", c)) == _num(_cell(kf, "Revenue", 2)) for c in (3, 4))
+    if flat:
+        assert basis == "midcycle-normalised", f"flat columns under basis {basis!r}"
+        assert any("normalised" in str(n).lower() for n in kf.get("notes") or []), \
+            "flat columns must carry the normalised-level note"
+    else:
+        assert basis in ("third-party-estimate", "analyst"), basis
+        assert kf.get("forecast_attribution"), "a moving path must be attributed"
 
 
 def test_multiples_are_computed_at_todays_price(payload):

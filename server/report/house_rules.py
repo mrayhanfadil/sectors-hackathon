@@ -241,6 +241,24 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
     if tuple(headers[1:]) != KF_COLUMNS:
         out.append(f"Key Financials columns are {headers[1:]} — expected two actuals and "
                    f"three forecasts {list(KF_COLUMNS)}")
+    # The forecast columns must say WHERE they came from. An unlabelled forecast reads as the house's own.
+    basis = str(kf.get("forecast_basis") or "")
+    notes_blob = " ".join(str(n) for n in (kf.get("notes") or [])).lower()
+    if not basis:
+        out.append("Key Financials does not declare a forecast basis for the FY26F-FY28F columns")
+    elif basis == "third-party-estimate":
+        if not kf.get("forecast_attribution") or not kf.get("forecast_as_of"):
+            out.append("Key Financials uses a third-party path without attribution/as-of — the reader "
+                       "cannot tell whose estimate is on the page")
+        if "pihak ketiga" not in notes_blob and "bukan estimasi rumah" not in notes_blob:
+            out.append("Key Financials uses a third-party forecast path without saying so — the columns "
+                       "would read as the house's own estimate")
+    elif basis == "midcycle-normalised" and "normalised" not in notes_blob:
+        out.append("Key Financials columns are a normalised mid-cycle level but the note does not say "
+                   "'normalised' — a flat level would read as a growth forecast")
+    elif basis == "invalid-driver-file":
+        names = "; ".join(str(p) for p in (kf.get("forecast_problems") or []))
+        out.append(f"Key Financials fell back because its forecast path file is unusable: {names}")
     labels = [_text(r[0]) for r in _rows_of(kf)]
     if len(labels) != len(KF_ROWS):
         out.append(f"Key Financials has {len(labels)} rows — expected {len(KF_ROWS)}")

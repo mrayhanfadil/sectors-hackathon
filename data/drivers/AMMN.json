@@ -1,0 +1,124 @@
+{
+  "ticker": "AMMN",
+  "basis": "third-party-estimate",
+  "attribution": "BRIDS Equity Research \u2014 'From Pit to Cathode: Unlocking a New Earnings Cycle', initiation 29 Jun 2026 (Exhibit 41 Income Statement, Exhibit 42 Balance Sheet, Exhibit 43 Cash Flow, Exhibit 24 DCF)",
+  "as_of": "2026-06-29",
+  "currency": "USD mn (as published)",
+  "fx_basis": "implied by FY2025A: Sectors revenue Rp 30,904 bn / BRIDS FY2025A US$1,847 mn = 16.73 Rp bn per US$1 mn (equivalent to 16,732 IDR/USD, the same-year, same-company cross-check, not a market-rate assumption).",
+  "years": [
+    "2026F",
+    "2027F",
+    "2028F"
+  ],
+  "drivers": {
+    "revenue": {
+      "path": [
+        4001,
+        4287,
+        4868
+      ],
+      "source": "BRIDS Exhibit 41, Revenue",
+      "note": "Phase-8 ramp (fresh ore 1Mt in 1Q25 to 38Mt in 1Q26) plus smelter/PMR downstream volume, new processing plant first ore 3Q26F (40 to 85Mtpa)"
+    },
+    "ebitda": {
+      "path": [
+        2024,
+        2673,
+        3300
+      ],
+      "source": "BRIDS Exhibit 41, EBITDA",
+      "note": "margin 50.6% / 62.3% / 67.8% \u2014 the ramp dilutes cost per tonne as volumes normalise"
+    },
+    "net_profit": {
+      "path": [
+        909,
+        1462,
+        1992
+      ],
+      "source": "BRIDS Exhibit 41, Net profit"
+    },
+    "dna": {
+      "path": [
+        444,
+        479,
+        496
+      ],
+      "source": "BRIDS Exhibit 43, Depreciation and Amort."
+    },
+    "capex": {
+      "path": [
+        498,
+        305,
+        318
+      ],
+      "source": "BRIDS Exhibit 24 (DCF), Less capex",
+      "note": "post-build normalisation \u2014 1,424 in FY2025A, 498 in FY26F"
+    },
+    "interest_expense": {
+      "path": [
+        375,
+        265,
+        176
+      ],
+      "source": "BRIDS Exhibit 41, Interest expense",
+      "note": "falls with the debt repayment path, not a flat coupon on frozen debt"
+    },
+    "minority": {
+      "path": [
+        16,
+        27,
+        42
+      ],
+      "source": "BRIDS Exhibit 41, Minority interest"
+    },
+    "gross_debt": {
+      "path": [
+        6258,
+        4412,
+        2936
+      ],
+      "source": "BRIDS Exhibit 42, ST Debt + Long Term Debt",
+      "note": "deleveraging out of free cash flow \u2014 6,258 in FY26F to 2,936 in FY28F"
+    },
+    "inventory": {
+      "path": [
+        1193,
+        1156,
+        1181
+      ],
+      "source": "BRIDS Exhibit 42, Inventory"
+    },
+    "fcf": {
+      "path": [
+        659,
+        1562,
+        2097
+      ],
+      "source": "BRIDS Exhibit 24 (DCF), FCF row",
+      "note": "free cash flow after tax, capex and working capital, as published"
+    }
+  },
+  "cross_check": {
+    "house_previous_basis": {
+      "basis": "midcycle-normalised",
+      "revenue": [
+        27236,
+        27236,
+        27236
+      ],
+      "ebitda": [
+        18396,
+        18396,
+        18396
+      ],
+      "net_profit": [
+        7004,
+        7004,
+        7004
+      ]
+    },
+    "note": "The normalised mid-cycle level stays in data/assumptions/AMMN.json for the valuation's mid-cycle multiple leg; this path drives the forecast COLUMNS."
+  },
+  "independence_note": "Jalur earnings FY26F-FY28F mengikuti estimasi pihak ketiga yang dikutip per driver di atas; multiple, WACC, beta, dan keputusan gate tetap milik rumah, bukan milik sumber estimasi.",
+  "fx_rp_bn_per_usd_mn": 16.73
+}

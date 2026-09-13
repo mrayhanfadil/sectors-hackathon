@@ -25,6 +25,8 @@ from __future__ import annotations
 import re
 from typing import Any, Optional
 
+from server.report.forecast_path import resolve_forecast_path
+
 from .cover_slide1 import _n, _pct, _rp_bn
 
 
@@ -126,10 +128,27 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     eps_f = (ni_f / shares * 1e9) if (ni_f is not None and shares) else None
     eb_f = mid_eb
 
-    revs = [rev0, rev1, rev_f, rev_f, rev_f]
-    ebis = [ebi0, ebi1, eb_f, eb_f, eb_f]
-    nis = [ni0, ni1, ni_f, ni_f, ni_f]
-    epss = [eps0, eps1, eps_f, eps_f, eps_f]
+    # ---- the forecast columns come from the shared resolver so no page can disagree ------------------
+    ticker = str(payload.get("ticker")
+                 or ((payload.get("cover") or {}).get("ticker"))
+                 or ((payload.get("cover") or {}).get("rating_box") or {}).get("ticker")
+                 or ((payload.get("meta") or {}).get("ticker"))
+                 or assum.get("ticker") or "").upper()
+    path = resolve_forecast_path(ticker, assum=assum, actual_years=[y0 or "2024A", y1 or "2025A"])
+    path_used = bool(path.get("available")) and path.get("basis") != "midcycle-normalised" \
+        and all(k in (path.get("drivers") or {}) for k in ("revenue", "ebitda", "net_profit"))
+
+    if path_used:
+        d = path["drivers"]
+        revs = [rev0, rev1, *d["revenue"]["rp_bn"]]
+        ebis = [ebi0, ebi1, *d["ebitda"]["rp_bn"]]
+        nis = [ni0, ni1, *d["net_profit"]["rp_bn"]]
+        epss = [eps0, eps1, *[(v / shares * 1e9) if shares else None for v in d["net_profit"]["rp_bn"]]]
+    else:
+        revs = [rev0, rev1, rev_f, rev_f, rev_f]
+        ebis = [ebi0, ebi1, eb_f, eb_f, eb_f]
+        nis = [ni0, ni1, ni_f, ni_f, ni_f]
+        epss = [eps0, eps1, eps_f, eps_f, eps_f]
 
     def g(series, i):
         return _growth(series[i], series[i - 1]) if i > 0 else None
@@ -164,12 +183,28 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         _row("EV/EBITDA (x)", [_num(ev_eb(i), 1) for i in range(5)]),
     ]
 
-    note = (
-        f"Asumsi kolom F: revenue & EPS FY26F = FY25A x (1 {_pct((g_rev or 0) * 100)}) / "
-        f"(1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector Sectors 2026; EBITDA FY26F = "
-        f"rata-rata 3 tahun aktual Sectors; FY27F-FY28F flat mengikuti jalur FCFF FLAT "
-        f"FY2026F-FY2030F di file asumsi."
-    )
+    if path_used:
+        src = (path.get("attribution") or "").split("(")[0].strip().split("—")[0].strip()
+        note = (
+            f"Asumsi kolom F: jalur 3 tahun dari estimasi pihak ketiga — {src or 'lihat data/drivers'} "
+            f"(as of {path.get('as_of') or 'n/a'}), dikutip per driver di data/drivers/{ticker}.json. "
+            f"Kolom F bukan estimasi rumah."
+        )
+    elif not path.get("available"):
+        note = (
+            "Asumsi kolom F: file jalur proyeksi TIDAK dipakai karena bermasalah ("
+            + "; ".join(path.get("problems") or []) + "). Kolom F jatuh ke level normalised: revenue & EPS "
+            f"FY26F = FY25A x (1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari "
+            "forecast subsector Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; "
+            "FY27F-FY28F ditahan flat."
+        )
+    else:
+        note = (
+            f"Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan — revenue & EPS FY26F = FY25A x "
+            f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector "
+            f"Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; FY27F-FY28F ditahan flat "
+            f"mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi."
+        )
     note2 = (
         f"Multiple pada harga Rp {_num(price, 0)} untuk semua kolom: PER = harga/EPS; PBV = "
         f"harga/BVPS (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan); EV/EBITDA = "
@@ -180,10 +215,19 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         "exhibit_title": f"Key Financials ({_yr(y0)}–2028F)" if y0 else "Key Financials",
         "headers": headers,
         "rows": rows,
+        "path_notes": path.get("notes") or [],          # kept for the record, not rendered
         "notes": [note, note2],
-        "source": "Sectors financials + forecast subsector + data/assumptions/AMMN.json",
+        "source": ("Sectors financials + " + (f"data/drivers/{ticker}.json" if path_used else
+                                            "forecast subsector + data/assumptions/AMMN.json")),
+        "forecast_basis": path.get("basis"),
+        "forecast_attribution": path.get("attribution"),
+        "forecast_as_of": path.get("as_of"),
+        "forecast_label": path.get("basis_label"),
+        "forecast_problems": path.get("problems") or [],
         "raw": {"rev": revs, "ebitda": ebis, "ni": nis, "eps": epss, "price": price,
                 "mid_eb": mid_eb, "net_debt": net_debt, "mcap": mcap, "shares": shares,
+                "forecast_path": {k: v.get("rp_bn") for k, v in (path.get("drivers") or {}).items()},
+                "forecast_basis": path.get("basis"),
                 "multiple": assum.get("ev_multiple"),
                 "sens": assum.get("ev_multiple_sensitivity") or {}},
     }
