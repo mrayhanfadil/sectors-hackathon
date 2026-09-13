@@ -540,6 +540,8 @@ def render_html_for_ticker(
     return template_name, html, data
 
 
+
+
 def _minimal_pdf_bytes(title: str, text_lines: Optional[list[str]] = None) -> bytes:
     """Generate minimal valid PDF (no deps) with title text. Satisfies %PDF magic check."""
     # Very small PDF 1.4 with one page, Helvetica, text

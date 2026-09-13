@@ -620,11 +620,13 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "detail": (f"Pendapatan FY2024 Rp {tot24t:,.2f} tn: emas 55,0% (Rp 23,67 tn) vs tembaga 45,0% "
                     f"(Rp 19,36 tn); FY2023 masih 43,5%/56,5% (emas Rp 13,67 tn, tembaga Rp 17,72 tn). "
                     f"Marjin bruto FY2024 50,5%, operasi 44,5%."),
+         "stat": "55,0%", "stat_label": "Porsi emas FY2024",
          "source": "Sectors /company/get-segments/AMMN FY2024 (9 flows) + FY2023"},
         {"headline": f"EBITDA TTM Rp {f2(ttm_eb_tn)} tn, marjin Q1-2026 {f1(q0_emgn)}%",
          "detail": (f"TTM (4 kuartal ke 2026-03-31): pendapatan Rp {f2(ttm_rev_tn)} tn, EBITDA Rp "
                     f"{f2(ttm_eb_tn)} tn, laba Rp {f2(ttm.get('earnings', 0) / 1e12)} tn. Marjin EBITDA "
                     f"Q1-2026 {f1(q0_emgn)}% (bruto {f1(q0_gmgn)}%). Basis Q1-2025 terdistorsi ramp smelter."),
+         "stat": f"{f1(q0_emgn)}%", "stat_label": "Marjin EBITDA Q1-2026",
          "source": "Sectors /financials/quarterly/AMMN n_quarters=8"},
         {"headline": "Neraca pasca-smelter: kas menipis, capex run-rate turun",
          "detail": (f"Utang bruto Rp {f2(float(q0.get('total_debt') or 0) / 1e12)} tn vs kas Rp "
@@ -633,12 +635,14 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     f"{f2(ttm.get('capital_expenditure', 0) / 1e12)} tn vs FCF Rp "
                     f"{f2(ttm.get('free_cash_flow', 0) / 1e12)} tn (smelter build); capex Q1-2026 turun "
                     f"ke Rp 1,60 tn dan FCF berbalik +Rp 1,69 tn."),
+         "stat": f"{f1(ttm_netd_ebitda)}×", "stat_label": "Net debt / EBITDA TTM",
          "source": "Sectors quarterly 8Q (TTM ke 2026-03-31)"},
         {"headline": "De-rating multiple 2026 + arus asing membaik",
          "detail": (f"EV/EBITDA 2026 17,99× vs 34,31× (2025) / 29,19× (2024) / 32,19× (2023) — de-rate "
                     f"adalah argumen; kontra: PE 38,23× vs rerata peer sektor 10,07×. Asing 90d −Rp 0,37 tn "
                     f"tapi +Rp 0,24 tn dalam 30d terakhir; cluster-buy direksi Jul-2026 12.961.700 sh "
                     f"@ rata-rata Rp 3.548."),
+         "stat": "17,99×", "stat_label": "EV/EBITDA 2026",
          "source": "Sectors valuation.historical_valuation + foreign-flow 90d + broker-top 30d + filings Jul-2026"},
     ]
     filled.append("thesis[4 pillars]")

@@ -121,6 +121,11 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
       "wrong" — it is simply only correct when one div is exactly one physical page.
     """
     meta = (report_data or {}).get("meta") or {}
+    # The investment-thesis anchor is part of the house layout, so it rides with the furniture: every
+    # environment that renders a house page gets it, not only the one the PDF router builds.
+    from server.report.text_figures import hero_stat as _hero_stat
+
+    env.filters["hero_stat"] = _hero_stat
     date_str = format_house_date(meta.get("date"))
     env.globals["HOUSE"] = {
         "header_title": HEADER_TITLE,

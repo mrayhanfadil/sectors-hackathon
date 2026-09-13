@@ -154,6 +154,24 @@
   .card { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; background: #fff; }
   .card-tint { border: .75pt solid var(--line); border-left: 2.5pt solid var(--brand);
                border-radius: 4pt; padding: 8pt; background: var(--band); }
+  /* Investment thesis as a numbered rail: the numeral is the anchor, hairlines do the separating, and the
+     extracted figure sits on the right so each pillar is scannable. No boxes — a stack of tinted cards
+     reads as one grey block and gives every point the same weight. */
+  ol.thesis-rail { list-style: none; margin: 5pt 0 0; padding: 0; }
+  ol.thesis-rail > li { display: grid; grid-template-columns: 20pt 1fr auto; column-gap: 9pt;
+                        align-items: start; padding: 5.5pt 0; border-top: .75pt solid var(--line); }
+  ol.thesis-rail > li:first-child { border-top: 0; padding-top: 2pt; }
+  ol.thesis-rail > li:last-child { border-bottom: .75pt solid var(--line); }
+  ol.thesis-rail .thesis-no { font-size: 12.5pt; font-weight: 800; color: var(--brand);
+                              line-height: 1.15; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
+  ol.thesis-rail .thesis-body h3 { font-size: 9.3pt; font-weight: 700; color: var(--ink);
+                                   margin: 0 0 1.5pt; letter-spacing: -.005em; }
+  ol.thesis-rail .thesis-body p { color: var(--muted); margin: 0; }
+  ol.thesis-rail .thesis-anchor { text-align: right; white-space: nowrap; padding-left: 10pt; }
+  ol.thesis-rail .thesis-anchor i { display: block; font-style: normal; font-size: 6.2pt; font-weight: 700;
+                                    letter-spacing: .09em; color: var(--muted); margin-bottom: .5pt; }
+  ol.thesis-rail .thesis-anchor { font-size: 10.5pt; font-weight: 700; color: var(--brand-dark);
+                                  font-variant-numeric: tabular-nums; }
   .kv { display: flex; justify-content: space-between; font-size: 8.2pt; padding: 2.2pt 0;
         border-bottom: .5pt dotted var(--line); }
   .kv-l { color: var(--muted); } .kv-v { font-weight: 600; font-variant-numeric: tabular-nums; }

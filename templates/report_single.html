@@ -180,13 +180,24 @@
   {% endif %}
 
   {{ m.section(3, "Tesis Investasi") }}
-  {% for t in thesis %}
-  <div class="card-tint" style="margin:5pt 0;">
-    <b>{{ loop.index }}. {{ t.headline }}</b>
-    <p class="small">{{ t.detail }}</p>
-    {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
-  </div>
-  {% endfor %}
+  <ol class="thesis-rail">
+    {% for t in thesis %}
+    {% if t.stat %}
+      {% set stat, stat_label = t.stat, t.stat_label or "" %}
+    {% else %}
+      {% set stat, stat_label = t.headline|hero_stat(t.detail, true) %}
+    {% endif %}
+    <li>
+      <span class="thesis-no">{{ "%02d"|format(loop.index) }}</span>
+      <div class="thesis-body">
+        <h3>{{ t.headline }}</h3>
+        <p class="small">{{ t.detail }}</p>
+      </div>
+      {% if stat %}<span class="thesis-anchor">{% if stat_label %}<i>{{ stat_label }}</i>{% endif %}{{ stat }}</span>{% endif %}
+      {% if t.source %}<!-- provenance (audit only, never printed; house-report-format.md §1) {{ t.source }} -->{% endif %}
+    </li>
+    {% endfor %}
+  </ol>
   {{ m.pagefoot(3, ns) }}
 </div>
 
