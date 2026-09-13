@@ -52,8 +52,9 @@ version and the Critic REJECTs on it, so treat every line below as a gate:
 - The three highlights must each be a QUANTITATIVE claim: a number, a delta, or a multiple. A
   highlight without a number is an adjective and gets rejected. Do not invent a number to pass
   this — pull it from the payload or drop the claim.
-- The theme title states the thesis with a figure (e.g. "Multiple 2026 di 17,99x vs mid-cycle
-  28,42x"). "Company Update", "Results Review" and similar are generic and rejected.
+- The theme title states the thesis with a figure the deck can defend on the page (for example the
+  current trading multiple against its own normalised or historical level). "Company Update", "Results
+  Review" and similar are generic and rejected.
 - Paragraph 2: name the period's concrete catalysts with their figures, quantify each catalyst's
   impact on earnings or valuation WHERE A BASIS EXISTS, and where it does not exist say so
   explicitly and say why (e.g. a commodity price with no tonnage/grade in the data cannot be
@@ -313,6 +314,40 @@ MODEL DISCIPLINE (these are the rules the Critic enforces, and the reasons they 
      rupiah in every column, and the page prints the tie-out.
 """
 
+
+VALUATION_BASIS_RULE = """VALUATION BASIS DISCIPLINE (every ticker, every leg, every page)
+
+The error that survives every tie-out: a ratio and the number it multiplies measured on DIFFERENT bases.
+Nothing downstream catches it — the arithmetic is clean, the exhibit foots, and the target price is wrong.
+
+  1. State the LEVEL a multiple multiplies. Last-actual/trailing, current-year forward and mid-cycle
+     normalised are three different numbers. A multiple taken from trailing prints may multiply only a
+     trailing level. If the deck prices the next fiscal year, the multiple must be a forward one: a live peer
+     print, a cited third-party print, or an explicit target multiple with its justification and date.
+  2. Never apply an own-history multiple mean to a level it was not measured on. Historical means are usually
+     gathered in trough years, so applying them to a recovered level double-counts the recovery. Test the
+     pairing before using it: rebase the multiple against the SAME kind of level for each print and see
+     whether the answer moves. If the rebase does not move it (EV stable while earnings halve and double),
+     that multiple is not an anchor for this name — say so, and lead with a leg whose basis holds.
+  3. Reconcile an own-history multiple to the provider's own print of the same ratio before resting anything
+     on it. Rebuilding market cap from the dataset's earnings and multiples is acceptable only if the rebuild
+     reproduces the provider's figure; report the largest gap.
+  4. Every leg declares level, multiple, source and as-of date. A multiple with no provenance is an opinion,
+     and the Critic rejects it.
+  5. Show the basis you REJECTED and the number it would have produced. A silent rejection reads as
+     "never considered", and the first reader who tries it finds the most inconvenient number available.
+  6. Pricing inputs and GATE inputs may sit on different bases (a conservative leverage gate against a
+     forward pricing level, for example) ONLY when annotated: which basis each uses, and why. Moving a gate
+     input to another basis is a gate decision, never a side effect of a pricing change.
+  7. If the licensed data carries no reserve / NAV / acreage / volume field the method needs, the leg is
+     EXCLUDED with the reason stated. Never synthesise the missing quantity from a ratio someone else
+     published for a different purpose.
+  8. Report the legs as a set with their bases, not one slogan number. When two legs disagree, print both and
+     name what separates them (an asset the data cannot value, a basis mismatch, a timing difference). A
+     rating must stay internally consistent: a BUY target below the market price is a contradiction, not
+     conviction.
+"""
+
 # ---------------------------------------------------------------------------
 # Social Sentiment — Sectors crowd proxy (parallel lane 1)
 # ---------------------------------------------------------------------------
@@ -506,7 +541,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -616,7 +651,7 @@ Rules:
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer — charts
@@ -755,4 +790,4 @@ Verdict:
 
 Be strict — institutional credibility depends on you.
 Output key: critic_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + VALUATION_BASIS_RULE

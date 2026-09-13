@@ -74,3 +74,20 @@ def test_rating_and_target_stay_consistent_with_the_market_price(payload):
     price, tp = float(rb["price"]), float(rb["tp"])
     assert tp > price, "a Buy with a target below the price is a contradiction"
     assert rb["upside_pct"] == pytest.approx((tp / price - 1) * 100, abs=0.2)
+
+
+def test_gate_requires_the_basis_disclosure(payload):
+    """The rule that the agent carries must also be enforced where a page can violate it."""
+    from server.report.house_rules import audit_house_rules
+
+    assert audit_house_rules(payload)["violations"] == []
+    import copy
+
+    broken = copy.deepcopy(payload)
+    broken["valuation_page"]["notes"] = [n for n in broken["valuation_page"]["notes"]
+                                         if "BASIS MULTIPLE" not in n]
+    # keep only the priced row: no rejected basis anywhere on the page
+    broken["valuation"]["midcycle"]["rows"] = [["EBITDA FY26F (basis TP)", "Rp 33,86 tn", "level"]]
+    out = audit_house_rules(broken)["violations"]
+    assert any("basis of the level" in v for v in out), out
+    assert any("rejected basis" in v for v in out), out

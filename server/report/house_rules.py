@@ -627,6 +627,18 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_peer_page(payload.get("peers_page"), payload)
     # Slide 6 of the deck is its own page as well.
     violations += audit_statements_page(payload.get("statements_page"), payload)
+    # Slide 4: a priced leg must state which level and which multiple produced it, and what was rejected.
+    # The instruction rule says so; this makes it enforced rather than optional.
+    vnotes = " ".join(str(n) for n in ((payload.get("valuation_page") or {}).get("notes") or []))
+    vrows = " ".join(str(c) for r in (((payload.get("valuation") or {}).get("midcycle") or {}).get("rows") or [])
+                     for c in r)
+    if (payload.get("valuation_page") or {}).get("available"):
+        if "BASIS MULTIPLE" not in vnotes and "basis TP" not in vrows:
+            violations.append("slide 4 valuation does not state the basis of the level and the multiple "
+                              "behind the target price (level, multiple, source, as-of)")
+        if "DITOLAK" not in vnotes and "tidak dipakai" not in vrows:
+            violations.append("slide 4 valuation names no rejected basis — a silent rejection reads as "
+                              "never considered")
     return {
         "ok": not violations,
         "applicable": applicable,
