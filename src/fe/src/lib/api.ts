@@ -86,19 +86,22 @@ function liveValuationDetail(raw: Record<string, unknown>): Report["valuationDet
   const methods: VD["methods"] = []
   const dcf = val["dcf"] as Record<string, unknown> | undefined
   if (dcf && typeof dcf === "object") {
-    const fv = Number(dcf["fv_per_share"] ?? dcf["fv"] ?? 0)
-    if (fv) methods.push({ method: "DCF", fv, assumptions: (val["assumptions"] as Record<string, unknown>) ?? {}, source: "engines.dcf" })
+    const rawVal = dcf["fv_per_share"] ?? dcf["fv"]
+    const fv = rawVal != null ? Number(rawVal) : null
+    if (fv && Number.isFinite(fv)) methods.push({ method: "DCF", fv, assumptions: (val["assumptions"] as Record<string, unknown>) ?? {}, source: "engines.dcf" })
   }
   const ev = val["ev"] as Record<string, unknown> | undefined
   if (ev && typeof ev === "object") {
-    const fv = Number(ev["fv_per_share"] ?? ev["fv"] ?? 0)
-    if (fv) methods.push({ method: "EV/EBITDA", fv, source: "engines.ev_ebitda" })
+    const rawVal = ev["fv_per_share"] ?? ev["fv"]
+    const fv = rawVal != null ? Number(rawVal) : null
+    if (fv && Number.isFinite(fv)) methods.push({ method: "EV/EBITDA", fv, source: "engines.ev_ebitda" })
   }
   const blendedRaw = val["blended"] as Record<string, unknown> | null | undefined
   let blended: VD["blended"] = null
   if (blendedRaw && typeof blendedRaw === "object") {
-    const bv = Number(blendedRaw["blended"] ?? 0) || Number(raw["fair_value"] ?? 0) || 0
-    if (bv) {
+    const rawBv = blendedRaw["blended"] ?? raw["fair_value"]
+    const bv = rawBv != null ? Number(rawBv) : null
+    if (bv && Number.isFinite(bv)) {
       blended = {
         weights: (blendedRaw["weights"] as Record<string, number>) ?? {},
         fv: bv,
@@ -640,5 +643,71 @@ export async function fetchDcfFull(ticker: string): Promise<DcfFriendPayload | {
   if (!r.ok) return { error: `HTTP ${r.status}` }
   return await r.json()
 }
+
+// ---------------------------------------------------------------------------
+// Full Institutional Report Payload (GET /api/report/{ticker}/payload)
+// ---------------------------------------------------------------------------
+import type { ReportPayloadEnvelope, FullReportPayload } from "./reportTypes"
+
+export type { ReportPayloadEnvelope }
+
+export async function fetchReportPayload(ticker: string): Promise<ReportPayloadEnvelope> {
+  const k = ticker.toUpperCase().trim()
+  const path = `/api/report/${encodeURIComponent(k)}/payload`
+  const url = API_BASE ? `${API_BASE}${path}` : path
+
+  try {
+    const res = await fetch(url)
+    if (res.status === 422) {
+      const body = await res.json().catch(() => null)
+      const detail = (body && typeof body === "object" && "detail" in body ? (body as Record<string, unknown>).detail : body) as
+        | { ticker?: string; missing?: string[]; summary?: string }
+        | undefined
+      return {
+        ticker: detail?.ticker || k,
+        payload: null,
+        is422: true,
+        missing: Array.isArray(detail?.missing) ? detail.missing : [],
+        summary:
+          detail?.summary ||
+          `Emiten ${k} belum memiliki data asumsi terverifikasi (data/assumptions/${k}.json). Engine deterministik menolak angka fabrikasi.`,
+        offline: false,
+      }
+    }
+
+    if (!res.ok) {
+      // Fallback for 404/500
+      return {
+        ticker: k,
+        payload: null,
+        is422: false,
+        offline: true,
+        summary: `BE mengembalikan kode ${res.status}. Data payload untuk ${k} belum dapat dimuat.`,
+      }
+    }
+
+    const data = (await res.json()) as Record<string, unknown>
+    const payload = (data.payload ?? data) as FullReportPayload
+    const sections = Array.isArray(data.sections) ? (data.sections as string[]) : []
+
+    return {
+      ticker: (data.ticker as string) || k,
+      payload,
+      sections,
+      is422: false,
+      offline: false,
+    }
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    return {
+      ticker: k,
+      payload: null,
+      is422: false,
+      offline: true,
+      summary: `BE tidak tersedia saat ini (${msg}). Data untuk ${k} belum dapat dimuat.`,
+    }
+  }
+}
+
 
 

@@ -1,0 +1,1282 @@
+{
+  "generated_from": [
+    "AMMN",
+    "BBCA"
+  ],
+  "sections": {
+    "meta": {
+      "shape": {
+        "template": "string",
+        "reason": "string",
+        "ticker": "string",
+        "company_name": "string",
+        "sector": "string",
+        "report_type": "string",
+        "date": "string",
+        "prepared_by": "string",
+        "language": "string",
+        "subsector": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "template",
+        "reason",
+        "ticker",
+        "company_name",
+        "sector",
+        "report_type",
+        "date",
+        "prepared_by",
+        "language",
+        "subsector"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "cover": {
+      "shape": {
+        "rating_box": {
+          "action": "string",
+          "tp": "number",
+          "prev_tp": "null",
+          "price": "number",
+          "upside_pct": "number",
+          "key_takeaways": "list[string]"
+        },
+        "vs_jci": {
+          "ytd_abs": "null",
+          "ytd_rel": "null",
+          "source": "string",
+          "note": "string",
+          "chart": {
+            "labels": "list[string]",
+            "series": "list[list[number]]"
+          }
+        },
+        "shares": {
+          "outstanding": "number",
+          "unit": "string",
+          "free_float_pct": "null",
+          "note": "string"
+        },
+        "shareholders": "list[{'name': 'string', 'pct': 'number'}]",
+        "shareholders_src": "string",
+        "shareholders_note": "string",
+        "esg": {
+          "found": "bool",
+          "score": "number",
+          "source": "string",
+          "date": "string",
+          "note": "string"
+        },
+        "summary": "string",
+        "price_chart": {
+          "title": "string",
+          "label": "string",
+          "caption": "string"
+        },
+        "market": {
+          "market_cap": "string",
+          "index_class": "string",
+          "range_52w": "string"
+        },
+        "slide1": {
+          "rating": {
+            "action": "string",
+            "action_status": "string",
+            "prev_action": "null",
+            "prev_tp": "null"
+          },
+          "price_box": {
+            "rows": "list[list[string]]",
+            "anchor": "string",
+            "anchor_basis": "string"
+          },
+          "stats": {
+            "rows": "list[list[string]]",
+            "major_shareholders": "list[object]",
+            "notes": "list[string]",
+            "sources": "object"
+          },
+          "analyst": {
+            "name": "string",
+            "title": "string"
+          },
+          "theme_title": "string",
+          "highlights": "list[string]",
+          "financial_para": {
+            "heading": "string",
+            "body": "string",
+            "source": "string"
+          },
+          "jci_chart": {
+            "ticker": "string",
+            "labels": "list[string]",
+            "price": "list[number]",
+            "index": "list[number]",
+            "rel_pct": "list[number]",
+            "window": "string",
+            "months": "number",
+            "abs_chg_pct": "number",
+            "idx_chg_pct": "number",
+            "source": "string"
+          },
+          "fx": {
+            "rate": "number",
+            "date": "string",
+            "source": "string"
+          },
+          "notes": "list[empty]"
+        },
+        "slide2": {
+          "key_financials": {
+            "exhibit_title": "string",
+            "headers": "list[string]",
+            "rows": "list[list[string]]",
+            "path_notes": "list[string]",
+            "notes": "list[string]",
+            "source": "string",
+            "forecast_basis": "string",
+            "forecast_attribution": "string",
+            "forecast_as_of": "string",
+            "forecast_label": "string",
+            "forecast_problems": "list[empty]",
+            "raw": "object"
+          },
+          "katalis": {
+            "heading": "string",
+            "body": "string"
+          },
+          "valuasi": {
+            "heading": "string",
+            "body": "string"
+          }
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "rating_box",
+        "vs_jci",
+        "shares",
+        "shareholders",
+        "shareholders_src",
+        "shareholders_note",
+        "esg",
+        "summary",
+        "price_chart",
+        "market",
+        "slide1",
+        "slide2"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "financial_highlights": {
+      "shape": {
+        "source": "string",
+        "note": "string",
+        "years": "list[string]",
+        "rows": "list[list[string]]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "source",
+        "note",
+        "years",
+        "rows"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "segments": {
+      "shape": "list[{'name': 'string', 'revenue': 'number', 'unit': 'string', 'yoy_pct': 'number', 'share_pct': 'number', 'pie': 'bool', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 2",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "segments_src": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Sectors /company/get-segments/AMMN (FY2024 latest; FY2025 -> 404)",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "segments_note": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "FY2024 pilar terakhir tersedia (FY2025 404 'data does not exist', 1 kredit; GAP G3). FY2023 tersedia untuk tren. Jangan ",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "kpis": {
+      "shape": "list[{'name': 'string', 'value': 'number', 'prev': 'number', 'unit': 'string', 'formula': 'string', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 4",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "kpis_src": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Sectors API v2 — company/report + quarterly-financials (AMMN)",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "kpis_note": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Volume produksi/tonase, grade, C1/AISC: tak ada baris volumetrik di payload Sectors mana pun (GAP G7/G10); AMMN absen da",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "thesis": {
+      "shape": "list[{'headline': 'string', 'detail': 'string', 'stat': 'string', 'stat_label': 'string', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 4",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "valuation": {
+      "shape": {
+        "anchor": "string",
+        "anchor_basis": "string",
+        "legs": {
+          "dcf": "number",
+          "ev_ebitda": "number"
+        },
+        "methods": "list[{'method': 'string', 'fv': 'number', 'assumptions': 'object', 'table': 'object', 'source': 'string'}]",
+        "blended": "null",
+        "bands": "null",
+        "midcycle": {
+          "title": "string",
+          "source": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]"
+        },
+        "dcf_grid": {
+          "pv_explicit": "string",
+          "pv_tv": "string",
+          "ev": "string",
+          "net_cash": "string",
+          "unit": "string",
+          "source": "string"
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "anchor",
+        "anchor_basis",
+        "legs",
+        "methods",
+        "blended",
+        "bands",
+        "midcycle",
+        "dcf_grid"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "financials": {
+      "shape": "list[{'title': 'string', 'headers': 'list[string]', 'rows': 'list[list[string]]', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 3",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "financials_note": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Minorities = EBT-pajak-laba (derived, eksak); kas = cash_and_equivalents (= cash_only FY2023-25; cash_only FY2020-22 nul",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "risks": {
+      "shape": "list[{'bucket': 'string', 'detail': 'string', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 6",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "risks_note": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); suspensi nihil ber-evidence.",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "peers": {
+      "shape": {
+        "tables": "list[{'pillar': 'string', 'headers': 'list[string]', 'rows': 'list[list[string]]', 'median': 'list[string]', 'average': 'list[string]', 'source': 'string'}]",
+        "source": "string",
+        "note": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "tables",
+        "source",
+        "note"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "news": {
+      "shape": "list[{'title': 'string', 'url': 'string', 'date': 'string', 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 8",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "sentiment": {
+      "shape": {
+        "net_foreign_90d_bn": "number",
+        "net_foreign_30d_bn": "number",
+        "pos_days": "string",
+        "top_buyers": "list[tuple]",
+        "top_sellers": "list[tuple]",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "net_foreign_90d_bn",
+        "net_foreign_30d_bn",
+        "pos_days",
+        "top_buyers",
+        "top_sellers",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "strategy": {
+      "shape": "null",
+      "filled_in": [],
+      "sample_keys": "None",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "catalysts": {
+      "shape": "list[{'name': 'string', 'effect': 'string', 'quantified': {'shares': 'string', 'avg_price': 'string', 'by': 'string'}, 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 4",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "catalysts_note": {
+      "shape": "string",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "Basis kuantifikasi dinyatakan per katalis; yang kualitatif dilabeli eksplisit (tanpa tenant-karangan).",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "exhibits": {
+      "shape": "list[{'title': 'string', 'chart': {'type': 'string', 'data': 'object'}, 'source': 'string'}]",
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": "list of 2",
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "gate_inputs": {
+      "shape": {
+        "domain": "string",
+        "filing_history_years": "number",
+        "ebit_positive_count": "number",
+        "d_de_ratio": "number",
+        "net_debt_to_ebitda": "number",
+        "interest_coverage": "number",
+        "shareholders_equity": "number",
+        "nci_pct": "number",
+        "revenue_drivers": "list[string]",
+        "has_steady_state_3y": "bool",
+        "life_cycle_stage": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "domain",
+        "filing_history_years",
+        "ebit_positive_count",
+        "d_de_ratio",
+        "net_debt_to_ebitda",
+        "interest_coverage",
+        "shareholders_equity",
+        "nci_pct",
+        "revenue_drivers",
+        "has_steady_state_3y",
+        "life_cycle_stage"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "key_financials": {
+      "shape": {
+        "title": "string",
+        "source": "string",
+        "headers": "list[string]",
+        "rows": "list[list[string]]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "source",
+        "headers",
+        "rows"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "financial_statements": {
+      "shape": {
+        "section_title": "string",
+        "section_sub": "string",
+        "income": {
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "source": "string"
+        },
+        "balance": {
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "source": "string"
+        },
+        "cashflow": {
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "bold_rows": "list[number]",
+          "footers": "list[list[string]]",
+          "source": "string"
+        },
+        "ratios": {
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "source": "string"
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "section_title",
+        "section_sub",
+        "income",
+        "balance",
+        "cashflow",
+        "ratios"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "sector_data": {
+      "shape": {
+        "subsector": "string",
+        "growth_forecast_2026": {
+          "revenue_pct": "number",
+          "eps_pct": "number",
+          "base_year": "number"
+        },
+        "growth_actual_2025": {
+          "revenue_pct": "number",
+          "eps_pct": "number"
+        },
+        "top_mcap": "list[{'symbol': 'string', 'name': 'string', 'market_cap': 'number'}]",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "subsector",
+        "growth_forecast_2026",
+        "growth_actual_2025",
+        "top_mcap",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "filings_digest": {
+      "shape": {
+        "n": "number",
+        "buy": {
+          "n": "number",
+          "shares": "number",
+          "value": "number",
+          "holders": "list[string]",
+          "first": "string",
+          "last": "string"
+        },
+        "sell": {
+          "n": "number",
+          "shares": "number",
+          "value": "number",
+          "holders": "list[string]",
+          "first": "string",
+          "last": "string"
+        },
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "n",
+        "buy",
+        "sell",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "corporate_actions": {
+      "shape": {
+        "agm": "list[string]",
+        "dividend": "null",
+        "upcoming_dividend": "null",
+        "bonus": "null",
+        "right_issue": "null",
+        "stock_split": "null",
+        "warrant": "null",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "agm",
+        "dividend",
+        "upcoming_dividend",
+        "bonus",
+        "right_issue",
+        "stock_split",
+        "warrant",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "ownership_mix": {
+      "shape": {
+        "latest": {
+          "date": "string",
+          "domestic": "number",
+          "foreign": "number",
+          "foreign_institutions": "number",
+          "foreign_mutual_fund": "number",
+          "foreign_corporate": "number",
+          "individuals": "number",
+          "insurance": "number"
+        },
+        "first": {
+          "date": "string",
+          "domestic": "number",
+          "foreign": "number",
+          "foreign_institutions": "number",
+          "foreign_mutual_fund": "number",
+          "foreign_corporate": "number",
+          "individuals": "number",
+          "insurance": "number"
+        },
+        "months": "number",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "latest",
+        "first",
+        "months",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "free_float": {
+      "shape": {
+        "n": "number",
+        "in_list": "bool",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "n",
+        "in_list",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "revenue_combo": {
+      "shape": {
+        "title": "string",
+        "years": "list[string]",
+        "bars": "list[number]",
+        "line": "list[number]",
+        "actual_periods": "number",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "years",
+        "bars",
+        "line",
+        "actual_periods",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "ebitda_combo": {
+      "shape": {
+        "title": "string",
+        "years": "list[string]",
+        "bars": "list[number]",
+        "line": "list[number]",
+        "actual_periods": "number",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "years",
+        "bars",
+        "line",
+        "actual_periods",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "netprofit_combo": {
+      "shape": {
+        "title": "string",
+        "years": "list[string]",
+        "bars": "list[number]",
+        "line": "list[number]",
+        "actual_periods": "number",
+        "source": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "years",
+        "bars",
+        "line",
+        "actual_periods",
+        "source"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "dcf_deep_dive": {
+      "shape": {
+        "section_sub": "string",
+        "intro": "string",
+        "wacc_build": {
+          "headers": "list[string]",
+          "rows": "list[list[string]]"
+        },
+        "sensitivity": {
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "note": "string"
+        },
+        "scenarios": {
+          "headers": "list[string]",
+          "rows": "list[list[string]]",
+          "note": "string"
+        },
+        "bridge": {
+          "headers": "list[string]",
+          "rows": "list[list[string]]"
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "section_sub",
+        "intro",
+        "wacc_build",
+        "sensitivity",
+        "scenarios",
+        "bridge"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "cDcf": {
+      "shape": {
+        "wacc_table": "list[{'label': 'string', 'value': 'string'}]",
+        "sensitivity": {
+          "fair_value": "list[list[number]]",
+          "upside": "list[list[number]]",
+          "wacc_axis": "list[number]",
+          "g_axis": "list[number]",
+          "stats": {
+            "base": "number",
+            "min": "number",
+            "max": "number",
+            "n_valid": "number",
+            "n_cells": "number"
+          }
+        },
+        "scenarios": {
+          "BEAR": {
+            "scenario": "string",
+            "basis": "string",
+            "ebitda_idr": "number",
+            "multiple": "number",
+            "fair_value_per_share": "number",
+            "upside": "number",
+            "rating": "string",
+            "leg": "string"
+          },
+          "BASE": {
+            "scenario": "string",
+            "basis": "string",
+            "ebitda_idr": "number",
+            "multiple": "number",
+            "fair_value_per_share": "number",
+            "upside": "number",
+            "rating": "string",
+            "leg": "string"
+          },
+          "BULL": {
+            "scenario": "string",
+            "basis": "string",
+            "ebitda_idr": "number",
+            "multiple": "number",
+            "fair_value_per_share": "number",
+            "upside": "number",
+            "rating": "string",
+            "leg": "string"
+          }
+        },
+        "valuation": {
+          "pv_explicit": "number",
+          "pv_terminal": "number",
+          "enterprise_value": "number",
+          "cash": "number",
+          "total_debt": "number",
+          "minority": "number",
+          "equity_value": "number",
+          "fair_value_per_share": "number",
+          "market_price": "number",
+          "upside": "number",
+          "wacc": "number",
+          "g": "number",
+          "shares_outstanding": "number"
+        },
+        "recommendation": {
+          "rating": "string",
+          "upside": "number",
+          "label": "string",
+          "note": "string"
+        },
+        "provenance": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "wacc_table",
+        "sensitivity",
+        "scenarios",
+        "valuation",
+        "recommendation",
+        "provenance"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "fill_meta": {
+      "shape": {
+        "filled": "list[string]",
+        "gaps": "list[string]",
+        "src": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "filled",
+        "gaps",
+        "src"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "house_rules": {
+      "shape": {
+        "ok": "bool",
+        "applicable": "bool",
+        "violations": "list[empty]",
+        "sections": "list[string]",
+        "copy_chars": "number",
+        "copy_budget": "number"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "ok",
+        "applicable",
+        "violations",
+        "sections",
+        "copy_chars",
+        "copy_budget"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "industry_page": {
+      "shape": {
+        "title": "string",
+        "paragraphs": "list[{'heading': 'string', 'body': 'string', 'basis': 'string'}]",
+        "sources": "list[string]",
+        "notes": "list[string]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "paragraphs",
+        "sources",
+        "notes"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "performance_page": {
+      "shape": {
+        "title": "string",
+        "subtitle": "string",
+        "quadrants": "list[{'title': 'string', 'window': 'string', 'bars': 'list[number]', 'line': 'list[null]', 'labels': 'list[string]', 'actual_n': 'number', 'bar_unit': 'string', 'line_unit': 'string', 'bar_fmt': 'list[string]', 'line_fmt': 'list[string]', 'narrative': 'string', 'tie_out': 'object'}]",
+        "notes": "list[string]",
+        "sources": "list[string]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "title",
+        "subtitle",
+        "quadrants",
+        "notes",
+        "sources"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "valuation_page": {
+      "shape": {
+        "available": "bool",
+        "method": "string",
+        "title": "string",
+        "subtitle": "string",
+        "periods": "list[string]",
+        "blocks": {
+          "build_up": {
+            "Revenue": "list[number]",
+            "EBIT": "list[number]",
+            "Tax on EBIT": "list[number]",
+            "NOPAT": "list[number]",
+            "(+) D&A": "list[number]",
+            "(-) Capex": "list[number]",
+            "(-/+) Delta NWC": "list[number]",
+            "FCFF (build-up)": "list[number]",
+            "FCFF growth (%)": "list[null]",
+            "Discount factor": "list[number]",
+            "PV of FCFF": "list[number]"
+          },
+          "documented_fcff": "list[number]"
+        },
+        "bridge": {
+          "basis": "string",
+          "fcff": "list[number]",
+          "growth": "list[null]",
+          "discount": "list[number]",
+          "pv_fcff": "list[number]",
+          "tv_gordon": "number",
+          "tv_gordon_df": "number",
+          "pv_tv_gordon": "number",
+          "tv_exit": "number",
+          "pv_tv_exit": "number",
+          "pv_explicit": "number",
+          "ev_gordon": "number",
+          "ev_exit": "number",
+          "equity_gordon": "number",
+          "pv_explicit_abs": "number",
+          "equity_exit": "number",
+          "fv_gordon": "number",
+          "fv_exit": "number",
+          "tv_share": "number",
+          "net_debt": "number",
+          "implied_exit_multiple": "number",
+          "flags": "list[empty]"
+        },
+        "alternatives": {
+          "build_up": {
+            "basis": "string",
+            "fcff": "list[number]",
+            "growth": "list[null]",
+            "discount": "list[number]",
+            "pv_fcff": "list[number]",
+            "tv_gordon": "number",
+            "tv_gordon_df": "number",
+            "pv_tv_gordon": "number",
+            "tv_exit": "number",
+            "pv_tv_exit": "number",
+            "pv_explicit": "number",
+            "ev_gordon": "number",
+            "ev_exit": "number",
+            "equity_gordon": "number",
+            "pv_explicit_abs": "number",
+            "equity_exit": "number",
+            "fv_gordon": "number",
+            "fv_exit": "number",
+            "tv_share": "number",
+            "net_debt": "number",
+            "implied_exit_multiple": "number",
+            "flags": "list[empty]"
+          }
+        },
+        "wacc_rows": "list[tuple]",
+        "sensitivity": {
+          "fair_value": "DataFrame",
+          "wacc_axis": "list[number]",
+          "g_axis": "list[number]",
+          "base": "tuple",
+          "base_fv": "number",
+          "swing": {
+            "min": "number",
+            "max": "number",
+            "median": "number"
+          },
+          "stats": {
+            "min": "number",
+            "max": "number",
+            "median": "number",
+            "n_valid": "number",
+            "n_cells": "number"
+          },
+          "columns": "list[string]",
+          "rows": "list[object]",
+          "base_wacc": "string",
+          "base_g": "string"
+        },
+        "bridge_basis": "string",
+        "drivers": {
+          "revenue_fy25": "number",
+          "ebit_margin_fy25": "number",
+          "effective_tax": "number",
+          "da_fy25": "number",
+          "capex_sustaining": "number",
+          "multiple": "number",
+          "price": "number",
+          "revenue_basis": "string"
+        },
+        "notes": "list[string]",
+        "convention": "string",
+        "block2_headers": "null",
+        "block3_headers": "null",
+        "block1_headers": "null",
+        "assumptions_view": {
+          "wacc": "number",
+          "g": "number",
+          "shares_bn": "number",
+          "rf": "number",
+          "beta": "number",
+          "erp": "number"
+        },
+        "legs": {
+          "dcf": "number",
+          "ev_ebitda": "number"
+        },
+        "sources": "list[string]",
+        "block1_rows": "list[tuple]",
+        "block2_rows": "list[tuple]",
+        "block3_rows": "list[tuple]",
+        "crosscheck_rows": "list[tuple]",
+        "narrative": "list[string]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "available",
+        "method",
+        "title",
+        "subtitle",
+        "periods",
+        "blocks",
+        "bridge",
+        "alternatives",
+        "wacc_rows",
+        "sensitivity",
+        "bridge_basis",
+        "drivers",
+        "notes",
+        "convention",
+        "block2_headers",
+        "block3_headers",
+        "block1_headers",
+        "assumptions_view",
+        "legs",
+        "sources",
+        "block1_rows",
+        "block2_rows",
+        "block3_rows",
+        "crosscheck_rows"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "peers_page": {
+      "shape": {
+        "available": "bool",
+        "ticker": "string",
+        "as_of": "string",
+        "part_a": {
+          "exhibit": "number",
+          "title": "string",
+          "columns": "list[string]",
+          "rows": "list[object]",
+          "median": {
+            "symbol": "string",
+            "pe": "number",
+            "pbv": "number",
+            "ev_ebitda": "number",
+            "roe": "number",
+            "is_stat": "bool"
+          },
+          "average": {
+            "symbol": "string",
+            "pe": "number",
+            "pbv": "number",
+            "ev_ebitda": "number",
+            "roe": "number",
+            "is_stat": "bool"
+          },
+          "counts": {
+            "pe_ttm": "number",
+            "pb_mrq": "number",
+            "ev_ebitda_ttm": "number",
+            "roe_ttm": "number"
+          },
+          "basis": "string",
+          "as_of": "string",
+          "criteria": "string",
+          "narrative": "list[string]",
+          "narrative_text": "string",
+          "sources": "list[string]",
+          "credit_log": "string"
+        },
+        "part_b": {
+          "exhibits": "list[number]",
+          "title": "string",
+          "methodology": "string",
+          "bands": "list[object]",
+          "implied": "list[object]",
+          "driver": {
+            "as_of": "string",
+            "earnings_ttm": "number",
+            "ebitda_ttm": "number",
+            "revenue_ttm": "number",
+            "equity": "number",
+            "net_debt": "number"
+          },
+          "driver_note": "string",
+          "last_close": "number",
+          "disclaimer": "string",
+          "sources": "list[string]",
+          "credit_log": "string"
+        },
+        "sections": {
+          "a": "string",
+          "b": "string"
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "available",
+        "ticker",
+        "as_of",
+        "part_a",
+        "part_b",
+        "sections"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "cashflow_page": {
+      "shape": {
+        "available": "bool",
+        "ticker": "string",
+        "years": "list[string]",
+        "sections": "list[{'title': 'string', 'rows': 'list[object]'}]",
+        "closing": "list[{'label': 'string', 'cells': 'list[number]', 'kind': 'string', 'note': 'string'}]",
+        "memo": "list[{'label': 'string', 'cells': 'list[number]', 'kind': 'string', 'note': 'string'}]",
+        "headers": "list[string]",
+        "end_cash": "list[number]",
+        "net_change": "list[number]",
+        "fcf": "list[number]",
+        "fcff_exhibit8": "number",
+        "notes": "list[string]",
+        "sources": "list[string]"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "available",
+        "ticker",
+        "years",
+        "sections",
+        "closing",
+        "memo",
+        "headers",
+        "end_cash",
+        "net_change",
+        "fcf",
+        "fcff_exhibit8",
+        "notes",
+        "sources"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "statements_page": {
+      "shape": {
+        "available": "bool",
+        "ticker": "string",
+        "years": "list[string]",
+        "variant": "string",
+        "income": {
+          "exhibit_key": "string",
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[object]"
+        },
+        "balance": {
+          "exhibit_key": "string",
+          "title": "string",
+          "headers": "list[string]",
+          "rows": "list[object]"
+        },
+        "tie_out": {
+          "2024A": "number",
+          "2025A": "number",
+          "2026F": "number",
+          "2027F": "number",
+          "2028F": "number"
+        },
+        "tied": "bool",
+        "notes": "list[string]",
+        "driver_basis": {
+          "interest_expense": "string",
+          "capex": "string"
+        },
+        "forecast_source": "string",
+        "forecast_source_display": "string",
+        "sources": "list[string]",
+        "bank_variant_note": "string"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "available",
+        "ticker",
+        "years",
+        "variant",
+        "income",
+        "balance",
+        "tie_out",
+        "tied",
+        "notes",
+        "driver_basis",
+        "forecast_source",
+        "forecast_source_display",
+        "sources",
+        "bank_variant_note"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "key_ratio_page": {
+      "shape": {
+        "available": "bool",
+        "ticker": "string",
+        "years": "list[string]",
+        "headers": "list[string]",
+        "exhibit_title": "string",
+        "sections": "list[{'title': 'string', 'rows': 'list[object]'}]",
+        "notes": "list[string]",
+        "sources": "list[string]",
+        "growth_basis": {
+          "sales": "number",
+          "ebitda": "number",
+          "operating": "number",
+          "net": "number"
+        }
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "available",
+        "ticker",
+        "years",
+        "headers",
+        "exhibit_title",
+        "sections",
+        "notes",
+        "sources",
+        "growth_basis"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    },
+    "critic": {
+      "shape": {
+        "verdict": "string",
+        "reasons": "list[empty]",
+        "fixes": "list[empty]",
+        "ready_for_pdf": "bool"
+      },
+      "filled_in": [
+        "AMMN"
+      ],
+      "sample_keys": [
+        "verdict",
+        "reasons",
+        "fixes",
+        "ready_for_pdf"
+      ],
+      "honest_state": "may be absent — the FE must render a pending state"
+    }
+  },
+  "notes": [
+    "BBCA: payload unavailable (HTTPException: 422: {'ticker': 'BBCA', 'missing': ['rf', 'beta', 'erp', 'cod', 'g', 'payout', 'fcf', 'shares_out', 'net_debt', 'cash', 'ebitda', 'ev_multiple', 'last_price', 'we', 'wd'], 'summary': 'no verified assumptions for BBCA — refusing generic fallback (add data/assumptions/BBCA.json or set SECTORS_API_KEY)'})"
+  ]
+}

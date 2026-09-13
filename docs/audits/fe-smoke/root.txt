@@ -1,0 +1,193 @@
+SEKTORAL // DECK
+DATA TERAKHIR
+[F1]
+SAHAM
+[F2]
+MESIN
+[F3]
+UJI SILANG
+PINTASAN:
+RATU
+CDIA
+MTEL
+BBCA
+ADRO
+12.25.19 WIB
+PANTAU PASAR
+Pantau 5 Saham Unggulan IDX
+
+Terminal pemantauan valuasi deterministik dan penalaran multi-agen untuk 5 emiten tier-1 Bursa Efek Indonesia.
+
+5 EMITEN · DATA TERAKHIR
+ZERO-FABRICATION PROTOCOL
+Sumber data: snapshot laporan keuangan IDX terverifikasi · DCF WACC · Red-Team Audit
+[PINTASAN: KETIK KODE SAHAM + ENTER DI ATAS]
+01 // NILAI WAJAR 5 EMITEN
+DATA TERVALIDASI · TANPA SINTETIK
+RATU IJ
+RATU - Offline
+MODEL: SAHAM
+AUDITED: 2026-09-13
+HARGA TERAKHIR
+NILAI WAJAR (TP)
+POTENSI NAIK
+Metode Utama:
+DCF Model
+Cost of Capital (WACC):
+MENUNGGU
+[RINGKASAN EKSEKUTIF]
+
+BE tidak tersedia saat ini. Data untuk RATU belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/RATU
+
+[F1] LAPORAN
+[F2] MESIN
+[F3] UJI
+CDIA IJ
+CDIA - Offline
+MODEL: SAHAM
+AUDITED: 2026-09-13
+HARGA TERAKHIR
+NILAI WAJAR (TP)
+POTENSI NAIK
+Metode Utama:
+DCF Model
+Cost of Capital (WACC):
+MENUNGGU
+[RINGKASAN EKSEKUTIF]
+
+BE tidak tersedia saat ini. Data untuk CDIA belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/CDIA
+
+[F1] LAPORAN
+[F2] MESIN
+[F3] UJI
+MTEL IJ
+MTEL - Offline
+MODEL: SAHAM
+AUDITED: 2026-09-13
+HARGA TERAKHIR
+NILAI WAJAR (TP)
+POTENSI NAIK
+Metode Utama:
+DCF Model
+Cost of Capital (WACC):
+MENUNGGU
+[RINGKASAN EKSEKUTIF]
+
+BE tidak tersedia saat ini. Data untuk MTEL belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/MTEL
+
+[F1] LAPORAN
+[F2] MESIN
+[F3] UJI
+BBCA IJ
+BBCA - Offline
+MODEL: SAHAM
+AUDITED: 2026-09-13
+HARGA TERAKHIR
+NILAI WAJAR (TP)
+POTENSI NAIK
+Metode Utama:
+DCF Model
+Cost of Capital (WACC):
+MENUNGGU
+[RINGKASAN EKSEKUTIF]
+
+BE tidak tersedia saat ini. Data untuk BBCA belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/BBCA
+
+[F1] LAPORAN
+[F2] MESIN
+[F3] UJI
+ADRO IJ
+ADRO - Offline
+MODEL: SAHAM
+AUDITED: 2026-09-13
+HARGA TERAKHIR
+NILAI WAJAR (TP)
+POTENSI NAIK
+Metode Utama:
+DCF Model
+Cost of Capital (WACC):
+MENUNGGU
+[RINGKASAN EKSEKUTIF]
+
+BE tidak tersedia saat ini. Data untuk ADRO belum dapat dimuat - coba lagi nanti atau buka langsung https://report.server-fadil.my.id/api/report/ADRO
+
+[F1] LAPORAN
+[F2] MESIN
+[F3] UJI
+[F2] PENALARAN MULTI-AGEN
+
+Jalankan atau pantau belasan mesin AI yang mengaudit laporan keuangan, menghitung valuasi DCF, dan menganalisis risiko secara mandiri.
+
+BUKA RUANG MESIN
+02 // PERBANDINGAN NILAI 5 EMITEN
+KLIK BARIS UNTUK MEMBUKA DETAIL LAPORAN
+EMITEN (KODE SAHAM)
+HARGA
+NILAI WAJAR
+POTENSI NAIK
+REKOMENDASI
+RATU IJ
+RATU - Offline
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MENUNGGU
+CDIA IJ
+CDIA - Offline
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MTEL IJ
+MTEL - Offline
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MENUNGGU
+BBCA IJ
+BBCA - Offline
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MENUNGGU
+ADRO IJ
+ADRO - Offline
+MENUNGGU
+MENUNGGU
+MENUNGGU
+MENUNGGU
+03 // PANDUAN METODOLOGI & CARA BACA
+PANDUAN EDUKASI · BUKAN SARAN FINANSIAL
+[PANDUAN ISTILAH SAHAM] Penjelasan di bawah ini disusun untuk memudahkan investor pemula memahami istilah analisis fundamental. Angka pada kartu emiten di atas dihitung secara deterministik dari laporan keuangan audited (missing = MENUNGGU), tanpa manipulasi.
+BUY (Undervalued)
+
+Harga pasar saat ini berada di bawah estimasi nilai wajar fundamental (Fair Value) berdasarkan proyeksi arus kas. Menandakan tersedianya ruang keamanan (margin of safety) yang memadai.
+
+HOLD (Fair Value)
+
+Harga pasar telah merefleksikan nilai intrinsik perusahaan secara wajar. Pertahankan kepemilikan aset atau tunggu konfirmasi katalis baru sebelum menambah posisi.
+
+SELL (Overvalued)
+
+Harga pasar dinilai telah melampaui valuasi fundamental konservatif. Risiko koreksi harga lebih besar daripada potensi apresiasi jangka pendek.
+
+Bagaimana Potensi Naik (Upside) Dihitung?
+
+Upside dihitung dari persentase selisih antara Target Price (Fair Value) hasil model DCF dan harga pasar terakhir: ((Target - Harga) / Harga) * 100%.
+
+Apa Itu Discounted Cash Flow (DCF)?
+
+Metode valuasi intrinsik yang memproyeksikan arus kas bebas (Free Cash Flow to Firm) masa depan dan mendiskontokannya ke nilai sekarang menggunakan WACC (Weighted Average Cost of Capital).
+
+[KEPATUHAN & PEMBERITAHUAN RESMI // SECTORS HACKATHON 2026]
+
+Seluruh analisis riset pada platform ini diproduksi secara deterministik dari laporan keuangan audited IDX. Sektoral.id tidak menyajikan angka sintetis atau rekayasa data. Informasi ini disajikan untuk tujuan riset kompetisi dan edukasi pasar, bukan merupakan rekomendasi transaksi efek dari penasihat investasi berlisensi.
+
+SEKTORAL.ID COMMAND DECK // TERMINAL SYSTEM v2.6
+● JALUR DATA TERKONEKSI: /api/report · /api/dcf · /api/news · /api/sentiment
+|
+OFFLINE: /api/outlook · /api/tickers
+
+PEMBERITAHUAN RISET: Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis kompetisi Sectors Hackathon. Kalkulasi Nilai Wajar (Fair Value) dan WACC memakai snapshot asumsi terverifikasi dari data historis IDX (Sectors API pending — bukan data live maupun rekomendasi resmi).
+
+Bukan rekomendasi transaksi efek maupun nasihat investasi finansial berlisensi. Keputusan alokasi modal dan risiko investasi sepenuhnya berada di tangan investor.

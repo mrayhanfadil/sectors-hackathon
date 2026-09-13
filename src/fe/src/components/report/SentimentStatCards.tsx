@@ -61,9 +61,12 @@ export function SentimentStatCards({
       let bull = 0
       let bear = 0
       let neut = 0
+      let unscored = 0
       items.forEach((it) => {
-        const score = it.score ?? 50
-        if (score >= 60) bull++
+        // A missing score is not a neutral reading: it is counted apart and shown, never defaulted to 50.
+        const score = typeof it.score === "number" ? it.score : null
+        if (score === null) unscored++
+        else if (score >= 60) bull++
         else if (score <= 40) bear++
         else neut++
       })
@@ -72,6 +75,7 @@ export function SentimentStatCards({
         bullishPct: Math.round((bull / total) * 100),
         bearishPct: Math.round((bear / total) * 100),
         neutralPct: Math.round((neut / total) * 100),
+        unscoredItems: unscored,
         totalItems: total,
       }
     }
@@ -181,6 +185,11 @@ export function SentimentStatCards({
               <div className="text-xs font-bold tabular-nums text-neutral-800 dark:text-neutral-200">
                 {distribution.neutralPct == null ? "—" : `${distribution.neutralPct}%`}
               </div>
+              {distribution.unscoredItems ? (
+                <div className="mt-0.5 text-[8px] text-neutral-500 dark:text-neutral-400">
+                  {distribution.unscoredItems} tanpa skor
+                </div>
+              ) : null}
             </div>
             <div className="border border-rose-300 bg-rose-500/10 p-1 dark:border-rose-800 dark:bg-rose-950/40">
               <div className="flex items-center justify-center gap-0.5 text-[9px] font-semibold text-rose-700 dark:text-rose-400">

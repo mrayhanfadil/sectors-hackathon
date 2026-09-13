@@ -260,7 +260,10 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         r["ta"] = (r["cash"] or 0.0) + (inv or 0.0) + other_ca + (r["fixed"] or 0.0) + other_nca
         r["tl"] = (r["tcl"] or 0.0) + (r["lt"] or 0.0) + other_ncl
         r["tle"] = r["tl"] + r["eq"]
-        r["gap"] = r["tle"] - r["ta"]
+        # A balance sheet assembled from floats never closes to exactly zero: the difference lands near 1e-11 and both
+        # consumers then print it — the PDF showed "-0" and the frontend showed -2.9103830456733704e-11. Snapping the
+        # residue changes no displayed figure (the smallest account is Rp bn) and lets each print a clean 0.
+        r["gap"] = 0.0 if abs(r["tle"] - r["ta"]) < 1e-6 else (r["tle"] - r["ta"])
         return r
 
     rows = {**acts}

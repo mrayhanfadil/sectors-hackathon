@@ -1,0 +1,142 @@
+{
+  "routeTree.gen.ts:14:RULE_A_MOCK_IMPORT": {
+    "reason": "Imports mock, fixture, or sample module instead of binding to backend payload",
+    "file": "src/fe/src/routeTree.gen.ts",
+    "line": 14,
+    "rule": "RULE_A_MOCK_IMPORT",
+    "pattern": "Mock/Fixture/Sample Import",
+    "matched_text": "import { Route as MockSectorsTickerRouteImport } from './routes/mock-sectors.$ticker'",
+    "line_content": "import { Route as MockSectorsTickerRouteImport } from './routes/mock-sectors.$ticker'",
+    "remediation": "Remove mock import and consume live fields from ReportPayload contract"
+  },
+  "DcfSpreadCharts.tsx:81:RULE_C_FIGURE_FALLBACK": {
+    "reason": "Substitutes default figure '0' when 'price' is missing, masking absent backend data",
+    "file": "src/fe/src/components/report/charts/DcfSpreadCharts.tsx",
+    "line": 81,
+    "rule": "RULE_C_FIGURE_FALLBACK",
+    "pattern": "Fabricated Figure Fallback (price ?? 0)",
+    "matched_text": "price ?? 0",
+    "line_content": "price ?? 0,",
+    "remediation": "Render honest pending block (PendingBlock) or format null as '\u2014'"
+  },
+  "PeersCharts.tsx:251:RULE_B_NUMERIC_ARRAY": {
+    "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
+    "file": "src/fe/src/components/report/charts/PeersCharts.tsx",
+    "line": 251,
+    "rule": "RULE_B_NUMERIC_ARRAY",
+    "pattern": "Hardcoded Numeric Literal Array (3+ elements)",
+    "matched_text": "[1.0, 0.5, 0.0]",
+    "line_content": "{[1.0, 0.5, 0.0].map((frac, idx) => {",
+    "remediation": "Derive series dynamically from payload arrays or pass file to --allow if static axis"
+  },
+  "PerformanceQuadrants.tsx:103:RULE_B_NUMERIC_ARRAY": {
+    "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
+    "file": "src/fe/src/components/report/charts/PerformanceQuadrants.tsx",
+    "line": 103,
+    "rule": "RULE_B_NUMERIC_ARRAY",
+    "pattern": "Hardcoded Numeric Literal Array (3+ elements)",
+    "matched_text": "[0, 0.5, 1]",
+    "line_content": "{[0, 0.5, 1].map((frac, idx) => {",
+    "remediation": "Derive series dynamically from payload arrays or pass file to --allow if static axis"
+  },
+  "PerformanceQuadrants.tsx:138:RULE_B_NUMERIC_ARRAY": {
+    "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",
+    "file": "src/fe/src/components/report/charts/PerformanceQuadrants.tsx",
+    "line": 138,
+    "rule": "RULE_B_NUMERIC_ARRAY",
+    "pattern": "Hardcoded Numeric Literal Array (3+ elements)",
+    "matched_text": "[0, 0.5, 1]",
+    "line_content": "{[0, 0.5, 1].map((frac, idx) => {",
+    "remediation": "Derive series dynamically from payload arrays or pass file to --allow if static axis"
+  },
+  "DividendTimeline.tsx:22:RULE_D_PLACEHOLDER_STRING": {
+    "reason": "Presents fabricated/placeholder text 'N/A' to the user",
+    "file": "src/fe/src/components/mock-sectors/DividendTimeline.tsx",
+    "line": 22,
+    "rule": "RULE_D_PLACEHOLDER_STRING",
+    "pattern": "Placeholder String Presented (N/A)",
+    "matched_text": "N/A",
+    "line_content": "if (val == null || Number.isNaN(Number(val))) return \"N/A\"",
+    "remediation": "Render honest pending state or omit empty section"
+  },
+  "NewsFeedCard.tsx:28:RULE_D_PLACEHOLDER_STRING": {
+    "reason": "Presents fabricated/placeholder text 'N/A' to the user",
+    "file": "src/fe/src/components/mock-sectors/NewsFeedCard.tsx",
+    "line": 28,
+    "rule": "RULE_D_PLACEHOLDER_STRING",
+    "pattern": "Placeholder String Presented (N/A)",
+    "matched_text": "N/A",
+    "line_content": "if (!ts) return \"N/A\"",
+    "remediation": "Render honest pending state or omit empty section"
+  },
+  "QuarterlyTrendChart.tsx:65:RULE_D_PLACEHOLDER_STRING": {
+    "reason": "Presents fabricated/placeholder text 'N/A' to the user",
+    "file": "src/fe/src/components/mock-sectors/QuarterlyTrendChart.tsx",
+    "line": 65,
+    "rule": "RULE_D_PLACEHOLDER_STRING",
+    "pattern": "Placeholder String Presented (N/A)",
+    "matched_text": "N/A",
+    "line_content": "if (val == null || Number.isNaN(Number(val))) return \"N/A\"",
+    "remediation": "Render honest pending state or omit empty section"
+  },
+  "QuarterlyTrendChart.tsx:326:RULE_D_PLACEHOLDER_STRING": {
+    "reason": "Presents fabricated/placeholder text 'N/A' to the user",
+    "file": "src/fe/src/components/mock-sectors/QuarterlyTrendChart.tsx",
+    "line": 326,
+    "rule": "RULE_D_PLACEHOLDER_STRING",
+    "pattern": "Placeholder String Presented (N/A)",
+    "matched_text": "N/A",
+    "line_content": "<span className=\"text-slate-500 dark:text-slate-400\">N/A</span>",
+    "remediation": "Render honest pending state or omit empty section"
+  },
+  "QuarterlyTrendChart.tsx:622:RULE_D_PLACEHOLDER_STRING": {
+    "reason": "Presents fabricated/placeholder text 'N/A' to the user",
+    "file": "src/fe/src/components/mock-sectors/QuarterlyTrendChart.tsx",
+    "line": 622,
+    "rule": "RULE_D_PLACEHOLDER_STRING",
+    "pattern": "Placeholder String Presented (N/A)",
+    "matched_text": "N/A",
+    "line_content": ": \"N/A\"}",
+    "remediation": "Render honest pending state or omit empty section"
+  },
+  "agent.tsx:71:RULE_E_SIMULATED_DATE": {
+    "reason": "Fabricates current timestamp when backend event timestamp is missing",
+    "file": "src/fe/src/routes/agent.tsx",
+    "line": 71,
+    "rule": "RULE_E_SIMULATED_DATE",
+    "pattern": "Date.now() Fallback in FE State/Data",
+    "matched_text": "Date.now()",
+    "line_content": "ts: ev.ts ?? (ev.payload?.ts || Date.now() / 1000),",
+    "remediation": "Preserve null/undefined timestamp or render pending status without inventing time"
+  },
+  "agent.tsx:312:RULE_E_SIMULATED_DATE": {
+    "reason": "Fabricates current timestamp when backend event timestamp is missing",
+    "file": "src/fe/src/routes/agent.tsx",
+    "line": 312,
+    "rule": "RULE_E_SIMULATED_DATE",
+    "pattern": "Date.now() Fallback in FE State/Data",
+    "matched_text": "Date.now()",
+    "line_content": "started_at: statusData.started_at || prev?.started_at || Date.now() / 1000,",
+    "remediation": "Preserve null/undefined timestamp or render pending status without inventing time"
+  },
+  "agent.tsx:528:RULE_E_SIMULATED_DATE": {
+    "reason": "Fabricates current timestamp when backend event timestamp is missing",
+    "file": "src/fe/src/routes/agent.tsx",
+    "line": 528,
+    "rule": "RULE_E_SIMULATED_DATE",
+    "pattern": "Date.now() Fallback in FE State/Data",
+    "matched_text": "Date.now()",
+    "line_content": "ms: j.elapsed_ms || Date.now() - startRef.current,",
+    "remediation": "Preserve null/undefined timestamp or render pending status without inventing time"
+  },
+  "agent.tsx:570:RULE_E_SIMULATED_DATE": {
+    "reason": "Fabricates current timestamp when backend event timestamp is missing",
+    "file": "src/fe/src/routes/agent.tsx",
+    "line": 570,
+    "rule": "RULE_E_SIMULATED_DATE",
+    "pattern": "Date.now() Fallback in FE State/Data",
+    "matched_text": "Date.now()",
+    "line_content": "started_at: Date.now() / 1000,",
+    "remediation": "Preserve null/undefined timestamp or render pending status without inventing time"
+  }
+}

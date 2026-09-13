@@ -1,17 +1,28 @@
 import { createFileRoute } from "@tanstack/react-router"
 import { useQuery } from "@tanstack/react-query"
 import { useState } from "react"
-import { AlertTriangle, RefreshCw, ShieldAlert, FileText, Database, Sliders, Info } from "lucide-react"
+import {
+  AlertTriangle,
+  RefreshCw,
+  ShieldAlert,
+  FileText,
+  Database,
+  Info,
+  Layers,
+  ChevronRight,
+  Compass,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { fetchReport, fetchPdf } from "@/lib/api"
-import { DcfFriend } from "@/components/DcfFriend"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { fetchReportPayload, fetchPdf } from "@/lib/api"
 import { type Log, type HistoryItem } from "@/components/report/AdkRunCard"
 import { ReportHeader } from "@/components/report/ReportHeader"
 import { ExecutiveSummary } from "@/components/report/ExecutiveSummary"
 import { ValuationMethodology } from "@/components/report/ValuationMethodology"
 import { RiskFactors } from "@/components/report/RiskFactors"
 import { ADKRunSidebar } from "@/components/report/ADKRunSidebar"
+import { PerformanceQuadrants } from "@/components/report/charts"
+import type { FullReportPayload } from "@/lib/reportTypes"
 
 export const Route = (createFileRoute as any)("/report/$ticker/")({ component: ReportPage })
 
@@ -41,8 +52,8 @@ function ReportPage() {
   const tk = String(ticker).toUpperCase()
 
   const { data, isLoading, error, refetch } = useQuery({
-    queryKey: ["report", tk],
-    queryFn: () => fetchReport(tk),
+    queryKey: ["report-payload", tk],
+    queryFn: () => fetchReportPayload(tk),
   })
 
   const logQuery = useQuery({
@@ -76,42 +87,42 @@ function ReportPage() {
   if (isLoading) {
     return (
       <div className="space-y-4 font-mono">
-        <div className="rounded border border-neutral-300 bg-neutral-100 p-3 text-center text-xs text-neutral-600 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-400">
-          [MEMUAT] MENYIAPKAN LAPORAN SAHAM {tk}…...
+        <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-3 text-center text-xs text-[#0B1F3A] dark:border-[#262930] dark:bg-[#121316] dark:text-[#A9C9E8]">
+          [MEMUAT] MENYIAPKAN LAPORAN INSTITUSIONAL LENGKAP {tk}…
         </div>
-        <div className="h-16 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
+        <div className="h-16 animate-pulse rounded border border-[#D6E2EE] bg-[#E4EEF7]/40 dark:border-[#262930] dark:bg-[#181a1f]" />
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1fr_320px]">
           <div className="space-y-4">
-            <div className="h-48 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
-            <div className="h-64 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
+            <div className="h-48 animate-pulse rounded border border-[#D6E2EE] bg-[#E4EEF7]/40 dark:border-[#262930] dark:bg-[#181a1f]" />
+            <div className="h-64 animate-pulse rounded border border-[#D6E2EE] bg-[#E4EEF7]/40 dark:border-[#262930] dark:bg-[#181a1f]" />
           </div>
-          <div className="h-80 animate-pulse rounded border border-neutral-200 bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f]" />
+          <div className="h-80 animate-pulse rounded border border-[#D6E2EE] bg-[#E4EEF7]/40 dark:border-[#262930] dark:bg-[#181a1f]" />
         </div>
       </div>
     )
   }
 
-  // Error State
+  // Error State (Network failure / unhandled)
   if (error || !data) {
     return (
-      <Card className="rounded-md border border-rose-300 bg-rose-50/70 p-4 font-mono dark:border-rose-800/60 dark:bg-rose-950/60">
+      <Card className="rounded-md border border-[#C0392B]/40 bg-[#C0392B]/10 p-4 font-mono dark:border-[#C0392B]/60 dark:bg-[#C0392B]/20">
         <div className="flex items-start gap-3">
-          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-rose-600 dark:text-rose-400" />
+          <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0 text-[#C0392B]" />
           <div className="space-y-2">
-            <h3 className="text-xs font-bold uppercase text-rose-900 dark:text-rose-100">
+            <h3 className="text-xs font-bold uppercase text-[#C0392B]">
               [SISTEM GAGAL] LAPORAN {tk} TIDAK BISA DIAMBIL
             </h3>
-            <p className="text-xs text-rose-700 leading-relaxed dark:text-rose-300">
-              Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif dan ticker terdaftar.
+            <p className="text-xs text-[#63748A] leading-relaxed dark:text-neutral-300">
+              Terjadi kesalahan saat memuat data laporan dari backend. Pastikan server API aktif.
             </p>
             <Button
               onClick={() => refetch()}
               size="sm"
               variant="outline"
-              className="mt-1 h-7 gap-1.5 border-rose-300 bg-white font-mono text-xs text-rose-800 hover:bg-rose-50 dark:border-rose-800 dark:bg-[#121316] dark:text-rose-200 dark:hover:bg-rose-950"
+              className="mt-1 h-7 gap-1.5 border-[#C0392B]/40 bg-white font-mono text-xs text-[#C0392B] hover:bg-[#C0392B]/10 dark:border-[#C0392B]/60 dark:bg-[#121316] dark:text-[#F87171]"
             >
               <RefreshCw className="h-3 w-3" />
-              <span>&gt; RETRY FETCH</span>
+              <span>&gt; COBA LAGI</span>
             </Button>
           </div>
         </div>
@@ -119,22 +130,119 @@ function ReportPage() {
     )
   }
 
-  // Offline State (Honest fallback)
+  // 422 Honest State: Ticker not covered / verified assumptions missing
+  if (data.is422) {
+    return (
+      <div className="min-h-screen pb-12 space-y-4">
+        <ReportHeader
+          ticker={tk}
+          rating={null}
+          price={null}
+          target={null}
+          upside={null}
+          updatedAt={null}
+          template="unknown"
+          source="assumptions_gate"
+          activeTab="valuation"
+          onDownloadPdf={onDownloadPdf}
+          pdfState={pdfState}
+          pdfMsg={pdfMsg}
+        />
+
+        <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
+          {/* Main Console: Honest Uncovered State */}
+          <div className="space-y-4 font-mono">
+            <Card className="rounded-lg border border-[#D6E2EE] bg-[#F4F8FC] p-5 dark:border-[#262930] dark:bg-[#121418]">
+              <div className="flex items-start gap-3.5">
+                <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#0B1F3A] dark:text-[#A9C9E8]" />
+                <div className="space-y-3">
+                  <div>
+                    <span className="rounded bg-[#0B1F3A] px-2 py-0.5 text-[10px] font-bold uppercase text-white dark:bg-[#A9C9E8] dark:text-[#0B1F3A]">
+                      STATUS JUJUR: EMITEN BELUM DICOVER
+                    </span>
+                    <h3 className="mt-2 text-sm font-bold text-[#0B1F3A] dark:text-neutral-100">
+                      Asumsi Valuasi Belum Tersedia untuk {tk} (HTTP 422)
+                    </h3>
+                  </div>
+
+                  <p className="text-xs leading-relaxed text-[#0B1F3A] dark:text-neutral-300">
+                    {data.summary}
+                  </p>
+
+                  {data.missing && data.missing.length > 0 && (
+                    <div className="space-y-1.5 border-t border-[#D6E2EE] pt-3 dark:border-[#262930]">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-[#63748A]">
+                        Daftar Parameter yang Belum Terverifikasi ({data.missing.length}):
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {data.missing.map((param) => (
+                          <span
+                            key={param}
+                            className="rounded border border-[#D6E2EE] bg-white px-2 py-0.5 text-[10px] font-semibold text-[#0B1F3A] dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300"
+                          >
+                            {param}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="rounded border-l-2 border-[#0B1F3A] bg-white p-3 text-xs text-[#63748A] leading-relaxed dark:border-[#A9C9E8] dark:bg-[#181a1f] dark:text-neutral-300 font-sans">
+                    <strong>Kebijakan Non-Fabrikasi:</strong> Seluruh output mesin riset wajib bersumber
+                    dari data terverifikasi. Sistem menolak membuat angka tiruan atau nilai pengganti ketika
+                    asumsi dasar emiten belum tersedia.
+                  </div>
+
+                  <div className="pt-1">
+                    <Button
+                      onClick={() => refetch()}
+                      size="sm"
+                      variant="outline"
+                      className="h-8 gap-1.5 border-[#D6E2EE] bg-white text-xs font-mono text-[#0B1F3A] hover:bg-[#E4EEF7] dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200"
+                    >
+                      <RefreshCw className="h-3 w-3" />
+                      <span>&gt; MUAT ULANG DATA</span>
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          </div>
+
+          {/* Right Sidebar */}
+          <div className="space-y-3 lg:sticky lg:top-28">
+            <ADKRunSidebar
+              ticker={tk}
+              price={null}
+              target={null}
+              upside={null}
+              rating={null}
+              template="unknown"
+              logLoading={logQuery.isLoading}
+              logData={logQuery.data}
+            />
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Offline State
   if (data.offline) {
     return (
       <div className="space-y-4 font-mono">
-        <Card className="rounded-md border border-amber-300 bg-amber-50/80 p-4 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/80 dark:text-amber-100">
+        <Card className="rounded-md border border-[#D6E2EE] bg-[#F4F8FC] p-4 text-xs text-[#0B1F3A] dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-200">
           <div className="flex items-start gap-3">
-            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-amber-600 dark:text-amber-400" />
+            <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#0B1F3A] dark:text-[#A9C9E8]" />
             <div className="space-y-2">
-              <h3 className="font-bold uppercase tracking-wider text-amber-950 dark:text-amber-100">
-                [MODE OFFLINE] SERVER BELUM NYAMBUNG // {tk}
+              <h3 className="font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-[#A9C9E8]">
+                [MODE OFFLINE] SERVER BACKEND BELUM TERSEDIA // {tk}
               </h3>
-              <p className="text-xs leading-relaxed text-amber-800 dark:text-amber-200">{data.summary}</p>
+              <p className="text-xs leading-relaxed text-[#63748A] dark:text-neutral-300">{data.summary}</p>
               <Button
                 onClick={() => window.location.reload()}
                 size="sm"
-                className="mt-1 h-7 bg-amber-900 font-mono text-xs text-white hover:bg-amber-800 dark:bg-amber-800 dark:hover:bg-amber-700"
+                className="mt-1 h-7 bg-[#0B1F3A] font-mono text-xs text-white hover:bg-[#14304F] dark:bg-[#A9C9E8] dark:text-[#0B1F3A]"
               >
                 <RefreshCw className="mr-1 h-3 w-3" />
                 <span>&gt; MUAT ULANG</span>
@@ -146,119 +254,30 @@ function ReportPage() {
     )
   }
 
-  const r = data as unknown as {
-    ticker: string
-    name: string
-    price: number | null
-    target: number | null
-    upside: string | null
-    rating: string | null
-    summary: string
-    valuation: { method: string; value: number; weight?: number }[]
-    updatedAt: string
-    template?: string
-    source?: string
-    cover?: {
-      rating_box?: {
-        action: string
-        tp: number
-        price: number
-        upside_pct: number
-        prev_tp?: number | null
-        key_takeaways?: string[]
-      }
-      vs_jci?: {
-        ytd_abs?: number | null
-        ytd_rel?: number | null
-        source?: string
-        chart?: { labels: string[]; series: number[][] } | null
-      }
-      shares?: { outstanding: number; unit: string; free_float_pct?: number }
-      shareholders?: { name: string; pct: number }[]
-      shareholders_src?: string | null
-      esg?: {
-        found: boolean
-        scores?: { e: number; s: number; g: number }
-        source?: string
-        date?: string
-      }
-    }
-    segments?: {
-      name: string
-      revenue?: number
-      share_pct?: number
-      yoy_pct?: unknown
-      qoq_pct?: unknown
-      one_off?: string
-    }[]
-    kpis?: {
-      name: string
-      value: number
-      prev?: number
-      unit?: string
-      formula?: string
-      source?: string
-    }[]
-    valuationDetail?: {
-      methods?: {
-        method: string
-        fv: number
-        assumptions?: Record<string, unknown>
-        table?: { headers: string[]; rows: unknown[][] }
-        source?: string
-      }[]
-      blended?: {
-        weights: Record<string, number>
-        fv: number
-        fv_str?: string
-        margin_of_safety_pct?: number
-        rows?: unknown[][]
-        source?: string
-      } | null
-      bands?: {
-        pbv_3y?: {
-          "std+2": number
-          "std+1": number
-          avg: number
-          "std-1": number
-          "std-2": number
-          current: number
-          label: string
-        }
-        source?: string
-      } | null
-      ggm?: {
-        pbv_implied: number
-        fv_per_share: number
-        formula: string
-        assumptions?: Record<string, unknown>
-      } | null
-      assumptions?: Record<string, unknown>
-      provenance?: string
-    }
-    ratios?: Record<string, string | number>
-    raw?: Record<string, unknown>
-  }
-
-  const tpl = (r.template ?? "single").toLowerCase()
-  const vd = r.valuationDetail
-  const takeaways = r.cover?.rating_box?.key_takeaways ?? []
-  const vs = r.cover?.vs_jci
-  const rawChart = Array.isArray((r.raw as any)?.chart) ? ((r.raw as any).chart as number[]) : undefined
+  const payload: FullReportPayload = data.payload || {}
+  const meta = payload.meta
+  const ratingBox = payload.cover?.rating_box
+  const tpl = meta?.template || (ratingBox ? "single" : "unknown")
+  const price = ratingBox?.price
+  const target = ratingBox?.tp
+  const upside = ratingBox?.upside_pct != null
+    ? `${ratingBox.upside_pct > 0 ? "+" : ""}${ratingBox.upside_pct.toFixed(1)}%`
+    : null
+  const rating = ratingBox?.action || null
 
   return (
     <div className="min-h-screen pb-12">
-      {/* 1. Sticky Terminal Header & Key-Stats Strip */}
+      {/* Sticky Header & Key-Stats Strip */}
       <ReportHeader
         ticker={tk}
-        name={r.name}
-        price={r.price}
-        target={r.target}
-        upside={r.upside}
-        rating={r.rating}
-        updatedAt={r.updatedAt}
+        name={meta?.company_name}
+        price={price}
+        target={target}
+        upside={upside}
+        rating={rating}
+        updatedAt={meta?.date}
         template={tpl}
-        source={r.source}
+        source={meta?.prepared_by}
         activeTab="valuation"
         onDownloadPdf={onDownloadPdf}
         pdfState={pdfState}
@@ -266,132 +285,141 @@ function ReportPage() {
       />
 
       {/* Terminal Analyst Notice Box */}
-      <div className="mb-4 flex items-start gap-2 rounded border border-neutral-300 bg-neutral-50/80 p-2.5 font-mono text-xs leading-relaxed text-neutral-700 dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-300">
-        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-amber-500" />
+      <div className="mb-4 flex items-start gap-2 rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2.5 font-mono text-xs leading-relaxed text-[#0B1F3A] dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-300">
+        <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0B1F3A] dark:text-[#A9C9E8]" />
         <div>
-          <span className="font-bold text-neutral-900 dark:text-neutral-100">[ANALYST GUIDE] </span>
+          <span className="font-bold text-[#0B1F3A] dark:text-[#A9C9E8]">[STANDAR RISET INSTITUSIONAL] </span>
           <span>
-            BUY: Analis merekomendasikan akumulasi saham (harga wajar &gt; pasar). HOLD: Pertahankan posisi. SELL: Valuasi telah merefleksikan harga penuh. UPSIDE: Potensi apresiasi harga ke target deterministik.
+            Seluruh data disusun deterministik dalam 10 bab berurutan mengikuti format dokumen PDF resmi. Market terms: BUY/HOLD/SELL, DCF, WACC, EV/EBITDA, PER, PBV.
           </span>
         </div>
       </div>
 
-      {/* 2. Responsive 2-Column Grid Layout */}
+      {/* 2-Column Responsive Layout */}
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-[1fr_320px]">
-        {/* Main Center Console */}
-        <div className="min-w-0 space-y-4">
-          {/* Section 1: Executive Summary */}
-          <ExecutiveSummary
-            ticker={tk}
-            name={r.name}
-            price={r.price}
-            target={r.target}
-            upside={r.upside}
-            rating={r.rating}
-            summary={r.summary}
-            takeaways={takeaways}
-            vsJci={vs}
-            rawChart={rawChart}
-            shareholders={r.cover?.shareholders}
-            shareholdersSrc={r.cover?.shareholders_src}
-            esg={r.cover?.esg}
-          />
+        {/* Main Content Area: 10 Sections in Exact PDF Order */}
+        <div className="min-w-0 space-y-6">
+          {/* ================================================================= */}
+          {/* 1. Cover & Rating & Investment Thesis (Bab 1)                      */}
+          {/* 2. Key Financials (Bab 2)                                         */}
+          {/* ================================================================= */}
+          <ExecutiveSummary ticker={tk} payload={payload} />
 
-          {/* Section 2: Valuation Methodology */}
-          <ValuationMethodology
-            ticker={tk}
-            valuation={r.valuation ?? []}
-            valuationDetail={vd}
-            template={tpl}
-            kpis={r.kpis}
-            segments={r.segments}
-            rawSegments={r.raw?.segments}
-            segmentsSource={
-              ((r.raw as unknown as Record<string, unknown>)?.["segments_src"] as string | undefined)
-            }
-            ratios={r.ratios}
-            rawBands={r.raw?.bands}
-          />
-
-          {/* Section 3: Interactive DCF Sensitivity Model */}
-          <section id="sensitivity-analysis" className="space-y-3 scroll-mt-28">
-            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
+          {/* ================================================================= */}
+          {/* 3. Performance: The Four Quadrants (Bab 3)                        */}
+          {/* ================================================================= */}
+          <section id="performance-quadrants" className="space-y-3 scroll-mt-28">
+            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
               <div className="flex items-center gap-2">
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
+                <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
                   03
                 </span>
-                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                  {tk} IJ &lt;EQUITY&gt; // INTERACTIVE DCF SENSITIVITY MODEL
+                <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
+                  {payload.performance_page?.title || "Visualisasi Kinerja Keuangan dan Forecasting"} // {tk}
                 </h2>
               </div>
-              <span className="font-mono text-[10px] text-neutral-400">
-                WACC &amp; TERMINAL GROWTH DYNAMIC MATRIX
-              </span>
-            </div>
-            <DcfFriend ticker={tk} />
-          </section>
-
-          {/* Section 4: Risk Factors & Solvency */}
-          <RiskFactors
-            ticker={tk}
-            template={tpl}
-            ratios={r.ratios}
-          />
-
-          {/* Section 5: Sources & Compliance */}
-          <section id="sources-disclaimer" className="scroll-mt-28 space-y-3 border-t border-neutral-200 pt-4 dark:border-[#262930]">
-            <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
-                  05
-                </span>
-                <h2 className="font-mono text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                  {tk} IJ &lt;EQUITY&gt; // DATA PROVENANCE &amp; OJK REGULATORY COMPLIANCE
-                </h2>
-              </div>
-              <span className="font-mono text-[10px] text-neutral-400">
-                RESEARCH ATTESTATION · NOT FINANCIAL ADVICE
+              <span className="font-mono text-[11px] text-[#63748A]">
+                Standar PDF Slide 3 · 4 Kuadran Combo Chart
               </span>
             </div>
 
-            <div className="rounded-md border border-neutral-300 bg-white p-3 font-mono shadow-none dark:border-[#262930] dark:bg-[#121316]">
-              <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-wider text-neutral-800 dark:text-neutral-200">
-                <FileText className="h-3.5 w-3.5 text-amber-500" />
-                <span>INFORMASI RISET - BUKAN SARAN INVESTASI (OJK COMPLIANCE)</span>
-              </div>
-              <p className="mt-1 text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
-                Dokumen ini disusun untuk tujuan analisis riset kompetisi Sectors Hackathon 2026, bukan merupakan rekomendasi jual/beli efek atau saran investasi resmi (kepatuhan regulasi OJK). Seluruh estimasi dan nilai wajar dihitung secara deterministik berdasarkan data historis dan asumsi yang diungkapkan secara transparan tanpa angka buatan.
+            {payload.performance_page?.subtitle && (
+              <p className="text-xs text-[#63748A] leading-relaxed">
+                {payload.performance_page.subtitle}
               </p>
-            </div>
+            )}
 
-            <div className="flex flex-wrap items-center justify-between gap-2 px-1 font-mono text-[10px] text-neutral-400">
-              <div className="flex items-center gap-1.5">
-                <Database className="h-3 w-3" />
-                <span>SUMBER: IDX Laporan Keuangan via Sectors API, SKK Migas, Sustainalytics</span>
-              </div>
-              <div>TanStack Query · Cache 4h · Template {tpl}</div>
-            </div>
+            {/* Lane B Frozen Chart Import */}
+            <PerformanceQuadrants payload={payload} />
+
+            {payload.performance_page?.sources && payload.performance_page.sources.length > 0 && (
+              <p className="font-mono text-[10px] text-[#63748A]">
+                Basis data: {payload.performance_page.sources.join("; ")}
+              </p>
+            )}
           </section>
+
+          {/* ================================================================= */}
+          {/* 4. Valuation Spread (DCF) (Bab 4)                                 */}
+          {/* 5. Peers 5A (Bab 5)                                               */}
+          {/* 6. Own History 5B (Bab 6)                                         */}
+          {/* ================================================================= */}
+          <ValuationMethodology ticker={tk} payload={payload} />
+
+          {/* ================================================================= */}
+          {/* 7. Statements (Bab 7)                                             */}
+          {/* 8. Cash Flow & Ratios (Bab 8)                                     */}
+          {/* 9. Risks (Bab 9)                                                  */}
+          {/* 10. Sources & Disclaimer (Bab 10)                                 */}
+          {/* ================================================================= */}
+          <RiskFactors ticker={tk} payload={payload} />
         </div>
 
         {/* Right Sticky Sidebar */}
         <div className="space-y-3 lg:sticky lg:top-28">
           <ADKRunSidebar
             ticker={tk}
-            name={r.name}
-            price={r.price}
-            target={r.target}
-            upside={r.upside}
-            rating={r.rating}
+            name={meta?.company_name}
+            price={price}
+            target={target}
+            upside={upside}
+            rating={rating}
             template={tpl}
-            shares={r.cover?.shares}
-            provenance={vd?.provenance}
+            shares={
+              payload.cover?.shares?.outstanding != null && payload.cover.shares.unit != null
+                ? {
+                    outstanding: payload.cover.shares.outstanding,
+                    unit: payload.cover.shares.unit,
+                    free_float_pct: payload.cover.shares.free_float_pct ?? undefined,
+                  }
+                : undefined
+            }
+            provenance={payload.valuation_page?.sources?.[0]}
             logLoading={logQuery.isLoading}
             logData={logQuery.data}
           />
+
+          {/* 10-Section Navigation Quick Jump Card */}
+          <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+            <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
+              <div className="flex items-center gap-2">
+                <Compass className="h-3.5 w-3.5 text-[#0B1F3A] dark:text-[#A9C9E8]" />
+                <CardTitle className="text-[11px] font-sans font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-[#A9C9E8]">
+                  Daftar 10 Bab Laporan
+                </CardTitle>
+              </div>
+            </CardHeader>
+            <CardContent className="p-3.5 pt-2 font-mono">
+              <nav className="space-y-1 text-xs font-sans">
+                {[
+                  { href: "#cover-rating", num: "01", label: "Cover & Rating" },
+                  { href: "#key-financials", num: "02", label: "Key Financials" },
+                  { href: "#performance-quadrants", num: "03", label: "Performance Quadrants" },
+                  { href: "#valuation-spread", num: "04", label: "Valuasi DCF Spread" },
+                  { href: "#peers-5a", num: "05", label: "Peers 5A (Cross-Sectional)" },
+                  { href: "#peers-5b", num: "06", label: "Own History 5B" },
+                  { href: "#financial-statements", num: "07", label: "Laporan Keuangan" },
+                  { href: "#cashflow-ratios", num: "08", label: "Arus Kas & Rasio" },
+                  { href: "#risk-factors", num: "09", label: "Faktor Risiko" },
+                  { href: "#sources-disclaimer", num: "10", label: "Sumber & Disklaimer" },
+                ].map((item) => (
+                  <a
+                    key={item.num}
+                    href={item.href}
+                    className="flex items-center justify-between rounded-md px-2.5 py-1 text-[#0B1F3A] hover:bg-[#E4EEF7] transition-colors dark:text-neutral-300 dark:hover:bg-[#181a1f] dark:hover:text-neutral-100"
+                  >
+                    <span className="truncate">
+                      <strong className="font-mono text-[#63748A] mr-1.5">{item.num}.</strong>
+                      {item.label}
+                    </span>
+                    <ChevronRight className="h-3 w-3 text-[#63748A] shrink-0" />
+                  </a>
+                ))}
+              </nav>
+            </CardContent>
+          </Card>
         </div>
       </div>
     </div>
   )
 }
-

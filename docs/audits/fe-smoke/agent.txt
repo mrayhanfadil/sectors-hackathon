@@ -1,0 +1,161 @@
+SEKTORAL // DECK
+DATA TERAKHIR
+[F1]
+SAHAM
+[F2]
+MESIN
+[F3]
+UJI SILANG
+PINTASAN:
+RATU
+CDIA
+MTEL
+BBCA
+ADRO
+12.25.24 WIB
+RUANG PANTAU MESIN // ORKESTRATOR
+16 AGENTS
+
+Layar pantau mesin analis: hitung nilai wajar (DCF/DDM/PE), baca laporan keuangan IDX, dan uji silang antar-mesin.
+
+MESIN SIAGA
+SAHAM:
+CARI CEPAT
+⌘K
+JALANKAN
+KILAT
+BERSIHKAN
+muse-spark-1.2
+STATUS SEMUA MESIN
+ANTRI
+JALAN
+SELESAI
+Pengumpul Data
+ANTRI
+Ambil Data
+Pemburu Berita
+ANTRI
+Ambil Data
+Pembaca Sentimen
+ANTRI
+Ambil Data
+Pencari Berita
+ANTRI
+Cari Data
+Pencari Sosmed
+ANTRI
+Cari Data
+Penghitung Valuasi
+ANTRI
+Hitung Nilai
+Analis
+ANTRI
+Riset
+Industri
+ANTRI
+Riset
+Pencari Data Industri
+ANTRI
+Cari Riset
+Risiko
+ANTRI
+Riset
+KPI
+ANTRI
+Riset
+Penulis
+ANTRI
+Tulis Laporan
+Pembuat Grafik
+ANTRI
+Grafik
+SOTP
+ANTRI
+Gabung Nilai
+Tim Penguji
+ANTRI
+Uji Silang
+Reviewer QA
+ANTRI
+Periksa Akhir
+RIWAYAT PROSES
+0
+K
+STATUS:
+SEMUA
+JALAN
+SELESAI
+GAGAL
+
+BELUM ADA PROSES
+
+Execute a run to populate history.
+
+ARSIP TERSIMPAN
+5s auto-poll
+Alur kerja mesin
+
+0/5 tahap selesai
+
+SIAGA
+1
+Pengumpulan Data
+ANTRI
+0/3 mesin · antri
+
+Menarik data laporan keuangan resmi IDX, berita terkini, dan sentimen publik.
+
+MESIN TERLIBAT (3):
+Pencari Data
+Pencari Berita
+Sentimen Pasar
+2
+Valuasi
+ANTRI
+0/1 mesin · antri
+3
+Riset
+ANTRI
+0/4 mesin · antri
+4
+Penulisan
+ANTRI
+0/3 mesin · antri
+5
+Penjaminan Kualitas
+ANTRI
+0/2 mesin · antri
+
+Ketuk tiap tahap untuk melihat mesin di dalamnya · ketuk nama mesin untuk menyaring catatan langkah.
+
+ISI MEMORI MESIN
+0 KUNCI
+
+BELUM ADA MEMORI AKTIF
+
+Kunci data akan muncul saat mesin berjalan atau saat proses dimuat.
+
+0 keys · 0.0 kb total
+arsip data mesin
+DATA MENTAH (DEBUG)
+0 BINGKAI
+CATATAN LANGKAH MESIN
+0 / 0 EVTS
+SCROLL: ON
+ALL
+DATA
+VALUATION
+QA/RED TEAM
+ERRORS
+BELUM ADA CATATAN
+
+Execute a run for selected ticker to stream live multi-agent execution events.
+
+SEKTORAL.ID COMMAND DECK // TERMINAL SYSTEM v2.6
+● JALUR DATA TERKONEKSI: /api/report · /api/dcf · /api/news · /api/sentiment
+|
+OFFLINE: /api/outlook · /api/tickers
+
+PEMBERITAHUAN RISET: Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis kompetisi Sectors Hackathon. Kalkulasi Nilai Wajar (Fair Value) dan WACC memakai snapshot asumsi terverifikasi dari data historis IDX (Sectors API pending — bukan data live maupun rekomendasi resmi).
+
+Bukan rekomendasi transaksi efek maupun nasihat investasi finansial berlisensi. Keputusan alokasi modal dan risiko investasi sepenuhnya berada di tangan investor.

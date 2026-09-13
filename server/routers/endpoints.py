@@ -732,6 +732,118 @@ def report_ticker_log(ticker: str):
     }
 
 
+def _to_json_serializable(val: Any) -> Any:
+    """Convert datetime, Decimal, DataFrame, Series, numpy types, sets, etc. into JSON-serializable structures."""
+    if val is None:
+        return None
+    if isinstance(val, (str, int, bool)):
+        return val
+    if isinstance(val, float):
+        import math
+        return val if math.isfinite(val) else None
+    import datetime
+    if isinstance(val, (datetime.datetime, datetime.date, datetime.time)):
+        return val.isoformat()
+    import decimal
+    if isinstance(val, decimal.Decimal):
+        import math
+        f = float(val)
+        return f if math.isfinite(f) else None
+    try:
+        import numpy as np
+        if isinstance(val, np.integer):
+            return int(val)
+        if isinstance(val, np.floating):
+            import math
+            f = float(val)
+            return f if math.isfinite(f) else None
+        if isinstance(val, np.bool_):
+            return bool(val)
+        if isinstance(val, np.ndarray):
+            return [_to_json_serializable(x) for x in val.tolist()]
+    except ImportError:
+        pass
+    try:
+        import pandas as pd
+        if isinstance(val, pd.DataFrame):
+            return {str(k): _to_json_serializable(v) for k, v in val.to_dict().items()}
+        if isinstance(val, pd.Series):
+            return {str(k): _to_json_serializable(v) for k, v in val.to_dict().items()}
+    except ImportError:
+        pass
+    if isinstance(val, (list, tuple, set, frozenset)):
+        return [_to_json_serializable(item) for item in val]
+    if isinstance(val, dict):
+        return {str(k): _to_json_serializable(v) for k, v in val.items()}
+    if hasattr(val, "__dict__"):
+        return {str(k): _to_json_serializable(v) for k, v in vars(val).items()}
+    return str(val)
+
+
+def _section_has_data(val: Any) -> bool:
+    """Determine if a top-level payload section carries data."""
+    if val is None:
+        return False
+    if isinstance(val, dict):
+        if "available" in val:
+            return bool(val["available"])
+        return len(val) > 0
+    if isinstance(val, (list, tuple, set, str)):
+        return len(val) > 0
+    if isinstance(val, (int, float)):
+        return True
+    if isinstance(val, bool):
+        return val
+    try:
+        import pandas as pd
+        if isinstance(val, (pd.DataFrame, pd.Series)):
+            return not val.empty
+    except ImportError:
+        pass
+    return bool(val)
+
+
+# ---------- report/{ticker}/payload ----------
+@router_report.get("/api/report/{ticker}/payload", summary="PDF-identical report payload for institutional report")
+def report_ticker_payload(
+    ticker: str,
+    template: Optional[str] = Query(None, description="force single|sotp|infra|strategy"),
+    section: Optional[str] = Query(None, description="filter to a single top-level section"),
+):
+    """Expose the exact same payload the PDF renders, as JSON.
+
+    Reuses server.routers.pdf.render_html_for_ticker so there is exactly ONE payload builder.
+    Propagates 422 for tickers without verified assumptions (loud failure).
+    Returns envelope: {"ticker": ..., "payload": {...}, "sections": {...}}
+    """
+    from .pdf import render_html_for_ticker
+
+    t = _clean_ticker(ticker)
+    if not t or len(t) > 10:
+        raise HTTPException(400, "invalid ticker")
+
+    # render_html_for_ticker raises HTTPException(422) if no verified assumptions
+    _, _, raw_payload = render_html_for_ticker(t, template_override=template)
+
+    sections = {k: _section_has_data(v) for k, v in raw_payload.items()}
+    serialized_payload = {k: _to_json_serializable(v) for k, v in raw_payload.items()}
+
+    if section:
+        if section not in serialized_payload:
+            raise HTTPException(404, detail=f"section '{section}' not found in report payload")
+        return {
+            "ticker": t,
+            "payload": {section: serialized_payload[section]},
+            "sections": {section: sections.get(section, False)},
+        }
+
+    return {
+        "ticker": t,
+        "payload": serialized_payload,
+        "sections": sections,
+    }
+
+
 # ---------- outlook ----------
 @router_outlook.get("/api/outlook", summary="JCI outlook — JPM base/bull/bear + sector OW/UW")
 async def outlook():

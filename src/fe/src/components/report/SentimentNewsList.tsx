@@ -69,7 +69,7 @@ export function SentimentNewsList({
       body: string
       source: string
       platform: string
-      sentiment: "bullish" | "bearish" | "neutral"
+      sentiment: "bullish" | "bearish" | "neutral" | "unscored"
       timestamp: string
       url?: string
       author?: string
@@ -79,13 +79,15 @@ export function SentimentNewsList({
 
     // Map news articles
     articles.forEach((a, idx) => {
-      const sentRaw = a.dimension?.sentiment?.toLowerCase() || "neutral"
-      const sent: "bullish" | "bearish" | "neutral" =
+      const sentRaw = a.dimension?.sentiment?.toLowerCase() || ""
+      const sent: "bullish" | "bearish" | "neutral" | "unscored" =
         sentRaw === "bullish" || sentRaw === "positif"
           ? "bullish"
           : sentRaw === "bearish" || sentRaw === "negatif"
           ? "bearish"
-          : "neutral"
+          : sentRaw === "neutral" || sentRaw === "netral"
+          ? "neutral"
+          : "unscored"
 
       list.push({
         id: `news-${idx}`,
@@ -104,9 +106,9 @@ export function SentimentNewsList({
 
     // Map social items
     socialItems.forEach((s, idx) => {
-      const score = s.score ?? 50
-      const sent: "bullish" | "bearish" | "neutral" =
-        score >= 60 ? "bullish" : score <= 40 ? "bearish" : "neutral"
+      const score = typeof s.score === "number" ? s.score : null
+      const sent: "bullish" | "bearish" | "neutral" | "unscored" =
+        score === null ? "unscored" : score >= 60 ? "bullish" : score <= 40 ? "bearish" : "neutral"
 
       list.push({
         id: `social-${idx}`,
@@ -126,7 +128,7 @@ export function SentimentNewsList({
   }, [articles, socialItems])
 
   const sentimentCounts = useMemo(() => {
-    const counts = { all: combinedEntries.length, bullish: 0, bearish: 0, neutral: 0 }
+    const counts = { all: combinedEntries.length, bullish: 0, bearish: 0, neutral: 0, unscored: 0 }
     combinedEntries.forEach((e) => {
       if (e.sentiment === "bullish") counts.bullish++
       else if (e.sentiment === "bearish") counts.bearish++
@@ -253,6 +255,11 @@ export function SentimentNewsList({
                         {item.sentiment === "neutral" && (
                           <span className="border border-neutral-300 bg-neutral-100 px-1.5 py-0.2 text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
                             [~ NEUTRAL]
+                          </span>
+                        )}
+                        {item.sentiment === "unscored" && (
+                          <span className="border border-dashed border-neutral-300 bg-transparent px-1.5 py-0.2 text-neutral-500 dark:border-neutral-700 dark:text-neutral-400">
+                            [? TANPA SKOR]
                           </span>
                         )}
 

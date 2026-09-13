@@ -70,3 +70,5 @@ assets/fonts/*.ttf
 # able to pick any of it up.
 output/
 scripts/fixtures/*.pdf
+src/fe/dist-verify/
+src/fe/dist-smoke/

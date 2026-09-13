@@ -1,0 +1,31 @@
+SEKTORAL // DECK
+DATA TERAKHIR
+[F1]
+SAHAM
+[F2]
+MESIN
+[F3]
+UJI SILANG
+PINTASAN:
+RATU
+CDIA
+MTEL
+BBCA
+ADRO
+12.25.25 WIB
+[SYSTEM NOTICE] ROUTE DEPRECATED // MOCK DATA RETIRED
+Halaman Data Tiruan Sudah Dipensiunkan
+
+Seluruh data tiruan telah dihapus permanen untuk menjamin integritas riset. Sistem Sektoral.id kini beroperasi secara 100% Live-Only menggunakan data keuangan audited IDX via Sectors API dan engine deterministik.
+
+[F1] Buka Laporan Live BBCA
+[ESC] Market Monitor Hub
+STATUS: 301 DEPRECATION // DESTINATION: /report/BBCA
+SEKTORAL.ID COMMAND DECK // TERMINAL SYSTEM v2.6
+● JALUR DATA TERKONEKSI: /api/report · /api/dcf · /api/news · /api/sentiment
+|
+OFFLINE: /api/outlook · /api/tickers
+
+PEMBERITAHUAN RISET: Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis kompetisi Sectors Hackathon. Kalkulasi Nilai Wajar (Fair Value) dan WACC memakai snapshot asumsi terverifikasi dari data historis IDX (Sectors API pending — bukan data live maupun rekomendasi resmi).
+
+Bukan rekomendasi transaksi efek maupun nasihat investasi finansial berlisensi. Keputusan alokasi modal dan risiko investasi sepenuhnya berada di tangan investor.

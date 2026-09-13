@@ -1,77 +1,12 @@
-import {
-  Calculator,
-  Layers,
-  BarChart2,
-  TrendingUp,
-  PieChart,
-  Table,
-  CheckCircle,
-} from "lucide-react"
+import React from "react"
+import { Calculator, Layers, TrendingUp, Info, ArrowUpRight, CheckCircle2 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { DcfSpreadCharts, PeersCharts } from "@/components/report/charts"
+import type { FullReportPayload, ValuationPage, PeersPage } from "@/lib/reportTypes"
 
 export interface ValuationMethodologyProps {
   ticker: string
-  valuation: { method: string; value: number; weight?: number }[]
-  valuationDetail?: {
-    methods?: {
-      method: string
-      fv: number
-      assumptions?: Record<string, unknown>
-      table?: { headers: string[]; rows: unknown[][] }
-      source?: string
-    }[]
-    blended?: {
-      weights: Record<string, number>
-      fv: number
-      fv_str?: string
-      margin_of_safety_pct?: number
-      rows?: unknown[][]
-      source?: string
-      weights_sum_100?: boolean
-    } | null
-    bands?: {
-      pbv_3y?: {
-        "std+2": number
-        "std+1": number
-        avg: number
-        "std-1": number
-        "std-2": number
-        current: number
-        label: string
-      }
-      source?: string
-    } | null
-    ggm?: {
-      pbv_implied: number
-      fv_per_share: number
-      formula: string
-      assumptions?: Record<string, unknown>
-    } | null
-    assumptions?: Record<string, unknown>
-    provenance?: string
-  }
-  template?: string
-  kpis?: {
-    name: string
-    value: number
-    prev?: number
-    unit?: string
-    formula?: string
-    source?: string
-  }[]
-  segments?: {
-    name: string
-    revenue?: number
-    share_pct?: number
-    yoy_pct?: unknown
-    qoq_pct?: unknown
-    one_off?: string
-  }[]
-  rawSegments?: unknown
-  segmentsSource?: string
-  ratios?: Record<string, string | number>
-  rawBands?: any
+  payload?: FullReportPayload | null
 }
 
 function fmtIDR(n: number | null | undefined): string {
@@ -79,592 +14,668 @@ function fmtIDR(n: number | null | undefined): string {
   return Number(n).toLocaleString("id-ID")
 }
 
-function BandsChart({
-  bands,
-  width = 380,
-  height = 110,
-}: {
-  bands: {
-    "std+2": number
-    "std+1": number
-    avg: number
-    "std-1": number
-    "std-2": number
-    current?: number
-    label?: string
-  }
-  width?: number
-  height?: number
-}) {
-  const p2 = Number(bands["std+2"] ?? 0)
-  const p1 = Number(bands["std+1"] ?? 0)
-  const avg = Number(bands.avg ?? 0)
-  const m1 = Number(bands["std-1"] ?? 0)
-  const m2 = Number(bands["std-2"] ?? 0)
-  const cur = bands.current != null ? Number(bands.current) : null
-
-  const allVals = [p2, p1, avg, m1, m2, ...(cur != null ? [cur] : [])].filter((v) => !Number.isNaN(v))
-  if (allVals.length < 5) return null
-  const min = Math.min(...allVals) * 0.95
-  const max = Math.max(...allVals) * 1.05
-  const range = max - min || 1
-
-  const getY = (v: number) => height - ((v - min) / range) * (height - 24) - 12
-
-  const lines = [
-    { label: `+2σ (${p2.toFixed(2)})`, y: getY(p2), color: "#f59e0b", dash: "3,3" },
-    { label: `+1σ (${p1.toFixed(2)})`, y: getY(p1), color: "#94a3b8", dash: "3,3" },
-    { label: `Mean (${avg.toFixed(2)})`, y: getY(avg), color: "#38bdf8", dash: "none", strokeWidth: 1.5 },
-    { label: `-1σ (${m1.toFixed(2)})`, y: getY(m1), color: "#94a3b8", dash: "3,3" },
-    { label: `-2σ (${m2.toFixed(2)})`, y: getY(m2), color: "#f59e0b", dash: "3,3" },
-  ]
-
-  const curY = cur != null ? getY(cur) : null
-
+function PendingCard({ label }: { label: string }) {
   return (
-    <div className="py-2">
-      <svg viewBox={`0 0 ${width} ${height}`} className="h-auto w-full max-w-md text-xs">
-        {lines.map((l, i) => (
-          <g key={i}>
-            <line
-              x1={85}
-              y1={l.y}
-              x2={width - 20}
-              y2={l.y}
-              stroke={l.color}
-              strokeWidth={l.strokeWidth ?? 1}
-              strokeDasharray={l.dash}
-            />
-            <text x={80} y={l.y + 3} textAnchor="end" fill="#71717a" className="font-mono text-[10px] dark:fill-[#a1a1a1]">
-              {l.label}
-            </text>
-          </g>
-        ))}
-        {cur != null && curY != null && (
-          <g>
-            <line x1={85} y1={curY} x2={width - 20} y2={curY} stroke="#10b981" strokeWidth={1.5} />
-            <circle cx={width / 2} cy={curY} r={3.5} fill="#10b981" />
-            <text x={width - 15} y={curY + 3} fill="#10b981" className="font-mono text-[10px] font-bold dark:fill-emerald-400">
-              KINI {cur.toFixed(2)}x
-            </text>
-          </g>
-        )}
-      </svg>
+    <div className="rounded-md border border-[#D6E2EE] bg-[#F4F8FC] p-4 text-center font-mono text-xs text-[#63748A] dark:border-[#262930] dark:bg-[#121316]">
+      {label} belum tersedia di payload.
     </div>
   )
 }
 
-function SegmentPie({
-  segments,
-  source,
-  rawSegments,
-}: {
-  segments: {
-    name: string
-    share_pct?: number
-    revenue?: number
-    yoy_pct?: unknown
-    qoq_pct?: unknown
-    one_off?: string
-  }[]
-  source?: string
-  rawSegments?: unknown
-}) {
-  if (!segments || segments.length === 0) {
-    if (rawSegments && typeof rawSegments === "object" && Object.keys(rawSegments).length > 0) {
-      return (
-        <ul className="space-y-1 font-mono text-xs text-neutral-800 dark:text-neutral-200">
-          {Object.entries(rawSegments as Record<string, unknown>).map(([seg, val]) => (
-            <li key={seg}>
-              <span className="font-bold">{seg}</span>: {typeof val === "object" && val !== null ? JSON.stringify(val) : String(val)}
-            </li>
-          ))}
-        </ul>
-      )
-    }
-    return (
-      <div className="rounded border border-dashed border-neutral-300 px-4 py-4 text-center font-mono text-xs text-neutral-500 dark:border-[#262930] dark:text-neutral-400">
-        Segmentasi tunggal / pengungkapan segmen terpadu sesuai laporan keuangan IDX.
-      </div>
-    )
-  }
-
-  const total = segments.reduce((s, x) => s + Number(x.share_pct ?? 0), 0)
-  const colors = [
-    "bg-amber-500",
-    "bg-sky-500",
-    "bg-emerald-500",
-    "bg-purple-500",
-    "bg-rose-500",
-    "bg-neutral-500",
-  ]
-
-  return (
-    <div className="space-y-3 font-mono">
-      {/* Visual Stacked Bar */}
-      <div className="flex h-2.5 overflow-hidden rounded-xs border border-neutral-300 dark:border-[#262930]">
-        {segments.map((s, i) => (
-          <div
-            key={s.name}
-            className={colors[i % colors.length]}
-            style={{ width: `${Number(s.share_pct ?? 0)}%` }}
-            title={`${s.name} ${s.share_pct}%`}
-          />
-        ))}
-      </div>
-
-      {/* Breakdown Items */}
-      <div className="grid gap-2 sm:grid-cols-2">
-        {segments.map((s, i) => (
-          <div
-            key={s.name}
-            className="flex items-center justify-between rounded border border-neutral-200 bg-neutral-50 px-2.5 py-1.5 text-xs dark:border-[#262930] dark:bg-[#121316]"
-          >
-            <span className="flex items-center gap-2 truncate text-neutral-900 dark:text-neutral-100 font-medium">
-              <span className={`h-2 w-2 shrink-0 rounded-xs ${colors[i % colors.length]}`} />
-              <span className="truncate">{s.name}</span>
-            </span>
-            <div className="ml-2 flex shrink-0 items-center gap-2">
-              <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                {s.share_pct != null ? `${s.share_pct}%` : "—"}
-              </span>
-              {s.revenue != null && (
-                <span className="text-[10px] text-neutral-500 tabular-nums dark:text-neutral-400">
-                  Rp {fmtIDR(Number(s.revenue))} bn
-                </span>
-              )}
-              {s.yoy_pct != null && (
-                <span className="rounded bg-neutral-200/60 px-1 py-px text-[9px] text-neutral-700 dark:bg-[#262930] dark:text-neutral-300">
-                  YoY {String(s.yoy_pct)}
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {Math.abs(total - 100) > 0.6 && total > 0 && (
-        <p className="rounded border border-amber-300 bg-amber-50 p-2 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200">
-          Total porsi segmen: {total.toFixed(1)}% (sesuai pengungkapan catatan atas laporan keuangan).
-        </p>
-      )}
-      {segments.some((s) => s.one_off) && (
-        <p className="rounded border border-amber-300 bg-amber-50 px-3 py-1.5 text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200">
-          Penyesuaian One-off: {segments.find((s) => s.one_off)?.one_off}
-        </p>
-      )}
-      {source && <p className="text-[10px] text-neutral-400">SRC: {source}</p>}
-    </div>
-  )
-}
-
-export function ValuationMethodology({
-  ticker,
-  valuation = [],
-  valuationDetail,
-  template = "single",
-  kpis = [],
-  segments = [],
-  rawSegments,
-  segmentsSource,
-  ratios,
-  rawBands,
-}: ValuationMethodologyProps) {
+export function ValuationMethodology({ ticker, payload }: ValuationMethodologyProps) {
   const tk = ticker.toUpperCase()
-  const vd = valuationDetail
-  const isInfra = template.toLowerCase() === "infra"
+  const valPage: ValuationPage | undefined = payload?.valuation_page
+  const peersPage: PeersPage | undefined = payload?.peers_page
+  const partA = peersPage?.part_a
+  const partB = peersPage?.part_b
+  const br = valPage?.bridge
+  const sens = valPage?.sensitivity
+  const priceNow = payload?.cover?.rating_box?.price || valPage?.drivers?.price
 
-  const bandsData =
-    vd?.bands?.pbv_3y ??
-    (rawBands?.pbv_3y ??
-      (typeof rawBands === "object" && !Array.isArray(rawBands) && rawBands?.["std+2"] != null
-        ? rawBands
-        : null))
+  const hasValuation = valPage && valPage.available !== false
 
   return (
-    <section id="valuation-methodology" className="space-y-3.5 scroll-mt-28">
-      {/* Terminal Section Header */}
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-2 dark:border-[#262930]">
-        <div className="flex items-center gap-2">
-          <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
-            02
-          </span>
-          <h2 className="font-sans text-sm font-bold tracking-tight text-neutral-900 dark:text-neutral-100">
-            Metodologi Valuasi &amp; Multiples // {tk}
-          </h2>
-        </div>
-        <span className="font-mono text-[11px] text-neutral-400">
-          Model Terpadu: DCF · SOTP · GGM · Multiples Relatif
-        </span>
-      </div>
-
-      {/* Row 1: Valuation Summary Matrix */}
-      <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Calculator className="h-4 w-4 text-amber-500" />
-              <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                Ringkasan Valuasi &amp; Matriks Mesin
-              </CardTitle>
-            </div>
-            <span className="font-mono text-[10px] text-neutral-400">
-              SUMBER: {vd?.provenance ?? "DETERMINISTIC DCF/SOTP ENGINE"}
+    <div className="space-y-6">
+      {/* ========================================================================= */}
+      {/* BAB 4: VALUATION SPREAD (DCF)                                             */}
+      {/* ========================================================================= */}
+      <section id="valuation-spread" className="scroll-mt-28 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
+              04
             </span>
+            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
+              Valuasi Spread DCF &amp; Sensitivitas WACC // {tk}
+            </h2>
           </div>
-        </CardHeader>
-        <CardContent className="space-y-3.5 p-4 sm:p-5">
-          <div className="grid gap-2.5 sm:grid-cols-2 lg:grid-cols-3">
-            {valuation.map((v) => (
-              <div
-                key={v.method}
-                className="flex items-center justify-between rounded-md border border-neutral-200 bg-neutral-50 p-3 font-mono dark:border-[#262930] dark:bg-[#181a1f]"
-              >
-                <div>
-                  <div className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{v.method}</div>
-                  <div className="text-[10px] text-neutral-500 dark:text-neutral-400">
-                    {v.weight ? `BOBOT: ${v.weight}%` : "MODEL TUNGGAL"}
-                  </div>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                    Rp {fmtIDR(v.value)}
-                  </div>
-                  <div className="text-[9px] uppercase text-neutral-400 font-sans">NILAI WAJAR</div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <span className="font-mono text-[11px] text-[#63748A]">
+            Standar PDF Slide 4 · Model Deterministik
+          </span>
+        </div>
 
-          {vd?.methods && vd.methods.length > 0 && (
-            <div className="space-y-2 border-t border-neutral-200 pt-3 font-mono text-xs dark:border-[#1f2228]">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">
-                Rincian Komponen Valuasi:
-              </div>
-              <div className="grid gap-2 sm:grid-cols-2">
-                {vd.methods.map((m) => (
-                  <div
-                    key={m.method}
-                    className="flex items-center justify-between rounded-md border border-neutral-200 bg-white px-3 py-2 dark:border-[#262930] dark:bg-[#121316]"
-                  >
-                    <span className="text-neutral-700 dark:text-neutral-300">
-                      {m.method} <span className="text-[10px] text-neutral-400">({m.source ?? "engine"})</span>
-                    </span>
-                    <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                      Rp {fmtIDR(m.fv)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+        {hasValuation ? (
+          <div className="space-y-4">
+            {valPage.subtitle && (
+              <p className="text-xs text-[#63748A] leading-relaxed">
+                {valPage.subtitle}
+              </p>
+            )}
 
-      {/* Row 2: Blended Valuation & GGM & Historical Bands */}
-      <div className="grid gap-3.5 lg:grid-cols-2">
-        {/* Blended Valuation */}
-        {vd?.blended ? (
-          <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Layers className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                  <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                    Valuasi Gabungan (Blended) {isInfra ? "(60% DCF / 40% EV)" : ""}
+            {/* Lane B Chart: DcfSpreadCharts */}
+            {payload && <DcfSpreadCharts payload={payload} />}
+
+            {/* Three Block Tables (Blok 1, 2, 3) */}
+            <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+              <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                    {valPage.exhibit8_title || "FCFF Forecast, Terminal Value and Bridge to Equity"}
                   </CardTitle>
+                  <span className="font-mono text-[10px] text-[#63748A]">
+                    Engine: {valPage.sources?.[2] || valPage.sources?.[0] || "Deterministic FCFF"}
+                  </span>
                 </div>
-                <Badge variant="outline" className="border-neutral-300 font-mono text-[10px] dark:border-[#262930]">
-                  Margin of Safety {vd.blended.margin_of_safety_pct ?? 15}%
-                </Badge>
+              </CardHeader>
+              <CardContent className="p-4 sm:p-5 space-y-4">
+                {/* Blok 1: Periode Proyeksi Eksplisit */}
+                {valPage.block1_rows && valPage.block1_rows.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                            {(
+                              valPage.block1_headers || [
+                                "Blok 1 — Periode proyeksi eksplisit (Rp bn)",
+                                ...(valPage.periods || []),
+                              ]
+                            ).map((h, idx) => (
+                              <th key={idx} className={`py-2 px-3 ${idx === 0 ? "text-left" : ""}`}>
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {valPage.block1_rows.map(([label, series], rIdx) => {
+                            const isBold =
+                              label === "FCFF (build-up)" ||
+                              label === "PV of FCFF" ||
+                              label.includes("FCFF growth");
+                            return (
+                              <tr
+                                key={rIdx}
+                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  rIdx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                                } ${isBold ? "font-bold text-[#0B1F3A] dark:text-neutral-100" : "text-[#0B1F3A] dark:text-neutral-300"}`}
+                              >
+                                <td className="py-1.5 px-3 text-left">{label}</td>
+                                {Array.isArray(series) ? (
+                                  series.map((val, cIdx) => (
+                                    <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                      {val != null ? String(val) : "—"}
+                                    </td>
+                                  ))
+                                ) : (
+                                  <td className="py-1.5 px-3 text-right tabular-nums">{String(series)}</td>
+                                )}
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Blok 2: Terminal Value */}
+                {valPage.block2_rows && valPage.block2_rows.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                            {(
+                              valPage.block2_headers || [
+                                "Blok 2 — Terminal value",
+                                "Gordon Growth",
+                                `Exit Multiple ${valPage.drivers?.multiple != null ? valPage.drivers.multiple.toFixed(1) : ""}×`,
+                              ]
+                            ).map((h, idx) => (
+                              <th key={idx} className={`py-2 px-3 ${idx === 0 ? "text-left" : ""}`}>
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {valPage.block2_rows.map(([label, a, b], rIdx) => {
+                            const isBold = label.includes("PV of Terminal") || label.includes("Terminal Value");
+                            return (
+                              <tr
+                                key={rIdx}
+                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  rIdx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                                } ${isBold ? "font-bold text-[#0B1F3A] dark:text-neutral-100" : "text-[#0B1F3A] dark:text-neutral-300"}`}
+                              >
+                                <td className="py-1.5 px-3 text-left">{label}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "—"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "—"}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+
+                {/* Blok 3: Bridge ke Equity Value */}
+                {valPage.block3_rows && valPage.block3_rows.length > 0 && (
+                  <div className="space-y-1">
+                    <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                            {(
+                              valPage.block3_headers || [
+                                "Blok 3 — Bridge ke equity value",
+                                "Rp bn",
+                                "Per saham (Rp)",
+                              ]
+                            ).map((h, idx) => (
+                              <th key={idx} className={`py-2 px-3 ${idx === 0 ? "text-left" : ""}`}>
+                                {h}
+                              </th>
+                            ))}
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {valPage.block3_rows.map(([label, a, b], rIdx) => {
+                            const isFv = label.includes("Fair Value");
+                            const isBold = isFv || label.includes("Enterprise Value") || label.includes("Equity Value");
+                            return (
+                              <tr
+                                key={rIdx}
+                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  isFv
+                                    ? "bg-[#E4EEF7] font-bold text-[#0B1F3A] dark:bg-[#0B1F3A]/40 dark:text-[#A9C9E8]"
+                                    : isBold
+                                    ? "font-bold text-[#0B1F3A] dark:text-neutral-100"
+                                    : "text-[#0B1F3A] dark:text-neutral-300"
+                                }`}
+                              >
+                                <td className="py-1.5 px-3 text-left">{label}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "—"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "—"}</td>
+                              </tr>
+                            )
+                          })}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* WACC Components */}
+            {valPage.wacc_rows && valPage.wacc_rows.length > 0 && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                      WACC Components
+                    </CardTitle>
+                    <span className="font-mono text-[10px] text-[#63748A]">
+                      Sumber per komponen tercantum di kolom ketiga
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-2">
+                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#0B1F3A] text-white text-[11px]">
+                          <th className="py-2 px-3 text-left">Parameter</th>
+                          <th className="py-2 px-3 text-right">Nilai</th>
+                          <th className="py-2 px-3 text-left">Sumber</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {valPage.wacc_rows.map((row, idx) => (
+                          <tr
+                            key={idx}
+                            className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                              idx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                            }`}
+                          >
+                            <td className="py-1.5 px-3 font-medium text-[#0B1F3A] dark:text-neutral-200">{row[0]}</td>
+                            <td className="py-1.5 px-3 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
+                              {row[1]}
+                            </td>
+                            <td className="py-1.5 px-3 text-[#63748A] text-[11px]">{row[2]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sensitivity Analysis Matrix */}
+            {sens && sens.columns && sens.rows && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                      Sensitivity Analysis — WACC × Terminal Growth
+                    </CardTitle>
+                    <span className="font-mono text-[10px] text-[#63748A]">
+                      Base case (WACC {sens.base_wacc} · g {sens.base_g}) dibingkai
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3 font-mono">
+                  <div className="overflow-x-auto rounded border border-[#D6E2EE] text-xs dark:border-[#262930]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#0B1F3A] text-white text-[11px]">
+                          <th className="py-2 px-3 text-left">WACC \ g</th>
+                          {sens.columns.map((col, idx) => (
+                            <th key={idx} className="py-2 px-3 text-right">
+                              {col}
+                            </th>
+                          ))}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sens.rows.map((r, rIdx) => (
+                          <tr key={rIdx} className="border-b border-[#D6E2EE]/60 last:border-0">
+                            <td className="py-1.5 px-3 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-200">
+                              {r.label}
+                            </td>
+                            {r.cells.map((c, cIdx) => (
+                              <td
+                                key={cIdx}
+                                className={`py-1.5 px-3 text-right tabular-nums ${
+                                  c.base
+                                    ? "font-black text-[#0B1F3A] bg-[#E4EEF7] ring-2 ring-[#0B1F3A] dark:bg-[#0B1F3A]/40 dark:text-[#A9C9E8]"
+                                    : "text-[#0B1F3A] dark:text-neutral-200"
+                                }`}
+                              >
+                                {c.value != null ? String(c.value) : "—"}
+                              </td>
+                            ))}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {sens.swing && (
+                    <p className="text-[11px] text-[#63748A] leading-relaxed">
+                      Dasar Rp {fmtIDR(sens.base_fv)} (WACC {sens.base_wacc} · g {sens.base_g}). Rentang grid: Rp{" "}
+                      {fmtIDR(sens.swing.min)} – Rp {fmtIDR(sens.swing.max)}.
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Sensitivity Strip & Method Comparison */}
+            {br && sens && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-[#F4F8FC] p-4 font-mono shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <div className="text-xs font-bold uppercase tracking-wider text-[#0B1F3A] mb-3 dark:text-[#A9C9E8]">
+                  Analisa Sensitivitas &amp; Keterkaitan Asumsi
+                </div>
+
+                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-3 mb-4">
+                  <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
+                    <div className="text-[10px] font-bold uppercase text-[#63748A]">PV TERMINAL / EV</div>
+                    <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                      {br.tv_share != null ? `${(br.tv_share * 100).toFixed(1)}%` : "—"}
+                    </div>
+                    <div className="text-[10px] text-[#63748A] mt-0.5">nilai wajar bertumpu di luar proyeksi</div>
+                  </div>
+
+                  <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
+                    <div className="text-[10px] font-bold uppercase text-[#63748A]">NET DEBT / EV</div>
+                    <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                      {br.net_debt != null && br.ev_gordon
+                        ? `${((br.net_debt / br.ev_gordon) * 100).toFixed(1)}%`
+                        : "—"}
+                    </div>
+                    <div className="text-[10px] text-[#63748A] mt-0.5">
+                      sisa ekuitas Rp {br.equity_gordon != null ? (br.equity_gordon / 1e12).toFixed(2) : "—"} tn
+                    </div>
+                  </div>
+
+                  <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
+                    <div className="text-[10px] font-bold uppercase text-[#63748A]">RENTANG GRID WACC × G</div>
+                    <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                      Rp {sens.swing ? `${fmtIDR(sens.swing.min)} – ${fmtIDR(sens.swing.max)}` : "—"}
+                    </div>
+                    <div className="text-[10px] text-[#63748A] mt-0.5">
+                      dasar Rp {fmtIDR(sens.base_fv)} ({sens.base_wacc} · g {sens.base_g})
+                    </div>
+                  </div>
+                </div>
+
+                {/* Narrative & Notes */}
+                {valPage.narrative && valPage.narrative.length > 0 && (
+                  <div className="space-y-1.5 border-t border-[#D6E2EE] pt-3 text-xs leading-relaxed text-[#0B1F3A] dark:text-neutral-300">
+                    {valPage.narrative.map((p, idx) => (
+                      <p key={idx}>{p}</p>
+                    ))}
+                  </div>
+                )}
+
+                {valPage.notes && valPage.notes.length > 0 && (
+                  <div className="space-y-1 border-t border-[#D6E2EE] pt-2.5 text-[11px] text-[#63748A]">
+                    {valPage.notes.map((n, idx) => (
+                      <div key={idx} className="flex items-start gap-1.5">
+                        <span className="font-bold text-[#0B1F3A] shrink-0 dark:text-neutral-300">·</span>
+                        <span>{n}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Card>
+            )}
+
+            {/* Metode Pembanding / Crosscheck Rows */}
+            {valPage.crosscheck_rows && valPage.crosscheck_rows.length > 0 && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                  <div className="flex items-center justify-between">
+                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                      Metode Pembanding (Anchor Target Price)
+                    </CardTitle>
+                    <span className="font-mono text-[10px] text-[#63748A]">
+                      Sectors Annual EBITDA / Multiples Crosscheck
+                    </span>
+                  </div>
+                </CardHeader>
+                <CardContent className="p-4 space-y-2">
+                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#0B1F3A] text-white text-[11px]">
+                          <th className="py-2 px-3 text-left">Metode</th>
+                          <th className="py-2 px-3 text-right">Fair Value (Rp)</th>
+                          <th className="py-2 px-3 text-left">Peran</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {valPage.crosscheck_rows.map((row, idx) => (
+                          <tr
+                            key={idx}
+                            className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                              idx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                            }`}
+                          >
+                            <td className="py-1.5 px-3 font-medium text-[#0B1F3A] dark:text-neutral-200">{row[0]}</td>
+                            <td className="py-1.5 px-3 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
+                              {typeof row[1] === "number" ? `Rp ${fmtIDR(row[1])}` : String(row[1])}
+                            </td>
+                            <td className="py-1.5 px-3 text-[#63748A] text-[11px]">{row[2]}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        ) : (
+          <PendingCard label="Halaman valuasi" />
+        )}
+      </section>
+
+      {/* ========================================================================= */}
+      {/* BAB 5: PEERS 5A — CROSS-SECTIONAL VALUATION                               */}
+      {/* ========================================================================= */}
+      <section id="peers-5a" className="scroll-mt-28 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
+              05
+            </span>
+            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
+              Peer Valuation — Cross-Sectional // {tk}
+            </h2>
+          </div>
+          <span className="font-mono text-[11px] text-[#63748A]">
+            Standar PDF Slide 5A · Komparasi Satu Tanggal
+          </span>
+        </div>
+
+        {partA && partA.rows && partA.rows.length > 0 ? (
+          <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+            <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]">
+              <div className="flex items-center justify-between">
+                <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                  {partA.title || "Peer Valuation — Cross-Sectional"}
+                </CardTitle>
+                <span className="font-mono text-[10px] text-[#63748A]">
+                  {partA.sources?.[0] || "Sectors API v2"}
+                </span>
               </div>
-              <CardDescription className="font-mono text-[10px] text-neutral-400">
-                SUMBER: {vd.blended.source ?? "scripts/blended.py"}
+              <CardDescription className="text-xs text-[#63748A] mt-1 font-sans">
+                Bagian A dari dua metodologi berbeda filosofi. Membandingkan emiten dengan peer set pada satu tanggal harga.
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-3 p-4 sm:p-5">
-              <div className="overflow-x-auto rounded-md border border-neutral-200 font-mono text-xs dark:border-[#262930]">
+            <CardContent className="p-4 sm:p-5 space-y-3 font-mono">
+              <div className="overflow-x-auto rounded border border-[#D6E2EE] text-xs dark:border-[#262930]">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b bg-neutral-100/70 text-left text-[11px] font-bold text-neutral-600 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400 font-sans">
-                      <th className="py-2 px-3">METODE</th>
-                      <th className="py-2 px-3">BOBOT</th>
-                      <th className="py-2 px-3 text-right">NILAI WAJAR</th>
+                    <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                      {(partA.columns || ["Ticker", "Perusahaan", "P/E (x)", "PBV (x)", "EV/EBITDA (x)", "ROE (%)", "Market Cap"]).map(
+                        (col, idx) => (
+                          <th key={idx} className={`py-2 px-3 ${idx <= 1 ? "text-left" : ""}`}>
+                            {col}
+                          </th>
+                        )
+                      )}
                     </tr>
                   </thead>
                   <tbody>
-                    {(vd.blended.rows && vd.blended.rows.length > 0
-                      ? vd.blended.rows
-                      : [["DCF", "60%", "—"], ["EV/EBITDA", "40%", "—"]]
-                    ).map((row, i) => (
-                      <tr key={i} className="border-b border-neutral-100 last:border-0 dark:border-[#1f2228]">
-                        <td className="py-2 px-3 font-medium text-neutral-800 dark:text-neutral-200">{String(row[0])}</td>
-                        <td className="py-2 px-3 text-neutral-600 dark:text-neutral-400">{String(row[1])}</td>
-                        <td className="py-2 px-3 text-right font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                          Rp {fmtIDR(Number(row[2]))}
-                        </td>
-                      </tr>
-                    ))}
-                    <tr className="bg-neutral-900 font-bold text-white dark:bg-[#262930]">
-                      <td className="py-2 px-3 text-amber-400">TARGET HARGA GABUNGAN</td>
-                      <td className="py-2 px-3">100%</td>
-                      <td className="py-2 px-3 text-right tabular-nums text-amber-400">
-                        Rp {fmtIDR(vd.blended.fv)}
-                      </td>
-                    </tr>
+                    {partA.rows.map((r, idx) => {
+                      const isSelf = r.is_covered || r.symbol === tk;
+                      return (
+                        <tr
+                          key={idx}
+                          className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                            isSelf
+                              ? "bg-[#E4EEF7] font-bold text-[#0B1F3A] border-l-4 border-l-[#0B1F3A] dark:bg-[#0B1F3A]/40 dark:text-[#A9C9E8]"
+                              : idx % 2 === 1
+                              ? "bg-[#F4F8FC] dark:bg-[#181a1f]"
+                              : "bg-white dark:bg-[#121316]"
+                          }`}
+                        >
+                          <td className="py-1.5 px-3 text-left font-bold">{r.symbol}</td>
+                          <td className="py-1.5 px-3 text-left truncate max-w-[160px] font-sans">{r.name}</td>
+                          <td className="py-1.5 px-3 text-right tabular-nums">
+                            {r.pe_nm ? "n.m." : r.pe != null ? r.pe.toFixed(2) : "—"}
+                          </td>
+                          <td className="py-1.5 px-3 text-right tabular-nums">
+                            {r.pbv != null ? r.pbv.toFixed(2) : "—"}
+                          </td>
+                          <td className="py-1.5 px-3 text-right tabular-nums">
+                            {r.ev_ebitda_nm ? "n.m." : r.ev_ebitda != null ? r.ev_ebitda.toFixed(2) : "—"}
+                          </td>
+                          <td className="py-1.5 px-3 text-right tabular-nums">
+                            {r.roe != null ? `${(r.roe * 100).toFixed(1)}%` : "—"}
+                          </td>
+                          <td className="py-1.5 px-3 text-right tabular-nums">
+                            {r.market_cap != null ? `${(r.market_cap / 1e12).toFixed(2)} tn` : "—"}
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
+                  <tfoot>
+                    {partA.median && (
+                      <tr className="border-t-2 border-[#0B1F3A] bg-[#F4F8FC] font-bold text-[#0B1F3A] text-right dark:bg-[#181a1f] dark:text-neutral-100">
+                        <td className="py-2 px-3 text-left">MEDIAN</td>
+                        <td className="py-2 px-3 text-left font-sans text-xs">
+                          Peer set ({partA.counts?.pe_ttm ?? "valid"} nama)
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.median.pe != null ? partA.median.pe.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.median.pbv != null ? partA.median.pbv.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.median.ev_ebitda != null ? partA.median.ev_ebitda.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.median.roe != null ? `${(partA.median.roe * 100).toFixed(1)}%` : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">—</td>
+                      </tr>
+                    )}
+                    {partA.average && (
+                      <tr className="border-b-2 border-[#0B1F3A] bg-[#F4F8FC] font-bold text-[#0B1F3A] text-right dark:bg-[#181a1f] dark:text-neutral-100">
+                        <td className="py-2 px-3 text-left">AVERAGE</td>
+                        <td className="py-2 px-3 text-left font-sans text-xs">Peer set</td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.average.pe != null ? partA.average.pe.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.average.pbv != null ? partA.average.pbv.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.average.ev_ebitda != null ? partA.average.ev_ebitda.toFixed(2) : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">
+                          {partA.average.roe != null ? `${(partA.average.roe * 100).toFixed(1)}%` : "—"}
+                        </td>
+                        <td className="py-2 px-3 tabular-nums">—</td>
+                      </tr>
+                    )}
+                  </tfoot>
                 </table>
               </div>
-              <div className="flex items-center gap-1.5 font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
-                <CheckCircle className="h-3.5 w-3.5 text-emerald-500" />
-                <span>
-                  AUDIT JUMLAH BOBOT:{" "}
-                  {Object.values(vd.blended.weights ?? {}).reduce((a: number, b: unknown) => a + Number(b), 0).toFixed(0)}
-                  % (STRICT 100% CONSTRAINT)
-                </span>
-              </div>
+
+              {partA.criteria && (
+                <div className="text-[11px] text-[#63748A]">
+                  {partA.criteria} Basis: {partA.basis}. Baris ber-shading = emiten yang dicover.
+                </div>
+              )}
+              {partA.narrative_text && (
+                <p className="text-xs text-[#0B1F3A] leading-relaxed dark:text-neutral-300">
+                  {partA.narrative_text}
+                </p>
+              )}
             </CardContent>
           </Card>
-        ) : null}
+        ) : (
+          <PendingCard label="Peer Valuation 5A" />
+        )}
+      </section>
 
-        {/* GGM Box */}
-        {vd?.ggm ? (
-          <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121316]">
-            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <BarChart2 className="h-4 w-4 text-emerald-500" />
-                  <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                    Gordon Growth Model (GGM P/BV)
-                  </CardTitle>
-                </div>
-                <Badge variant="outline" className="border-emerald-500/40 bg-emerald-500/10 font-mono text-[10px] font-bold text-emerald-600 dark:border-emerald-500/50 dark:text-emerald-300">
-                  {vd.ggm.pbv_implied}x P/BV
-                </Badge>
-              </div>
-              <CardDescription className="font-mono text-[10px] text-neutral-400">
-                FORMULA: {vd.ggm.formula}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 p-4 sm:p-5 font-mono">
-              <div className="grid grid-cols-3 gap-2 text-center text-xs">
-                <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
-                  <div className="text-[10px] uppercase font-sans text-neutral-500 dark:text-neutral-400 font-medium">PBV IMPLIED</div>
-                  <div className="mt-0.5 text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                    {vd.ggm.pbv_implied}x
-                  </div>
-                </div>
-                <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
-                  <div className="text-[10px] uppercase font-sans text-neutral-500 dark:text-neutral-400 font-medium">PROYEKSI BVPS</div>
-                  <div className="mt-0.5 text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                    {(() => {
-                      const v = Number((vd.ggm?.assumptions as Record<string, unknown>)?.["bvps"])
-                      return Number.isFinite(v) && v > 0 ? "Rp " + fmtIDR(v) : "—"
-                    })()}
-                  </div>
-                </div>
-                <div className="rounded-md border border-emerald-300 bg-emerald-50/80 p-2.5 dark:border-emerald-800/60 dark:bg-emerald-950/60">
-                  <div className="text-[10px] uppercase font-bold text-emerald-700 dark:text-emerald-300 font-sans">HARGA TARGET</div>
-                  <div className="mt-0.5 text-sm font-bold text-emerald-900 tabular-nums dark:text-emerald-100">
-                    Rp {fmtIDR(vd.ggm.fv_per_share)}
-                  </div>
-                </div>
-              </div>
-
-              <div className="rounded-md border border-neutral-200 bg-neutral-50/60 p-2.5 text-xs text-neutral-700 dark:border-[#262930] dark:bg-[#181a1f]/60 dark:text-neutral-300">
-                <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-500 dark:text-neutral-400 font-sans">
-                  Asumsi Parameter GGM:
-                </div>
-                <div className="mt-1 grid grid-cols-3 gap-1 text-[11px] tabular-nums">
-                  <div>
-                    ROE: {(() => {
-                      const v = Number((vd.ggm?.assumptions as Record<string, unknown>)?.["roe"])
-                      return Number.isFinite(v) ? (v * 100).toFixed(1) + "%" : "—"
-                    })()}
-                  </div>
-                  <div>
-                    g (terminal): {(() => {
-                      const v = Number((vd.ggm?.assumptions as Record<string, unknown>)?.["g"])
-                      return Number.isFinite(v) ? (v * 100).toFixed(1) + "%" : "—"
-                    })()}
-                  </div>
-                  <div>
-                    CoE: {(() => {
-                      const v = Number((vd.ggm?.assumptions as Record<string, unknown>)?.["coe"])
-                      return Number.isFinite(v) ? (v * 100).toFixed(2) + "%" : "—"
-                    })()}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : null}
-
-        {/* Historical Bands STD+-2 */}
-        {bandsData ? (
-          <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs lg:col-span-2 dark:border-[#262930] dark:bg-[#121316]">
-            <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-              <div className="flex flex-wrap items-center justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-4 w-4 text-sky-500" />
-                  <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                    Valuasi Historis 3 Tahun (Rentang PBV STD ± 2)
-                  </CardTitle>
-                </div>
-                <Badge variant="outline" className="border-neutral-300 font-mono text-[10px] dark:border-[#262930]">
-                  POSISI: {String(bandsData.label ?? "STD BAND")}
-                </Badge>
-              </div>
-              <CardDescription className="font-mono text-[10px] text-neutral-400">
-                SUMBER: {vd?.bands?.source ?? "IDX AUDITED TICK"} · ANALISIS REGRESI HISTORIS
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3.5 p-4 sm:p-5">
-              <div className="grid grid-cols-7 gap-1.5 font-mono text-center text-xs">
-                {[
-                  { k: "+2σ", v: bandsData["std+2"] },
-                  { k: "+1σ", v: bandsData["std+1"] },
-                  { k: "Rata-rata", v: bandsData.avg },
-                  { k: "-1σ", v: bandsData["std-1"] },
-                  { k: "-2σ", v: bandsData["std-2"] },
-                  { k: "Kini", v: bandsData.current },
-                  { k: "Posisi", v: bandsData.label },
-                ].map((c) => (
-                  <div
-                    key={c.k}
-                    className={`rounded-md border p-2 ${
-                      c.k === "Kini"
-                        ? "border-emerald-500 bg-emerald-500/10 text-emerald-600 font-bold dark:border-emerald-500/50 dark:bg-emerald-950/40 dark:text-emerald-400"
-                        : c.k === "Posisi"
-                        ? "border-amber-300 bg-amber-50 text-amber-900 font-bold dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200"
-                        : "border-neutral-200 bg-neutral-50 text-neutral-800 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200"
-                    }`}
-                  >
-                    <div className="text-[9px] uppercase text-neutral-400 font-sans">{c.k}</div>
-                    <div className="mt-0.5 text-xs font-bold tabular-nums">
-                      {typeof c.v === "number" ? c.v.toFixed(2) : String(c.v ?? "—")}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <BandsChart bands={bandsData} />
-            </CardContent>
-          </Card>
-        ) : null}
-      </div>
-
-      {/* Row 3: Operational KPIs */}
-      {kpis && kpis.length > 0 && (
-        <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121316]">
-          <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <BarChart2 className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                  Indikator Operasional Kunci &amp; Efisiensi (KPI)
-                </CardTitle>
-              </div>
-              <span className="font-mono text-[10px] text-neutral-400">
-                AUDITED EMITEN FILING / SKK MIGAS
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-5">
-            <div className="grid gap-2.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-              {kpis.map((k) => {
-                const delta = k.prev != null && k.value != null ? Number(k.value) - Number(k.prev) : null
-                const deltaPct = k.prev
-                  ? (((Number(k.value) - Number(k.prev)) / Number(k.prev)) * 100).toFixed(1)
-                  : null
-
-                return (
-                  <div
-                    key={k.name}
-                    className="space-y-1 rounded-md border border-neutral-200 bg-neutral-50 p-3 font-mono dark:border-[#262930] dark:bg-[#181a1f]"
-                  >
-                    <div className="truncate text-[11px] font-bold text-neutral-700 dark:text-neutral-300 font-sans">{k.name}</div>
-                    <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
-                      {typeof k.value === "number" ? fmtIDR(k.value) : String(k.value)}{" "}
-                      <span className="text-[10px] font-normal text-neutral-500 dark:text-neutral-400">{k.unit ?? ""}</span>
-                    </div>
-                    {k.prev != null && (
-                      <div
-                        className={`text-[10px] tabular-nums ${
-                          delta != null && delta >= 0
-                            ? "text-emerald-600 dark:text-emerald-400"
-                            : "text-rose-600 dark:text-rose-400"
-                        }`}
-                      >
-                        {delta != null ? `${delta > 0 ? "+" : ""}${delta}` : ""}{" "}
-                        {deltaPct != null ? `(${deltaPct}%)` : ""} · PREV {fmtIDR(Number(k.prev))}
-                      </div>
-                    )}
-                    {k.formula && <div className="truncate text-[9px] text-neutral-400">{k.formula}</div>}
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Row 4: Segment Mix */}
-      <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121316]">
-        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <PieChart className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-              <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                Bauran Segmen Usaha &amp; Dekomposisi Pendapatan
-              </CardTitle>
-            </div>
+      {/* ========================================================================= */}
+      {/* BAB 6: OWN HISTORY 5B — RELATIVE VALUATION                                */}
+      {/* ========================================================================= */}
+      <section id="peers-5b" className="scroll-mt-28 space-y-3">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
+          <div className="flex items-center gap-2">
+            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
+              06
+            </span>
+            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
+              Valuasi Relatif Historis (Own History 5B) // {tk}
+            </h2>
           </div>
-          <CardDescription className="font-mono text-[10px] text-neutral-400">
-            SEGMEN BISNIS · KONTRIBUSI PENDAPATAN YOY / QOQ SESUAI LAPORAN KEUANGAN
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="p-4 sm:p-5">
-          <SegmentPie
-            segments={segments}
-            source={segmentsSource}
-            rawSegments={rawSegments}
-          />
-        </CardContent>
-      </Card>
+          <span className="font-mono text-[11px] text-[#63748A]">
+            Standar PDF Slide 5B · Time-Series Bands &amp; Implied
+          </span>
+        </div>
 
-      {/* Row 5: Financial Ratios */}
-      {ratios && Object.keys(ratios).length > 0 && (
-        <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121316]">
-          <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Table className="h-4 w-4 text-neutral-600 dark:text-neutral-400" />
-                <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                  Rasio Keuangan Utama &amp; Solvabilitas
-                </CardTitle>
-              </div>
-              <span className="font-mono text-[10px] text-neutral-400">
-                AUDITED FINANCIAL METRICS
-              </span>
-            </div>
-          </CardHeader>
-          <CardContent className="p-4 sm:p-5">
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-6">
-              {Object.entries(ratios).map(([k, v]) => (
-                <div
-                  key={k}
-                  className="rounded-md border border-neutral-200 bg-neutral-50 p-2.5 text-center font-mono dark:border-[#262930] dark:bg-[#181a1f]"
-                >
-                  <div className="truncate text-[10px] font-bold uppercase text-neutral-500 dark:text-neutral-400 font-sans">{k}</div>
-                  <div className="mt-0.5 text-xs font-bold text-neutral-900 tabular-nums dark:text-neutral-100">{String(v)}</div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-    </section>
+        {partB ? (
+          <div className="space-y-4">
+            {partB.methodology && (
+              <p className="text-xs text-[#63748A] leading-relaxed">
+                {partB.methodology}
+              </p>
+            )}
+
+            {/* Lane B Chart: PeersCharts */}
+            {payload && <PeersCharts payload={payload} />}
+
+            {/* Implied Price Judgement Table */}
+            {partB.implied && partB.implied.length > 0 && (
+              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+                  <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
+                    Implied Price Judgement
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 space-y-3 font-mono">
+                  <div className="overflow-x-auto rounded border border-[#D6E2EE] text-xs dark:border-[#262930]">
+                    <table className="w-full">
+                      <thead>
+                        <tr className="bg-[#0B1F3A] text-white text-[11px]">
+                          <th className="py-2 px-3 text-left">Multiple</th>
+                          <th className="py-2 px-3 text-right">Reversion ke Mean (Rp)</th>
+                          <th className="py-2 px-3 text-right">Reversion ke Median (Rp)</th>
+                          <th className="py-2 px-3 text-right">Rentang</th>
+                          <th className="py-2 px-3 text-right">Selisih</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {partB.implied.map((r, idx) => (
+                          <tr
+                            key={idx}
+                            className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                              idx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                            }`}
+                          >
+                            <td className="py-1.5 px-3 font-bold text-[#0B1F3A] dark:text-neutral-200">{r.label}</td>
+                            <td className="py-1.5 px-3 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
+                              Rp {fmtIDR(r.to_mean)}
+                            </td>
+                            <td className="py-1.5 px-3 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
+                              Rp {fmtIDR(r.to_median)}
+                            </td>
+                            <td className="py-1.5 px-3 text-right tabular-nums text-[#63748A]">
+                              {r.is_range && r.low != null && r.high != null
+                                ? `Rp ${fmtIDR(r.low)} – ${fmtIDR(r.high)}`
+                                : "konvergen"}
+                            </td>
+                            <td className="py-1.5 px-3 text-right font-bold tabular-nums">
+                              {r.delta_pct != null ? `${r.delta_pct.toFixed(0)}%` : "—"}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  <div className="text-[11px] text-[#63748A]">
+                    Harga terakhir: {partB.last_close != null ? `Rp ${fmtIDR(partB.last_close)}` : "—"} ·{" "}
+                    {partB.driver_note}
+                  </div>
+
+                  {partB.disclaimer && (
+                    <div className="rounded border-l-2 border-[#0B1F3A] bg-[#F4F8FC] p-2.5 text-xs text-[#0B1F3A] dark:border-[#A9C9E8] dark:bg-[#181a1f] dark:text-neutral-300">
+                      <strong>Catatan:</strong> {partB.disclaimer}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        ) : (
+          <PendingCard label="Own history 5B" />
+        )}
+      </section>
+    </div>
   )
 }
-

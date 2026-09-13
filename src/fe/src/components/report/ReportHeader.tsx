@@ -24,7 +24,7 @@ export type ReportHeaderProps = {
   price?: number | null
   target?: number | null
   targetPrice?: number | null
-  upside?: string | null
+  upside?: string | number | null
   updatedAt?: string | null
   template?: string | null
   source?: string | null
@@ -39,8 +39,9 @@ function fmtIDR(n: number | null | undefined): string {
   return Number(n).toLocaleString("id-ID")
 }
 
-function parseUpside(upside?: string | null): number | null {
+function parseUpside(upside?: string | number | null): number | null {
   if (upside == null) return null
+  if (typeof upside === "number") return upside
   const m = String(upside).replace(",", ".").match(/-?\d+(\.\d+)?/)
   return m ? Number(m[0]) : null
 }
@@ -80,6 +81,14 @@ export function ReportHeader({
   const upsidePositive = upsideNum != null && upsideNum > 0
   const upsideNegative = upsideNum != null && upsideNum < 0
 
+  const upsideDisplay = (() => {
+    if (upside == null) return "—"
+    if (typeof upside === "number") {
+      return `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%`
+    }
+    return String(upside)
+  })()
+
   async function handlePdfDownload() {
     if (onDownloadPdf) {
       onDownloadPdf()
@@ -105,7 +114,7 @@ export function ReportHeader({
   const tabBase =
     "inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-sans font-medium border-b-2 transition-colors whitespace-nowrap cursor-pointer"
   const tabActive =
-    "border-amber-500 text-amber-600 bg-amber-500/10 font-bold dark:border-amber-400 dark:text-amber-300 dark:bg-amber-950/40"
+    "border-[#0B1F3A] text-[#0B1F3A] bg-[#E4EEF7] font-bold dark:border-[#A9C9E8] dark:text-[#A9C9E8] dark:bg-[#0B1F3A]/40"
   const tabIdle =
     "border-transparent text-neutral-500 hover:text-neutral-900 hover:border-neutral-300 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:border-neutral-700"
 
@@ -117,24 +126,24 @@ export function ReportHeader({
   }
 
   return (
-    <div className="sticky top-12 z-20 -mx-4 -mt-6 mb-6 border-b border-neutral-200 bg-white/95 backdrop-blur shadow-xs dark:border-[#262930] dark:bg-[#0c0d0e]/95">
+    <div className="sticky top-12 z-20 -mx-4 -mt-6 mb-6 border-b border-[#D6E2EE] bg-white/95 backdrop-blur shadow-xs dark:border-[#262930] dark:bg-[#0c0d0e]/95">
       {/* 1. Terminal Command Line & Ticker Switcher Strip */}
-      <div className="border-b border-neutral-200 bg-neutral-100/90 px-4 py-1.5 text-[11px] font-mono text-neutral-600 dark:border-[#1f2228] dark:bg-[#121316] dark:text-neutral-400">
+      <div className="border-b border-[#D6E2EE] bg-[#F4F8FC] px-4 py-1.5 text-[11px] font-mono text-neutral-600 dark:border-[#1f2228] dark:bg-[#121316] dark:text-neutral-400">
         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <span className="flex items-center gap-1 font-bold text-neutral-900 dark:text-amber-400">
-              <Terminal className="h-3.5 w-3.5 text-amber-500" />
+            <span className="flex items-center gap-1 font-bold text-[#0B1F3A] dark:text-[#A9C9E8]">
+              <Terminal className="h-3.5 w-3.5 text-[#0B1F3A] dark:text-[#A9C9E8]" />
               <span>TERMINAL</span>
             </span>
-            <span className="text-neutral-400 dark:text-neutral-600">::</span>
-            <span className="text-neutral-700 dark:text-neutral-300">
-              {tk} SAHAM ID
+            <span className="text-[#63748A]">::</span>
+            <span className="text-[#0B1F3A] font-semibold dark:text-neutral-300">
+              {tk} SAHAM ID · INSTITUTIONAL REPORT
             </span>
           </div>
 
           {/* Ticker Quick Switcher */}
           <div className="flex items-center gap-1">
-            <span className="mr-1 hidden text-[10px] text-neutral-400 sm:inline uppercase">Universe:</span>
+            <span className="mr-1 hidden text-[10px] text-[#63748A] sm:inline uppercase">Universe:</span>
             {ENGINE_TICKERS.map((symbol) => {
               const isActive = symbol === tk
               return (
@@ -143,8 +152,8 @@ export function ReportHeader({
                   to={getTickerRoute(symbol)}
                   className={`rounded px-1.5 py-0.5 text-[10px] font-bold font-mono transition-all ${
                     isActive
-                      ? "bg-neutral-900 text-white shadow-xs dark:bg-amber-400 dark:text-neutral-950 font-bold"
-                      : "bg-neutral-200/80 text-neutral-700 hover:bg-neutral-300 dark:bg-[#1c1f26] dark:text-neutral-400 dark:hover:bg-[#282c37] dark:hover:text-neutral-200"
+                      ? "bg-[#0B1F3A] text-white shadow-xs dark:bg-[#A9C9E8] dark:text-[#0B1F3A] font-bold"
+                      : "bg-[#E4EEF7] text-[#0B1F3A] hover:bg-[#D6E2EE] dark:bg-[#1c1f26] dark:text-neutral-400 dark:hover:bg-[#282c37] dark:hover:text-neutral-200"
                   }`}
                 >
                   {symbol}
@@ -162,7 +171,7 @@ export function ReportHeader({
           <div className="flex min-w-0 items-start gap-3">
             <Link
               to="/"
-              className="mt-1 inline-flex items-center justify-center rounded-md border border-neutral-300 bg-neutral-100 p-1.5 text-neutral-600 hover:bg-neutral-200 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400 dark:hover:bg-[#22252c] dark:hover:text-neutral-200"
+              className="mt-1 inline-flex items-center justify-center rounded-md border border-[#D6E2EE] bg-[#F4F8FC] p-1.5 text-neutral-600 hover:bg-[#E4EEF7] transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-400 dark:hover:bg-[#22252c] dark:hover:text-neutral-200"
               title="Kembali ke Beranda"
             >
               <ArrowLeft className="h-3.5 w-3.5" />
@@ -170,10 +179,10 @@ export function ReportHeader({
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-xs font-bold text-amber-400 dark:bg-amber-400/10 dark:border dark:border-amber-400/30 dark:text-amber-400">
+                <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-xs font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:border dark:border-[#A9C9E8]/30 dark:text-[#A9C9E8]">
                   {tk}
                 </span>
-                <h1 className="truncate text-base font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-sans">
+                <h1 className="truncate text-base font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 font-sans">
                   {finalName || `${tk} Tbk`}
                 </h1>
                 <RecommendationBadge rating={rating} size="sm" />
@@ -181,12 +190,12 @@ export function ReportHeader({
 
               <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs font-mono">
                 {template && (
-                  <span className="rounded border border-neutral-300 bg-neutral-100 px-1.5 py-px text-[10px] font-semibold uppercase text-neutral-700 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300">
+                  <span className="rounded border border-[#D6E2EE] bg-[#E4EEF7] px-1.5 py-px text-[10px] font-semibold uppercase text-[#0B1F3A] dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
                     ARKETIPE: {template}
                   </span>
                 )}
                 {updatedAt && (
-                  <span className="text-[11px] text-neutral-500 dark:text-neutral-400">
+                  <span className="text-[11px] text-[#63748A]">
                     DIAUDIT: {updatedAt} {source ? `(${source})` : ""}
                   </span>
                 )}
@@ -196,41 +205,41 @@ export function ReportHeader({
 
           {/* Key Numerals Strip & Actions */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-baseline gap-3 rounded-lg border border-neutral-200 bg-neutral-50/80 px-3 py-1.5 font-mono dark:border-[#262930] dark:bg-[#121316]">
+            <div className="flex items-baseline gap-3 rounded-lg border border-[#D6E2EE] bg-[#F4F8FC] px-3 py-1.5 font-mono dark:border-[#262930] dark:bg-[#121316]">
               {/* Last Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">HARGA PASAR</div>
-                <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
+                <div className="text-[10px] uppercase text-[#63748A] font-sans font-medium">HARGA PASAR</div>
+                <div className="text-sm font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
                   {price != null ? `Rp ${fmtIDR(price)}` : "—"}
                 </div>
               </div>
 
-              <div className="h-6 w-px bg-neutral-200 dark:bg-[#262930]" />
+              <div className="h-6 w-px bg-[#D6E2EE] dark:bg-[#262930]" />
 
               {/* Target Price */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">NILAI WAJAR (TP)</div>
-                <div className="text-sm font-bold text-neutral-900 tabular-nums dark:text-neutral-100">
+                <div className="text-[10px] uppercase text-[#63748A] font-sans font-medium">NILAI WAJAR (TP)</div>
+                <div className="text-sm font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
                   {finalTarget != null ? `Rp ${fmtIDR(finalTarget)}` : "—"}
                 </div>
               </div>
 
-              <div className="h-6 w-px bg-neutral-200 dark:bg-[#262930]" />
+              <div className="h-6 w-px bg-[#D6E2EE] dark:bg-[#262930]" />
 
               {/* Upside / Downside */}
               <div>
-                <div className="text-[10px] uppercase text-neutral-500 dark:text-neutral-400 font-sans font-medium">POTENSI RETURN</div>
+                <div className="text-[10px] uppercase text-[#63748A] font-sans font-medium">POTENSI RETURN</div>
                 <div
                   className={`text-sm font-bold tabular-nums ${
                     upsidePositive
-                      ? "text-emerald-600 dark:text-emerald-400"
+                      ? "text-[#1E8F5F]"
                       : upsideNegative
-                      ? "text-rose-600 dark:text-rose-400"
-                      : "text-neutral-500 dark:text-neutral-400"
+                      ? "text-[#C0392B]"
+                      : "text-[#63748A]"
                   }`}
                 >
                   {upsidePositive ? "▲ " : upsideNegative ? "▼ " : ""}
-                  {upside || "—"}
+                  {upsideDisplay}
                 </div>
               </div>
             </div>
@@ -242,12 +251,12 @@ export function ReportHeader({
                 size="sm"
                 onClick={handlePdfDownload}
                 disabled={isPdfBusy}
-                className="h-8 gap-1.5 rounded-md border-neutral-300 font-sans text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
+                className="h-8 gap-1.5 rounded-md border-[#D6E2EE] bg-white font-sans text-xs font-semibold text-[#0B1F3A] hover:bg-[#E4EEF7] dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
               >
                 {isPdfBusy ? (
-                  <Loader2 className="h-3 w-3 animate-spin text-amber-500" />
+                  <Loader2 className="h-3 w-3 animate-spin text-[#0B1F3A] dark:text-[#A9C9E8]" />
                 ) : (
-                  <Download className="h-3 w-3 text-neutral-500 dark:text-neutral-400" />
+                  <Download className="h-3 w-3 text-[#0B1F3A] dark:text-[#A9C9E8]" />
                 )}
                 <span>[F12] Unduh PDF</span>
               </Button>
@@ -255,7 +264,7 @@ export function ReportHeader({
               <Link
                 to="/agent"
                 search={{ ticker: tk } as any}
-                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-neutral-300 bg-neutral-100 px-2.5 font-sans text-xs font-semibold text-[#0070f3] hover:bg-neutral-200 transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#3291ff] dark:hover:bg-[#22252c]"
+                className="inline-flex h-8 items-center gap-1.5 rounded-md border border-[#D6E2EE] bg-[#F4F8FC] px-2.5 font-sans text-xs font-semibold text-[#0B1F3A] hover:bg-[#E4EEF7] transition-colors dark:border-[#262930] dark:bg-[#181a1f] dark:text-[#A9C9E8] dark:hover:bg-[#22252c]"
               >
                 <Bot className="h-3 w-3" />
                 <span>[F5] Jejak Mesin</span>
@@ -265,20 +274,20 @@ export function ReportHeader({
         </div>
 
         {errorMsg && (
-          <div className="mt-2 rounded-md border border-amber-300 bg-amber-50 px-3 py-1 font-mono text-xs text-amber-900 dark:border-amber-800/60 dark:bg-amber-950/60 dark:text-amber-200">
+          <div className="mt-2 rounded-md border border-[#C0392B]/40 bg-[#C0392B]/10 px-3 py-1 font-mono text-xs text-[#C0392B] dark:border-[#C0392B]/60 dark:bg-[#C0392B]/20">
             [PERINGATAN] {errorMsg}
           </div>
         )}
 
         {/* 3. Dense Tab Navigation */}
-        <div className="mt-3 flex items-center gap-1 overflow-x-auto border-t border-neutral-200 pt-1 dark:border-[#1f2228]">
+        <div className="mt-3 flex items-center gap-1 overflow-x-auto border-t border-[#D6E2EE] pt-1 dark:border-[#1f2228]">
           <Link
             to="/report/$ticker"
             params={{ ticker: tk }}
             className={`${tabBase} ${isValuationActive ? tabActive : tabIdle}`}
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>[1] Model Valuasi</span>
+            <span>[1] Laporan Institusional Lengkap</span>
           </Link>
 
           <Link
@@ -299,12 +308,11 @@ export function ReportHeader({
             <span>[3] Uji Tesis (Red Team)</span>
           </Link>
 
-          <div className="ml-auto hidden pr-1 font-mono text-[10px] text-neutral-400 sm:block">
-            TERMINAL VER 2.6 // MESIN SAHAM DETERMINISTIK
+          <div className="ml-auto hidden pr-1 font-mono text-[10px] text-[#63748A] sm:block">
+            TERMINAL INSTITUSIONAL // 10 BAB STANDAR PDF
           </div>
         </div>
       </div>
     </div>
   )
 }
-
