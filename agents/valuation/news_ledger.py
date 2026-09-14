@@ -1,8 +1,10 @@
-"""News/sentiment → forward-assumptions ledger.
+"""News → forward-assumptions ledger.
 
-Bridges ``news_output`` / ``social_output`` (ADK state keys, see
-``agents/adk/agents/instructions.py`` news/social schemas) into quantified
-forward drivers consumed by the modeler.
+Bridges ``news_output`` (ADK state key, see
+``agents/adk/agents/instructions.py`` news schema) into quantified
+forward drivers consumed by the modeler. The social leg is retired
+(14 Sep 2026) — ``extract_drivers`` keeps its ``social`` param for
+back-compat and treats None as no social drivers.
 
 Placement: ``agents/valuation/`` (not ``agents/adk/tools/``) because this is
 deterministic valuation input math consumed by the modeler / ``dcf_full``

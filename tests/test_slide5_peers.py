@@ -196,7 +196,7 @@ def test_prompt_rule_and_data_technique_reach_the_agents():
     # it reaches the prompts that build pages, and stays out of the ones that only gather data
     for name in ("industry_instruction", "writer_instruction", "critic_instruction"):
         assert "SLIDE 5 — PEER VALUATION" in getattr(I, name), f"{name} lost the slide-5 rule"
-    for name in ("news_harvester_instruction", "social_sentiment_instruction"):
+    for name in ("news_harvester_instruction",):
         assert "SLIDE 5 — PEER VALUATION" not in getattr(I, name), f"{name} should not carry page rules"
 
 

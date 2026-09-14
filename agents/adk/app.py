@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Main ADK Python graph — 11 agents → Sequential/Parallel/LoopAgent(max=4).
+"""Main ADK Python graph — 10 agents → Sequential/Parallel/LoopAgent(max=4).
 
 Orchestrator wiring per plan.md §3 + task T05:
 
@@ -77,7 +77,6 @@ from .agents.instructions import (
     modeler_instruction,
     news_harvester_instruction,
     risk_instruction,
-    social_sentiment_instruction,
     sotp_instruction,
     visualizer_instruction,
     writer_instruction,
@@ -245,9 +244,8 @@ def build_graph(
     # -- Search sub-agents REMOVED (Sectors-only cleanup, 13 Sep 2026) --------
     # _build_search_subagent + news/social/industry_search_sub were orphans:
     # constructed but never attached to any agent (no AgentTool wiring) and
-    # never in the graph dump. Parents (news_harvester, social_sentiment,
-    # industry) call Sectors web_search directly. Instructions kept in
-    # instructions.py as prompt reference.
+    # never in the graph dump. Parents (news_harvester, industry) call Sectors
+    # web_search directly. Instructions kept in instructions.py as prompt reference.
 
     # -- MCP toolset (best-effort) -------------------------------------------
     sectors_toolset = maybe_sectors_mcp_toolset(api_key=sectors_api_key)
@@ -286,14 +284,6 @@ def build_graph(
         instruction=_fmt(news_harvester_instruction),
         tools=composite_web_tools,
         output_key="news_output",
-    )
-    social_sentiment = LlmAgent(
-        name="social_sentiment",
-        model=main_model,
-        description="Gauges retail crowd sentiment 0-100 from Sectors news + filings proxies.",
-        instruction=_fmt(social_sentiment_instruction),
-        tools=composite_web_tools,
-        output_key="social_output",
     )
 
     modeler = LlmAgent(
@@ -397,14 +387,16 @@ def build_graph(
     )
 
     # -- Workflow composition -------------------------------------------------
-    # Parallel 1: Collector + News + Social (all blocking inputs to Modeler)
+    # Parallel 1: Collector + News (blocking inputs to Modeler; social killed
+    # 14 Sep 2026 — Sectors carries no X/Reddit/Stockbit, sentiment lives in
+    # industry para 3 from foreign flow + broker + relative price).
     if free_tier:
         # Sequential for free tier: avoids 3 concurrent minimax calls that 503.
         # Keep name 'intake_parallel' so state/output_keys unchanged.
         intake_parallel = SequentialAgent(
             name="intake_parallel",
-            sub_agents=[collector, news_harvester, social_sentiment],
-            description="Sequential intake (free-tier throttling): collector → news → social.",
+            sub_agents=[collector, news_harvester],
+            description="Sequential intake (free-tier throttling): collector → news.",
         )
         research_parallel = SequentialAgent(
             name="research_parallel",
@@ -414,8 +406,8 @@ def build_graph(
     else:
         intake_parallel = ParallelAgent(
             name="intake_parallel",
-            sub_agents=[collector, news_harvester, social_sentiment],
-            description="Parallel intake: collector + news + social.",
+            sub_agents=[collector, news_harvester],
+            description="Parallel intake: collector + news.",
         )
         # Parallel 2: Analyst + Industry + Risk + KPI (all after Modeler)
         research_parallel = ParallelAgent(
@@ -445,7 +437,7 @@ def build_graph(
             adversarial_loop,
             critic,
         ],
-        description="Institutional equity report — 11 agents, Sequential + Parallel + Loop(max=4), ADK Python + MCP.",
+        description="Institutional equity report — 10 agents, Sequential + Parallel + Loop(max=4), ADK Python + MCP.",
     )
 
     return root

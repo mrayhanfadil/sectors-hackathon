@@ -261,7 +261,7 @@ def test_agents_that_do_not_produce_exhibits_are_not_given_the_rule() -> None:
     """The complement: the rule must not be sprinkled where it has no referent, or it
     stops meaning anything."""
     instructions = _instructions_module()
-    data_only = ["collector", "news_harvester", "social_sentiment", "risk"]
+    data_only = ["collector", "news_harvester", "risk"]
     for name in data_only:
         txt = getattr(instructions, f"{name}_instruction")
         assert "HOUSE REPORT FORMAT" not in txt, (

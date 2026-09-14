@@ -272,7 +272,6 @@ SLIDE2_PARAGRAPHS = (
 SLIDE2_AGENTS = (
     "industry_instruction",
     "news_harvester_instruction",
-    "social_sentiment_instruction",
     "writer_instruction",
     "critic_instruction",
 )
@@ -552,7 +551,7 @@ def test_adk_agents_carry_the_page2_rules_at_runtime() -> None:
 
     walk(root)
     marker = "Related-party flow is reported in BOTH directions"
-    for name in ("news_harvester", "social_sentiment", "industry", "writer", "critic"):
+    for name in ("news_harvester", "industry", "writer", "critic"):
         assert name in carried, f"the ADK graph no longer builds a {name} agent"
         assert marker in carried[name], f"{name} does not receive the page-2 evidence rules"
         assert "WIDEST Sectors evidence" in carried[name], f"{name} lost the evidence instruction"

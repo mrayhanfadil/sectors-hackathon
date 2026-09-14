@@ -15,7 +15,7 @@ PAGE_RULES = ("HOUSE_FORMAT_RULE", "SLIDE_PAGES_RULE", "SLIDE5_RULE", "SLIDE6_RU
 #: every agent instruction that builds or judges a PAGE
 PAGE_BUILDERS = ("industry_instruction", "writer_instruction", "critic_instruction")
 #: agents that only gather data — a page rule here is noise that dilutes their instruction
-DATA_GATHERERS = ("collector_instruction", "news_harvester_instruction", "social_sentiment_instruction",
+DATA_GATHERERS = ("collector_instruction", "news_harvester_instruction",
                   "modeler_instruction", "risk_instruction", "kpi_instruction")
 
 THOUSANDS = re.compile(r"\b\d{1,3}(?:[.,]\d{3})+\b")

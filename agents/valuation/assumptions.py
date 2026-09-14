@@ -1,7 +1,9 @@
-"""Forward-looking assumption modulation based on news and retail sentiment.
+"""Forward-looking assumption modulation based on news signals.
 
-Wires news engine (news_harvester) and sentiment engine (social_sentiment)
-into forward-looking revenue growth and capex projections.
+Wires the news engine (news_harvester) into forward-looking revenue growth
+and capex projections. (social_sentiment retired 14 Sep 2026 — Sectors has
+no retail-social feed; the sentiment arg stays optional and falls back
+cleanly when None.)
 
 Wire pattern:
 1. Sentiment-driven revenue growth modulation:

@@ -876,8 +876,10 @@ async def news(
     if hit:
         hit["cached"] = True
         return hit
-    # wire to scripts/news when available, else deterministic placeholder with honest provenance
+    # live Sectors v2 via scripts/news.search_news (rewired 14 Sep 2026);
+    # keyless or error → honest empty with sectors_missing_key, never synthetic
     items = []
+    keyed = bool((settings.sectors_api_key or "").strip())
     try:
         import inspect
         try:
@@ -897,14 +899,13 @@ async def news(
     except Exception:
         items = []
     if not items:
-        # honest empty until scripts/news.py is added — see plans §4 data
         items = []
     payload = {
         "ticker": clean_ticker,
         "items": items[:limit],
-        "source": "sectors_missing_key",
+        "source": "sectors" if (keyed and items) else "sectors_missing_key",
         "cached": False,
-        "note": "wire scripts/news.py search_news() when T02 lands; returns [] until then (sectors_missing_key, no fabrication)",
+        "note": "live Sectors v2 via scripts/news.search_news (keyless → honest empty, no fabrication)",
     }
     await cache.set(key, payload)
     return payload

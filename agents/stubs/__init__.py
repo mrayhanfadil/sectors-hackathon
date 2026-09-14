@@ -22,7 +22,6 @@ from __future__ import annotations
 STUB_AGENTS = [
     "collector",
     "news_harvester",
-    "social_sentiment",
     "modeler",
     "analyst",
     "industry",

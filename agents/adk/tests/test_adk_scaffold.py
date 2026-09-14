@@ -178,8 +178,8 @@ def test_build_graph_structure(monkeypatch):
     assert critic.name == "critic"
 
     # Parallel composition
-    assert len(intake.sub_agents) == 3  # collector, news, social
-    assert {a.name for a in intake.sub_agents} == {"collector", "news_harvester", "social_sentiment"}
+    assert len(intake.sub_agents) == 2  # collector, news (social retired 14 Sep 2026)
+    assert {a.name for a in intake.sub_agents} == {"collector", "news_harvester"}
     assert len(research.sub_agents) == 4  # analyst, industry, risk, kpi
 
     # Loop cap is task-mandated max=4
@@ -191,14 +191,14 @@ def test_build_graph_structure(monkeypatch):
     collector = intake.sub_agents[0]
     assert not any(isinstance(t, GoogleSearchTool) for t in (collector.tools or [])), "collector must not own GoogleSearch directly"
 
-    # News/social/industry route via Sectors web_tools (FunctionTool wrappers around
+    # News/industry route via Sectors web_tools (FunctionTool wrappers around
     # Sectors v2 news + readability extract) — the legacy AgentTool wrapping was
     # replaced by the Sectors web_tools refactor (commit b5aad41+).
+    # Social retired 14 Sep 2026 — sentiment lives in industry para 3.
     from google.adk.tools.function_tool import FunctionTool
     news = intake.sub_agents[1]
-    social = intake.sub_agents[2]
     industry = research.sub_agents[1]
-    for label, agent in (("news", news), ("social", social), ("industry", industry)):
+    for label, agent in (("news", news), ("industry", industry)):
         assert any(isinstance(t, FunctionTool) for t in (agent.tools or [])), (
             f"{label} agent must have at least one FunctionTool (Sectors web_tools), got: "
             f"{[type(t).__name__ for t in (agent.tools or [])]}"

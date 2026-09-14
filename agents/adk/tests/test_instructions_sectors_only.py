@@ -25,12 +25,11 @@ if str(_REPO) not in sys.path:
 
 from agents.adk.agents import instructions as ins  # noqa: E402
 
-# Every live agent instruction (sub-agent orphans excluded — removed from
-# app.py 13 Sep 2026, kept in instructions.py as prompt reference only).
+# Every live agent instruction (social retired 14 Sep 2026 — kept as a retired
+# marker in instructions.py so old refs fail loudly; sub-agent orphans excluded).
 LIVE = {
     "collector": ins.collector_instruction,
     "news_harvester": ins.news_harvester_instruction,
-    "social_sentiment": ins.social_sentiment_instruction,
     "modeler": ins.modeler_instruction,
     "analyst": ins.analyst_instruction,
     "industry": ins.industry_instruction,

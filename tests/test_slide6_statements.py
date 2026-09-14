@@ -239,7 +239,7 @@ def test_prompt_rule_reaches_the_page_builders_only():
         assert marker in I.SLIDE6_RULE, f"slide-6 rule lost: {marker}"
     for name in ("writer_instruction", "critic_instruction", "industry_instruction"):
         assert "SLIDE 6 — INCOME STATEMENT" in getattr(I, name), f"{name} lost the slide-6 rule"
-    for name in ("news_harvester_instruction", "social_sentiment_instruction"):
+    for name in ("news_harvester_instruction",):
         assert "SLIDE 6 — INCOME STATEMENT" not in getattr(I, name)
 
 
