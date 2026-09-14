@@ -1,4 +1,6 @@
 import { useState, useEffect, useMemo } from "react"
+import { AGENT_FRIENDLY_MAP, type TraceEvent } from "./AGENT_FRIENDLY_META"
+export type { TraceEvent }
 
 export type AgentStatus = "idle" | "running" | "finished" | "error"
 
@@ -9,38 +11,21 @@ export interface AgentMeta {
   color: string
 }
 
-export interface TraceEvent {
-  seq: number
-  ts: number
-  author: string
-  node: string
-  branch?: string | null
-  event_type: string
-  text: string
-  function_calls: { name: string; args: Record<string, unknown>; id: string }[]
-  function_responses: { name: string; response: unknown; id: string }[]
-  state_delta_keys: string[]
-  state_delta?: Record<string, unknown> | null
-  transfer_to?: string | null
-}
-
 export const AGENT_META_MAP: Record<string, { label: string; phase: string; color: string }> = {
-  collector: { label: "Pengumpul Data", phase: "Ambil Data", color: "bg-sky-100 text-sky-800 border-sky-300" },
-  news_harvester: { label: "Pemburu Berita", phase: "Ambil Data", color: "bg-amber-100 text-amber-800 border-amber-300" },
-  social_sentiment: { label: "Pembaca Sentimen", phase: "Ambil Data", color: "bg-violet-100 text-violet-800 border-violet-300" },
-  news_search_sub: { label: "Pencari Berita", phase: "Cari Data", color: "bg-amber-50 text-amber-800 border-amber-200" },
-  social_search_sub: { label: "Pencari Sosmed", phase: "Cari Data", color: "bg-violet-50 text-violet-800 border-violet-200" },
-  modeler: { label: "Penghitung Valuasi", phase: "Hitung Nilai", color: "bg-emerald-100 text-emerald-800 border-emerald-400 font-semibold" },
-  analyst: { label: "Analis", phase: "Riset", color: "bg-neutral-100 text-neutral-800 border-neutral-300" },
-  industry: { label: "Industri", phase: "Riset", color: "bg-teal-100 text-teal-800 border-teal-300" },
-  industry_search_sub: { label: "Pencari Data Industri", phase: "Cari Riset", color: "bg-emerald-50 text-emerald-800 border-emerald-200" },
-  risk: { label: "Risiko", phase: "Riset", color: "bg-red-100 text-red-800 border-red-300" },
-  kpi: { label: "KPI", phase: "Riset", color: "bg-cyan-100 text-cyan-800 border-cyan-300" },
-  writer: { label: "Penulis", phase: "Tulis Laporan", color: "bg-indigo-100 text-indigo-800 border-indigo-300" },
-  visualizer: { label: "Pembuat Grafik", phase: "Grafik", color: "bg-pink-100 text-pink-800 border-pink-300" },
-  sotp: { label: "SOTP", phase: "Gabung Nilai", color: "bg-orange-100 text-orange-800 border-orange-300" },
-  adversarial: { label: "Tim Penguji", phase: "Uji Silang", color: "bg-rose-100 text-rose-800 border-rose-300" },
-  critic: { label: "Reviewer QA", phase: "Periksa Akhir", color: "bg-neutral-900 text-white border-neutral-900" },
+  collector: { label: "Pencari data", phase: "Ambil data", color: "bg-sky-50 text-sky-800 border-sky-200" },
+  news_harvester: { label: "Pencari berita", phase: "Ambil data", color: "bg-amber-50 text-amber-800 border-amber-200" },
+  news_search_sub: { label: "Pencari berita (sub)", phase: "Cari data", color: "bg-amber-50 text-amber-700 border-amber-200" },
+  modeler: { label: "Ahli valuasi", phase: "Hitung nilai", color: "bg-emerald-50 text-emerald-800 border-emerald-300 font-medium" },
+  analyst: { label: "Analis fundamental", phase: "Riset", color: "bg-[#F5F2EB] text-[#1C1B17] border-[#E7E3DA]" },
+  industry: { label: "Analis industri", phase: "Riset", color: "bg-teal-50 text-teal-800 border-teal-200" },
+  industry_search_sub: { label: "Riset industri (sub)", phase: "Cari riset", color: "bg-teal-50 text-teal-700 border-teal-200" },
+  risk: { label: "Analis risiko", phase: "Riset", color: "bg-rose-50 text-rose-800 border-rose-200" },
+  kpi: { label: "Analis KPI", phase: "Riset", color: "bg-cyan-50 text-cyan-800 border-cyan-200" },
+  writer: { label: "Penulis laporan", phase: "Tulis laporan", color: "bg-indigo-50 text-indigo-800 border-indigo-200" },
+  visualizer: { label: "Visualisasi data", phase: "Grafik", color: "bg-pink-50 text-pink-800 border-pink-200" },
+  sotp: { label: "Valuasi SOTP", phase: "Gabung nilai", color: "bg-orange-50 text-orange-800 border-orange-200" },
+  adversarial: { label: "Penguji kritis", phase: "Uji silang", color: "bg-red-50 text-red-800 border-red-200" },
+  critic: { label: "Peninjau mutu", phase: "Periksa akhir", color: "bg-[#0E6E63]/10 text-[#0E6E63] border-[#0E6E63]/25" },
 }
 
 export const KNOWN_AGENTS: AgentMeta[] = Object.entries(AGENT_META_MAP).map(([key, meta]) => ({
@@ -79,7 +64,7 @@ export function useAgentProgress({
 }: UseAgentProgressProps): UseAgentProgressReturn {
   const [now, setNow] = useState<number>(() => Date.now())
 
-  // Keep a 1-second interval while running so the 8s sliding window evaluates dynamically
+  // Interval 1s saat proses berjalan agar kalkulasi dinamis
   useEffect(() => {
     if (!running) return
     const interval = setInterval(() => {
@@ -92,7 +77,7 @@ export function useAgentProgress({
     const statuses: Record<string, AgentStatus> = {}
     const lastSeen: Record<string, number> = {}
 
-    // Group events by author
+    // Kelompokkan event berdasarkan author
     const eventsByAuthor: Record<string, TraceEvent[]> = {}
     for (const ev of events) {
       if (!ev.author) continue
@@ -114,26 +99,26 @@ export function useAgentProgress({
         continue
       }
 
-      // Check if any error event occurred
+      // Periksa apakah ada event error
       const hasError = agentEvents.some((e) => e.event_type === "error")
       if (hasError) {
         statuses[key] = "error"
         continue
       }
 
-      // If run has finished with done frame
+      // Jika alur kerja sudah selesai
       if (done !== null) {
         statuses[key] = "finished"
         continue
       }
 
-      // If currently running, apply the 8s heuristic and transfer detection
+      // Jika alur kerja sedang berjalan
       if (running) {
         const lastEv = agentEvents[agentEvents.length - 1]
         const lastTs = lastEv.ts || nowSec
         const ageSec = Math.max(0, nowSec - lastTs)
 
-        // If explicitly transferred away to another agent
+        // Deteksi serah terima tugas
         const hasTransferredAway = Boolean(lastEv.transfer_to && lastEv.transfer_to !== key)
 
         if (hasTransferredAway) {
@@ -144,7 +129,6 @@ export function useAgentProgress({
           statuses[key] = "finished"
         }
       } else {
-        // Run is not active and not officially done (stopped/idle/interrupted)
         statuses[key] = "finished"
       }
     }
@@ -168,14 +152,14 @@ export function useAgentProgress({
     }
   }, [events, running, done, now])
 
-  // Rolling ETA computation over the last 10 events
+  // Estimasi sisa waktu
   const { etaText, throughputRate } = useMemo(() => {
     if (events.length < 5) {
       return { etaText: "-", throughputRate: 0 }
     }
 
     if (done !== null) {
-      return { etaText: "0s", throughputRate: 0 }
+      return { etaText: "0 detik", throughputRate: 0 }
     }
 
     if (!running) {
@@ -190,7 +174,6 @@ export function useAgentProgress({
     const durationSec = Math.max(1, lastTs - firstTs)
     const currentRate = Math.max(0.1, windowEvents.length / durationSec)
 
-    // Estimate remaining events based on uncompleted agents and typical 35-event pipeline
     const uncompletedAgents = KNOWN_AGENTS.filter(
       (a) => agentStatuses[a.key] !== "finished" && agentStatuses[a.key] !== "error"
     ).length
@@ -203,12 +186,12 @@ export function useAgentProgress({
     const estSec = Math.max(1, Math.round(estRemainingEvents / currentRate))
 
     if (estSec < 60) {
-      return { etaText: `${estSec}s`, throughputRate: currentRate }
+      return { etaText: `${estSec} detik`, throughputRate: currentRate }
     }
 
     const mins = Math.floor(estSec / 60)
     const secs = estSec % 60
-    return { etaText: `${mins}m ${secs}s`, throughputRate: currentRate }
+    return { etaText: `${mins} menit ${secs} detik`, throughputRate: currentRate }
   }, [events, done, running, agentStatuses])
 
   const isInterrupted = !running && done === null && events.length > 0 && !error

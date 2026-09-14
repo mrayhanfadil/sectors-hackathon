@@ -3,17 +3,12 @@ import {
   Activity,
   ChevronDown,
   ChevronUp,
-  Clock,
   Code2,
-  Filter,
   Search,
   ArrowDownCircle,
   Copy,
   Check,
 } from "lucide-react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 import {
   getFriendlyAgent,
@@ -33,42 +28,6 @@ export interface PlainEnglishPanelProps {
   className?: string
 }
 
-function getAgentTerminalColor(author: string): { bg: string; text: string; border: string } {
-  switch (author) {
-    case "collector":
-      return { bg: "bg-sky-950/80", text: "text-sky-300", border: "border-sky-800" }
-    case "news_harvester":
-    case "news_search_sub":
-      return { bg: "bg-amber-950/80", text: "text-amber-300", border: "border-amber-800" }
-    case "social_sentiment":
-    case "social_search_sub":
-      return { bg: "bg-purple-950/80", text: "text-purple-300", border: "border-purple-800" }
-    case "modeler":
-      return { bg: "bg-emerald-950/80", text: "text-emerald-300", border: "border-emerald-700" }
-    case "analyst":
-      return { bg: "bg-slate-900", text: "text-slate-200", border: "border-slate-700" }
-    case "industry":
-    case "industry_search_sub":
-      return { bg: "bg-teal-950/80", text: "text-teal-300", border: "border-teal-800" }
-    case "risk":
-      return { bg: "bg-rose-950/80", text: "text-rose-300", border: "border-rose-800" }
-    case "kpi":
-      return { bg: "bg-cyan-950/80", text: "text-cyan-300", border: "border-cyan-800" }
-    case "writer":
-      return { bg: "bg-indigo-950/80", text: "text-indigo-300", border: "border-indigo-800" }
-    case "visualizer":
-      return { bg: "bg-pink-950/80", text: "text-pink-300", border: "border-pink-800" }
-    case "sotp":
-      return { bg: "bg-orange-950/80", text: "text-orange-300", border: "border-orange-800" }
-    case "adversarial":
-      return { bg: "bg-red-950/90", text: "text-red-300", border: "border-red-700" }
-    case "critic":
-      return { bg: "bg-neutral-800", text: "text-emerald-200", border: "border-emerald-600" }
-    default:
-      return { bg: "bg-neutral-900", text: "text-neutral-300", border: "border-neutral-700" }
-  }
-}
-
 interface EventRowProps {
   event: TraceEvent
   prevEvent?: TraceEvent
@@ -79,7 +38,6 @@ interface EventRowProps {
 function EventRow({ event, prevEvent, ticker }: EventRowProps) {
   const [expanded, setExpanded] = useState(false)
   const agent = getFriendlyAgent(event.author)
-  const colors = getAgentTerminalColor(event.author)
 
   const actionText = useMemo(() => {
     return getEventActionDescription(event, ticker)
@@ -95,50 +53,34 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
   const hasTechDetails =
     (event.function_calls && event.function_calls.length > 0) ||
     (event.function_responses && event.function_responses.length > 0) ||
-    (event.state_delta_keys && event.state_delta_keys.length > 0) ||
-    Boolean(event.branch) ||
-    Boolean(event.transfer_to)
-
-  const formattedSeq = String(event.seq).padStart(4, "0")
+    (event.state_delta_keys && event.state_delta_keys.length > 0)
 
   return (
-    <div className="group border-b border-neutral-900 p-2.5 transition-colors hover:bg-neutral-900/50 font-mono text-xs">
+    <div className="group border-b border-[#E7E3DA]/70 dark:border-[#2A2822]/70 py-3 transition-colors hover:bg-[#FBFAF7]/60 dark:hover:bg-[#14130F]/40 text-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        {/* Sequence + Agent tag + Event type */}
+        {/* Step sequence & agent tag */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-mono text-cyan-400 font-bold">
-            #{formattedSeq}
+          <span className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+            Langkah {event.seq}
           </span>
 
           <span
             className={cn(
-              "inline-flex items-center gap-1 rounded border px-1.5 py-0.2 text-[10px] font-mono font-bold tracking-tight",
-              colors.bg,
-              colors.text,
-              colors.border
+              "inline-flex items-center gap-1 rounded-md border px-2 py-0.5 text-[11px] font-medium",
+              agent.badgeBg,
+              agent.badgeText,
+              agent.badgeBorder
             )}
           >
-            {agent.shortLabel.toUpperCase()}
+            {agent.shortLabel}
           </span>
-
-          {event.event_type && (
-            <span className="rounded bg-neutral-900 px-1 py-0.2 font-mono text-[9px] text-neutral-400 border border-neutral-800 uppercase">
-              {event.event_type}
-            </span>
-          )}
-
-          {event.node && (
-            <span className="text-[10px] font-mono text-neutral-500">
-              node:{event.node}
-            </span>
-          )}
         </div>
 
-        {/* Timestamp + Real latency diff */}
-        <div className="flex items-center gap-2 text-right text-[10px] font-mono text-neutral-500">
+        {/* Timestamp */}
+        <div className="flex items-center gap-2 text-right text-[11px] text-[#6B6659] dark:text-[#A8A296]">
           {latencyMs !== null && latencyMs > 0 && (
-            <span className="text-emerald-400/90 font-medium">
-              +{latencyMs}ms
+            <span className="text-[#0E6E63] dark:text-[#4FD1B5]">
+              +{latencyMs} ms
             </span>
           )}
           <span>{formatTimestamp(event.ts)}</span>
@@ -146,47 +88,47 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
       </div>
 
       {/* Main Action Line */}
-      <div className="mt-1.5">
-        <p className="text-xs font-mono font-medium leading-normal text-neutral-200">
+      <div className="mt-1.5 space-y-1">
+        <p className="text-xs font-medium leading-relaxed text-[#1C1B17] dark:text-[#EDEAE3]">
           {actionText}
         </p>
 
-        {/* Text snippet if available */}
+        {/* Text preview if available */}
         {event.text && event.text.trim().length > 0 && (
-          <div className="mt-1.5 rounded bg-black/80 border border-neutral-800/80 p-2 text-[11px] font-mono leading-relaxed text-neutral-300">
+          <div className="rounded-lg bg-[#FBFAF7] dark:bg-[#14130F] border border-[#E7E3DA] dark:border-[#2A2822] p-2.5 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
             <div className="whitespace-pre-wrap break-words">
-              {event.text.length > 500
-                ? `${event.text.slice(0, 500)}…`
+              {event.text.length > 400
+                ? `${event.text.slice(0, 400)}…`
                 : event.text}
             </div>
           </div>
         )}
       </div>
 
-      {/* Function Calls / Responses / Delta keys preview */}
+      {/* Expandable Technical Details */}
       {hasTechDetails && (
         <div className="mt-2">
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="flex items-center gap-1 text-[10px] font-mono text-neutral-400 hover:text-neutral-200 transition-colors focus:outline-none"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296] hover:text-[#0E6E63] dark:hover:text-[#4FD1B5] transition-colors focus:outline-none"
           >
-            <Code2 className="h-3 w-3 text-neutral-500" />
-            <span>{expanded ? "HIDE PAYLOAD" : "INSPECT PAYLOAD / PARAMS"}</span>
+            <Code2 className="h-3 w-3" />
+            <span>{expanded ? "Sembunyikan rincian parameter" : "Lihat rincian kalkulasi"}</span>
             {expanded ? (
-              <ChevronUp className="h-3 w-3 text-neutral-500" />
+              <ChevronUp className="h-3 w-3" />
             ) : (
-              <ChevronDown className="h-3 w-3 text-neutral-500" />
+              <ChevronDown className="h-3 w-3" />
             )}
           </button>
 
           {expanded && (
-            <div className="mt-2 space-y-2 rounded border border-neutral-800 bg-black p-2.5 text-neutral-200">
+            <div className="mt-2 space-y-2 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/80 dark:bg-[#14130F]/80 p-3 text-[#1C1B17] dark:text-[#EDEAE3]">
               {/* Function Calls */}
               {event.function_calls && event.function_calls.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-[10px] font-mono font-bold text-amber-400 uppercase">
-                    Function Invocations:
+                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    Parameter kalkulasi:
                   </div>
                   {event.function_calls.map((fc, i) => (
                     <FunctionCallCard key={fc.id || `${fc.name}-${i}`} fc={fc} />
@@ -197,8 +139,8 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               {/* Function Responses */}
               {event.function_responses && event.function_responses.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-[10px] font-mono font-bold text-emerald-400 uppercase">
-                    Function Returns:
+                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    Hasil kalkulasi:
                   </div>
                   {event.function_responses.map((fr, i) => (
                     <FunctionResponseCard key={fr.id || `${fr.name}-${i}`} fr={fr} />
@@ -209,14 +151,14 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               {/* State Delta Keys */}
               {event.state_delta_keys && event.state_delta_keys.length > 0 && (
                 <div className="pt-1">
-                  <div className="text-[10px] font-mono font-bold text-cyan-400 uppercase">
-                    State Keys Delta:
+                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    Kunci memori diperbarui:
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {event.state_delta_keys.map((k) => (
                       <span
                         key={k}
-                        className="rounded bg-neutral-900 px-1.5 py-0.2 font-mono text-[9px] text-cyan-300 border border-neutral-800"
+                        className="rounded bg-white dark:bg-[#1B1A16] px-1.5 py-0.5 text-[10px] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822]"
                       >
                         {k}
                       </span>
@@ -224,13 +166,6 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
                   </div>
                 </div>
               )}
-
-              {/* Node / Branch Info */}
-              <div className="flex flex-wrap gap-3 pt-1 border-t border-neutral-900 text-[9px] font-mono text-neutral-500">
-                {event.node && <span>NODE: {event.node}</span>}
-                {event.branch && <span>BRANCH: {event.branch}</span>}
-                {event.transfer_to && <span>TRANSFER_TO: {event.transfer_to}</span>}
-              </div>
             </div>
           )}
         </div>
@@ -248,12 +183,11 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
   className,
 }: PlainEnglishPanelProps) {
   const listRef = useRef<HTMLDivElement>(null)
-  const [filterType, setFilterType] = useState<"all" | "calculations" | "data" | "qa" | "errors">("all")
+  const [filterType, setFilterType] = useState<"all" | "data" | "valuation" | "research" | "qa">("all")
   const [searchText, setSearchText] = useState("")
   const [autoScroll, setAutoScroll] = useState(true)
   const [copiedTrace, setCopiedTrace] = useState(false)
 
-  // Auto-scroll to bottom when streaming events arrive
   useEffect(() => {
     if (autoScroll && listRef.current) {
       listRef.current.scrollTop = listRef.current.scrollHeight
@@ -266,51 +200,32 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
       if (selectedAuthor !== "all" && ev.author !== selectedAuthor) {
         return false
       }
-      // Category filter
-      if (filterType === "calculations") {
-        return (
-          ev.function_calls?.some((fc) => fc.name.startsWith("calc_")) ||
-          ev.author === "modeler" ||
-          ev.author === "sotp"
-        )
-      }
+      // Stage category filter
       if (filterType === "data") {
-        return (
-          ev.author === "collector" ||
-          ev.author === "news_harvester" ||
-          ev.author === "social_sentiment" ||
-          ev.author === "news_search_sub" ||
-          ev.author === "social_search_sub"
-        )
+        return ["collector", "news_harvester", "news_search_sub"].includes(ev.author)
+      }
+      if (filterType === "valuation") {
+        return ev.author === "modeler" || ev.author === "sotp" || ev.function_calls?.some((fc) => fc.name.startsWith("calc_"))
+      }
+      if (filterType === "research") {
+        return ["analyst", "industry", "risk", "kpi", "industry_search_sub", "writer", "visualizer"].includes(ev.author)
       }
       if (filterType === "qa") {
         return ev.author === "adversarial" || ev.author === "critic"
       }
-      if (filterType === "errors") {
-        return ev.event_type === "error" || ev.text.toLowerCase().includes("error")
-      }
 
-      // Free text search
+      // Search text filter
       if (searchText.trim()) {
         const q = searchText.toLowerCase().trim()
         const textMatch = ev.text.toLowerCase().includes(q)
         const authorMatch = ev.author.toLowerCase().includes(q)
-        const nodeMatch = ev.node?.toLowerCase().includes(q)
         const fcMatch = ev.function_calls?.some((fc) => fc.name.toLowerCase().includes(q))
-        return textMatch || authorMatch || nodeMatch || fcMatch
+        return textMatch || authorMatch || fcMatch
       }
 
       return true
     })
   }, [events, selectedAuthor, filterType, searchText])
-
-  const authorsInTrace = useMemo(() => {
-    const set = new Set<string>()
-    for (const e of events) {
-      if (e.author) set.add(e.author)
-    }
-    return Array.from(set)
-  }, [events])
 
   const handleCopyTraceJson = () => {
     const jsonStr = JSON.stringify(events, null, 2)
@@ -320,181 +235,157 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
   }
 
   return (
-    <Card className={cn("overflow-hidden border-neutral-800 bg-neutral-950 text-neutral-100 shadow-md font-mono", className)}>
-      <CardHeader className="border-b border-neutral-800 bg-neutral-900/90 p-3">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div className="flex items-center gap-2">
-            <div className="flex h-6 w-6 items-center justify-center rounded bg-neutral-800 text-emerald-400 border border-neutral-700">
-              <Activity className="h-3.5 w-3.5" />
-            </div>
-            <div>
-              <CardTitle className="text-xs font-mono font-bold uppercase tracking-wider text-neutral-100">
-                CATATAN LANGKAH MESIN
-              </CardTitle>
-            </div>
+    <div className={cn("rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 font-sans shadow-none space-y-4", className)}>
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+        <div className="flex items-center gap-3">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F2EB] dark:bg-[#23211C] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822]">
+            <Activity className="h-4 w-4" />
           </div>
+          <div>
+            <h2 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+              Catatan langkah alur kerja
+            </h2>
+            <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+              Jejak kronologis langkah kerja agen yang mudah dibaca.
+            </p>
+          </div>
+        </div>
 
-          <div className="flex items-center gap-2">
-            {running && (
-              <span className="flex items-center gap-1 rounded bg-amber-950 border border-amber-800 px-2 py-0.5 text-[10px] font-mono font-bold text-amber-300">
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-                <span>STREAMING</span>
-              </span>
+        <div className="flex items-center gap-2 text-xs">
+          {running && (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800/60 px-2.5 py-0.5 text-xs font-medium text-amber-800 dark:text-amber-300">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-ping" />
+              <span>Memproses</span>
+            </span>
+          )}
+
+          <span className="rounded-full bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-2.5 py-0.5 text-xs font-medium text-[#6B6659] dark:text-[#A8A296]">
+            {filteredEvents.length} dari {events.length} langkah
+          </span>
+
+          <button
+            type="button"
+            onClick={() => setAutoScroll((prev) => !prev)}
+            className={cn(
+              "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs border transition-colors",
+              autoScroll
+                ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 border-[#0E6E63]/25 dark:border-[#4FD1B5]/30 text-[#0E6E63] dark:text-[#4FD1B5]"
+                : "bg-white dark:bg-[#1B1A16] border-[#E7E3DA] dark:border-[#2A2822] text-[#6B6659] dark:text-[#A8A296]"
             )}
-            <Badge variant="outline" className="font-mono text-[10px] border-neutral-700 bg-neutral-900 text-neutral-300">
-              {filteredEvents.length} / {events.length} EVTS
-            </Badge>
+            title="Otomatis gulir ke bawah saat ada langkah baru"
+          >
+            <ArrowDownCircle className="h-3 w-3" />
+            <span>Gulir otomatis: {autoScroll ? "Aktif" : "Mati"}</span>
+          </button>
 
+          {events.length > 0 && (
             <button
               type="button"
-              onClick={() => setAutoScroll((prev) => !prev)}
-              className={cn(
-                "flex items-center gap-1 rounded px-1.5 py-0.5 text-[9px] font-mono border transition-colors",
-                autoScroll
-                  ? "bg-emerald-950 border-emerald-800 text-emerald-300"
-                  : "bg-neutral-900 border-neutral-800 text-neutral-500"
-              )}
-              title="Toggle auto-scroll on new events"
+              onClick={handleCopyTraceJson}
+              className="inline-flex items-center gap-1 rounded-md border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] px-2 py-1 text-xs text-[#6B6659] dark:text-[#A8A296] transition-colors"
+              title="Salin data jejak analisis lengkap"
             >
-              <ArrowDownCircle className="h-2.5 w-2.5" />
-              <span>SCROLL: {autoScroll ? "ON" : "OFF"}</span>
+              {copiedTrace ? (
+                <>
+                  <Check className="h-3 w-3 text-emerald-600 dark:text-emerald-400" />
+                  <span>Tersalin</span>
+                </>
+              ) : (
+                <>
+                  <Copy className="h-3 w-3" />
+                  <span>Salin JSON</span>
+                </>
+              )}
             </button>
-
-            {events.length > 0 && (
-              <button
-                type="button"
-                onClick={handleCopyTraceJson}
-                className="flex items-center gap-1 rounded bg-neutral-800 hover:bg-neutral-700 border border-neutral-700 px-1.5 py-0.5 text-[9px] font-mono text-neutral-300 transition-colors"
-                title="Copy entire trace as JSON"
-              >
-                {copiedTrace ? (
-                  <>
-                    <Check className="h-2.5 w-2.5 text-emerald-400" />
-                    <span>TERSALIN</span>
-                  </>
-                ) : (
-                  <>
-                    <Copy className="h-2.5 w-2.5" />
-                    <span>JSON</span>
-                  </>
-                )}
-              </button>
-            )}
-          </div>
+          )}
         </div>
+      </div>
 
-        {/* Search & Category Filter Toolbar */}
-        <div className="mt-2 pt-2 border-t border-neutral-800 space-y-1.5">
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="relative flex-1 min-w-[140px]">
-              <Search className="absolute left-2 top-1.5 h-3 w-3 text-neutral-500" />
-              <input
-                type="text"
-                value={searchText}
-                onChange={(e) => setSearchText(e.target.value)}
-                placeholder="Search event logs (text, function, node)..."
-                className="w-full rounded bg-neutral-900 border border-neutral-800 pl-7 pr-2 py-1 text-[11px] font-mono text-neutral-200 placeholder:text-neutral-600 focus:outline-none focus:border-neutral-700"
-              />
-            </div>
-
-            <div className="flex flex-wrap items-center gap-1">
-              {(
-                [
-                  { id: "all", label: "ALL" },
-                  { id: "data", label: "DATA" },
-                  { id: "calculations", label: "VALUATION" },
-                  { id: "qa", label: "QA/RED TEAM" },
-                  { id: "errors", label: "ERRORS" },
-                ] as const
-              ).map((cat) => (
-                <button
-                  key={cat.id}
-                  type="button"
-                  onClick={() => setFilterType(cat.id)}
-                  className={cn(
-                    "px-1.5 py-0.5 rounded text-[9px] font-mono transition-colors border",
-                    filterType === cat.id
-                      ? "bg-neutral-800 text-white font-bold border-neutral-600"
-                      : "bg-neutral-900/60 text-neutral-400 border-neutral-800 hover:text-neutral-200"
-                  )}
-                >
-                  {cat.label}
-                </button>
-              ))}
-            </div>
+      {/* Filter and Search Bar */}
+      <div className="space-y-2">
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+            <input
+              type="text"
+              value={searchText}
+              onChange={(e) => setSearchText(e.target.value)}
+              placeholder="Cari catatan langkah..."
+              className="w-full rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] pl-9 pr-3 py-1.5 text-xs text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none focus:border-[#0E6E63] dark:focus:border-[#4FD1B5]"
+            />
           </div>
 
-          {/* Author micro-chips if multiple authors exist */}
-          {authorsInTrace.length > 0 && (
-            <div className="flex flex-wrap items-center gap-1 pt-1">
-              <span className="text-[9px] font-mono text-neutral-500 mr-1">AGENTS:</span>
+          <div className="flex flex-wrap items-center gap-1">
+            {(
+              [
+                { id: "all", label: "Semua" },
+                { id: "data", label: "Data" },
+                { id: "valuation", label: "Valuasi" },
+                { id: "research", label: "Riset" },
+                { id: "qa", label: "Uji mutu" },
+              ] as const
+            ).map((cat) => (
               <button
+                key={cat.id}
                 type="button"
-                onClick={() => onFilterAuthor?.("all")}
+                onClick={() => setFilterType(cat.id)}
                 className={cn(
-                  "px-1.5 py-0.2 rounded text-[9px] font-mono transition-colors border",
-                  selectedAuthor === "all"
-                    ? "bg-emerald-950 border-emerald-800 text-emerald-300 font-bold"
-                    : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
+                  "px-2.5 py-1 rounded-md text-xs transition-colors border",
+                  filterType === cat.id
+                    ? "bg-[#0E6E63] text-white border-[#0E6E63] font-medium"
+                    : "bg-white dark:bg-[#1B1A16] text-[#6B6659] dark:text-[#A8A296] border-[#E7E3DA] dark:border-[#2A2822] hover:text-[#1C1B17] dark:hover:text-[#EDEAE3]"
                 )}
               >
-                ALL ({events.length})
+                {cat.label}
               </button>
-              {authorsInTrace.map((aKey) => {
-                const aMeta = getFriendlyAgent(aKey)
-                const isSelected = selectedAuthor === aKey
-                const aCount = events.filter((e) => e.author === aKey).length
-                return (
-                  <button
-                    key={aKey}
-                    type="button"
-                    onClick={() => onFilterAuthor?.(isSelected ? "all" : aKey)}
-                    className={cn(
-                      "px-1.5 py-0.2 rounded text-[9px] font-mono transition-colors border",
-                      isSelected
-                        ? "bg-emerald-950 border-emerald-800 text-emerald-300 font-bold"
-                        : "bg-neutral-900 border-neutral-800 text-neutral-400 hover:text-neutral-200"
-                    )}
-                  >
-                    {aMeta.shortLabel.toUpperCase()} ({aCount})
-                  </button>
-                )
-              })}
-            </div>
-          )}
+            ))}
+          </div>
         </div>
-      </CardHeader>
 
-      <CardContent className="p-0">
-        <div
-          ref={listRef}
-          className="max-h-[580px] min-h-[360px] overflow-y-auto divide-y divide-neutral-900 scrollbar-thin bg-black"
-        >
-          {filteredEvents.length === 0 ? (
-            <div className="flex flex-col items-center justify-center px-4 py-16 text-center font-mono text-xs">
-              <Activity className="h-8 w-8 text-neutral-700 mb-2" />
-              <h3 className="font-bold text-neutral-400">
-                {events.length === 0 ? "BELUM ADA CATATAN" : "TIDAK ADA YANG COCOK"}
-              </h3>
-              <p className="mt-1 max-w-sm text-[11px] text-neutral-600">
-                {events.length === 0
-                  ? `Execute a run for ${ticker || "selected ticker"} to stream live multi-agent execution events.`
-                  : "Try clearing filter criteria or searching a different term."}
-              </p>
-            </div>
-          ) : (
-            filteredEvents.map((event, idx) => (
-              <EventRow
-                key={event.seq || idx}
-                event={event}
-                prevEvent={idx > 0 ? filteredEvents[idx - 1] : undefined}
-                ticker={ticker}
-                isLast={idx === filteredEvents.length - 1}
-              />
-            ))
-          )}
-        </div>
-      </CardContent>
-    </Card>
+        {selectedAuthor !== "all" && (
+          <div className="flex items-center gap-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <span>Filter agen: <strong>{getFriendlyAgent(selectedAuthor).title}</strong></span>
+            <button
+              type="button"
+              onClick={() => onFilterAuthor?.("all")}
+              className="text-[#0E6E63] dark:text-[#4FD1B5] underline text-xs"
+            >
+              Tampilkan semua
+            </button>
+          </div>
+        )}
+      </div>
+
+      {/* Events List */}
+      <div
+        ref={listRef}
+        className="max-h-[500px] min-h-[240px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60 pr-1"
+      >
+        {filteredEvents.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-16 text-center space-y-2">
+            <Activity className="h-6 w-6 text-[#6B6659] dark:text-[#A8A296]" />
+            <h3 className="font-serif text-base font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+              {events.length === 0 ? "Belum ada catatan langkah" : "Tidak ada langkah yang sesuai"}
+            </h3>
+            <p className="text-xs text-[#6B6659] dark:text-[#A8A296] max-w-sm">
+              {events.length === 0
+                ? `Jalankan analisis untuk ${ticker || "emiten terpilih"} untuk melihat proses alur kerja multi-agen.`
+                : "Coba ubah kata kunci pencarian atau hapus filter kategori."}
+            </p>
+          </div>
+        ) : (
+          filteredEvents.map((event, idx) => (
+            <EventRow
+              key={event.seq || idx}
+              event={event}
+              prevEvent={idx > 0 ? filteredEvents[idx - 1] : undefined}
+              ticker={ticker}
+              isLast={idx === filteredEvents.length - 1}
+            />
+          ))
+        )}
+      </div>
+    </div>
   )
 })
