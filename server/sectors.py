@@ -117,6 +117,10 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
         _cache = cache  # type: ignore[name-defined]
     payload, hit = cache.get(path, params)
     if hit:
+        # Cached 404 marker → re-raise so callers keep the honest
+        # sectors_error path (never masquerade as valid empty data).
+        if isinstance(payload, dict) and payload.get("_neg404"):
+            raise SectorsError(404, "cached 404: no data for this endpoint+params")
         log.debug("sectors cache HIT %s", path)
         return payload
 
@@ -135,7 +139,14 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
         r = c.get(path, params=params or {})
 
     if r.status_code >= 400:
-        # Errors are NOT cached — keep them transient so retries can succeed.
+        # 404 = deterministic (unknown symbol, no segments for this issuer):
+        # negative-cache 24h so retries don't reburn credit (15 Sep 2026,
+        # AMMN segments 404 twice per run). Transient 4xx/5xx stay uncached.
+        if r.status_code == 404:
+            try:
+                cache.set(path, params, {"data": [], "_neg404": True}, 24 * 3600)
+            except Exception:
+                pass
         raise SectorsError(r.status_code, r.text)
     body = r.json()
     if isinstance(body, list):

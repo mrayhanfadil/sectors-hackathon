@@ -18,7 +18,8 @@ mirroring agents/adk/tools/finance_tools.py conventions.
 
 Tools:
   sectors_quarterly, sectors_company_report, sectors_peers,
-  sectors_filings, sectors_foreign_flow, sectors_segments
+  sectors_filings, sectors_foreign_flow, sectors_segments,
+  sectors_index_daily
 
 Env:
   SECTORS_API_KEY — required for live data; missing key returns an honest
@@ -262,6 +263,36 @@ async def sectors_segments(
         return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
 
 
+async def sectors_index_daily(
+    index_code: Annotated[str, "Index code, e.g. 'IHSG' for JCI benchmark."] = "IHSG",
+    start: Annotated[str, "Window start YYYY-MM-DD (max 90d window)."] = "",
+    end: Annotated[str, "Window end YYYY-MM-DD."] = "",
+) -> dict[str, Any]:
+    """Index daily close via Sectors (honest JCI benchmark for vs-index charts).
+
+    Returns:
+        Dict with index_code, source, fetched_at, data (index rows).
+        Keyless -> {data: [], source: 'sectors_missing_key'}.
+    """
+    from server.sectors import SectorsNotConfigured, index_daily as _index_daily
+
+    code = (index_code or "IHSG").strip().upper()
+    fetched_at = datetime.now(timezone.utc).isoformat()
+    if (miss := _missing_key_dict(code, fetched_at)) is not None:
+        return miss
+    if not start or not end:
+        return {"ticker": code, "source": "sectors", "fetched_at": fetched_at, "data": [],
+                "error": "start and end required (YYYY-MM-DD, max 90d window)"}
+    try:
+        raw = await asyncio.to_thread(_index_daily, code, start, end)
+        return {"ticker": code, "source": "sectors", "fetched_at": fetched_at, "data": _payload(raw)}
+    except SectorsNotConfigured:
+        return {"ticker": code, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
+    except Exception as e:
+        logger.warning("sectors_index_daily(%s) failed: %s", code, e)
+        return {"ticker": code, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+
+
 # Export list for ADK registration (collector only — see agents/adk/app.py)
 SECTORS_FINANCIAL_TOOLS = [
     sectors_quarterly,
@@ -270,4 +301,5 @@ SECTORS_FINANCIAL_TOOLS = [
     sectors_filings,
     sectors_foreign_flow,
     sectors_segments,
+    sectors_index_daily,
 ]

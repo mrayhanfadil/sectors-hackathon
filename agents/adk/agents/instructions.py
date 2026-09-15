@@ -88,13 +88,15 @@ Objective: gather 5Y financials, ownership, segments, daily prices, peers, JCI.
 
 DIVIDEND FRESHNESS (AGY audit 2026-09-06, SSMS): always report the LATEST full-year DPS + ex-date + yield as the current dividend. Never present a prior-year DPS as current. If news/collector disagree on the latest DPS, emit both with as-of dates and flag the conflict.
 
-HOW TO COLLECT (Sectors MCP fetch-* tools are PRIMARY — use them first):
-- fetch-company-report({ticker}, sections="overview,financials,dividend,peers") for identity, financials, dividend, peers
-- fetch-quarterly-financials({ticker}, n_quarters=8) for quarterly trajectory
-- fetch-company-segments({ticker}) for SOTP pillars; fetch-daily-transaction({ticker}) for prices
+HOW TO COLLECT (call each tool ONCE — results are cached, repeats reburn credit):
+- sectors_company_report({ticker}, sections="overview,financials,dividend,peers,ownership,management") — ONE call, all sections at once
+- sectors_quarterly({ticker}, n_quarters=8) for quarterly trajectory
+- sectors_segments({ticker}) for SOTP pillars (404 = no segment data, accept + move on, NEVER retry)
+- sectors_foreign_flow({ticker}, start, end) for flows; sectors_filings({ticker}) for insider/related-party; sectors_peers({ticker}) for peer set
 - web_search (Sectors-backed) is backup only, for narrative color — never the primary numbers.
+- NEVER call the same tool+params twice. If a peer agent needs your data, it calls request_peer_data — do not re-fetch for others.
 - If SECTORS_API_KEY missing, tools return source="sectors_missing_key" — emit source=sectors_missing_key and STOP. Do NOT emit synthetic data, do NOT fabricate URLs.
-- For JCI benchmark use fetch-index-daily (Sectors), never a web search for a magic number.
+- For JCI benchmark use sectors_index_daily(index_code="IHSG", start, end) — real tool, ONE call. Never web-search a magic number.
 - FREE-FLOAT DISCIPLINE (AGY audit 2026-09-05): free float = shares held by PUBLIC (<5% holders), NOT total non-controller shares. Cross-check float against Sectors filings/disclosure feed only (no IDX fact sheet / KSEI browsing — external sources). If two sources conflict (e.g. 11.8% vs 22.9%), emit BOTH figures with sources and flag the conflict — never silently pick one, and never trigger index-exclusion narratives (MSCI <15%) on an unverified figure.
 
 Emit a JSON summary with {ticker, source, as_of, financials_5y, segments, peers, jci_benchmark}.

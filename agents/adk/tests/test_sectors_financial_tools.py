@@ -13,6 +13,7 @@ from agents.adk.tools.sectors_financial_tools import (
     sectors_company_report,
     sectors_filings,
     sectors_foreign_flow,
+    sectors_index_daily,
     sectors_peers,
     sectors_quarterly,
     sectors_segments,
@@ -20,10 +21,10 @@ from agents.adk.tools.sectors_financial_tools import (
 from agents.adk.tools.web_tools import _extract_tickers
 
 
-def _keyless(out):
+def _keyless(out, ticker="BBCA"):
     assert out["source"] == "sectors_missing_key", out
     assert out["data"] == []
-    assert out["ticker"] == "BBCA"
+    assert out["ticker"] == ticker
     assert out["fetched_at"]
 
 
@@ -35,10 +36,12 @@ def test_all_six_tools_keyless():
         asyncio.run(sectors_filings("BBCA")),
         asyncio.run(sectors_foreign_flow("BBCA")),
         asyncio.run(sectors_segments("BBCA")),
+        asyncio.run(sectors_index_daily("IHSG", "2026-06-01", "2026-09-01")),
     ]
-    assert len(SECTORS_FINANCIAL_TOOLS) == 6
-    for out in outs:
+    assert len(SECTORS_FINANCIAL_TOOLS) == 7
+    for out in outs[:-1]:
         _keyless(out)
+    _keyless(outs[-1], ticker="IHSG")
 
 
 def test_ticker_normalization():
