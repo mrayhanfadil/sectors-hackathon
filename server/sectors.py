@@ -16,6 +16,7 @@ Rules:
 from __future__ import annotations
 
 import logging
+import os
 from typing import Any
 
 import httpx
@@ -97,13 +98,23 @@ def _client() -> httpx.Client:
     )
 
 
-def _get(path: str, params: dict[str, Any] | None = None) -> Any:
+def _window_substitute_enabled() -> bool:
+    """SECTORS_WINDOW_SUBSTITUTE=0 restores strict per-params cache keys."""
+    return os.getenv("SECTORS_WINDOW_SUBSTITUTE", "1").strip().lower() not in ("0", "false", "no")
+
+
+def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitute: bool = False) -> Any:
     """Sectors v2 GET with SQLite-backed credit-saving cache.
 
     Lookup chain:
       1. _cache.get(endpoint, params) — if hit and not expired, return cached payload.
-      2. _client() + GET path?params=params — populate cache with TTL _ttl_for(endpoint).
-      3. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
+      2. WINDOW-DRIFT GUARD (when allow_window_substitute): an endpoint that
+         already has ANY cached row never burns a fresh credit for a different
+         date window — the freshest cached payload is served with
+         ``_window_substituted`` + ``_requested_params`` + ``_cached_fetched_at``
+         attached, so callers (and the Critic) see exactly which window they got.
+      3. _client() + GET path?params=params — populate cache with TTL _ttl_for(endpoint).
+      4. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
     """
     cache_key = None  # avoid unused-name lints
     from .storage import SectorsCache  # late-bound import (avoids circular at module load)
@@ -123,6 +134,26 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
             raise SectorsError(404, "cached 404: no data for this endpoint+params")
         log.debug("sectors cache HIT %s", path)
         return payload
+
+    # 2. Window-drift guard — see docstring. Only for date-windowed endpoints,
+    # which opt in via allow_window_substitute=True (15 Sep 2026: 2 credits
+    # burned when the collector drifted the flow/index window by 10 days).
+    if allow_window_substitute and _window_substitute_enabled():
+        sub = cache.latest_for_endpoint(path)
+        if sub is not None:
+            cached_payload, meta = sub
+            if not isinstance(cached_payload, dict):
+                cached_payload = {"data": cached_payload}
+            else:
+                cached_payload = dict(cached_payload)
+            cached_payload["_window_substituted"] = True
+            cached_payload["_requested_params"] = dict(params or {})
+            cached_payload["_cached_fetched_at"] = meta.get("fetched_at")
+            log.info(
+                "sectors WINDOW-SUBSTITUTED %s (requested %s, serving newest cached row from %s) — 0 credits",
+                path, params, meta.get("fetched_at"),
+            )
+            return cached_payload
 
     if not get_settings().sectors_api_key:
         # Cache miss + no key — let the caller raise SectorsNotConfigured.
@@ -165,7 +196,7 @@ def _get(path: str, params: dict[str, Any] | None = None) -> Any:
 def daily(symbol: str, start: str, end: str) -> Any:
     """Replaces yfinance OHLCV. Range max 90 days (API limit)."""
     return _get(f"/daily/{bare_ticker(symbol)}/",
-                {"start": start, "end": end})
+                {"start": start, "end": end}, allow_window_substitute=True)
 
 
 def universe_close(date: str) -> Any:
@@ -207,7 +238,7 @@ def filings(symbol: str) -> Any:
 def foreign_flow(symbol: str, start: str, end: str) -> Any:
     """Net foreign-broker inflow — new signal we never had (max 90 days)."""
     return _get(f"/foreign-flow/{bare_ticker(symbol)}/",
-                {"start": start, "end": end})
+                {"start": start, "end": end}, allow_window_substitute=True)
 
 
 # --- Tier 1: report sections that fix open gaps (1 credit each) ---
@@ -247,7 +278,8 @@ def management(symbol: str) -> Any:
 def broker_top(symbol: str, start: str, end: str, n_brokers: int = 20) -> Any:
     """Top accumulators/distributors for one stock — Asing-flow radar."""
     return _get(f"/broker-summary/{bare_ticker(symbol)}/top/",
-                {"start": start, "end": end, "n_brokers": n_brokers})
+                {"start": start, "end": end, "n_brokers": n_brokers},
+                allow_window_substitute=True)
 
 
 def suspensions(symbol: str = "", start: str = "", end: str = "") -> Any:
@@ -326,7 +358,7 @@ def index_daily(index_code: str, start: str, end: str) -> Any:
     """Index daily close — honest IHSG benchmark for vs-JCI charts."""
     # API wants lowercase code ('ihsg'); upper-casing 400s (15 Sep 2026).
     return _get(f"/index-daily/{index_code.strip().lower()}/",
-                {"start": start, "end": end})
+                {"start": start, "end": end}, allow_window_substitute=True)
 
 
 def idx_market_cap(start: str, end: str) -> Any:

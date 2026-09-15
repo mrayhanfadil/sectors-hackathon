@@ -868,6 +868,31 @@ class SectorsCache:
                 pass
         return (payload, True)
 
+    def latest_for_endpoint(self, endpoint: str) -> tuple[Any, dict] | None:
+        """Freshest cached payload for an endpoint, ANY params.
+
+        Credit guard (15 Sep 2026): once a date-windowed endpoint has been paid
+        for, a drifting window must never burn a second credit — the caller
+        serves the freshest cached row instead and discloses the substitution.
+        Returns (payload, meta{fetched_at,expires_at}) or None when the endpoint
+        has no rows. Negative-404 markers are never eligible (errors, not data).
+        """
+        with self._lock:
+            row = self.conn.execute(
+                "SELECT fetched_at, expires_at, payload_json FROM sectors_cache "
+                "WHERE endpoint=? ORDER BY fetched_at DESC LIMIT 1",
+                (endpoint,),
+            ).fetchone()
+        if not row:
+            return None
+        try:
+            payload = json.loads(row["payload_json"])
+        except json.JSONDecodeError:
+            return None
+        if isinstance(payload, dict) and payload.get("_neg404"):
+            return None
+        return payload, {"fetched_at": row["fetched_at"], "expires_at": row["expires_at"]}
+
     def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int) -> None:
         """Persist payload with TTL (seconds)."""
         key = self._key(endpoint, params)

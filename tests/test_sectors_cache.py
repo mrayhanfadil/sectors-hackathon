@@ -10,6 +10,7 @@ transparently in production; one Sectors _get() call -> one credit saved on hit.
 from __future__ import annotations
 
 import json
+import os
 import tempfile
 import time
 from pathlib import Path
@@ -169,3 +170,92 @@ def test_cache_does_not_store_errors(tmp_path: Path) -> None:
     assert out is None
     # Confirm stats reflect zero entries (errors must NOT pollute the table).
     assert cache.stats()["n_entries"] == 0
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# Window-drift credit guard (15 Sep 2026).
+#
+# Incident: collector asked foreign_flow/index_daily for a window 10 days off
+# the cached one → distinct cache keys → 2 fresh credits per run, every run.
+# Guard: once a date-windowed endpoint has ANY cached row, a drifted window is
+# served from cache (disclosed via _window_substituted) instead of billed again.
+# ──────────────────────────────────────────────────────────────────────────────
+
+def test_latest_for_endpoint_serves_freshest_row_any_params(cache: SectorsCache) -> None:
+    cache.set("/foreign-flow/AMMN/", {"start": "2026-06-01", "end": "2026-09-06"},
+              {"data": [1]}, ttl_seconds=3600)
+    time.sleep(0.02)
+    cache.set("/foreign-flow/AMMN/", {"start": "2026-05-01", "end": "2026-08-06"},
+              {"data": [2]}, ttl_seconds=3600)
+    got = cache.latest_for_endpoint("/foreign-flow/AMMN/")
+    assert got is not None, "endpoint with rows must resolve"
+    payload, meta = got
+    assert payload == {"data": [2]}, "must serve the FRESHEST row, not the first"
+    assert meta["fetched_at"] > 0, "provenance timestamp must travel with the payload"
+
+
+def test_latest_for_endpoint_ignores_neg404_markers(cache: SectorsCache) -> None:
+    """A cached 404 is an error marker, never data — must not be served."""
+    cache.set("/company/get-segments/AMMN/", {}, {"data": [], "_neg404": True}, ttl_seconds=3600)
+    assert cache.latest_for_endpoint("/company/get-segments/AMMN/") is None
+
+
+def test_latest_for_endpoint_absent_returns_none(cache: SectorsCache) -> None:
+    assert cache.latest_for_endpoint("/never/fetched/") is None
+
+
+def test_window_drift_serves_cache_and_never_calls_http(monkeypatch) -> None:
+    """THE guarantee: a drifted date window costs 0 credits once the endpoint
+    is cached. HTTP must not be touched, and the substitution is disclosed."""
+    import server.sectors as S
+
+    S._cache.set("/foreign-flow/AMMN/", {"start": "2026-06-01", "end": "2026-09-06"},
+                 {"data": [{"n": 1}]}, ttl_seconds=3600)
+
+    def _boom(*_a, **_k):
+        raise AssertionError("HTTP must not fire when a cached row exists")
+
+    monkeypatch.setattr(S.httpx, "Client", _boom)
+    out = S._get("/foreign-flow/AMMN/", {"start": "2026-06-17", "end": "2026-09-15"},
+                 allow_window_substitute=True)
+    assert out["_window_substituted"] is True, "drift must be disclosed"
+    assert out["_requested_params"] == {"start": "2026-06-17", "end": "2026-09-15"}
+    assert out["data"] == [{"n": 1}]
+    assert out["_cached_fetched_at"], "caller must be able to show the real as-of date"
+
+
+def test_exact_params_still_hit_without_substitution_flag(monkeypatch) -> None:
+    """Substitution is a fallback, not the norm — same params = plain cache HIT."""
+    import server.sectors as S
+
+    S._cache.set("/index-daily/ihsg/", {"start": "2021-01-01", "end": "2026-09-06"},
+                 {"data": [{"close": 7000}]}, ttl_seconds=3600)
+    out = S._get("/index-daily/ihsg/", {"start": "2021-01-01", "end": "2026-09-06"},
+                 allow_window_substitute=True)
+    assert "_window_substituted" not in out, "exact hit must not be flagged as substituted"
+    assert out["data"] == [{"close": 7000}]
+
+
+@pytest.mark.skipif(os.getenv("SECTORS_LIVE") == "1", reason="keyless-only assertion")
+def test_window_guard_is_opt_in_per_endpoint(monkeypatch) -> None:
+    """Non-window endpoints (e.g. /close/{date}) must NOT inherit the guard —
+    a different date there is genuinely different data."""
+    import server.sectors as S
+    from server.sectors import SectorsNotConfigured
+
+    S._cache.set("/close/", {"date": "2026-09-15"}, {"data": []}, ttl_seconds=3600)
+    with pytest.raises(SectorsNotConfigured):
+        S._get("/close/", {"date": "2026-09-16"})  # no allow_window_substitute → live path
+
+
+@pytest.mark.skipif(os.getenv("SECTORS_LIVE") == "1", reason="keyless-only assertion")
+def test_window_guard_disabled_by_env(monkeypatch) -> None:
+    """SECTORS_WINDOW_SUBSTITUTE=0 is the documented escape hatch (strict keys)."""
+    import server.sectors as S
+    from server.sectors import SectorsNotConfigured
+
+    S._cache.set("/foreign-flow/AMMN/", {"start": "2026-06-01", "end": "2026-09-06"},
+                 {"data": []}, ttl_seconds=3600)
+    monkeypatch.setenv("SECTORS_WINDOW_SUBSTITUTE", "0")
+    with pytest.raises(SectorsNotConfigured):
+        S._get("/foreign-flow/AMMN/", {"start": "2026-06-17"}, allow_window_substitute=True)

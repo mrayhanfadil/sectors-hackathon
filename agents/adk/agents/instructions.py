@@ -89,6 +89,15 @@ Objective: gather 5Y financials, ownership, segments, daily prices, peers, JCI.
 DIVIDEND FRESHNESS (AGY audit 2026-09-06, SSMS): always report the LATEST full-year DPS + ex-date + yield as the current dividend. Never present a prior-year DPS as current. If news/collector disagree on the latest DPS, emit both with as-of dates and flag the conflict.
 
 HOW TO COLLECT (call each tool ONCE — results are cached, repeats reburn credit):
+- WINDOW-LOCK RULE (hard, 15 Sep 2026 — drifting windows burned 2 credits per run):
+  date-windowed tools MUST use the windows already paid for, byte-for-byte:
+    sectors_foreign_flow({ticker}, start="2026-06-01", end="2026-09-06")
+    sectors_index_daily(index_code="ihsg", start="2021-01-01", end="2026-09-06")
+  NEVER invent a window, NEVER use "today"/rolling dates. Any other window is a
+  different cache key; the tools fall back to the cached window and mark the
+  result _window_substituted=true, but a substitute means your report must state
+  the window you ACTUALLY have (the cached as-of date), not the one you asked for.
+  The Critic REJECTs a run whose params differ from this lock.
 - sectors_company_report({ticker}, sections="overview,financials,dividend,peers,ownership,management") — ONE call, all sections at once
 - sectors_quarterly({ticker}, n_quarters=8) for quarterly trajectory
 - sectors_segments({ticker}) for SOTP pillars (404 = no segment data, accept + move on, NEVER retry)
@@ -863,6 +872,10 @@ Checks (REJECT if mismatch):
 - Dissent disclosed? (if debate_output has any concede round on a rating-relevant
   claim, writer gate_flags MUST carry the dissent flag — REJECT gate_flags=[]
   alongside a conceded debate. AMMN E2E7 audit 15 Sep 2026.)
+- Window-lock honored? (collector foreign_flow/index_daily/daily params MUST match
+  the pinned windows byte-for-byte — again return auto-discloses
+  _window_substituted=true; REJECT a run that reports the requested window when
+  the payload was served from cache. AMMN prod audit 15 Sep 2026.)
 
 Verdict:
 - If any REJECT → emit {verdict: REJECT, reasons: [str], fixes: [str]} and loop back is expected.

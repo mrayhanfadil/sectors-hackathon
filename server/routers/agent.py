@@ -20,6 +20,7 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import re
 import time
 import logging
 from typing import Any, AsyncGenerator
@@ -132,8 +133,42 @@ def _serialize_event(ev: Any, seq: int) -> dict[str, Any]:
 
 
 class AgentRunRequest(BaseModel):
-    ticker: str = "BBCA"
+    ticker: str
     prompt: str | None = None
+
+
+# IDX equity codes are exactly 4 capital letters (BBCA, AMMN, RATU…). Anything
+# else — test fixtures like DT1A2B3C, typos, pasted junk — is rejected BEFORE a
+# run spawns, because every spawned run bills Sectors: unknown symbols still cost
+# 1 credit per addressed endpoint on their 404s (15 Sep 2026: the live-BE
+# integration tests burned ~71 credits posting fake tickers at :8777).
+# Override with SECTORS_TICKER_RE when a non-4-letter instrument is genuinely needed.
+_TICKER_RE = re.compile(os.getenv("SECTORS_TICKER_RE", r"^[A-Z]{4}$"))
+
+
+def _invalid_ticker_response(raw: str | None) -> JSONResponse | None:
+    """None when the ticker is a plausible IDX code, else the 400 to return.
+
+    Shared by /api/agent/start and /api/agent/run so neither path can spawn a
+    billable run for junk input.
+    """
+    ticker = (raw or "").upper().strip()
+    if _TICKER_RE.match(ticker):
+        return None
+    log.warning("agent run rejected ticker=%r (not a 4-letter IDX code)", raw)
+    return JSONResponse(
+        {
+            "ok": False,
+            "error": "invalid_ticker",
+            "ticker": ticker,
+            "message": (
+                f"'{raw}' bukan kode IDX yang valid — harus 4 huruf kapital "
+                "(contoh: BBCA, AMMN, RATU). Run dibatalkan sebelum jalan supaya "
+                "tidak membakar credit Sectors."
+            ),
+        },
+        status_code=400,
+    )
 
 
 @router_agent.get("/api/agent/health", summary="ADK wiring + Spark/minimax health")
@@ -326,9 +361,9 @@ async def agent_health():
 @router_agent.post("/api/agent/run", summary="Blocking ADK full run (no stream)")
 async def agent_run(req: AgentRunRequest):
     """Blocking run — drives full 11-agent graph and returns final state + event trace."""
-    ticker = (req.ticker or "BBCA").upper().strip()[:10]
-    if not ticker.isalnum():
-        return JSONResponse({"error": "invalid ticker"}, status_code=400)
+    if (bad := _invalid_ticker_response(req.ticker)) is not None:
+        return bad
+    ticker = (req.ticker or "").upper().strip()
     try:
         from agents.adk.runner import run_report
 
@@ -454,9 +489,9 @@ async def agent_start(req: AgentRunRequest):
     """
     from server.storage import AgentRunStore
 
-    ticker = (req.ticker or "BBCA").upper().strip()[:10]
-    if not ticker.isalnum():
-        return JSONResponse({"error": "invalid ticker"}, status_code=400)
+    if (bad := _invalid_ticker_response(req.ticker)) is not None:
+        return bad
+    ticker = (req.ticker or "").upper().strip()
 
     from server.storage import AgentRunStore
     store = AgentRunStore()
