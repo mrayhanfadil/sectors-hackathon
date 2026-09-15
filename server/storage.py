@@ -830,14 +830,15 @@ class SectorsCache:
         return f"sc:{endpoint[:32]}:{h[:32]}"
 
     def get(self, endpoint: str, params: dict | None) -> tuple[Any, bool]:
-        """Return (payload, hit). hit=False means expired or absent.
+        """Return (payload, hit). hit=False means absent.
 
-        STALE-SAFE (14 Sep 2026, credit-thin mode): an expired row is still
-        returned with hit=True when ``SECTORS_STALE_OK=1`` (default) — the
-        payload is marked ``_stale: True`` + ``_stale_age_h`` so callers and
-        the Critic can see the data is past TTL. Set SECTORS_STALE_OK=0 to
-        restore strict expiry (fresh pull, burns 1 credit per endpoint).
-        Absent rows still miss.
+        NO-EXPIRY (15 Sep 2026, credit-thin mode): every cached row is a HIT
+        regardless of age — Sectors data never expires from cache. The payload
+        carries ``_stale_age_h`` (hours since TTL passed) so the Critic and
+        callers see freshness transparently. Set SECTORS_STALE_OK=0 to restore
+        strict TTL expiry (fresh pull, burns 1 credit per endpoint).
+        Absent rows still miss. Cached 404 markers are NOT unwrapped here —
+        server/sectors._get() re-raises them as SectorsError.
         """
         import os as _os
 
@@ -854,18 +855,18 @@ class SectorsCache:
             payload = json.loads(row["payload_json"])
         except json.JSONDecodeError:
             return (None, False)
-        if row["expires_at"] > now:
+        if _os.getenv("SECTORS_STALE_OK", "1").strip() in ("0", "false", "no"):
+            if row["expires_at"] <= now:
+                return (None, False)
             return (payload, True)
-        if _os.getenv("SECTORS_STALE_OK", "1").strip() not in ("0", "false", "no"):
-            if isinstance(payload, dict):
-                payload = dict(payload)
-                payload["_stale"] = True
-                try:
-                    payload["_stale_age_h"] = round((now - row["expires_at"]) / 3600.0, 1)
-                except Exception:
-                    pass
-            return (payload, True)
-        return (None, False)
+        if isinstance(payload, dict) and row["expires_at"] <= now:
+            payload = dict(payload)
+            payload["_stale"] = True
+            try:
+                payload["_stale_age_h"] = round((now - row["expires_at"]) / 3600.0, 1)
+            except Exception:
+                pass
+        return (payload, True)
 
     def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int) -> None:
         """Persist payload with TTL (seconds)."""

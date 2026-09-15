@@ -51,8 +51,8 @@ def test_distinct_params_distinct_keys(cache: SectorsCache) -> None:
 
 
 def test_expired_entry_serves_stale_by_default(cache: SectorsCache) -> None:
-    """Credit-thin mode (14 Sep 2026): expired rows serve stale with _stale flag
-    instead of forcing a fresh pull — TTL=0 + sleep, then get() must HIT."""
+    """NO-EXPIRY (15 Sep 2026, credit-thin mode): cached rows NEVER expire —
+    TTL=0 + sleep, then get() must still HIT with _stale flag."""
     import os
 
     os.environ.pop("SECTORS_STALE_OK", None)
