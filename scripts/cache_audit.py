@@ -149,7 +149,9 @@ def main() -> int:
         fetched, expires, n = r
         age = (now - fetched) / 3600
         ttl = (expires - fetched) / 3600
-        state = "EXPIRED" if expires < now else "fresh"
+        # An aged row is still a HIT unless SECTORS_STALE_OK=0 — say so, or the
+        # audit reports a pending charge that the next run will never make.
+        state = "aged*" if expires < now else "fresh"
         print(f"{tool:26s} {state:9s} {age:7.1f} {ttl:6.1f} {n:8d}")
 
     if a.pin:
@@ -177,20 +179,19 @@ def main() -> int:
                 "select expires_at from sectors_cache where cache_key=?",
                 (key_for(endpoint, params),),
             ).fetchone()
-            state = "MISSING" if not r else ("EXPIRED" if r[0] < time.time() else "fresh")
-            if state != "fresh":
+            if not r:
                 missing.append((tool, endpoint, params))
 
     print()
     if missing:
-        print(f"VERDICT: {len(calls) - len(missing)}/{len(calls)} calls are cache-served; "
-              f"{len(missing)} would bill on the next run:")
+        print(f"VERDICT: {len(calls) - len(missing)}/{len(calls)} calls serve from cache; "
+              f"{len(missing)} have NO row and would BILL on the next run:")
         for tool, endpoint, params in missing:
             print(f"  {tool}: {endpoint} {json.dumps(params, sort_keys=True)}")
         print("\nDo NOT fetch blindly with thin credit — decide per endpoint whether the data is worth the credit.")
         return 1
     print(f"VERDICT: all {len(calls)} calls serve from cache — the next {ticker} run costs 0 credits.")
-    print("(rows are served regardless of age: SECTORS_STALE_OK=1 is the default credit-thin mode)")
+    print("aged* rows are HITS too: SECTORS_STALE_OK defaults to 1, so only a MISSING key can bill.")
     return 0
 
 
