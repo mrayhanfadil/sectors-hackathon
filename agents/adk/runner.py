@@ -95,6 +95,7 @@ async def run_report(
     events: list[Any] = []
     last_text = ""
     seq = 0
+    run_error: str | None = None
     try:
         async for event in runner.run_async(
             user_id=user_id, session_id=session_id, new_message=content
@@ -113,12 +114,32 @@ async def run_report(
             app_name=app_name, user_id=user_id, session_id=session_id
         )
         state = dict(session.state) if session and session.state else {}
+        missing = [
+            k
+            for k in (
+                "collector_output", "news_output", "valuation_output",
+                "analyst_output", "industry_output", "risk_output",
+                "kpi_output", "writer_output", "visuals_output",
+                "sotp_output", "debate_output", "critic_output",
+            )
+            if not state.get(k)
+        ]
         store.finish_run(
-            session_id, status="completed", last_text=last_text, state=state
+            session_id, status="completed", last_text=last_text, state=state,
+            error=("missing_keys=" + ",".join(missing)) if missing else None,
         )
     except Exception as e:
+        run_error = str(e)[:2000]
+        try:
+            session = await session_service.get_session(
+                app_name=app_name, user_id=user_id, session_id=session_id
+            )
+            state = dict(session.state) if session and session.state else {}
+        except Exception:
+            state = {}
         store.finish_run(
-            session_id, status="failed", last_text=last_text, error=str(e)[:2000]
+            session_id, status="failed", last_text=last_text,
+            error=run_error, state=state,
         )
         raise
 

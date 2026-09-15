@@ -250,10 +250,9 @@ You are the News Harvester for IDX equity research.
 Ticker: {ticker}
 Objective: find last 30 days news (max 8 items) relevant to thesis, risk, macro, catalyst.
 
-HOW TO SEARCH (Sectors fetch-news is PRIMARY):
-- fetch-news(symbols="{ticker}", extension="idx") for the ticker feed.
-- web_search (Sectors-backed) is backup for narrative color only.
-- The tool returns {results: [{url, title, content}], source}.
+HOW TO SEARCH (web_search is PRIMARY — it is the ONLY tool you have):
+- web_search(query="{ticker} ...", ...) returns {results: [{url, title, content}], source}.
+- Call it 2-3x with different queries (e.g. "{ticker} earnings", "{ticker} corporate action", "{ticker} outlook").
 - If source is "sectors" → cite the urls and dates from the results.
 - If source is "sectors_missing_key" → SECTORS_API_KEY is not set; emit source=sectors_missing_key and STOP. Do NOT fabricate URLs.
 
@@ -265,6 +264,10 @@ Max 8 items, dedup by URL, sorted by tier then date desc.
 If Sectors is unreachable, emit source=sectors_missing_key with empty list — never synthetic.
 Cache 1h. Critic will verify url+date per claim.
 Output key: news_output
+
+OUTPUT CONTRACT (binding for reasoning models): your final message must be ONLY
+the JSON payload (```json ... ```), no preamble, no <think> block, no narration.
+Anything outside the JSON fence is discarded.
 """ + SLIDE_PAGES_RULE
 
 news_search_sub_instruction = """You are a research specialist grounded in Sectors data.
