@@ -264,7 +264,7 @@ async def sectors_segments(
 
 
 async def sectors_index_daily(
-    index_code: Annotated[str, "Index code, e.g. 'IHSG' for JCI benchmark."] = "IHSG",
+    index_code: Annotated[str, "Index code lowercase, e.g. 'ihsg' for JCI benchmark (API rejects uppercase)."] = "ihsg",
     start: Annotated[str, "Window start YYYY-MM-DD (max 90d window)."] = "",
     end: Annotated[str, "Window end YYYY-MM-DD."] = "",
 ) -> dict[str, Any]:
@@ -276,7 +276,7 @@ async def sectors_index_daily(
     """
     from server.sectors import SectorsNotConfigured, index_daily as _index_daily
 
-    code = (index_code or "IHSG").strip().upper()
+    code = (index_code or "ihsg").strip().lower()
     fetched_at = datetime.now(timezone.utc).isoformat()
     if (miss := _missing_key_dict(code, fetched_at)) is not None:
         return miss

@@ -96,7 +96,7 @@ HOW TO COLLECT (call each tool ONCE — results are cached, repeats reburn credi
 - web_search (Sectors-backed) is backup only, for narrative color — never the primary numbers.
 - NEVER call the same tool+params twice. If a peer agent needs your data, it calls request_peer_data — do not re-fetch for others.
 - If SECTORS_API_KEY missing, tools return source="sectors_missing_key" — emit source=sectors_missing_key and STOP. Do NOT emit synthetic data, do NOT fabricate URLs.
-- For JCI benchmark use sectors_index_daily(index_code="IHSG", start, end) — real tool, ONE call. Never web-search a magic number.
+- For JCI benchmark use sectors_index_daily(index_code="ihsg", start, end) — lowercase, real tool, ONE call. Never web-search a magic number.
 - FREE-FLOAT DISCIPLINE (AGY audit 2026-09-05): free float = shares held by PUBLIC (<5% holders), NOT total non-controller shares. Cross-check float against Sectors filings/disclosure feed only (no IDX fact sheet / KSEI browsing — external sources). If two sources conflict (e.g. 11.8% vs 22.9%), emit BOTH figures with sources and flag the conflict — never silently pick one, and never trigger index-exclusion narratives (MSCI <15%) on an unverified figure.
 
 Emit a JSON summary with {ticker, source, as_of, financials_5y, segments, peers, jci_benchmark}.

@@ -324,7 +324,8 @@ def screener(where: str = "", order_by: str = "", limit: int = 50) -> Any:
 
 def index_daily(index_code: str, start: str, end: str) -> Any:
     """Index daily close — honest IHSG benchmark for vs-JCI charts."""
-    return _get(f"/index-daily/{index_code.strip().upper()}/",
+    # API wants lowercase code ('ihsg'); upper-casing 400s (15 Sep 2026).
+    return _get(f"/index-daily/{index_code.strip().lower()}/",
                 {"start": start, "end": end})
 
 
