@@ -425,6 +425,8 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         from server.report.valuation_page import build_valuation_page
 
         payload["valuation_page"] = build_valuation_page(payload, assum if _has_assump else {})
+        # The valuation ladder is attached inside build_valuation_page (nested, so
+        # the deck's frozen top-level key contract is unchanged).
 
         # Deck slide 5: peer table + own-history bands. Cache-only — the builder performs no network
         # call, so a render never spends a Sectors credit (see server/report/peers_data.py).

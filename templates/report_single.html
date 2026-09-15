@@ -272,6 +272,26 @@
       {% endfor %}
     </tbody>
   </table>
+
+  {# ---- Valuation ladder: every rung the modeler computed, roles marked ----
+     Deliberately NOT a new exhibit: an extra exhibit would renumber every
+     later one, and the ladder belongs next to the bridge it explains. #}
+  {% if valuation_page.ladder and valuation_page.ladder.available %}
+  <p class="small" style="margin-top:6pt;"><b>Tangga valuasi</b> — {{ valuation_page.ladder.note }}</p>
+  <table class="fin-table" style="margin-top:3pt;">
+    <thead><tr><th>Rung</th><th class="num">Fair Value (Rp)</th><th class="num">Upside</th><th>Peran</th></tr></thead>
+    <tbody>
+      {% for r in valuation_page.ladder.rows %}
+      <tr class="{{ 'bold hl' if r.is_primary else '' }}">
+        <td>{{ r.label }}</td>
+        <td class="num">{{ r.fair_value | idn(0) }}</td>
+        <td class="num">{{ r.upside_str }}</td>
+        <td>{{ {'primary': 'dasar target terbit', 'contested': 'diserang debat', 'cross-check': 'pembanding silang', 'sensitivity': 'sensitivitas'}.get(r.role, r.role) }}{% if r.contested and not r.is_primary %} · diserang debat{% endif %}{% if r.contested and r.is_primary %} · <b>diserang debat</b>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
   {{ m.exhibit_source(ns) }}
 
   {# ---- Exhibit 9: WACC components, each parameter with its source ---- #}

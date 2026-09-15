@@ -374,6 +374,23 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "Engine valuasi internal: server/report/engines/dcf_engine",
         ],
     }
+    # Valuation ladder — appended here so BOTH payload paths (PDF render and the
+    # /payload endpoint) carry it, and so the frozen top-level key contract stays
+    # at its declared count. Failure is non-fatal: a missing ladder must not cost
+    # the deck its page.
+    try:
+        from server.report.ladder import build_ladder
+
+        rating_box = ((payload.get("cover") or {}).get("rating_box") or {})
+        page["ladder"] = build_ladder(
+            str(payload.get("ticker") or "").upper(),
+            price=rating_box.get("price") or assum.get("last_price"),
+            target=rating_box.get("tp") or assum.get("target_price"),
+        )
+    except Exception as exc:  # noqa: BLE001
+        import logging as _logging
+
+        _logging.getLogger(__name__).warning("valuation ladder unavailable: %s", exc)
     return _view(page)
 
 
