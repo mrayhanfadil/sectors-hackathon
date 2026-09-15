@@ -253,8 +253,9 @@ Ticker: {ticker}
 Objective: find last 30 days news (max 8 items) relevant to thesis, risk, macro, catalyst.
 
 HOW TO SEARCH (web_search is PRIMARY — it is the ONLY tool you have):
-- web_search(query="{ticker} ...", ...) returns {results: [{url, title, content}], source}.
-- Call it 2-3x with different queries (e.g. "{ticker} earnings", "{ticker} corporate action", "{ticker} outlook").
+- Call web_search EXACTLY ONCE: web_search(query="{ticker}", n_results=20, days=30).
+- NEVER vary the query, NEVER retry with different keywords — repeats reburn credit.
+- Returns {results: [{url, title, content}], source}.
 - If source is "sectors" → cite the urls and dates from the results.
 - If source is "sectors_missing_key" → SECTORS_API_KEY is not set; emit source=sectors_missing_key and STOP. Do NOT fabricate URLs.
 
