@@ -62,17 +62,15 @@ def test_heuristic_failed_closed_on_english():
 
 
 def test_collector_owns_financial_tools(monkeypatch):
-    """Collector tool list includes the 6 Sectors financial FunctionTools."""
+    """Collector tool list includes the 7 Sectors financial FunctionTools (MCP removed 15 Sep 2026)."""
     monkeypatch.setenv("DEEPSEEK_API_KEY", "sk-fake")
     monkeypatch.setenv("GOOGLE_API_KEY", "fake-gemini")
 
-    from unittest.mock import patch
     from google.adk.tools.function_tool import FunctionTool
 
-    with patch("agents.adk.app.maybe_sectors_mcp_toolset", return_value=None):
-        from agents.adk.app import build_graph
+    from agents.adk.app import build_graph
 
-        root = build_graph(ticker="BBCA")
+    root = build_graph(ticker="BBCA")
 
     intake = root.sub_agents[0]
     collector = next(a for a in intake.sub_agents if a.name == "collector")

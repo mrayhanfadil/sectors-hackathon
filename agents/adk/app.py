@@ -85,7 +85,6 @@ from .providers import deepseek_model, gemini_model, spark_model
 from .tools.finance_tools import DETERMINISTIC_TOOLS
 from .tools.sectors_financial_tools import SECTORS_FINANCIAL_TOOLS
 from .debate import submit_debate
-from .tools.mcp_sectors import maybe_sectors_mcp_toolset
 from .tools.web_tools import web_search
 
 logger = logging.getLogger(__name__)
@@ -247,20 +246,33 @@ def build_graph(
     # never in the graph dump. Parents (news_harvester, industry) call Sectors
     # web_search directly. Instructions kept in instructions.py as prompt reference.
 
-    # -- MCP toolset (best-effort) -------------------------------------------
-    sectors_toolset = maybe_sectors_mcp_toolset(api_key=sectors_api_key)
+    # -- MCP toolset REMOVED (15 Sep 2026, credit-thin mode) --------------------
+    # Sectors MCP bypasses the SQLite credit-saving cache (every MCP call =
+    # 1 credit, no TTL, no stale-serve, no neg-404) AND times out 5s on this
+    # host. All Sectors reads go through cached FunctionTools
+    # (sectors_financial_tools + web_search, both delegating to
+    # server/sectors._get). maybe_sectors_mcp_toolset kept in
+    # tools/mcp_sectors.py for manual/opt-in use only — never in the graph.
+    # To re-enable: SECTORS_MCP=1 env.
+    import os as _os_mcp
+
+    sectors_toolset = None
+    if _os_mcp.getenv("SECTORS_MCP", "0").strip() == "1":
+        from .tools.mcp_sectors import maybe_sectors_mcp_toolset as _maybe_mcp
+
+        sectors_toolset = _maybe_mcp(api_key=sectors_api_key)
     if sectors_toolset is not None:
-        logger.info("Sectors MCP toolset attached")
+        logger.info("Sectors MCP toolset attached (SECTORS_MCP=1 opt-in)")
     else:
-        logger.info("Sectors MCP skipped (no SECTORS_API_KEY)")
+        logger.info("Sectors MCP disabled — cached FunctionTools only (0-credit e2e)")
 
     # -- Leaf LlmAgents -------------------------------------------------------
     # Composite web tools (Sectors search + readability extract) attached to any
     # agent that needs fresh IDX data without Sectors MCP. Generated once and reused.
     composite_web_tools = _web_composite_tools()
 
-    # Collector: Sectors financial FunctionTools always (keyless-honest),
-    # plus Sectors MCP if present, else Sectors web_search backup.
+    # Collector: Sectors financial FunctionTools (cached, credit-saving) +
+    # Sectors web_search backup.
     # (Previously empty tools caused LLM hallucination of tool names.)
     collector_tools: list[Any] = [FunctionTool(fn) for fn in SECTORS_FINANCIAL_TOOLS]
     if sectors_toolset is not None:
@@ -437,7 +449,7 @@ def build_graph(
             adversarial_loop,
             critic,
         ],
-        description="Institutional equity report — 10 agents, Sequential + Parallel + Loop(max=4), ADK Python + MCP.",
+        description="Institutional equity report — 10 agents, Sequential + Parallel + Loop(max=4), ADK Python (MCP removed 15 Sep 2026, cached tools only).",
     )
 
     return root
