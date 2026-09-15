@@ -72,7 +72,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0x pada EBITDA FY26F — owner-selected headline multiple (bukan midpoint aritmetik: (13,3+15,7)/2 = 14,5). Justifikasi Sectors-only: multiple forward market sendiri 13,3x FY26F (harga 11 Sep 2026) plus premi ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke own -1sigma band 22,13x dan sensitivity leg +/-2x (13x-17x). Bukan mean own-history.",
+  "ev_multiple_basis": "Target 15,0× pada EBITDA FY26F — owner-selected headline multiple (bukan midpoint aritmetik: (13,3+15,7)/2 = 14,5). Justifikasi Sectors-only: multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus premi ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke own -1sigma band 22,13× dan sensitivity leg +/-2× (13×-17×). Bukan mean own-history.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -258,7 +258,7 @@
     }
   },
   "pending": {
-    "peer_ev_ebitda_prints": "No live peer EV/EBITDA print set: the Sectors peers payload carries no peer EBITDA/debt/cash, and per-peer quarterly pulls are outside this task's AMMN-only authorisation. ev_multiple is therefore an explicit assumption with a +/-2x sensitivity leg.",
+    "peer_ev_ebitda_prints": "No live peer EV/EBITDA print set: the Sectors peers payload carries no peer EBITDA/debt/cash, and per-peer quarterly pulls are outside this task's AMMN-only authorisation. ev_multiple is therefore an explicit assumption with a +/-2× sensitivity leg.",
     "consensus_fcf_path": "FY2026F-FY2030F FCF is a flat normalisation derived from live Sectors TTM figures (no fabricated growth curve). A bottom-up consensus path (volume/price deck) belongs to the modeler lane.",
     "equity_credit_quality_peers": "Not pulled (AMMN-only authorisation).",
     "gate_inputs_sectors_only": "Sectors API key not present in this session's env (2026-09-12), so the 8 sourced gate inputs use audited AMMN PDF disclosures + public sources (see gate_inputs_provenance per-key outlet+url+as_of) rather than fresh Sectors pulls. The AMMN-only billing authorisation is intact; re-running this lane with SECTORS_API_KEY set would yield identical numbers (every value is sourced from AMMN's own audited disclosures that Sectors republishes)."
@@ -325,7 +325,7 @@
       "outlet": "Sectors API v2 \u2014 TTM EBITDA + TTM interest_expense_non_operating (TTM = 4 quarters to 2026-03-31)",
       "url": "https://api.sectors.app/v2/company/quarterly-financials/AMMN/?n_quarters=8",
       "as_of": "TTM to 2026-03-31",
-      "note": "TTM EBITDA 24,978,798,106,260 IDR / TTM interest expense 7,185,779,289,920 IDR = 3.4761x. Convention: AMMN's own prospectus footnote 9 (Prospektus Juni 2023, p.xxii) defines ICR as EBITDA / beban keuangan. Spot IC (EBIT basis) using FY2025 audited Operating Profit $673,602K / Finance costs $386,046K = 1.745x \u2014 both clear the 1.0x Gate 1c threshold by a wide margin."
+      "note": "TTM EBITDA 24,978,798,106,260 IDR / TTM interest expense 7,185,779,289,920 IDR = 3.4761×. Convention: AMMN's own prospectus footnote 9 (Prospektus Juni 2023, p.xxii) defines ICR as EBITDA / beban keuangan. Spot IC (EBIT basis) using FY2025 audited Operating Profit $673,602K / Finance costs $386,046K = 1.745× \u2014 both clear the 1.0× Gate 1c threshold by a wide margin."
     },
     "shareholders_equity": {
       "value": 93687393398000.0,
@@ -377,7 +377,7 @@
     "ev_ebitda_fy27f": 10.0,
     "ev_ebitda_midcycle_fy27f_28f": 9.0,
     "third_party_implied_fy26f": null,
-    "third_party_implied_note": "REMOVED 15 Sep 2026 — source-independence rule: deck is Sectors-only, no external research-house cross-check shipped. 15.0x justified by market-implied 13.3x + ramp premium + own-history cross-check + sensitivity leg.",
+    "third_party_implied_note": "REMOVED 15 Sep 2026 — source-independence rule: deck is Sectors-only, no external research-house cross-check shipped. 15.0× justified by market-implied 13.3× + ramp premium + own-history cross-check + sensitivity leg.",
     "source": "Sectors market cap 11 Sep 2026 + jalur EBITDA FY26F-FY28F yang dikutip"
   },
   "ev_multiple_own_history": {
