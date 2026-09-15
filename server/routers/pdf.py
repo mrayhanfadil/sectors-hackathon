@@ -699,10 +699,13 @@ async def report_pdf(ticker: str, template: Optional[str] = Query(None, descript
     tmp.close()
 
     headers = {
-        "Content-Disposition": f'attachment; filename="{t}_{tpl_name}.pdf"',
+        # `inline` (not `attachment`) so iOS Safari opens the built-in PDF
+        # viewer with Share -> Save to Files/Books. Desktop keeps the
+        # force-download behaviour via the anchor `download` attribute.
+        "Content-Disposition": f'inline; filename="{t}_{tpl_name}.pdf"',
         "X-PDF-Engine": engine,
     }
-    return FileResponse(tmp.name, media_type="application/pdf", headers=headers, filename=f"{t}_{tpl_name}.pdf")
+    return FileResponse(tmp.name, media_type="application/pdf", headers=headers, filename=f"{t}_{tpl_name}.pdf", content_disposition_type="inline")
 
 
 @router_pdf.get("/api/report/{ticker}/html", summary="Debug HTML for report (same jinja2 render as PDF)")

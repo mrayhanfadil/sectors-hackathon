@@ -295,13 +295,30 @@ export async function fetchPdf(ticker: string): Promise<void> {
   const tk = ticker.toUpperCase()
   const path = `/api/report/${encodeURIComponent(tk)}/pdf`
   const url = API_BASE ? `${API_BASE}${path}` : path
+  // iOS Safari ignores the anchor `download` attribute on blob URLs
+  // (tap does nothing or opens a blank tab). Open the viewer tab NOW,
+  // synchronously inside the tap gesture — after any await the popup
+  // blocker eats window.open. The tab shows a loading note until the
+  // bytes arrive.
+  const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
+    || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1)
+  const earlyWin = isiOS ? window.open("", "_blank", "noopener") : null
+  if (earlyWin) {
+    try {
+      earlyWin.document.title = `${tk} · menyiapkan PDF…`
+      earlyWin.document.body.innerHTML =
+        `<p style="font-family:sans-serif;padding:2rem;color:#555">Menyiapkan PDF ${tk}…</p>`
+    } catch { /* cross-origin blank — skip note, still usable */ }
+  }
   let r: Response
   try {
     r = await fetch(url)
   } catch (e) {
+    earlyWin?.close()
     throw new Error(`network error - PDF endpoint unreachable (${API_BASE || "same-origin"}${path} - is the API up? ${(e as Error)?.message ?? String(e)})`)
   }
   if (!r.ok) {
+    earlyWin?.close()
     const text = await r.text().catch(() => "")
     // surface real backend message + hint
     const hint = r.status === 404 ? " - check API url / tunnel" : r.status >= 500 ? " - server error" : ""
@@ -310,14 +327,23 @@ export async function fetchPdf(ticker: string): Promise<void> {
   // defensive: backend sometimes returns JSON error with 200
   const ctype = r.headers.get("content-type") || ""
   if (ctype.includes("application/json")) {
+    earlyWin?.close()
     const j = await r.json().catch(() => null) as Record<string, unknown> | null
     throw new Error((j?.["detail"] as string) || (j?.["message"] as string) || `unexpected JSON from PDF endpoint`)
   }
   const blob = await r.blob()
+  const href = URL.createObjectURL(blob)
+  if (isiOS) {
+    // Built-in viewer offers Share -> Save to Files/Books. Do NOT revoke
+    // early: the viewer streams from the blob URL.
+    if (earlyWin) earlyWin.location.href = href
+    else window.open(href, "_blank", "noopener")
+    setTimeout(() => URL.revokeObjectURL(href), 120000)
+    return
+  }
   const cd = r.headers.get("content-disposition") || ""
   const m = cd.match(/filename=\"?([^\";]+)\"?/i)
   const filename = m?.[1] || `${tk}_report.pdf`
-  const href = URL.createObjectURL(blob)
   const a = document.createElement("a")
   a.href = href
   a.download = filename
