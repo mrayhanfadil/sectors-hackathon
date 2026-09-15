@@ -214,7 +214,10 @@ def minimax_model(
             model=f"minimax/{model_id}",
             api_base=base,
             api_key=direct_key,
-            max_tokens=4096,
+            # 24k headroom (15 Sep 2026): MiniMax-M3 thinking eats budget —
+            # Turn-2 synthesis ~8k chars truncated at 4096 (see run ammn-b93bac07).
+            # Model ceiling is 128k, so 24k is safe. Override via MINIMAX_MAX_TOKENS.
+            max_tokens=int(os.getenv("MINIMAX_MAX_TOKENS", "24576")),
             num_retries=retries,
             timeout=int(os.getenv("MINIMAX_TIMEOUT", "90")),
         )
@@ -244,7 +247,7 @@ def minimax_model(
         model=f"openai/{model_id}",
         api_base=base,
         api_key=key,
-        max_tokens=4096,
+        max_tokens=int(os.getenv("MINIMAX_MAX_TOKENS", "24576")),
         num_retries=retries,
         timeout=int(os.getenv("MINIMAX_TIMEOUT", "120")),
     )
