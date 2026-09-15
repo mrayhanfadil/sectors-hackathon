@@ -872,6 +872,15 @@ Checks (REJECT if mismatch):
 - Dissent disclosed? (if debate_output has any concede round on a rating-relevant
   claim, writer gate_flags MUST carry the dissent flag — REJECT gate_flags=[]
   alongside a conceded debate. AMMN E2E7 audit 15 Sep 2026.)
+  **RUN THE AUDIT — it is binding.** Call
+  `agents.valuation.dissent_audit.audit(run_state, price=<spot the deck prints>)`
+  and copy its verdict: it derives the required flags and the house override
+  mechanically, so your verdict must not be softer than it. REJECT when it returns
+  REJECT, and quote its `reasons` verbatim. It also returns `ladder` (every rung the
+  modeler computed) and `disclosure` — if a directional rating shipped on a conceded
+  anchor, the required outcome is the house override slot: `Review Required`.
+  Publishing is blocked on this: /api/report/{ticker}/pdf returns 409 while the
+  audit says REJECT.
 - Window-lock honored? (collector foreign_flow/index_daily/daily params MUST match
   the pinned windows byte-for-byte — again return auto-discloses
   _window_substituted=true; REJECT a run that reports the requested window when

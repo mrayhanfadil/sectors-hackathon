@@ -37,6 +37,35 @@ _ADVISORY_VIOLATIONS = (
 )
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+# Dissent audit (15 Sep 2026): a run whose own red team conceded the anchor must
+# not publish a directional rating. Deterministic — reads run state, no LLM.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+
+
+def _publish_audit(ticker: str) -> dict | None:
+    """Audit the ticker's most recent run for publishability. None when no run exists."""
+    try:
+        from server.storage import AgentRunStore
+        from agents.valuation.dissent_audit import audit as _audit
+
+        run = AgentRunStore().get_latest_completed(ticker)
+        if run is None:
+            return None
+        state = run.get("state") or {}
+        if not state:
+            return None
+        price = None
+        apath = ASSUMPTIONS_DIR / f"{ticker.upper()}.json"
+        if apath.exists():
+            import json as _json
+
+            price = _json.loads(apath.read_text(encoding="utf-8")).get("last_price")
+        return _audit(state, price=float(price or 0.0)).to_dict()
+    except Exception as exc:  # noqa: BLE001 — the gate must never break rendering by itself
+        logger.warning("publish audit unavailable for %s: %s", ticker, exc)
+        return None
 SCRIPTS_DIR = REPO_ROOT / "scripts"
 TEMPLATES_DIR = REPO_ROOT / "templates"
 #: Authoritative per-ticker input store (loud-failure policy: no generic fallback).
@@ -683,12 +712,44 @@ async def render_pdf_bytes_for_ticker(
 
 # ---------------------------------------------------------------- routes
 @router_pdf.get("/api/report/{ticker}/pdf", summary="Institutional PDF — Playwright else weasyprint else minimal (always %PDF)")
-async def report_pdf(ticker: str, template: Optional[str] = Query(None, description="force single|sotp|infra|strategy")):
+async def report_pdf(
+    ticker: str,
+    template: Optional[str] = Query(None, description="force single|sotp|infra|strategy"),
+    force: bool = Query(False, description="render even when the run's own audit says REJECT"),
+):
     t = ticker.upper().strip()
     if not t or len(t) > 12:
         raise HTTPException(400, "invalid ticker")
     if template and template not in ("single", "sotp", "infra", "strategy"):
         raise HTTPException(400, "invalid template")
+
+    # PUBLISH GATE (15 Sep 2026): the deck renders from the assumptions file and
+    # never saw the agent run, so a run whose red team conceded its own anchor
+    # could still ship as BUY. Now the audit decides: REJECT blocks publication
+    # unless the caller explicitly forces it.
+    audit = _publish_audit(t)
+    if audit and audit.get("verdict") == "REJECT" and not force:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "publish_blocked",
+                "ticker": t,
+                "run_audit": {
+                    "verdict": audit.get("verdict"),
+                    "rating_published": audit.get("rating_actual"),
+                    "rating_override_required": audit.get("rating_override_required"),
+                    "anchor_contested": audit.get("anchor_contested"),
+                    "reasons": audit.get("reasons"),
+                    "required_flags": audit.get("required_flags"),
+                    "disclosure": audit.get("disclosure"),
+                },
+                "message": (
+                    f"Laporan {t} belum boleh terbit: audit deterministik menolak run terakhirnya. "
+                    f"{'Rating ' + str(audit.get('rating_actual')) + ' dipublikasikan padahal anchor-nya sudah di-concede di debat. ' if audit.get('anchor_contested') else ''}"
+                    "Lihat run_audit.reasons. Pakai ?force=1 kalau tetap mau render (tidak disarankan)."
+                ),
+            },
+        )
 
     pdf_bytes, engine, tpl_name, data = await render_pdf_bytes_for_ticker(t, template)
     title = f"{t} — {data.get('meta', {}).get('report_type', 'Report')} ({tpl_name})"
