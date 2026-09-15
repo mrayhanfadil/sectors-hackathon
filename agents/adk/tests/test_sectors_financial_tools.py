@@ -36,12 +36,12 @@ def test_all_six_tools_keyless():
         asyncio.run(sectors_filings("BBCA")),
         asyncio.run(sectors_foreign_flow("BBCA")),
         asyncio.run(sectors_segments("BBCA")),
-        asyncio.run(sectors_index_daily("IHSG", "2026-06-01", "2026-09-01")),
+        asyncio.run(sectors_index_daily("ihsg", "2026-06-01", "2026-09-01")),
     ]
     assert len(SECTORS_FINANCIAL_TOOLS) == 7
     for out in outs[:-1]:
         _keyless(out)
-    _keyless(outs[-1], ticker="IHSG")
+    _keyless(outs[-1], ticker="ihsg")
 
 
 def test_ticker_normalization():
