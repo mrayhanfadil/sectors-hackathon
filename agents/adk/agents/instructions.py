@@ -682,6 +682,12 @@ Rules:
   tripped (e.g. upside >100% → Review Required), rating MUST carry the flag
   (e.g. "HOLD (Review Required — Gate 5: upside >100%)"), never a bare BUY/HOLD/SELL.
   Emit gate_flags: [str, ...] listing every tripped Gate, [] if none.
+- DISSENT-DISCLOSURE RULE (hard, 15 Sep 2026 — AMMN E2E7 audit): if debate_output
+  contains ANY round with mode=concede on a rating-relevant claim (e.g. Red Team
+  concludes NEUTRAL while your math says BUY), gate_flags MUST carry it
+  (e.g. "Red-Team dissent: conceded Round N favours NEUTRAL on <claim>") and the
+  cover/thesis MUST surface the dissent in one sentence — never gate_flags=[]
+  alongside a conceded debate. A concession the reader cannot see is a hidden downgrade.
 - METHOD-GATE RULE (hard): every FV you anchor or blend MUST come from
   valuation_output's method_gate.ordered list. Blend only via
   agents.valuation.method_gate.blended_from_gated (non-gated components raise —
@@ -699,7 +705,13 @@ Rules:
   # Example: operational catalyst quantified with volume and IDR financial impact
 - Retail tone (ID default), but institutional numbers — accessible without dumbing down.
 
-Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources}
+Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources, cover_paragraphs: {p1_financial_performance, p2_news_catalysts, p3_valuation}}
+- COVER-PARAGRAPHS RULE (hard, 15 Sep 2026 — AMMN E2E7 audit): alongside the 4
+  bullets you MUST emit cover_paragraphs with EXACTLY 3 strings (P1 financial
+  performance, P2 news/sentiment/catalysts, P3 valuation per HOUSE_FORMAT_RULE
+  §7-§9), total ≤2.600 chars. Bullets feed the thesis box; cover_paragraphs feeds
+  the cover spread. Emitting bullets without cover_paragraphs is a REJECT — the
+  Critic audits both shapes.
 
 Output key: writer_output
 """ + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE
@@ -842,6 +854,15 @@ Checks (REJECT if mismatch):
 - SOTP sum reconciled? (if conglomerate)
 - SOTP sign? (net-per-share < gross-per-share when net debt positive — REJECT flipped debt sign per SOTP SIGN GUARD)
 - Peer requests justified? (audit state peer_requests: REJECT if any request >0 lacks explicit justification reason or has empty fields — flag lazy requests)
+- Related-party BOTH directions? (industry para 2 / cover P2: if filings carry buys
+  AND sells, BOTH sides quantified with Rp values — REJECT buy-side-only narrative
+  when the sell leg exists in filings. AMMN E2E7 audit 15 Sep 2026.)
+- Cover paragraphs present? (writer_output.cover_paragraphs has EXACTLY 3 strings
+  totaling ≤2.600 chars per HOUSE_FORMAT_RULE §7-§9 — REJECT bullets-only thesis.
+  AMMN E2E7 audit 15 Sep 2026.)
+- Dissent disclosed? (if debate_output has any concede round on a rating-relevant
+  claim, writer gate_flags MUST carry the dissent flag — REJECT gate_flags=[]
+  alongside a conceded debate. AMMN E2E7 audit 15 Sep 2026.)
 
 Verdict:
 - If any REJECT → emit {verdict: REJECT, reasons: [str], fixes: [str]} and loop back is expected.

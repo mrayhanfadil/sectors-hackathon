@@ -72,7 +72,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0× pada EBITDA FY26F \u2014 multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke estimasi pihak ketiga yang TP-nya mengimplikasikan 15,7× FY26F. Bukan mean own-history.",
+  "ev_multiple_basis": "Target 15,0x pada EBITDA FY26F — owner-selected headline multiple (bukan midpoint aritmetik: (13,3+15,7)/2 = 14,5). Justifikasi Sectors-only: multiple forward market sendiri 13,3x FY26F (harga 11 Sep 2026) plus premi ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke own -1sigma band 22,13x dan sensitivity leg +/-2x (13x-17x). Bukan mean own-history.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -376,7 +376,8 @@
     "ev_ebitda_fy26f": 13.3,
     "ev_ebitda_fy27f": 10.0,
     "ev_ebitda_midcycle_fy27f_28f": 9.0,
-    "third_party_implied_fy26f": 15.7,
+    "third_party_implied_fy26f": null,
+    "third_party_implied_note": "REMOVED 15 Sep 2026 — source-independence rule: deck is Sectors-only, no external research-house cross-check shipped. 15.0x justified by market-implied 13.3x + ramp premium + own-history cross-check + sensitivity leg.",
     "source": "Sectors market cap 11 Sep 2026 + jalur EBITDA FY26F-FY28F yang dikutip"
   },
   "ev_multiple_own_history": {
