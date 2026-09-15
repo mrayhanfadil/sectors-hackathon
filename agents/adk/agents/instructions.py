@@ -697,6 +697,13 @@ Rules:
   (e.g. "Red-Team dissent: conceded Round N favours NEUTRAL on <claim>") and the
   cover/thesis MUST surface the dissent in one sentence — never gate_flags=[]
   alongside a conceded debate. A concession the reader cannot see is a hidden downgrade.
+  **COPY IT FROM THE AUDIT — do not compose it yourself.** Call
+  `agents.valuation.dissent_audit.audit(run_state, price=<spot>)` and put its
+  `required_flags` into `gate_flags` verbatim (they are derived from the rounds, so
+  they cannot be softened). If the audit returns `rating_override_required`
+  ("Review Required"), THAT is your rating — a directional BUY/HOLD/SELL on a
+  conceded anchor is rejected downstream and blocks publication of the deck:
+  /api/report/{ticker}/pdf answers 409 while the audit says REJECT.
 - METHOD-GATE RULE (hard): every FV you anchor or blend MUST come from
   valuation_output's method_gate.ordered list. Blend only via
   agents.valuation.method_gate.blended_from_gated (non-gated components raise —
