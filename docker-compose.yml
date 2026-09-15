@@ -16,20 +16,25 @@ services:
         # false = report/PDF only, no Google ADK stack (smaller, faster to build; /agent routes stop working)
         WITH_ADK: "true"
     image: sectors-api:local
-    # Optional so the stack still runs without a .env (the app reports the missing provider keys honestly).
+    # Secrets come from the SAME file the systemd unit used (EnvironmentFile), so
+    # the container and the host unit can never drift apart. .env keeps dev extras.
     env_file:
       - path: .env
         required: false
+      - path: /home/fadil/.config/sectors-be/env
+        required: true
     environment:
       PYTHONUNBUFFERED: "1"
     # Assumptions and harvest cache live on the host: editable without a rebuild, and they survive one.
     volumes:
       - ./data:/app/data
       - ./output:/app/output
-    # 18777 on purpose: the host already runs the production service on 8777, and two listeners on one port is a
-    # silent "which one answered?" bug.
+    # The container IS production now (systemd unit retired 15 Sep 2026), so it owns 8777 —
+    # the port the Cloudflare tunnel already targets, which is why the cutover needs no
+    # dashboard change. cloudflared runs on this host, so all-interface publishing matches
+    # the exposure the retired unit had (0.0.0.0:8777).
     ports:
-      - "127.0.0.1:18777:8777"
+      - "8777:8777"
     restart: unless-stopped
 
   web:
@@ -57,9 +62,12 @@ services:
       args:
         WITH_ADK: "true"
     image: sectors-api:local
+    # Same single secrets source as the api service (see note above).
     env_file:
       - path: .env
         required: false
+      - path: /home/fadil/.config/sectors-be/env
+        required: true
     environment:
       PYTHONUNBUFFERED: "1"
     volumes:

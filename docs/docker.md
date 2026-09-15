@@ -36,14 +36,19 @@ Practical result: a source edit rebuilds in seconds; a dependency edit rebuilds 
 
 ## Keys
 
-The host keeps provider keys in `~/.config/sectors-be/env` (outside the repository, and intentionally not copied into
-any image). A container does not see that file, so `.env` is the container's source of truth:
+Provider keys live in `~/.config/sectors-be/env` (outside the repository, never copied into an image). Compose loads
+that file directly as a second `env_file`, so the container and the host read the SAME secrets and cannot drift:
 
-```bash
-cp .env.example .env
-grep -E '^(SECTORS_API_KEY|SPARK13_MAX_TOKENS)=' ~/.config/sectors-be/env >> .env   # or paste them by hand
-docker compose up -d --force-recreate
+```yaml
+    env_file:
+      - path: .env                               # dev-only extras
+        required: false
+      - path: /home/fadil/.config/sectors-be/env # the file the retired systemd unit used
+        required: true                           # missing file = compose refuses to start, loudly
 ```
+
+Hand-copying keys into `.env` is what let the container run for two days without `SECTORS_API_KEY` (caught during the
+15 Sep 2026 cutover) — one source of truth, or the two silently diverge.
 
 Check what the container actually received without printing values:
 
@@ -55,11 +60,12 @@ docker compose exec api python -c "import os; print({k: bool(os.environ.get(k)) 
 Without `SECTORS_API_KEY` the report endpoints still answer, but any path that needs fresh market data fails loudly
 instead of guessing — which is the intended behaviour, not a bug to work around.
 
-## Ports, and why the API is on 18777
+## Ports
 
-The host already runs the production service on 8777 (`sectors-be.service`). Publishing the container on the same
-port would create a silent "which one answered?" bug, so compose maps it to `127.0.0.1:18777`. The browser talks to
-`web` on 8080 and never sees the API port.
+The container owns `8777` — the port the Cloudflare tunnel already targets, so the cutover needed no dashboard change.
+`sectors-be.service` was the previous owner; it was stopped and disabled on 15 Sep 2026. Two listeners on one port is
+a silent "which one answered?" bug, and two writers on one SQLite file (`data/agent_runs.db`) is worse, so the two
+runtimes never coexist. `web` still publishes 8080 for local browsing.
 
 ## State
 
@@ -84,9 +90,28 @@ mount and the reload flag differ.
 
 - `agents/adk/providers/__init__.py` and `agents/adk/app.py` read `/home/fadil/.env` by absolute path. That is the
   agent path only (the report and PDF path never touches it), and inside a container the file does not exist, so the
-  ADK provider keys must come from the environment. Anyone using the `/agent` routes in Docker should set them in
-  `.env`, which compose passes through.
-- The app also tries `~/.config/sectors-be/env` at startup. Environment variables win, so the compose `env_file` is
-  the source of truth in a container; the host file is simply absent.
+  ADK provider keys come from the environment — `SECTORS_API_KEY`, `MINIMAX_API_KEY` and `SPARK13_MAX_TOKENS` all
+  arrive through the compose `env_file` pair above.
+- The app also tries `~/.config/sectors-be/env` at startup. Environment variables win; in the container the compose
+  `env_file` is the source of truth, and it points at that very file.
 - `WITH_ADK=false make build-slim` produces a report-only image: no Google ADK stack, smaller and faster, and the
   `/agent` routes stop working. The report, valuation, PDF and test paths do not need it.
+
+## Production
+
+This stack **is** production since the 15 Sep 2026 cutover: `report.server-fadil.my.id` → cloudflared → `127.0.0.1:8777`
+→ this container. Deploy is:
+
+```bash
+make build && make up      # rebuild the api image, recreate the container
+make ps && curl -s localhost:8777/api/agent/health   # verify
+```
+
+Pitfalls worth remembering, both of which cost real debugging time:
+
+- **A running container is not proof of current code.** `docker images --format '{{.CreatedSince}}' | grep sectors-api`
+  tells you when the image was built; if it is older than the last commit, `make build` before believing any fix is
+  live. The same trap killed a systemd deploy: the unit served pre-fix code for hours because nobody restarted it.
+- **Never run the container and the host unit together.** Both bind-mount `./data`, so they share
+  `data/agent_runs.db` — the Sectors credit cache and the run history. Two writers on one SQLite file is how you lose
+  paid cache rows. `sectors-be.service` is disabled; leave it that way.
