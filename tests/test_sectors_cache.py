@@ -50,14 +50,30 @@ def test_distinct_params_distinct_keys(cache: SectorsCache) -> None:
     assert out_a == {"a": 1} and out_b == {"a": 2}
 
 
-def test_expired_entry_is_missed_not_served(cache: SectorsCache) -> None:
-    """TTL of 0s means expires immediately on the next get()."""
+def test_expired_entry_serves_stale_by_default(cache: SectorsCache) -> None:
+    """Credit-thin mode (14 Sep 2026): expired rows serve stale with _stale flag
+    instead of forcing a fresh pull — TTL=0 + sleep, then get() must HIT."""
+    import os
+
+    os.environ.pop("SECTORS_STALE_OK", None)
     payload = {"expired": True}
     cache.set("/news/news/", {"symbols": "BBCA"}, payload, ttl_seconds=0)
-    # Sleep one full second so expires_at <= now (TTL=0 + check expires_at <= now).
+    # Sleep one full second so expires_at <= now.
     time.sleep(1.05)
     out, hit = cache.get("/news/news/", {"symbols": "BBCA"})
-    assert hit is False, "expired entry must be a miss"
+    assert hit is True, "expired entry must serve stale by default (credit-thin mode)"
+    assert out is not None and out.get("_stale") is True
+    assert "expired" in out
+
+
+def test_expired_entry_misses_under_strict_mode(cache: SectorsCache, monkeypatch) -> None:
+    """SECTORS_STALE_OK=0 restores strict expiry (fresh pull, burns credit)."""
+    monkeypatch.setenv("SECTORS_STALE_OK", "0")
+    payload = {"expired": True}
+    cache.set("/news/news/", {"symbols": "BBCA"}, payload, ttl_seconds=0)
+    time.sleep(1.05)
+    out, hit = cache.get("/news/news/", {"symbols": "BBCA"})
+    assert hit is False, "strict mode: expired entry must be a miss"
     assert out is None
 
 

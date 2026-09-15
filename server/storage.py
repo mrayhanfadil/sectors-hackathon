@@ -830,7 +830,17 @@ class SectorsCache:
         return f"sc:{endpoint[:32]}:{h[:32]}"
 
     def get(self, endpoint: str, params: dict | None) -> tuple[Any, bool]:
-        """Return (payload, hit). hit=False means expired or absent."""
+        """Return (payload, hit). hit=False means expired or absent.
+
+        STALE-SAFE (14 Sep 2026, credit-thin mode): an expired row is still
+        returned with hit=True when ``SECTORS_STALE_OK=1`` (default) — the
+        payload is marked ``_stale: True`` + ``_stale_age_h`` so callers and
+        the Critic can see the data is past TTL. Set SECTORS_STALE_OK=0 to
+        restore strict expiry (fresh pull, burns 1 credit per endpoint).
+        Absent rows still miss.
+        """
+        import os as _os
+
         key = self._key(endpoint, params)
         now = time.time()
         with self._lock:
@@ -838,12 +848,24 @@ class SectorsCache:
                 "SELECT expires_at, payload_json FROM sectors_cache WHERE cache_key=?",
                 (key,),
             ).fetchone()
-        if not row or row["expires_at"] <= now:
+        if not row:
             return (None, False)
         try:
-            return (json.loads(row["payload_json"]), True)
+            payload = json.loads(row["payload_json"])
         except json.JSONDecodeError:
             return (None, False)
+        if row["expires_at"] > now:
+            return (payload, True)
+        if _os.getenv("SECTORS_STALE_OK", "1").strip() not in ("0", "false", "no"):
+            if isinstance(payload, dict):
+                payload = dict(payload)
+                payload["_stale"] = True
+                try:
+                    payload["_stale_age_h"] = round((now - row["expires_at"]) / 3600.0, 1)
+                except Exception:
+                    pass
+            return (payload, True)
+        return (None, False)
 
     def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int) -> None:
         """Persist payload with TTL (seconds)."""
