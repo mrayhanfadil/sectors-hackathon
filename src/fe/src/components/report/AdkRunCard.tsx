@@ -7,10 +7,8 @@ import {
   ChevronUp,
   History,
   Activity,
-  Terminal,
 } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 
 export type Log = {
@@ -69,36 +67,36 @@ function renderStatusBadge(status: string) {
   switch (norm) {
     case "completed":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-emerald-500/40 bg-emerald-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-emerald-600 dark:border-emerald-500/50 dark:text-emerald-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          SELESAI
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#BCE2C9] bg-[#EBF6EE] px-2 py-0.5 text-xs font-medium text-[#157F3D] dark:border-[#157F3D]/40 dark:bg-[#157F3D]/20 dark:text-[#34D399]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#157F3D]" />
+          Selesai
         </span>
       )
     case "interrupted":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-amber-500/40 bg-amber-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-amber-600 dark:border-amber-500/50 dark:text-amber-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-amber-500" />
-          TERINTERUPSI
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#F6E3B8] bg-[#FEF9EE] px-2 py-0.5 text-xs font-medium text-[#A16207] dark:border-[#A16207]/40 dark:bg-[#A16207]/20 dark:text-[#FBBF24]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#A16207]" />
+          Terinterupsi
         </span>
       )
     case "failed":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-rose-500/40 bg-rose-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-rose-600 dark:border-rose-500/50 dark:text-rose-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-rose-500" />
-          GAGAL
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#F8C8CB] bg-[#FDF2F2] px-2 py-0.5 text-xs font-medium text-[#B4232A] dark:border-[#B4232A]/40 dark:bg-[#B4232A]/20 dark:text-[#F87171]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#B4232A]" />
+          Gagal
         </span>
       )
     case "running":
       return (
-        <span className="inline-flex items-center gap-1 rounded-md border border-sky-500/40 bg-sky-500/10 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-sky-600 animate-pulse dark:border-sky-500/50 dark:text-sky-300">
-          <span className="h-1.5 w-1.5 rounded-full bg-sky-500" />
-          BERJALAN
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#0E6E63]/30 bg-[#0E6E63]/10 px-2 py-0.5 text-xs font-medium text-[#0E6E63] animate-pulse dark:border-[#4FD1B5]/30 dark:bg-[#4FD1B5]/20 dark:text-[#4FD1B5]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#0E6E63]" />
+          Sedang diproses
         </span>
       )
     default:
       return (
-        <span className="inline-flex items-center rounded-md border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] font-bold uppercase text-neutral-700 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-300">
-          {status.toUpperCase()}
+        <span className="inline-flex items-center rounded-md border border-[#E7E3DA] bg-[#FBFAF7] px-2 py-0.5 text-xs font-medium text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+          {status}
         </span>
       )
   }
@@ -110,31 +108,31 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
 
   if (!hasRun || !log) {
     return (
-      <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-        <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
+      <Card className="rounded-xl border border-[#E7E3DA] bg-white shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]">
+        <CardHeader className="border-b border-[#E7E3DA] p-4 pb-3 dark:border-[#2A2822]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-neutral-500 dark:text-neutral-400" />
-              <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                Proses analisis // {tk}
+              <Bot className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
+              <CardTitle className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                Proses analisis {tk}
               </CardTitle>
             </div>
-            <span className="font-mono text-[10px] text-neutral-400">STATUS: SIAGA</span>
+            <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Siaga</span>
           </div>
         </CardHeader>
-        <CardContent className="space-y-3 p-3.5 pt-3 font-mono">
-          <div className="flex items-center gap-2 text-xs text-neutral-500 dark:text-neutral-400 font-sans">
-            <Inbox className="h-4 w-4 text-neutral-400" />
-            <span>Belum ada rekam jejak eksekusi ADK untuk {tk}.</span>
+        <CardContent className="space-y-3 p-4">
+          <div className="flex items-center gap-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <Inbox className="h-4 w-4 text-[#A8A296]" />
+            <span>Belum ada rekam jejak eksekusi untuk {tk}.</span>
           </div>
           <div>
             <Link to="/agent" search={{ ticker: tk } as any}>
               <Button
                 size="sm"
                 variant="outline"
-                className="h-7 rounded-md border-neutral-300 font-sans text-xs font-semibold text-neutral-800 hover:bg-neutral-100 dark:border-[#262930] dark:bg-[#181a1f] dark:text-neutral-200 dark:hover:bg-[#22252c]"
+                className="h-8 rounded-lg border-[#E7E3DA] bg-white text-xs font-medium text-[#1C1B17] hover:bg-[#F4F1EA] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3] dark:hover:bg-[#25231E] cursor-pointer"
               >
-                <span>&gt; Jalankan analisis</span>
+                <span>Jalankan analisis</span>
               </Button>
             </Link>
           </div>
@@ -151,93 +149,92 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     : "-"
 
   return (
-    <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-      <CardHeader className="border-b border-neutral-200 bg-neutral-50/70 p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]/70">
+    <Card className="rounded-xl border border-[#E7E3DA] bg-white shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]">
+      <CardHeader className="border-b border-[#E7E3DA] p-4 pb-3 dark:border-[#2A2822]">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-amber-500" />
-            <CardTitle className="font-sans text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-              Proses analisis // {tk}
+            <Activity className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
+            <CardTitle className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+              Proses analisis {tk}
             </CardTitle>
           </div>
           <Link to="/agent" search={{ ticker: tk } as any}>
-            <span className="font-sans text-[11px] font-bold text-[#0070f3] hover:underline dark:text-[#3291ff]">
-              [Lihat rincian &gt;]
+            <span className="text-xs font-medium text-[#0E6E63] hover:underline dark:text-[#4FD1B5]">
+              Lihat rincian
             </span>
           </Link>
         </div>
       </CardHeader>
 
-      <CardContent className="space-y-3 p-3.5 pt-3 font-mono text-xs">
+      <CardContent className="space-y-3 p-4 text-xs">
         {/* Row 1: Status & Metadata */}
         <div className="flex flex-wrap items-center justify-between gap-1.5">
           <div>{renderStatusBadge(log.status)}</div>
-          <div className="text-[11px] text-neutral-500 tabular-nums dark:text-neutral-400 font-sans">
+          <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
             {formatRelativeTime(log.started_at)}
           </div>
         </div>
 
-        {/* Row 2: Metrics grid */}
-        <div className="grid grid-cols-2 gap-2 text-[11px]">
-          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2 dark:border-[#262930] dark:bg-[#181a1f]">
-            <div className="text-[9px] uppercase text-neutral-400 font-sans font-medium">MODEL</div>
-            <div className="truncate font-bold text-neutral-800 dark:text-neutral-200">
+        {/* Row 2: Metrics */}
+        <div className="grid grid-cols-2 gap-2 text-xs">
+          <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 dark:border-[#2A2822] dark:bg-[#14130F]">
+            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Model</div>
+            <div className="truncate font-medium text-[#1C1B17] mt-0.5 dark:text-[#EDEAE3]">
               {log.provider}/{log.model}
             </div>
           </div>
-          <div className="rounded-md border border-neutral-200 bg-neutral-50 p-2 dark:border-[#262930] dark:bg-[#181a1f]">
-            <div className="text-[9px] uppercase text-neutral-400 font-sans font-medium">DURASI / EVENT</div>
-            <div className="font-bold text-neutral-800 tabular-nums dark:text-neutral-200">
-              {formatDuration(log.duration_s)} · {log.n_events} ev
+          <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 dark:border-[#2A2822] dark:bg-[#14130F]">
+            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Durasi / Kejadian</div>
+            <div className="font-medium text-[#1C1B17] mt-0.5 dark:text-[#EDEAE3]">
+              <span className="font-mono tabular-nums">{formatDuration(log.duration_s)}</span> · <span className="font-mono tabular-nums">{log.n_events}</span> ev
             </div>
           </div>
         </div>
 
-        {/* Row 3: Last activity stream */}
-        <div className="rounded-md border border-neutral-200 bg-neutral-50/80 p-2.5 text-[11px] leading-relaxed dark:border-[#262930] dark:bg-[#181a1f]/60">
-          <div className="flex items-center gap-1 font-bold uppercase text-neutral-500 dark:text-neutral-400 font-sans text-[10px]">
-            <Terminal className="h-3 w-3 text-amber-500" />
-            <span>Aktivitas Mesin Terakhir:</span>
+        {/* Row 3: Last activity */}
+        <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs leading-relaxed dark:border-[#2A2822] dark:bg-[#14130F]">
+          <div className="font-semibold text-[#1C1B17] text-[11px] dark:text-[#EDEAE3]">
+            Aktivitas mesin terakhir:
           </div>
-          <p className="mt-1 text-neutral-700 dark:text-neutral-300 font-mono">
-            &gt; {lastTextPreview}
+          <p className="mt-1 text-[#6B6659] dark:text-[#A8A296]">
+            {lastTextPreview}
           </p>
         </div>
 
-        {/* Collapsible history: Riwayat run sebelumnya */}
+        {/* Expandable Riwayat Eksekusi */}
         {history && history.length > 0 && (
-          <div className="border-t border-neutral-200 pt-2.5 dark:border-[#1f2228]">
+          <div className="border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822]">
             <button
               type="button"
               onClick={() => setHistoryOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between py-0.5 text-left font-sans text-xs font-bold text-neutral-600 hover:text-neutral-900 select-none cursor-pointer dark:text-neutral-400 dark:hover:text-neutral-200"
+              className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold text-[#1C1B17] hover:text-[#0E6E63] cursor-pointer dark:text-[#EDEAE3] dark:hover:text-[#4FD1B5]"
             >
               <div className="flex items-center gap-1.5">
-                <History className="h-3.5 w-3.5 text-neutral-400" />
-                <span>Riwayat Eksekusi ({Math.min(history.length, 5)})</span>
+                <History className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+                <span>Riwayat eksekusi ({Math.min(history.length, 5)})</span>
               </div>
               {historyOpen ? (
-                <ChevronUp className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronUp className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-neutral-400" />
+                <ChevronDown className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
               )}
             </button>
 
             {historyOpen && (
-              <div className="mt-2 space-y-1 rounded-md border border-neutral-200 bg-neutral-50 p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
+              <div className="mt-2 space-y-1.5 rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 dark:border-[#2A2822] dark:bg-[#14130F]">
                 {history.slice(0, 5).map((h) => (
                   <div
                     key={h.run_id}
-                    className="flex flex-wrap items-center justify-between gap-1 border-b border-neutral-200/50 py-1.5 text-[10px] last:border-0 dark:border-[#262930]/50"
+                    className="flex flex-wrap items-center justify-between gap-1 border-b border-[#E7E3DA]/60 py-1.5 text-xs last:border-0 dark:border-[#2A2822]/60"
                   >
                     <div className="flex items-center gap-1.5">
                       {renderStatusBadge(h.status)}
-                      <span className="text-neutral-500 tabular-nums dark:text-neutral-400 font-sans">
+                      <span className="text-[#6B6659] dark:text-[#A8A296]">
                         {formatRelativeTime(h.started_at)}
                       </span>
                     </div>
-                    <div className="text-neutral-500 tabular-nums dark:text-neutral-400">
-                      {h.n_events} ev · {formatDuration(h.duration_s)}
+                    <div className="text-[#6B6659] dark:text-[#A8A296]">
+                      <span className="font-mono tabular-nums">{h.n_events}</span> ev · <span className="font-mono tabular-nums">{formatDuration(h.duration_s)}</span>
                     </div>
                   </div>
                 ))}
@@ -249,4 +246,3 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     </Card>
   )
 }
-

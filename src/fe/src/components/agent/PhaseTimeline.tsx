@@ -44,7 +44,7 @@ function getStageStatus(
     else if (s === "finished") finCount += 1
   }
 
-  // Check subagents if any
+  // Check subagents
   for (const k of stage.allAgents) {
     if (!primaryKeys.includes(k)) {
       const s = agentStatuses[k]
@@ -76,11 +76,11 @@ function getStageStatus(
   return { status: "idle", finishedCount: finCount, totalCount: primaryKeys.length }
 }
 
-const STATUS_ID: Record<string, string> = {
-  running: "berjalan",
-  finished: "selesai",
-  error: "gagal",
-  idle: "antri",
+const STATUS_LABELS: Record<string, string> = {
+  running: "Sedang diproses",
+  finished: "Selesai",
+  error: "Gagal",
+  idle: "Menunggu",
 }
 
 export const PhaseTimeline = memo(function PhaseTimeline({
@@ -107,11 +107,9 @@ export const PhaseTimeline = memo(function PhaseTimeline({
     }
   }
 
-  // Collapse aggressively by default: only auto-expand running step or first unfinished
   const defaultStageId = firstRunningId ?? (done ? null : firstUnfinishedId ?? PIPELINE_STAGES[0].id)
   const [expandedId, setExpandedId] = useState<string | null>(() => defaultStageId)
 
-  // Track running stage changes so the active step auto-expands as pipeline progresses
   const prevRunningRef = useRef<string | null>(null)
   useEffect(() => {
     if (running && firstRunningId && firstRunningId !== prevRunningRef.current) {
@@ -120,7 +118,6 @@ export const PhaseTimeline = memo(function PhaseTimeline({
     }
   }, [running, firstRunningId])
 
-  // When run completes, collapse all by default for a clean summary
   const prevDoneRef = useRef<typeof done>(done)
   useEffect(() => {
     if (done !== null && prevDoneRef.current === null) {
@@ -129,7 +126,6 @@ export const PhaseTimeline = memo(function PhaseTimeline({
     prevDoneRef.current = done
   }, [done])
 
-  // If user selected an author externally, expand the stage containing that agent
   useEffect(() => {
     if (selectedAuthor && selectedAuthor !== "all") {
       const matched = PIPELINE_STAGES.find((st) => st.allAgents.includes(selectedAuthor))
@@ -139,39 +135,40 @@ export const PhaseTimeline = memo(function PhaseTimeline({
     }
   }, [selectedAuthor])
 
-  const globalStatus = done !== null ? "SELESAI" : running ? "JALAN" : "SIAGA"
+  const globalStatus = done !== null ? "Selesai" : running ? "Sedang diproses" : "Siaga"
 
   return (
-    <div className={cn("w-full rounded-lg border border-neutral-800 bg-neutral-950 p-4 font-sans shadow-md", className)}>
-      {/* Header: title + global status + progress bar */}
+    <div className={cn("w-full rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 font-sans shadow-none", className)}>
+      {/* Header */}
       <div className="flex items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-neutral-900 border border-neutral-800 text-emerald-400">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F2EB] dark:bg-[#23211C] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822]">
             <Layers className="h-4 w-4" />
           </div>
           <div className="min-w-0">
-            <h3 className="text-sm font-bold text-neutral-100 truncate">
-              Alur kerja mesin
-            </h3>
-            <p className="text-xs text-neutral-400">
-              {completedStages}/{PIPELINE_STAGES.length} tahap selesai
+            <h2 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3] truncate">
+              Tahapan alur kerja
+            </h2>
+            <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+              {completedStages} dari {PIPELINE_STAGES.length} tahap selesai
             </p>
           </div>
         </div>
+
         <span
           className={cn(
-            "shrink-0 rounded-full border px-3 py-1 text-xs font-bold",
-            globalStatus === "JALAN"
-              ? "border-amber-700 bg-amber-950 text-amber-300"
-              : globalStatus === "SELESAI"
-              ? "border-emerald-700 bg-emerald-950 text-emerald-300"
-              : "border-neutral-700 bg-neutral-900 text-neutral-400"
+            "shrink-0 rounded-full border px-3 py-1 text-xs font-medium",
+            globalStatus === "Sedang diproses"
+              ? "border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300"
+              : globalStatus === "Selesai"
+              ? "border-emerald-200 dark:border-emerald-800/60 bg-emerald-50 dark:bg-emerald-950/40 text-emerald-800 dark:text-emerald-300"
+              : "border-[#E7E3DA] dark:border-[#2A2822] bg-[#F5F2EB] dark:bg-[#23211C] text-[#6B6659] dark:text-[#A8A296]"
           )}
         >
-          {globalStatus === "JALAN" ? (
+          {globalStatus === "Sedang diproses" ? (
             <span className="flex items-center gap-1.5">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
-              JALAN
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+              Sedang diproses
             </span>
           ) : (
             globalStatus
@@ -179,18 +176,19 @@ export const PhaseTimeline = memo(function PhaseTimeline({
         </span>
       </div>
 
-      <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-neutral-800">
+      {/* Progress Bar */}
+      <div className="mt-4 h-1.5 overflow-hidden rounded-full bg-[#F5F2EB] dark:bg-[#23211C]">
         <div
           className={cn(
             "h-full rounded-full transition-all duration-300",
-            globalStatus === "JALAN" ? "bg-amber-400" : "bg-emerald-400"
+            globalStatus === "Sedang diproses" ? "bg-amber-500" : "bg-[#0E6E63] dark:bg-[#4FD1B5]"
           )}
           style={{ width: `${(completedStages / PIPELINE_STAGES.length) * 100}%` }}
         />
       </div>
 
       {/* Vertical Stepper Timeline */}
-      <div className="mt-4 space-y-2.5">
+      <div className="mt-5 space-y-3">
         {PIPELINE_STAGES.map((stage, idx) => {
           const { status, finishedCount, totalCount } = getStageStatus(
             stage,
@@ -201,25 +199,21 @@ export const PhaseTimeline = memo(function PhaseTimeline({
           const isExpanded = expandedId === stage.id
           const isLast = idx === PIPELINE_STAGES.length - 1
 
-          let ringClass = "border-neutral-700 bg-neutral-900 text-neutral-400"
-          let pillClass = "bg-neutral-900 border-neutral-700 text-neutral-400 font-medium"
-          let statusLabel = "ANTRI"
+          let ringClass = "border-[#E7E3DA] dark:border-[#2A2822] bg-[#F5F2EB] dark:bg-[#23211C] text-[#6B6659] dark:text-[#A8A296]"
+          let pillClass = "bg-[#F5F2EB] dark:bg-[#23211C] border-[#E7E3DA] dark:border-[#2A2822] text-[#6B6659] dark:text-[#A8A296]"
+          const statusText = STATUS_LABELS[status] || "Menunggu"
 
           if (status === "running") {
-            ringClass = "border-amber-500 bg-amber-950 text-amber-200 ring-2 ring-amber-500/20 shadow-sm shadow-amber-950"
-            pillClass = "bg-amber-950/90 border-amber-700/80 text-amber-200 font-bold"
-            statusLabel = "JALAN"
+            ringClass = "border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-200"
+            pillClass = "bg-amber-50 dark:bg-amber-950/60 border-amber-200 dark:border-amber-800/60 text-amber-800 dark:text-amber-300 font-medium"
           } else if (status === "finished") {
-            ringClass = "border-emerald-600 bg-emerald-950 text-emerald-300 shadow-sm shadow-emerald-950"
-            pillClass = "bg-emerald-950/80 border-emerald-700/80 text-emerald-300 font-medium"
-            statusLabel = "SELESAI"
+            ringClass = "border-emerald-300 dark:border-emerald-700 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300"
+            pillClass = "bg-emerald-50 dark:bg-emerald-950/60 border-emerald-200 dark:border-emerald-800/60 text-emerald-800 dark:text-emerald-300 font-medium"
           } else if (status === "error") {
-            ringClass = "border-rose-600 bg-rose-950 text-rose-200 shadow-sm shadow-rose-950"
-            pillClass = "bg-rose-950/90 border-rose-700/80 text-rose-200 font-bold"
-            statusLabel = "GAGAL"
+            ringClass = "border-rose-300 dark:border-rose-700 bg-rose-50 dark:bg-rose-950/60 text-rose-800 dark:text-rose-200"
+            pillClass = "bg-rose-50 dark:bg-rose-950/60 border-rose-200 dark:border-rose-800/60 text-rose-800 dark:text-rose-200 font-medium"
           }
 
-          // Combined list of primary agents and any active subagents
           const displayAgents = Array.from(
             new Set([
               ...stage.primaryAgents,
@@ -235,29 +229,29 @@ export const PhaseTimeline = memo(function PhaseTimeline({
 
           return (
             <div key={stage.id} className="relative flex items-stretch gap-3">
-              {/* Left rail with node circle + vertical connecting line */}
+              {/* Left rail */}
               <div className="relative flex flex-col items-center shrink-0 w-8">
                 <div
                   className={cn(
-                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-bold transition-all z-10",
+                    "flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-medium transition-all z-10",
                     ringClass
                   )}
                 >
                   {status === "finished" ? (
-                    <CheckCircle2 className="h-4 w-4" />
+                    <CheckCircle2 className="h-4 w-4 text-emerald-600 dark:text-emerald-400" />
                   ) : status === "running" ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <Loader2 className="h-4 w-4 animate-spin text-amber-600 dark:text-amber-400" />
                   ) : status === "error" ? (
-                    <AlertCircle className="h-4 w-4" />
+                    <AlertCircle className="h-4 w-4 text-rose-600 dark:text-rose-400" />
                   ) : (
-                    stage.stageNumber
+                    <span>{stage.stageNumber}</span>
                   )}
                 </div>
                 {!isLast && (
                   <div
                     className={cn(
-                      "w-0.5 grow min-h-4 my-1 transition-colors",
-                      status === "finished" ? "bg-emerald-800/60" : "bg-neutral-800"
+                      "w-px grow min-h-4 my-1 transition-colors",
+                      status === "finished" ? "bg-emerald-300 dark:bg-emerald-800" : "bg-[#E7E3DA] dark:bg-[#2A2822]"
                     )}
                     aria-hidden="true"
                   />
@@ -269,48 +263,47 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                 className={cn(
                   "flex-1 min-w-0 rounded-lg border transition-colors",
                   status === "running"
-                    ? "border-amber-700/70 bg-amber-950/20"
+                    ? "border-amber-200 dark:border-amber-800/40 bg-amber-50/30 dark:bg-amber-950/10"
                     : status === "finished"
-                    ? "border-emerald-800/50 bg-emerald-950/15"
+                    ? "border-emerald-200/80 dark:border-emerald-800/30 bg-emerald-50/20 dark:bg-emerald-950/10"
                     : status === "error"
-                    ? "border-rose-800/60 bg-rose-950/20"
-                    : "border-neutral-800/90 bg-neutral-900/40 hover:border-neutral-700"
+                    ? "border-rose-200 dark:border-rose-800/40 bg-rose-50/30 dark:bg-rose-950/10"
+                    : "border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/50 dark:bg-[#1B1A16]/50 hover:border-[#0E6E63]/30"
                 )}
               >
-                {/* Row Header - Clickable toggle button */}
+                {/* Row Header */}
                 <button
                   type="button"
                   onClick={() => setExpandedId(isExpanded ? null : stage.id)}
-                  className="w-full flex items-center justify-between gap-3 p-3 text-left transition-colors rounded-lg focus:outline-none focus:ring-1 focus:ring-neutral-600"
+                  className="w-full flex items-center justify-between gap-3 p-3.5 text-left transition-colors rounded-lg focus:outline-none"
                   aria-expanded={isExpanded}
-                  title={isExpanded ? "Ketuk untuk ringkas" : "Ketuk untuk rincian tahap ini"}
                 >
                   <div className="min-w-0 flex-1">
                     <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-sm font-bold text-neutral-100">
+                      <span className="text-sm font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
                         {stage.title}
                       </span>
                       <span
                         className={cn(
-                          "inline-flex items-center gap-1 rounded px-2 py-0.5 text-[11px] font-mono border",
+                          "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[11px] border",
                           pillClass
                         )}
                       >
                         {status === "running" && (
-                          <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                          <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
                         )}
-                        {statusLabel}
+                        {statusText}
                       </span>
                     </div>
-                    <div className="mt-0.5 text-xs text-neutral-400">
-                      {finishedCount}/{totalCount} mesin · {STATUS_ID[status] || status}
+                    <div className="mt-0.5 text-xs text-[#6B6659] dark:text-[#A8A296]">
+                      {finishedCount} dari {totalCount} agen selesai
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-1 shrink-0 text-neutral-400">
+                  <div className="flex items-center gap-1 shrink-0 text-[#6B6659] dark:text-[#A8A296]">
                     <ChevronDown
                       className={cn(
-                        "h-4 w-4 text-neutral-400 transition-transform duration-200",
+                        "h-4 w-4 text-[#6B6659] dark:text-[#A8A296] transition-transform duration-200",
                         isExpanded && "rotate-180"
                       )}
                     />
@@ -319,16 +312,16 @@ export const PhaseTimeline = memo(function PhaseTimeline({
 
                 {/* Expanded content */}
                 {isExpanded && (
-                  <div className="border-t border-neutral-800/80 p-3 pt-2.5 space-y-2.5">
-                    <p className="text-xs leading-relaxed text-neutral-300">
+                  <div className="border-t border-[#E7E3DA] dark:border-[#2A2822] p-3.5 pt-3 space-y-3">
+                    <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
                       {stage.description}
                     </p>
 
                     <div>
-                      <div className="text-[11px] font-mono text-neutral-500 uppercase tracking-wider mb-1.5">
-                        Mesin Terlibat ({displayAgents.length}):
+                      <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296] mb-1.5">
+                        Agen terlibat:
                       </div>
-                      <div className="flex flex-wrap gap-2">
+                      <div className="flex flex-wrap gap-1.5">
                         {displayAgents.map((aKey) => {
                           const aMeta = getFriendlyAgent(aKey)
                           const aStatus = done !== null ? "finished" : (agentStatuses[aKey] || "idle")
@@ -342,23 +335,23 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                               className={cn(
                                 "inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 text-xs transition-colors border select-none",
                                 isSelected
-                                  ? "border-emerald-400 bg-emerald-950 text-emerald-200 font-bold ring-1 ring-emerald-500/30"
+                                  ? "border-[#0E6E63] dark:border-[#4FD1B5] bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/20 text-[#0E6E63] dark:text-[#4FD1B5] font-medium"
                                   : aStatus === "running"
-                                  ? "border-amber-700 bg-amber-950/80 text-amber-200 font-semibold"
+                                  ? "border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/50 text-amber-800 dark:text-amber-300 font-medium"
                                   : aStatus === "finished"
-                                  ? "border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500 hover:text-white"
-                                  : "border-neutral-800 bg-neutral-950 text-neutral-400 hover:border-neutral-700 hover:text-neutral-300"
+                                  ? "border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#1C1B17] dark:text-[#EDEAE3] hover:border-[#0E6E63]/40"
+                                  : "border-[#E7E3DA] dark:border-[#2A2822] bg-[#F5F2EB] dark:bg-[#23211C] text-[#6B6659] dark:text-[#A8A296]"
                               )}
-                              title={`${aMeta.title} (${STATUS_ID[aStatus] ?? aStatus}) - klik untuk saring catatan`}
+                              title={`${aMeta.title} (${STATUS_LABELS[aStatus] ?? aStatus}) - saring catatan`}
                             >
                               {aStatus === "running" ? (
-                                <Loader2 className="h-3 w-3 animate-spin text-amber-400 shrink-0" />
+                                <Loader2 className="h-3 w-3 animate-spin text-amber-600 dark:text-amber-400 shrink-0" />
                               ) : aStatus === "finished" ? (
-                                <CheckCircle2 className="h-3 w-3 text-emerald-400 shrink-0" />
+                                <CheckCircle2 className="h-3 w-3 text-emerald-600 dark:text-emerald-400 shrink-0" />
                               ) : aStatus === "error" ? (
-                                <AlertCircle className="h-3 w-3 text-rose-400 shrink-0" />
+                                <AlertCircle className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
                               ) : (
-                                <span className="h-1.5 w-1.5 rounded-full bg-neutral-600 shrink-0" />
+                                <span className="h-1.5 w-1.5 rounded-full bg-[#6B6659] dark:bg-[#A8A296] shrink-0" />
                               )}
                               <span>{aMeta.shortLabel}</span>
                             </button>
@@ -374,8 +367,8 @@ export const PhaseTimeline = memo(function PhaseTimeline({
         })}
       </div>
 
-      <p className="mt-3 text-xs text-neutral-500">
-        Ketuk tiap tahap untuk melihat mesin di dalamnya · ketuk nama mesin untuk menyaring catatan langkah.
+      <p className="mt-4 text-xs text-[#6B6659] dark:text-[#A8A296]">
+        Klik nama agen untuk menyaring catatan langkah alur kerja di bawah.
       </p>
     </div>
   )

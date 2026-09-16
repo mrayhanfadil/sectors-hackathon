@@ -1,17 +1,14 @@
 import { useEffect, useState, useMemo, useRef, useCallback } from "react"
 import {
   Search,
-  Terminal,
-  Play,
-  History,
   CheckCircle2,
   AlertCircle,
   Check,
   X,
   CornerDownLeft,
   ArrowUpDown,
+  History,
 } from "lucide-react"
-import { Badge } from "@/components/ui/badge"
 import type { AgentRunItem } from "./RunHistoryPanel"
 import type { UniverseTicker } from "./tickers"
 
@@ -33,11 +30,11 @@ function formatRelativeTime(ts: number | undefined | null): string {
   if (!ts) return "-"
   const now = Date.now() / 1000
   const diff = Math.max(0, Math.floor(now - ts))
-  if (diff < 10) return "just now"
-  if (diff < 60) return `${diff}s ago`
-  if (diff < 3600) return `${Math.floor(diff / 60)}m ago`
-  if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`
-  return `${Math.floor(diff / 86400)}d ago`
+  if (diff < 10) return "baru saja"
+  if (diff < 60) return `${diff} detik lalu`
+  if (diff < 3600) return `${Math.floor(diff / 60)} menit lalu`
+  if (diff < 86400) return `${Math.floor(diff / 3600)} jam lalu`
+  return `${Math.floor(diff / 86400)} hari lalu`
 }
 
 function truncateId(id: string): string {
@@ -50,20 +47,17 @@ export function RunCommandPalette({
   onClose,
   currentTicker,
   onSelectTicker,
-  onRunTicker,
   runs,
   selectedRunId,
   onSelectRun,
   universe,
   knownTickers,
-  running,
 }: RunCommandPaletteProps) {
   const [query, setQuery] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
 
-  // Focus input on open
   useEffect(() => {
     if (isOpen) {
       setQuery("")
@@ -72,7 +66,6 @@ export function RunCommandPalette({
     }
   }, [isOpen])
 
-  // Filter tickers
   const filteredTickers = useMemo(() => {
     const q = query.trim().toUpperCase()
     const all = knownTickers.length > 0 ? knownTickers : ["ADRO", "BBCA", "CDIA", "MTEL", "POWR", "RATU"]
@@ -84,7 +77,6 @@ export function RunCommandPalette({
     }).slice(0, 8)
   }, [query, knownTickers, universe])
 
-  // Filter runs
   const filteredRuns = useMemo(() => {
     const q = query.trim().toLowerCase()
     if (!q) return runs.slice(0, 12)
@@ -96,7 +88,6 @@ export function RunCommandPalette({
     ).slice(0, 12)
   }, [query, runs])
 
-  // Flattened items for keyboard navigation
   type PaletteItem =
     | { type: "ticker"; ticker: string; meta?: UniverseTicker }
     | { type: "run"; run: AgentRunItem }
@@ -113,12 +104,10 @@ export function RunCommandPalette({
     return res
   }, [filteredTickers, filteredRuns, universe])
 
-  // Reset selected index when items change
   useEffect(() => {
     setSelectedIndex(0)
   }, [items.length])
 
-  // Scroll active item into view
   useEffect(() => {
     if (listRef.current) {
       const activeEl = listRef.current.querySelector(`[data-index="${selectedIndex}"]`)
@@ -129,22 +118,18 @@ export function RunCommandPalette({
   }, [selectedIndex])
 
   const handleSelect = useCallback(
-    (item: PaletteItem, executeRun = false) => {
+    (item: PaletteItem) => {
       if (item.type === "ticker") {
         onSelectTicker(item.ticker)
-        if (executeRun && !running) {
-          onRunTicker(item.ticker)
-        }
         onClose()
       } else if (item.type === "run") {
         onSelectRun(item.run.run_id)
         onClose()
       }
     },
-    [onSelectTicker, onRunTicker, onSelectRun, onClose, running]
+    [onSelectTicker, onSelectRun, onClose]
   )
 
-  // Keyboard navigation
   useEffect(() => {
     if (!isOpen) return
 
@@ -161,7 +146,7 @@ export function RunCommandPalette({
       } else if (e.key === "Enter") {
         e.preventDefault()
         if (items[selectedIndex]) {
-          handleSelect(items[selectedIndex], e.shiftKey || e.ctrlKey || e.metaKey)
+          handleSelect(items[selectedIndex])
         }
       }
     }
@@ -173,65 +158,51 @@ export function RunCommandPalette({
   if (!isOpen) return null
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-24 backdrop-blur-xs bg-black/70 animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-24 bg-black/50 animate-in fade-in duration-150">
       <div
-        className="w-full max-w-2xl rounded-lg border border-neutral-700 bg-neutral-950 text-neutral-100 shadow-2xl overflow-hidden flex flex-col font-sans"
+        className="w-full max-w-2xl rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#1C1B17] dark:text-[#EDEAE3] shadow-lg overflow-hidden flex flex-col font-sans"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Command Palette Header */}
-        <div className="flex items-center justify-between px-3.5 py-2.5 bg-neutral-900/90 border-b border-neutral-800 text-xs font-mono">
-          <div className="flex items-center gap-2 text-neutral-300">
-            <Terminal className="h-4 w-4 text-emerald-400" />
-            <span className="font-semibold text-neutral-200">PILIH PROSES // CARI CEPAT</span>
-          </div>
-          <div className="flex items-center gap-1 text-[11px] text-neutral-400">
-            <span className="rounded bg-neutral-800 px-1.5 py-0.5 border border-neutral-700">ESC</span>
-            <span>tutup</span>
-          </div>
+        <div className="flex items-center justify-between px-4 py-3 bg-[#FBFAF7] dark:bg-[#14130F] border-b border-[#E7E3DA] dark:border-[#2A2822] text-xs">
+          <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Cari cepat emiten dan proses</span>
+          <button
+            type="button"
+            onClick={onClose}
+            className="text-[#6B6659] dark:text-[#A8A296] hover:text-[#1C1B17] dark:hover:text-[#EDEAE3]"
+          >
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        {/* Input Bar */}
-        <div className="relative flex items-center px-3.5 py-3 border-b border-neutral-800 bg-neutral-950">
-          <Search className="h-4 w-4 text-neutral-400 shrink-0 mr-2.5" />
+        <div className="relative flex items-center px-4 py-3 border-b border-[#E7E3DA] dark:border-[#2A2822]">
+          <Search className="h-4 w-4 text-[#6B6659] dark:text-[#A8A296] shrink-0 mr-2.5" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Ketik kode saham (BBCA, CDIA...), ID proses, atau status..."
-            className="w-full bg-transparent text-sm font-mono text-neutral-100 placeholder:text-neutral-500 focus:outline-none"
+            placeholder="Ketik kode saham atau status..."
+            className="w-full bg-transparent text-sm text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none"
             spellCheck={false}
           />
-          {query && (
-            <button
-              type="button"
-              onClick={() => setQuery("")}
-              className="text-neutral-500 hover:text-neutral-300 p-1"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-          )}
         </div>
 
-        {/* Results List */}
         <div
           ref={listRef}
-          className="max-h-[380px] overflow-y-auto divide-y divide-neutral-900 p-2 space-y-2 text-xs"
+          className="max-h-[360px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60 p-2 space-y-1 text-xs"
         >
           {items.length === 0 ? (
-            <div className="py-12 text-center text-neutral-500 font-mono text-xs">
-              No matching ticker or run found for &quot;{query}&quot;
+            <div className="py-10 text-center text-[#6B6659] dark:text-[#A8A296] text-xs">
+              Tidak ditemukan hasil untuk &quot;{query}&quot;
             </div>
           ) : (
             <>
-              {/* Tickers Section */}
               {filteredTickers.length > 0 && (
-                <div>
-                  <div className="px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-500 flex items-center justify-between">
-                    <span>Universe Tickers (Select &amp; Execute)</span>
-                    <span>{filteredTickers.length} results</span>
+                <div className="p-1">
+                  <div className="px-2 py-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    Daftar emiten ({filteredTickers.length})
                   </div>
-                  <div className="mt-1 space-y-0.5">
+                  <div className="space-y-0.5">
                     {filteredTickers.map((t) => {
                       const itemIndex = items.findIndex(
                         (i) => i.type === "ticker" && i.ticker === t
@@ -244,54 +215,32 @@ export function RunCommandPalette({
                         <div
                           key={`ticker-${t}`}
                           data-index={itemIndex}
-                          onClick={() => handleSelect(items[itemIndex], false)}
-                          className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                          onClick={() => handleSelect(items[itemIndex])}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-neutral-800 text-white ring-1 ring-neutral-600"
-                              : "text-neutral-300 hover:bg-neutral-900"
+                              ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 text-[#0E6E63] dark:text-[#4FD1B5]"
+                              : "text-[#1C1B17] dark:text-[#EDEAE3] hover:bg-[#FBFAF7] dark:hover:bg-[#14130F]"
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
-                            <span className="font-mono font-bold text-emerald-400 text-sm">
+                            <span className="font-serif font-medium text-sm">
                               {t}
                             </span>
                             {meta?.nama && (
-                              <span className="text-neutral-400 text-[11px] truncate">
+                              <span className="text-[#6B6659] dark:text-[#A8A296] text-xs truncate">
                                 {meta.nama}
                               </span>
                             )}
-                            {meta?.sector && (
-                              <Badge
-                                variant="outline"
-                                className="font-mono text-[9px] border-neutral-700 bg-neutral-900 text-neutral-400 py-0"
-                              >
-                                {meta.sector}
-                              </Badge>
-                            )}
                             {isCurrent && (
-                              <span className="text-[10px] font-mono text-neutral-400 bg-neutral-900 border border-neutral-800 px-1 rounded">
-                                SELECTED
+                              <span className="text-[10px] text-[#6B6659] dark:text-[#A8A296] bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-1.5 py-0.5 rounded">
+                                Sedang aktif
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              type="button"
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleSelect(items[itemIndex], true)
-                              }}
-                              disabled={running}
-                              className="flex items-center gap-1 rounded bg-emerald-950 border border-emerald-800 px-2 py-0.5 text-[10px] font-mono font-medium text-emerald-300 hover:bg-emerald-900 transition-colors"
-                              title="Set ticker and run immediately"
-                            >
-                              <Play className="h-2.5 w-2.5 fill-current" />
-                              <span>EXECUTE</span>
-                            </button>
-                            <span className="text-neutral-600 font-mono text-[10px]">
-                              <CornerDownLeft className="h-3 w-3 inline" /> SELECT
-                            </span>
+                          <div className="flex items-center gap-2 shrink-0 text-xs text-[#6B6659] dark:text-[#A8A296]">
+                            <CornerDownLeft className="h-3 w-3 inline" />
+                            <span>Pilih</span>
                           </div>
                         </div>
                       )
@@ -300,73 +249,45 @@ export function RunCommandPalette({
                 </div>
               )}
 
-              {/* Past Runs Section */}
               {filteredRuns.length > 0 && (
-                <div className="pt-2">
-                  <div className="px-2 py-1 text-[10px] font-mono font-semibold uppercase tracking-wider text-neutral-500 flex items-center justify-between">
-                    <span>Riwayat proses yang tersimpan</span>
-                    <span>{filteredRuns.length} runs</span>
+                <div className="p-1">
+                  <div className="px-2 py-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    Riwayat proses ({filteredRuns.length})
                   </div>
-                  <div className="mt-1 space-y-0.5">
+                  <div className="space-y-0.5">
                     {filteredRuns.map((r) => {
                       const itemIndex = items.findIndex(
                         (i) => i.type === "run" && i.run.run_id === r.run_id
                       )
                       const isSelected = selectedIndex === itemIndex
                       const isRunActive = selectedRunId === r.run_id
-                      const isLive = r.status === "running" || r.is_active
 
                       return (
                         <div
                           key={`run-${r.run_id}`}
                           data-index={itemIndex}
-                          onClick={() => handleSelect(items[itemIndex], false)}
-                          className={`flex items-center justify-between px-3 py-2 rounded-md cursor-pointer transition-colors ${
+                          onClick={() => handleSelect(items[itemIndex])}
+                          className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-neutral-800 text-white ring-1 ring-neutral-600"
-                              : "text-neutral-300 hover:bg-neutral-900"
+                              ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 text-[#0E6E63] dark:text-[#4FD1B5]"
+                              : "text-[#1C1B17] dark:text-[#EDEAE3] hover:bg-[#FBFAF7] dark:hover:bg-[#14130F]"
                           }`}
                         >
-                          <div className="flex items-center gap-2.5 min-w-0">
-                            <History className="h-3.5 w-3.5 text-neutral-500 shrink-0" />
-                            <span className="font-mono font-bold text-neutral-100">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <History className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296] shrink-0" />
+                            <span className="font-serif font-medium">
                               {r.ticker}
                             </span>
-                            <span className="font-mono text-[11px] text-neutral-500">
+                            <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
                               {truncateId(r.run_id)}
                             </span>
-                            <span className="font-mono text-[11px] text-neutral-400">
-                              {r.n_events} evts
-                            </span>
                             {isRunActive && (
-                              <Check className="h-3 w-3 text-emerald-400 shrink-0" />
+                              <Check className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0 ml-0.5" />
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0">
-                            {isLive ? (
-                              <span className="inline-flex items-center gap-1 rounded bg-amber-950 border border-amber-800 px-1.5 py-0.5 text-[10px] font-mono font-semibold text-amber-300">
-                                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-ping" />
-                                JALAN
-                              </span>
-                            ) : r.status === "completed" ? (
-                              <span className="inline-flex items-center gap-1 rounded bg-emerald-950 border border-emerald-800 px-1.5 py-0.5 text-[10px] font-mono font-medium text-emerald-300">
-                                <CheckCircle2 className="h-2.5 w-2.5" />
-                                SELESAI
-                              </span>
-                            ) : r.status === "failed" ? (
-                              <span className="inline-flex items-center gap-1 rounded bg-rose-950 border border-rose-800 px-1.5 py-0.5 text-[10px] font-mono font-medium text-rose-300">
-                                <AlertCircle className="h-2.5 w-2.5" />
-                                GAGAL
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center gap-1 rounded bg-neutral-900 border border-neutral-700 px-1.5 py-0.5 text-[10px] font-mono font-medium text-neutral-400">
-                                {r.status}
-                              </span>
-                            )}
-                            <span className="font-mono text-[10px] text-neutral-500">
-                              {formatRelativeTime(r.started_at)}
-                            </span>
+                          <div className="flex items-center gap-2 shrink-0 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                            <span>{formatRelativeTime(r.started_at)}</span>
                           </div>
                         </div>
                       )
@@ -376,23 +297,6 @@ export function RunCommandPalette({
               )}
             </>
           )}
-        </div>
-
-        {/* Footer Shortcut Guide */}
-        <div className="flex items-center justify-between px-3.5 py-2 bg-neutral-900/90 border-t border-neutral-800 text-[11px] font-mono text-neutral-400">
-          <div className="flex items-center gap-3">
-            <span className="flex items-center gap-1">
-              <ArrowUpDown className="h-3 w-3 text-neutral-500" />
-              <span>Navigate</span>
-            </span>
-            <span className="flex items-center gap-1">
-              <CornerDownLeft className="h-3 w-3 text-neutral-500" />
-              <span>Pilih proses/saham</span>
-            </span>
-          </div>
-          <div className="text-neutral-500">
-            Hanya proses asli yang tersimpan
-          </div>
         </div>
       </div>
     </div>

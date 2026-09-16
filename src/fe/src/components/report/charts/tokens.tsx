@@ -1,16 +1,16 @@
-// Frozen palette tokens and formatting helpers for report charts.
-// Tokens strictly adhere to: navy #0B1F3A, ice #A9C9E8, ice-pale #E4EEF7, rule #D6E2EE, muted #63748A, buy #1E8F5F, sell #C0392B.
-
 import React from "react"
 
 export const TOKENS = {
-  navy: "#0B1F3A",
-  ice: "#A9C9E8",
-  icePale: "#E4EEF7",
-  rule: "#D6E2EE",
-  muted: "#63748A",
-  buy: "#1E8F5F",
-  sell: "#C0392B",
+  navy: "#1C1B17",
+  teal: "#0E6E63",
+  tealLight: "#4FD1B5",
+  ice: "#CBD5E1",
+  icePale: "#F4F1EA",
+  rule: "#E7E3DA",
+  muted: "#6B6659",
+  buy: "#157F3D",
+  sell: "#B4232A",
+  hold: "#A16207",
 } as const
 
 /**
@@ -19,8 +19,8 @@ export const TOKENS = {
  */
 export function PendingBlock({ label, message }: { label: string; message?: string }) {
   return (
-    <div className="rounded-md border border-neutral-200 bg-neutral-50/70 px-4 py-6 text-center text-xs font-mono text-neutral-500 dark:border-[#262930] dark:bg-[#121418] dark:text-neutral-400">
-      <span className="font-semibold text-neutral-700 dark:text-neutral-300">[{label}]</span>{" "}
+    <div className="rounded-xl border border-[#E7E3DA] bg-white px-4 py-8 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+      <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{label}</span>{" "}
       {message ?? "belum tersedia di payload."}
     </div>
   )

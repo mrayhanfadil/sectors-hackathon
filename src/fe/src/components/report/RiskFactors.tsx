@@ -1,15 +1,5 @@
 import React from "react"
-import {
-  ShieldAlert,
-  AlertTriangle,
-  FileText,
-  Database,
-  Scale,
-  DollarSign,
-  TrendingDown,
-  Info,
-  CheckCircle2,
-} from "lucide-react"
+import { FileText } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import type {
   FullReportPayload,
@@ -101,7 +91,7 @@ function normalizeRows(
 
 function PendingCard({ label }: { label: string }) {
   return (
-    <div className="rounded-md border border-[#D6E2EE] bg-[#F4F8FC] p-4 text-center font-mono text-xs text-[#63748A] dark:border-[#262930] dark:bg-[#121316]">
+    <div className="rounded-xl border border-[#E7E3DA] bg-white p-6 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
       {label} belum tersedia di payload.
     </div>
   )
@@ -118,19 +108,19 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
   const sectorData: SectorData | undefined = payload?.sector_data
   const meta = payload?.meta
 
-  // Resolve Income Statement data (statements_page or financial_statements)
+  // Resolve Income Statement data
   const incomeBlock = stmts?.income || finStmts?.income
   const hasIncome = Boolean(incomeBlock && (stmts?.available !== false))
   const incomeHeaders = stmts?.income?.headers || finStmts?.income?.headers || ["Pos (Rp bn)", ...(stmts?.years || [])]
   const incomeRows = normalizeRows(stmts?.income?.rows || finStmts?.income?.rows)
-  const incomeSource = stmts?.sources?.[0] || finStmts?.income?.source || "Laporan Keuangan IDX"
+  const incomeSource = stmts?.sources?.[0] || finStmts?.income?.source || "Laporan keuangan IDX"
 
-  // Resolve Balance Sheet data (statements_page or financial_statements)
+  // Resolve Balance Sheet data
   const balanceBlock = stmts?.balance || finStmts?.balance
   const hasBalance = Boolean(balanceBlock && (stmts?.available !== false))
   const balanceHeaders = stmts?.balance?.headers || finStmts?.balance?.headers || ["Pos (Rp bn)", ...(stmts?.years || [])]
   const balanceRows = normalizeRows(stmts?.balance?.rows || finStmts?.balance?.rows)
-  const balanceSource = stmts?.balance?.source || stmts?.sources?.[0] || finStmts?.balance?.source || "Laporan Keuangan IDX"
+  const balanceSource = stmts?.balance?.source || stmts?.sources?.[0] || finStmts?.balance?.source || "Laporan keuangan IDX"
 
   // Resolve Cash Flow data
   const finCf = finStmts?.cashflow
@@ -141,61 +131,56 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
   const hasKeyRatio = Boolean(keyRatio && keyRatio.available !== false) || Boolean(finRatios)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* ========================================================================= */}
-      {/* BAB 7: LAPORAN KEUANGAN - LABA RUGI & NERACA                             */}
+      {/* SECTION 7: LAPORAN KEUANGAN - LABA RUGI & NERACA                         */}
       {/* ========================================================================= */}
-      <section id="financial-statements" className="scroll-mt-28 space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
-              07
-            </span>
-            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Laporan Keuangan - Laba Rugi &amp; Neraca // {tk}
-            </h2>
-          </div>
-          <span className="font-mono text-[11px] text-[#63748A]">
+      <section id="financial-statements" className="scroll-mt-28 space-y-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+            Laporan keuangan - Laba rugi dan neraca
+          </h2>
+          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
             {balanceSource}
           </span>
         </div>
 
         {hasIncome || hasBalance ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* Income Statement Table */}
             {hasIncome && (
-              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {stmts?.income?.title || finStmts?.income?.title || "Laporan Laba Rugi (Income Statement)"}
+                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      {stmts?.income?.title || finStmts?.income?.title || "Laporan laba rugi (Income statement)"}
                     </CardTitle>
-                    <span className="font-mono text-[10px] text-[#63748A]">
+                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
                       {incomeSource}
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-2">
-                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
-                    <table className="w-full">
+                <CardContent className="p-5 space-y-2">
+                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
                           {incomeHeaders.map((h, i) => (
-                            <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
+                            <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
                               {h}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
                         {incomeRows.map((r, rIdx) => {
                           if (r.kind === "section") {
                             return (
                               <tr
                                 key={rIdx}
-                                className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
+                                className="bg-[#FBFAF7] font-semibold text-[#1C1B17] text-xs dark:bg-[#14130F] dark:text-[#EDEAE3]"
                               >
-                                <td colSpan={incomeHeaders.length} className="py-2 px-3">
+                                <td colSpan={incomeHeaders.length} className="py-2.5 px-3">
                                   {r.label}
                                 </td>
                               </tr>
@@ -206,25 +191,25 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                           return (
                             <tr
                               key={rIdx}
-                              className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                              className={`${
                                 isHighlight
-                                  ? "bg-[#E4EEF7] font-bold text-[#0B1F3A] dark:bg-[#0B1F3A]/40 dark:text-[#A9C9E8]"
+                                  ? "bg-[#0E6E63]/10 font-semibold text-[#0E6E63] dark:bg-[#4FD1B5]/15 dark:text-[#4FD1B5]"
                                   : isSubtotal
-                                  ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
+                                  ? "font-semibold text-[#1C1B17] border-t border-t-[#E7E3DA] dark:border-t-[#2A2822] dark:text-[#EDEAE3]"
                                   : rIdx % 2 === 1
-                                  ? "bg-[#F4F8FC] dark:bg-[#181a1f]"
-                                  : "bg-white dark:bg-[#121316]"
+                                  ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30"
+                                  : "bg-white dark:bg-[#1B1A16]"
                               }`}
                             >
-                              <td className="py-1.5 px-3 text-left">
-                                <span className={isSubtotal || isHighlight ? "font-bold" : "font-normal"}>
+                              <td className="py-2 px-3 text-left font-sans">
+                                <span className={isSubtotal || isHighlight ? "font-semibold" : "font-normal"}>
                                   {r.label}
                                 </span>
-                                {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
-                                {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
+                                {r.kind === "deduction" && <span className="ml-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">(-)</span>}
+                                {r.note && <span className="ml-1.5 text-[11px] italic text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                               </td>
                               {r.cells.map((c, cIdx) => (
-                                <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                   {fmtStatementNumber(c)}
                                 </td>
                               ))}
@@ -240,38 +225,38 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
 
             {/* Balance Sheet Table */}
             {hasBalance && (
-              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {stmts?.balance?.title || finStmts?.balance?.title || "Neraca Keuangan (Balance Sheet)"}
+                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      {stmts?.balance?.title || finStmts?.balance?.title || "Neraca keuangan (Balance sheet)"}
                     </CardTitle>
-                    <span className="font-mono text-[10px] text-[#63748A]">
+                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
                       {balanceSource}
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-3">
-                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
-                    <table className="w-full">
+                <CardContent className="p-5 space-y-3">
+                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
+                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
                           {balanceHeaders.map((h, i) => (
-                            <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
+                            <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
                               {h}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
                         {balanceRows.map((r, rIdx) => {
                           if (r.kind === "section") {
                             return (
                               <tr
                                 key={rIdx}
-                                className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
+                                className="bg-[#FBFAF7] font-semibold text-[#1C1B17] text-xs dark:bg-[#14130F] dark:text-[#EDEAE3]"
                               >
-                                <td colSpan={balanceHeaders.length} className="py-2 px-3">
+                                <td colSpan={balanceHeaders.length} className="py-2.5 px-3">
                                   {r.label}
                                 </td>
                               </tr>
@@ -281,23 +266,23 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                           return (
                             <tr
                               key={rIdx}
-                              className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                              className={`${
                                 isSubtotal
-                                  ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
+                                  ? "font-semibold text-[#1C1B17] border-t border-t-[#E7E3DA] dark:border-t-[#2A2822] dark:text-[#EDEAE3]"
                                   : rIdx % 2 === 1
-                                  ? "bg-[#F4F8FC] dark:bg-[#181a1f]"
-                                  : "bg-white dark:bg-[#121316]"
+                                  ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30"
+                                  : "bg-white dark:bg-[#1B1A16]"
                               }`}
                             >
-                              <td className="py-1.5 px-3 text-left">
-                                <span className={isSubtotal ? "font-bold" : "font-normal"}>
+                              <td className="py-2 px-3 text-left font-sans">
+                                <span className={isSubtotal ? "font-semibold" : "font-normal"}>
                                   {r.label}
                                 </span>
-                                {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
-                                {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
+                                {r.kind === "deduction" && <span className="ml-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">(-)</span>}
+                                {r.note && <span className="ml-1.5 text-[11px] italic text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                               </td>
                               {r.cells.map((c, cIdx) => (
-                                <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                   {fmtStatementNumber(c)}
                                 </td>
                               ))}
@@ -310,8 +295,8 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
 
                   {/* Balance Check Tie-out Note */}
                   {stmts?.tie_out && (
-                    <div className="rounded border-l-2 border-[#1E8F5F] bg-[#F4F8FC] p-2.5 font-mono text-xs text-[#0B1F3A] dark:border-[#1E8F5F] dark:bg-[#181a1f] dark:text-neutral-200">
-                      <strong>Balance check:</strong> Total Liabilities &amp; Equity − Total Assets ={" "}
+                    <div className="rounded-lg border border-[#BCE2C9] bg-[#EBF6EE] p-3 text-xs text-[#157F3D] dark:border-[#157F3D]/40 dark:bg-[#157F3D]/10 dark:text-[#34D399]">
+                      <strong>Pemeriksaan neraca:</strong> Total Liabilitas &amp; Ekuitas − Total Aset ={" "}
                       {stmts.years?.map((y, i) => (
                         <span key={y}>
                           {y}: {fmtStatementNumber(stmts.tie_out?.[y])}
@@ -324,9 +309,9 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
 
                   {/* Notes */}
                   {stmts?.notes && stmts.notes.length > 0 && (
-                    <div className="space-y-1 text-[11px] text-[#63748A] border-t border-[#D6E2EE] pt-2.5 dark:border-[#262930]">
-                      <div className="font-bold uppercase text-[#0B1F3A] dark:text-neutral-300">
-                        Catatan metode &amp; keterbatasan data:
+                    <div className="space-y-1 text-xs text-[#6B6659] border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822] dark:text-[#A8A296]">
+                      <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                        Catatan metode dan keterbatasan data:
                       </div>
                       {stmts.notes.map((n, idx) => (
                         <p key={idx}>· {n}</p>
@@ -338,61 +323,56 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             )}
           </div>
         ) : (
-          <PendingCard label="Laporan keuangan (income statement & balance sheet)" />
+          <PendingCard label="Laporan keuangan (laba rugi dan neraca)" />
         )}
       </section>
 
       {/* ========================================================================= */}
-      {/* BAB 8: ARUS KAS & RASIO KUNCI                                             */}
+      {/* SECTION 8: ARUS KAS & RASIO KUNCI                                         */}
       {/* ========================================================================= */}
-      <section id="cashflow-ratios" className="scroll-mt-28 space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
-              08
-            </span>
-            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Arus Kas &amp; Rasio Kunci // {tk}
-            </h2>
-          </div>
-          <span className="font-mono text-[11px] text-[#63748A]">
-            {cf?.sources?.[0] || keyRatio?.sources?.[0] || "Laporan Keuangan & Rasio IDX"}
+      <section id="cashflow-ratios" className="scroll-mt-28 space-y-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+            Arus kas dan rasio keuangan
+          </h2>
+          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+            {cf?.sources?.[0] || keyRatio?.sources?.[0] || "Laporan keuangan & rasio IDX"}
           </span>
         </div>
 
         {hasCashflow || hasKeyRatio ? (
-          <div className="space-y-4">
+          <div className="space-y-5">
             {/* 1. Cash Flow Statement */}
             {hasCashflow && (
-              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {finCf?.title || "Cash Flow Statement"}
+                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      {finCf?.title || "Laporan arus kas (Cash flow statement)"}
                     </CardTitle>
-                    <span className="font-mono text-[10px] text-[#63748A]">
-                      {cf?.sources?.[0] || finCf?.source || "Laporan Keuangan IDX"}
+                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                      {cf?.sources?.[0] || finCf?.source || "Laporan keuangan IDX"}
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-3">
-                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
-                    <table className="w-full">
+                <CardContent className="p-5 space-y-3">
+                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                          {(cf?.headers || finCf?.headers || ["Pos Arus Kas (Rp bn)", ...(cf?.years || [])]).map((h, i) => (
-                            <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
+                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                          {(cf?.headers || finCf?.headers || ["Pos arus kas (Rp bn)", ...(cf?.years || [])]).map((h, i) => (
+                            <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
                               {h}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
                         {/* Sections from cashflow_page */}
                         {cf?.sections?.map((sec, sIdx) => (
                           <React.Fragment key={sIdx}>
-                            <tr className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
-                              <td colSpan={(cf.headers?.length || 5) + 1} className="py-2 px-3">
+                            <tr className="bg-[#FBFAF7] font-semibold text-[#1C1B17] text-xs dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                              <td colSpan={(cf.headers?.length || 5) + 1} className="py-2.5 px-3">
                                 {sec.title}
                               </td>
                             </tr>
@@ -401,19 +381,19 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                               return (
                                 <tr
                                   key={rIdx}
-                                  className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                  className={`${
                                     isSubtotal
-                                      ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
-                                      : "text-[#0B1F3A] dark:text-neutral-300"
+                                      ? "font-semibold text-[#1C1B17] border-t border-t-[#E7E3DA] dark:border-t-[#2A2822] dark:text-[#EDEAE3]"
+                                      : "text-[#1C1B17] dark:text-[#EDEAE3]/90"
                                   }`}
                                 >
-                                  <td className="py-1.5 px-3 text-left">
-                                    <span className={isSubtotal ? "font-bold" : "font-normal"}>{r.label}</span>
-                                    {r.kind === "deduction" && <span className="ml-1 text-[10px] text-[#63748A]">(-)</span>}
-                                    {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
+                                  <td className="py-2 px-3 text-left font-sans">
+                                    <span className={isSubtotal ? "font-semibold" : "font-normal"}>{r.label}</span>
+                                    {r.kind === "deduction" && <span className="ml-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">(-)</span>}
+                                    {r.note && <span className="ml-1.5 text-[11px] italic text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                                   </td>
                                   {r.cells?.map((c, cIdx) => (
-                                    <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                    <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                       {fmtStatementNumber(c)}
                                     </td>
                                   ))}
@@ -423,36 +403,36 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                           </React.Fragment>
                         ))}
 
-                        {/* Closing Rows from cashflow_page */}
+                        {/* Closing Rows */}
                         {cf?.closing?.map((r, idx) => (
                           <tr
                             key={`closing-${idx}`}
-                            className="border-b border-[#D6E2EE]/60 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-100"
+                            className="font-semibold text-[#1C1B17] bg-[#FBFAF7] dark:bg-[#14130F] dark:text-[#EDEAE3]"
                           >
-                            <td className="py-1.5 px-3 text-left">
+                            <td className="py-2 px-3 text-left font-sans">
                               {r.label}
-                              {r.note && <span className="ml-1.5 text-[10px] italic font-normal text-[#63748A]">{r.note}</span>}
+                              {r.note && <span className="ml-1.5 text-[11px] italic font-normal text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                             </td>
                             {r.cells?.map((c, cIdx) => (
-                              <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                              <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                 {fmtStatementNumber(c)}
                               </td>
                             ))}
                           </tr>
                         ))}
 
-                        {/* Memo Rows from cashflow_page */}
+                        {/* Memo Rows */}
                         {cf?.memo?.map((r, idx) => (
                           <tr
                             key={`memo-${idx}`}
-                            className="border-t border-[#0B1F3A] italic font-semibold text-[#0B1F3A] bg-[#E4EEF7]/50 dark:bg-[#0B1F3A]/20 dark:text-[#A9C9E8]"
+                            className="italic text-[#0E6E63] bg-[#0E6E63]/5 dark:bg-[#4FD1B5]/10 dark:text-[#4FD1B5]"
                           >
-                            <td className="py-1.5 px-3 text-left">
+                            <td className="py-2 px-3 text-left font-sans">
                               {r.label}
-                              {r.note && <span className="ml-1.5 text-[10px] italic font-normal text-[#63748A]">{r.note}</span>}
+                              {r.note && <span className="ml-1.5 text-[11px] italic font-normal text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                             </td>
                             {r.cells?.map((c, cIdx) => (
-                              <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                              <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums">
                                 {fmtStatementNumber(c)}
                               </td>
                             ))}
@@ -465,15 +445,15 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                             {normalizeRows(finCf.rows, finCf.bold_rows).map((r, rIdx) => (
                               <tr
                                 key={`fin-cf-${rIdx}`}
-                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
+                                className={`${
                                   r.kind === "subtotal"
-                                    ? "font-bold text-[#0B1F3A] border-t border-t-[#0B1F3A] dark:text-neutral-100"
-                                    : "text-[#0B1F3A] dark:text-neutral-300"
+                                    ? "font-semibold text-[#1C1B17] border-t border-t-[#E7E3DA] dark:border-t-[#2A2822] dark:text-[#EDEAE3]"
+                                    : "text-[#1C1B17] dark:text-[#EDEAE3]/90"
                                 }`}
                               >
-                                <td className="py-1.5 px-3 text-left font-medium">{r.label}</td>
+                                <td className="py-2 px-3 text-left font-sans font-medium">{r.label}</td>
                                 {r.cells.map((c, cIdx) => (
-                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                  <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                     {fmtStatementNumber(c)}
                                   </td>
                                 ))}
@@ -482,11 +462,11 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                             {normalizeRows(finCf.footers).map((r, rIdx) => (
                               <tr
                                 key={`fin-cf-foot-${rIdx}`}
-                                className="border-b border-[#D6E2EE]/60 font-bold text-[#0B1F3A] bg-[#F4F8FC] dark:bg-[#181a1f] dark:text-neutral-100"
+                                className="font-semibold text-[#1C1B17] bg-[#FBFAF7] dark:bg-[#14130F] dark:text-[#EDEAE3]"
                               >
-                                <td className="py-1.5 px-3 text-left font-medium">{r.label}</td>
+                                <td className="py-2 px-3 text-left font-sans font-medium">{r.label}</td>
                                 {r.cells.map((c, cIdx) => (
-                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                  <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                     {fmtStatementNumber(c)}
                                   </td>
                                 ))}
@@ -503,51 +483,51 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
 
             {/* 2. Key Ratios Table & Visualisation */}
             {hasKeyRatio && (
-              <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-                <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      {keyRatio?.exhibit_title || finRatios?.title || "Key Ratio (Rasio Kunci & Efisiensi)"}
+                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      {keyRatio?.exhibit_title || finRatios?.title || "Rasio keuangan dan efisiensi"}
                     </CardTitle>
-                    <span className="font-mono text-[10px] text-[#63748A]">
-                      {keyRatio?.sources?.[0] || finRatios?.source || "Sectors - data historis & proyeksi"}
+                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                      {keyRatio?.sources?.[0] || finRatios?.source || "Sectors - data historis dan proyeksi"}
                     </span>
                   </div>
                 </CardHeader>
-                <CardContent className="p-4 space-y-3">
-                  <div className="overflow-x-auto rounded border border-[#D6E2EE] font-mono text-xs dark:border-[#262930]">
-                    <table className="w-full">
+                <CardContent className="p-5 space-y-4">
+                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <table className="w-full text-xs">
                       <thead>
-                        <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
-                          {(keyRatio?.headers || finRatios?.headers || ["Rasio Kunci", ...(keyRatio?.years || [])]).map((h, i) => (
-                            <th key={i} className={`py-2 px-3 ${i === 0 ? "text-left" : ""}`}>
+                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                          {(keyRatio?.headers || finRatios?.headers || ["Rasio kunci", ...(keyRatio?.years || [])]).map((h, i) => (
+                            <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
                               {h}
                             </th>
                           ))}
                         </tr>
                       </thead>
-                      <tbody>
+                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
                         {/* Sections from key_ratio_page */}
                         {keyRatio?.sections?.map((sec, sIdx) => (
                           <React.Fragment key={sIdx}>
-                            <tr className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]">
-                              <td colSpan={(keyRatio.headers?.length || 5) + 1} className="py-2 px-3">
+                            <tr className="bg-[#FBFAF7] font-semibold text-[#1C1B17] text-xs dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                              <td colSpan={(keyRatio.headers?.length || 5) + 1} className="py-2.5 px-3">
                                 {sec.title}
                               </td>
                             </tr>
                             {sec.rows.map((r, rIdx) => (
                               <tr
                                 key={rIdx}
-                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
-                                  rIdx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                                className={`${
+                                  rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
                                 }`}
                               >
-                                <td className="py-1.5 px-3 text-left font-medium text-[#0B1F3A] dark:text-neutral-200">
+                                <td className="py-2 px-3 text-left font-sans font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
                                   {r.label}
-                                  {r.note && <span className="ml-1.5 text-[10px] italic text-[#63748A]">{r.note}</span>}
+                                  {r.note && <span className="ml-1.5 text-[11px] italic text-[#6B6659] dark:text-[#A8A296]">{r.note}</span>}
                                 </td>
                                 {r.cells?.map((c, cIdx) => (
-                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                  <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                     {fmtRatioNumber(c, 1)}
                                   </td>
                                 ))}
@@ -563,9 +543,9 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                               return (
                                 <tr
                                   key={`fin-ratio-${rIdx}`}
-                                  className="bg-[#F4F8FC] font-bold text-[#0B1F3A] uppercase tracking-wider text-[11px] dark:bg-[#181a1f] dark:text-[#A9C9E8]"
+                                  className="bg-[#FBFAF7] font-semibold text-[#1C1B17] text-xs dark:bg-[#14130F] dark:text-[#EDEAE3]"
                                 >
-                                  <td colSpan={(finRatios.headers?.length || 5) + 1} className="py-2 px-3">
+                                  <td colSpan={(finRatios.headers?.length || 5) + 1} className="py-2.5 px-3">
                                     {r.label}
                                   </td>
                                 </tr>
@@ -574,15 +554,15 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                             return (
                               <tr
                                 key={`fin-ratio-${rIdx}`}
-                                className={`border-b border-[#D6E2EE]/60 last:border-0 ${
-                                  rIdx % 2 === 1 ? "bg-[#F4F8FC] dark:bg-[#181a1f]" : "bg-white dark:bg-[#121316]"
+                                className={`${
+                                  rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
                                 }`}
                               >
-                                <td className="py-1.5 px-3 text-left font-medium text-[#0B1F3A] dark:text-neutral-200">
+                                <td className="py-2 px-3 text-left font-sans font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
                                   {r.label}
                                 </td>
                                 {r.cells.map((c, cIdx) => (
-                                  <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
+                                  <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                                     {fmtRatioNumber(c, 1)}
                                   </td>
                                 ))}
@@ -594,24 +574,24 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                     </table>
                   </div>
 
-                  {/* Growth Basis Callout Line */}
+                  {/* Growth Basis Line */}
                   {keyRatio?.growth_basis && Object.keys(keyRatio.growth_basis).length > 0 && (
-                    <div className="rounded border-l-2 border-[#0B1F3A] bg-[#F4F8FC] p-2.5 font-mono text-xs text-[#0B1F3A] dark:border-[#A9C9E8] dark:bg-[#181a1f] dark:text-neutral-200">
+                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
                       <strong>Basis pertumbuhan tahun awal (FY2024A vs FY2023A):</strong>{" "}
                       {Object.entries(keyRatio.growth_basis)
-                        .map(([k, v]) => `${k.toUpperCase()}: ${fmtRatioNumber(v, 1)}%`)
+                        .map(([k, v]) => `${k}: ${fmtRatioNumber(v, 1)}%`)
                         .join(" · ")}
                     </div>
                   )}
 
-                  {/* Structured Visual Cards */}
+                  {/* Visual Cards */}
                   {keyRatio && <KeyRatioCharts keyRatio={keyRatio} />}
 
-                  {/* Notes for Cash Flow and Key Ratios */}
+                  {/* Notes */}
                   {((cf?.notes && cf.notes.length > 0) || (keyRatio?.notes && keyRatio.notes.length > 0)) && (
-                    <div className="space-y-1 text-[11px] text-[#63748A] border-t border-[#D6E2EE] pt-2.5 dark:border-[#262930]">
-                      <div className="font-bold uppercase text-[#0B1F3A] dark:text-neutral-300">
-                        Catatan tie-out &amp; keterbatasan data:
+                    <div className="space-y-1 text-xs text-[#6B6659] border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822] dark:text-[#A8A296]">
+                      <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                        Catatan rekonsiliasi dan keterbatasan data:
                       </div>
                       {cf?.notes?.map((n, idx) => (
                         <p key={`cf-n-${idx}`}>· {n}</p>
@@ -626,77 +606,69 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
             )}
           </div>
         ) : (
-          <PendingCard label="Arus kas & rasio kunci" />
+          <PendingCard label="Arus kas dan rasio kunci" />
         )}
       </section>
 
       {/* ========================================================================= */}
-      {/* BAB 9: FAKTOR RISIKO                                                      */}
+      {/* SECTION 9: FAKTOR RISIKO                                                  */}
       {/* ========================================================================= */}
-      <section id="risk-factors" className="scroll-mt-28 space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
-              09
-            </span>
-            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Faktor Risiko Utama // {tk}
-            </h2>
-          </div>
-          <span className="font-mono text-[11px] text-[#63748A]">
-            Severity &amp; Sensitivitas
+      <section id="risk-factors" className="scroll-mt-28 space-y-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+            Faktor risiko
+          </h2>
+          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+            Tingkat keparahan dan mitigasi
           </span>
         </div>
 
         {risks.length > 0 ? (
-          <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-            <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]">
-              <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                Faktor Risiko &amp; Mitigasi Teridentifikasi ({risks.length} Poin)
+          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+              <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                Faktor risiko dan mitigasi teridentifikasi ({risks.length} poin)
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 sm:p-5 space-y-3">
-              <div className="space-y-3 font-mono">
+            <CardContent className="p-5 space-y-4">
+              <div className="space-y-4">
                 {risks.map((r, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-[32px_1fr_auto] gap-3 items-start border-t border-[#D6E2EE] pt-3 first:border-0 first:pt-0 dark:border-[#262930]"
+                    className="grid grid-cols-[28px_1fr_auto] gap-3 items-start border-t border-[#E7E3DA] pt-4 first:border-0 first:pt-0 dark:border-[#2A2822]"
                   >
-                    {/* Numbering badge */}
-                    <span className="text-base font-black text-[#C0392B] dark:text-[#F87171]">
-                      {String(idx + 1).padStart(2, "0")}
+                    <span className="font-serif text-base font-semibold text-[#B4232A] dark:text-[#F87171]">
+                      {idx + 1}.
                     </span>
 
-                    {/* Content */}
-                    <div className="space-y-1">
-                      <div className="flex items-center gap-2">
-                        <h4 className="text-xs font-bold text-[#0B1F3A] dark:text-neutral-100">
+                    <div className="space-y-1.5">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <h4 className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
                           {r.bucket}
                         </h4>
                         {r.severity != null && (
-                          <span className="rounded bg-[#C0392B]/10 px-1.5 py-0.5 text-[9px] font-bold text-[#C0392B] dark:bg-[#C0392B]/20">
-                            SEVERITY: {String(r.severity)}
+                          <span className="rounded bg-[#FDF2F2] px-2 py-0.5 text-[11px] font-medium text-[#B4232A] dark:bg-[#B4232A]/20 dark:text-[#F87171]">
+                            Tingkat keparahan: {String(r.severity)}
                           </span>
                         )}
                       </div>
-                      <p className="text-xs leading-relaxed text-[#63748A]">
+                      <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
                         {r.detail}
                       </p>
                       {r.source && (
-                        <p className="text-[10px] text-[#63748A]/80 italic">
+                        <p className="text-[11px] text-[#6B6659]/80 italic dark:text-[#A8A296]/80">
                           Sumber: {r.source}
                         </p>
                       )}
                     </div>
 
-                    {/* Stat Anchor */}
                     {r.stat && (
                       <div className="text-right pl-3 shrink-0">
-                        <div className="text-xs font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
+                        <div className="text-xs font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
                           {r.stat}
                         </div>
                         {r.stat_label && (
-                          <div className="text-[9px] uppercase text-[#63748A]">
+                          <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
                             {r.stat_label}
                           </div>
                         )}
@@ -707,7 +679,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
               </div>
 
               {payload?.risks_note && (
-                <div className="text-[11px] text-[#63748A] border-t border-[#D6E2EE] pt-2.5 dark:border-[#262930]">
+                <div className="text-xs text-[#6B6659] border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822] dark:text-[#A8A296]">
                   {payload.risks_note}
                 </div>
               )}
@@ -719,43 +691,38 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
       </section>
 
       {/* ========================================================================= */}
-      {/* BAB 10: SUMBER DATA, DAFTAR EXHIBIT & DISKLAIMER                          */}
+      {/* SECTION 10: SUMBER DATA & DISKLAIMER                                      */}
       {/* ========================================================================= */}
-      <section id="sources-disclaimer" className="scroll-mt-28 space-y-3">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
-          <div className="flex items-center gap-2">
-            <span className="rounded bg-[#0B1F3A] px-1.5 py-0.5 font-mono text-[10px] font-bold text-[#E4EEF7] dark:bg-[#0B1F3A] dark:text-[#A9C9E8]">
-              10
-            </span>
-            <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Sumber Data, Daftar Exhibit &amp; Disklaimer // {tk}
-            </h2>
-          </div>
-          <span className="font-mono text-[11px] text-[#63748A]">
-            Kepatuhan Riset &amp; Transparansi Provenance
+      <section id="sources-disclaimer" className="scroll-mt-28 space-y-4">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+            Cara membaca dan disklaimer
+          </h2>
+          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+            Kepatuhan dan transparansi
           </span>
         </div>
 
         {/* Exhibits List */}
         {exhibits.length > 0 && (
-          <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-            <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
-              <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                Daftar Exhibit Terverifikasi ({exhibits.length})
+          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+              <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                Daftar exhibit terverifikasi ({exhibits.length})
               </CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-2 font-mono text-xs">
-              <div className="grid gap-2 sm:grid-cols-2">
+            <CardContent className="p-5">
+              <div className="grid gap-2.5 sm:grid-cols-2 text-xs">
                 {exhibits.map((ex, idx) => (
                   <div
                     key={idx}
-                    className="flex items-center justify-between rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 dark:border-[#262930] dark:bg-[#181a1f]"
+                    className="flex items-center justify-between rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 dark:border-[#2A2822] dark:bg-[#14130F]"
                   >
-                    <span className="font-medium text-[#0B1F3A] dark:text-neutral-200 truncate mr-2">
+                    <span className="font-medium text-[#1C1B17] truncate mr-2 dark:text-[#EDEAE3]">
                       {ex.title}
                     </span>
                     {ex.source && (
-                      <span className="text-[10px] text-[#63748A] shrink-0">
+                      <span className="text-[11px] text-[#6B6659] shrink-0 dark:text-[#A8A296]">
                         {ex.source}
                       </span>
                     )}
@@ -766,34 +733,34 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
           </Card>
         )}
 
-        {/* Sector Data Overview if present */}
+        {/* Sector Data */}
         {sectorData && (
-          <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-            <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
+          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
               <div className="flex items-center justify-between">
-                <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                  Data Sektoral: {sectorData.subsector || meta?.subsector || meta?.sector || "IDX Sector"}
+                <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  Data sektoral: {sectorData.subsector || meta?.subsector || meta?.sector || "Sektor IDX"}
                 </CardTitle>
-                <span className="font-mono text-[10px] text-[#63748A]">
-                  Source: {sectorData.source || "Sectors Sektoral Engine"}
+                <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                  Sumber: {sectorData.source || "Sektoral Engine"}
                 </span>
               </div>
             </CardHeader>
-            <CardContent className="p-4 space-y-2 font-mono text-xs">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <CardContent className="p-5 text-xs">
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
                 {sectorData.growth_forecast_2026 && (
                   <>
-                    <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
-                      <div className="text-[10px] text-[#63748A]">PROYEKSI REV 2026</div>
-                      <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-center dark:border-[#2A2822] dark:bg-[#14130F]">
+                      <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Proyeksi pendapatan 2026</div>
+                      <div className="font-semibold text-[#1C1B17] font-mono tabular-nums mt-1 text-sm dark:text-[#EDEAE3]">
                         {sectorData.growth_forecast_2026.revenue_pct != null
                           ? `${sectorData.growth_forecast_2026.revenue_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.revenue_pct}%`
                           : "-"}
                       </div>
                     </div>
-                    <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
-                      <div className="text-[10px] text-[#63748A]">PROYEKSI EPS 2026</div>
-                      <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-center dark:border-[#2A2822] dark:bg-[#14130F]">
+                      <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Proyeksi EPS 2026</div>
+                      <div className="font-semibold text-[#1C1B17] font-mono tabular-nums mt-1 text-sm dark:text-[#EDEAE3]">
                         {sectorData.growth_forecast_2026.eps_pct != null
                           ? `${sectorData.growth_forecast_2026.eps_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.eps_pct}%`
                           : "-"}
@@ -803,17 +770,17 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                 )}
                 {sectorData.growth_actual_2025 && (
                   <>
-                    <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
-                      <div className="text-[10px] text-[#63748A]">AKTUAL REV 2025</div>
-                      <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-center dark:border-[#2A2822] dark:bg-[#14130F]">
+                      <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Realisasi pendapatan 2025</div>
+                      <div className="font-semibold text-[#1C1B17] font-mono tabular-nums mt-1 text-sm dark:text-[#EDEAE3]">
                         {sectorData.growth_actual_2025.revenue_pct != null
                           ? `${sectorData.growth_actual_2025.revenue_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.revenue_pct}%`
                           : "-"}
                       </div>
                     </div>
-                    <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
-                      <div className="text-[10px] text-[#63748A]">AKTUAL EPS 2025</div>
-                      <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
+                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-center dark:border-[#2A2822] dark:bg-[#14130F]">
+                      <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Realisasi EPS 2025</div>
+                      <div className="font-semibold text-[#1C1B17] font-mono tabular-nums mt-1 text-sm dark:text-[#EDEAE3]">
                         {sectorData.growth_actual_2025.eps_pct != null
                           ? `${sectorData.growth_actual_2025.eps_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.eps_pct}%`
                           : "-"}
@@ -827,20 +794,16 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
         )}
 
         {/* Regulatory Disclaimer Block */}
-        <div className="rounded-lg border border-[#D6E2EE] bg-[#F4F8FC] p-4 text-xs font-mono space-y-2 dark:border-[#262930] dark:bg-[#121316]">
-          <div className="flex items-center gap-2 font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-[#A9C9E8]">
-            <FileText className="h-4 w-4 text-[#0B1F3A] dark:text-[#A9C9E8]" />
-            <span>INFORMASI, BUKAN SARAN INVESTASI</span>
+        <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 text-xs space-y-3 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="flex items-center gap-2 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <FileText className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
+            <span>Informasi dan disklaimer kepatuhan</span>
           </div>
-          <p className="leading-relaxed text-[#63748A] dark:text-neutral-300 font-sans">
-            Laporan ini dihasilkan oleh sistem multi-agent untuk keperluan informasi dan analisis data pasar modal
-            Indonesia. Seluruh output adalah data historis dan agregat - bukan rekomendasi, prediksi, atau saran investasi.
-            Keputusan investasi sepenuhnya tanggung jawab pembaca. Selalu lakukan riset mandiri dan konsultasikan dengan
-            penasihat keuangan berlisensi sebelum berinvestasi. Performa masa lalu tidak menjamin hasil di masa depan.
-            Akurasi data tunduk pada kualitas data sumber.
+          <p className="leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            Laporan ini disusun untuk keperluan informasi dan analisis data pasar modal Indonesia. Seluruh konten didasarkan pada data historis dan publik emiten - bukan merupakan rekomendasi jual atau beli efek, maupun saran investasi profesional. Keputusan investasi sepenuhnya menjadi tanggung jawab pembaca. Selalu lakukan riset mandiri dan konsultasikan dengan penasihat keuangan berlisensi sebelum mengambil keputusan investasi. Kinerja masa lalu tidak menjamin hasil di masa depan.
           </p>
           {meta?.prepared_by && (
-            <div className="pt-2 border-t border-[#D6E2EE] text-[11px] text-[#63748A] dark:border-[#262930]">
+            <div className="pt-2.5 border-t border-[#E7E3DA] text-[11px] text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296]">
               Disiapkan oleh {meta.prepared_by} · {meta.date} · Bahasa: {meta.language?.toUpperCase() || "ID"}
             </div>
           )}

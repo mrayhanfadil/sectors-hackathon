@@ -1,5 +1,4 @@
-// Universe emiten IDX untuk /agent - sumber: GET /api/tickers (Sectors universe feed).
-// (data/assumptions/*.json) kalau endpoint belum kebaca.
+// Daftar emiten IDX untuk /agent - sumber: GET /api/tickers.
 
 export interface UniverseTicker {
   kode: string
@@ -7,10 +6,12 @@ export interface UniverseTicker {
   sector: string | null
 }
 
+export type TickerInfo = UniverseTicker
+
 // Full engines: DCF/SOTP/infra/bank/coal + fixtures + template archetype.
 export const ENGINE_TICKERS = ["ADRO", "BBCA", "CDIA", "MTEL", "POWR", "RATU"] as const
 
-// Kompat: dropdown 6-only sebelum universe datang.
+// Kompat: dropdown sebelum daftar emiten datang.
 export const SUPPORTED_TICKERS = ENGINE_TICKERS
 
 let _cache: UniverseTicker[] | null = null
@@ -28,7 +29,7 @@ export function fetchUniverse(apiBase: string): Promise<UniverseTicker[]> {
       const r = await fetch(`${apiBase}/api/tickers`)
       if (!r.ok) throw new Error(`HTTP ${r.status}`)
       const j = (await r.json()) as { tickers?: UniverseTicker[] }
-      if (!Array.isArray(j.tickers) || j.tickers.length === 0) throw new Error("empty universe")
+      if (!Array.isArray(j.tickers) || j.tickers.length === 0) throw new Error("empty list")
       _cache = j.tickers
     } catch {
       _cache = fallback()
@@ -50,7 +51,9 @@ export function normalizeTicker(raw: unknown, known?: readonly string[]): string
   const t = String(raw ?? "")
     .toUpperCase()
     .trim()
-  const list = known ?? ENGINE_TICKERS
-  // TIDAK ada fallback: ticker asing = string kosong = tidak bisa jalan.
-  return (list as readonly string[]).includes(t) ? t : ""
+  if (!t) return ""
+  if (known && known.length > 0) {
+    return known.includes(t) ? t : t
+  }
+  return /^[A-Z]{4}$/.test(t) ? t : ""
 }

@@ -1,9 +1,3 @@
-// PerformanceQuadrants component.
-// Displays the 2x2 performance and forecast quadrants (Revenue & YoY growth, EBITDA & EBITDA margin, etc.) over 2024A-2028F.
-//
-// Primary data source: payload.cover.slide2.key_financials (tied out with performance_page.quadrants).
-// Fallback: payload.key_financials (if cover.slide2.key_financials is absent; documented per requirement).
-
 import React from "react"
 import type { ReportPayload } from "@/lib/reportPayload"
 import { TOKENS, PendingBlock, formatIdn, formatPct, parseIdnNumber } from "./tokens"
@@ -24,8 +18,7 @@ interface QuadrantData {
 }
 
 /**
- * Inline SVG combo chart rendering bars (actual in solid navy, forecast in lighter navy)
- * and a line on a secondary axis with independent scaling and zero-baseline.
+ * Inline SVG combo chart rendering bars and a line on a secondary axis.
  */
 function SvgComboChart({
   labels,
@@ -48,8 +41,8 @@ function SvgComboChart({
 }) {
   const W = 360
   const H = 190
-  const padL = 42
-  const padR = 42
+  const padL = 44
+  const padR = 44
   const padT = 24
   const padB = 30
   const chartW = W - padL - padR
@@ -62,7 +55,7 @@ function SvgComboChart({
   const validBars = bars.filter((v): v is number => v !== null && Number.isFinite(v))
   const bmax = validBars.length > 0 ? Math.max(...validBars) : 1
 
-  // Line scale (always anchored to 0 if negatives present)
+  // Line scale
   const validLine = line.filter((v): v is number => v !== null && Number.isFinite(v))
   const lmin = validLine.length > 0 ? Math.min(...validLine) : 0
   const lmax = validLine.length > 0 ? Math.max(...validLine) : 1
@@ -95,11 +88,11 @@ function SvgComboChart({
       viewBox={`0 0 ${W} ${H}`}
       className="w-full h-auto block select-none"
       role="img"
-      aria-label={`Combo chart ${labels.join(", ")}`}
+      aria-label={`Grafik kinerja ${labels.join(", ")}`}
     >
-      <rect x="0" y="0" width={W} height={H} rx="4" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
+      <rect x="0" y="0" width={W} height={H} rx="6" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
 
-      {/* Gridlines & Left axis (Bars) */}
+      {/* Gridlines & Left axis */}
       {[0, 0.5, 1].map((frac, idx) => {
         const gy = padT + chartH - frac * chartH
         const val = bmax * frac
@@ -121,7 +114,7 @@ function SvgComboChart({
         )
       })}
 
-      {/* Zero line for negative line values */}
+      {/* Zero line */}
       {zeroY !== null && zeroY >= padT && zeroY <= padT + chartH && (
         <line
           x1={padL}
@@ -134,7 +127,7 @@ function SvgComboChart({
         />
       )}
 
-      {/* Right axis ticks (Line %) */}
+      {/* Right axis ticks */}
       {[0, 0.5, 1].map((frac, idx) => {
         const ly = padT + chartH - frac * chartH
         const val = lLo + frac * lSpan
@@ -178,8 +171,8 @@ function SvgComboChart({
               y={by}
               width={bw}
               height={Math.max(bh, 0.5)}
-              rx="1.5"
-              fill={TOKENS.navy}
+              rx="2"
+              fill={TOKENS.teal}
               opacity={isActual ? 1 : 0.4}
             />
             {/* Bar top label */}
@@ -188,7 +181,7 @@ function SvgComboChart({
               y={by - 3}
               fontSize="7"
               fontWeight="bold"
-              fill={TOKENS.navy}
+              fill={TOKENS.teal}
               textAnchor="middle"
               fontFamily="monospace"
               className="tabular-nums"
@@ -227,9 +220,11 @@ function SvgComboChart({
                   y={lblY - 6.5}
                   width={text.length * 4.4 + 4}
                   height="8"
-                  rx="1.5"
+                  rx="2"
                   fill="#ffffff"
-                  fillOpacity="0.9"
+                  fillOpacity="0.92"
+                  stroke={TOKENS.rule}
+                  strokeWidth="0.5"
                 />
                 <text
                   x={p.x}
@@ -249,7 +244,7 @@ function SvgComboChart({
         )
       })}
 
-      {/* X Axis Period Labels */}
+      {/* X Axis Labels */}
       {labels.map((lab, i) => {
         const lx = padL + i * step + step / 2
         return (
@@ -268,29 +263,21 @@ function SvgComboChart({
         )
       })}
 
-      {/* Bottom Subtitle / Legend */}
+      {/* Legend */}
       <text x={padL} y={H - 3} fontSize="6.5" fill={TOKENS.muted}>
-        Solid = Aktual · Lighter = Proyeksi
+        Solid = Aktual · Transparan = Proyeksi
       </text>
     </svg>
   )
 }
 
-/**
- * Extracts and normalizes quadrant data from payload.
- * Fallback priority:
- * 1. payload.performance_page.quadrants (if fully precomputed by backend engine)
- * 2. payload.cover.slide2.key_financials (primary per prompt contract)
- * 3. payload.key_financials (secondary fallback; documented per requirement)
- */
 function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
   const p = payload as Record<string, any>
 
-  // 1. Check if backend performance_page quadrants are available
   const perfQuadrants = p.performance_page?.quadrants
   if (Array.isArray(perfQuadrants) && perfQuadrants.length > 0) {
     return perfQuadrants.map((q: any) => ({
-      title: q.title ?? "Performance Quadrant",
+      title: q.title ?? "Kuadran kinerja",
       window: q.window,
       labels: Array.isArray(q.labels) ? q.labels.map(String) : [],
       bars: Array.isArray(q.bars) ? q.bars.map((v: unknown) => parseIdnNumber(v)) : [],
@@ -305,8 +292,6 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
     }))
   }
 
-  // 2. Primary fallback: payload.cover.slide2.key_financials
-  // 3. Secondary fallback: payload.key_financials (say so in comment: fallback if slide2 is absent)
   const kf = p.cover?.slide2?.key_financials ?? p.key_financials
   if (!kf || !Array.isArray(kf.headers) || !Array.isArray(kf.rows)) {
     return null
@@ -316,7 +301,6 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
   const headers = rawHeaders.length > 1 ? rawHeaders.slice(1) : rawHeaders
   const rows: (string | number)[][] = kf.rows
 
-  // Helper to find a row matching needles
   const findRow = (...needles: string[]) => {
     return rows.find((r) => {
       const label = String(r[0] ?? "").toLowerCase()
@@ -344,7 +328,6 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
     return null
   }
 
-  // Calculate growth and margins deterministically from payload rows
   const calcGrowth = (series: (number | null)[]) => {
     return series.map((cur, i) => {
       if (i === 0 || cur === null) return null
@@ -362,7 +345,6 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
   })
   const epsGrowth = calcGrowth(eps)
 
-  // Count actual periods (ending with 'A')
   let actualN = 0
   for (const h of headers) {
     if (h.trim().toUpperCase().endsWith("A")) {
@@ -375,7 +357,7 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
 
   const quadrants: QuadrantData[] = [
     {
-      title: "Revenue & Revenue Growth",
+      title: "Pendapatan dan pertumbuhan pendapatan",
       window: headers.length > 0 ? `${headers[0]}–${headers[headers.length - 1]}` : undefined,
       labels: headers,
       bars: rev,
@@ -386,13 +368,13 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
       tieOut: "cover.slide2.key_financials (Revenue)",
     },
     {
-      title: "EBITDA & EBITDA Margin",
+      title: "EBITDA dan marjin EBITDA",
       window: headers.length > 0 ? `${headers[0]}–${headers[headers.length - 1]}` : undefined,
       labels: headers,
       bars: ebitda,
       line: ebitdaMargins,
       barUnit: "Rp bn",
-      lineUnit: "% margin",
+      lineUnit: "% marjin",
       actualN,
       tieOut: "cover.slide2.key_financials (EBITDA)",
     },
@@ -400,7 +382,7 @@ function extractQuadrants(payload: ReportPayload): QuadrantData[] | null {
 
   if (net.length > 0) {
     quadrants.push({
-      title: "Net Profit & EPS Growth",
+      title: "Laba bersih dan pertumbuhan EPS",
       window: headers.length > 0 ? `${headers[0]}–${headers[headers.length - 1]}` : undefined,
       labels: headers,
       bars: net,
@@ -419,39 +401,20 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
   const quadrants = extractQuadrants(payload)
 
   if (!quadrants || quadrants.length === 0) {
-    return <PendingBlock label="Kuartal & marjin" message="data kinerja keuangan (Key Financials) belum tersedia." />
+    return <PendingBlock label="Kuadran kinerja" message="data kinerja keuangan belum tersedia di payload." />
   }
 
   return (
     <div className="space-y-4 font-sans">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-            Visualisasi Kinerja Keuangan &amp; Forecasting (2024A–2028F)
-          </h3>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            Terkait langsung dengan tabel Key Financials di dokumen resmi emiten
-          </p>
-        </div>
-        <span className="font-mono text-[10px] text-neutral-400">
-          SUMBER: {((payload as any).performance_page?.sources ?? ["cover.slide2.key_financials"]).join("; ")}
-        </span>
-      </div>
-
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         {quadrants.map((q, idx) => (
           <div
             key={idx}
-            className="flex flex-col rounded-lg border border-neutral-200 bg-white p-3.5 shadow-xs dark:border-[#262930] dark:bg-[#121418]"
+            className="flex flex-col rounded-xl border border-[#E7E3DA] bg-white p-4 shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]"
           >
-            <div className="mb-2 flex items-center justify-between border-b border-neutral-100 pb-2 dark:border-[#1f2228]">
-              <div className="flex items-center gap-2">
-                <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
-                  {`0${idx + 1}`}
-                </span>
-                <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">{q.title}</span>
-              </div>
-              {q.window && <span className="font-mono text-[10px] text-neutral-400">{q.window}</span>}
+            <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
+              <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{q.title}</span>
+              {q.window && <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">{q.window}</span>}
             </div>
 
             <div className="my-auto">
@@ -468,15 +431,9 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
             </div>
 
             {q.narrative && (
-              <p className="mt-2.5 rounded border border-neutral-100 bg-neutral-50/70 p-2 text-[11px] leading-relaxed text-neutral-700 dark:border-[#262930] dark:bg-[#181a1f]/60 dark:text-neutral-300">
+              <p className="mt-3 rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
                 {q.narrative}
               </p>
-            )}
-
-            {q.tieOut && (
-              <div className="mt-2 text-right font-mono text-[9px] text-neutral-400">
-                Angka identik dengan tabel Key Financials
-              </div>
             )}
           </div>
         ))}

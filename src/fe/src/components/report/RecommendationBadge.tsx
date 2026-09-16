@@ -28,18 +28,18 @@ export function RecommendationBadge({
   const isHold = normRating ? !isBuy && !isSell : false
 
   const ratingStyles = isBuy
-    ? "border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:border-emerald-500/50 dark:bg-emerald-950/40 dark:text-emerald-400"
+    ? "border-[#BCE2C9] bg-[#EBF6EE] text-[#157F3D] dark:border-[#157F3D]/40 dark:bg-[#157F3D]/20 dark:text-[#34D399]"
     : isSell
-    ? "border-rose-500/40 bg-rose-500/10 text-rose-600 dark:border-rose-500/50 dark:bg-rose-950/40 dark:text-rose-400"
+    ? "border-[#F8C8CB] bg-[#FDF2F2] text-[#B4232A] dark:border-[#B4232A]/40 dark:bg-[#B4232A]/20 dark:text-[#F87171]"
     : isHold
-    ? "border-amber-500/40 bg-amber-500/10 text-amber-700 dark:border-amber-500/50 dark:bg-amber-950/40 dark:text-amber-400"
-    : "border-neutral-300 bg-neutral-100 text-neutral-600 dark:border-neutral-700 dark:bg-neutral-800/60 dark:text-neutral-400"
+    ? "border-[#F6E3B8] bg-[#FEF9EE] text-[#A16207] dark:border-[#A16207]/40 dark:bg-[#A16207]/20 dark:text-[#FBBF24]"
+    : "border-[#E7E3DA] bg-[#F4F1EA] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]"
 
   const upsideColor = isBuy
-    ? "text-emerald-600 dark:text-emerald-400"
+    ? "text-[#157F3D] dark:text-[#34D399]"
     : isSell
-    ? "text-rose-600 dark:text-rose-400"
-    : "text-amber-600 dark:text-amber-400"
+    ? "text-[#B4232A] dark:text-[#F87171]"
+    : "text-[#A16207] dark:text-[#FBBF24]"
 
   const formattedUpside = (() => {
     if (upside == null) return null
@@ -47,14 +47,14 @@ export function RecommendationBadge({
       return `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%`
     }
     const str = String(upside).trim()
-    if (!str || str === "-") return null
+    if (!str || str === "-" || str === "-") return null
     return str
   })()
 
   const sizeClasses = {
-    sm: "text-[10px] px-1.5 py-0.5 tracking-wider",
-    md: "text-xs px-2 py-0.5 tracking-wide",
-    lg: "text-xs sm:text-sm px-2.5 py-1 font-bold tracking-wider",
+    sm: "text-xs px-2 py-0.5 font-medium",
+    md: "text-xs px-2.5 py-1 font-semibold",
+    lg: "text-sm px-3 py-1.5 font-bold",
   }
 
   const displayRating = normRating || "MENUNGGU"
@@ -62,20 +62,24 @@ export function RecommendationBadge({
   return (
     <div className={`inline-flex flex-wrap items-center gap-1.5 ${className}`}>
       <span
-        className={`inline-flex items-center gap-1 rounded border font-mono font-bold uppercase tabular-nums ${ratingStyles} ${sizeClasses[size]}`}
+        className={`inline-flex items-center gap-1.5 rounded-md border font-sans ${ratingStyles} ${sizeClasses[size]}`}
       >
-        {isBuy && <TrendingUp className="h-3 w-3 shrink-0" />}
-        {isSell && <TrendingDown className="h-3 w-3 shrink-0" />}
-        {isHold && <Minus className="h-3 w-3 shrink-0" />}
+        {isBuy && <TrendingUp className="h-3.5 w-3.5 shrink-0" />}
+        {isSell && <TrendingDown className="h-3.5 w-3.5 shrink-0" />}
+        {isHold && <Minus className="h-3.5 w-3.5 shrink-0" />}
         <span>{displayRating}</span>
       </span>
 
       {showTarget && targetPrice != null && (
         <span
-          className={`inline-flex items-center rounded border border-neutral-300 bg-neutral-50 font-mono font-medium tabular-nums text-neutral-900 ${sizeClasses[size]} dark:border-[#262930] dark:bg-[#121316] dark:text-neutral-200`}
+          className={`inline-flex items-center rounded-md border border-[#E7E3DA] bg-[#FBFAF7] font-sans font-medium text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3] ${sizeClasses[size]}`}
         >
-          <span>TP Rp {fmtIDR(targetPrice)}</span>
-          {formattedUpside && <span className={`ml-1 font-semibold ${upsideColor}`}>({formattedUpside})</span>}
+          <span>Nilai wajar Rp <span className="font-mono tabular-nums">{fmtIDR(targetPrice)}</span></span>
+          {formattedUpside && (
+            <span className={`ml-1 font-semibold font-mono tabular-nums ${upsideColor}`}>
+              ({formattedUpside})
+            </span>
+          )}
         </span>
       )}
     </div>

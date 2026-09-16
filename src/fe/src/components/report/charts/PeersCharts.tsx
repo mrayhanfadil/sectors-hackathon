@@ -1,11 +1,3 @@
-// PeersCharts component.
-// Own-history valuation band panels and implied price judgement chart from payload.peers_page.part_b.
-//
-// Price determination rule:
-// Uses payload.peers_page.part_b.last_close if it is a number. If it is a formatted string, we do NOT
-// parse it silently (to prevent locale parsing anomalies); instead we take the numeric price from
-// payload.cover.rating_box.price per the frozen contract. Every series comes directly from the payload.
-
 import React from "react"
 import type { ReportPayload } from "@/lib/reportPayload"
 import { TOKENS, PendingBlock, formatIdn, formatPct } from "./tokens"
@@ -35,12 +27,6 @@ interface ImpliedRow {
   delta_pct?: number
 }
 
-/**
- * Single multiple own-history valuation band panel.
- * Draws shaded P10-P90 distribution band, historical series polyline,
- * dashed median (buy green, pinned left), dotted mean (sell red, pinned right),
- * and current value marker with percentile.
- */
 function BandPanel({ block }: { block: BandBlock }) {
   const W = 430
   const H = 170
@@ -48,8 +34,8 @@ function BandPanel({ block }: { block: BandBlock }) {
 
   if (pts.length < 2) {
     return (
-      <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-center text-xs font-mono text-neutral-400 dark:border-[#262930] dark:bg-[#121418]">
-        Series historis {block.label} tidak cukup data (&lt; 2 titik).
+      <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+        Data historis {block.label} tidak mencukupi (&lt; 2 titik).
       </div>
     )
   }
@@ -78,22 +64,21 @@ function BandPanel({ block }: { block: BandBlock }) {
   const curX = x(n - 1)
   const curY = y(curVal)
 
-  // Distribution band coordinates
   const y10 = p10 !== null ? y(p10) : null
   const y90 = p90 !== null ? y(p90) : null
 
   return (
-    <div className="flex flex-col justify-between rounded-lg border border-neutral-200 bg-white p-3.5 shadow-xs dark:border-[#262930] dark:bg-[#121418]">
+    <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
       <div>
-        <div className="mb-2 flex items-center justify-between border-b border-neutral-100 pb-1 dark:border-[#1f2228]">
-          <span className="text-xs font-bold text-neutral-900 dark:text-neutral-100">
-            {block.label} Historical Band (1-Year)
+        <div className="mb-2 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-1.5 dark:border-[#2A2822]">
+          <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            Rentang historis {block.label} (1 tahun)
           </span>
-          <span className="font-mono text-[10px] text-neutral-400">n = {block.n ?? n} sesi</span>
+          <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">n = {block.n ?? n} sesi</span>
         </div>
 
         <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto block select-none" role="img">
-          <rect x="0" y="0" width={W} height={H} rx="3" fill="#ffffff" />
+          <rect x="0" y="0" width={W} height={H} rx="4" fill="#ffffff" />
 
           {/* Shaded P10-P90 Distribution Band */}
           {y10 !== null && y90 !== null && (
@@ -103,14 +88,14 @@ function BandPanel({ block }: { block: BandBlock }) {
                 y={y90}
                 width={W - 8}
                 height={Math.max(y10 - y90, 0.5)}
-                fill="rgba(169,201,232,0.30)"
+                fill="rgba(14,110,99,0.08)"
               />
-              <line x1="4" y1={y90} x2={W - 4} y2={y90} stroke={TOKENS.ice} strokeWidth="0.7" />
-              <line x1="4" y1={y10} x2={W - 4} y2={y10} stroke={TOKENS.ice} strokeWidth="0.7" />
+              <line x1="4" y1={y90} x2={W - 4} y2={y90} stroke="#0E6E63" strokeOpacity={0.25} strokeWidth="0.7" />
+              <line x1="4" y1={y10} x2={W - 4} y2={y10} stroke="#0E6E63" strokeOpacity={0.25} strokeWidth="0.7" />
             </g>
           )}
 
-          {/* Average Reference Line (Sell Red, Pinned Right) */}
+          {/* Average Reference Line */}
           {mean !== null && (
             <g>
               <line
@@ -129,14 +114,14 @@ function BandPanel({ block }: { block: BandBlock }) {
                 fontWeight="bold"
                 fill={TOKENS.sell}
                 textAnchor="end"
-                fontFamily="monospace"
+                fontFamily="sans-serif"
               >
-                rata-rata {formatIdn(mean, 1)}×
+                Rata-rata {formatIdn(mean, 1)}×
               </text>
             </g>
           )}
 
-          {/* Median Reference Line (Buy Green, Pinned Left) */}
+          {/* Median Reference Line */}
           {median !== null && (
             <g>
               <line
@@ -155,9 +140,9 @@ function BandPanel({ block }: { block: BandBlock }) {
                 fontWeight="bold"
                 fill={TOKENS.buy}
                 textAnchor="start"
-                fontFamily="monospace"
+                fontFamily="sans-serif"
               >
-                median {formatIdn(median, 1)}×
+                Median {formatIdn(median, 1)}×
               </text>
             </g>
           )}
@@ -166,20 +151,20 @@ function BandPanel({ block }: { block: BandBlock }) {
           <polyline
             points={pts.map((p, i) => `${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ")}
             fill="none"
-            stroke={TOKENS.navy}
+            stroke={TOKENS.teal}
             strokeWidth="1.8"
             strokeLinejoin="round"
             strokeLinecap="round"
           />
 
-          {/* Current Value Marker & Tag */}
-          <circle cx={curX} cy={curY} r="3.4" fill={TOKENS.navy} stroke="#ffffff" strokeWidth="1.2" />
+          {/* Current Value Marker */}
+          <circle cx={curX} cy={curY} r="3.4" fill={TOKENS.teal} stroke="#ffffff" strokeWidth="1.2" />
           <text
             x={W - 6}
             y={curY - 6}
             fontSize="8.5"
             fontWeight="bold"
-            fill={TOKENS.navy}
+            fill={TOKENS.teal}
             textAnchor="end"
             fontFamily="monospace"
             className="tabular-nums"
@@ -189,17 +174,17 @@ function BandPanel({ block }: { block: BandBlock }) {
 
           {/* Date Axis Base Line */}
           <line x1="4" y1={H - 12} x2={W - 4} y2={H - 12} stroke={TOKENS.rule} strokeWidth="0.7" />
-          <text x="6" y={H - 3} fontSize="8" fill={TOKENS.muted} fontFamily="monospace">
+          <text x="6" y={H - 3} fontSize="8" fill={TOKENS.muted}>
             {pts[0].date}
           </text>
-          <text x={W - 6} y={H - 3} fontSize="8" fill={TOKENS.muted} textAnchor="end" fontFamily="monospace">
+          <text x={W - 6} y={H - 3} fontSize="8" fill={TOKENS.muted} textAnchor="end">
             {cur.date} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "-"}×-{p90 !== null ? formatIdn(p90, 0) : "-"}×
           </text>
         </svg>
       </div>
 
       {block.narrative && (
-        <p className="mt-2 text-[11px] leading-relaxed text-neutral-700 dark:text-neutral-300 font-sans border-t border-neutral-100 pt-2 dark:border-[#1f2228]">
+        <p className="mt-2 text-xs leading-relaxed text-[#6B6659] border-t border-[#E7E3DA]/60 pt-2 dark:border-[#2A2822] dark:text-[#A8A296]">
           {block.narrative}
         </p>
       )}
@@ -207,10 +192,6 @@ function BandPanel({ block }: { block: BandBlock }) {
   )
 }
 
-/**
- * Grouped bars SVG chart for Implied Price Judgement per multiple.
- * Draws to_mean in navy, to_median in ice, with a dashed red line at traded market price.
- */
 function ImpliedPriceBars({
   rows,
   price,
@@ -245,7 +226,7 @@ function ImpliedPriceBars({
 
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto block select-none" role="img" aria-label="Implied price per multiple">
-      <rect x="0" y="0" width={W} height={H} rx="4" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
+      <rect x="0" y="0" width={W} height={H} rx="6" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
 
       {/* Gridlines & Left Scale */}
       {[1.0, 0.5, 0.0].map((frac, idx) => {
@@ -286,27 +267,27 @@ function ImpliedPriceBars({
       )}
 
       {/* Legend */}
-      <rect x={padL} y="8" width="8" height="8" rx="1.5" fill={TOKENS.navy} />
+      <rect x={padL} y="8" width="8" height="8" rx="2" fill={TOKENS.teal} />
       <text x={padL + 12} y="15.5" fontSize="8" fill={TOKENS.muted}>
-        reversion ke 1Y mean
+        Reversion ke rata-rata 1Y
       </text>
-      <rect x={padL + 124} y="8" width="8" height="8" rx="1.5" fill={TOKENS.ice} stroke="#2C4A6B" strokeWidth="0.8" />
-      <text x={padL + 136} y="15.5" fontSize="8" fill={TOKENS.muted}>
-        reversion ke 1Y median
+      <rect x={padL + 130} y="8" width="8" height="8" rx="2" fill={TOKENS.tealLight} />
+      <text x={padL + 142} y="15.5" fontSize="8" fill={TOKENS.muted}>
+        Reversion ke median 1Y
       </text>
       {price !== null && price > 0 && (
         <g>
           <line
-            x1={padL + 252}
+            x1={padL + 258}
             y1="12"
-            x2={padL + 274}
+            x2={padL + 280}
             y2="12"
             stroke={TOKENS.sell}
             strokeWidth="1.4"
             strokeDasharray="4 3"
           />
-          <text x={padL + 280} y="15.5" fontSize="8" fill={TOKENS.sell} fontWeight="bold" fontFamily="monospace">
-            harga pasar {formatIdn(price, 0)}
+          <text x={padL + 286} y="15.5" fontSize="8" fill={TOKENS.sell} fontWeight="bold" fontFamily="monospace">
+            Harga pasar {formatIdn(price, 0)}
           </text>
         </g>
       )}
@@ -318,7 +299,7 @@ function ImpliedPriceBars({
 
         return (
           <g key={`grp-${i}`}>
-            {/* to_mean bar (Navy) */}
+            {/* to_mean bar */}
             {typeof r.to_mean === "number" && (
               <g>
                 <rect
@@ -326,15 +307,15 @@ function ImpliedPriceBars({
                   y={padT + chartH - chartH * (r.to_mean / top)}
                   width={bw}
                   height={chartH * (r.to_mean / top)}
-                  fill={TOKENS.navy}
-                  rx="1.5"
+                  fill={TOKENS.teal}
+                  rx="2"
                 />
                 <text
                   x={cx - bw / 2 - 1}
                   y={padT + chartH - chartH * (r.to_mean / top) - 3}
                   fontSize="7.5"
                   fontWeight="bold"
-                  fill={TOKENS.navy}
+                  fill={TOKENS.teal}
                   textAnchor="middle"
                   fontFamily="monospace"
                   className="tabular-nums"
@@ -344,7 +325,7 @@ function ImpliedPriceBars({
               </g>
             )}
 
-            {/* to_median bar (Ice) */}
+            {/* to_median bar */}
             {typeof r.to_median === "number" && (
               <g>
                 <rect
@@ -352,10 +333,8 @@ function ImpliedPriceBars({
                   y={padT + chartH - chartH * (r.to_median / top)}
                   width={bw}
                   height={chartH * (r.to_median / top)}
-                  fill={TOKENS.ice}
-                  stroke="#2C4A6B"
-                  strokeWidth="0.8"
-                  rx="1.5"
+                  fill={TOKENS.tealLight}
+                  rx="2"
                 />
                 <text
                   x={cx + bw / 2 + 1}
@@ -380,7 +359,6 @@ function ImpliedPriceBars({
               fontWeight="bold"
               fill={TOKENS.navy}
               textAnchor="middle"
-              fontFamily="monospace"
             >
               {r.label}
               {isAnchor ? " *" : ""}
@@ -402,7 +380,7 @@ function ImpliedPriceBars({
         )
       })}
 
-      <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke="#2C4A6B" strokeWidth="0.9" />
+      <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke={TOKENS.rule} strokeWidth="0.9" />
     </svg>
   )
 }
@@ -415,7 +393,7 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
   if (!peersPage || peersPage.available === false || !partB) {
     return (
       <PendingBlock
-        label="Own history & implied price"
+        label="Valuasi relatif historis"
         message="data valuasi historis / peers part B belum tersedia di payload."
       />
     )
@@ -424,10 +402,6 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
   const bands: BandBlock[] = Array.isArray(partB.bands) ? partB.bands : []
   const impliedRows: ImpliedRow[] = Array.isArray(partB.implied) ? partB.implied : []
 
-  // Price resolution:
-  // Use payload.peers_page.part_b.last_close if it is a number. If it is a formatted string (e.g. "Rp 4.860"),
-  // we do not parse it into a number silently - we take the clean numeric price from payload.cover.rating_box.price
-  // instead to avoid localization parsing errors and adhere strictly to the frozen data contract.
   let price: number | null = null
   if (typeof partB.last_close === "number" && Number.isFinite(partB.last_close)) {
     price = partB.last_close
@@ -441,23 +415,7 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
 
   return (
     <div className="space-y-5 font-sans">
-      {/* Header */}
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
-        <div>
-          <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-            Valuasi Relatif Historis - Own History (Time-Series)
-          </h3>
-          <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
-            {partB.methodology ??
-              "Evaluasi posisi multiple historis 1 tahun terhadap distribusi (mean, median, persentil) dan harga implisit."}
-          </p>
-        </div>
-        <span className="font-mono text-[10px] text-neutral-400">
-          SUMBER: {(partB.sources ?? ["Sectors API v2 time-series"]).join("; ")}
-        </span>
-      </div>
-
-      {/* Historical Band Panels (P/E, P/BV, EV/EBITDA, EV/Sales) */}
+      {/* Historical Band Panels */}
       {bands.length > 0 ? (
         <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {bands.map((blk, idx) => (
@@ -465,26 +423,21 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-md border border-neutral-200 bg-neutral-50 p-4 text-center text-xs font-mono text-neutral-400 dark:border-[#262930] dark:bg-[#121418]">
-          Panel band historis belum tersedia.
+        <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+          Panel rentang historis belum tersedia.
         </div>
       )}
 
       {/* Implied Price Section */}
       {impliedRows.length > 0 && (
-        <div className="rounded-lg border border-neutral-200 bg-white p-3.5 shadow-xs dark:border-[#262930] dark:bg-[#121418]">
-          <div className="mb-2.5 flex items-center justify-between border-b border-neutral-100 pb-2 dark:border-[#1f2228]">
-            <div className="flex items-center gap-2">
-              <span className="rounded bg-neutral-900 px-1.5 py-0.5 font-mono text-[10px] font-bold text-amber-400 dark:bg-amber-400/10 dark:text-amber-400">
-                IMPLIED
-              </span>
-              <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-                Implied Price Judgement
-              </span>
-            </div>
+        <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
+            <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+              Penilaian harga implisit (Implied price)
+            </span>
             {price !== null && (
-              <span className="font-mono text-[10px] font-bold text-[#C0392B]">
-                Harga Acuan: Rp {formatIdn(price, 0)}
+              <span className="text-xs font-medium text-[#B4232A] dark:text-[#F87171]">
+                Harga acuan: Rp {formatIdn(price, 0)}
               </span>
             )}
           </div>
@@ -492,24 +445,24 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           {/* Grouped Bar Chart */}
           <div className="mb-4">
             <ImpliedPriceBars rows={impliedRows} price={price} headline={anchor} />
-            <p className="mt-2 font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
-              Batang = harga implisit bila kelipatan kembali ke rata-rata (navy) atau median (ice) 1 tahun; garis putus-putus merah = harga pasar. Tanda * menandai kelipatan yang menjadi basis anchor target price.
+            <p className="mt-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+              Batang = harga implisit bila kelipatan kembali ke rata-rata (teal) atau median (teal muda) 1 tahun; garis putus-putus merah = harga pasar. Tanda * menandai kelipatan yang menjadi basis anchor target price.
             </p>
           </div>
 
           {/* Implied Price Table */}
-          <div className="overflow-x-auto rounded border border-neutral-200 dark:border-[#262930]">
-            <table className="w-full border-collapse text-xs font-mono">
+          <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+            <table className="w-full text-xs">
               <thead>
-                <tr className="bg-[#0B1F3A] text-white">
-                  <th className="px-3 py-1.5 text-left font-bold">Multiple</th>
-                  <th className="px-3 py-1.5 text-right font-bold">Reversion ke Mean (Rp)</th>
-                  <th className="px-3 py-1.5 text-right font-bold">Reversion ke Median (Rp)</th>
-                  <th className="px-3 py-1.5 text-right font-bold">Rentang</th>
-                  <th className="px-3 py-1.5 text-right font-bold">Selisih</th>
+                <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                  <th className="px-3 py-2 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Kelipatan</th>
+                  <th className="px-3 py-2 text-right font-semibold">Kembali ke rata-rata (Rp)</th>
+                  <th className="px-3 py-2 text-right font-semibold">Kembali ke median (Rp)</th>
+                  <th className="px-3 py-2 text-right font-semibold">Rentang</th>
+                  <th className="px-3 py-2 text-right font-semibold">Selisih</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-200 dark:divide-[#262930]">
+              <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
                 {impliedRows.map((r, rIdx) => {
                   const rangeText = r.is_range && typeof r.low === "number" && typeof r.high === "number"
                     ? `Rp ${formatIdn(r.low, 0)} – ${formatIdn(r.high, 0)}`
@@ -518,21 +471,23 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
                   return (
                     <tr
                       key={r.key ?? rIdx}
-                      className="hover:bg-neutral-50 dark:hover:bg-[#181a1f]/50 even:bg-neutral-50/50 dark:even:bg-[#181a1f]/30"
+                      className={`${
+                        rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                      }`}
                     >
-                      <td className="px-3 py-1.5 font-bold text-neutral-900 dark:text-neutral-100">
+                      <td className="px-3 py-2 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
                         {r.label}
                       </td>
-                      <td className="px-3 py-1.5 text-right font-semibold text-[#0B1F3A] tabular-nums dark:text-sky-400">
+                      <td className="px-3 py-2 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
                         {typeof r.to_mean === "number" ? formatIdn(r.to_mean, 0) : "-"}
                       </td>
-                      <td className="px-3 py-1.5 text-right font-semibold text-neutral-700 tabular-nums dark:text-neutral-300">
+                      <td className="px-3 py-2 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
                         {typeof r.to_median === "number" ? formatIdn(r.to_median, 0) : "-"}
                       </td>
-                      <td className="px-3 py-1.5 text-right text-neutral-600 tabular-nums dark:text-neutral-400">
+                      <td className="px-3 py-2 text-right font-mono tabular-nums text-[#6B6659] dark:text-[#A8A296]">
                         {rangeText}
                       </td>
-                      <td className="px-3 py-1.5 text-right font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
+                      <td className="px-3 py-2 text-right font-semibold font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
                         {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-"}
                       </td>
                     </tr>
@@ -543,16 +498,16 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           </div>
 
           {/* Footnotes & Disclaimers */}
-          <div className="mt-3 space-y-1.5 font-sans text-xs">
+          <div className="mt-3.5 space-y-1.5 text-xs">
             {partB.driver_note && (
-              <p className="font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
+              <p className="text-[#6B6659] dark:text-[#A8A296]">
                 {partB.last_close !== undefined ? `Harga terakhir: ${partB.last_close} · ` : ""}
                 {partB.driver_note}
               </p>
             )}
             {partB.disclaimer && (
-              <div className="rounded border-l-2 border-[#0B1F3A] bg-sky-50/50 p-2.5 text-[11px] leading-relaxed text-neutral-800 dark:border-sky-500 dark:bg-sky-950/30 dark:text-neutral-200">
-                <span className="font-bold">Catatan: </span>
+              <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                <span className="font-semibold">Catatan: </span>
                 {partB.disclaimer}
               </div>
             )}

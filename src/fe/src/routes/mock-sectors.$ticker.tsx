@@ -35,10 +35,10 @@ function MockSectorsRedirect() {
         <div className="mt-6 flex flex-wrap gap-2.5 pt-4 border-t border-neutral-200 dark:border-[#1e2229]">
           <Link
             to={`/report/${tk}` as any}
-            className="inline-flex h-8 items-center gap-1.5 rounded bg-amber-500 px-3 text-xs font-bold text-black transition-colors hover:bg-amber-400"
+            className="inline-flex h-8 items-center gap-1.5 rounded-lg bg-[#0E6E63] px-3 text-xs font-medium text-white transition-opacity hover:opacity-90"
           >
             <FileText className="h-3.5 w-3.5" />
-            <span>[F1] Buka Laporan Live {tk}</span>
+            <span>Buka laporan {tk}</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
 
