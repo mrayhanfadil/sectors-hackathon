@@ -62,36 +62,57 @@ def _ticker_norm(ticker: str) -> str:
 
 # Cache paths - two layers:
 #   (1) per-ticker file under data/output/ (4h TTL) - the rendered payload
-#   (2) per-ticker freeze under output/cache/ammn_fill/ (7d TTL, set by AMMN-FILLD
-#       lane on Sep 12) from kanban t_2c5f420e; when it exists we use it WITHOUT
-#       a Sectors call, so a /api/agent/run click does not re-bill upstream on
-#       every render. A different lane wanting the same behaviour just drops a
-#       matching `*_{TICKER}.json` set into output/cache/ammn_fill/.
-_LOCAL_FILL_DIR = REPO_ROOT / "output" / "cache" / "ammn_fill"
+#   (2) per-ticker freeze under output/cache/ticker_fill/ (7d TTL). The directory
+#       is named `ticker_fill` (not `ammn_fill`) so any ticker's freeze lives
+#       there without renaming. The historical `ammn_fill/` path is still
+#       consulted as a legacy alias - AMMN's existing freeze (kanban t_2c5f420e)
+#       was dropped there before the rename, and forcing a move would invalidate
+#       any in-flight runs that hold the path. A different lane wanting the same
+#       behaviour just drops a `*_{TICKER}.json` set into output/cache/ticker_fill/.
+_LOCAL_FILL_DIR = REPO_ROOT / "output" / "cache" / "ticker_fill"
+_LEGACY_FILL_DIR = REPO_ROOT / "output" / "cache" / "ammn_fill"
 
 
-def _ammn_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
-    """Return the AMMN-FILLD freeze for a ticker if it exists and is <12h old.
+def _freeze_path_for(ticker: str) -> Path | None:
+    """Return the existing freeze directory for a ticker (ticker_fill first, ammn_fill fallback).
 
-    The freeze carries all 4 endpoints the rate log was burning (corporate-actions,
-    quarterly, company/report, daily), so reusing it lets the collector serve a
-    full payload with zero Sectors API calls. The directory is owned by the
-    AMMN-FILLD kanban lane (kanban t_2c5f420e); when a different lane wants the
-    same behaviour, drop a `*_{TICKER}.json` set with the same naming.
+    The freeze is a set of `*_{TICKER}.json` files written by a separate lane. Any ticker
+    that has been pre-populated (regardless of who populated it) is served here at zero
+    Sectors cost. New lanes should write to `ticker_fill/`; `ammn_fill/` is kept for the
+    historical AMMN freeze only.
     """
-    fill_path = _LOCAL_FILL_DIR / f"company_report_{ticker}_multisection.json"
+    for d in (_LOCAL_FILL_DIR, _LEGACY_FILL_DIR):
+        if (d / f"company_report_{ticker}_multisection.json").exists() \
+                or (d / f"company_report_{ticker}.json").exists():
+            return d
+    return None
+
+
+def _ticker_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
+    """Return the per-ticker freeze payload if a freeze exists and is <7d old.
+
+    The freeze carries the four endpoints the rate log was burning (corporate-actions,
+    quarterly, company/report, daily), so reusing it lets the collector serve a full
+    payload with zero Sectors API calls. The directory is owned by the freeze lane;
+    another lane wanting the same behaviour just drops a matching `*_{TICKER}.json`
+    set into output/cache/ticker_fill/ (or output/cache/ammn_fill/ as legacy alias).
+    """
+    fill_dir = _freeze_path_for(ticker)
+    if fill_dir is None:
+        return None
+    fill_path = fill_dir / f"company_report_{ticker}_multisection.json"
     if not fill_path.exists():
-        alt = _LOCAL_FILL_DIR / f"company_report_{ticker}.json"
+        alt = fill_dir / f"company_report_{ticker}.json"
         if alt.exists():
             fill_path = alt
         else:
             return None
     age = time.time() - fill_path.stat().st_mtime
-    # Freeze TTL = 7 days. The AMMN-FILLD lane (kanban t_2c5f420e) is the canonical
-    # source for AMMN data; if the freeze is older than 7 days the analyst should
-    # either refresh the freeze or accept that the collector says sectors_missing_key
-    # instead of burning upstream on a render. The shorter the TTL, the more often
-    # this fires when only ~1 person is editing the freeze by hand.
+    # Freeze TTL = 7 days. The freeze lane is the canonical source for any ticker's
+    # data; if the freeze is older than 7 days the analyst should either refresh it
+    # or accept that the collector says sectors_missing_key instead of burning
+    # upstream on a render. The shorter the TTL, the more often this fires when only
+    # ~1 person is editing the freeze by hand.
     if age > 7 * 24 * 3600:
         return None
     try:
@@ -100,7 +121,8 @@ def _ammn_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
         # Surface the freeze as a Sector-shaped dict so the rest of the pipeline
         # (modeler, analyst) can run unchanged.
         return {
-            "source": "ammn_fill_freeze",
+            "source": "ticker_fill_freeze",
+            "legacy_source": "ammn_fill_freeze" if fill_dir == _LEGACY_FILL_DIR else None,
             "symbol": ticker,
             "info": overview if isinstance(overview, dict) else {"symbol": ticker},
             "financials": None,
@@ -112,7 +134,7 @@ def _ammn_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
             "freeze_age_s": int(age),
         }
     except Exception as e:
-        logger.warning("ammn-fill freeze corrupt %s: %s", ticker, e)
+        logger.warning("ticker-fill freeze corrupt %s: %s", ticker, e)
         return None
 
 
@@ -166,7 +188,7 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
     Two sources feed the mirror:
       (a) the rendered payload (overview + dividends from freeze; prices +
           quarterly from a live Sectors pull).
-      (b) the raw freeze files in output/cache/ammn_fill/* - direct reads
+      (b) the raw freeze files in output/cache/ticker_fill/* (legacy alias: ammn_fill/*) - direct reads
           of the multisection report, daily, quarterly, corporate-actions,
           broker_top, foreign_flow, and segments JSONs. The freeze files
           are richer than the rendered payload, so the mirror catches more
@@ -186,12 +208,14 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
     ttl_s = 93 * 24 * 3600  # storage default; matches upstream _get()
 
     # (b) Mirror from freeze files first - richest source, no upstream cost.
-    # The AMMN-FILLD lane (kanban t_2c5f420e) writes:
+    # Any ticker freeze lane writes:
     #   company_report_<TICKER>_multisection.json, daily_<TICKER>_90d.json,
     #   quarterly_<TICKER>_8.json, corporate_actions_<TICKER>.json,
     #   foreign_flow_<TICKER>_90d.json, broker_top_<TICKER>_30d.json,
     #   segments_<TICKER>_<YYYY>.json.
-    freeze_dir = REPO_ROOT / "output" / "cache" / "ammn_fill"
+    # The mirror walks both ticker_fill/ (new) and ammn_fill/ (legacy alias) so a
+    # ticker's freeze can live in either directory without code change.
+    freeze_dirs = [d for d in (_LOCAL_FILL_DIR, _LEGACY_FILL_DIR) if d.exists()]
     freeze_map: dict[str, tuple[str, dict]] = {
         f"/daily/{t}/": (
             f"daily_{t}_90d.json",
@@ -219,28 +243,37 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
         ),
     }
     for endpoint, (fname, params) in freeze_map.items():
-        p = freeze_dir / fname
-        if not p.exists():
-            alt = freeze_dir / f"company_report_{t}.json"  # older filename
-            if endpoint == f"/company/report/{t}/" and alt.exists():
-                p = alt
-            else:
-                continue
+        p = None
+        for freeze_dir in freeze_dirs:
+            cand = freeze_dir / fname
+            if cand.exists():
+                p = cand
+                break
+            if endpoint == f"/company/report/{t}/":
+                alt = freeze_dir / f"company_report_{t}.json"
+                if alt.exists():
+                    p = alt
+                    break
+        if p is None:
+            continue
         try:
             body = json.loads(p.read_text(encoding="utf-8"))
             cache.set(endpoint, params, body, ttl_s)
         except Exception:
             pass
 
-    # segments_<TICKER>_<YYYY>.json may exist for 1-2 years; mirror each.
-    for seg in freeze_dir.glob(f"segments_{t}_*.json"):
-        try:
-            year = seg.stem.rsplit("_", 1)[-1]
-            body = json.loads(seg.read_text(encoding="utf-8"))
-            cache.set(f"/company/get-segments/{t}/",
-                      {"financial_year": year}, body, ttl_s)
-        except Exception:
-            pass
+    # segments_<TICKER>_<YYYY>.json may exist for 1-2 years; mirror each, walking both
+    # directories (new ticker_fill first, then legacy ammn_fill) so a ticker's segments
+    # files can live in either without changing the collector.
+    for freeze_dir in freeze_dirs:
+        for seg in freeze_dir.glob(f"segments_{t}_*.json"):
+            try:
+                year = seg.stem.rsplit("_", 1)[-1]
+                body = json.loads(seg.read_text(encoding="utf-8"))
+                cache.set(f"/company/get-segments/{t}/",
+                          {"financial_year": year}, body, ttl_s)
+            except Exception:
+                pass
 
     # (a) Also mirror anything the rendered payload carries - this covers
     # the live-Sectors path (when freeze absent) AND the dividend table
@@ -470,8 +503,13 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
     # 0) AMMN-FILLD freeze (12h) - serves 4 endpoints at 0 credits when present.
     #    Always consulted BEFORE any Sectors call so a /api/agent/run click does
     #    not re-bill the upstream on each render.
-    fill_hit = _ammn_fill_payload(t)
+    fill_hit = _ticker_fill_payload(t)
     if fill_hit is not None:
+        # Two source labels on offer: the new "ticker_fill_*" (preferred) and the legacy
+        # "ammn_fill_*" (for callers that pattern-match the historical string). The freeze
+        # itself is the same shape on disk; only the label changed.
+        legacy = fill_hit.get("legacy_source") == "ammn_fill_freeze"
+        passthrough = "ammn_fill_freeze_passthrough" if legacy else "ticker_fill_freeze_passthrough"
         payload: Dict[str, Any] = {
             "ticker": t,
             "as_of": _now_iso(),
@@ -480,19 +518,19 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "company": fill_hit.get("info") or {"symbol": t},
             "financials": fill_hit.get("financials"),
             "segments": None,
-            "segments_source": "ammn_fill_freeze_passthrough",
+            "segments_source": passthrough,
             "peers": _peers_for(t),
             "jci": None,
-            "jci_source": "ammn_fill_freeze_passthrough",
+            "jci_source": passthrough,
             "holders": None,
-            "holders_source": "ammn_fill_freeze_passthrough",
+            "holders_source": passthrough,
             "dividends": fill_hit.get("dividends") or {},
             "prices": fill_hit.get("prices"),
             "ratios": None,
-            "ratios_source": "ammn_fill_freeze_passthrough",
+            "ratios_source": passthrough,
             "kpi": None,
-            "kpi_source": "ammn_fill_freeze_passthrough",
-            "esg": {"found": False, "note": "ammin-fill freeze carries no ESG - render bare"},
+            "kpi_source": passthrough,
+            "esg": {"found": False, "note": "freeze carries no ESG - render bare"},
             "_cache_hit": False,
             "_freeze_age_s": fill_hit.get("freeze_age_s"),
         }
@@ -505,7 +543,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
     if os.getenv("SECTORS_OFFLINE", "").strip().lower() in ("1", "true", "yes"):
         raise RuntimeError(
             f"sectors_offline_mode: SECTORS_OFFLINE=1 set, refusing to call upstream for {t}. "
-            f"Either unset SECTORS_OFFLINE or supply a freeze at output/cache/ammn_fill/"
+            f"Either unset SECTORS_OFFLINE or supply a freeze at output/cache/ticker_fill/"
             f"company_report_{t}_multisection.json so the collector can serve from disk."
         )
 

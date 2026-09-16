@@ -372,9 +372,14 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # financials. Re-enable only with real Sectors quarterly actuals as base.
     # financial_highlights stays honest-empty (set above).
     if t == "AMMN":
-        # AMMN-FILLT: fill FILL_MAP-mapped keys from output/cache/ammn_fill
-        # (sibling harvest, 0 credits). Missing cache -> honest-empty kept;
-        # never crash the render (filler itself is section-guarded too).
+        # AMMN-FILLT: AMMN-specific post-render enrichment layer. Fills FILL_MAP-mapped
+        # keys (NEWS_PICKS, peer cap-stack strings, gate_inputs provenance) from the
+        # sibling harvest at output/cache/ammn_fill/. The freeze lookup itself is
+        # ticker-agnostic (see agents.collector._ticker_fill_payload); this function
+        # only runs for AMMN because its NEWS_PICKS and provenance strings are AMMN-
+        # specific data, not generic data binding. A different ticker needs its own
+        # enrichment module (e.g. server/report/bbca_fill.py) gated on its own ticker
+        # check; the collector + freeze pathway already serves any ticker at 0 credits.
         try:
             from server.report.ammn_fill import apply_ammn_fill
         except ImportError:

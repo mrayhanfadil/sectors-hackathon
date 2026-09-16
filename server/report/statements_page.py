@@ -28,7 +28,12 @@ from server.report import numfmt as _nf
 
 ROOT = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 CACHE = os.path.join(ROOT, "output", "cache", "sectors")
+# Raw Sectors dumps - consulted in ticker_fill first, then ammn_fill (legacy alias)
+# for tickers whose freeze predates the rename. A ticker's raw dump lives at
+# output/cache/ticker_fill/raw_cache/<TICKER>_<ENDPOINT>.json (the AMMN historical
+# dumps use a slightly different naming with a hash suffix, handled by `_sources`).
 LEGACY_CACHE = os.path.join(ROOT, "output", "cache", "ammn_fill", "raw_cache")
+PRIMARY_LEGACY_CACHE = os.path.join(ROOT, "output", "cache", "ticker_fill", "raw_cache")
 BN = 1e9
 ACTUAL_YEARS = ("2024A", "2025A")
 FORECAST_YEARS = ("2026F", "2027F", "2028F")
@@ -59,9 +64,19 @@ def _bn(v: Optional[float]) -> Optional[float]:
 
 
 def _sources(ticker: str) -> dict:
-    for base in (os.path.join(CACHE, ticker), LEGACY_CACHE):
-        rep = _load(os.path.join(base, "company_report_AMMN__33503f87.json" if base == LEGACY_CACHE
-                                 else os.path.join("raw", f"peers_{ticker}.json")))
+    # The historical freeze dumps (output/cache/ticker_fill/raw_cache/<TICKER>_*.json)
+    # are looked up by ticker. The legacy AMMN multisection dump was named with a hash
+    # suffix (company_report_AMMN__33503f87.json) before the format was standardised;
+    # that file is only relevant when ticker=AMMN, so we keep the literal name as a
+    # ticker-scoped legacy alias here rather than hiding it in the directory layout.
+    legacy_multisection = {
+        "AMMN": "company_report_AMMN__33503f87.json",
+    }.get(ticker.upper())
+    for base in (os.path.join(CACHE, ticker), PRIMARY_LEGACY_CACHE, LEGACY_CACHE):
+        if legacy_multisection and base == LEGACY_CACHE:
+            rep = _load(os.path.join(base, legacy_multisection))
+        else:
+            rep = _load(os.path.join(base, "raw", f"peers_{ticker}.json"))
         if rep:
             return {"report": rep, "dir": base}
     return {"report": {}, "dir": LEGACY_CACHE}
