@@ -34,8 +34,11 @@ from server.report import numfmt as _nf
 PATH_DIR = pathlib.Path(__file__).resolve().parents[2] / "data" / "drivers"
 
 SPINE_KEYS = ("revenue", "ebitda", "net_profit")
+#: bvps_path carries per-year BVPS in `path_unit == "Rp per share"`; the slide writes PBV(t) = price / path[t].
+#: Without it the slide can only divide by a single equity scalar and PBV collapses to one number across the row.
 OPTIONAL_KEYS = ("dna", "capex", "interest_expense", "interest_income", "minority", "gross_debt",
-                 "other_income", "inventory", "receivables", "payables", "fcf", "working_capital")
+                 "other_income", "inventory", "receivables", "payables", "fcf", "working_capital",
+                 "bvps_path")
 BASIS_LABEL = {
     "analyst": "estimasi analis (Sectors company_value_forecasts)",
     "third-party-estimate": "estimasi tim yang diselaraskan ke basis data berlisensi",
@@ -93,11 +96,30 @@ def _validate(doc: dict, ticker: str) -> tuple[list[str], dict]:
         if not str(block.get("source") or "").strip():
             problems.append(f"`{key}` has no `source` - an untraceable forecast is not a forecast")
             continue
+        if key == "bvps_path":
+            # BVPS is Rp/share, not Rp bn: never FX-multiply. The slide divides price by it to get PBV(t).
+            unit = str(block.get("path_unit") or "").strip().lower()
+            if "rp" not in unit or "share" not in unit:
+                problems.append("`bvps_path.path_unit` must declare the per-share unit "
+                                "(e.g. 'Rp per share') so it cannot be confused with a Rp bn spine")
+                continue
+            out[key] = {
+                "rp_per_share": vals,
+                "source": str(block["source"]),
+                "note": block.get("note"),
+            }
+            continue
         out[key] = {
             "rp_bn": [v * fx for v in vals],
             "source": str(block["source"]),
             "note": block.get("note"),
         }
+    # If the file carries the three spine keys but no bvps_path the renderer can only divide by a scalar
+    # equity and silently prints a flat PBV row. Refuse the file loudly so the slide fails loud, not quiet.
+    if all(out.get(k) for k in SPINE_KEYS) and not out.get("bvps_path"):
+        problems.append(
+            "driver file declares revenue/ebitda/net_profit but no `bvps_path` - PBV would collapse to a "
+            "constant scalar across the row; either publish a per-year BVPS array or drop the PBV row")
     if out.get("revenue"):
         for i, _y in enumerate(years):
             if out["revenue"]["rp_bn"][i] <= 0:

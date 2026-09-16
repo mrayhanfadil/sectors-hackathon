@@ -126,9 +126,7 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     rev_f = rev1 * (1 + g_rev) if (rev1 is not None and isinstance(g_rev, (int, float))) else None
     ni_f = ni1 * (1 + g_eps) if (ni1 is not None and isinstance(g_eps, (int, float))) else None
     eps_f = (ni_f / shares * 1e9) if (ni_f is not None and shares) else None
-    eb_f = mid_eb
-
-    # ---- the forecast columns come from the shared resolver so no page can disagree ------------------
+    eb_f = mid_eb    # ---- the forecast columns come from the shared resolver so no page can disagree ------------------
     ticker = str(payload.get("ticker")
                  or ((payload.get("cover") or {}).get("ticker"))
                  or ((payload.get("cover") or {}).get("rating_box") or {}).get("ticker")
@@ -163,7 +161,15 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         return (price / epss[i]) if (price and epss[i]) else None
 
     def pbv(i):
-        return (price / (equity * 1e9 / shares)) if (price and equity and shares) else None
+        # Per-year BVPS when the resolver published one (drivers.bvps_path); historically the deck
+        # divided price by a single Q1-2026 equity scalar and the row collapsed to one number. The
+        # forecast resolver refuses the file without a bvps_path - see forecast_path._validate().
+        bvps_arr = (path.get("drivers") or {}).get("bvps_path", {}).get("rp_per_share") if path_used else None
+        if isinstance(bvps_arr, list) and len(bvps_arr) == 3 and i >= 2:
+            v = bvps_arr[i - 2]
+            return (price / v) if (price and v) else None
+        bvps = (equity * 1e9 / shares) if (equity and shares) else None
+        return (price / bvps) if (price and bvps) else None
 
     def ev_eb(i):
         return (ev / ebis[i]) if (ev is not None and ebis[i]) else None
@@ -208,9 +214,15 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
             f"Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; FY27F-FY28F ditahan flat "
             f"mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi."
         )
+    bvps_used = bool(path_used and (path.get("drivers") or {}).get("bvps_path"))
     note2 = (
-        f"Multiple pada harga Rp {_num(price, 0)} untuk semua kolom: PER = harga/EPS; PBV = "
-        f"harga/BVPS (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan); EV/EBITDA = "
+        f"Multiple pada harga Rp {_num(price, 0)}: PER = harga/EPS; PBV = harga/BVPS"
+        + (f" (BVPS per tahun dari drivers.bvps_path: Rp {_num((path['drivers']['bvps_path']['rp_per_share'][0] or 0), 0)}, "
+           f"Rp {_num((path['drivers']['bvps_path']['rp_per_share'][1] or 0), 0)}, "
+           f"Rp {_num((path['drivers']['bvps_path']['rp_per_share'][2] or 0), 0)})"
+           if bvps_used else
+           f" (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan)")
+        + "; EV/EBITDA = "
         f"(mcap Rp {_num(_div(mcap, 1000), 1)} tn + net debt Rp {_num(_div(net_debt, 1000), 1)} tn)/EBITDA "
         f"tahun itu."
     )
