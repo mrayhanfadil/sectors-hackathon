@@ -1,4 +1,4 @@
-# .pre-commit-config.yaml — Pre-commit hooks for institutional report pipeline
+# .pre-commit-config.yaml - Pre-commit hooks for institutional report pipeline
 # Run order: lint -> format -> tests -> harness. Stop on first fail.
 fail_fast: true
 

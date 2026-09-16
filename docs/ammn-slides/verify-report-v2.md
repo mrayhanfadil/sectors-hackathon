@@ -1,4 +1,4 @@
-# AMMN-FIX-V — Post-Fix Re-Verification & Full Compliance Verdict Report
+# AMMN-FIX-V - Post-Fix Re-Verification & Full Compliance Verdict Report
 
 - **Target Ticker**: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ)
 - **Sub-Sector**: Copper & Gold Mining (`metals-mining`, `Basic Materials`)
@@ -19,7 +19,7 @@
 |---|:---:|---|
 | **Overall Verdict** | **FAIL-4 / GAP-1** | 4 critical failures resolved (**CHK-02, CHK-09, CHK-10, CHK-11 flipped to PASS**); 4 residual failures remain (**CHK-03, CHK-04, CHK-06, CHK-08**); 1 honest keyless data gap remains (**CHK-01**); 2 checks maintained (**CHK-05, CHK-07**). |
 | **PDF Compilation** | **PASS (FLIPPED)** | Both render paths (`scripts/render_typst.py` and `server/report/typst_renderer.py`) compile without crash (362KB CLI, 390KB server). Missing chart PNG crashes resolved via PIL placeholder fallbacks and `#if` guards. |
-| **Financial Statements (Slide 6–7)** | **PASS (FLIPPED)** | Statements pinned to 5-year rolling horizon (`2024A`–`2028F`); IS and BS split onto Slide 6, CF and Key Ratios onto Slide 7; defaults unified to honest dashes (`—`); Net Profit and Cash tie-outs hold. |
+| **Financial Statements (Slide 6–7)** | **PASS (FLIPPED)** | Statements pinned to 5-year rolling horizon (`2024A`–`2028F`); IS and BS split onto Slide 6, CF and Key Ratios onto Slide 7; defaults unified to honest dashes (`-`); Net Profit and Cash tie-outs hold. |
 | **Mining Valuation (Slide 4)** | **PASS (FLIPPED)** | Finite-reserve discipline enforced; Exhibit 8 Opsi C (RNAV Bridge) and 3Y mid-cycle EV/EBITDA cross-check tables added; spurious exhibits demoted to un-numbered text. |
 | **Peers & Disclaimer (Slide 5)** | **PASS (FLIPPED)** | Bold `Median` and `Average` summary rows added to peer table; verbatim mandatory own-history disclaimer added; 1Y P/E and P/BV band chart functions implemented. |
 | **Exhibit 1 Skip** | **FAIL (RESIDUAL)** | Shareholder structure demoted to un-numbered text, but document global counter was not offset: canonical Exhibit 2 (Kinerja Harga vs IHSG) is labelled `Exhibit 1`. |
@@ -44,7 +44,7 @@
   - Generates initiation payload with headline rating **SELL** (-96.97% upside vs DCF FV 147), un-assumed fields marked `sectors_missing_key`. Zero synthetic numbers injected.
 - **6-Gate Evaluation Halt**:
   - Direct execution of `render_report('AMMN')` advances past data loading to line 444 (`params = _get_ticker_gate_params(t, data)`).
-  - Halts with `ValueError: gate inputs absent for AMMN: missing ['filing_history_years', 'ebit_positive_count', 'd_de_ratio', 'net_debt_to_ebitda', 'interest_coverage', 'shareholders_equity', 'nci_pct', 'revenue_drivers', 'has_steady_state_3y', 'life_cycle_stage'] — refusing fabricated gate params (add data['gate_inputs'])`.
+  - Halts with `ValueError: gate inputs absent for AMMN: missing ['filing_history_years', 'ebit_positive_count', 'd_de_ratio', 'net_debt_to_ebitda', 'interest_coverage', 'shareholders_equity', 'nci_pct', 'revenue_drivers', 'has_steady_state_3y', 'life_cycle_stage'] - refusing fabricated gate params (add data['gate_inputs'])`.
 - **Compliance Assessment**: **GAP (LOUD)**. The 15-key assumptions gate is permanently solved. The production pipeline halts loudly on absent Gate-0..5 inputs rather than fabricating financial filing histories or coverage ratios.
 
 ### 1.2 PDF Render Execution Path Audit
@@ -72,7 +72,7 @@
 | **CHK-06** | Numbering sequential 2..17 with no gaps | Template lines 13–15, Prompt Job §3 | `report_single.typ:125-930` | **FAIL** | **FAIL** | **FAIL (Residual)**. Figure counter runs contiguous 1..12 rather than canonical 2..17. Exhibit 1 is not skipped, and total count is depressed by omitted chart exhibits. |
 | **CHK-07** | House header/footer on every page | Template lines 16–26, `house-report-format.md` | `templates/typst/common/theme.typ:86-141` | **PASS** | **PASS** | **Maintained (PASS)**. Verified on 100% of pages (10/10). Header (`Equity Research – Company Update`, formatted date, logo, `#067647` rule) and footer (`sectors.app`, disclosure, page number) present on all pages. |
 | **CHK-08** | Slide 3 numbers == Exhibit 3 numbers (Tie-out) | `slide1-cover-spec.md:139`, `slide3-visual-spec.md:28` | `report_single.typ:146-171, 319-332` | **FAIL** | **FAIL** | **FAIL (Residual)**. Slide 1 now hosts Key Financials (Exhibit 2, dashes default). Slide 3 un-numbered Financial Highlights retains hardcoded static numbers (`1.290, 610, 402...`), directly contradicting Slide 1 dashes. |
-| **CHK-09** | Slide 6–7 tie-outs hold (Net Profit, Cash) | `slide6-statements-spec.md:270-284` | `report_single.typ:808-960` | **FAIL** | **PASS** | **FLIPPED (PASS)**. Pinned to 5-year rolling horizon (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; defaults unified to dashes (`—`); NP & Cash tie-outs hold; all required line items added. |
+| **CHK-09** | Slide 6–7 tie-outs hold (Net Profit, Cash) | `slide6-statements-spec.md:270-284` | `report_single.typ:808-960` | **FAIL** | **PASS** | **FLIPPED (PASS)**. Pinned to 5-year rolling horizon (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; defaults unified to dashes (`-`); NP & Cash tie-outs hold; all required line items added. |
 | **CHK-10** | Slide 4 method = DCF-shortened + RNAV + mid-cycle EV/EBITDA + gates | `slide4-valuation-spec.md:1-33`, `instructions.py:221` | `report_single.typ:554, 582, 693, 707` | **FAIL** | **PASS** | **FLIPPED (PASS)**. Added Exhibit 8 Opsi C (RNAV Bridge) and 3Y mid-cycle EV/EBITDA table. Spurious Scenario/Bridge/PBV-3Y headers demoted to plain bold text. Finite-reserve discipline active. |
 | **CHK-11** | Slide 5 peer table + bands + disclaimer present | `slide5-peer-spec.md:58-135, 200` | `report_single.typ:750-780`, `report_charts.py:340-420` | **FAIL** | **PASS** | **FLIPPED (PASS)**. Bold `Median` and `Average` summary rows added to peer table. Verbatim mandatory own-history disclaimer present. P/E and P/BV 1Y band chart functions wired. |
 
@@ -93,10 +93,10 @@ Residuals:             4 FAIL (CHK-03, CHK-04, CHK-06, CHK-08), 1 GAP (CHK-01)
    - *Fix*: Added placeholder generation in `scripts/render_typst.py:244-263` and guarded `relval_bars` with `#if data.charts.relval_bars` in `report_single.typ:784`.
 2. **CHK-09 (Slide 6–7 Statement Tie-Outs: FAIL -> PASS)**:
    - *Baseline*: Cash Flow was empty dashes while IS/BS had static numbers `402` and `410`; merged on Page 6; 6-year horizon.
-   - *Fix*: Pinned to 5-year rolling columns (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; defaults set to dashes (`—`) so Net Profit and Cash structurally tie out; added Interest split, Minority Interest, Inventory, ST/LT Debt split, Total Liabilities & Equity check row, and Growth/Leverage ratios.
+   - *Fix*: Pinned to 5-year rolling columns (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; defaults set to dashes (`-`) so Net Profit and Cash structurally tie out; added Interest split, Minority Interest, Inventory, ST/LT Debt split, Total Liabilities & Equity check row, and Growth/Leverage ratios.
 3. **CHK-10 (Slide 4 Mining Valuation Architecture: FAIL -> PASS)**:
    - *Baseline*: Lacked RNAV Bridge (Opsi C) and mid-cycle EV/EBITDA cross-check.
-   - *Fix*: Implemented `RNAV Bridge — Attributable NAV ke Target Price` (`report_single.typ:554`) and `EV/EBITDA Mid-Cycle Cross-Check (3Y Average)` (`report_single.typ:582`). Demoted non-template exhibits (Scenario Analysis, Jembatan Nilai EV, PBV 3Y table) to plain bold titles.
+   - *Fix*: Implemented `RNAV Bridge - Attributable NAV ke Target Price` (`report_single.typ:554`) and `EV/EBITDA Mid-Cycle Cross-Check (3Y Average)` (`report_single.typ:582`). Demoted non-template exhibits (Scenario Analysis, Jembatan Nilai EV, PBV 3Y table) to plain bold titles.
 4. **CHK-11 (Slide 5 Peer Bands & Disclaimer: FAIL -> PASS)**:
    - *Baseline*: Missing Median/Average rows; missing band charts; missing mandatory disclaimer.
    - *Fix*: Added `peer_median` and `peer_average` bold rows (`report_single.typ:750-752`); added verbatim mandatory own-history disclaimer (`report_single.typ:779-780`); implemented `chart_pe_band_1y` and `chart_pbv_band_1y` in `scripts/report_charts.py`.
@@ -121,14 +121,14 @@ The canonical BRIDS template mandates 17 exhibits sequentially numbered 2..17 ac
 | **Ex 6** | **Net Profit & EPS Growth Combo Chart** | Slide 3 (Visuals 2x2) | `report_single.typ:372` (Guarded by `#if data.charts.netprofit_combo`) | **OMITTED** | **FAIL** (Missing in keyless render) |
 | **Ex 7** | **Mining: Volume vs Cash Cost Combo Chart** | Slide 3 (Visuals 2x2) | `report_single.typ:378` (Guarded by `#if data.charts.production_cost`) | **OMITTED** | **FAIL** (Missing in keyless render) |
 | **Ex 8** | **FCFF Forecast & TV** / **RNAV Bridge** | Slide 4 (Valuation) | `report_single.typ:503` (FCFF) & `line 554` (RNAV Bridge) | **Exhibit 3 & 4** | **FAIL** (Both active simultaneously) |
-| — | *EV/EBITDA Mid-Cycle Cross-Check (3Y Average)* | Slide 4 (Valuation) | `report_single.typ:582` `#exhibit-header(mcev.title, ...)` | **Exhibit 5** | **FAIL** (Additional exhibit header) |
+| - | *EV/EBITDA Mid-Cycle Cross-Check (3Y Average)* | Slide 4 (Valuation) | `report_single.typ:582` `#exhibit-header(mcev.title, ...)` | **Exhibit 5** | **FAIL** (Additional exhibit header) |
 | **Ex 9** | **WACC Components / Cost of Capital Build** | Slide 4 (Valuation) | `report_single.typ:653` `#exhibit-header("Cost of Capital Build")` | **Exhibit 6** | **FAIL** (Numbered 6 instead of 9) |
-| **Ex 10** | **Sensitivity Analysis Matrix (5x5)** | Slide 4 (Valuation) | `report_single.typ:673` `#exhibit-header("Sensitivity Analysis — ...")` | **Exhibit 7** | **FAIL** (Numbered 7 instead of 10) |
+| **Ex 10** | **Sensitivity Analysis Matrix (5x5)** | Slide 4 (Valuation) | `report_single.typ:673` `#exhibit-header("Sensitivity Analysis - ...")` | **Exhibit 7** | **FAIL** (Numbered 7 instead of 10) |
 | **Ex 11** | **Peer Valuation Table** (P/E, P/BV, EV/EBITDA) | Slide 5 (Peers) | `report_single.typ:754` `#exhibit-header(peer_title, peer_src)` | **Exhibit 8** | **FAIL** (Numbered 8 instead of 11) |
 | **Ex 12** | **P/E Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `report_single.typ:768` (Guarded by `#if data.charts.pe_hist_band`) | **OMITTED** | **FAIL** (Missing in keyless render) |
 | **Ex 13** | **P/BV Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `report_single.typ:774` (Guarded by `#if data.charts.pbv_hist_band`) | **OMITTED** | **FAIL** (Missing in keyless render) |
-| — | *Non-canonical: Perbandingan Valuasi Relatif* | Slide 5 (Peers) | `report_single.typ:785` (Guarded by `#if data.charts.relval_bars`) | **OMITTED** | **FAIL** (Non-canonical exhibit slot) |
-| — | *Non-canonical: EV/EBITDA Peers vs Subjek* | Slide 5 (Peers) | `report_single.typ:793` (Guarded by `#if data.charts.peer_evebitda`) | **OMITTED** | **FAIL** (Non-canonical exhibit slot) |
+| - | *Non-canonical: Perbandingan Valuasi Relatif* | Slide 5 (Peers) | `report_single.typ:785` (Guarded by `#if data.charts.relval_bars`) | **OMITTED** | **FAIL** (Non-canonical exhibit slot) |
+| - | *Non-canonical: EV/EBITDA Peers vs Subjek* | Slide 5 (Peers) | `report_single.typ:793` (Guarded by `#if data.charts.peer_evebitda`) | **OMITTED** | **FAIL** (Non-canonical exhibit slot) |
 | **Ex 14** | **Income Statement (2024A–2028F)** | Slide 6 (Statements) | `report_single.typ:813` `#exhibit-header("Laporan Laba Rugi ...")` | **Exhibit 9** | **FAIL** (Numbered 9 instead of 14) |
 | **Ex 15** | **Balance Sheet (2024A–2028F)** | Slide 6 (Statements) | `report_single.typ:843` `#exhibit-header("Neraca Keuangan Ringkas ...")` | **Exhibit 10** | **FAIL** (Numbered 10 instead of 15) |
 | **Ex 16** | **Cash Flow Statement (2024A–2028F)** | Slide 7 (Statements) | `report_single.typ:880` `#exhibit-header("Laporan Arus Kas ...")` | **Exhibit 11** | **FAIL** (Numbered 11 instead of 16) |
@@ -150,7 +150,7 @@ The canonical BRIDS template mandates 17 exhibits sequentially numbered 2..17 ac
   ("EBITDA", "610", "540", "585", ...),
   ("Laba Bersih", "402", "355", "390", ...),
   ```
-- **The Defect**: Key Financials on Slide 1 defaults honestly to dashes (`—`), but Slide 3 renders the static numbers above. This directly violates the strict tie-out rule between Slide 1 and Slide 3.
+- **The Defect**: Key Financials on Slide 1 defaults honestly to dashes (`-`), but Slide 3 renders the static numbers above. This directly violates the strict tie-out rule between Slide 1 and Slide 3.
 - **Visual Grid Omission**: In `report_single.typ:358-385`, the 2x2 grid calls `#exhibit-header` inside `#if data.charts.<name>` blocks. In a keyless run where chart PNGs are not generated, the `#exhibit-header` calls never fire, leaving Slide 3 empty of exhibits and truncating the document-wide exhibit count.
 
 ### 5.3 Slide 4 Vertical Height & Physical Page Spilling
@@ -169,7 +169,7 @@ The canonical BRIDS template mandates 17 exhibits sequentially numbered 2..17 ac
 ## Section 6: Concrete Evidence Log (Files & Lines)
 
 1. **`data/assumptions/AMMN.json:16-58`**: Verified presence of all 15 valuation gate inputs with complete provenance citations, clearing the HTTP 422 gate.
-2. **`server/report/typst_renderer.py:122-126`**: `_get_ticker_gate_params` raises `ValueError: gate inputs absent for AMMN: missing [...] — refusing fabricated gate params`.
+2. **`server/report/typst_renderer.py:122-126`**: `_get_ticker_gate_params` raises `ValueError: gate inputs absent for AMMN: missing [...] - refusing fabricated gate params`.
 3. **`scripts/render_typst.py:244-263`**: PIL placeholder generation for 20 chart assets prevents `file not found` crashes.
 4. **`templates/typst/archetypes/report_single.typ:87-88`**: `Struktur Kepemilikan Saham` converted to un-numbered bold title.
 5. **`templates/typst/archetypes/report_single.typ:125`**: `#exhibit-header(pc.title, pc_src)` executes as the first exhibit call, rendering as `Exhibit 1`.
@@ -191,12 +191,12 @@ The canonical BRIDS template mandates 17 exhibits sequentially numbered 2..17 ac
 In accordance with the **READ-ONLY** constraint, no production files were modified during this audit. The following targeted fixes are recommended for owning lanes:
 
 1. **Lane 10 (Templates / `report_single.typ`)**:
-   - `templates/typst/archetypes/report_single.typ:124` — Insert `#counter(figure.where(kind: "exhibit")).update(1)` immediately prior to line 125 so Kinerja Harga vs IHSG is numbered `Exhibit 2` and Exhibit 1 is skipped per canonical spec.
-   - `templates/typst/archetypes/report_single.typ:319-332` — Replace hardcoded numbers in `default_fh_rows` with dashes (`—`) to maintain cross-slide tie-out with Slide 1 Key Financials.
-   - `templates/typst/archetypes/report_single.typ:358-385, 766-777` — Move `#exhibit-header` outside the `#if` chart guard and display `chart-placeholder` when image is false, guaranteeing exhibits 4–7 and 12–13 always render.
-   - `templates/typst/archetypes/report_single.typ:782-800` — Remove non-canonical exhibit headers for `relval_bars` and `peer_evebitda` (demote to un-numbered figures).
-   - `templates/typst/archetypes/report_single.typ:445-640` — Distribute Slide 4 tables (move Mid-Cycle EV/EBITDA to Slide 5 or adjust spacing) to eliminate vertical spillover from Page 4 to physical Page 5.
+   - `templates/typst/archetypes/report_single.typ:124` - Insert `#counter(figure.where(kind: "exhibit")).update(1)` immediately prior to line 125 so Kinerja Harga vs IHSG is numbered `Exhibit 2` and Exhibit 1 is skipped per canonical spec.
+   - `templates/typst/archetypes/report_single.typ:319-332` - Replace hardcoded numbers in `default_fh_rows` with dashes (`-`) to maintain cross-slide tie-out with Slide 1 Key Financials.
+   - `templates/typst/archetypes/report_single.typ:358-385, 766-777` - Move `#exhibit-header` outside the `#if` chart guard and display `chart-placeholder` when image is false, guaranteeing exhibits 4–7 and 12–13 always render.
+   - `templates/typst/archetypes/report_single.typ:782-800` - Remove non-canonical exhibit headers for `relval_bars` and `peer_evebitda` (demote to un-numbered figures).
+   - `templates/typst/archetypes/report_single.typ:445-640` - Distribute Slide 4 tables (move Mid-Cycle EV/EBITDA to Slide 5 or adjust spacing) to eliminate vertical spillover from Page 4 to physical Page 5.
 2. **Lane 4 (Backend / `server/routers/pdf.py`)**:
-   - `server/routers/pdf.py:_build_live_payload` — Read or default `gate_inputs` (10 required keys) from `data/assumptions/AMMN.json` so unassisted `render_report('AMMN')` clears Gate-0..5 evaluation without testing injection.
+   - `server/routers/pdf.py:_build_live_payload` - Read or default `gate_inputs` (10 required keys) from `data/assumptions/AMMN.json` so unassisted `render_report('AMMN')` clears Gate-0..5 evaluation without testing injection.
 3. **Lane 6 (Renderer / `scripts/render_typst.py`)**:
-   - `scripts/render_typst.py:311, 342` — Ensure `report_data_path.resolve()` is used when passing `data_path` to Typst CLI, preventing relative path resolution errors.
+   - `scripts/render_typst.py:311, 342` - Ensure `report_data_path.resolve()` is used when passing `data_path` to Typst CLI, preventing relative path resolution errors.

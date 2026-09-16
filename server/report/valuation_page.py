@@ -456,12 +456,12 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
 def _fmt(value, digits: int = 1) -> str:
     """Deck number format: Indonesian separators, em dash when absent."""
     if value is None:
-        return "\u2014"
+        return "-"
     return f"{value:,.{digits}f}".replace(",", "\u2009").replace(".", ",").replace("\u2009", ".")
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
+    return "-" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view(page: dict) -> dict:
@@ -487,7 +487,7 @@ def _view(page: dict) -> dict:
         (
             label,
             [
-                "\u2014" if val is None else _fmt(val, 3 if key == "Discount factor" else 1)
+                "-" if val is None else _fmt(val, 3 if key == "Discount factor" else 1)
                 for val in build.get(key, [])
             ],
         )
@@ -498,7 +498,7 @@ def _view(page: dict) -> dict:
     tv_df_exit = 1.0 / ((1 + av["wacc"]) ** len(periods))
     page["block2_rows"] = [
         ("Terminal FCFF (FCFF terakhir x (1+g))", _fmt(b["fcff"][-1]), _fmt(b["fcff"][-1])),
-        ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", "\u2014"),
+        ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", "-"),
         ("Terminal Value (undiscounted)", _fmt(b["tv_gordon"] / 1e9), _fmt((b["tv_exit"] or 0) / 1e9)),
         ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), _fmt(tv_df_exit, 3)),
         ("PV of Terminal Value", _fmt(b["pv_tv_gordon"] / 1e9), _fmt((b["pv_tv_exit"] or 0) / 1e9)),
@@ -506,13 +506,13 @@ def _view(page: dict) -> dict:
          _fmt(page["drivers"]["multiple"], 2) + "×"),
     ]
     page["block3_rows"] = [
-        ("Sum PV of FCFF (periode eksplisit)", _fmt(b["pv_explicit"] / 1e9), "\u2014"),
-        ("(+) PV of Terminal Value (Gordon)", _fmt(b["pv_tv_gordon"] / 1e9), "\u2014"),
-        ("Enterprise Value", _fmt(b["ev_gordon"] / 1e9), "\u2014"),
-        ("(-) Net Debt (Total Debt - Cash)", _fmt(b["net_debt"] / 1e9), "\u2014"),
-        ("(+/-) Minority Interest / Non-Operating Assets", _fmt(0.0), "\u2014"),
-        ("Equity Value", _fmt(b["equity_gordon"] / 1e9), "\u2014"),
-        ("Jumlah saham beredar (bn saham)", _fmt(av["shares_bn"], 2), "\u2014"),
+        ("Sum PV of FCFF (periode eksplisit)", _fmt(b["pv_explicit"] / 1e9), "-"),
+        ("(+) PV of Terminal Value (Gordon)", _fmt(b["pv_tv_gordon"] / 1e9), "-"),
+        ("Enterprise Value", _fmt(b["ev_gordon"] / 1e9), "-"),
+        ("(-) Net Debt (Total Debt - Cash)", _fmt(b["net_debt"] / 1e9), "-"),
+        ("(+/-) Minority Interest / Non-Operating Assets", _fmt(0.0), "-"),
+        ("Equity Value", _fmt(b["equity_gordon"] / 1e9), "-"),
+        ("Jumlah saham beredar (bn saham)", _fmt(av["shares_bn"], 2), "-"),
         ("Fair Value per Share - terminal Gordon", _fmt0(b["fv_gordon"]), _fmt0(b["fv_gordon"])),
         ("Fair Value per Share - terminal exit multiple", _fmt0(b["fv_exit"]), _fmt0(b["fv_exit"])),
     ]
@@ -555,8 +555,8 @@ def _view(page: dict) -> dict:
         }
         for r, label in enumerate(grid.index)
     ]
-    page["sensitivity"]["base_wacc"] = str(grid.index[base[0]]) if base else "\u2014"
-    page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "\u2014"
+    page["sensitivity"]["base_wacc"] = str(grid.index[base[0]]) if base else "-"
+    page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "-"
     legs = page.get("legs") or {}
     page["crosscheck_rows"] = [
         ("DCF (leg kedua, halaman ini)", _fmt0(b["fv_gordon"]), "Cross-check intrinsik"),

@@ -4,7 +4,7 @@
 
 ## Why this exists as its own file
 
-F1 audit gap **G-9**: "Credit budgeting calculator — `sectors-api-and-mcp.md` estimates '100–200 well-scoped calls' with 1,000 credits. Without a calculator, the team can't pre-budget a Track-1 agent loop vs a Track-2 cron vs a Track-3 screener."
+F1 audit gap **G-9**: "Credit budgeting calculator - `sectors-api-and-mcp.md` estimates '100–200 well-scoped calls' with 1,000 credits. Without a calculator, the team can't pre-budget a Track-1 agent loop vs a Track-2 cron vs a Track-3 screener."
 
 This file is the operational budget. Use it before committing to a build plan.
 
@@ -14,18 +14,18 @@ This file is the operational budget. Use it before committing to a build plan.
 |---|---|---|
 | Screener `GET /v2/companies/` (structured `where`) | **1 credit** | Default. |
 | Screener `GET /v2/companies/?q=natural_language` | **3 credits** | Spikes on NL queries because LLM runs. |
-| Universe feed `GET /v2/transaction/close/{date}/` | 1 credit/page | Returns all IDX tickers in paginated feed — far cheaper than per-symbol loops. |
+| Universe feed `GET /v2/transaction/close/{date}/` | 1 credit/page | Returns all IDX tickers in paginated feed - far cheaper than per-symbol loops. |
 | Per-company report `GET /v2/company/report/{symbol}/?sections=...` | 1 credit (most sections) | Higher if multi-section reports. |
 | `GET /v2/company/quarterly-financials/{symbol}/` | 1 credit | |
 | `GET /v2/news/news/`, `/v2/news/filings/`, `/v2/news/suspensions/` | 1 credit | |
-| `GET /v2/brokers/top/`, `/v2/brokers/foreign-flow/{symbol}/`, `/v2/brokers/broker-summary/{broker}/{symbol}/` | 1 credit | Foreign-flow returns 90 days of daily data — high-value per credit. |
+| `GET /v2/brokers/top/`, `/v2/brokers/foreign-flow/{symbol}/`, `/v2/brokers/broker-summary/{broker}/{symbol}/` | 1 credit | Foreign-flow returns 90 days of daily data - high-value per credit. |
 | Mining endpoints (companies, sites, commodities, licenses, auctions) | 1 credit each | |
 | 404 (addressed resource not found) | 1 credit | "You are billed for the lookup, not the result." |
-| 400 (bad request), 401/403, 429, 5xx | **0 credits** | Free — early rejection. |
+| 400 (bad request), 401/403, 429, 5xx | **0 credits** | Free - early rejection. |
 
 ## Track-specific budgets (4-week build, 1,000 credits)
 
-### Track 01 — AI Agent (Asing Radar-style or Saham Jujur-style)
+### Track 01 - AI Agent (Asing Radar-style or Saham Jujur-style)
 
 **Asing Radar (recommended):** Daily cron at 08:00 WIB.
 
@@ -42,14 +42,14 @@ This file is the operational budget. Use it before committing to a build plan.
 
 **Cache-optimized budget (1,000 credits, 30 days):**
 - Universe close once per day: 1 × 30 = **30 credits**
-- Foreign-flow loop on first cache miss per ticker per day: 50 × 30 = **1,500** (still too high — cache doesn't help within a single day's run)
+- Foreign-flow loop on first cache miss per ticker per day: 50 × 30 = **1,500** (still too high - cache doesn't help within a single day's run)
 - **Solution: shrink the loop to top 10 tickers only**: 10 × 30 = **300 credits**
 - Drill-down `/dive` calls (interactive, user-triggered): ~5/day = **150 credits/month**
 - Buffer for dev/test: **520 credits**
 
 **Final track-02 budget (Asing Radar, optimized): ~1,000 credits across 30 days.**
 
-### Track 01 — Saham Jujur-style agent
+### Track 01 - Saham Jujur-style agent
 
 User asks ad-hoc ticker questions. No cron. Cost = sum of per-query tools called.
 
@@ -65,7 +65,7 @@ User asks ad-hoc ticker questions. No cron. Cost = sum of per-query tools called
 
 **Budget:** 1,000 credits / 6 = **~167 agent answers** = ~5/day over 30 days. Comfortable.
 
-### Track 03 — Screener / Smart-Money Score
+### Track 03 - Screener / Smart-Money Score
 
 User-driven screener, less frequency.
 
@@ -76,7 +76,7 @@ User-driven screener, less frequency.
 
 **Per screener session:** ~10 credits. Budget: **~100 sessions**. Plenty.
 
-### Track 03 — Tema Scanner (theme → ticker mapping)
+### Track 03 - Tema Scanner (theme → ticker mapping)
 
 Mostly static data, recomputed weekly.
 
@@ -90,18 +90,18 @@ Mostly static data, recomputed weekly.
 ## Universal rules
 
 - **Empty array results cost 1 credit** (the query ran). Build filters that fail fast.
-- **Test calls in dev** count toward your 1,000-credit budget. Use free 400 errors aggressively during integration testing (send malformed params to confirm your code handles the error path — those are free).
+- **Test calls in dev** count toward your 1,000-credit budget. Use free 400 errors aggressively during integration testing (send malformed params to confirm your code handles the error path - those are free).
 - **Cache by ticker per EOD.** Sectors says EOD-updated. 24h TTL is safe for almost all endpoints. Universe-feed endpoints are the best cache anchor.
 
 ## Cross-track comparison
 
 | Track | Recommended idea | Est. credits/day | Headroom |
 |---|---|---|---|
-| 01 — Agent | Saham Jujur | ~6 (per query) | ✅ ~167 queries |
-| 02 — Automation | Asing Radar | ~50 (with cache) | 🟡 tight |
-| 02 — Automation | Pre-market brief | ~80 (multiple signals) | 🟡 tight |
-| 03 — Market Intel | Tema Scanner | ~7 (weekly batch) | ✅ very comfortable |
-| 03 — Market Intel | Dividend Consistency | ~15 (cron) | ✅ comfortable |
+| 01 - Agent | Saham Jujur | ~6 (per query) | ✅ ~167 queries |
+| 02 - Automation | Asing Radar | ~50 (with cache) | 🟡 tight |
+| 02 - Automation | Pre-market brief | ~80 (multiple signals) | 🟡 tight |
+| 03 - Market Intel | Tema Scanner | ~7 (weekly batch) | ✅ very comfortable |
+| 03 - Market Intel | Dividend Consistency | ~15 (cron) | ✅ comfortable |
 
 ## When you blow the budget
 

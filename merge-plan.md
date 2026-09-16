@@ -1,4 +1,4 @@
-# Merge plan — pre-build reference-branch consolidation
+# Merge plan - pre-build reference-branch consolidation
 
 > Goal: merge the three parallel `references/*` extraction branches into `main` without breaking the 19 cross-lane links the F1 audit found.
 
@@ -33,7 +33,7 @@ This step does NOT merge any `references/*` content. It only adds new planning f
 
 ### Step 2: Merge `references/rest-idx-mining-2026-08-29` first
 
-This is the **leaf branch** — it has the fewest cross-lane dependencies (cookbook links TO it, not the other way around).
+This is the **leaf branch** - it has the fewest cross-lane dependencies (cookbook links TO it, not the other way around).
 
 ```bash
 git checkout main
@@ -54,12 +54,12 @@ After merge: `references/mcp/*.md` and `references/recipes/*.md` exist on `main`
 
 **Cross-link caveat:** `references/mcp/tools.md` has 55 dead REST cross-refs (per F1 audit). These should be fixed in this same merge, not deferred. See "Cleanup step 3a" below.
 
-#### Step 3a: Cleanup — fix `mcp/tools.md` dead cross-refs
+#### Step 3a: Cleanup - fix `mcp/tools.md` dead cross-refs
 
 55 dead links in `mcp/tools.md` (one per MCP tool that points to a non-existent per-endpoint REST stub). Two acceptable fixes per F1 audit recommendation:
 
-- **Option (b) — recommended, ~30 min:** Rewrite all 55 cross-refs to point at the 7 actual rest-lane files (`idx-screener.md`, `idx-company.md`, `idx-financials-transactions.md`, `idx-rankings-brokers-news.md`, `mining-companies.md`, `mining-commodities-trade.md`, `mining-sites-licenses.md`) with anchor fragments. Lower effort, acceptable UX.
-- **Option (a) — better UX, ~2h:** Create one stub file per MCP tool under `references/rest/mcp-tool-stubs/` with a one-hop deep link. Worth it only if the team plans to use MCP extensively.
+- **Option (b) - recommended, ~30 min:** Rewrite all 55 cross-refs to point at the 7 actual rest-lane files (`idx-screener.md`, `idx-company.md`, `idx-financials-transactions.md`, `idx-rankings-brokers-news.md`, `mining-companies.md`, `mining-commodities-trade.md`, `mining-sites-licenses.md`) with anchor fragments. Lower effort, acceptable UX.
+- **Option (a) - better UX, ~2h:** Create one stub file per MCP tool under `references/rest/mcp-tool-stubs/` with a one-hop deep link. Worth it only if the team plans to use MCP extensively.
 
 Pick option (b) unless a teammate volunteers for (a).
 
@@ -73,9 +73,9 @@ git merge --no-ff references/cookbook-idx-mining-2026-08-29 -m "merge: bring qui
 
 After merge: `references/quickstart.md` and `references/cookbook/*.md` exist on `main`.
 
-### Step 5: Audit branches (optional — read-only context, can stay as references)
+### Step 5: Audit branches (optional - read-only context, can stay as references)
 
-`references/audit/f1-repo-2026-08-29`, `references/audit/f2-cookbook-2026-08-29`, `references/audit/f3-ideas-2026-08-29` are point-in-time audit deliverables. **Don't merge into `main`.** Leave them as standalone branches so they remain searchable / citable. If you want them visible on `main`, copy `references/audit/` directories from each branch into a single commit — but this is optional.
+`references/audit/f1-repo-2026-08-29`, `references/audit/f2-cookbook-2026-08-29`, `references/audit/f3-ideas-2026-08-29` are point-in-time audit deliverables. **Don't merge into `main`.** Leave them as standalone branches so they remain searchable / citable. If you want them visible on `main`, copy `references/audit/` directories from each branch into a single commit - but this is optional.
 
 ### Step 6: Final cleanup
 
@@ -103,11 +103,11 @@ If any links are still broken, fix in a follow-up commit.
 
 - ❌ Merge cookbook before rest or mcp → 14 broken cross-refs
 - ❌ Force-push to `main` to "fix" a bad merge
-- ❌ Skip step 3a — the 55 dead links WILL be judged by reviewers scanning the repo
+- ❌ Skip step 3a - the 55 dead links WILL be judged by reviewers scanning the repo
 - ❌ Squash-merge the reference branches (we lose the per-file commit history the F1 audit tracked)
 
 ## When NOT to follow this plan
 
-If the team decides to keep `main` strictly planning-only (no reference docs at all), then steps 2-4 are skipped — reference docs stay in their branches and `main` only carries planning + (eventually) project code under `experiment/<track>/`.
+If the team decides to keep `main` strictly planning-only (no reference docs at all), then steps 2-4 are skipped - reference docs stay in their branches and `main` only carries planning + (eventually) project code under `experiment/<track>/`.
 
 This is **not** the recommended approach because it makes judges' review harder (they'd have to switch branches to verify the docs claim). The plan above is the cleaner path.

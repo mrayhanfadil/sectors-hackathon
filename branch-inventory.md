@@ -1,8 +1,8 @@
-# Branch inventory — 2026-08-30 cleanup
+# Branch inventory - 2026-08-30 cleanup
 
 ## Status after cleanup: 8 branches (was 17)
 
-### KEEP — 8 canonical branches
+### KEEP - 8 canonical branches
 
 | Branch | Last SHA | Purpose |
 |---|---|---|
@@ -16,7 +16,7 @@
 | `idea/agy-retail-institutional-2026-08-30` | `ffaa816` | 9 empowerment-angled ideas |
 | `idea/agy-niche-2026-08-30` | `cb44658` | 9 niche ideas + friend's "Smart Newsletter" eval |
 
-### ARCHIVED — 9 superseded or consumed branches
+### ARCHIVED - 9 superseded or consumed branches
 
 | Archived branch | Last SHA | Reason | Where the content lives now |
 |---|---|---|---|
@@ -28,7 +28,7 @@
 | `audit/f2-cookbook-2026-08-29` | `952e6bb` | Cookbook-v2 lives in `references/cookbook-idx-mining-` | `references/cookbook-idx-mining-2026-08-29` |
 | `audit/f3-ideas-2026-08-29` | `2230ccb` | Asing Radar recommendation superseded by friend's "Macro-to-Micro" Variant 2 (4.50 vs 8.13) | `idea/agy-niche-2026-08-30/ideas/friend-ideas/smart-newsletter-3-variants.md` |
 | `fix/f1-audit-2026-08-29` | `4aad52e` | Fixes already merged to main (`4aad52e`) | `main` |
-| `fix/mcp-crosslinks-2026-08-29` | `f03f1b7` | Identical content to `references/mcp-idx-mining-2026-08-29` (verified — same blob SHAs for all mcp/recipes files; only `tools.md` differs by the fix commit which is also in mcp-idx-mining branch) | `references/mcp-idx-mining-2026-08-29` |
+| `fix/mcp-crosslinks-2026-08-29` | `f03f1b7` | Identical content to `references/mcp-idx-mining-2026-08-29` (verified - same blob SHAs for all mcp/recipes files; only `tools.md` differs by the fix commit which is also in mcp-idx-mining branch) | `references/mcp-idx-mining-2026-08-29` |
 
 ## Recovery procedure
 
@@ -49,7 +49,7 @@ Local refs are cheap (just SHA pointers, no blobs). Keeping them lets us quickly
 ## Note for the merge plan
 
 When ready to merge the reference branches into `main`, follow `merge-plan.md` (4 steps + cleanup step 3a):
-1. Step 1: planning-only updates — DONE (already merged `fix/f1-audit-2026-08-29`)
+1. Step 1: planning-only updates - DONE (already merged `fix/f1-audit-2026-08-29`)
 2. Step 2: merge `references/rest-idx-mining-2026-08-29` (leaf)
 3. Step 3: merge `references/mcp-idx-mining-2026-08-29`
 4. Step 4: merge `references/cookbook-idx-mining-2026-08-29`

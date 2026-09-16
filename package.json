@@ -1,7 +1,7 @@
 {
   "name": "sectors-institutional-report-api",
   "version": "0.1.0",
-  "description": "FastAPI backend for T03 Market Intelligence — stockdata:15437 proxy + yfinance fallback + deterministic engines",
+  "description": "FastAPI backend for T03 Market Intelligence - stockdata:15437 proxy + yfinance fallback + deterministic engines",
   "scripts": {
     "dev": "uvicorn server.main:app --reload --port 8000",
     "start": "uvicorn server.main:app --host 0.0.0.0 --port 8000"

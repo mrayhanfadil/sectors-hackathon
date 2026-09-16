@@ -2,9 +2,9 @@
   "ticker": "AMMN",
   "company_name": "PT Amman Mineral Internasional Tbk.",
   "archetype": "coal",
-  "archetype_note": "Repo resources bucket: VALID_ARCHETYPES (server/routers/endpoints.py:34) has no 'mining' \u2014 Basic Materials/metals-mining resolves to 'coal' there (_infer_archetype:139). Template resolution is unchanged (_template_for -> 'single'). Mining-specific discipline (finite-reserve, mid-cycle EV/EBITDA, RNAV cross-check) applies per agents/adk/agents/instructions.py:221.",
+  "archetype_note": "Repo resources bucket: VALID_ARCHETYPES (server/routers/endpoints.py:34) has no 'mining' - Basic Materials/metals-mining resolves to 'coal' there (_infer_archetype:139). Template resolution is unchanged (_template_for -> 'single'). Mining-specific discipline (finite-reserve, mid-cycle EV/EBITDA, RNAV cross-check) applies per agents/adk/agents/instructions.py:221.",
   "generated_at": "2026-09-12T10:00:00+07:00",
-  "generated_by": "AMMN-R2D2 lane (10-key Gate-0..5 inputs sourced from public AMMN audited financials) \u2014 kanban t_9885ad15; AMMN-only billing authorisation kept unchanged (no new Sectors calls this session \u2014 public PDFs used for the 8 sourced keys, see gate_inputs_provenance). | 12 Sep 2026: gate-primary diarahkan ke multiple forward pada level FY26F dari jalur proyeksi yang dikutip (keputusan owner).",
+  "generated_by": "AMMN-R2D2 lane (10-key Gate-0..5 inputs sourced from public AMMN audited financials) - kanban t_9885ad15; AMMN-only billing authorisation kept unchanged (no new Sectors calls this session - public PDFs used for the 8 sourced keys, see gate_inputs_provenance). | 12 Sep 2026: gate-primary diarahkan ke multiple forward pada level FY26F dari jalur proyeksi yang dikutip (keputusan owner).",
   "source": "sectors+public",
   "source_detail": "Sectors API v2 live pulls (AMMN-only credit authorisation) for every market/financial number; traceable public sources for the four inputs Sectors v2 does not carry (rf, beta, erp, g). No silent defaults: see `provenance` for outlet+url+date on every field, and `pending` for legs still owed a live Sectors print.",
   "units": {
@@ -56,7 +56,7 @@
     "net_debt_after_cash": 96939936180000.0,
     "as_of": "2026-03-31 (latest Sectors quarter)"
   },
-  "fcf_basis": "Normalised mid-cycle FCFF, FLAT across FY2026F-FY2030F (no fabricated growth curve): fcf = TTM EBITDA x (1 - tax) - annualised post-build capex = 24979 bn x 0.78 - 6395 bn = 13089 bn/yr. TTM EBITDA is used (not the 3Y average) because FY2024-25 EBITDA is distorted by the smelter construction/ramp (FY2025 EBITDA 16.4 tn vs TTM 25.0 tn). Steady-state capex is the 2026Q1 run-rate annualised \u2014 1,598.6 bn in the quarter, the lowest of the eight quarters on file (5.3-5.8 tn/qtr through 2025, 7.3-8.0 tn/qtr in H2-2024) and consistent with the smelter build closing out (project acceptance certificate signed 2026-07-18). Proxy is conservative: it omits the D&A tax shield and working-capital release. Modeler lane may override with a consensus-based path.",
+  "fcf_basis": "Normalised mid-cycle FCFF, FLAT across FY2026F-FY2030F (no fabricated growth curve): fcf = TTM EBITDA x (1 - tax) - annualised post-build capex = 24979 bn x 0.78 - 6395 bn = 13089 bn/yr. TTM EBITDA is used (not the 3Y average) because FY2024-25 EBITDA is distorted by the smelter construction/ramp (FY2025 EBITDA 16.4 tn vs TTM 25.0 tn). Steady-state capex is the 2026Q1 run-rate annualised - 1,598.6 bn in the quarter, the lowest of the eight quarters on file (5.3-5.8 tn/qtr through 2025, 7.3-8.0 tn/qtr in H2-2024) and consistent with the smelter build closing out (project acceptance certificate signed 2026-07-18). Proxy is conservative: it omits the D&A tax shield and working-capital release. Modeler lane may override with a consensus-based path.",
   "fcf_components_idr_bn": {
     "ebitda_ttm": 24978.8,
     "tax": 0.22,
@@ -64,7 +64,7 @@
     "fcf_normalised": 13088.9
   },
   "dcf_role": "Comparison-only, NOT the anchor: a perpetual Gordon terminal is not defensible for a depleting reserve and AMMN's gross debt (Rp 110.8 tn) against a mid-cycle FCFF path makes the DCF leg punitive by construction. Gate-primary for this name is the mid-cycle EV/EBITDA leg (FINITE-RESERVE DISCIPLINE, instructions.py:221).",
-  "terminal_note": "g = 2.5% is the long-run NOMINAL growth proxy (Bank Indonesia 2026-2027 inflation target midpoint 2.5%+/-1%, PMK No. 31/2024) \u2014 it is not a claim about perpetual mine reserves.",
+  "terminal_note": "g = 2.5% is the long-run NOMINAL growth proxy (Bank Indonesia 2026-2027 inflation target midpoint 2.5%+/-1%, PMK No. 31/2024) - it is not a claim about perpetual mine reserves.",
   "ev_ebitda_own_history": {
     "2023": 32.19,
     "2024": 29.19,
@@ -81,7 +81,7 @@
   "ev_multiple_latest_print": 17.99,
   "ev_multiple_peer_prints_available": false,
   "gate_primary": "EV/EBITDA FY26F forward (REL)",
-  "gate_secondary": "DCF (comparison-only; finite-reserve discipline) \u2014 pada jalur FCF yang dikutip",
+  "gate_secondary": "DCF (comparison-only; finite-reserve discipline) - pada jalur FCF yang dikutip",
   "dps_d0": 0.0,
   "dps_note": "D0 = last normalized ACTUAL DPS = 0. AMMN has paid no dividend since its 2023-07-07 listing: Sectors dividend section is null across the board (payout_ratio, dividend_ttm, upcoming_dividends) and corporate-actions.dividend is null. DDM is therefore gated out (payout = 0), never fed a peak dividend. Any future dps_* field must stay D0 = last normalized ACTUAL (DDM-TIMING LOCK).",
   "sector_context": {
@@ -92,24 +92,24 @@
       "revenue_growth": -0.118711319374727
     },
     "sectors_subsector_pe_2026": 10.07,
-    "note": "Sectors basic-materials 2026 forecast (base year 2025): revenue -11.87%, EPS +68.08%. Recorded as sector context only \u2014 no company forecast was derived from it."
+    "note": "Sectors basic-materials 2026 forecast (base year 2025): revenue -11.87%, EPS +68.08%. Recorded as sector context only - no company forecast was derived from it."
   },
   "pull_log": {
     "authorisation": "AMMN-only billing (kanban t_86982cea)",
     "endpoints": [
-      "/v2/transaction/daily/AMMN/ (30d window) \u2014 1 call",
-      "/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future \u2014 1 call",
-      "/v2/company/quarterly-financials/AMMN/?n_quarters=8 \u2014 1 call",
-      "/v2/company/quarterly-financial-dates/AMMN/ \u2014 1 call",
-      "/v2/company/corporate-actions/AMMN/ \u2014 1 call",
-      "/v2/mining/companies/?keyword=AMMN \u2014 1 call (empty result set)",
-      "/v2/mining/companies/ (full list) \u2014 1 call",
-      "/v2/subsectors/ \u2014 1 call",
-      "/v2/subsector/report/basic-materials/?sections=valuation,growth,companies \u2014 1 call"
+      "/v2/transaction/daily/AMMN/ (30d window) - 1 call",
+      "/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future - 1 call",
+      "/v2/company/quarterly-financials/AMMN/?n_quarters=8 - 1 call",
+      "/v2/company/quarterly-financial-dates/AMMN/ - 1 call",
+      "/v2/company/corporate-actions/AMMN/ - 1 call",
+      "/v2/mining/companies/?keyword=AMMN - 1 call (empty result set)",
+      "/v2/mining/companies/ (full list) - 1 call",
+      "/v2/subsectors/ - 1 call",
+      "/v2/subsector/report/basic-materials/?sections=valuation,growth,companies - 1 call"
     ],
     "rejected_calls": [
-      "/v2/subsector/report/metals-mining/?sections=overview,financials \u2014 HTTP 400 invalid sections (slug/sections both wrong; superseded by basic-materials)",
-      "/v2/subsector/report/metals-mining/?sections=valuation \u2014 HTTP 404 sub_sector does not exist"
+      "/v2/subsector/report/metals-mining/?sections=overview,financials - HTTP 400 invalid sections (slug/sections both wrong; superseded by basic-materials)",
+      "/v2/subsector/report/metals-mining/?sections=valuation - HTTP 404 sub_sector does not exist"
     ],
     "total_billable_calls": 9
   },
@@ -117,7 +117,7 @@
     "last_price": {
       "value": 4860.0,
       "kind": "sectors_live",
-      "outlet": "Sectors API v2 \u2014 company/report valuation + transaction/daily",
+      "outlet": "Sectors API v2 - company/report valuation + transaction/daily",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "latest_close_price 4860 (also confirmed by the 30-day daily series, last row 2026-09-11 close 4860)."
@@ -125,7 +125,7 @@
     "shares_out": {
       "value": 72518217656.0,
       "kind": "sectors_live",
-      "outlet": "Sectors API v2 \u2014 overview.market_cap / valuation.last_close_price",
+      "outlet": "Sectors API v2 - overview.market_cap / valuation.last_close_price",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "352,438,537,808,160 / 4860 = 72,518,217,656. Matches the FY2024 reported outstanding_shares (72,518,217,656) in the same payload; FY2025 reported 72,377,616,279 (buyback)."
@@ -133,7 +133,7 @@
     "cash": {
       "value": 13846126732260.0,
       "kind": "sectors_live",
-      "outlet": "Sectors API v2 \u2014 quarterly-financials 2026-Q1 (cash_only)",
+      "outlet": "Sectors API v2 - quarterly-financials 2026-Q1 (cash_only)",
       "url": "https://api.sectors.app/v2/company/quarterly-financials/AMMN/?n_quarters=8",
       "as_of": "2026-03-31 (latest available quarter)",
       "note": "cash_only = cash_and_short_term_investments = Rp 13,846,126,732,260."
@@ -141,7 +141,7 @@
     "net_debt": {
       "value": 110786062912260.0,
       "kind": "sectors_live",
-      "outlet": "Sectors API v2 \u2014 quarterly-financials 2026-Q1 (total_debt)",
+      "outlet": "Sectors API v2 - quarterly-financials 2026-Q1 (total_debt)",
       "url": "https://api.sectors.app/v2/company/quarterly-financials/AMMN/?n_quarters=8",
       "as_of": "2026-03-31",
       "note": "GROSS debt leg of the bridge (see net_debt_semantics). total_debt 110,786,062,912,260; net of cash = 96,939,936,180,000 (also exposed as net_debt_after_cash)."
@@ -149,7 +149,7 @@
     "ebitda": {
       "value": 18396257972040.0,
       "kind": "sectors_live",
-      "outlet": "Sectors API v2 \u2014 financials.historical_financials (annual, 3Y average)",
+      "outlet": "Sectors API v2 - financials.historical_financials (annual, 3Y average)",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "FY2023-FY2025 (as reported in the 2026-09-11 payload)",
       "note": "Mid-cycle (3Y mean) per the cyclical rule, constituents in ebitda_midcycle_constituents. TTM EBITDA 24,978,798,106,260 is exposed separately as ebitda_ttm."
@@ -157,7 +157,7 @@
     "ev_multiple": {
       "value": 28.42,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 valuation.historical_valuation[].enterprise_to_ebitda",
+      "outlet": "Sectors API v2 - valuation.historical_valuation[].enterprise_to_ebitda",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2023-2026 prints (payload 2026-09-11)",
       "note": "Mean of the four own-history prints; explicit assumption (no live peer EV/EBITDA prints available). Sensitivity +/-2× published."
@@ -165,7 +165,7 @@
     "payout": {
       "value": 0.0,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 dividend section + corporate-actions (both null)",
+      "outlet": "Sectors API v2 - dividend section + corporate-actions (both null)",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "All dividend fields null (payout_ratio, dividend_ttm, dividend_yield_avg, upcoming_dividends); corporate-actions.dividend null. No dividend since listing 2023-07-07 -> payout 0.0, explicitly."
@@ -189,7 +189,7 @@
     "beta": {
       "value": 1.4071,
       "kind": "derived_public",
-      "outlet": "Damodaran, Betas by Sector (Global) \u2014 Metals & Mining; relevered to AMMN's market gearing",
+      "outlet": "Damodaran, Betas by Sector (Global) - Metals & Mining; relevered to AMMN's market gearing",
       "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/BetasGlobal.html",
       "as_of": "page updated 2026-01 (January); accessed 2026-09-12",
       "note": "Observed AMMN 5Y spot betas are unusable/negative (stockanalysis.com -0.42; investing.com -1.24), so beta is a relevered peer-sector beta: unlevered beta corrected for cash 1.13 (Metals & Mining, 1,874 firms; levered 1.24; D/E 23.04%) relevered to AMMN market D/E 31.43% at the 22% Indonesian tax rate: 1.13× (1 + 0.78× 0.3143) = 1.4071. Sensitivity: the un-relevered sector print 1.24 gives WACC ~11.6% vs 13.8% here."
@@ -197,7 +197,7 @@
     "cod": {
       "value": 0.0649,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 TTM interest_expense_non_operating / 2026-Q1 total_debt",
+      "outlet": "Sectors API v2 - TTM interest_expense_non_operating / 2026-Q1 total_debt",
       "url": "https://api.sectors.app/v2/company/quarterly-financials/AMMN/?n_quarters=8",
       "as_of": "TTM to 2026-03-31",
       "note": "Pre-tax cost of debt (the engine applies the 22% shield itself): 7,185,779,289,920 / 110,786,062,912,260 = 6.49%. FY2025 basis 6,461,043,437,160 / 108,371,423,698,200 = 5.96%."
@@ -205,7 +205,7 @@
     "we": {
       "value": 0.7608,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 2026-03-31 total_debt vs 2026-09-11 market cap",
+      "outlet": "Sectors API v2 - 2026-03-31 total_debt vs 2026-09-11 market cap",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "we = 352,438,537,808,160 / (352,438,537,808,160 + 110,786,062,912,260) = 76.08%; spot weights, not modeler-selected (WACC-SENSITIVITY-DISCLOSURE)."
@@ -213,7 +213,7 @@
     "wd": {
       "value": 0.2392,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 2026-03-31 total_debt vs 2026-09-11 market cap",
+      "outlet": "Sectors API v2 - 2026-03-31 total_debt vs 2026-09-11 market cap",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "wd = 1 - we = 23.92% (mirror of the we entry above)."
@@ -221,10 +221,10 @@
     "g": {
       "value": 0.025,
       "kind": "public",
-      "outlet": "Bank Indonesia \u2014 2026-2027 inflation target 2.5%+/-1% (PMK No. 31/2024)",
+      "outlet": "Bank Indonesia - 2026-2027 inflation target 2.5%+/-1% (PMK No. 31/2024)",
       "url": "https://www.bi.go.id/en/fungsi-utama/moneter/inflasi/default.aspx",
       "as_of": "target set 2024-05-16 for 2025-2027; accessed 2026-09-12",
-      "note": "Long-run nominal growth proxy only (target midpoint). NOT a reserve-life claim \u2014 see terminal_note."
+      "note": "Long-run nominal growth proxy only (target midpoint). NOT a reserve-life claim - see terminal_note."
     },
     "fcf": {
       "value": [
@@ -235,7 +235,7 @@
         13088.9
       ],
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 TTM EBITDA (4 quarters to 2026-03-31) and 2026-Q1 capex annualised; smelter completion per AMMAN press release",
+      "outlet": "Sectors API v2 - TTM EBITDA (4 quarters to 2026-03-31) and 2026-Q1 capex annualised; smelter completion per AMMAN press release",
       "url": "https://www.amman.co.id/press-release/amman-copper-smelter-completed-strengthening-indonesia-s-downstream-minerals-industry-and-value-creation",
       "as_of": "Sectors quarter 2026-03-31; AMMAN PAC signed 2026-07-18 (release 2026-07-24)",
       "note": "See fcf_basis for the full formula and fcf_components_idr_bn for the constituents."
@@ -249,7 +249,7 @@
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
     },
     "theme_title": {
-      "value": "Multiple 2026 di 17,99× vs mid-cycle 28,42× \u2014 re-rating belum tercermin dalam harga",
+      "value": "Multiple 2026 di 17,99× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
       "kind": "derived_editorial",
       "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
       "url": "internal://data/assumptions/AMMN.json",
@@ -282,10 +282,10 @@
     "domain": {
       "value": "mining",
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 financial statements + AMMN corporate identity (file's archetype_note cross-ref: 'mining' is the operative domain for finite-reserve mining per agents/adk/agents/instructions.py:221; _domain_from_sector() cannot see mining through the live meta.sector='General' keyword map, so the gate block carries it explicitly)",
+      "outlet": "Sectors API v2 - financial statements + AMMN corporate identity (file's archetype_note cross-ref: 'mining' is the operative domain for finite-reserve mining per agents/adk/agents/instructions.py:221; _domain_from_sector() cannot see mining through the live meta.sector='General' keyword map, so the gate block carries it explicitly)",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-12",
-      "note": "DOMAIN_MINING override is mandatory: AMMN is a finite-reserve copper/gold miner (Batu Hijau mine), so Gate-0 must trigger the NAV/reserve-based primary leg. Without this override the live payload's meta.sector='General' would let _domain_from_sector() return DOMAIN_SINGLE_BUSINESS and the gate verdict would default to FCFF/WACC DCF \u2014 wrong for a depleting reserve."
+      "note": "DOMAIN_MINING override is mandatory: AMMN is a finite-reserve copper/gold miner (Batu Hijau mine), so Gate-0 must trigger the NAV/reserve-based primary leg. Without this override the live payload's meta.sector='General' would let _domain_from_sector() return DOMAIN_SINGLE_BUSINESS and the gate verdict would default to FCFF/WACC DCF - wrong for a depleting reserve."
     },
     "filing_history_years": {
       "value": 6,
@@ -293,20 +293,20 @@
       "outlet": "AMMN audited annual financial statements (FY2020, FY2021, FY2022 via Prospektus Juni 2023; FY2023, FY2024, FY2025 via listed-entity annual reports)",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "Prospektus Juni 2023 (predecessor AMNT financials audited by Mirawati Sensi Idris/Moore); listed-entity annuals audited by the same firm FY2023 onward",
-      "note": "6y of audited annual financials for the AMMN consolidated group. The listed entity itself is 3y (IPO 2023-07-07), but the group's continuous operating + financial reporting history at Batu Hijau is much longer \u2014 the prospectus explicitly presents FY2020-FY2022 audited as the group's predecessor financials. Reading 'filing history' as the audited annual financial record available for the entity being valued (the consolidated group), 6 is the honest count. Clears Gate 1a (>=4y) and lets Gate 0's NAV primary override survive."
+      "note": "6y of audited annual financials for the AMMN consolidated group. The listed entity itself is 3y (IPO 2023-07-07), but the group's continuous operating + financial reporting history at Batu Hijau is much longer - the prospectus explicitly presents FY2020-FY2022 audited as the group's predecessor financials. Reading 'filing history' as the audited annual financial record available for the entity being valued (the consolidated group), 6 is the honest count. Clears Gate 1a (>=4y) and lets Gate 0's NAV primary override survive."
     },
     "ebit_positive_count": {
       "value": 3,
       "kind": "public",
-      "outlet": "AMMN audited annual reports (FY2023, FY2024, FY2025) \u2014 Laporan Laba Rugi, baris LABA OPERASIONAL",
+      "outlet": "AMMN audited annual reports (FY2023, FY2024, FY2025) - Laporan Laba Rugi, baris LABA OPERASIONAL",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "FY2023 767,225 / FY2024 1,184,816 / FY2025 673,602 (thousand USD; all positive)",
-      "note": "All three cited annual constituents show positive operating profit. Prospectus 2020-2022 also positive (FY2020 265,925 / FY2021 557,080 / FY2022 1,527,420) \u2014 would give ebit_positive_count=6 for predecessor-consolidated, but the gate keys are restricted to the 3 cited annuals that drive mid-cycle EBITDA."
+      "note": "All three cited annual constituents show positive operating profit. Prospectus 2020-2022 also positive (FY2020 265,925 / FY2021 557,080 / FY2022 1,527,420) - would give ebit_positive_count=6 for predecessor-consolidated, but the gate keys are restricted to the 3 cited annuals that drive mid-cycle EBITDA."
     },
     "d_de_ratio": {
       "value": 0.2392,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 2026-03-31 total_debt vs 2026-09-11 market cap (= file's documented `wd` = spot gearing D/(D+E))",
+      "outlet": "Sectors API v2 - 2026-03-31 total_debt vs 2026-09-11 market cap (= file's documented `wd` = spot gearing D/(D+E))",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-09-11",
       "note": "Same value as the file's wd; declared in gate_inputs to keep the file self-contained for the gate stage (loader also restates it from wd if absent)."
@@ -314,7 +314,7 @@
     "net_debt_to_ebitda": {
       "value": 5.2695,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 2026-03-31 total_debt - cash, divided by mid-cycle EBITDA (3Y mean)",
+      "outlet": "Sectors API v2 - 2026-03-31 total_debt - cash, divided by mid-cycle EBITDA (3Y mean)",
       "url": "https://api.sectors.app/v2/company/report/AMMN/?sections=overview,financials,dividend,valuation,ownership,management,peers,future",
       "as_of": "2026-03-31 (latest Sectors quarter) and FY2023-FY2025 EBITDA constituents",
       "note": "96,939,936,180,000 / 18,396,257,972,040 = 5.2695. Same value as the file's own net_debt_after_cash / ebitda restatement (loader also computes this if absent). Using the net leg, NOT the gross net_debt bridge leg, per net_debt_semantics."
@@ -322,15 +322,15 @@
     "interest_coverage": {
       "value": 3.4761,
       "kind": "derived_sectors",
-      "outlet": "Sectors API v2 \u2014 TTM EBITDA + TTM interest_expense_non_operating (TTM = 4 quarters to 2026-03-31)",
+      "outlet": "Sectors API v2 - TTM EBITDA + TTM interest_expense_non_operating (TTM = 4 quarters to 2026-03-31)",
       "url": "https://api.sectors.app/v2/company/quarterly-financials/AMMN/?n_quarters=8",
       "as_of": "TTM to 2026-03-31",
-      "note": "TTM EBITDA 24,978,798,106,260 IDR / TTM interest expense 7,185,779,289,920 IDR = 3.4761×. Convention: AMMN's own prospectus footnote 9 (Prospektus Juni 2023, p.xxii) defines ICR as EBITDA / beban keuangan. Spot IC (EBIT basis) using FY2025 audited Operating Profit $673,602K / Finance costs $386,046K = 1.745× \u2014 both clear the 1.0× Gate 1c threshold by a wide margin."
+      "note": "TTM EBITDA 24,978,798,106,260 IDR / TTM interest expense 7,185,779,289,920 IDR = 3.4761×. Convention: AMMN's own prospectus footnote 9 (Prospektus Juni 2023, p.xxii) defines ICR as EBITDA / beban keuangan. Spot IC (EBIT basis) using FY2025 audited Operating Profit $673,602K / Finance costs $386,046K = 1.745× - both clear the 1.0× Gate 1c threshold by a wide margin."
     },
     "shareholders_equity": {
       "value": 93687393398000.0,
       "kind": "public",
-      "outlet": "AMMN Q1 2026 audited interim financial statements \u2014 Consolidated Statements of Financial Position, 'Jumlah Ekuitas yang Dapat Diatribusikan kepada Pemilik Entitas Induk' line (Equity attributable to owners of the parent entity)",
+      "outlet": "AMMN Q1 2026 audited interim financial statements - Consolidated Statements of Financial Position, 'Jumlah Ekuitas yang Dapat Diatribusikan kepada Pemilik Entitas Induk' line (Equity attributable to owners of the parent entity)",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "2026-03-31 (Q1 2026, latest available; the AMMN PDF carries comparative 2025-12-31 too)",
       "note": "Q1 2026 USD 5,486,174 thousand \u00d7 BI mid-rate 31 March 2026 = Rp 17,077/USD (Kurs Transaksi BI per Kontan 31/3/2026) = Rp 93,687,393,398,000 IDR (Rp 93.687 tn). FX choice: same source as the file's own USD\u2192IDR conversions on cash and total_debt (file cash 13.846 tn / PDF cash_only $814.571M \u2248 16,998; this equity figure uses 17,077 as a clean published spot). Equity attributable to parent excludes NCI of USD 95,086 thousand."
@@ -338,7 +338,7 @@
     "nci_pct": {
       "value": 1.704,
       "kind": "public",
-      "outlet": "AMMN Q1 2026 audited interim financial statements \u2014 Consolidated Statements of Financial Position, 'Kepentingan nonpengendali' / Total Equity",
+      "outlet": "AMMN Q1 2026 audited interim financial statements - Consolidated Statements of Financial Position, 'Kepentingan nonpengendali' / Total Equity",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "2026-03-31",
       "note": "USD 95,086 thousand NCI / USD 5,581,260 thousand Total Equity = 1.704%. Way under Gate 2's 15% threshold (single-business + DCF proceeds normally; no SOTP cross-check)."
@@ -348,10 +348,10 @@
         "other"
       ],
       "kind": "derived_sectors",
-      "outlet": "AMMN financial statements \u2014 Penjualan (revenue breakdown by commodity, FY2024 PDF discloses 'Penjualan tembaga, bersih' + 'Penjualan emas, bersih' as the only product lines)",
+      "outlet": "AMMN financial statements - Penjualan (revenue breakdown by commodity, FY2024 PDF discloses 'Penjualan tembaga, bersih' + 'Penjualan emas, bersih' as the only product lines)",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "FY2024 + FY2025 audited annuals",
-      "note": "AMMN sells ONLY copper and gold at spot prices \u2014 two commodity-declining product lines that don't fit any of the recognised commodity tags (commodity_coal, commodity_nickel, commodity_cpo, commodity_oil). Per the loader docstring, archetype ('coal' for Basic Materials in the repo bucket) is deliberately NOT mapped; picking the nearest commodity tag (commodity_nickel is for base metals \u2014 closest by SIC class) would mislabel a copper/gold miner. Honest answer: 'other' (recognised tag). Gate 0 (domain=mining) already triggers NAV primary, so Gate 3's commodity path is redundant here."
+      "note": "AMMN sells ONLY copper and gold at spot prices - two commodity-declining product lines that don't fit any of the recognised commodity tags (commodity_coal, commodity_nickel, commodity_cpo, commodity_oil). Per the loader docstring, archetype ('coal' for Basic Materials in the repo bucket) is deliberately NOT mapped; picking the nearest commodity tag (commodity_nickel is for base metals - closest by SIC class) would mislabel a copper/gold miner. Honest answer: 'other' (recognised tag). Gate 0 (domain=mining) already triggers NAV primary, so Gate 3's commodity path is redundant here."
     },
     "has_steady_state_3y": {
       "value": true,
@@ -370,7 +370,7 @@
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
   },
-  "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42× \u2014 re-rating belum tercermin dalam harga",
+  "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
   "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,
@@ -389,5 +389,5 @@
     "why": "EV bertahan Rp 506-672 tn sepanjang siklus sementara EBITDA naik-turun 2×: market menghargai asset base, bukan laba trailing. Menerapkan multiple ini ke level yang sudah pulih memberi Rp 13.362-20.564/saham (2,7-4,2× harga). Rekonstruksi diverifikasi exact (gap 0,00×) di server/valuation/normalised_multiple.py; diuji di tests/test_normalised_multiple.py."
   },
   "mid_cycle_ebitda_note": "Mid-cycle historis = rata-rata 3Y EBITDA Sectors (FY2023 15.738, FY2024 23.040, FY2025 16.410 -> 18.396 tn) tetap dihitung sebagai cross-check, TIDAK dipakai sebagai basis TP sejak 12 Sep 2026: level TP memakai EBITDA FY26F dari jalur proyeksi (lihat ebitda_leg_level_note).",
-  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) \u2014 basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86× dan gate harus dievaluasi ulang \u2014 itu keputusan owner, bukan perubahan diam-diam."
+  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) - basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86× dan gate harus dievaluasi ulang - itu keputusan owner, bukan perubahan diam-diam."
 }

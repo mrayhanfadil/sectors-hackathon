@@ -1,4 +1,4 @@
-# AMMN-VERIFY — End-to-End AMMN Render & Compliance Verdict Report
+# AMMN-VERIFY - End-to-End AMMN Render & Compliance Verdict Report
 
 - **Target Ticker**: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ)
 - **Sub-Sector**: Copper & Gold Mining (`metals-mining`, `Basic Materials`)
@@ -22,7 +22,7 @@
 | **Source Lines** | **PASS (100%)** | `theme.typ:62-72` uniformly renders `Source: Company, Team Estimates` below 100% of exhibits. |
 | **Page Furniture (Header/Footer)** | **PASS (100%)** | Native page margin placement (`theme.typ:86-141`) guarantees header, date, Sectors logo, divider `#067647`, and footer disclosure/page number on all pages. |
 | **Slide 3 == Exhibit 3 Tie-Out** | **BROKEN** | Exhibit 3 Key Financials is absent on Slide 1; Slide 3 lacks the 2x2 combo charts to reconcile. |
-| **Slide 6–7 Statement Tie-Outs** | **BROKEN** | Cash flow default displays honest dashes (`—`) while IS/BS carry static values; Net Profit and Ending Cash do not tie out; statements crammed on Page 6 (6Y horizon vs 5Y template). |
+| **Slide 6–7 Statement Tie-Outs** | **BROKEN** | Cash flow default displays honest dashes (`-`) while IS/BS carry static values; Net Profit and Ending Cash do not tie out; statements crammed on Page 6 (6Y horizon vs 5Y template). |
 | **Slide 4 Mining Valuation** | **FAIL** | Modeler instructions & gate framework contain finite-reserve discipline, but `report_single.typ` lacks the RNAV bridge (Opsi C) and mid-cycle EV/EBITDA table. |
 | **Slide 5 Peer Bands & Disclaimer** | **FAIL** | P/E 1Y and P/BV 1Y historical band charts missing; median/average summary rows missing from peer table; mandatory own-history disclaimer missing. |
 
@@ -40,10 +40,10 @@
   fastapi.exceptions.HTTPException: 422: {
     'ticker': 'AMMN',
     'missing': ['rf', 'beta', 'erp', 'cod', 'g', 'payout', 'fcf', 'shares_out', 'net_debt', 'cash', 'ebitda', 'ev_multiple', 'last_price', 'we', 'wd'],
-    'summary': 'no verified assumptions for AMMN — refusing generic fallback (add data/assumptions/AMMN.json or set SECTORS_API_KEY)'
+    'summary': 'no verified assumptions for AMMN - refusing generic fallback (add data/assumptions/AMMN.json or set SECTORS_API_KEY)'
   }
   ```
-- **Sectors Gateway Check**: `server/sectors.py:86-97` raises `SectorsNotConfigured: SECTORS_API_KEY missing — onboard at sectors.app/api, save key to .env (mode 600). No fallback wired on purpose.` (maps to HTTP 503).
+- **Sectors Gateway Check**: `server/sectors.py:86-97` raises `SectorsNotConfigured: SECTORS_API_KEY missing - onboard at sectors.app/api, save key to .env (mode 600). No fallback wired on purpose.` (maps to HTTP 503).
 - **Compliance Assessment**: **GAP (LOUD)**. The production pipeline behaves with strict integrity: it halts loudly with HTTP 422 / 503 rather than fabricating synthetic financial estimates or hallucinating commodity price decks.
 
 ### 1.2 PDF Render Execution Path
@@ -73,7 +73,7 @@
 | **CHK-06** | Numbering sequential 2..17 with no gaps | Template line 13-15, Prompt Job §3 | `report_single.typ:88-787` | **FAIL** | Figure counter runs 1..18/19 rather than 2..17. Exhibit 1 is not skipped, and total exhibit count exceeds 17 due to layout divergence. |
 | **CHK-07** | House header/footer on every page | Template lines 16–26, `house-report-format.md` | `theme.typ:86-141, 335-344` | **PASS** | Native margin placement ensures header (`Equity Research – Company Update`, formatted date, Sectors logo, `#067647` rule) and footer (`sectors.app`, disclosure, page number) render on 100% of pages. |
 | **CHK-08** | Slide 3 numbers == Exhibit 3 numbers (Tie-out) | `slide1-cover-spec.md:139`, `slide3-visual-spec.md:28` | `report_single.typ:160, 285-335` | **FAIL** | Exhibit 3 on Slide 1 in `report_single.typ` is "Informasi Pasar & Saham" (market cap/float), NOT Key Financials. Slide 3 lacks the 2x2 combo charts to reconcile. |
-| **CHK-09** | Slide 6–7 tie-outs hold (Net Profit, Cash) | `slide6-statements-spec.md:270-284` | `report_single.typ:630-740` | **FAIL** | Cash Flow default is honest dashes (`—`) while IS/BS carry hardcoded values (`402` NP, `410` Cash); all 4 statements merged on 1 page; 6Y horizon used instead of 5Y. |
+| **CHK-09** | Slide 6–7 tie-outs hold (Net Profit, Cash) | `slide6-statements-spec.md:270-284` | `report_single.typ:630-740` | **FAIL** | Cash Flow default is honest dashes (`-`) while IS/BS carry hardcoded values (`402` NP, `410` Cash); all 4 statements merged on 1 page; 6Y horizon used instead of 5Y. |
 | **CHK-10** | Slide 4 method = DCF-shortened + RNAV + mid-cycle EV/EBITDA + gates | `slide4-valuation-spec.md:1-33`, `instructions.py:221` | `report_single.typ:393-623`, `gates.py:73-74` | **FAIL** | Gate engine and agent instructions are compliant, but template `report_single.typ` lacks the RNAV bridge (Opsi C) and mid-cycle EV/EBITDA table, implementing generic perpetual DCF. |
 | **CHK-11** | Slide 5 peer table + bands + disclaimer present | `slide5-peer-spec.md:58-135, 200` | `report_single.typ:748-796` | **FAIL** | P/E 1Y and P/BV 1Y band charts missing; peer table lacks Median/Average summary rows; mandatory own-history disclaimer completely missing. |
 
@@ -88,19 +88,19 @@ The canonical BRIDS equity template defines exactly 17 exhibits across 7 slides.
 | **Ex 1** | **EPS Consensus Table** | Slide 1 (Cover) | **SKIPPED in Spec** (Rationale: no locked consensus feed). However, `report_single.typ:88` inserts `#exhibit-header("Struktur Kepemilikan Saham")` as Exhibit 1. | **Exhibit 1** | **FAIL** (Unwanted table labelled as Exhibit 1) |
 | **Ex 2** | **AMMN relative to JCI Index** (Dual-axis) | Slide 1 (Cover) | `report_single.typ:126` `#exhibit-header("Kinerja Harga vs IHSG (YTD)")` | **Exhibit 2** | **PASS** (Dual-axis chart slot present) |
 | **Ex 3** | **Key Financials Table** (2024A–2028F, 9 rows) | Slide 1 (Cover) | **MISSING from Slide 1**. `report_single.typ:160` instead inserts `#exhibit-header("Informasi Pasar & Saham AMMN")`. Financial Highlights pushed to Page 3. | **Exhibit 3 (wrong content)** | **FAIL** (Key Financials missing from Cover) |
-| — | *Spurious Exhibit: Trajektori Parameter Operasional* | Slide 2 (KPI Hero) | `report_single.typ:244` `#exhibit-header(ex3_title)` | **Exhibit 4** | **FAIL** (Slide 2 is pure narrative in template) |
-| — | *Spurious Exhibit: Karakteristik Aset & Jaringan* | Slide 2 (KPI Hero) | `report_single.typ:263` `#exhibit-header(ex4_title)` | **Exhibit 5** | **FAIL** (Slide 2 is pure narrative in template) |
+| - | *Spurious Exhibit: Trajektori Parameter Operasional* | Slide 2 (KPI Hero) | `report_single.typ:244` `#exhibit-header(ex3_title)` | **Exhibit 4** | **FAIL** (Slide 2 is pure narrative in template) |
+| - | *Spurious Exhibit: Karakteristik Aset & Jaringan* | Slide 2 (KPI Hero) | `report_single.typ:263` `#exhibit-header(ex4_title)` | **Exhibit 5** | **FAIL** (Slide 2 is pure narrative in template) |
 | **Ex 4** | **Revenue & Revenue Growth Combo Chart** | Slide 3 (Visuals 2x2) | `report_single.typ:307` `#exhibit-header("Financial Highlights")` table. Combo chart absent. | **Exhibit 6 (table, not chart)** | **FAIL** (Combo chart missing) |
 | **Ex 5** | **EBITDA & EBITDA Margin Combo Chart** | Slide 3 (Visuals 2x2) | `report_single.typ:317` embeds `margin_trajectory.png` only if flagged. Distinct EBITDA combo absent. | **Exhibit 7 (conditional)** | **FAIL** (Combo chart missing) |
 | **Ex 6** | **Net Profit & EPS Growth Combo Chart** | Slide 3 (Visuals 2x2) | Absent from `report_single.typ`. | **None** | **FAIL** (Missing entirely) |
 | **Ex 7** | **Mining: Volume vs Cash Cost Combo Chart** | Slide 3 (Visuals 2x2) | `report_single.typ:329` embeds `production_cost.png` behind `charts.production_cost`. | **Exhibit 7 or 8 (conditional)** | **PASS** (Chart function & wiring compliant per commit 266a08d) |
 | **Ex 8** | **FCFF Forecast & TV** / **RNAV Asset Bridge** | Slide 4 (Valuation) | `report_single.typ:453` `#exhibit-header("Proyeksi Arus Kas Bebas (FCFF)")` (Page 4). RNAV bridge absent. | **Exhibit 7 / 8** | **FAIL** (Lacks mining RNAV bridge) |
-| — | *Pita Valuasi Historis P/BV 3-Tahun (STD±2) Table* | Slide 4 (Valuation) | `report_single.typ:517` `#exhibit-figure("Pita Valuasi Historis P/BV 3-Tahun (STD±2)")` | **Exhibit 8 / 9** | **FAIL** (Band chart misplaced on Slide 4 as table) |
+| - | *Pita Valuasi Historis P/BV 3-Tahun (STD±2) Table* | Slide 4 (Valuation) | `report_single.typ:517` `#exhibit-figure("Pita Valuasi Historis P/BV 3-Tahun (STD±2)")` | **Exhibit 8 / 9** | **FAIL** (Band chart misplaced on Slide 4 as table) |
 | **Ex 9** | **WACC Components / Cost of Capital Build** | Slide 4 (Valuation) | `report_single.typ:552` `#exhibit-header("Cost of Capital Build")` on Page 5. | **Exhibit 9 / 10** | **PASS** (Table present, though pushed to Page 5) |
-| **Ex 10** | **Sensitivity Analysis Matrix** | Slide 4 (Valuation) | `report_single.typ:572` `#exhibit-header("Sensitivity Analysis — WACC vs Terminal Growth")` | **Exhibit 10 / 11** | **PASS** (5x5 matrix present on Page 5) |
-| — | *Spurious Exhibit: Scenario Analysis* | Slide 4 (Valuation) | `report_single.typ:592` `#exhibit-header("Scenario Analysis")` | **Exhibit 11 / 12** | **FAIL** (Non-template exhibit) |
-| — | *Spurious Exhibit: Jembatan Nilai EV ke Ekuitas* | Slide 4 (Valuation) | `report_single.typ:606` `#exhibit-header("Jembatan Nilai EV ke Ekuitas")` | **Exhibit 12 / 13** | **FAIL** (Non-template exhibit) |
-| **Ex 11** | **Peer Valuation Table** (P/E, P/BV, EV/EBITDA) | Slide 5 (Peers) | `report_single.typ:767` `#exhibit-header("Peer Comparison — ...")` on Page 7. | **Exhibit 17** | **FAIL** (Missing Median/Average rows; numbered 17) |
+| **Ex 10** | **Sensitivity Analysis Matrix** | Slide 4 (Valuation) | `report_single.typ:572` `#exhibit-header("Sensitivity Analysis - WACC vs Terminal Growth")` | **Exhibit 10 / 11** | **PASS** (5x5 matrix present on Page 5) |
+| - | *Spurious Exhibit: Scenario Analysis* | Slide 4 (Valuation) | `report_single.typ:592` `#exhibit-header("Scenario Analysis")` | **Exhibit 11 / 12** | **FAIL** (Non-template exhibit) |
+| - | *Spurious Exhibit: Jembatan Nilai EV ke Ekuitas* | Slide 4 (Valuation) | `report_single.typ:606` `#exhibit-header("Jembatan Nilai EV ke Ekuitas")` | **Exhibit 12 / 13** | **FAIL** (Non-template exhibit) |
+| **Ex 11** | **Peer Valuation Table** (P/E, P/BV, EV/EBITDA) | Slide 5 (Peers) | `report_single.typ:767` `#exhibit-header("Peer Comparison - ...")` on Page 7. | **Exhibit 17** | **FAIL** (Missing Median/Average rows; numbered 17) |
 | **Ex 12** | **P/E Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | Absent from `report_single.typ`. Line 793 emits note: "Grafik P/E tidak disajikan". | **None** | **FAIL** (1Y P/E band chart missing) |
 | **Ex 13** | **P/BV Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | Absent from `report_single.typ` (placed on Page 4 as table). | **None** | **FAIL** (1Y P/BV band chart missing) |
 | **Ex 14** | **Income Statement (2024A–2028F)** | Slide 6 (Statements) | `report_single.typ:634` `#exhibit-header("Laporan Laba Rugi Komprehensif")` on Page 6. | **Exhibit 13 / 14** | **FAIL** (6Y horizon vs 5Y; merged on single page) |
@@ -119,8 +119,8 @@ The canonical BRIDS equity template defines exactly 17 exhibits across 7 slides.
 ### 4.2 Financial Statements Integrity & Disclosures (Slides 6 & 7)
 1. **Single-Page Statement Squashing**: Slides 6 and 7 in the template provide dedicated full slides for IS + BS (Slide 6) and CF + Key Ratios (Slide 7). In `report_single.typ:629-741`, all four financial tables are stacked onto a single logical page (Page 6). Because of vertical height, this triggers severe page overflow in Typst, splitting unpredictably across physical pages 7 and 8.
 2. **Broken Accounting Tie-Outs**:
-   - **TIE-01 & TIE-02**: Income Statement Net Profit (line 649: `402, 355, 390...`) does not reconcile with Cash Flow starting CFO Net Profit (line 690: `—, —, —...`).
-   - **TIE-03**: Cash Flow Ending Cash (line 714: `—, —, —...`) does not reconcile with Balance Sheet Cash & Equivalents (line 661: `410, 465, 500...`).
+   - **TIE-01 & TIE-02**: Income Statement Net Profit (line 649: `402, 355, 390...`) does not reconcile with Cash Flow starting CFO Net Profit (line 690: `-, -, -...`).
+   - **TIE-03**: Cash Flow Ending Cash (line 714: `-, -, -...`) does not reconcile with Balance Sheet Cash & Equivalents (line 661: `410, 465, 500...`).
 3. **Horizon Mismatch**: The house specification pins a 5-year rolling horizon (`2024A 2025A 2026F 2027F 2028F`), whereas `report_single.typ` renders 6 columns (`FY24A - FY29F`).
 4. **Line Item Gaps**:
    - Income Statement merges interest income/expense and omits Minority Interest.
@@ -137,7 +137,7 @@ The canonical BRIDS equity template defines exactly 17 exhibits across 7 slides.
 1. **Absence of Band Charts**: Slide 5 requires a hard visual split:
    - Top 50%: Cross-sectional Peer Valuation Table.
    - Bottom 50%: Time-series Own-History Tool featuring Exhibit 12 (P/E 1Y Band) and Exhibit 13 (P/BV 1Y Band) with mean (dashed), median (dotted), and current level marker.
-   - `report_single.typ` omits both band charts, explicitly writing on line 793: `"Grafik P/E tidak disajikan — P/E trailing tak bermakna di trough siklikal"`.
+   - `report_single.typ` omits both band charts, explicitly writing on line 793: `"Grafik P/E tidak disajikan - P/E trailing tak bermakna di trough siklikal"`.
 2. **Missing Summary Rows**: The peer table lacks bold `Median` and `Average` summary rows.
 3. **Missing Mandatory Disclaimer**: The verbatim disclaimer mandated by `slide5-peer-spec.md:200-205` is completely absent from the template:
    > *"Implied prices from this own-history tool are mean-reversion cross-checks that hold fundamental drivers constant at their current TTM/forward level and revert only the multiple to its 1-year historical mean/median. They are a snapshot, not a forecast, and are NOT the official Target Price established in Slide 4 (DCF-shortened / RNAV)."*
@@ -153,7 +153,7 @@ The canonical BRIDS equity template defines exactly 17 exhibits across 7 slides.
 5. **`templates/typst/archetypes/report_single.typ:244, 263`**: Introduces Exhibits 4 and 5 on Page 2 where the template mandates pure narrative.
 6. **`templates/typst/archetypes/report_single.typ:307`**: Financial Highlights rendered on Page 3 instead of Slide 1.
 7. **`templates/typst/archetypes/report_single.typ:630-740`**: All 4 financial statements stacked on Page 6 with 6 columns (`FY24A-FY29F`).
-8. **`templates/typst/archetypes/report_single.typ:685-715`**: Default Cash Flow rows are dashes (`—`), breaking tie-outs with lines 649 (Net Profit) and 661 (Cash).
+8. **`templates/typst/archetypes/report_single.typ:685-715`**: Default Cash Flow rows are dashes (`-`), breaking tie-outs with lines 649 (Net Profit) and 661 (Cash).
 9. **`templates/typst/archetypes/report_single.typ:781`**: Hardcoded `image(chart-dir + "/relval_bars.png")` without placeholder generation crashes `scripts/render_typst.py`.
 10. **`templates/typst/common/theme.typ:62-72`**: Uniform `Source: Company, Team Estimates` generation verified compliant.
 11. **`templates/typst/common/theme.typ:86-141`**: Native running header and footer placement verified compliant.

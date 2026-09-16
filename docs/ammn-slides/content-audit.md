@@ -1,4 +1,4 @@
-# AMMN-FILLV — Content Audit & Data Provenance Verification Matrix
+# AMMN-FILLV - Content Audit & Data Provenance Verification Matrix
 
 **Execution Date**: 2026-09-12 WIB  
 **Workspace**: `/home/fadil/projects/sectors-hackathon` (branch: `feat/institutional-report`, commit `a57e3ca`)  
@@ -17,7 +17,7 @@
 
 | Audit Item | Scope & Rule | Evaluation | Evidence Reference |
 |---|---|---|---|
-| **(a) Zero Placeholders** | Zero `"lengkapi fixture"`, `"Ringkasan eksekutif belum tersedia"`, or `"—"` where a mapped key promised data. | **FAIL (Residual Template Placeholders)** | `"lengkapi fixture"` count = 0; `"Ringkasan eksekutif belum tersedia"` count = 0; all 22 promised mapped keys are populated. However, 7 unmapped visual placeholders remain from template fallbacks (4 dashes in Exhibit 8 DCF card at `P6L12-15`, 3 literal `Engine Chart Renderer (Sectors pending)` strings at `P5L3`, `P9L22`, `P9L26`). |
+| **(a) Zero Placeholders** | Zero `"lengkapi fixture"`, `"Ringkasan eksekutif belum tersedia"`, or `"-"` where a mapped key promised data. | **FAIL (Residual Template Placeholders)** | `"lengkapi fixture"` count = 0; `"Ringkasan eksekutif belum tersedia"` count = 0; all 22 promised mapped keys are populated. However, 7 unmapped visual placeholders remain from template fallbacks (4 dashes in Exhibit 8 DCF card at `P6L12-15`, 3 literal `Engine Chart Renderer (Sectors pending)` strings at `P5L3`, `P9L22`, `P9L26`). |
 | **(b) Number Traceability** | Every thesis, valuation, and peer number traces to `FILL_MAP.md` or `AMMN.json`. | **FAIL (38 Untraced Valuation Numbers)** | Pages 1–6 and 9–13 trace 100% to live harvested Sectors data and assumptions. However, Page 7–8 contains 38 untraced mock numbers in Exhibit 12 (Sensitivity matrix), Scenario Analysis, and EV Bridge due to unpopulated `dcf_deep_dive` sub-keys in `ammn_fill.py`. |
 | **(c) Gated TP & Anchor** | TP == ONE gated FV with anchor named; rating follows gates. | **PASS** | Target Price is exactly Rp 147 (live DCF FV). Anchor is named in cover summary (`P1L20-23`: *"berjangkar pada SATU FV engine (DCF/EV-blend)"*). Rating is `Review Required`, strictly adhering to Gate 5 output sanity flag (`P1L57-60`: upside -97.0% out of band). |
 | **(d) Tie-Outs & Identities** | Slide-3 numbers == Exhibit-3; IS/BS/CF tie-outs hold. | **PASS (Clean)** | Exhibit 3 (Page 2) matches Slide 3 Financial Highlights (Page 4) cell-for-cell for all 5 overlapping years (FY21A–FY25A) across Revenue, EBITDA, Net Profit, EPS, and PER. Net Profit ties out across IS, FH, and Ex 3. CF closing cash ties out to BS Cash for all 6 years (FY20A–FY25A). BS accounting identity Assets = Liabilities + Equity holds. Minorities derived tie-out holds. |
@@ -33,7 +33,7 @@ Verdict: FAIL-2 (placeholders 7, uncited numbers 38, tie-outs ok)
 
 ---
 
-## 1. Check (a) — Placeholders & Honest-Empty Ledger
+## 1. Check (a) - Placeholders & Honest-Empty Ledger
 
 ### 1.1 Forbidden Placeholder String Scan
 Extracted full-text search against [`output/ammn_report_typst.pdf`](file:///home/fadil/projects/sectors-hackathon/output/ammn_report_typst.pdf):
@@ -52,7 +52,7 @@ Audit of the 22 keys marked `FILLED` in [`output/cache/ammn_fill/FILL_MAP.md`](f
 | # | Mapped Key | Promised in `FILL_MAP.md` | Rendered Value in PDF | PDF Page & Line | Verdict |
 |:---:|---|---|---|---|:---:|
 | 1 | `meta.company_name` | PT Amman Mineral Internasional Tbk. | PT Amman Mineral Internasional Tbk. | `P1L4-5` | PASS |
-| 2 | `meta.sector` | Basic Materials — Metals & Minerals | Basic Materials — Metals & Minerals | `P1L3` | PASS |
+| 2 | `meta.sector` | Basic Materials - Metals & Minerals | Basic Materials - Metals & Minerals | `P1L3` | PASS |
 | 3 | `cover.summary` | 4-bullet thesis prose | 4-bullet prose (tembaga-emas Batu Hijau, FY24 Rp 43,04 tn...) | `P1L9-24` | PASS |
 | 4 | `cover.rating_box.price` | Rp 4,860 | Rp 4860 | `P1L45`, `P1L66` | PASS |
 | 5 | `cover.rating_box.tp` | Rp 147 | Rp 147 | `P1L44`, `P1L69` | PASS |
@@ -86,7 +86,7 @@ Audit confirming that unavailable data points stay loud, honest, and uninvented:
 | **G5** | Forward Estimates | Projections null, consensus directional only (`P1L20`) | `valuation.forward_pe` and `future.company_growth_forecasts` null in API | PASS (Honest) |
 | **G6** | Dividend History | Excluded from catalyst; DPS = 0 | AMMN paid zero dividends since July 2023 IPO; `corporate_actions.dividend` null | PASS (Honest) |
 | **G7** | KPI Volumes (Mt/tonase) | Financial KPIs used (Rev, EBITDA, D/E, ICR) | Zero volumetric rows in Sectors quarterly/annual payloads | PASS (Honest) |
-| **G8** | Peer EV/EBITDA Multiple | Rendered as `—` for all 9 peers (`P9L7-15`) | Sectors peer payload provides Mcap, P/E, P/BV, but omits peer EBITDA/debt/cash | PASS (Honest) |
+| **G8** | Peer EV/EBITDA Multiple | Rendered as `-` for all 9 peers (`P9L7-15`) | Sectors peer payload provides Mcap, P/E, P/BV, but omits peer EBITDA/debt/cash | PASS (Honest) |
 | **G9** | Historical Bands Chart | Muted text note (`P6L49`, `P9L20-26`) | Historical valuation table has only 4 annual points; no continuous time-series bands | PASS (Honest) |
 | **G10** | Reserve Life / Grade / C1 | Honest exclusion in KPI/Thesis | No volumetric or grade metrics available in Sectors AMMN feeds | PASS (Honest) |
 
@@ -105,12 +105,12 @@ The following visual placeholders appear in the PDF due to Typst template unhand
    - `P9L26`: `Exhibit 15: Engine Chart Renderer (Sectors pending)` (Page 9)
    *Cause*: Chart PNG generation skipped or missing from cache; template emits placeholder string.
 3. **Exhibit 9 RNAV Bridge (`P6L30-47`)**:
-   - 11 rows of `— —` under title `Engine RNAV (Sectors pending)`.
+   - 11 rows of `- -` under title `Engine RNAV (Sectors pending)`.
    *Cause*: Fallback default in `report_single.typ:578-593`.
 
 ---
 
-## 2. Check (b) & (f) — Number Provenance & Synthetic Markers
+## 2. Check (b) & (f) - Number Provenance & Synthetic Markers
 
 ### 2.1 Traceable Number Matrix (Clean Sections)
 All numbers in the following sections trace 100% to verified data sources:
@@ -154,7 +154,7 @@ Audit identified **38 distinct mock numbers** (and 45 total numeric tokens) appe
 
 ---
 
-## 3. Check (c) — Target Price, Anchor & Gate Stance
+## 3. Check (c) - Target Price, Anchor & Gate Stance
 
 ### 3.1 Single Gated FV & Anchor Rule
 - **Published Target Price**: **Rp 147** (`P1L44`, `P1L69`, `P6L28`).
@@ -180,7 +180,7 @@ Audit identified **38 distinct mock numbers** (and 45 total numeric tokens) appe
 
 ---
 
-## 4. Check (d) — Slide 3 vs Exhibit 3 & Financial Statements Tie-Outs
+## 4. Check (d) - Slide 3 vs Exhibit 3 & Financial Statements Tie-Outs
 
 ### 4.1 Slide 3 Financial Highlights vs Exhibit 3 Key Financials
 Cross-table reconciliation for the overlapping periods (FY21A–FY25A):
@@ -191,11 +191,11 @@ Cross-table reconciliation for the overlapping periods (FY21A–FY25A):
 | **EBITDA (Rp bn)** | `[7904.3, 24174.6, 15738.4, 23039.9, 16410.5]` | `[7904.3, 24174.6, 15738.4, 23039.9, 16410.5]` | 0.0 | **TIE-OUT OK** |
 | **EBITDA Growth %** | `[98.2, 205.8, −34.9, 46.4, −28.8]` | *(calculated from EBITDA)* | 0.0 | **TIE-OUT OK** |
 | **Net Profit (Rp bn)**| `[4506.9, 17049.7, 3892.9, 10290.3, 4167.0]` | `[4506.9, 17049.7, 3892.9, 10290.3, 4167.0]` | 0.0 | **TIE-OUT OK** |
-| **EPS (Rp)** | `[—, —, 53.68, 141.9, 57.46]` | `[—, —, 53.68, 141.9, 57.46]` | 0.0 | **TIE-OUT OK** |
-| **EPS Growth %** | `[—, —, —, 164.3, −59.5]` | *(calculated from EPS)* | 0.0 | **TIE-OUT OK** |
-| **PER (x)** | `[—, —, 122.02, 59.73, 111.81]` | `[—, —, 122.02, 59.73, 111.81]` | 0.0 | **TIE-OUT OK** |
-| **PBV (x)** | `[—, —, 6.64, 7.25, 5.13]` | *(reported in ratios)* | 0.0 | **TIE-OUT OK** |
-| **EV/EBITDA (x)** | `[—, —, 32.19, 29.19, 34.31]` | *(reported in ratios)* | 0.0 | **TIE-OUT OK** |
+| **EPS (Rp)** | `[-, -, 53.68, 141.9, 57.46]` | `[-, -, 53.68, 141.9, 57.46]` | 0.0 | **TIE-OUT OK** |
+| **EPS Growth %** | `[-, -, -, 164.3, −59.5]` | *(calculated from EPS)* | 0.0 | **TIE-OUT OK** |
+| **PER (x)** | `[-, -, 122.02, 59.73, 111.81]` | `[-, -, 122.02, 59.73, 111.81]` | 0.0 | **TIE-OUT OK** |
+| **PBV (x)** | `[-, -, 6.64, 7.25, 5.13]` | *(reported in ratios)* | 0.0 | **TIE-OUT OK** |
+| **EV/EBITDA (x)** | `[-, -, 32.19, 29.19, 34.31]` | *(reported in ratios)* | 0.0 | **TIE-OUT OK** |
 
 ### 4.2 Comprehensive Statements & Accounting Identities (Pages 11–12)
 Verification across all 6 historical periods (FY20A–FY25A):
@@ -203,7 +203,7 @@ Verification across all 6 historical periods (FY20A–FY25A):
 1. **Net Profit Tie-Out Across All Exhibits**:
    - `Income Statement (Exhibit 16, P11L16)`: `[1212.8, 4506.9, 17049.7, 3892.9, 10290.3, 4167.0]`
    - `Financial Highlights (Page 4, P4L11)`: `[1212.8, 4506.9, 17049.7, 3892.9, 10290.3, 4167.0]`
-   - `Key Financials (Exhibit 3, P2L14)`: `[—, 4506.9, 17049.7, 3892.9, 10290.3, 4167.0]`
+   - `Key Financials (Exhibit 3, P2L14)`: `[-, 4506.9, 17049.7, 3892.9, 10290.3, 4167.0]`
    *Status*: **100% Exact Match**.
 2. **Cash Reconciliation (Balance Sheet vs Cash Flow)**:
    - `Balance Sheet Cash & Equivalents (Exhibit 17, P11L20)`:
@@ -230,7 +230,7 @@ Verification across all 6 historical periods (FY20A–FY25A):
 
 ---
 
-## 5. Check (e) — News Claims & Provenance Grounding
+## 5. Check (e) - News Claims & Provenance Grounding
 
 ### 5.1 News Feed Payload Audit
 The live data payload carries 8 citable news articles, 100% equipped with valid URL and publish date:
@@ -302,14 +302,14 @@ $$\text{Budget Headroom} = 1,000 - 22 = \mathbf{978 \text{ credits remaining (2.
 
 ## 7. Actionable Recommendations for Downstream Lanes
 
-To achieve a full `PASS-clean` in the next template/modeler pass, the following 3 remediation steps are required (DO NOT FIX in this lane — reported only):
+To achieve a full `PASS-clean` in the next template/modeler pass, the following 3 remediation steps are required (DO NOT FIX in this lane - reported only):
 
 1. **Populate `dcf_deep_dive` sub-keys in `server/report/ammn_fill.py`**:
    Supply explicit `sensitivity` (5x5 matrix evaluated around WACC 13.77% and g 2.5%), `scenarios` (Bear/Base/Bull using AMMN's real parameters), and `bridge` (using AMMN's real Rp 110.79 tn debt and Rp 13.85 tn cash). This will eliminate all 38 synthetic numbers on Pages 7 and 8.
 2. **Populate `dcf_grid` in `payload["valuation"]`**:
    Supply `pv_explicit`, `pv_tv`, `ev`, and `net_cash` so Exhibit 8 renders real valuation bridge numbers instead of four `-` dashes.
 3. **Handle RNAV and Pending Charts cleanly in Typst Template**:
-   If RNAV is unmapped for AMMN (finite reserve / lack of mine-level asset split in Sectors), demote Exhibit 9 or hide it when `val.at("rnav")` is empty rather than rendering 11 rows of `— —`.
+   If RNAV is unmapped for AMMN (finite reserve / lack of mine-level asset split in Sectors), demote Exhibit 9 or hide it when `val.at("rnav")` is empty rather than rendering 11 rows of `- -`.
    Suppress the literal string `Engine Chart Renderer (Sectors pending)` when chart PNGs are absent, replacing it with an honest static note matching Exhibit 10/11.
 
 ---

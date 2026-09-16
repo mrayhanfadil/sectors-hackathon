@@ -1,10 +1,10 @@
 # Onboarding blocker tracker
 
-> Rules §03 + §04 — every team member must finish sectors.app onboarding **before any project code is written**. Onboarding is verified at eligibility check. A non-onboarded member can disqualify the entire submission.
+> Rules §03 + §04 - every team member must finish sectors.app onboarding **before any project code is written**. Onboarding is verified at eligibility check. A non-onboarded member can disqualify the entire submission.
 
 ## Why this exists as its own file
 
-The F1 audit flagged this as **gap G-5**: "Onboarding blocker tracker — Rules §03 onboarding is a hard precondition for eligibility AND for claiming credits. The repo only has it as a checklist line; no Kanban task, no due-date, no escalation rule if a team member doesn't complete it."
+The F1 audit flagged this as **gap G-5**: "Onboarding blocker tracker - Rules §03 onboarding is a hard precondition for eligibility AND for claiming credits. The repo only has it as a checklist line; no Kanban task, no due-date, no escalation rule if a team member doesn't complete it."
 
 This file is the operational version. Mirror status from [`team-roster.md`](team-roster.md) weekly.
 
@@ -13,8 +13,8 @@ This file is the operational version. Mirror status from [`team-roster.md`](team
 Each teammate must:
 
 1. **Create a Sectors account** at [sectors.app](https://sectors.app/auth) (or log in if they already have one).
-2. **Complete the in-app onboarding flow** — the Sectors App has a multi-step onboarding tour that includes watching company data render in the dashboard.
-3. **Generate an API key** at [sectors.app/api](https://sectors.app/api) after onboarding. Save it locally (`.env`, mode 600) — DO NOT commit.
+2. **Complete the in-app onboarding flow** - the Sectors App has a multi-step onboarding tour that includes watching company data render in the dashboard.
+3. **Generate an API key** at [sectors.app/api](https://sectors.app/api) after onboarding. Save it locally (`.env`, mode 600) - DO NOT commit.
 4. **Onboard, then claim credits.** The 1,000-credit grant only unlocks after every team member's onboarding is verified.
 
 ## Onboarding steps per teammate
@@ -32,7 +32,7 @@ Each teammate must:
 If **any** teammate is ⚪ on onboarding at the start of project code work:
 
 1. **Pause all coding.** Resume only when roster is fully 🟢 on onboarding.
-2. **Escalate to that teammate directly** — rules §03 disqualification is real.
+2. **Escalate to that teammate directly** - rules §03 disqualification is real.
 3. **If unresolved within 48 hours**, drop them from the team per [`team-roster.md`](team-roster.md) escalation rule.
 
 ## Why rules §03 + §04 are strict
@@ -47,7 +47,7 @@ Verbatim from [rules.md](rules.md):
 
 - **Skipped the tour.** The "I've used Sectors before, skip onboarding" option exists but **does not satisfy** the onboarding rule. Re-run the full tour.
 - **Used a personal email instead of GitHub-verified email.** Onboarding may complete but portal verification fails because portal expects the email registered on the team page.
-- **Multiple accounts.** Rules §04 explicitly forbids registering multiple accounts to claim extra credits — disqualification risk.
+- **Multiple accounts.** Rules §04 explicitly forbids registering multiple accounts to claim extra credits - disqualification risk.
 - **Read-only testing.** Clicking through company reports on the web app is not a substitute for the onboarding flow.
 
 ## Once everyone is 🟢

@@ -15,7 +15,7 @@
 
 ---
 
-## Part 1 — Payload Availability Audit
+## Part 1 - Payload Availability Audit
 
 ### 1.1 Verified Tickers Identification
 Scanning `data/assumptions/*.json`:
@@ -99,7 +99,7 @@ When `render_html_for_ticker(ticker)` is invoked for any ticker lacking a verifi
       "we",
       "wd"
     ],
-    "summary": "no verified assumptions for <TICKER> — refusing generic fallback (add data/assumptions/<TICKER>.json or set SECTORS_API_KEY)"
+    "summary": "no verified assumptions for <TICKER> - refusing generic fallback (add data/assumptions/<TICKER>.json or set SECTORS_API_KEY)"
   }
 }
 ```
@@ -124,7 +124,7 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
 
 ---
 
-## Part 2 — Fabrication Inventory in the Current FE
+## Part 2 - Fabrication Inventory in the Current FE
 
 ### 2.1 Fabrication Counts by Pattern
 
@@ -132,7 +132,7 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
 | :--- | :--- | :---: | :---: |
 | **Pattern 1: Mock/Fixture Imports & Deprecated Mock Routes** | Unused mock components in `components/mock-sectors/**` and deprecated mock route imports in `routeTree.gen.ts` | 4 | No |
 | **Pattern 2: Hardcoded Numeric Arrays, Objects & Statistical Defaults** | Hardcoded WACC/NIM/Capex figures in suggestions, hardcoded ticker universe quintets, fallback matrix rows, fallback margin-of-safety | 11 | 4 |
-| **Pattern 3: `?? 0`, `|| 0`, `|| "-"`, `|| "—"`, and Magic Number Nullish Defaults** | Zeroes, dashes, or magic constants (`50`, `100`, `15`) applied to missing metric/figure fields | 19 | 12 |
+| **Pattern 3: `?? 0`, `|| 0`, `|| "-"`, `|| "-"`, and Magic Number Nullish Defaults** | Zeroes, dashes, or magic constants (`50`, `100`, `15`) applied to missing metric/figure fields | 19 | 12 |
 | **Pattern 4: Synthetic / Placeholder Strings Presented as Live Data** | Generic fallback labels, placeholder summaries, simulated debate evidence/verdicts, and default company titles | 14 | 7 |
 | **Pattern 5: `Math.random`** | Stochastic or randomized figure generators | 0 | 0 |
 | **Total** | | **48** | **23** |
@@ -178,7 +178,7 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
    - **Should Render Instead:** Render badge only if `margin_of_safety_pct` exists in `payload.valuation.blended`; otherwise render `"N/A"` or omit badge.
 
 7. **`src/fe/src/components/report/ValuationMethodology.tsx:398`**
-   - **Quoted Line:** `: [["DCF", "60%", "—"], ["EV/EBITDA", "40%", "—"]]`
+   - **Quoted Line:** `: [["DCF", "60%", "-"], ["EV/EBITDA", "40%", "-"]]`
    - **Reaches Report Page:** Yes (`/report/$ticker`).
    - **Should Render Instead:** Empty table state or omit table when `payload.valuation.blended.rows` is absent.
 
@@ -224,7 +224,7 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
 
 ---
 
-#### Pattern 3: `?? 0`, `|| 0`, `|| "-"`, `|| "—"`, and Magic Number Nullish Defaults (19 instances)
+#### Pattern 3: `?? 0`, `|| 0`, `|| "-"`, `|| "-"`, and Magic Number Nullish Defaults (19 instances)
 
 16. **`src/fe/src/components/report/charts/DcfSpreadCharts.tsx:81`**
     - **Quoted Line:** `price ?? 0,`
@@ -232,12 +232,12 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
     - **Should Render Instead:** Exclude `price` from `Math.max` scaling if `price === null`.
 
 17. **`src/fe/src/components/report/ExecutiveSummary.tsx:272`**
-    - **Quoted Line:** `const action = s1?.rating?.action || cover?.rating_box?.action || "—"`
+    - **Quoted Line:** `const action = s1?.rating?.action || cover?.rating_box?.action || "-"`
     - **Reaches Report Page:** Yes (`/report/$ticker`).
     - **Should Render Instead:** `null` with `<PendingBlock label="Rating" />` if rating is omitted.
 
 18. **`src/fe/src/components/report/ReportHeader.tsx:233`**
-    - **Quoted Line:** `{upside || "—"}` (via `upsideDisplay`)
+    - **Quoted Line:** `{upside || "-"}` (via `upsideDisplay`)
     - **Reaches Report Page:** Yes (`/report/$ticker`).
     - **Should Render Instead:** Display `"N/A"` or omit return container if upside cannot be computed.
 
@@ -397,7 +397,7 @@ When the backend returns HTTP 422, the FE **must not** attempt fallback to gener
 
 ---
 
-## Part 3 — Remediation Directives for FE Lanes
+## Part 3 - Remediation Directives for FE Lanes
 
 1. **Rebind Main Report Route to Frozen Contract (`fetchReportPayload`):**  
    Transition `src/fe/src/routes/report.$ticker.index.tsx` from `fetchReport` to `fetchReportPayload` (`docs/fe-payload-contract.json`). If the response returns `is422: true`, render the honest unverified state with the exact missing keys list (`missing`).

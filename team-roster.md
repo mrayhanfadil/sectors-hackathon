@@ -1,4 +1,4 @@
-> ⚠️ ROSTER LOCK WARNING — do NOT claim API credits before the roster is final. Claim = roster lock. Registration deadline 22 Sep 2026 23:59 WIB. Finalize members first, then claim.
+> ⚠️ ROSTER LOCK WARNING - do NOT claim API credits before the roster is final. Claim = roster lock. Registration deadline 22 Sep 2026 23:59 WIB. Finalize members first, then claim.
 
 # Team roster
 
@@ -16,18 +16,18 @@
 | Name | GitHub handle | Email (login) | Role | Team rep? | Onboarding | API key issued | Credits claimed |
 |---|---|---|---|---|---|---|---|
 | Fadil (Fadiil) | mrayhanfadil | mrayhanfadil@users.noreply.github.com | Dev + lead | TBD | ⚪ | ⚪ | ⚪ |
-| _open slots (up to 3 more)_ | — | — | — | — | — | — | — |
+| _open slots (up to 3 more)_ | - | - | - | - | - | - | - |
 
 ## Roles to fill
 
 Pick roles based on team size. Solo team = one person wears all hats.
 
-- **Team representative (1)** — sole API credit holder + prize recipient. Dotted-line authority on final submission.
-- **Backend / data engineer** — Sectors API integration, worker scheduling, cron.
-- **Frontend / dashboard engineer** — if product has a UI surface.
-- **DevOps / deployment** — CF Worker / Telegram bot / deployment automation.
-- **Video producer** — 60s teaser + 3-min judging video. Can be the same person as DevOps.
-- **Compliance / writer** — one-sentence problem statement + disclaimer boilerplate + social media post copy.
+- **Team representative (1)** - sole API credit holder + prize recipient. Dotted-line authority on final submission.
+- **Backend / data engineer** - Sectors API integration, worker scheduling, cron.
+- **Frontend / dashboard engineer** - if product has a UI surface.
+- **DevOps / deployment** - CF Worker / Telegram bot / deployment automation.
+- **Video producer** - 60s teaser + 3-min judging video. Can be the same person as DevOps.
+- **Compliance / writer** - one-sentence problem statement + disclaimer boilerplate + social media post copy.
 
 ## Open invite (if team < 4)
 

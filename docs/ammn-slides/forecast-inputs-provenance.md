@@ -1,4 +1,4 @@
-# Forecast inputs — internal calibration trail (NOT rendered in the deck)
+# Forecast inputs - internal calibration trail (NOT rendered in the deck)
 
 The shipped deck presents the forecast columns as **team estimates aligned to the licensed dataset** and does
 not name any other research house. This file is the audit trail behind that label; it stays in the repo, is

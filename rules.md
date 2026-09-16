@@ -1,4 +1,4 @@
-# Official Rules — Sectors Hackathon 2026
+# Official Rules - Sectors Hackathon 2026
 
 > Source: <https://hackathon.sectors.app/rules>
 > Copied here for offline reading and quick reference. If the official page changes after 19 Aug 2026, organizers will announce updates through their official channels and won't disadvantage participants who started under the prior rules.
@@ -66,8 +66,8 @@ Build period runs from **19 Aug 2026** through **30 Sep 2026, 23:59 WIB**. Teams
 - **Repo creation**: The project repository must be created during the build period. Judges may inspect commit history. Repositories created before 19 August 2026, or code migrated from previous projects, may result in disqualification. Multiple repositories are allowed if all were created within the build period.
 - **Templates & OSS**: Starting from a public template or boilerplate is allowed, as long as the first commit falls within the build period. Boilerplate, templates, frameworks, libraries, and public open-source code may be used, provided they are not a finished product. Open-sourcing your own prior project before the event solely to reuse its code during the event is prohibited.
 - **Single competition**: Projects must be exclusive to Sectors Hackathon. No work from previous projects, no submission to other competitions or hackathons.
-- **Freeze**: A team's repository and application freeze on submit, or at the 30 Sep deadline — whichever first. After freezing, **no commits, pushes, edits, or changes of any kind are allowed, including bug fixes**. Violation → disqualification.
-- **Freeze exception (only)**: a leaked API key / credential — notify organizers on Slack `#support`, revoke + rotate the credential first, then push a commit containing only its removal.
+- **Freeze**: A team's repository and application freeze on submit, or at the 30 Sep deadline - whichever first. After freezing, **no commits, pushes, edits, or changes of any kind are allowed, including bug fixes**. Violation → disqualification.
+- **Freeze exception (only)**: a leaked API key / credential - notify organizers on Slack `#support`, revoke + rotate the credential first, then push a commit containing only its removal.
 
 ---
 
@@ -83,16 +83,16 @@ Build period runs from **19 Aug 2026** through **30 Sep 2026, 23:59 WIB**. Teams
 
 ### Track summary (full briefs in [`tracks/`](tracks/))
 
-- **Track 01 — AI Agents & Assistants.** Conversational or autonomous AI products for Indonesian financial markets, with an AI/LLM component at their core.
-- **Track 02 — Automation & Workflows.** Products in which Sectors data works inside real, recurring routines.
-- **Track 03 — Market Intelligence.** Products that turn Sectors data into insight for financial market decisions.
+- **Track 01 - AI Agents & Assistants.** Conversational or autonomous AI products for Indonesian financial markets, with an AI/LLM component at their core.
+- **Track 02 - Automation & Workflows.** Products in which Sectors data works inside real, recurring routines.
+- **Track 03 - Market Intelligence.** Products that turn Sectors data into insight for financial market decisions.
 
 ### Track boundaries and support
 
 Track is determined by **what the product fundamentally does**, not what it looks like. Examples from organizers:
 
 - An agent with a dashboard interface still belongs in **AI Agents & Assistants**.
-- An autonomous pipeline that also produces scores may fit **Automation & Workflows** or **Market Intelligence** — team chooses.
+- An autonomous pipeline that also produces scores may fit **Automation & Workflows** or **Market Intelligence** - team chooses.
 
 If a project does not meet its declared track's requirement, judges may move it to the track that fits rather than disqualify. Track-based disqualification applies only when the project fits no track. Unsure teams should ask on Slack `#discussion` during the build period.
 
@@ -123,7 +123,7 @@ Submissions and videos may be in Bahasa Indonesia or English. Neither language i
 
 Judging is **fully asynchronous from 1–8 Oct 2026**, based on submission materials. **No live presentation sessions.** Make sure video and repo speak for themselves.
 
-### Eligibility check — pass or fail
+### Eligibility check - pass or fail
 
 The submission is complete, the product works, Sectors data is used as a core source, and every team participant's Sectors onboarding is verified.
 
@@ -152,7 +152,7 @@ Total prize pool: **IDR 50,000,000** = IDR 30M cash + IDR 20M Sectors API credit
 
 ## 11. Publicity & content rights
 
-- By submitting, participants grant Sectors and Supertype permission to display, publish, and promote the submission — including videos, screenshots, project names, and participant names — on their websites, social media, newsletters, and promotional materials, without additional compensation.
+- By submitting, participants grant Sectors and Supertype permission to display, publish, and promote the submission - including videos, screenshots, project names, and participant names - on their websites, social media, newsletters, and promotional materials, without additional compensation.
 - Intellectual property in the project remains entirely with the participants. Sectors and Supertype claim no ownership rights over any code or product built during the event.
 - Participants are responsible for ensuring their project does not infringe the IP rights of others.
 
@@ -172,7 +172,7 @@ Total prize pool: **IDR 50,000,000** = IDR 30M cash + IDR 20M Sectors API credit
 Organizers may disqualify any participant or team at their sole discretion, including for:
 
 - Violating these rules
-- Cheating — including pre-event code and code-freeze violations
+- Cheating - including pre-event code and code-freeze violations
 - Creating multiple accounts for additional API credits
 - Duplicate submissions
 - Code of conduct violations

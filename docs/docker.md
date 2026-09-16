@@ -18,7 +18,7 @@ make pdf TICKER=AMMN      # render the deck inside the container
 | `web` | `node:22-alpine` build, `nginx:1.27-alpine` runtime | the front-end is static after `vite build`; the runtime image only has to serve files and proxy. |
 
 The Playwright base carries three browsers (~3.4 GB). The app launches chromium only, so `api.Dockerfile` removes
-firefox and webkit — about a gigabyte off the image, and nothing can reach for them.
+firefox and webkit - about a gigabyte off the image, and nothing can reach for them.
 
 ## Caching, which is the part that matters day to day
 
@@ -28,7 +28,7 @@ Rebuild cost is decided by layer order, not by the tool:
   copy the code. Editing a component reuses the dependency layer.
 - **Cache mounts.** pip (`/root/.cache/pip`) and npm (`/root/.npm`) are mounted as BuildKit caches, so even a
   manifest change keeps the wheels and tarballs instead of re-downloading them.
-- **Build context.** `.dockerignore` drops `.venv`, `node_modules`, `.git` and `output` from the context — without it
+- **Build context.** `.dockerignore` drops `.venv`, `node_modules`, `.git` and `output` from the context - without it
   every build uploads ~1.8 GB before doing any work.
 - The browser prune sits above the source copy, so it stays cached across code changes.
 
@@ -48,7 +48,7 @@ that file directly as a second `env_file`, so the container and the host read th
 ```
 
 Hand-copying keys into `.env` is what let the container run for two days without `SECTORS_API_KEY` (caught during the
-15 Sep 2026 cutover) — one source of truth, or the two silently diverge.
+15 Sep 2026 cutover) - one source of truth, or the two silently diverge.
 
 Check what the container actually received without printing values:
 
@@ -58,11 +58,11 @@ docker compose exec api python -c "import os; print({k: bool(os.environ.get(k)) 
 ```
 
 Without `SECTORS_API_KEY` the report endpoints still answer, but any path that needs fresh market data fails loudly
-instead of guessing — which is the intended behaviour, not a bug to work around.
+instead of guessing - which is the intended behaviour, not a bug to work around.
 
 ## Ports
 
-The container owns `8777` — the port the Cloudflare tunnel already targets, so the cutover needed no dashboard change.
+The container owns `8777` - the port the Cloudflare tunnel already targets, so the cutover needed no dashboard change.
 `sectors-be.service` was the previous owner; it was stopped and disabled on 15 Sep 2026. Two listeners on one port is
 a silent "which one answered?" bug, and two writers on one SQLite file (`data/agent_runs.db`) is worse, so the two
 runtimes never coexist. `web` still publishes 8080 for local browsing.
@@ -75,7 +75,7 @@ runtimes never coexist. `web` still publishes 8080 for local browsing.
 - `output/cache/` (the harvest cache) survives a container rebuild, which is the difference between a fast start and
   a long one.
 
-Everything else — the app, the fonts, the browser — lives in the image and is immutable at runtime.
+Everything else - the app, the fonts, the browser - lives in the image and is immutable at runtime.
 
 ## Development
 
@@ -90,7 +90,7 @@ mount and the reload flag differ.
 
 - `agents/adk/providers/__init__.py` and `agents/adk/app.py` read `/home/fadil/.env` by absolute path. That is the
   agent path only (the report and PDF path never touches it), and inside a container the file does not exist, so the
-  ADK provider keys come from the environment — `SECTORS_API_KEY`, `MINIMAX_API_KEY` and `SPARK13_MAX_TOKENS` all
+  ADK provider keys come from the environment - `SECTORS_API_KEY`, `MINIMAX_API_KEY` and `SPARK13_MAX_TOKENS` all
   arrive through the compose `env_file` pair above.
 - The app also tries `~/.config/sectors-be/env` at startup. Environment variables win; in the container the compose
   `env_file` is the source of truth, and it points at that very file.
@@ -113,5 +113,5 @@ Pitfalls worth remembering, both of which cost real debugging time:
   tells you when the image was built; if it is older than the last commit, `make build` before believing any fix is
   live. The same trap killed a systemd deploy: the unit served pre-fix code for hours because nobody restarted it.
 - **Never run the container and the host unit together.** Both bind-mount `./data`, so they share
-  `data/agent_runs.db` — the Sectors credit cache and the run history. Two writers on one SQLite file is how you lose
+  `data/agent_runs.db` - the Sectors credit cache and the run history. Two writers on one SQLite file is how you lose
   paid cache rows. `sectors-be.service` is disabled; leave it that way.

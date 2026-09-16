@@ -4,9 +4,9 @@
 
 ## F1 audit gap that motivated this file
 
-Gap **G-8**: "Disclaimer template — Rules §12 require 'include a disclaimer where relevant'. No boilerplate disclaimer is provided. Recipe `human-agent-framework.md` recommends writing one but doesn't give wording."
+Gap **G-8**: "Disclaimer template - Rules §12 require 'include a disclaimer where relevant'. No boilerplate disclaimer is provided. Recipe `human-agent-framework.md` recommends writing one but doesn't give wording."
 
-## Boilerplate (Bahasa Indonesia — primary, for IDX audience)
+## Boilerplate (Bahasa Indonesia - primary, for IDX audience)
 
 Copy this verbatim into the footer of every product surface (web app, Telegram bot message footer, README). Adjust the "Telegram" / "aplikasi" wording to match your surface.
 
@@ -29,7 +29,7 @@ IDX. Akurasi data tunduk pada kualitas data sumber.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-## Boilerplate (English — for non-IDX surface, fallback)
+## Boilerplate (English - for non-IDX surface, fallback)
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -37,7 +37,7 @@ IDX. Akurasi data tunduk pada kualitas data sumber.
 
 [Product Name] is an information and analysis tool for Indonesian
 capital-market data sourced from the Sectors Financial API. All
-outputs are historical and aggregate — not recommendations,
+outputs are historical and aggregate - not recommendations,
 predictions, or investment advice.
 
 Investment decisions are the reader's sole responsibility. Always
@@ -72,7 +72,7 @@ accuracy is subject to source quality.
 - ❌ Burying the disclaimer in a Terms of Service link. Judges read the disclaimer when it's visible on the product surface.
 - ❌ Generic disclaimer copied from a US/EU product ("not FDIC insured"). IDX retail doesn't relate to that.
 - ❌ Disclaimer that contradicts the product's framing. If your Telegram bot says "RECOMMENDED BUY" in all caps and the disclaimer says "bukan saran investasi", judges will catch the contradiction.
-- ❌ Translating the disclaimer with a machine translator. The Bahasa Indonesia wording above has been reviewed for the IDX retail audience — use it.
+- ❌ Translating the disclaimer with a machine translator. The Bahasa Indonesia wording above has been reviewed for the IDX retail audience - use it.
 
 ## Cross-link
 

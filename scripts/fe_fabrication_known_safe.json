@@ -17,7 +17,7 @@
     "pattern": "Fabricated Figure Fallback (price ?? 0)",
     "matched_text": "price ?? 0",
     "line_content": "price ?? 0,",
-    "remediation": "Render honest pending block (PendingBlock) or format null as '\u2014'"
+    "remediation": "Render honest pending block (PendingBlock) or format null as '-'"
   },
   "HistoryCharts.tsx:123:RULE_B_NUMERIC_ARRAY": {
     "reason": "Hardcoded numeric array in source fabricates data series instead of reading payload",

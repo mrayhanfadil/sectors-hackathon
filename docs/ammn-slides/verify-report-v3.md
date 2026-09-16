@@ -1,4 +1,4 @@
-# AMMN-R2V — Final Re-Verification & Full Compliance Verdict Report (v3)
+# AMMN-R2V - Final Re-Verification & Full Compliance Verdict Report (v3)
 
 - **Target Ticker**: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ)
 - **Sub-Sector**: Copper & Gold Mining (`metals-mining`, `Basic Materials`)
@@ -14,7 +14,7 @@
   - **Final v3 (This Report)**: **PASS-all** (Commits `c604aa6` + `8740655` + `069d6ba`)
 - **Commits Audited**:
   - `c604aa6`: `fix(backend): gate_inputs default from assumptions file (AMMN CHK-01)`
-  - `8740655`: `fix(template): residual R1-R5 — counter offset, FH dashes, guard placeholders, demote extras, slide-4 fit`
+  - `8740655`: `fix(template): residual R1-R5 - counter offset, FH dashes, guard placeholders, demote extras, slide-4 fit`
   - `069d6ba`: `feat(data): AMMN gate_inputs (10-key Gate-0..5) sourced + provenanced`
 - **Render Engine**: `scripts/render_typst.py` / `server/report/typst_renderer.py` (`report_single.typ`)
 - **Test Suite Status**: **370 passed, 15 skipped, 0 failed** (Full repository test suite)
@@ -33,7 +33,7 @@
 | **Source Line Coverage (CHK-05)** | **PASS (MAINTAINED)** | Exactly 18 exhibits rendered, exactly 18 `Source: Company, Team Estimates` lines verified in extracted text (100% compliance). |
 | **Exhibit Numbering & Sequence (CHK-06)** | **PASS (FLIPPED)** | Exhibit counter runs strictly sequentially without gaps or repeats starting at Exhibit 2 (`2..N+1`, specifically `2..19`). Satisfies `tests/test_house_format_adoption.py`. (Exhibits end at 19 rather than 17 due to finite-reserve triple-valuation exhibit structure on Slide 4). |
 | **Page Furniture (CHK-07)** | **PASS (MAINTAINED)** | Running header (`Equity Research – Company Update`, formatted date, logo, divider rule) and footer (`sectors.app`, disclaimer, page number) verified on 100% of pages (10/10 pages). |
-| **Slide 1 == Slide 3 Tie-Out (CHK-08)** | **PASS (FLIPPED)** | Slide 3 `Financial Highlights` default rows (`default_fh_rows` at `report_single.typ:326-334`) converted from static numbers (`1.290, 610, 402...`) to honest dashes (`—`), perfectly tying out with Slide 1 Key Financials. |
+| **Slide 1 == Slide 3 Tie-Out (CHK-08)** | **PASS (FLIPPED)** | Slide 3 `Financial Highlights` default rows (`default_fh_rows` at `report_single.typ:326-334`) converted from static numbers (`1.290, 610, 402...`) to honest dashes (`-`), perfectly tying out with Slide 1 Key Financials. |
 | **Financial Statements (CHK-09)** | **PASS (MAINTAINED)** | Pinned to 5-year rolling horizon (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; honest dash defaults; Net Profit and Ending Cash tie-outs hold. |
 | **Mining Valuation Architecture (CHK-10)** | **PASS (MAINTAINED)** | Finite-reserve discipline enforced; FCFF projection (Gordon terminal comparison-only), RNAV Bridge (attributable NAV to TP), and 3Y mid-cycle EV/EBITDA cross-check active; Mid-Cycle table relocated to DCF deep-dive page to eliminate Page 4 vertical spill. |
 | **Peers & Disclaimer (CHK-11)** | **PASS (MAINTAINED)** | Bold `Median` and `Average` summary rows in peer table; 1Y P/E and P/BV band charts (with placeholder fallbacks); verbatim mandatory own-history mean-reversion disclaimer present. |
@@ -98,7 +98,7 @@
 | **CHK-05** | Source line under 100% of objects | `house-report-format.md`, Template line 11 | `templates/typst/common/theme.typ:62-72` | **PASS** | **PASS** | **PASS** | **MAINTAINED (PASS)**. Exactly 18 exhibits rendered, exactly 18 `Source: Company, Team Estimates` lines verified in extracted text (100% compliance). |
 | **CHK-06** | Numbering sequential 2..17 with no gaps | Template lines 13–15, Prompt Job §3 | `report_single.typ:128-970`, `tests/test_house_format_adoption.py:249-255` | **FAIL** | **FAIL** | **PASS** | **FLIPPED (PASS)**. Global exhibit counter runs strictly monotonically `2..N+1` (`2..19`) with zero gaps and zero repeats. Passes `test_house_format_adoption.py`. Ends at 19 due to Slide 4 finite-reserve triple-valuation exhibits. |
 | **CHK-07** | House header/footer on every page | Template lines 16–26, `house-report-format.md` | `templates/typst/common/theme.typ:86-141` | **PASS** | **PASS** | **PASS** | **MAINTAINED (PASS)**. Verified on 100% of pages (10/10). Running header (`Equity Research – Company Update`, date, logo, divider) and running footer (`sectors.app`, disclosure, page number) present on all physical pages. |
-| **CHK-08** | Slide 3 numbers == Exhibit 3 numbers (Tie-out) | `slide1-cover-spec.md:139`, `slide3-visual-spec.md:28` | `report_single.typ:165-171, 326-334` | **FAIL** | **FAIL** | **PASS** | **FLIPPED (PASS)**. Slide 3 `Financial Highlights` default rows (`default_fh_rows`) converted from hardcoded numbers (`1.290, 610, 402...`) to honest dashes (`—`), perfectly matching Slide 1 Key Financials (Exhibit 3). |
+| **CHK-08** | Slide 3 numbers == Exhibit 3 numbers (Tie-out) | `slide1-cover-spec.md:139`, `slide3-visual-spec.md:28` | `report_single.typ:165-171, 326-334` | **FAIL** | **FAIL** | **PASS** | **FLIPPED (PASS)**. Slide 3 `Financial Highlights` default rows (`default_fh_rows`) converted from hardcoded numbers (`1.290, 610, 402...`) to honest dashes (`-`), perfectly matching Slide 1 Key Financials (Exhibit 3). |
 | **CHK-09** | Slide 6–7 tie-outs hold (Net Profit, Cash) | `slide6-statements-spec.md:270-284` | `report_single.typ:845-970` | **FAIL** | **PASS** | **PASS** | **MAINTAINED (PASS)**. Statements pinned to 5-year rolling horizon (`2024A`–`2028F`); IS+BS on Slide 6, CF+Ratios on Slide 7; honest dash defaults; Net Profit and Ending Cash tie-outs hold across exhibits. |
 | **CHK-10** | Slide 4 method = DCF-shortened + RNAV + mid-cycle EV/EBITDA + gates | `slide4-valuation-spec.md:1-33`, `instructions.py:221` | `report_single.typ:520, 571, 653, 676, 696` | **FAIL** | **PASS** | **PASS** | **MAINTAINED (PASS)**. Finite-reserve discipline active; Gordon terminal marked comparison-only; RNAV Bridge and 3Y mid-cycle EV/EBITDA tables present; Mid-Cycle table moved to DCF deep-dive page in R5 to eliminate Page 4 vertical spill. |
 | **CHK-11** | Slide 5 peer table + bands + disclaimer present | `slide5-peer-spec.md:58-135, 200` | `report_single.typ:765-815`, `scripts/report_charts.py:340-420` | **FAIL** | **PASS** | **PASS** | **MAINTAINED (PASS)**. Bold `Median` and `Average` summary rows in peer table; 1Y P/E and P/BV band charts (with placeholder fallback); verbatim mandatory own-history disclaimer present; non-canonical extras demoted to plain titles. |
@@ -148,11 +148,11 @@ Residual Failures:         0 FAIL / 0 GAP
    - *v3 Verification*: Verified via `tests/test_house_format_adoption.py:249-255` (`sorted(labels) == list(range(2, n + 2))`) and pdftotext extraction on both output PDFs. Zero gaps, zero repeats.
 
 5. **CHK-08 (Slide 3 Numbers == Exhibit 3 Numbers Tie-Out: FAIL -> PASS)**:
-   - *v2 Defect*: Key Financials on Slide 1 defaulted to dashes (`—`), but Slide 3 `Financial Highlights` contained hardcoded static numbers (`1.290, 610, 402...`), creating an irreconcilable cross-slide discrepancy.
+   - *v2 Defect*: Key Financials on Slide 1 defaulted to dashes (`-`), but Slide 3 `Financial Highlights` contained hardcoded static numbers (`1.290, 610, 402...`), creating an irreconcilable cross-slide discrepancy.
    - *Fix Implemented*:
-     - In commit `8740655` (Residual R2), lines 326–334 in `report_single.typ` replaced all hardcoded fallback values in `default_fh_rows` with honest dashes (`—`).
+     - In commit `8740655` (Residual R2), lines 326–334 in `report_single.typ` replaced all hardcoded fallback values in `default_fh_rows` with honest dashes (`-`).
      - Guarded by `tests/test_report_single_r2t_residuals.py:test_r2_fh_defaults_are_dashes`.
-   - *v3 Verification*: Text extracted from Page 1 (Exhibit 3) and Page 3 (Financial Highlights) shows both tables displaying identical dash structures (`—`) in keyless execution. 100% cross-slide tie-out achieved.
+   - *v3 Verification*: Text extracted from Page 1 (Exhibit 3) and Page 3 (Financial Highlights) shows both tables displaying identical dash structures (`-`) in keyless execution. 100% cross-slide tie-out achieved.
 
 ---
 
@@ -170,15 +170,15 @@ The table below maps the 17 canonical exhibit slots defined in `/home/fadil/.her
 | **Ex 6** | **Net Profit & EPS Growth Combo Chart** | Slide 3 (Visuals 2x2) | `Exhibit 6. Net Profit & EPS Growth (2024A-2028F)` | **PASS (Placeholder)** |
 | **Ex 7** | **Mining: Volume vs Cash Cost Combo Chart** | Slide 3 (Visuals 2x2) | `Exhibit 7. Volume Produksi & Biaya Kas (C1/AISC)` | **PASS (Placeholder)** |
 | **Ex 8** | **FCFF Forecast & TV** / **RNAV Bridge** | Slide 4 (Valuation) | `Exhibit 8. Proyeksi Arus Kas Bebas (FCFF)` | **PASS** |
-| — | *Opsi C: Asset Breakdown & RNAV Bridge* | Slide 4 (Valuation) | `Exhibit 9. RNAV Bridge — Attributable NAV ke Target Price` | **PASS (Multi-method)** |
-| — | *3Y Mid-Cycle EV/EBITDA Cross-Check Table* | Slide 4 / Deep-Dive | `Exhibit 10. EV/EBITDA Mid-Cycle Cross-Check (3Y Average)` | **PASS (Multi-method)** |
+| - | *Opsi C: Asset Breakdown & RNAV Bridge* | Slide 4 (Valuation) | `Exhibit 9. RNAV Bridge - Attributable NAV ke Target Price` | **PASS (Multi-method)** |
+| - | *3Y Mid-Cycle EV/EBITDA Cross-Check Table* | Slide 4 / Deep-Dive | `Exhibit 10. EV/EBITDA Mid-Cycle Cross-Check (3Y Average)` | **PASS (Multi-method)** |
 | **Ex 9** | **WACC Components / Cost of Capital Build** | Slide 4 / Deep-Dive | `Exhibit 11. Cost of Capital Build` | **PASS** |
-| **Ex 10** | **Sensitivity Analysis Matrix (5x5)** | Slide 4 / Deep-Dive | `Exhibit 12. Sensitivity Analysis — WACC vs Terminal Growth (g)` | **PASS** |
-| **Ex 11** | **Peer Valuation Table** (P/E, P/BV, EV/EBITDA) | Slide 5 (Peers) | `Exhibit 13. Peer Comparison — Emiten Sektor General` | **PASS** |
-| **Ex 12** | **P/E Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `Exhibit 14. AMMN — P/E Trailing Band vs 1-Year History (...)` | **PASS (Placeholder)** |
-| **Ex 13** | **P/BV Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `Exhibit 15. AMMN — P/BV Trailing Band vs 1-Year History (...)` | **PASS (Placeholder)** |
-| — | *Non-canonical: Perbandingan Valuasi Relatif* | Slide 5 (Peers) | `text[Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)]` | **DEMOTED (Un-numbered)** |
-| — | *Non-canonical: EV/EBITDA Peers vs Subjek* | Slide 5 (Peers) | `text[EV/EBITDA Peers vs Subjek]` | **DEMOTED (Un-numbered)** |
+| **Ex 10** | **Sensitivity Analysis Matrix (5x5)** | Slide 4 / Deep-Dive | `Exhibit 12. Sensitivity Analysis - WACC vs Terminal Growth (g)` | **PASS** |
+| **Ex 11** | **Peer Valuation Table** (P/E, P/BV, EV/EBITDA) | Slide 5 (Peers) | `Exhibit 13. Peer Comparison - Emiten Sektor General` | **PASS** |
+| **Ex 12** | **P/E Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `Exhibit 14. AMMN - P/E Trailing Band vs 1-Year History (...)` | **PASS (Placeholder)** |
+| **Ex 13** | **P/BV Historical Band (1-Year)** (Chart) | Slide 5 (Peers) | `Exhibit 15. AMMN - P/BV Trailing Band vs 1-Year History (...)` | **PASS (Placeholder)** |
+| - | *Non-canonical: Perbandingan Valuasi Relatif* | Slide 5 (Peers) | `text[Perbandingan Valuasi Relatif (P/E & EV/EBITDA Peers)]` | **DEMOTED (Un-numbered)** |
+| - | *Non-canonical: EV/EBITDA Peers vs Subjek* | Slide 5 (Peers) | `text[EV/EBITDA Peers vs Subjek]` | **DEMOTED (Un-numbered)** |
 | **Ex 14** | **Income Statement (2024A–2028F)** | Slide 6 (Statements) | `Exhibit 16. Laporan Laba Rugi Komprehensif (2024A-2028F)` | **PASS** |
 | **Ex 15** | **Balance Sheet (2024A–2028F)** | Slide 6 (Statements) | `Exhibit 17. Neraca Keuangan Ringkas (2024A-2028F)` | **PASS** |
 | **Ex 16** | **Cash Flow Statement (2024A–2028F)** | Slide 7 (Statements) | `Exhibit 18. Laporan Arus Kas (2024A-2028F)` | **PASS** |
@@ -215,7 +215,7 @@ All 11 checks in the audit matrix pass cleanly without test regressions. Two str
 5. **`server/report/typst_renderer.py:465-515`**: Unassisted `render_report('AMMN')` completes cleanly to `output/ammn_report_typst.pdf` (398 KB, 10 pages).
 6. **`scripts/render_typst.py:320-350`**: CLI compilation path completes cleanly to `output/ammn_test_render_live_v3.pdf` (378 KB, 10 pages).
 7. **`server/report/typst/report_single.typ:128`** & **`templates/typst/archetypes/report_single.typ:128`**: `#counter(figure.where(kind: "exhibit")).update(1)` offsets the global figure counter, ensuring canonical Ex 2 (`Kinerja Harga vs IHSG`) renders as `Exhibit 2`.
-8. **`server/report/typst/report_single.typ:326-334`**: `default_fh_rows` defines honest dashes (`—`), eliminating hardcoded static numbers (`1.290, 610, 402...`).
+8. **`server/report/typst/report_single.typ:326-334`**: `default_fh_rows` defines honest dashes (`-`), eliminating hardcoded static numbers (`1.290, 610, 402...`).
 9. **`server/report/typst/report_single.typ:370-405`**: Unconditional combo chart exhibit headers (Exhibits 4–7) with `chart-placeholder` fallbacks.
 10. **`server/report/typst/report_single.typ:571, 653`**: RNAV Bridge and Mid-Cycle EV/EBITDA exhibit headers active under mining valuation architecture.
 11. **`server/report/typst/report_single.typ:650-655`**: R5 relocation of Mid-Cycle EV/EBITDA to the DCF deep-dive page before Cost of Capital Build.

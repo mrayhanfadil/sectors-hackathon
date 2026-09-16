@@ -1,6 +1,6 @@
 # Ideas & Track Decision
 
-> **Decision tracker.** We pick exactly one track before writing project code (see [`submission-checklist.md`](submission-checklist.md) Week 1). The brainstorming below is intentionally raw — judges see the final product, not this file.
+> **Decision tracker.** We pick exactly one track before writing project code (see [`submission-checklist.md`](submission-checklist.md) Week 1). The brainstorming below is intentionally raw - judges see the final product, not this file.
 
 ---
 
@@ -16,30 +16,30 @@ Quick decision rubric (each 0–5):
 | How realistic in 4 weeks for a solo/small team? | 3 | 4 | 4 |
 | How exciting will the 3-min judging video be? | 5 | 3 | 4 |
 
-(Totals are personal gut feel — fill in your own.)
+(Totals are personal gut feel - fill in your own.)
 
 **Honest take:** Automation is the most reliable path to a "real person can use it today" product. AI Agents is the most video-exciting but is the highest-risk because the disqualification bar is strict (no off-the-shelf wrappers). Market Intelligence is the middle ground: easier to prove technical depth, easy to demo visually.
 
 ---
 
-## Track 01 — AI Agents & Assistants ideas
+## Track 01 - AI Agents & Assistants ideas
 
 Each must satisfy "if Sectors data is removed, the product breaks."
 
-1. **"Saham Jujur" — single-ticker due diligence agent.**
-   Input: ticker (BBCA, BMRI, TLKM…). Output: structured 5Y revenue trend, profitability vs sector peers, dividend track record, recent disclosures — each answer clickable back to the Sectors endpoint it came from. Citations are mandatory; the user can audit every claim.
+1. **"Saham Jujur" - single-ticker due diligence agent.**
+   Input: ticker (BBCA, BMRI, TLKM…). Output: structured 5Y revenue trend, profitability vs sector peers, dividend track record, recent disclosures - each answer clickable back to the Sectors endpoint it came from. Citations are mandatory; the user can audit every claim.
    Why it works: clearly an agent (multi-step tool calls, memory of which sub-questions the user already asked), clearly Sectors-core (no ticker → no useful answer), clearly auditable (great judging video).
 
-2. **"Porto Copilot" — held-ticker briefing bot.**
-   Input: list of tickers the user owns. Output: daily briefing — peer comp moves, sector rotation, any ticker with material new filings.
+2. **"Porto Copilot" - held-ticker briefing bot.**
+   Input: list of tickers the user owns. Output: daily briefing - peer comp moves, sector rotation, any ticker with material new filings.
    Why it works: memory/state (the user's holdings list), recurring workflow (a daily check), custom tool routing (per-ticker fetch).
 
-3. **"DD for Small Caps" — research agent for thinly-covered IDX names.**
+3. **"DD for Small Caps" - research agent for thinly-covered IDX names.**
    For IDX small/mid caps with thin coverage, an agent that pulls fundamentals, peer-ranks them, surfaces anomalies vs sector.
 
 ---
 
-## Track 02 — Automation & Workflows ideas
+## Track 02 - Automation & Workflows ideas
 
 Each must satisfy "fires automatically, no human click required."
 
@@ -54,24 +54,24 @@ Each must satisfy "fires automatically, no human click required."
 
 ---
 
-## Track 03 — Market Intelligence ideas
+## Track 03 - Market Intelligence ideas
 
 Each must satisfy "adds interpretation on top of raw data, not just re-presentation."
 
-1. **"Dividend Consistency Score"** — cross-sector screener scoring IDX companies on dividend continuity / payout ratio / yield vs history. Output: ranked table.
-2. **Sector rotation radar** — weekly comparative view across IDX sectors showing momentum (price + breadth + volume delta).
-3. **Material-change detector** — flags tickers where fundamentals moved >N std-dev vs trailing 90 days (revenue surprise, ROE shift, leverage jump).
-4. **Liquidity / ownership-concentration screener** — surfaces low-float or high-concentrated-ownership names retail should know about.
+1. **"Dividend Consistency Score"** - cross-sector screener scoring IDX companies on dividend continuity / payout ratio / yield vs history. Output: ranked table.
+2. **Sector rotation radar** - weekly comparative view across IDX sectors showing momentum (price + breadth + volume delta).
+3. **Material-change detector** - flags tickers where fundamentals moved >N std-dev vs trailing 90 days (revenue surprise, ROE shift, leverage jump).
+4. **Liquidity / ownership-concentration screener** - surfaces low-float or high-concentrated-ownership names retail should know about.
 
 ---
 
 ## What we haven't picked yet (gaps to fill)
 
-- [x] ~~One-sentence problem statement~~ — see template below; drafted for every idea.
-- [ ] **Audience validation** — who is the first person we'd show this to, and would they actually use it tomorrow? If we can't name them, the idea isn't ready.
-- [x] ~~Sectors API/MCP coverage check~~ — see `references/rest-idx-mining-2026-08-29/` + `references/mcp-idx-mining-2026-08-29/`.
-- [x] ~~Risk register~~ — see template below.
-- [x] ~~Stack decision matrix~~ — see template below.
+- [x] ~~One-sentence problem statement~~ - see template below; drafted for every idea.
+- [ ] **Audience validation** - who is the first person we'd show this to, and would they actually use it tomorrow? If we can't name them, the idea isn't ready.
+- [x] ~~Sectors API/MCP coverage check~~ - see `references/rest-idx-mining-2026-08-29/` + `references/mcp-idx-mining-2026-08-29/`.
+- [x] ~~Risk register~~ - see template below.
+- [x] ~~Stack decision matrix~~ - see template below.
 
 ---
 
@@ -113,10 +113,10 @@ Fill one row per candidate. Pick the idea with the lowest #1 risk.
 
 | Track | Top 1 stack option | Top 2 stack option | Decision factor |
 |---|---|---|---|
-| **01 — AI Agents** | Python + LangGraph + `MultiServerMCPClient` (per `references/mcp/setup.md`) | Node + Vercel AI SDK + `@modelcontextprotocol/sdk` | Pick Python if your team knows it. Pick Node if you want a web frontend in the same codebase. |
-| **02 — Automation — Telegram bot** | Cloudflare Worker + Cron Trigger + `node-telegram-bot-api` (free) | Cloudflare Worker + Cron + Webhook (no library) | Worker is free, cron is built-in. Either is fine. |
-| **02 — Automation — n8n** | n8n Cloud (free tier) + Sectors MCP node | Self-hosted n8n + Sectors HTTP node | Self-hosted gives more control; cloud is faster to start. |
-| **03 — Market Intelligence** | Streamlit (per `references/cookbook/sectorscan-part1.md`) | Next.js + Sectors REST | Streamlit for fastest demo; Next.js if you'll iterate post-hackathon. |
+| **01 - AI Agents** | Python + LangGraph + `MultiServerMCPClient` (per `references/mcp/setup.md`) | Node + Vercel AI SDK + `@modelcontextprotocol/sdk` | Pick Python if your team knows it. Pick Node if you want a web frontend in the same codebase. |
+| **02 - Automation - Telegram bot** | Cloudflare Worker + Cron Trigger + `node-telegram-bot-api` (free) | Cloudflare Worker + Cron + Webhook (no library) | Worker is free, cron is built-in. Either is fine. |
+| **02 - Automation - n8n** | n8n Cloud (free tier) + Sectors MCP node | Self-hosted n8n + Sectors HTTP node | Self-hosted gives more control; cloud is faster to start. |
+| **03 - Market Intelligence** | Streamlit (per `references/cookbook/sectorscan-part1.md`) | Next.js + Sectors REST | Streamlit for fastest demo; Next.js if you'll iterate post-hackathon. |
 
 **Other valid stacks (no wrong answer):** Node + Express, Python + FastAPI, Cloudflare Workers (any language via Wrangler), Vercel Edge Functions. The matrix above is the **default-fast** option. Override if you have a strong reason.
 
@@ -126,10 +126,10 @@ Fill one row per candidate. Pick the idea with the lowest #1 risk.
 
 > **Track:** T03 Market Intelligence
 > **Idea:** Institutional-grade equity report (cover: thesis/valuation/KPI/risks/ESG/holders/sentiment + adversarial challenge)
-> **One-sentence problem statement:** Retail IDX investors get institutional-grade equity research (full DCF+SOTP+GGM+blended+bands+KPI+sentiment+adversarial defense) with citations per claim and a live challenge interface — without paying Rp 5-50jt/year for a Bloomberg + Maybank/BCA Sekuritas subscription.
-> **Intended audience:** Indonesian retail investors (multi-bank user, ages 22-35) investing ≤Rp 100jt in IDX blue-chips, want institutional rigor without analyst jargon — plus OJK compliance (informasi, bukan saran investasi).
+> **One-sentence problem statement:** Retail IDX investors get institutional-grade equity research (full DCF+SOTP+GGM+blended+bands+KPI+sentiment+adversarial defense) with citations per claim and a live challenge interface - without paying Rp 5-50jt/year for a Bloomberg + Maybank/BCA Sekuritas subscription.
+> **Intended audience:** Indonesian retail investors (multi-bank user, ages 22-35) investing ≤Rp 100jt in IDX blue-chips, want institutional rigor without analyst jargon - plus OJK compliance (informasi, bukan saran investasi).
 > **Locked at:** 2026-09-01 09:42 WIB (feat/institutional-report @ 9e9167b)
 >
 > **Quintet ticker (cover semua archetype engine):** RATU (single/DCF+multiples), CDIA (SOTP+revision), MTEL (infra recurring+blended 60/40), BBCA (bank/GGM), ADRO (SOTP spin-off).
 >
-> **Why we chose T03 over T02 Asing Radar (F3 score 8.13) and T01 Macro-to-Micro Translator (4.50):** Code sudah hidup di `feat/institutional-report` (commit 9e9167b, 12/12 tests passing, FE build 162 modules). Switching now = sunk cost 5 days of Kanban work + 30 hours of lane dispatches. Institutional report juga lebih kuat di **Technical depth (30%)** dan **real-world usability (40%)** — judges reward "what a real person uses today" lebih dari clever prototype. Asing Radar tetap arsitektural-elegant tapi kategori sempit (10+10 ticker/day) vs institutional report yang universal (5 archetype × 11 agent = derived signal yang jauh lebih kaya).
+> **Why we chose T03 over T02 Asing Radar (F3 score 8.13) and T01 Macro-to-Micro Translator (4.50):** Code sudah hidup di `feat/institutional-report` (commit 9e9167b, 12/12 tests passing, FE build 162 modules). Switching now = sunk cost 5 days of Kanban work + 30 hours of lane dispatches. Institutional report juga lebih kuat di **Technical depth (30%)** dan **real-world usability (40%)** - judges reward "what a real person uses today" lebih dari clever prototype. Asing Radar tetap arsitektural-elegant tapi kategori sempit (10+10 ticker/day) vs institutional report yang universal (5 archetype × 11 agent = derived signal yang jauh lebih kaya).

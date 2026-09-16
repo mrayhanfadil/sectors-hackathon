@@ -1,6 +1,6 @@
-# Ideas INDEX — Sectors Hackathon 2026
+# Ideas INDEX - Sectors Hackathon 2026
 
-> Single ranked matrix for all brainstormed ideas across the repo. Source-of-truth detail lives in the original branch docs (linked below). This file is the **decision surface** — when you pick an idea, lock it in §7.
+> Single ranked matrix for all brainstormed ideas across the repo. Source-of-truth detail lives in the original branch docs (linked below). This file is the **decision surface** - when you pick an idea, lock it in §7.
 
 **Generated:** 2026-08-30
 **Total ideas:** 31 across 4 source files (excluding 5 NEW ideas from F3 audit branch which is now deleted; can be recovered from local refs if needed)
@@ -28,8 +28,8 @@
 | 🥇 1 | **Macro-to-Micro Translator** (Friend's Variant 2) | T01 AI Agents | **4.50** | `friend-ideas/smart-newsletter-3-variants.md` | Event-triggered agent that translates BI Rate / FX / inflation news into portfolio-specific wallet impact via deterministic debt/interest-coverage math. Lowest overlap (45%), cinematic video hook, clean Track 01 disqualification survival. |
 | 🥈 2 | **Smart Money Divergence Radar** (Asing Radar variant) | T02 Automation | **8.13/10** | F3 audit (`tracks/idea-scoring.md`) | Daily 08:00 WIB pre-market Telegram bot showing top 10 net foreign inflow + top 10 outflow. Sectors-distinguishing dataset, perfect stack fit, one-message demo. F3 recommendation before friend's Variant 2 arrived. |
 | 🥉 3 | **InsiderCompounder** | T03 Market Intel | ~7.5/10 (est.) | `agy-9-retail-institutional.md` | Custom thesis-as-code screener combining insider buying + ROE + free-float. Differentiated by personalization (user-defined thresholds) vs. generic screeners. |
-| 4 | **DES-Guard** (OJK Sharia forced-divestment radar) | T03 Market Intel | ~7.0/10 (est.) | `agy-9-niche.md` | Cites actual OJK Regulation 35/POJK.04/2017 + Reksa Dana Syariah 10-30 day forced divestiture. Genuinely IDX-specific — Bloomberg can't replicate. High-judge-wow potential. |
-| 5 | **BandarDivergence** (Smart Money Conviction Index) | T01 / T03 | ~6.5/10 (est.) | `agy-9-retail-institutional.md` | Composite signal correlating foreign broker flow percentiles + insider activity + valuation z-scores. Requires backtesting validation — eats Week 2 if pursued standalone. |
+| 4 | **DES-Guard** (OJK Sharia forced-divestment radar) | T03 Market Intel | ~7.0/10 (est.) | `agy-9-niche.md` | Cites actual OJK Regulation 35/POJK.04/2017 + Reksa Dana Syariah 10-30 day forced divestiture. Genuinely IDX-specific - Bloomberg can't replicate. High-judge-wow potential. |
+| 5 | **BandarDivergence** (Smart Money Conviction Index) | T01 / T03 | ~6.5/10 (est.) | `agy-9-retail-institutional.md` | Composite signal correlating foreign broker flow percentiles + insider activity + valuation z-scores. Requires backtesting validation - eats Week 2 if pursued standalone. |
 
 **Honest note on ranking:** scores are mixed (F3 audit uses /10 scale; AGY scores use /5). The ranked order is my judgment after reading all 31 ideas; treat as directional, not absolute.
 
@@ -39,7 +39,7 @@
 
 > Per F3 rubric: R = Real-world usability (40%), V = Video wow (30%), T = Technical depth (30%). "Diff" = differentiator vs existing solutions. "Eff" = effort L/M/H.
 
-### Track 01 — AI Agents & Assistants
+### Track 01 - AI Agents & Assistants
 
 | # | Idea | Source | R | V | T | Diff | Eff |
 |---|---|---|---|---|---|---|---|
@@ -52,7 +52,7 @@
 | 7 | ForeignFlow Divergence / Concentration | `agy-9-retail-institutional.md` | 3 | 3 | 4 | Portfolio flow risk | M |
 | 8 | DD for Small Caps | `ideas.md` | 3 | 3 | 4 | Thin coverage angle | M |
 
-### Track 02 — Automation & Workflows
+### Track 02 - Automation & Workflows
 
 | # | Idea | Source | R | V | T | Diff | Eff |
 |---|---|---|---|---|---|---|---|
@@ -68,7 +68,7 @@
 | 10 | Disclosure watcher | `ideas.md` | 4 | 3 | 3 | Event-driven alerts | L |
 | 11 | EOD portfolio digest | `ideas.md` | 3 | 2 | 3 | Daily PnL recap | L |
 
-### Track 03 — Market Intelligence
+### Track 03 - Market Intelligence
 
 | # | Idea | Source | R | V | T | Diff | Eff |
 |---|---|---|---|---|---|---|---|
@@ -89,9 +89,9 @@
 
 ## 4. Disqualification risk per track (rules)
 
-- **Track 01 — AI Agents:** judges disqualify "off-the-shelf AI client (Claude, OpenClaw, Hermes, etc.) + Sectors MCP with custom prompts alone." **Mitigation:** every Track 01 idea above uses ≥3 Sectors endpoints + custom math/state (citations, multi-agent, fundamental analysis). None is a pure wrapper.
-- **Track 02 — Automation:** disqualification if "requires human click per run." **Mitigation:** every Track 02 idea above is cron-triggered or event-triggered.
-- **Track 03 — Market Intelligence:** disqualification if "only displays raw Sectors data in a different visual form." **Mitigation:** every Track 03 idea adds a custom score/filter/composite signal.
+- **Track 01 - AI Agents:** judges disqualify "off-the-shelf AI client (Claude, OpenClaw, Hermes, etc.) + Sectors MCP with custom prompts alone." **Mitigation:** every Track 01 idea above uses ≥3 Sectors endpoints + custom math/state (citations, multi-agent, fundamental analysis). None is a pure wrapper.
+- **Track 02 - Automation:** disqualification if "requires human click per run." **Mitigation:** every Track 02 idea above is cron-triggered or event-triggered.
+- **Track 03 - Market Intelligence:** disqualification if "only displays raw Sectors data in a different visual form." **Mitigation:** every Track 03 idea adds a custom score/filter/composite signal.
 
 ---
 
@@ -112,7 +112,7 @@ Per [`credit-calculator.md`](../credit-calculator.md):
 
 ## 6. Final recommendation (TL;DR)
 
-**Two finalists — pick one based on risk appetite:**
+**Two finalists - pick one based on risk appetite:**
 
 ### Conservative pick: **Asing Radar** (Track 02 Automation, F3 audit recommendation)
 - Daily 08:00 WIB Telegram bot, top 10 net foreign inflow + top 10 net outflow
@@ -151,7 +151,7 @@ Per [`credit-calculator.md`](../credit-calculator.md):
 
 - [ ] Track locked + idea locked (§7)
 - [ ] `team-roster.md` updated (solo entry OK)
-- [ ] `onboarding-blocker.md` checklist opened — register at https://sectors.app
+- [ ] `onboarding-blocker.md` checklist opened - register at https://sectors.app
 - [ ] Each team member completes onboarding → claims 1,000 credits
 - [ ] Onboarding verified in portal → `experiment/<track-slug>/` branch created
 - [ ] `.env.example` committed to the new branch with Sectors API key placeholder

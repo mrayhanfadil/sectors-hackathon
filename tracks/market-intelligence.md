@@ -1,4 +1,4 @@
-# Track 03 — Market Intelligence
+# Track 03 - Market Intelligence
 
 > Source: <https://hackathon.sectors.app/tracks/market-intelligence>
 
@@ -31,10 +31,10 @@ Translation: **must add interpretation, ranking, scoring, or anomaly detection o
 
 (We add these ourselves.)
 
-- **"Dividend Consistency Score"** — cross-sector screener scoring IDX-listed companies on a dividend continuity / payout-ratio / yield-vs-history composite. Output: ranked table user can drill into.
-- **Sector rotation radar** — weekly comparative output across IDX sectors showing which ones are gaining vs losing momentum (price action + breadth + volume delta from Sectors).
-- **"Material change detector"** — flags tickers where fundamentals moved >N std-dev vs trailing 90 days (revenue surprise, ROE shift, leverage jump). Useful for catching stories before they hit the news.
-- **Liquidity / ownership concentration screener** — surfaces low-float or high-concentrated-ownership names that retail investors should know about before they trade.
+- **"Dividend Consistency Score"** - cross-sector screener scoring IDX-listed companies on a dividend continuity / payout-ratio / yield-vs-history composite. Output: ranked table user can drill into.
+- **Sector rotation radar** - weekly comparative output across IDX sectors showing which ones are gaining vs losing momentum (price action + breadth + volume delta from Sectors).
+- **"Material change detector"** - flags tickers where fundamentals moved >N std-dev vs trailing 90 days (revenue surprise, ROE shift, leverage jump). Useful for catching stories before they hit the news.
+- **Liquidity / ownership concentration screener** - surfaces low-float or high-concentrated-ownership names that retail investors should know about before they trade.
 
 ## Boundary reminder
 

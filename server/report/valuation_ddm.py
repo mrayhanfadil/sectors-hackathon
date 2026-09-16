@@ -241,12 +241,12 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
 
 def _fmt(value, digits: int = 1) -> str:
     if value is None:
-        return "\u2014"
+        return "-"
     return f"{value:,.{digits}f}".replace(",", "\u2009").replace(".", ",").replace("\u2009", ".")
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
+    return "-" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view_ddm(page: dict) -> dict:
@@ -255,7 +255,7 @@ def _view_ddm(page: dict) -> dict:
     av = page["assumptions_view"]
     rows = page["blocks"]["build_up"]
     page["block1_rows"] = [
-        (label, ["\u2014" if v is None else _fmt(v, 3 if "Discount factor" in label else 1) for v in rows[key]])
+        (label, ["-" if v is None else _fmt(v, 3 if "Discount factor" in label else 1) for v in rows[key]])
         for label, key in (
             ("Net Profit (Rp bn)", "Net Profit"),
             ("Payout Ratio (%)", "Payout Ratio (%)"),
@@ -269,21 +269,21 @@ def _view_ddm(page: dict) -> dict:
     tv = b["tv_gordon"]
     page["block2_headers"] = ["Blok 2 - Terminal value", "Gordon DDM", "Inverse CoE (fair P/BV x BVPS)"]
     page["block2_rows"] = [
-        ("Terminal DPS (DPS terakhir x (1+g))", _fmt(b["fcff"][-1] * 1.0), "\u2014"),
+        ("Terminal DPS (DPS terakhir x (1+g))", _fmt(b["fcff"][-1] * 1.0), "-"),
         ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", _fmt(av["g"] * 100, 2) + "%"),
         ("Terminal Value (undiscounted)",
-         _fmt(tv) + " / saham" if tv else "\u2014",
-         _fmt(pbv.get("fair")) + " / saham" if pbv else "\u2014"),
-        ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), "\u2014"),
-        ("PV of Terminal Value", _fmt(b["pv_tv_gordon"]) if b["pv_tv_gordon"] else "\u2014", "\u2014"),
-        ("Forward ROE (basis Inverse CoE)", _fmt(av.get("forward_roe") and av["forward_roe"] * 100, 2) + "%" if av.get("forward_roe") else "\u2014",
-         _fmt(pbv.get("forward_roe") and pbv["forward_roe"] * 100, 2) + "%" if pbv else "\u2014"),
+         _fmt(tv) + " / saham" if tv else "-",
+         _fmt(pbv.get("fair")) + " / saham" if pbv else "-"),
+        ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), "-"),
+        ("PV of Terminal Value", _fmt(b["pv_tv_gordon"]) if b["pv_tv_gordon"] else "-", "-"),
+        ("Forward ROE (basis Inverse CoE)", _fmt(av.get("forward_roe") and av["forward_roe"] * 100, 2) + "%" if av.get("forward_roe") else "-",
+         _fmt(pbv.get("forward_roe") and pbv["forward_roe"] * 100, 2) + "%" if pbv else "-"),
     ]
     page["block3_headers"] = ["Blok 3 - Nilai ekuitas per saham", "Rp per saham", "Pembanding"]
     page["block3_rows"] = [
-        ("Sum PV of DPS (periode eksplisit)", _fmt0(b["pv_explicit"]), "\u2014"),
-        ("(+) PV of Terminal Value", _fmt0(b["pv_tv_gordon"]), "\u2014"),
-        ("Fair Value per Share - Gordon DDM", _fmt0(b["fv_gordon"]), "\u2014"),
+        ("Sum PV of DPS (periode eksplisit)", _fmt0(b["pv_explicit"]), "-"),
+        ("(+) PV of Terminal Value", _fmt0(b["pv_tv_gordon"]), "-"),
+        ("Fair Value per Share - Gordon DDM", _fmt0(b["fv_gordon"]), "-"),
         ("Fair Value per Share - Inverse CoE (fair P/BV x BVPS)", _fmt0(b["fv_exit"]),
          (_fmt(pbv.get("fair_pbv"), 2) + "x x BVPS " + _fmt0(pbv.get("bvps"))) if pbv else "tidak tersedia"),
     ]
@@ -300,8 +300,8 @@ def _view_ddm(page: dict) -> dict:
         }
         for r, label in enumerate(grid.index)
     ]
-    page["sensitivity"]["base_wacc"] = str(grid.index[base[0]]) if base else "\u2014"
-    page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "\u2014"
+    page["sensitivity"]["base_wacc"] = str(grid.index[base[0]]) if base else "-"
+    page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "-"
     legs = page.get("legs") or {}
     page["crosscheck_rows"] = [
         ("DDM Gordon (halaman ini)", _fmt0(b["fv_gordon"]), "Nilai intrinsik ekuitas"),

@@ -1,4 +1,4 @@
-# Track 02 — Automation & Workflows
+# Track 02 - Automation & Workflows
 
 > Source: <https://hackathon.sectors.app/tracks/automation-workflows>
 
@@ -30,14 +30,14 @@ Translation: **must be trigger-based or scheduled**. If the user has to remember
 
 (We add these ourselves.)
 
-- **Pre-market brief bot** — every trading day at 08:00 WIB, the bot pulls sector-level signals from Sectors (top movers, breadth, volume anomalies), assembles a Telegram message, and pushes to subscribers.
-- **Disclosure watcher** — fires when a watched ticker posts a new Sectors-tracked event (material disclosure, ownership change, dividend announcement); posts a single-line alert to a Slack channel.
-- **"Screener-of-the-day"** — runs a different custom screener daily on Sectors universe, posts the top 10 results to a Discord or channel.
-- **End-of-day portfolio pnl digest** — cron at 16:30 WIB, computes moves vs yesterday's close, posts summary to WA/Telegram.
+- **Pre-market brief bot** - every trading day at 08:00 WIB, the bot pulls sector-level signals from Sectors (top movers, breadth, volume anomalies), assembles a Telegram message, and pushes to subscribers.
+- **Disclosure watcher** - fires when a watched ticker posts a new Sectors-tracked event (material disclosure, ownership change, dividend announcement); posts a single-line alert to a Slack channel.
+- **"Screener-of-the-day"** - runs a different custom screener daily on Sectors universe, posts the top 10 results to a Discord or channel.
+- **End-of-day portfolio pnl digest** - cron at 16:30 WIB, computes moves vs yesterday's close, posts summary to WA/Telegram.
 
 ## Boundary reminder
 
-Track is determined by **what the product fundamentally does**. An autonomous pipeline that produces scores may fit here OR Market Intelligence — we pick the one that best represents the core. If a chat-style interface is the primary surface, it belongs in AI Agents instead.
+Track is determined by **what the product fundamentally does**. An autonomous pipeline that produces scores may fit here OR Market Intelligence - we pick the one that best represents the core. If a chat-style interface is the primary surface, it belongs in AI Agents instead.
 
 ## Universal rules (apply to every track)
 

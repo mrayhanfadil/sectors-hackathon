@@ -40,7 +40,7 @@ Target Directory: /home/fadil/projects/sectors-hackathon/src/fe/src
     Rule:        RULE_C_FIGURE_FALLBACK (Fabricated Figure Fallback (price ?? 0))
     Line:        price ?? 0,
     Why:         Substitutes default figure '0' when 'price' is missing, masking absent backend data
-    Remediation: Render honest pending block (PendingBlock) or format null as '—'
+    Remediation: Render honest pending block (PendingBlock) or format null as '-'
 ------------------------------------------------------------
  3. src/fe/src/components/report/charts/PeersCharts.tsx:251
     Rule:        RULE_B_NUMERIC_ARRAY (Hardcoded Numeric Literal Array (3+ elements))
@@ -131,7 +131,7 @@ Target Directory: /home/fadil/projects/sectors-hackathon/src/fe/src
 | File:Line | Pattern | Why it is fabrication | What it should render instead |
 | :--- | :--- | :--- | :--- |
 | `src/fe/src/routeTree.gen.ts:14` | `import { Route as MockSectorsTickerRouteImport } from './routes/mock-sectors.$ticker'` | Imports mock, fixture, or sample module instead of binding to backend payload | Remove mock import and consume live fields from ReportPayload contract |
-| `src/fe/src/components/report/charts/DcfSpreadCharts.tsx:81` | `price ?? 0` | Substitutes default figure '0' when 'price' is missing, masking absent backend data | Render honest pending block (PendingBlock) or format null as '—' |
+| `src/fe/src/components/report/charts/DcfSpreadCharts.tsx:81` | `price ?? 0` | Substitutes default figure '0' when 'price' is missing, masking absent backend data | Render honest pending block (PendingBlock) or format null as '-' |
 | `src/fe/src/components/report/charts/PeersCharts.tsx:251` | `[1.0, 0.5, 0.0]` | Hardcoded numeric array in source fabricates data series instead of reading payload | Derive series dynamically from payload arrays or pass file to --allow if static axis |
 | `src/fe/src/components/report/charts/PerformanceQuadrants.tsx:103` | `[0, 0.5, 1]` | Hardcoded numeric array in source fabricates data series instead of reading payload | Derive series dynamically from payload arrays or pass file to --allow if static axis |
 | `src/fe/src/components/report/charts/PerformanceQuadrants.tsx:138` | `[0, 0.5, 1]` | Hardcoded numeric array in source fabricates data series instead of reading payload | Derive series dynamically from payload arrays or pass file to --allow if static axis |

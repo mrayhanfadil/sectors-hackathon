@@ -208,12 +208,12 @@ def _rnav_notes(assum: dict, assets: list, discount, rnav_per_share) -> list[str
 
 def _fmt(value, digits: int = 1) -> str:
     if value is None:
-        return "\u2014"
+        return "-"
     return f"{value:,.{digits}f}".replace(",", "\u2009").replace(".", ",").replace("\u2009", ".")
 
 
 def _fmt0(value) -> str:
-    return "\u2014" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
+    return "-" if value is None else f"{_nf.idn(value, digits=0)}".replace(",", ".")
 
 
 def _view_rnav(page: dict) -> dict:
@@ -226,7 +226,7 @@ def _view_rnav(page: dict) -> dict:
             [
                 _fmt(a["size"], 0) + (" " + a["size_unit"] if a["size_unit"] else ""),
                 _fmt(a["nav"]),
-                f"{_nf.dec(a['ownership'] * 100, digits=1)}%" if a["ownership"] is not None else "\u2014",
+                f"{_nf.dec(a['ownership'] * 100, digits=1)}%" if a["ownership"] is not None else "-",
                 _fmt(a["nav_attributable"]),
                 a["nav_source"],
             ],
@@ -237,12 +237,12 @@ def _view_rnav(page: dict) -> dict:
                               "NAV attributable (Rp bn)", "Sumber NAV"]
     page["block2_headers"] = ["Blok 2 - Bridge RNAV", "Rp bn", "Per saham (Rp)"]
     page["block2_rows"] = [
-        ("Sum of NAV (attributable ke emiten)", _fmt(b["sum_nav"]), "\u2014"),
-        ("(+) Cash & Equivalents", _fmt(b["cash"]), "\u2014"),
-        ("(-) Total Debt", _fmt(-b["total_debt"]), "\u2014"),
-        ("(-) Corporate overhead (PV)", _fmt(-b["overhead"]), "\u2014"),
+        ("Sum of NAV (attributable ke emiten)", _fmt(b["sum_nav"]), "-"),
+        ("(+) Cash & Equivalents", _fmt(b["cash"]), "-"),
+        ("(-) Total Debt", _fmt(-b["total_debt"]), "-"),
+        ("(-) Corporate overhead (PV)", _fmt(-b["overhead"]), "-"),
         ("Total RNAV", _fmt(b["total_rnav"]), _fmt0(b["rnav_per_share"])),
-        ("(-) Discount to RNAV", _fmt(b["discount"] * 100, 1) + "%", "\u2014"),
+        ("(-) Discount to RNAV", _fmt(b["discount"] * 100, 1) + "%", "-"),
     ]
     page["block3_headers"] = ["Blok 3 - Target price", "Nilai", "Catatan"]
     page["block3_rows"] = [

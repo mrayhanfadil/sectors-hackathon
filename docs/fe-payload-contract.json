@@ -32,7 +32,7 @@
         "language",
         "subsector"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "cover": {
       "shape": {
@@ -171,7 +171,7 @@
         "slide1",
         "slide2"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "financial_highlights": {
       "shape": {
@@ -189,7 +189,7 @@
         "years",
         "rows"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "segments": {
       "shape": "list[{'name': 'string', 'revenue': 'number', 'unit': 'string', 'yoy_pct': 'number', 'share_pct': 'number', 'pie': 'bool', 'source': 'string'}]",
@@ -197,7 +197,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 2",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "segments_src": {
       "shape": "string",
@@ -205,7 +205,7 @@
         "AMMN"
       ],
       "sample_keys": "Sectors /company/get-segments/AMMN (FY2024 latest; FY2025 -> 404)",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "segments_note": {
       "shape": "string",
@@ -213,7 +213,7 @@
         "AMMN"
       ],
       "sample_keys": "FY2024 pilar terakhir tersedia (FY2025 404 'data does not exist', 1 kredit; GAP G3). FY2023 tersedia untuk tren. Jangan ",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "kpis": {
       "shape": "list[{'name': 'string', 'value': 'number', 'prev': 'number', 'unit': 'string', 'formula': 'string', 'source': 'string'}]",
@@ -221,15 +221,15 @@
         "AMMN"
       ],
       "sample_keys": "list of 4",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "kpis_src": {
       "shape": "string",
       "filled_in": [
         "AMMN"
       ],
-      "sample_keys": "Sectors API v2 — company/report + quarterly-financials (AMMN)",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "sample_keys": "Sectors API v2 - company/report + quarterly-financials (AMMN)",
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "kpis_note": {
       "shape": "string",
@@ -237,7 +237,7 @@
         "AMMN"
       ],
       "sample_keys": "Volume produksi/tonase, grade, C1/AISC: tak ada baris volumetrik di payload Sectors mana pun (GAP G7/G10); AMMN absen da",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "thesis": {
       "shape": "list[{'headline': 'string', 'detail': 'string', 'stat': 'string', 'stat_label': 'string', 'source': 'string'}]",
@@ -245,7 +245,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 4",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "valuation": {
       "shape": {
@@ -286,7 +286,7 @@
         "midcycle",
         "dcf_grid"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "financials": {
       "shape": "list[{'title': 'string', 'headers': 'list[string]', 'rows': 'list[list[string]]', 'source': 'string'}]",
@@ -294,7 +294,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 3",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "financials_note": {
       "shape": "string",
@@ -302,7 +302,7 @@
         "AMMN"
       ],
       "sample_keys": "Minorities = EBT-pajak-laba (derived, eksak); kas = cash_and_equivalents (= cash_only FY2023-25; cash_only FY2020-22 nul",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "risks": {
       "shape": "list[{'bucket': 'string', 'detail': 'string', 'source': 'string'}]",
@@ -310,7 +310,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 6",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "risks_note": {
       "shape": "string",
@@ -318,7 +318,7 @@
         "AMMN"
       ],
       "sample_keys": "Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); suspensi nihil ber-evidence.",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "peers": {
       "shape": {
@@ -334,7 +334,7 @@
         "source",
         "note"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "news": {
       "shape": "list[{'title': 'string', 'url': 'string', 'date': 'string', 'source': 'string'}]",
@@ -342,7 +342,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 8",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "sentiment": {
       "shape": {
@@ -364,13 +364,13 @@
         "top_sellers",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "strategy": {
       "shape": "null",
       "filled_in": [],
       "sample_keys": "None",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "catalysts": {
       "shape": "list[{'name': 'string', 'effect': 'string', 'quantified': {'shares': 'string', 'avg_price': 'string', 'by': 'string'}, 'source': 'string'}]",
@@ -378,7 +378,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 4",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "catalysts_note": {
       "shape": "string",
@@ -386,7 +386,7 @@
         "AMMN"
       ],
       "sample_keys": "Basis kuantifikasi dinyatakan per katalis; yang kualitatif dilabeli eksplisit (tanpa tenant-karangan).",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "exhibits": {
       "shape": "list[{'title': 'string', 'chart': {'type': 'string', 'data': 'object'}, 'source': 'string'}]",
@@ -394,7 +394,7 @@
         "AMMN"
       ],
       "sample_keys": "list of 2",
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "gate_inputs": {
       "shape": {
@@ -426,7 +426,7 @@
         "has_steady_state_3y",
         "life_cycle_stage"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "key_financials": {
       "shape": {
@@ -444,7 +444,7 @@
         "headers",
         "rows"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "financial_statements": {
       "shape": {
@@ -488,7 +488,7 @@
         "cashflow",
         "ratios"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "sector_data": {
       "shape": {
@@ -515,7 +515,7 @@
         "top_mcap",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "filings_digest": {
       "shape": {
@@ -547,7 +547,7 @@
         "sell",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "corporate_actions": {
       "shape": {
@@ -573,7 +573,7 @@
         "warrant",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "ownership_mix": {
       "shape": {
@@ -609,7 +609,7 @@
         "months",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "free_float": {
       "shape": {
@@ -625,7 +625,7 @@
         "in_list",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "revenue_combo": {
       "shape": {
@@ -647,7 +647,7 @@
         "actual_periods",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "ebitda_combo": {
       "shape": {
@@ -669,7 +669,7 @@
         "actual_periods",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "netprofit_combo": {
       "shape": {
@@ -691,7 +691,7 @@
         "actual_periods",
         "source"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "dcf_deep_dive": {
       "shape": {
@@ -728,7 +728,7 @@
         "scenarios",
         "bridge"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "cDcf": {
       "shape": {
@@ -812,7 +812,7 @@
         "recommendation",
         "provenance"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "fill_meta": {
       "shape": {
@@ -828,7 +828,7 @@
         "gaps",
         "src"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "house_rules": {
       "shape": {
@@ -850,7 +850,7 @@
         "copy_chars",
         "copy_budget"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "industry_page": {
       "shape": {
@@ -868,7 +868,7 @@
         "sources",
         "notes"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "performance_page": {
       "shape": {
@@ -888,7 +888,7 @@
         "notes",
         "sources"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "valuation_page": {
       "shape": {
@@ -1051,7 +1051,7 @@
         "block3_rows",
         "crosscheck_rows"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "peers_page": {
       "shape": {
@@ -1129,7 +1129,7 @@
         "part_b",
         "sections"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "cashflow_page": {
       "shape": {
@@ -1165,7 +1165,7 @@
         "notes",
         "sources"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "statements_page": {
       "shape": {
@@ -1222,7 +1222,7 @@
         "sources",
         "bank_variant_note"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "key_ratio_page": {
       "shape": {
@@ -1255,7 +1255,7 @@
         "sources",
         "growth_basis"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     },
     "critic": {
       "shape": {
@@ -1273,10 +1273,10 @@
         "fixes",
         "ready_for_pdf"
       ],
-      "honest_state": "may be absent — the FE must render a pending state"
+      "honest_state": "may be absent - the FE must render a pending state"
     }
   },
   "notes": [
-    "BBCA: payload unavailable (HTTPException: 422: {'ticker': 'BBCA', 'missing': ['rf', 'beta', 'erp', 'cod', 'g', 'payout', 'fcf', 'shares_out', 'net_debt', 'cash', 'ebitda', 'ev_multiple', 'last_price', 'we', 'wd'], 'summary': 'no verified assumptions for BBCA — refusing generic fallback (add data/assumptions/BBCA.json or set SECTORS_API_KEY)'})"
+    "BBCA: payload unavailable (HTTPException: 422: {'ticker': 'BBCA', 'missing': ['rf', 'beta', 'erp', 'cod', 'g', 'payout', 'fcf', 'shares_out', 'net_debt', 'cash', 'ebitda', 'ev_multiple', 'last_price', 'we', 'wd'], 'summary': 'no verified assumptions for BBCA - refusing generic fallback (add data/assumptions/BBCA.json or set SECTORS_API_KEY)'})"
   ]
 }
