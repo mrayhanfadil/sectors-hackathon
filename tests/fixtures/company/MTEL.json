@@ -16,7 +16,7 @@
     {"pillar": "Tower leasing",    "revenue_mn": 3833000.0, "pct": 81.0, "growth_yoy": 0.01, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG, PROTELINDO", "source": "KSI Research 27 Aug 2026"},
     {"pillar": "Fiber",            "revenue_mn": 309000.0,  "pct": 7.0,  "growth_yoy": 0.08, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG", "source": "KSI Research 27 Aug 2026"},
     {"pillar": "Tower-related",    "revenue_mn": 299000.0,  "pct": 6.0,  "growth_yoy": 0.15, "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "TOWR, TBIG", "source": "KSI Research 27 Aug 2026"},
-    {"pillar": "Reseller",         "revenue_mn": 251000.0,  "pct": 6.0,  "growth_yoy": 0.0,  "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "—", "source": "KSI Research 27 Aug 2026"}
+    {"pillar": "Reseller",         "revenue_mn": 251000.0,  "pct": 6.0,  "growth_yoy": 0.0,  "peer_avg_pe": 20.0, "peer_avg_ev_ebitda": 8.47, "peer_set": "-", "source": "KSI Research 27 Aug 2026"}
   ],
   "one_offs": null,
   "financials": {

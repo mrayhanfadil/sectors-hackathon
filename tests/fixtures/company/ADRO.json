@@ -34,7 +34,7 @@
     "net_margin": [0.31, 0.25, 0.19]
   },
   "sotp": {
-    "method": "SOTP — peer-avg per pillar, US$6.1bn AADI + US$5.3-7.0bn post-spin ADRO",
+    "method": "SOTP - peer-avg per pillar, US$6.1bn AADI + US$5.3-7.0bn post-spin ADRO",
     "holdco_discount_pct": 0.15,
     "pre_discount_total_mn": 920000.0,
     "post_discount_equity_mn": 782000.0,

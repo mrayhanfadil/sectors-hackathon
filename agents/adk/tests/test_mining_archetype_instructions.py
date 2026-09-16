@@ -9,7 +9,7 @@
 """Guard tests for mining-archetype instruction compliance (AMMN-tested, ticker-agnostic).
 
 Proves the four mining deltas exist in instructions.py and that the ADDED
-blocks carry no ticker literals (AMMN / Batu Hijau / Elang) — Option3:
+blocks carry no ticker literals (AMMN / Batu Hijau / Elang) - Option3:
 instructions carry `{ticker}` patterns, AMMN only proves them.
 """
 

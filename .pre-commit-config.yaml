@@ -19,15 +19,22 @@ repos:
         types: [python]
         exclude: ^(scripts/report_charts\.py|scripts/report_fixtures\.py|agents/valuation/gates\.py|agents/valuation/assumptions\.py|server/routers/.*)$
 
+      - id: no-em-dash
+        name: 3. typography + regex guards (no em dash in a shipped surface, rule §12)
+        entry: .venv/bin/pytest tests/test_no_em_dash.py tests/test_regex_literals_compile.py -q
+        language: system
+        pass_filenames: false
+        always_run: true
+
       - id: pytest-subset
-        name: 3. pytest valuation + quintet (fast subset)
+        name: 4. pytest valuation + quintet (fast subset)
         entry: .venv/bin/pytest agents/valuation/ scripts/test_audit_quintet.py
         language: system
         pass_filenames: false
         always_run: true
 
       - id: harness-post-agy
-        name: 4. post-agy recovery harness
+        name: 5. post-agy recovery harness
         entry: .venv/bin/python scripts/harness_post_agy.py
         language: system
         pass_filenames: false

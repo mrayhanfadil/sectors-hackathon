@@ -1,18 +1,18 @@
-"""Visualizer agent — institutional charts as PNG files.
+"""Visualizer agent - institutional charts as PNG files.
 
 Deterministic matplotlib renderer (Agg backend, no display). Emits exactly the
 plan.md §5 chart set and writes a machine-readable manifest:
 
-  1. revenue_mix   — pie (segments)            [sotp/infra only]
-  2. trend         — revenue & EBITDA lines
-  3. margin        — gross / EBITDA / net margin lines
-  4. leverage      — gearing %, Debt/EBITDA, Current ratio (dual axis)
-  5. roe_roa       — ROE / ROA bars
-  6. vs_jci        — indexed price vs JCI + YTD abs/rel callout
-  7. peer_multiples— P/E & EV/EBITDA dot/bar vs peers
-  8. kpi           — subsector hero KPIs (tenancy ratio, fiber km, ...)
+  1. revenue_mix   - pie (segments)            [sotp/infra only]
+  2. trend         - revenue & EBITDA lines
+  3. margin        - gross / EBITDA / net margin lines
+  4. leverage      - gearing %, Debt/EBITDA, Current ratio (dual axis)
+  5. roe_roa       - ROE / ROA bars
+  6. vs_jci        - indexed price vs JCI + YTD abs/rel callout
+  7. peer_multiples- P/E & EV/EBITDA dot/bar vs peers
+  8. kpi           - subsector hero KPIs (tenancy ratio, fiber km, ...)
 
-  + bands          — PBV & EV/EBITDA historical bands (MTEL infra; when data exists)
+  + bands          - PBV & EV/EBITDA historical bands (MTEL infra; when data exists)
 
 Every chart footer prints the source label from company.json (provenance rule).
 
@@ -109,7 +109,7 @@ def chart_revenue_mix(company: dict, outdir: str) -> dict:
         w.set_label("")
     legend = [f"{l}  {_nf.dec(s, digits=0)}%  (y/y {_nf.dec(g*100, digits=1, signed=True)}%)" for l, s, g in zip(labels, sizes, growth)]
     ax.legend(wedges, legend, loc="center left", bbox_to_anchor=(1.0, 0.5), fontsize=9, frameon=False)
-    ax.set_title(f"{company['ticker']} — Revenue Mix by Segment", fontsize=13, fontweight="bold", pad=14)
+    ax.set_title(f"{company['ticker']} - Revenue Mix by Segment", fontsize=13, fontweight="bold", pad=14)
     ax.axis("equal")
     _foot(fig, company)
     path = _save(fig, os.path.join(outdir, "revenue_mix.png"))
@@ -128,7 +128,7 @@ def chart_trend(company: dict, outdir: str) -> dict:
         ax.text(float(xi), r, f"{_nf.idn(rtn, digits=0)}" + ("tn" if abs(r) >= 1e6 else "bn"), ha="center", va="bottom", fontsize=8.5)
     ax.set_xticks(x, years)
     ax.set_ylabel("IDR mn")
-    ax.set_title(f"{company['ticker']} — Revenue & EBITDA Trend", fontsize=13, fontweight="bold")
+    ax.set_title(f"{company['ticker']} - Revenue & EBITDA Trend", fontsize=13, fontweight="bold")
     ax.legend(frameon=False, loc="upper left")
     _foot(fig, company, "units: IDR mn; T = trillion")
     path = _save(fig, os.path.join(outdir, "trend.png"))
@@ -145,7 +145,7 @@ def chart_margin(company: dict, outdir: str) -> dict:
     ax.plot(years, [v * 100 for v in n], marker="^", label="Net margin", color=PALETTE[3], linewidth=2)
     ax.set_ylabel("%")
     ax.set_ylim(0, max([*[v * 100 for v in g], *[v * 100 for v in n], 10]) * 1.15)
-    ax.set_title(f"{company['ticker']} — Margin Structure", fontsize=13, fontweight="bold")
+    ax.set_title(f"{company['ticker']} - Margin Structure", fontsize=13, fontweight="bold")
     ax.legend(frameon=False, loc="best")
     _foot(fig, company)
     path = _save(fig, os.path.join(outdir, "margin.png"))
@@ -171,7 +171,7 @@ def chart_leverage(company: dict, outdir: str) -> dict:
     h2, l2 = ax2.get_legend_handles_labels()
     ax1.legend(h1 + h2, l1 + l2, frameon=False, loc="upper right")
     ax1.set_title(
-        f"{company['ticker']} — Leverage & Liquidity "
+        f"{company['ticker']} - Leverage & Liquidity "
         f"(Gearing {_nf.dec(gear[0], digits=0)}→{_nf.dec(gear[-1], digits=0)}% · D/EBITDA {_nf.dec(debt_eb[0], digits=0)}→{_nf.dec(debt_eb[-1], digits=0)}× · Current {_nf.dec(cur[0], digits=1)}→{_nf.dec(cur[-1], digits=1)})",
         fontsize=11, fontweight="bold",
     )
@@ -195,7 +195,7 @@ def chart_roe_roa(company: dict, outdir: str) -> dict:
         ax.text(xi, v * 100 + 0.4, f"{_nf.dec(v*100, digits=1)}", ha="center", fontsize=8.5)
     ax.set_xticks(x, years)
     ax.set_ylabel("%")
-    ax.set_title(f"{company['ticker']} — ROE / ROA", fontsize=13, fontweight="bold")
+    ax.set_title(f"{company['ticker']} - ROE / ROA", fontsize=13, fontweight="bold")
     ax.legend(frameon=False)
     _foot(fig, company)
     path = _save(fig, os.path.join(outdir, "roe_roa.png"))
@@ -222,7 +222,7 @@ def chart_vs_jci(company: dict, outdir: str) -> dict:
                 transform=ax.transAxes, fontsize=9, color="#24292f",
                 bbox=dict(boxstyle="round,pad=0.4", fc="#f6f8fa", ec="#d0d7de"))
     ax.set_ylabel("Indexed (100 = first point)")
-    ax.set_title(f"{company['ticker']} vs JCI — Relative Performance", fontsize=13, fontweight="bold")
+    ax.set_title(f"{company['ticker']} vs JCI - Relative Performance", fontsize=13, fontweight="bold")
     ax.legend(frameon=False, loc="best")
     _foot(fig, company, "indexed to 100 at first date; YTD absolute & relative")
     path = _save(fig, os.path.join(outdir, "vs_jci.png"))
@@ -247,7 +247,7 @@ def chart_peer_multiples(company: dict, outdir: str) -> dict:
         ax.set_xticks(x, labels)
         ax.set_ylabel("x")
         ax.legend(frameon=False)
-    ax.set_title(f"{company['ticker']} — Peer Multiples (P/E & EV/EBITDA)", fontsize=13, fontweight="bold")
+    ax.set_title(f"{company['ticker']} - Peer Multiples (P/E & EV/EBITDA)", fontsize=13, fontweight="bold")
     _foot(fig, company, "peer set: " + ", ".join(p["ticker"] for p in peers[:5]) if peers else "")
     path = _save(fig, os.path.join(outdir, "peer_multiples.png"))
     return {"id": "peer_multiples", "file": "charts/peer_multiples.png", "path": path, "title": "Peer Multiples", "kind": "bar", "source": source_label(company)}
@@ -261,13 +261,13 @@ def chart_kpi(company: dict, outdir: str) -> dict:
         ax.text(0.5, 0.55, f"Tenancy ratio {_nf.dec(tenancy, digits=2)}×", ha="center", fontsize=20, color=PALETTE[0], fontweight="bold", transform=ax.transAxes)
         ax.text(0.5, 0.40, f"tenants {_nf.idn(kpi.get('tenants', 0), digits=0)} / towers {_nf.idn(kpi.get('towers', 0), digits=0)}", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
         ax.text(0.5, 0.28, f"colocation {_nf.idn(kpi.get('colocation', 0), digits=0)} · fiber {_nf.idn(kpi.get('fiber_km', 0), digits=0)} km", ha="center", fontsize=11, color="#24292f", transform=ax.transAxes)
-        ax.set_title(f"{company['ticker']} — Operational KPI (infra hero)", fontsize=13, fontweight="bold")
+        ax.set_title(f"{company['ticker']} - Operational KPI (infra hero)", fontsize=13, fontweight="bold")
         ax.axis("off")
     else:
         keys = [k for k in ("ccpp_mw", "water_lps", "vessels", "tanks") if k in kpi]
         vals = [kpi[k] for k in keys]
         ax.bar(keys, [float(v) for v in vals], color=PALETTE[2])
-        ax.set_title(f"{company['ticker']} — Operational KPI", fontsize=13, fontweight="bold")
+        ax.set_title(f"{company['ticker']} - Operational KPI", fontsize=13, fontweight="bold")
         ax.set_ylabel("units")
     _foot(fig, company, kpi.get("kpi_period", ""))
     path = _save(fig, os.path.join(outdir, "kpi.png"))
@@ -297,11 +297,11 @@ def chart_bands(company: dict, outdir: str) -> dict:
                 ax.axhline(mean + sgn * std, color="#bf8700", linestyle=":", linewidth=0.9)
             cur = vals[-1]
             pos = "ABOVE" if cur > mean + std else ("BELOW" if cur < mean - std else "within")
-            ax.set_title(f"{name} — {pos} AVG ({_nf.dec(cur, digits=2)}×)", fontsize=11, fontweight="bold")
+            ax.set_title(f"{name} - {pos} AVG ({_nf.dec(cur, digits=2)}×)", fontsize=11, fontweight="bold")
         else:
-            ax.set_title(f"{name} — historical", fontsize=11, fontweight="bold")
+            ax.set_title(f"{name} - historical", fontsize=11, fontweight="bold")
         ax.legend(frameon=False, fontsize=8)
-    fig.suptitle(f"{company['ticker']} — Historical Valuation Bands (±σ)", fontsize=13, fontweight="bold")
+    fig.suptitle(f"{company['ticker']} - Historical Valuation Bands (±σ)", fontsize=13, fontweight="bold")
     _foot(fig, company, "mean-reversion: STD+2/+1/AVG/-1/-2 labels (MTEL pattern)")
     path = _save(fig, os.path.join(outdir, "bands.png"))
     return {"id": "bands", "file": "charts/bands.png", "path": path, "title": "Historical Valuation Bands (P/BV & EV/EBITDA)", "kind": "bands", "source": source_label(company), "present": made}

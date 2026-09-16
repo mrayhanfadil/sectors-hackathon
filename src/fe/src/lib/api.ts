@@ -176,7 +176,7 @@ export async function fetchReport(ticker: string): Promise<Report> {
     }
     return withLive
   }
-  // sudah bentuk Report — kembalikan apa adanya, tanpa fixture
+  // sudah bentuk Report - kembalikan apa adanya, tanpa fixture
   return live
 }
 
@@ -208,7 +208,7 @@ export async function fetchOutlook(): Promise<Outlook> {
       thematics: [],
       source: "offline",
       offline: true,
-      note: "BE tidak tersedia saat ini — outlook belum dapat dimuat. Coba lagi nanti.",
+      note: "BE tidak tersedia saat ini - outlook belum dapat dimuat. Coba lagi nanti.",
     }
   }
   const num = (v: unknown): number => {
@@ -297,7 +297,7 @@ export async function fetchPdf(ticker: string): Promise<void> {
   const url = API_BASE ? `${API_BASE}${path}` : path
   // iOS Safari ignores the anchor `download` attribute on blob URLs
   // (tap does nothing or opens a blank tab). Open the viewer tab NOW,
-  // synchronously inside the tap gesture — after any await the popup
+  // synchronously inside the tap gesture - after any await the popup
   // blocker eats window.open. The tab shows a loading note until the
   // bytes arrive.
   const isiOS = /iPad|iPhone|iPod/.test(navigator.userAgent)
@@ -308,7 +308,7 @@ export async function fetchPdf(ticker: string): Promise<void> {
       earlyWin.document.title = `${tk} · menyiapkan PDF…`
       earlyWin.document.body.innerHTML =
         `<p style="font-family:sans-serif;padding:2rem;color:#555">Menyiapkan PDF ${tk}…</p>`
-    } catch { /* cross-origin blank — skip note, still usable */ }
+    } catch { /* cross-origin blank - skip note, still usable */ }
   }
   let r: Response
   try {
@@ -399,12 +399,12 @@ export async function fetchReportLog(ticker: string): Promise<ReportLogResponse>
 }
 
 // ---------------------------------------------------------------------------
-// Agent pipeline runs — the hub lists only what has actually run
+// Agent pipeline runs - the hub lists only what has actually run
 
 export type RunsSummaryTicker = {
   ticker: string
   total_runs: number
-  /** Whether data/assumptions/<TICKER>.json exists — the same condition that makes /api/report answer 422. */
+  /** Whether data/assumptions/<TICKER>.json exists - the same condition that makes /api/report answer 422. */
   report_ready?: boolean
   latest_run?: {
     run_id?: string
@@ -432,7 +432,7 @@ export async function fetchRunsSummary(): Promise<RunsSummary> {
 }
 
 // ---------------------------------------------------------------------------
-// Sectors API v2 — single data gateway (see server/sectors.py)
+// Sectors API v2 - single data gateway (see server/sectors.py)
 // ---------------------------------------------------------------------------
 
 export type DividendItem = {
@@ -543,7 +543,7 @@ export async function fetchDividends(ticker: string): Promise<CorporateActionsRe
       bonus: [],
       agm: [],
       symbol: tk,
-      note: `BE tidak tersedia saat ini — corporate actions ${tk} belum dapat dimuat.`,
+      note: `BE tidak tersedia saat ini - corporate actions ${tk} belum dapat dimuat.`,
     })
   )
 }
@@ -555,17 +555,17 @@ export async function fetchQuarterly(ticker: string, nQuarters = 8): Promise<Qua
     () => ({
       pagination: { limit: nQuarters, offset: 0, total: 0 },
       data: [],
-      note: `BE tidak tersedia saat ini — quarterly financials ${tk} belum dapat dimuat.`,
+      note: `BE tidak tersedia saat ini - quarterly financials ${tk} belum dapat dimuat.`,
     })
   )
 }
 
 export async function fetchNews(ticker: string, limit = 30): Promise<NewsResponse> {
   const tk = ticker.toUpperCase().trim()
-  // live-only: BE /api/news (harvester) — bukan endpoint tiruan; gagal = feed kosong jujur
+  // live-only: BE /api/news (harvester) - bukan endpoint tiruan; gagal = feed kosong jujur
   const live = await apiFetch<{ items?: Record<string, unknown>[]; note?: string; source?: string }>(
     `/api/news?ticker=${encodeURIComponent(tk)}&limit=${limit}`,
-    () => ({ items: [], note: `BE tidak tersedia saat ini — berita ${tk} belum dapat dimuat.` })
+    () => ({ items: [], note: `BE tidak tersedia saat ini - berita ${tk} belum dapat dimuat.` })
   )
   const items = Array.isArray(live.items) ? live.items : []
   return {

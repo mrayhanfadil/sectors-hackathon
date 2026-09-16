@@ -1,4 +1,4 @@
-"""Routers — one per endpoint family. All handlers import engines via server.engines.
+"""Routers - one per endpoint family. All handlers import engines via server.engines.
 Data path: Sectors snapshot -> assumptions file -> deterministic engines (legacy removed).
 Cache key: f"{prefix}:{ticker}" with TTL 4h.
 """
@@ -27,7 +27,7 @@ _started = time.time()
 
 # ---------- Archetype names (KILLED values, Sep 2026) ----------
 # ARCHETYPE_DEFAULTS held per-ticker invented fundamentals (rf/beta/fcf/
-# shares_out/last_price tuned to target fair values — fabrication). Killed in
+# shares_out/last_price tuned to target fair values - fabrication). Killed in
 # the no-fabrication sweep; only the valid archetype NAMES survive, used for
 # _infer_archetype validation. Valuation inputs come exclusively from
 # data/assumptions/{T}.json (LOUD 422 on gaps).
@@ -117,7 +117,7 @@ def _infer_archetype(symbol: str, raw_json: dict | None = None) -> str:
     if not sector_cand and raw_json and isinstance(raw_json, dict):
         sector_cand = raw_json.get("provenance", {}).get("sector") or raw_json.get("sector")
 
-    # 4. Sectors company report (overview section) — the single sector source.
+    # 4. Sectors company report (overview section) - the single sector source.
     # Keyless -> skip honestly; sector stays None -> "unknown" (never fabricated).
     if not sector_cand:
         try:
@@ -170,7 +170,7 @@ def _segments_for(archetype: str, assum: dict, sectors_segments: Optional[dict] 
     if not assum.get("has_assumptions_file", True):
         return {"segments": [], "total_pct": 0.0, "source": "no_assumptions_file"}
 
-    # LOUD policy: no invented pillars — file/Sectors segments absent -> honest empty.
+    # LOUD policy: no invented pillars - file/Sectors segments absent -> honest empty.
     return {
         "segments": [],
         "total_pct": 0.0,
@@ -186,7 +186,7 @@ def _kpis_for(archetype: str, assum: dict) -> list[dict] | None:
     if not assum.get("has_assumptions_file", True):
         return []
 
-    # LOUD policy: no invented KPIs — file kpis absent -> honest empty.
+    # LOUD policy: no invented KPIs - file kpis absent -> honest empty.
     return []
 
 
@@ -194,7 +194,7 @@ def _cover_boxes_for(archetype: str, assum: dict) -> Optional[dict]:
     """Enrich cover boxes dynamically per archetype and assumptions."""
     if assum.get("cover_boxes") and isinstance(assum["cover_boxes"], dict):
         return assum["cover_boxes"]
-    # LOUD policy: no invented takeaways/shareholders/esg — file cover_boxes absent -> honest empty.
+    # LOUD policy: no invented takeaways/shareholders/esg - file cover_boxes absent -> honest empty.
     return {
         "source": "sectors_missing_key",
         "note": "cover boxes unavailable: no cover_boxes in assumptions file (no fabrication)",
@@ -207,7 +207,7 @@ def _forecast_revision_for(archetype: str, assum: dict) -> Optional[dict]:
         return assum["forecast_revision"]
     if not assum.get("has_assumptions_file", True):
         return None
-    # LOUD policy: no invented revision narrative — file forecast_revision absent -> honest empty.
+    # LOUD policy: no invented revision narrative - file forecast_revision absent -> honest empty.
     return {
         "source": "sectors_missing_key",
         "note": "forecast revision unavailable: no forecast_revision in assumptions file (no fabrication)",
@@ -220,7 +220,7 @@ def _quarterly_for(archetype: str, assum: dict) -> Optional[dict]:
         return assum["quarterly"]
     if not assum.get("has_assumptions_file", True):
         return None
-    # LOUD policy: no invented quarterly narrative — file quarterly absent -> honest empty.
+    # LOUD policy: no invented quarterly narrative - file quarterly absent -> honest empty.
     return {
         "source": "sectors_missing_key",
         "note": "quarterly breakdown unavailable: no quarterly in assumptions file (no fabrication)",
@@ -230,7 +230,7 @@ def _quarterly_for(archetype: str, assum: dict) -> Optional[dict]:
 def _ggm_for(archetype: str, assum: dict, coe: float) -> Optional[dict]:
     """Enrich GGM model dynamically for bank archetype or when ROE is provided."""
     if archetype == "bank" or assum.get("roe") is not None:
-        # LOUD policy: GGM needs file-present roe/g/bvps — absent -> omit, never default-invent.
+        # LOUD policy: GGM needs file-present roe/g/bvps - absent -> omit, never default-invent.
         _roe = assum.get("roe")
         _g = assum.get("g")
         _bvps = assum.get("bvps")
@@ -295,7 +295,7 @@ def _assumptions_for(ticker: str) -> dict:
             pass
 
     archetype = _infer_archetype(t, raw_json)
-    # LOUD policy: missing keys stay missing — file values as-is, never
+    # LOUD policy: missing keys stay missing - file values as-is, never
     # silently filled (ARCHETYPE_DEFAULTS killed Sep 2026; every consumer
     # must handle absence loudly).
     base: dict[str, Any] = {}
@@ -340,7 +340,7 @@ async def health():
 @router_universe.get("/api/tickers", summary="Ticker universe (Sectors screener, pending)")
 async def tickers():
     # LOUD policy: IDX Postgres killed Sep 2026 (external source). Universe
-    # comes from the Sectors screener post-key — honest 503 until then.
+    # comes from the Sectors screener post-key - honest 503 until then.
     raise HTTPException(status_code=503, detail="ticker universe unavailable (sectors screener pending): set SECTORS_API_KEY, then wire companies/?where=&order_by=")
 
 
@@ -349,7 +349,7 @@ async def _sectors_snapshot(t: str) -> dict:
     """Sectors-first market snapshot (swaps 2+4 scaffold).
 
     Returns {overview, financials, segments, price, source} with defensive
-    extraction — unknown shapes yield empty (honest, never fabricated).
+    extraction - unknown shapes yield empty (honest, never fabricated).
     Raises SectorsNotConfigured when keyless so callers fall through to the
     legacy path (deprecated, delete after env lands).
     """
@@ -400,7 +400,10 @@ async def report_ticker(
     cached = await cache.get(ckey)
     if cached:
         cached["cached"] = True
-        return cached
+        # The funnel below is new; entries written before it existed can still carry an em dash.
+        from server.report.text_sanitize import clean
+
+        return clean(cached)
 
     overview = None
     financials = None
@@ -437,7 +440,7 @@ async def report_ticker(
                     f"No valuation engine for {t}: missing data/assumptions/{t}.json. "
                     f"Deterministic fallback is disabled to avoid fabricated ratings. "
                     f"Run the full agent instead: POST /api/agent/start "
-                    f"{{\"ticker\": \"{t}\"}} — every number via calc_* tools."
+                    f"{{\"ticker\": \"{t}\"}} - every number via calc_* tools."
                 ),
             },
         )
@@ -445,7 +448,7 @@ async def report_ticker(
     # deterministic valuation via engines (never LLM)
     from ..engines import wacc as calc_wacc, dcf as calc_dcf, ev_ebitda
 
-    # LOUD policy: every valuation input must be file-present — absent fields 422 by name, never invented.
+    # LOUD policy: every valuation input must be file-present - absent fields 422 by name, never invented.
     _missing_wacc = [k for k in _expected_wacc if assum.get(k) is None]
     if _missing_wacc:
         raise HTTPException(
@@ -479,7 +482,7 @@ async def report_ticker(
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
     try:
-        # FCF base is in IDR bn — scale to full IDR to match cash/net_debt (e9)
+        # FCF base is in IDR bn - scale to full IDR to match cash/net_debt (e9)
         raw_fcf = assum.get("fcf")
         fcf_list = [float(x) * 1e9 for x in raw_fcf]
         dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum["shares_out"], net_debt=assum["net_debt"], cash=assum.get("cash", 0))
@@ -509,7 +512,7 @@ async def report_ticker(
                     status_code=422,
                     detail=(
                         f"fv anchor '{fv_anchor['leg']}' produced no value for {t} "
-                        f"({fv_anchor['basis']}) — refusing to rate on a missing leg."
+                        f"({fv_anchor['basis']}) - refusing to rate on a missing leg."
                     ),
                 )
     except HTTPException:
@@ -521,7 +524,7 @@ async def report_ticker(
         fv = None
         fv_anchor = {"leg": "none", "fv": None, "basis": f"valuation failed: {e}"}
 
-    # LOUD policy: no 'or 1000' — file last_price AND live price absent -> 422.
+    # LOUD policy: no 'or 1000' - file last_price AND live price absent -> 422.
     last_price = assum.get("last_price") or price
     if not last_price:
         raise HTTPException(
@@ -559,14 +562,14 @@ async def report_ticker(
     # GGM for bank archetype
     ggm_res = _ggm_for(archetype, assum, w["coe"])
 
-    # LOUD policy: no synthetic_prices read — empty bands + source note until Sectors daily backs them.
+    # LOUD policy: no synthetic_prices read - empty bands + source note until Sectors daily backs them.
     bands_res = {
         "bands": [],
         "source": "sectors_missing_key",
         "note": "valuation bands unavailable keyless: synthetic_prices are disclosed-seed fixtures, not market data; wired to Sectors daily when SECTORS_API_KEY lands",
     }
 
-    # ratios — LOUD policy: revenue/equity are absent from assumption files, and
+    # ratios - LOUD policy: revenue/equity are absent from assumption files, and
     # revenue=ebitda*2 / equity=cash*2 was invented math. No ratios until
     # Sectors quarterly backs them.
     ratios_res = None
@@ -625,6 +628,13 @@ async def report_ticker(
         "cached": False,
         "generated_at": _now_iso(),
     }
+    # Same funnel the PDF passes through (server/report/text_sanitize.py). The web page and the
+    # PDF render from these strings, so an em dash written at run time (agent prose, a note field
+    # in data/, a quote out of a research PDF) has to be normalised here too, or the two surfaces
+    # disagree about the same report. Cleaned BEFORE caching so the cache never hands it back.
+    from server.report.text_sanitize import clean
+
+    payload = clean(payload)
     await cache.set(ckey, payload)
     return payload
 
@@ -845,7 +855,7 @@ def report_ticker_payload(
 
 
 # ---------- outlook ----------
-@router_outlook.get("/api/outlook", summary="JCI outlook — JPM base/bull/bear + sector OW/UW")
+@router_outlook.get("/api/outlook", summary="JCI outlook - JPM base/bull/bear + sector OW/UW")
 async def outlook():
     settings = get_settings()
     cache = get_cache(settings.cache_ttl)
@@ -863,7 +873,7 @@ async def outlook():
 
 
 # ---------- news ----------
-@router_news.get("/api/news", summary="News harvester — tiered, max 8, last 30d")
+@router_news.get("/api/news", summary="News harvester - tiered, max 8, last 30d")
 async def news(
     ticker: str | None = Query(None, description="filter by ticker, e.g. BBCA"),
     limit: int = Query(8, ge=1, le=20),
@@ -952,7 +962,7 @@ async def sentiment(
             "top_narratives": [],
             "timeline": [],
             "items": [],
-            "disclaimer": "sentiment != advice — retail narrative tracker only",
+            "disclaimer": "sentiment != advice - retail narrative tracker only",
             "cached": False,
             "note": "wire scripts/social.py search_social() when T02/T03 lands; returns empty until then (sectors_missing_key, no fabrication)",
         }
@@ -970,7 +980,7 @@ async def sentiment(
             "top_narratives": [],
             "timeline": [],
             "items": items[:8],
-            "disclaimer": "sentiment != advice — retail narrative tracker only",
+            "disclaimer": "sentiment != advice - retail narrative tracker only",
             "cached": False,
         }
     await cache.set(key, payload)
@@ -978,7 +988,7 @@ async def sentiment(
 
 
 # ---------- challenge ----------
-@router_challenge.post("/api/challenge", summary="Adversarial challenge & defense — verdict defend|concede with evidence")
+@router_challenge.post("/api/challenge", summary="Adversarial challenge & defense - verdict defend|concede with evidence")
 async def challenge(body: dict):
     from fastapi import HTTPException
     import inspect
@@ -1012,18 +1022,18 @@ async def challenge(body: dict):
             return res
     except Exception:
         pass
-    # honest fallback — must not hallucinate verdict as defend; return concede-with-correction placeholder
+    # honest fallback - must not hallucinate verdict as defend; return concede-with-correction placeholder
     # so downstream critic can still audit
     return {
         "verdict": "concede",
         "stub": True,
-        "evidence": "adversarial challenge stubbed — see agents/adversarial.py T09 (sectors_missing_key, no live debate)",
+        "evidence": "adversarial challenge stubbed - see agents/adversarial.py T09 (sectors_missing_key, no live debate)",
         "exhibit_ref": None,
         "correction": None,
         "debate_id": debate_id,
         "ticker": ticker,
         "claim": claim,
-        "note": "adversarial challenge stubbed — see agents/adversarial.py T09",
+        "note": "adversarial challenge stubbed - see agents/adversarial.py T09",
     }
 
 
@@ -1038,7 +1048,7 @@ def dcf_full_endpoint(ticker: str, overrides: str | None = None):
 
     # LOUD policy: dcf_full() computes on hardcoded seed assumptions when the
     # file lacks keys (rf 0.065 / revenue 10000e9). Require file-backed WACC
-    # inputs first — never serve seed-math as valuation.
+    # inputs first - never serve seed-math as valuation.
     from ..config import get_settings as _get_settings
 
     _ = _get_settings()
@@ -1080,5 +1090,5 @@ def dcf_full_endpoint(ticker: str, overrides: str | None = None):
         result["provenance"] = result.get("provenance", "") + " :: /api/dcf endpoint"
         return result
     except Exception as e:
-        return {"error": str(e), "ticker": ticker, "provenance": "dcf_full error — fallback to /api/report"}
+        return {"error": str(e), "ticker": ticker, "provenance": "dcf_full error - fallback to /api/report"}
 

@@ -1,11 +1,11 @@
-"""N-GATE tests — upfront method-order pre-filter + Gate 5 ACES regression.
+"""N-GATE tests - upfront method-order pre-filter + Gate 5 ACES regression.
 
 Matrix covers: healthy payer, zero-payout (DDM skipped), negative-EBITDA
 (EV/EBITDA skipped, EV/Sales gated), bank (DDM anchor, no DCF), mining
 (NAV + DCF comparison), NCI>40% (SOTP), NCI 15-40% (mandatory SOTP
 cross-check), thin-data (shortened DCF), critic/writer loud-fail, and the
 Gate 5 regression (synthetic 2079%-upside DCF -> Review Required; 69.42%
-upside stays BUY-eligible). Pure gate math — no fixture dependency.
+upside stays BUY-eligible). Pure gate math - no fixture dependency.
 """
 
 from __future__ import annotations

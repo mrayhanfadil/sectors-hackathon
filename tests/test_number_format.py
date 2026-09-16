@@ -64,5 +64,5 @@ def test_the_formatter_swaps_correctly():
     assert numfmt.dec(43.04, 2) == "43,04"
     assert numfmt.pct(20.84, 1) == "+20,8%"
     assert numfmt.pcfrac(0.2084, 1) == "20,8%"
-    assert numfmt.idn(None) == "—" and numfmt.dec("x") == "—"
+    assert numfmt.idn(None) == "-" and numfmt.dec("x") == "-"
     assert numfmt.idn(-1234.5, 1, signed=True) == "-1.234,5"

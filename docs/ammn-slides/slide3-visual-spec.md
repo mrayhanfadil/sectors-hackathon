@@ -1,10 +1,10 @@
-# Slide 3 — Performance Visualisation & Forecasting spec (AMMN)
+# Slide 3 - Performance Visualisation & Forecasting spec (AMMN)
 
 ## 0. Binding rule text (owner, 12 Sep 2026)
 
 The owner's wording outranks any paraphrase elsewhere in this document.
 
-> **SLIDE 3 — Visualisasi Kinerja Keuangan dan Forecasting**
+> **SLIDE 3 - Visualisasi Kinerja Keuangan dan Forecasting**
 >
 > Layout grid 2x2, masing-masing kuadran berisi satu chart plus blok narasi pendamping (baik di bawah chart atau di sampingnya tergantung ruang, tapi harus menempel visual dengan chart-nya masing-masing, bukan narasi terpisah di ujung slide).
 >
@@ -30,7 +30,7 @@ The owner's wording outranks any paraphrase elsewhere in this document.
 
 Ticker: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ). Sector: copper-gold mining.
 Slide 3 is the model made visible: four charts on a 2x2 grid, each with its own attached
-narrative block. Its job is to make the forecast auditable — a reader must be able to see
+narrative block. Its job is to make the forecast auditable - a reader must be able to see
 whether the projected growth is *produced* (volume), *earned* (price vs cost), and *kept*
 (below-the-line leakage to net profit), and to reconcile every printed number back to the
 Key Financials table on Slide 1.
@@ -45,7 +45,7 @@ price (USD/oz), reserve life (years)`).
 ## 1. Purpose (what this slide must prove)
 
 1. Revenue growth has a named driver per significant period (volume, realised Cu/Au price,
-   or both) — not a top-down percentage.
+   or both) - not a top-down percentage.
 2. EBITDA margin direction has a structural cause (cost structure / pricing power /
    operating leverage), and the forecast margin is sanity-checked against the 3-5Y
    historical average.
@@ -55,7 +55,7 @@ price (USD/oz), reserve life (years)`).
    reserve-life context deferred to Slide 4.
 5. Every number is IDENTICAL to the Key Financials table on Slide 1 for the same period.
 
-## 2. Layout — 2x2 grid
+## 2. Layout - 2x2 grid
 
 | Quadrant | Chart (role slot) | Narrative block |
 |---|---|---|
@@ -67,9 +67,9 @@ price (USD/oz), reserve life (years)`).
 Binding layout rules:
 
 - Each narrative block is a child of its own quadrant. A narrative parked at the slide end
-  (a detached block covering "all four charts") is a REJECT — with 2x2 there is no room and
+  (a detached block covering "all four charts") is a REJECT - with 2x2 there is no room and
   the reader loses the pairing.
-- If a quadrant overflows, the narrative moves BESIDE its chart inside the same quadrant —
+- If a quadrant overflows, the narrative moves BESIDE its chart inside the same quadrant -
   never to another quadrant, never to the slide footer.
 - All four charts share one visual grammar: identical bar-vs-line treatment, identical
   actual-vs-forecast encoding, identical axis-label style. Four charts in four different
@@ -84,7 +84,7 @@ Binding layout rules:
 
 The four exhibits below are written as ROLE SLOTS (4/5/6/7 in the template's intended
 sequence) because the house format forbids literal `Exhibit N` strings in payloads and
-forbids an `id` field — the number is the renderer's global figure counter
+forbids an `id` field - the number is the renderer's global figure counter
 (`kind: "exhibit"`). Consequences the builder must respect:
 
 - Never write `"Exhibit 4"` (or any number) into a chart title, payload, or `id` field.
@@ -92,7 +92,7 @@ forbids an `id` field — the number is the renderer's global figure counter
 - The actual printed number depends on how many exhibits earlier slides emit. Slide 1's
   Key Financials table is the tie-out source of truth referred to here as "Exhibit 3" in
   the template sequence (Slide 1 spec §4 skipped the EPS-consensus table, so under the
-  current build it renders as the SECOND exhibit, and slide 2's default build emits none —
+  current build it renders as the SECOND exhibit, and slide 2's default build emits none -
   meaning the first Slide 3 chart can legitimately render as Exhibit 3). This is expected,
   not a bug: it is exactly why the counter is global.
 - Prose cross-references must therefore be live references (`#exhibit-figure(...)` +
@@ -100,11 +100,11 @@ forbids an `id` field — the number is the renderer's global figure counter
 - The tie-out in §6 is defined by OBJECT IDENTITY (chart series → table row), never by
   exhibit number, so it survives any re-sequencing.
 
-## 4. Exhibit specs (title + data + chart shape only — no literal numbers, no `id`)
+## 4. Exhibit specs (title + data + chart shape only - no literal numbers, no `id`)
 
 Shared axis/encoding contract for the three financial combo charts:
 
-- Chart type: combo — NAVY bars (primary axis, left) + line (secondary axis, right).
+- Chart type: combo - NAVY bars (primary axis, left) + line (secondary axis, right).
 - Bar encoding (actual vs forecast is visible WITHOUT reading labels):
   - 2024A, 2025A → NAVY SOLID (theme `NAVY`, e.g. `#004b93`).
   - 2026F, 2027F, 2028F → NAVY at reduced opacity (~40%) OR diagonal hatch, consistently
@@ -114,7 +114,7 @@ Shared axis/encoding contract for the three financial combo charts:
     boundary on every combo chart.
 - Line: the growth/margin series, single stroke in a clearly distinct hue from NAVY
   (theme accent). Negative values are signalled (theme `neg` `#b42318` for the negative
-  segment, or an explicit below-zero marker) — a negative year must not masquerade as a
+  segment, or an explicit below-zero marker) - a negative year must not masquerade as a
   positive one.
 - Axis labels carry the unit explicitly. Left axis and right axis units are always both
   printed (no unitless axes).
@@ -122,7 +122,7 @@ Shared axis/encoding contract for the three financial combo charts:
   values off the table tie-out, and the narrative quotes the numbers.
 - Gridlines: horizontal only, `line` token; no chart chrome, no 3D, no shadow.
 
-### Exhibit — Revenue and Revenue Growth (2024A-2028F)
+### Exhibit - Revenue and Revenue Growth (2024A-2028F)
 
 - Type: combo. Bars = Revenue, line = Revenue growth (yoy %).
 - Axes: left `Revenue (Rpbn)`; right `Growth (yoy %)`.
@@ -130,7 +130,7 @@ Shared axis/encoding contract for the three financial combo charts:
   - Revenue actual 2024A/2025A: Sectors annual financials (`company_report()` /
     `report_sections()` financials sections; `quarterly()` for the interim detail that
     reconciles the annual figure).
-  - Revenue forecast 2026F-2028F: model output — MUST equal the Revenue row of the Key
+  - Revenue forecast 2026F-2028F: model output - MUST equal the Revenue row of the Key
     Financials table (Slide 1), cell-for-cell (§6).
   - Growth line = yoy change of the SAME revenue series (derived, never an independently
     sourced growth number).
@@ -139,32 +139,32 @@ Shared axis/encoding contract for the three financial combo charts:
   stated rate + date (USDIDR, as-of date printed in the audit field) and that same rate is
   reused by Slide 4's USD legs. Two different FX rates across slides = tie-out failure.
 
-### Exhibit — EBITDA and EBITDA Margin (2024A-2028F)
+### Exhibit - EBITDA and EBITDA Margin (2024A-2028F)
 
 - Type: combo. Bars = EBITDA, line = EBITDA margin (%).
 - Axes: left `EBITDA (Rpbn)`; right `EBITDA Margin (%)`.
 - Series binding: EBITDA actuals from Sectors financials; forecast = EBITDA row of the Key
   Financials table. Margin is DERIVED as EBITDA / Revenue x 100 from the two series on this
-  slide — never an independently sourced margin, so the margin line cannot drift away from
+  slide - never an independently sourced margin, so the margin line cannot drift away from
   the bars.
 - Mining reality: for AMMN, EBITDA is a price x volume − cash-cost function. The chart must
   be consistent with Exhibit 7's volume/cost path; a margin expansion with falling volume
   and rising unit cost is a contradiction the narrative must either explain or drop.
 
-### Exhibit — Net Profit and EPS Growth (2024A-2028F)
+### Exhibit - Net Profit and EPS Growth (2024A-2028F)
 
 - Type: combo. Bars = Net Profit, line = EPS growth (yoy %).
 - Axes: left `Net Profit (Rpbn)`; right `EPS Growth (yoy %)`.
 - Series binding: net profit actuals from Sectors financials; forecast = Net Profit row of
   the Key Financials table. EPS = net profit attributable to owners / shares outstanding
-  (Sectors company snapshot, same share count as Slide 1/Slide 4) — the EPS growth line must
+  (Sectors company snapshot, same share count as Slide 1/Slide 4) - the EPS growth line must
   reconcile to the EPS row of the Key Financials table, not to an independently computed EPS.
 - Mandatory gap disclosure: if net profit growth differs materially from EBITDA growth in
   any forecast year, the attached narrative MUST name the below-the-line cause (effective
   tax rate, interest on smelter/expansion debt, minority interest on the smelter JV, FX
   loss/gain). A visible gap with no named cause is a REJECT.
 
-### Exhibit — Mining: Production Volume vs Unit Cash Cost (role slot 7, MANDATORY variant)
+### Exhibit - Mining: Production Volume vs Unit Cash Cost (role slot 7, MANDATORY variant)
 
 - Type: combo. Bars = production volume, line = unit cash cost.
 - NOT DER/ROE. NOT NIM / Cost of Credit. Rationale: AMMN's earnings are volume x realised
@@ -172,18 +172,18 @@ Shared axis/encoding contract for the three financial combo charts:
   mined at a sane cost.
 - Axes: left `Production Volume (unit stated)`; right `Cash Cost (unit stated)`.
   - Volume unit MUST be stated in the axis label and in the audit field. Recommended:
-    contained copper, either `kt Cu` or `Mlb Cu` — pick ONE and hold it across the slide,
+    contained copper, either `kt Cu` or `Mlb Cu` - pick ONE and hold it across the slide,
     the report, and Slide 4's reserve-life leg. (AMMN produces copper CONCENTRATE, not
-    cathode — never label the series "cathode".)
+    cathode - never label the series "cathode".)
   - Gold is carried as a memo series or an annotation only (e.g. `Au koz`), never as a second
     competing bar series that muddies the volume read.
-  - Cost unit MUST be stated and MUST be one of C1 or AISC — state WHICH. Recommended:
+  - Cost unit MUST be stated and MUST be one of C1 or AISC - state WHICH. Recommended:
     `AISC (US$/lb Cu, net of Au by-product credit)` because AMMN's gold credit materially
     changes the cost read; the axis label must say `net of Au credit` when that is the basis.
 - Series binding: production/cost from the mining extension (`mining_company_financials()`
   → `/mining/financials/{slug}/`, USD millions) plus `data/assumptions/AMMN.json` model
   output for forecast years. Actual vs forecast encoding identical to the other three charts.
-  Strip ratio is NOT a plotted series — it belongs in the narrative as the cost driver (§5,
+  Strip ratio is NOT a plotted series - it belongs in the narrative as the cost driver (§5,
   Exhibit 7 narrative).
 - Narrative must include the reserve-life pointer: one clause handing off to Slide 4 for the
   horizon (Batu Hijau remaining life + Elang development timeline). Do not re-derive reserve
@@ -197,33 +197,33 @@ Shared axis/encoding contract for the three financial combo charts:
 Every narrative is attached to its own chart and must carry explicit numbers. Placeholders
 in `<...>` are filled from the same model output that feeds the charts.
 
-### N4 — Revenue
+### N4 - Revenue
 "Revenue <+/-X%> yoy to Rp<A>bn in <year>, driven mainly by <volume change> and
 <realised Cu/Au price change> (state which dominates). Historic CAGR 2024A-2025A of
-<X>% vs forecast CAGR 2026F-2028F of <Y>% — <reason for the pace change>. Inflection at
+<X>% vs forecast CAGR 2026F-2028F of <Y>% - <reason for the pace change>. Inflection at
 <year> reflects <base effect | capacity/phase end | grade step-change>."
 Required: main driver per significant period; both CAGRs; every material pace change
 explained; inflection points flagged.
 
-### N5 — EBITDA
+### N5 - EBITDA
 "EBITDA margin <expands|contracts> <X>pp to <Y>% by 2028F, structurally driven by
 <cost structure shift | realised-price capture | operating leverage on fixed cost>.
 The 2028F margin of <Y>% compares with the 3-5Y historical average of <Z>% (years
-<lo-hi>) — <above/below> track record because <reason>. Forecast margin assumes
+<lo-hi>) - <above/below> track record because <reason>. Forecast margin assumes
 <volume growth | unit-cost path> as shown in the mining quadrant."
 Required: direction + structural cause; explicit sanity check vs 3-5Y average with the
 years cited; no margin assumption floating free of Exhibit 7.
 
-### N6 — Net Profit / EPS
+### N6 - Net Profit / EPS
 "Net profit <+/-X%> yoy to Rp<A>bn with EPS growth of <Y>% in <year>, vs revenue growth
-of <B>% and EBITDA growth of <C>% — <in line | gap of D>pp>. The gap is explained by
+of <B>% and EBITDA growth of <C>% - <in line | gap of D>pp>. The gap is explained by
 <named below-the-line item: effective tax rate of <t>% | interest expense on
 <smelter/expansion debt> | minority interest on the smelter JV | FX loss/gain on
 USD-denominated debt>."
 Required: the three-growth comparison (revenue/EBITDA/net profit); ANY material gap → named
 below-the-line cause with a number. Forbidden: "dampened by higher costs" with no line item.
 
-### N7 — Mining volume vs cash cost
+### N7 - Mining volume vs cash cost
 "Copper production of <V> <kt/Mlb> in <year> (<+/-X%> yoy) at AISC of US$<c>/lb
 <net of Au credit>, <+/-Y%> vs <prior year / historical average of US$<z>/lb>. The
 volume-cost relationship is <favourable: volume growth absorbing fixed cost | adverse:
@@ -254,7 +254,7 @@ skipped). Match by object identity, not by exhibit number.
 Rules:
 
 1. A mismatch between Slide 3 and the Key Financials table is a MODEL LINK ERROR, never a
-   "rounding difference". The only exception is a genuine sub-0.1% rounding artefact — and
+   "rounding difference". The only exception is a genuine sub-0.1% rounding artefact - and
    even then the difference is disclosed, not absorbed.
 2. Any Slide 3 revision re-exports the Key Financials table on Slide 1 (and Slide 4's
    revenue/EBITDA/cost assumption rows) in the same change. There is no version of this
@@ -282,23 +282,23 @@ AMMN hero KPIs live in `kpi_output`; every chart states which KPI feeds it.
 | Reserve life (years) | pointer to Slide 4 only | never re-derived on this slide |
 
 Rules: a KPI with `source: sectors_missing_key` and an empty value is a LOUD GAP on the
-affected chart — never a synthetic placeholder, never a silent omission of the chart's
+affected chart - never a synthetic placeholder, never a silent omission of the chart's
 narrative obligation (the narrative says the KPI is unavailable, not that it is fine).
 
 ## 8. Data dependencies (Sectors primary; web_search colour only)
 
 | Exhibit | Sectors wrapper → endpoint | Fields | Fallback |
 |---|---|---|---|
-| Revenue / EBITDA / Net Profit actuals | `company_report()` / `report_sections()` → /company/report/ (sections: financials) + `quarterly()` → /financials/quarterly/ + `quarterly_dates()` | revenue, EBITDA/operating profit, net profit, by year/quarter | NONE for numbers — loud STOP on `sectors_missing_key` |
+| Revenue / EBITDA / Net Profit actuals | `company_report()` / `report_sections()` → /company/report/ (sections: financials) + `quarterly()` → /financials/quarterly/ + `quarterly_dates()` | revenue, EBITDA/operating profit, net profit, by year/quarter | NONE for numbers - loud STOP on `sectors_missing_key` |
 | Shares outstanding (EPS leg) | `company_report()` company snapshot | shares outstanding | same |
-| Mining volume + unit cost | `mining_company_financials(slug)` → /v2/mining/companies/financials/?year= | production, cost (USD millions) — slug resolved first via `mining_companies(keyword="AMMN")` | same |
-| Mining operational detail (grade, strip ratio, commodity mix) | `/v2/mining/companies/{slug}/` and `/v2/mining/companies/{slug}/performance/` — NOTE: no wrapper exists in `server/sectors.py` yet (only `mining_companies` + `mining_company_financials`); needs MCP tool or a new wrapper — flagged as a build dependency, do NOT fake it | operational fields | loud gap |
+| Mining volume + unit cost | `mining_company_financials(slug)` → /v2/mining/companies/financials/?year= | production, cost (USD millions) - slug resolved first via `mining_companies(keyword="AMMN")` | same |
+| Mining operational detail (grade, strip ratio, commodity mix) | `/v2/mining/companies/{slug}/` and `/v2/mining/companies/{slug}/performance/` - NOTE: no wrapper exists in `server/sectors.py` yet (only `mining_companies` + `mining_company_financials`); needs MCP tool or a new wrapper - flagged as a build dependency, do NOT fake it | operational fields | loud gap |
 | Commodity price deck (Cu/Au realised) | `mining/commodities/price/{commodity}/` (monthly, max 3yr) or the model's realised-price assumption | monthly price | loud gap; web_search for narrative colour only, url+date mandatory |
-| Segments (production/sales split) | `segments()` → /company/get-segments/ (known 404 for some names — bills 1 credit, handle honestly) | segment revenue | qualitative only |
-| Forecast years 2026F-2028F | data/assumptions/AMMN.json model output | forecast revenue/EBITDA/NP/EPS/volume/cost | NONE — this is the model, not an external feed |
+| Segments (production/sales split) | `segments()` → /company/get-segments/ (known 404 for some names - bills 1 credit, handle honestly) | segment revenue | qualitative only |
+| Forecast years 2026F-2028F | data/assumptions/AMMN.json model output | forecast revenue/EBITDA/NP/EPS/volume/cost | NONE - this is the model, not an external feed |
 
 Rules: `sectors_missing_key` → loud STOP recorded on the slide, never synthetic. Empty-result
-200 still bills — cache aggressively. Every object keeps `source` (internal provenance:
+200 still bills - cache aggressively. Every object keeps `source` (internal provenance:
 outlet, url, date) as an AUDIT field; the printed line is always the house constant.
 
 ## 9. Critic checks (gate before ship)
@@ -315,7 +315,7 @@ outlet, url, date) as an AUDIT field; the printed line is always the house const
       boundary.
 - [ ] Every axis label carries its unit; volume unit and C1-vs-AISC choice stated; AISC
       labelled "net of Au credit" if that is the basis.
-- [ ] Exhibit 7 is the MINING variant (production volume bar + unit cash cost line) —
+- [ ] Exhibit 7 is the MINING variant (production volume bar + unit cash cost line) -
       NOT DER/ROE, NOT NIM/Cost of Credit.
 - [ ] Revenue/EBITDA/Net Profit/EPS series IDENTICAL to the Key Financials table rows
       (any mismatch = model link error, not rounding; sub-0.1% artefacts disclosed).

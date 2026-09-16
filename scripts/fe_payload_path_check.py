@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Every payload path the FE reads must exist in the payload the PDF renders.
 
-A component that binds to a path the payload does not carry does not throw a helpful error — it renders a pending
+A component that binds to a path the payload does not carry does not throw a helpful error - it renders a pending
 state, an empty axis, or crashes on `.toFixed()`. Either way the page looks like "no data" rather than a bug, which
 is precisely the failure mode this revamp must not ship.
 
@@ -26,8 +26,8 @@ FE = ROOT / "src/fe/src"
 # `payload.a.b`, tolerating optional chaining and index access
 RE_DOT = re.compile(r"(?<![\w.$])payload\?\.([A-Za-z_][\w]*(?:\??\.[A-Za-z_]\w*)*)")
 RE_INDEX = re.compile(r"(?<![\w.$])payload\??\[\s*[\"']([\w.]+)[\"']\s*\]")
-# `const page = payload.valuation_page` — then `page.bridge.ev` belongs under valuation_page
-# `const ratingBox = payload.cover?.rating_box` — the optional chaining is part of the path, and stopping at
+# `const page = payload.valuation_page` - then `page.bridge.ev` belongs under valuation_page
+# `const ratingBox = payload.cover?.rating_box` - the optional chaining is part of the path, and stopping at
 # `cover` reports correct code as broken (which is exactly what happened the first time this ran).
 RE_SECTION_VAR = re.compile(
     r"\b(?:const|let)\s+(\w+)\s*=\s*(?<![\w.])payload\s*\??\.\s*([A-Za-z_][\w]*(?:\s*\??\.\s*[A-Za-z_]\w*)*)"

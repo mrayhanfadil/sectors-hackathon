@@ -1,13 +1,13 @@
-"""Sectors API v2 client — the single gateway for ALL market data.
+"""Sectors API v2 client - the single gateway for ALL market data.
 
 Goal: 100% Sectors-sourced, zero external (yfinance/Tavily/scrapers) in prod paths.
 Docs: references/sectors-api-and-mcp.md. Base: https://api.sectors.app/v2.
 
 Rules:
-- Auth = raw key in `Authorization` header (NO Bearer prefix — that's MCP-only).
-- Tickers = bare IDX code (`BBCA`, never `BBCA.JK`) — normalized here.
+- Auth = raw key in `Authorization` header (NO Bearer prefix - that's MCP-only).
+- Tickers = bare IDX code (`BBCA`, never `BBCA.JK`) - normalized here.
 - No key  -> SectorsNotConfigured (callers map to honest 503, NEVER silent
-  fallback to yfinance/Tavily — Fadil's explicit-failure rule).
+  fallback to yfinance/Tavily - Fadil's explicit-failure rule).
 - Credit discipline: _get() wraps a SQLite cache (server.storage.SectorsCache)
   with per-endpoint TTLs. Hit saves 1 credit per call. Group repeated calls
   (e.g., orchestrator loops) into the universe feed (1 credit, full IDX) instead
@@ -31,13 +31,13 @@ log = logging.getLogger(__name__)
 # Default tier mapping documented in server/storage.py SectorsCache docstring.
 
 _TTL_BY_PREFIX: list[tuple[str, int]] = [
-    # TIER 1 — intra-day moves (6h)
+    # TIER 1 - intra-day moves (6h)
     ("/daily/", 6 * 3600),
     ("/index-daily/", 6 * 3600),
     ("/idx-total/", 6 * 3600),
     ("/broker-summary/", 6 * 3600),
     ("/foreign-flow/", 6 * 3600),
-    # TIER 2 — fundamentals/filings/news (12h)
+    # TIER 2 - fundamentals/filings/news (12h)
     ("/financials/quarterly/", 12 * 3600),
     ("/company/get_quarterly_financial_dates/", 12 * 3600),
     ("/company/get-segments/", 12 * 3600),
@@ -47,13 +47,13 @@ _TTL_BY_PREFIX: list[tuple[str, int]] = [
     ("/news/", 12 * 3600),
     ("/filings/", 12 * 3600),
     ("/suspensions/", 12 * 3600),
-    # TIER 3 — slow-moving (24h)
+    # TIER 3 - slow-moving (24h)
     ("/subsector/report/", 24 * 3600),
     ("/subsectors/", 24 * 3600),
     ("/companies/", 24 * 3600),
     ("/listing-performance/", 24 * 3600),
     ("/mining/", 24 * 3600),
-    # TIER 0 — close is the cheap universe feed (4h — covers EOD moves)
+    # TIER 0 - close is the cheap universe feed (4h - covers EOD moves)
     ("/close/", 4 * 3600),
 ]
 _DEFAULT_TTL = 6 * 3600  # catch-all for any unlisted path
@@ -67,11 +67,11 @@ def _ttl_for(endpoint: str) -> int:
 
 
 class SectorsNotConfigured(RuntimeError):
-    """Raised when SECTORS_API_KEY is missing — wire to HTTP 503, not fallback."""
+    """Raised when SECTORS_API_KEY is missing - wire to HTTP 503, not fallback."""
 
 
 class SectorsError(RuntimeError):
-    """Raised on non-2xx from api.sectors.app — carries status + body snippet."""
+    """Raised on non-2xx from api.sectors.app - carries status + body snippet."""
 
     def __init__(self, status: int, body: str):
         super().__init__(f"sectors v2 -> {status}: {body[:300]}")
@@ -88,7 +88,7 @@ def _client() -> httpx.Client:
     s = get_settings()
     if not s.sectors_api_key:
         raise SectorsNotConfigured(
-            "SECTORS_API_KEY missing — onboard at sectors.app/api, "
+            "SECTORS_API_KEY missing - onboard at sectors.app/api, "
             "save key to .env (mode 600). No fallback wired on purpose."
         )
     return httpx.Client(
@@ -107,19 +107,19 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
     """Sectors v2 GET with SQLite-backed credit-saving cache.
 
     Lookup chain:
-      1. _cache.get(endpoint, params) — if hit and not expired, return cached payload.
+      1. _cache.get(endpoint, params) - if hit and not expired, return cached payload.
       2. WINDOW-DRIFT GUARD (when allow_window_substitute): an endpoint that
          already has ANY cached row never burns a fresh credit for a different
-         date window — the freshest cached payload is served with
+         date window - the freshest cached payload is served with
          ``_window_substituted`` + ``_requested_params`` + ``_cached_fetched_at``
          attached, so callers (and the Critic) see exactly which window they got.
-      3. _client() + GET path?params=params — populate cache with TTL _ttl_for(endpoint).
+      3. _client() + GET path?params=params - populate cache with TTL _ttl_for(endpoint).
       4. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
     """
     cache_key = None  # avoid unused-name lints
     from .storage import SectorsCache  # late-bound import (avoids circular at module load)
 
-    # Lazy singleton — first call creates the table, subsequent calls reuse it.
+    # Lazy singleton - first call creates the table, subsequent calls reuse it.
     global _cache
     try:
         cache = _cache  # type: ignore[name-defined]
@@ -135,7 +135,7 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
         log.debug("sectors cache HIT %s", path)
         return payload
 
-    # 2. Window-drift guard — see docstring. Only for date-windowed endpoints,
+    # 2. Window-drift guard - see docstring. Only for date-windowed endpoints,
     # which opt in via allow_window_substitute=True (15 Sep 2026: 2 credits
     # burned when the collector drifted the flow/index window by 10 days).
     if allow_window_substitute and _window_substitute_enabled():
@@ -150,15 +150,15 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
             cached_payload["_requested_params"] = dict(params or {})
             cached_payload["_cached_fetched_at"] = meta.get("fetched_at")
             log.info(
-                "sectors WINDOW-SUBSTITUTED %s (requested %s, serving newest cached row from %s) — 0 credits",
+                "sectors WINDOW-SUBSTITUTED %s (requested %s, serving newest cached row from %s) - 0 credits",
                 path, params, meta.get("fetched_at"),
             )
             return cached_payload
 
     if not get_settings().sectors_api_key:
-        # Cache miss + no key — let the caller raise SectorsNotConfigured.
+        # Cache miss + no key - let the caller raise SectorsNotConfigured.
         raise SectorsNotConfigured(
-            "SECTORS_API_KEY missing — onboard at sectors.app/api, "
+            "SECTORS_API_KEY missing - onboard at sectors.app/api, "
             "save key to .env (mode 600). No fallback wired on purpose."
         )
 
@@ -200,7 +200,7 @@ def daily(symbol: str, start: str, end: str) -> Any:
 
 
 def universe_close(date: str) -> Any:
-    """Replaces IDX Postgres stockdata feed — every ticker, one paginated call."""
+    """Replaces IDX Postgres stockdata feed - every ticker, one paginated call."""
     return _get("/close/", {"date": date})
 
 
@@ -236,7 +236,7 @@ def filings(symbol: str) -> Any:
 
 
 def foreign_flow(symbol: str, start: str, end: str) -> Any:
-    """Net foreign-broker inflow — new signal we never had (max 90 days)."""
+    """Net foreign-broker inflow - new signal we never had (max 90 days)."""
     return _get(f"/foreign-flow/{bare_ticker(symbol)}/",
                 {"start": start, "end": end}, allow_window_substitute=True)
 
@@ -249,17 +249,17 @@ def report_sections(symbol: str, sections: str) -> Any:
 
 
 def peers(symbol: str) -> Any:
-    """Subsector peer comparison — feeds PRIMARY-MULTIPLE provenance."""
+    """Subsector peer comparison - feeds PRIMARY-MULTIPLE provenance."""
     return company_report(symbol, "peers")
 
 
 def future(symbol: str) -> Any:
-    """Analyst forecasts + EPS growth — grounds our forward numbers."""
+    """Analyst forecasts + EPS growth - grounds our forward numbers."""
     return company_report(symbol, "future")
 
 
 def valuation_section(symbol: str) -> Any:
-    """Forward PE, intrinsic value, historical PB/PE/PS/PCF/PEG — DCF cross-check."""
+    """Forward PE, intrinsic value, historical PB/PE/PS/PCF/PEG - DCF cross-check."""
     return company_report(symbol, "valuation")
 
 
@@ -276,14 +276,14 @@ def management(symbol: str) -> Any:
 # --- Tier 2: new signals ---
 
 def broker_top(symbol: str, start: str, end: str, n_brokers: int = 20) -> Any:
-    """Top accumulators/distributors for one stock — Asing-flow radar."""
+    """Top accumulators/distributors for one stock - Asing-flow radar."""
     return _get(f"/broker-summary/{bare_ticker(symbol)}/top/",
                 {"start": start, "end": end, "n_brokers": n_brokers},
                 allow_window_substitute=True)
 
 
 def suspensions(symbol: str = "", start: str = "", end: str = "") -> Any:
-    """IDX suspensions with official PDF links — risk factors with provenance."""
+    """IDX suspensions with official PDF links - risk factors with provenance."""
     p: dict[str, Any] = {}
     if symbol:
         p["symbol"] = bare_ticker(symbol)
@@ -295,13 +295,13 @@ def suspensions(symbol: str = "", start: str = "", end: str = "") -> Any:
 
 
 def subsectors() -> Any:
-    """All sector/subsector slug pairs — resolve a company's sub_sector slug
+    """All sector/subsector slug pairs - resolve a company's sub_sector slug
     before calling subsector_report (avoids billed-empty on bad slugs)."""
     return _get("/subsectors/", None)
 
 
 def mining_companies(keyword: str = "", has_financials: bool = True) -> Any:
-    """Mining company list — resolve a slug (e.g. AMMN) before financials."""
+    """Mining company list - resolve a slug (e.g. AMMN) before financials."""
     p: dict[str, Any] = {"has_financials": has_financials}
     if keyword:
         p["keyword"] = keyword
@@ -309,18 +309,18 @@ def mining_companies(keyword: str = "", has_financials: bool = True) -> Any:
 
 
 def subsector_report(sub_sector: str, sections: str) -> Any:
-    """Subsector stats/mcap/valuation/growth/companies — sector context (1/s)."""
+    """Subsector stats/mcap/valuation/growth/companies - sector context (1/s)."""
     return _get(f"/subsector/report/{sub_sector.strip().lower()}/",
                 {"sections": sections})
 
 
 def listing_performance(symbol: str) -> Any:
-    """7/30/90/365d price change since listing — IPO-name context (CDIA)."""
+    """7/30/90/365d price change since listing - IPO-name context (CDIA)."""
     return _get(f"/listing-performance/{bare_ticker(symbol)}/")
 
 
 def segments(symbol: str, financial_year: str = "") -> Any:
-    """Sankey-ready revenue+cost segments — SOTP pillar input. Not all have it."""
+    """Sankey-ready revenue+cost segments - SOTP pillar input. Not all have it."""
     from datetime import date as _d
 
     fy = financial_year or str(_d.today().year - 1)
@@ -329,7 +329,7 @@ def segments(symbol: str, financial_year: str = "") -> Any:
 
 
 def shareholders_composition(symbol: str, year: str = "") -> Any:
-    """Local vs foreign monthly composition — ownership detail."""
+    """Local vs foreign monthly composition - ownership detail."""
     from datetime import date as _d
 
     y = year or str(_d.today().year)
@@ -338,14 +338,14 @@ def shareholders_composition(symbol: str, year: str = "") -> Any:
 
 
 def quarterly_dates(symbol: str) -> Any:
-    """Available quarterly report dates — call BEFORE quarterly to avoid billed-empty."""
+    """Available quarterly report dates - call BEFORE quarterly to avoid billed-empty."""
     return _get(f"/company/get_quarterly_financial_dates/{bare_ticker(symbol)}/")
 
 
 # --- Tier 3: breadth, cheap ---
 
 def screener(where: str = "", order_by: str = "", limit: int = 50) -> Any:
-    """Structured screener ONLY (1 credit) — never ?q= (3 credits)."""
+    """Structured screener ONLY (1 credit) - never ?q= (3 credits)."""
     p: dict[str, Any] = {"limit": min(max(1, limit), 200)}
     if where:
         p["where"] = where
@@ -355,7 +355,7 @@ def screener(where: str = "", order_by: str = "", limit: int = 50) -> Any:
 
 
 def index_daily(index_code: str, start: str, end: str) -> Any:
-    """Index daily close — honest IHSG benchmark for vs-JCI charts."""
+    """Index daily close - honest IHSG benchmark for vs-JCI charts."""
     # API wants lowercase code ('ihsg'); upper-casing 400s (15 Sep 2026).
     return _get(f"/index-daily/{index_code.strip().lower()}/",
                 {"start": start, "end": end}, allow_window_substitute=True)
@@ -367,7 +367,7 @@ def idx_market_cap(start: str, end: str) -> Any:
 
 
 def mining_company_financials(slug: str, year: str = "") -> Any:
-    """Mining extension — ADRO coal ops (USD millions)."""
+    """Mining extension - ADRO coal ops (USD millions)."""
     p: dict[str, Any] = {}
     if year:
         p["year"] = year

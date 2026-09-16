@@ -1,4 +1,4 @@
-"""Tests for Mock Sectors Layer — tests/test_mock_sectors.py
+"""Tests for Mock Sectors Layer - tests/test_mock_sectors.py
 Validates the 4 mock routes mirroring Sectors v2 endpoints:
 1. test_filings_bcca_returns_schema
 2. test_news_bca_returns_schema
@@ -16,7 +16,7 @@ from server.routers.mock_sectors import router_mock_sectors
 
 client = TestClient(app)
 
-# Mock router deregistered from prod (gap-fix Lane B) — schema tests run it
+# Mock router deregistered from prod (gap-fix Lane B) - schema tests run it
 # on an isolated test-only app with the same prefix.
 mock_app = FastAPI()
 mock_app.include_router(router_mock_sectors, prefix="/api/mock")
@@ -175,7 +175,7 @@ def test_quarterly_bca_returns_schema():
 
     Keyed Sectors -> items validated against the 29-field schema.
     Keyless -> honest empty with source=sectors_missing_key note
-    (legacy removed, Lane E — no yfinance).
+    (legacy removed, Lane E - no yfinance).
     """
     resp = mock_client.get("/api/mock/quarterly-financials?symbol=BBCA&n_quarters=8")
     assert resp.status_code == 200

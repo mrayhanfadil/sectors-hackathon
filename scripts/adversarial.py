@@ -1,5 +1,5 @@
 """
-Adversarial Red Team & Defense Engine — scripts/adversarial.py
+Adversarial Red Team & Defense Engine - scripts/adversarial.py
 Part of Lane T09 & Multi-Agent Architecture (plan.md §3, §11).
 
 Key rules:
@@ -50,7 +50,7 @@ def _load_assumptions(ticker: str) -> Dict[str, Any]:
     # 630 / BBCA 9850 / ADRO 4120 were invented calibration served as live).
     # Missing file -> loud error; caller surfaces the stub disclosure.
     raise FileNotFoundError(
-        f"no verified assumptions for {ticker.upper()} — refusing invented "
+        f"no verified assumptions for {ticker.upper()} - refusing invented "
         f"calibration (add data/assumptions/{ticker.upper()}.json)"
     )
 
@@ -170,7 +170,7 @@ async def challenge(ticker: str, claim: str, context: Optional[dict] = None) -> 
     elif "math error" in lower_claim or "sum mismatch" in lower_claim:
         verdict = "concede"
         evidence = "Mathematical assertion conceded for recalculation audit by QA Critic."
-        exhibit_ref = "Audit Queue"  # not an exhibit — an internal queue, no number
+        exhibit_ref = "Audit Queue"  # not an exhibit - an internal queue, no number
         correction = "Re-running deterministic engine verification to reconcile discrepancy."
 
     # 6. Default robust defense with evidence

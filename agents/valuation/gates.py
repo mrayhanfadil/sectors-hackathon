@@ -1,4 +1,4 @@
-"""Valuation Method Selection Framework — 6 gates (0-5) per PDF.
+"""Valuation Method Selection Framework - 6 gates (0-5) per PDF.
 
 User decision (2026-09-04): Gate 1 fallback = shortened DCF + thin-data disclosure
 (banker doesn't apply for the thin-data case because pure Relative Valuation has no
@@ -6,7 +6,7 @@ defensible fair value). Gate 5 auto-overrides rating to "Review Required" when
 upside > 100% or downside > 50% vs market price.
 
 Returns GateVerdict(primary, secondary, gates_passed, gates_failed, reasons,
-rating_override). Pure stdlib — deterministic, no LLM calls.
+rating_override). Pure stdlib - deterministic, no LLM calls.
 """
 
 from __future__ import annotations
@@ -47,7 +47,7 @@ class GateVerdict:
     gates_failed: list[str]
     reasons: list[str]
     rating_override: Optional[str] = None  # None | "Review Required"
-    thin_data: bool = False  # Gate 1a failure flag — shows ⚠ banner on cover
+    thin_data: bool = False  # Gate 1a failure flag - shows ⚠ banner on cover
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -68,13 +68,13 @@ def _gate0_business_model(
     finite_reserves = {DOMAIN_MINING, DOMAIN_OIL_GAS, DOMAIN_PLANTATION}
 
     if domain in financial:
-        return ("DDM / Excess Return", "Financial institution — debt is raw material, EV undefined, FCF convention inapplicable")
+        return ("DDM / Excess Return", "Financial institution - debt is raw material, EV undefined, FCF convention inapplicable")
     if domain == DOMAIN_REIT:
-        return ("NAV / Reserve-based", "REIT — value is asset-driven, rental income is a derivative of asset value")
+        return ("NAV / Reserve-based", "REIT - value is asset-driven, rental income is a derivative of asset value")
     if domain in finite_reserves:
-        return ("NAV / Reserve-based", "Finite reserves — perpetual-growth DCF structurally wrong, reserve-based NAV is correct")
+        return ("NAV / Reserve-based", "Finite reserves - perpetual-growth DCF structurally wrong, reserve-based NAV is correct")
     if domain == DOMAIN_HOLDING_DISSIMILAR:
-        return ("SOTP", "Holding with dissimilar subsidiaries — one WACC hides value, each line needs its own method")
+        return ("SOTP", "Holding with dissimilar subsidiaries - one WACC hides value, each line needs its own method")
     # single business → DCF candidate, proceed to Gate 1
     return (None, None)
 
@@ -98,7 +98,7 @@ def _gate1_data_eligibility(
     thin_data = False
     primary_override: Method | None = None
 
-    # 1a — filing history
+    # 1a - filing history
     if filing_history_years >= 4:
         passed.append("1a_filing_history")
     else:
@@ -109,7 +109,7 @@ def _gate1_data_eligibility(
             f"1a filing history {filing_history_years}y < 4y → shortened-horizon DCF + ⚠ Thin Data disclosure"
         )
 
-    # 1b — operating profitability
+    # 1b - operating profitability
     if ebit_positive_count >= 2:
         passed.append("1b_profitability")
     else:
@@ -121,7 +121,7 @@ def _gate1_data_eligibility(
         if primary_override is None:
             primary_override = "Relative Valuation"
 
-    # 1c — capital structure
+    # 1c - capital structure
     if d_de_ratio <= 0.80 and net_debt_to_ebitda <= 6.0 and interest_coverage >= 1.0:
         passed.append("1c_capital_structure")
     else:
@@ -130,7 +130,7 @@ def _gate1_data_eligibility(
             f"1c capital structure breach (D/(D+E)={_nf.dec(d_de_ratio, digits=2)}, ND/EBITDA={_nf.dec(net_debt_to_ebitda, digits=2)}×, IC={_nf.dec(interest_coverage, digits=2)}×) → DCF proceeds with mandatory Relative cross-check"
         )
 
-    # 1d — equity base
+    # 1d - equity base
     if shareholders_equity > 0:
         passed.append("1d_equity_base")
     else:
@@ -339,7 +339,7 @@ def evaluate(
             all_reasons.append(g0_reason)
         # Banks skip most downstream gates (financials have no D/E ratio, no FCF)
         if domain in {DOMAIN_BANK, DOMAIN_INSURANCE, DOMAIN_MULTIFINANCE, DOMAIN_SECURITIES}:
-            # Apply Gate 5 only — financial valuation doesn't fit Gates 1-4
+            # Apply Gate 5 only - financial valuation doesn't fit Gates 1-4
             g5_passed, g5_failed, g5_reasons, g5_override = _gate5_output_sanity(
                 upside_pct, terminal_value_pct_of_ev,
                 implied_exit_ev_ebitda, peer_exit_low, peer_exit_high,
@@ -406,7 +406,7 @@ def evaluate(
     # Determine secondary method (cross-check) based on primary
     secondary = _secondary_for(primary, all_failed)
 
-    # Gate 5 — applied after DCF is computed (output sanity)
+    # Gate 5 - applied after DCF is computed (output sanity)
     # Only apply if DCF is the primary; for NAV/SOTP/DDM it's less meaningful but
     # still applies for the upside band logic.
     g5_passed, g5_failed, g5_reasons, g5_override = _gate5_output_sanity(

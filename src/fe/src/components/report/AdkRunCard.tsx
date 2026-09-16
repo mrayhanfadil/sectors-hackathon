@@ -42,7 +42,7 @@ export type Props = {
 }
 
 export function formatDuration(s: number | null | undefined): string {
-  if (s == null || Number.isNaN(s)) return "—"
+  if (s == null || Number.isNaN(s)) return "-"
   const totalSeconds = Math.round(s)
   const m = Math.floor(totalSeconds / 60)
   const d = totalSeconds % 60
@@ -53,7 +53,7 @@ export function formatDuration(s: number | null | undefined): string {
 }
 
 export function formatRelativeTime(ts: number | null | undefined): string {
-  if (!ts) return "—"
+  if (!ts) return "-"
   const now = Date.now() / 1000
   const diff = Math.max(0, now - ts)
   if (diff < 60) return "baru saja"
@@ -148,7 +148,7 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     ? rawPreview.length > 90
       ? `${rawPreview.slice(0, 90)}...`
       : rawPreview
-    : "—"
+    : "-"
 
   return (
     <Card className="rounded-lg border border-neutral-200 bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">

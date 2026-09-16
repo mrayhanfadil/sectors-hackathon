@@ -1,12 +1,12 @@
 """
-Industry / Macro Analyst — T07
+Industry / Macro Analyst - T07
 
 Owns: Commodity (Brent), regulatory (SKK Migas), macro thematics (JPM 5 + Danantara $12bn).
 
 Archetype refs:
 - RATU: Commodity (Brent), Operator PSC, Regulatory (PSC/DMO), Natural decline
 - CDIA: Pillar-specific (sedimentation, gas supply, vessel damage, climate)
-- MTEL: Infra recurring — dependency on operators, satellite/Open RAN, regulatory, financing
+- MTEL: Infra recurring - dependency on operators, satellite/Open RAN, regulatory, financing
 - JPM 2026 Outlook (02 Dec 2025): 5 thematics + Danantara Value-Up $12bn (0.8% GDP) + $14bn SWF
 
 Spec: plan.md 2.4 (JPM archetype) + 3 "Industry/Macro (Brent/IEA/regulator)"
@@ -21,10 +21,10 @@ import json
 import os
 
 ARCHETYPE_SOURCES = {
-    "RATU": "HP Sekuritas 7 Jan 2026 — RATU",
-    "CDIA": "BCA Sekuritas 23 Jun 2026 — CDIA",
-    "MTEL": "KSI/Kiwoom 27 Aug 2026 — MTEL",
-    "JPM": "J.P. Morgan 02 Dec 2025 — Indonesia Equity 2026 Outlook (52p)",
+    "RATU": "HP Sekuritas 7 Jan 2026 - RATU",
+    "CDIA": "BCA Sekuritas 23 Jun 2026 - CDIA",
+    "MTEL": "KSI/Kiwoom 27 Aug 2026 - MTEL",
+    "JPM": "J.P. Morgan 02 Dec 2025 - Indonesia Equity 2026 Outlook (52p)",
     "IEA": "IEA Oil Market Report",
 }
 
@@ -122,7 +122,7 @@ class IndustryOutlook:
 
 
 # ---------------------------------------------------------------------------
-# Deterministic helpers — NEVER let LLM invent these
+# Deterministic helpers - NEVER let LLM invent these
 # ---------------------------------------------------------------------------
 def calc_yoy_pct(current: float, prior: float) -> float:
     if prior == 0:
@@ -151,19 +151,19 @@ def calc_danantara_gdp_pct(dry_powder_usd_bn: float, gdp_usd_bn: float = 1500) -
 
 
 # ---------------------------------------------------------------------------
-# Prompt contract — ADK LlmAgent (Gemini 3.7 Flash High)
+# Prompt contract - ADK LlmAgent (Gemini 3.7 Flash High)
 # ---------------------------------------------------------------------------
 INDUSTRY_SYSTEM_PROMPT = """\
-You are Industry/Macro Analyst (T07) — IDX institutional research.
+You are Industry/Macro Analyst (T07) - IDX institutional research.
 
 Rules:
 - JANGAN hitung. Panggil calc_yoy_pct / calc_commodity_sensitivity / calc_danantara_gdp_pct untuk angka.
-- Brent: sebut spot + IEA demand/supply + OPEC+ spare. Kutip IEA OMR bulan/tahun + url. Jangan ngarang harga — pakai collector spot.
+- Brent: sebut spot + IEA demand/supply + OPEC+ spare. Kutip IEA OMR bulan/tahun + url. Jangan ngarang harga - pakai collector spot.
 - IEA: cite IEA Oil Market Report dengan bulan/tahun + url. Kalau tidak ada, label source T2 dan flag estimated.
 - Regulator: RATU=SKK Migas PSC/DMO 25% expiry 2035. MTEL=Kominfo 700MHz/2.6GHz. Bank=OJK/BI. Sebut regime + key term + change risk (PP 28/2025).
-- JPM 5 thematics — WAJIB mapping tiap sektor OW/N/UW ke >=1 thematic. Table: Theme | Description | Related sectors | Our exposure. Critic REJECT kalau OW tanpa theme.
+- JPM 5 thematics - WAJIB mapping tiap sektor OW/N/UW ke >=1 thematic. Table: Theme | Description | Related sectors | Our exposure. Critic REJECT kalau OW tanpa theme.
 - Danantara: $12bn = 0.8% GDP (JPM Fig 54), >$14bn SWF commitments, 9 priority sectors. Sebut struktur BPI+DAM+DIM + market signal SOE +25% YTD. Source: JPM p28-29 + CNBC Indonesia + danantara.go.id.
-- Index target: JCI 9,100 base / 10,000 bull / 7,800 bear (JPM 02 Dec 2025, priced 28 Nov 2025) — sebut EPS 8% x 15x flat bridge. Jangan ubah angka.
+- Index target: JCI 9,100 base / 10,000 bull / 7,800 bear (JPM 02 Dec 2025, priced 28 Nov 2025) - sebut EPS 8% x 15x flat bridge. Jangan ubah angka.
 - Bahasa default ID. Setiap klaim: source tier + url+date. Anti-sycophancy: defend(evidence) atau concede(correction).
 """
 
@@ -203,7 +203,7 @@ def build_industry_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Fixtures — offline dev / tests (seed=42 style)
+# Fixtures - offline dev / tests (seed=42 style)
 # ---------------------------------------------------------------------------
 JPM_FIVE_THEMATICS: list[Thematic] = [
     Thematic("T1_consumption", "Domestic consumption recovery", "p13",
@@ -304,7 +304,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="UW Energy (JPM) — single-pillar commodity exposure hedged via PSC floor",
+            sector_stance="UW Energy (JPM) - single-pillar commodity exposure hedged via PSC floor",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",
@@ -337,7 +337,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="OW Conglomerates (JPM T2_tsr / T5_danantara) — multi-pillar diversification & TSR re-rating",
+            sector_stance="OW Conglomerates (JPM T2_tsr / T5_danantara) - multi-pillar diversification & TSR re-rating",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",
@@ -358,7 +358,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="N Communication Services (JPM) — infra recurring, tower demand tied to FWA/fiberization",
+            sector_stance="N Communication Services (JPM) - infra recurring, tower demand tied to FWA/fiberization",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",
@@ -379,7 +379,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="OW Financials (JPM T3_foreign) — loan growth 10-12%, NIM resilience, ROE expansion",
+            sector_stance="OW Financials (JPM T3_foreign) - loan growth 10-12%, NIM resilience, ROE expansion",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",
@@ -412,7 +412,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="UW Coal (JPM T4_fiscal) — high cash dividend yield offset by ASP moderation",
+            sector_stance="UW Coal (JPM T4_fiscal) - high cash dividend yield offset by ASP moderation",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",
@@ -433,7 +433,7 @@ def fixture_from_archetype(
             ),
             thematics=JPM_FIVE_THEMATICS,
             danantara=danantara_block,
-            sector_stance="N General Market — neutral stance pending sector categorization",
+            sector_stance="N General Market - neutral stance pending sector categorization",
             index_target=index_target_dict,
             as_of=as_of_val,
             source_tier="T1",

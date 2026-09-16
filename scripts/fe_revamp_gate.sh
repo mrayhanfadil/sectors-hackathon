@@ -28,7 +28,7 @@ if [ "${SKIP_TESTS:-0}" != "1" ] && [ -f tests/test_fe_payload_endpoint.py ]; th
   note "$(echo "$OUT" | tail -1)"
   if echo "$OUT" | grep -qE "passed"; then ok "payload endpoint tests pass"; else bad "payload endpoint tests failed"; fi
 else
-  note "tests/test_fe_payload_endpoint.py not present — lane A has not landed"
+  note "tests/test_fe_payload_endpoint.py not present - lane A has not landed"
   bad "payload endpoint has no test file"
 fi
 
@@ -36,7 +36,7 @@ say "2. backend: the endpoint equals the builder the PDF uses (parity, live)"
 CODE_LOCAL=$(curl -s -o /dev/null -w '%{http_code}' --max-time 10 "http://127.0.0.1:8777${PAYLOAD_PATH}" || echo 000)
 note "GET http://127.0.0.1:8777${PAYLOAD_PATH} -> $CODE_LOCAL"
 if [ "$CODE_LOCAL" = "404" ]; then
-  blocked "the running backend serves no /payload — it predates this work, so the parity cannot be observed yet"
+  blocked "the running backend serves no /payload - it predates this work, so the parity cannot be observed yet"
 else
 PARITY=$(timeout 240 .venv/bin/python - <<'PY' 2>&1 | tail -4
 import json, sys, urllib.request
@@ -69,9 +69,9 @@ note "GET $API_BASE/api/report/BBCA/payload -> $CODE"
 if [ "$CODE" = "422" ]; then
   ok "uncovered ticker refused with 422 (body: $(head -c 160 /tmp/gate_422.json 2>/dev/null))"
 elif [ "$CODE" = "404" ]; then
-  blocked "404 — the running backend does not serve the payload route yet, so the refusal cannot be observed"
+  blocked "404 - the running backend does not serve the payload route yet, so the refusal cannot be observed"
 else
-  bad "uncovered ticker returned $CODE — a fabricated payload would be the wrong answer"
+  bad "uncovered ticker returned $CODE - a fabricated payload would be the wrong answer"
 fi
 
 say "3b. frontend reads the refusal in the shape the API actually sends"
@@ -80,7 +80,7 @@ say "3b. frontend reads the refusal in the shape the API actually sends"
 if grep -rqE "detail" src/fe/src/routes src/fe/src/lib 2>/dev/null; then
   ok "the FE references the detail envelope"
 else
-  bad "no FE file reads detail.* — the 422 missing list would render empty"
+  bad "no FE file reads detail.* - the 422 missing list would render empty"
 fi
 if grep -rqE "missing" src/fe/src/routes src/fe/src/lib 2>/dev/null; then
   ok "the FE surfaces the missing-field list"
@@ -116,7 +116,7 @@ if [ -f "$ENVF" ] && grep -q "VITE_API_URL" "$ENVF"; then
   if [ "$URL" = "$API_BASE" ]; then ok "production build targets $API_BASE"
   else bad "production build targets $URL but the gate checks $API_BASE"; fi
 else
-  bad "src/fe/.env.production does not define VITE_API_URL — the deployed bundle would call its own origin"
+  bad "src/fe/.env.production does not define VITE_API_URL - the deployed bundle would call its own origin"
 fi
 
 say "5. frontend: production build"
@@ -150,10 +150,10 @@ if [ -f "$FE_DUMP" ] && [ -f "${PDF_FOR_PARITY:-/tmp/AMMN_abida.pdf}" ]; then
   if [ "${SHORT:-0}" -eq 0 ]; then
     ok "every page of the PDF is represented on the page"
   else
-    bad "$SHORT PDF page(s) below 90% coverage on the web page — content is missing, not layout"
+    bad "$SHORT PDF page(s) below 90% coverage on the web page - content is missing, not layout"
   fi
 else
-  note "no rendered frontend text at $FE_DUMP — render the page first, then re-run (this step measures the painted page)"
+  note "no rendered frontend text at $FE_DUMP - render the page first, then re-run (this step measures the painted page)"
 fi
 
 say "6. frontend bundle: no fabrication markers, honest states present"
@@ -166,7 +166,7 @@ else
   for marker in "lorem ipsum" "dummy data" "sample data" "MOCK_DATA" "FAKE_DATA" "fixture data"; do
     if printf '%s' "$JS" | grep -qi "$marker"; then bad "bundle contains '$marker'"; else ok "bundle free of '$marker'"; fi
   done
-  # A MOCK token is not by itself fabrication — the demo route ships a notice saying its mock data was retired, and
+  # A MOCK token is not by itself fabrication - the demo route ships a notice saying its mock data was retired, and
   # that notice is the honest thing to ship. Flag a MOCK token only when it is not that notice.
   MOCKHITS=$(printf '%s' "$JS" | grep -oE ".{24}MOCK.{24}" | grep -vc "ROUTE DEPRECATED" || true)
   if [ "${MOCKHITS:-0}" -gt 0 ]; then bad "bundle carries a MOCK/DUMMY token outside the retirement notice ($MOCKHITS)"; else ok "the only MOCK token is the retirement notice"; fi
@@ -181,7 +181,7 @@ say "6b. no new fabrication candidate (ratchet against the judged set)"
 RATCHET=$(timeout 300 .venv/bin/python scripts/fe_fabrication_ratchet.py 2>&1 | tail -8)
 echo "$RATCHET" | sed 's/^/        /'
 if echo "$RATCHET" | grep -q "NEW FABRICATION CANDIDATE"; then
-  bad "a new fabrication candidate appeared — judge it and give a reason, then re-run --update"
+  bad "a new fabrication candidate appeared - judge it and give a reason, then re-run --update"
 else
   ok "scanner finds nothing beyond the judged set"
 fi
@@ -203,5 +203,5 @@ fi
 
 say "RESULT"
 printf '  %d passed, %d failed, %d blocked\n' "$PASS" "$FAIL" "$BLOCKED"
-[ "$FAIL" -eq 0 ] && echo "  GATE: green" || echo "  GATE: NOT green — do not claim the revamp is done"
+[ "$FAIL" -eq 0 ] && echo "  GATE: green" || echo "  GATE: NOT green - do not claim the revamp is done"
 exit $([ "$FAIL" -eq 0 ] && echo 0 || echo 1)

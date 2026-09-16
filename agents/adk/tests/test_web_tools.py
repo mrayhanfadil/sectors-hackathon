@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Tests for web_tools — Sectors search only (extract killed Sep 2026, Sectors-only rule).
+"""Tests for web_tools - Sectors search only (extract killed Sep 2026, Sectors-only rule).
 
 Two layers:
   1) Pure unit: domain tier classification, schema validation
@@ -32,7 +32,7 @@ from agents.adk.tools.web_tools import _domain_tier, TIER_DOMAINS, web_search  #
 
 
 # ----------------------------------------------------------------------------
-# Unit tests — domain tier classification
+# Unit tests - domain tier classification
 # ----------------------------------------------------------------------------
 def test_domain_tier_t1_indonesian_official():
     assert _domain_tier("https://www.idx.co.id/news") == "t1"
@@ -65,7 +65,7 @@ def test_domain_tier_strips_www():
 
 
 # ----------------------------------------------------------------------------
-# Behavioral — missing SECTORS_API_KEY returns honest empty (legacy removed)
+# Behavioral - missing SECTORS_API_KEY returns honest empty (legacy removed)
 # ----------------------------------------------------------------------------
 def test_web_search_missing_key_returns_empty():
     """No SECTORS_API_KEY → source=sectors_missing_key, empty results, no exception."""
@@ -81,7 +81,7 @@ def test_web_search_missing_key_returns_empty():
 
 
 def test_web_search_legacy_keys_ignored():
-    """Bogus TAVILY_API_KEY[S] are ignored — Sectors gateway only, honest empty keyless."""
+    """Bogus TAVILY_API_KEY[S] are ignored - Sectors gateway only, honest empty keyless."""
     saved_single = os.environ.pop("TAVILY_API_KEY", None)
     saved_multi = os.environ.pop("TAVILY_API_KEYS", None)
     saved_sectors = os.environ.pop("SECTORS_API_KEY", None)
@@ -98,17 +98,17 @@ def test_web_search_legacy_keys_ignored():
             os.environ["TAVILY_API_KEYS"] = saved_multi
         if saved_sectors is not None:
             os.environ["SECTORS_API_KEY"] = saved_sectors
-# Live network test — only runs if explicitly enabled
-# Tool registration smoke — FunctionTool compatibility
+# Live network test - only runs if explicitly enabled
+# Tool registration smoke - FunctionTool compatibility
 # ----------------------------------------------------------------------------
 def test_web_search_live_with_real_key():
-    """Live test — only runs if SECTORS_API_KEY is set in env.
+    """Live test - only runs if SECTORS_API_KEY is set in env.
 
     Skipped silently otherwise (CI without secrets or test isolation).
     Verifies source=sectors and result schema.
     """
     if not os.environ.get("SECTORS_API_KEY"):
-        print("    (skipped — no SECTORS_API_KEY in env)")
+        print("    (skipped - no SECTORS_API_KEY in env)")
         return
     out = asyncio.run(web_search("BBCA earnings 2026", n_results=3))
     assert out["source"] == "sectors", f"expected sectors, got {out['source']}"
@@ -117,7 +117,7 @@ def test_web_search_live_with_real_key():
 
 def test_web_search_maps_sectors_news_shape():
     """Sectors v2 news rows carry link in `source`, prose in `body`, time in
-    `timestamp` — the tool must surface all three (plus dimension-sum score),
+    `timestamp` - the tool must surface all three (plus dimension-sum score),
     not empty url/content with hardcoded 0.0."""
     from unittest import mock as _mock
 

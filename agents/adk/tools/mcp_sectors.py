@@ -11,7 +11,7 @@
 Endpoint: https://sectors-mcp.supertype.ai/mcp
 Auth: Authorization: Bearer <SECTORS_API_KEY>
 
-Uses apiKey header pattern — mirrors adk-go-skill/apiKeyTransport but
+Uses apiKey header pattern - mirrors adk-go-skill/apiKeyTransport but
 in Python ADK via McpToolset(StreamableHTTPConnectionParams(headers=...)).
 
 Ref: references/sectors-api-and-mcp.md, plan.md §6, https://adk.dev/mcp,
@@ -45,12 +45,12 @@ def sectors_mcp_toolset(
         tool_list_cache_ttl_seconds: Cache tools/list for this many seconds.
 
     Returns:
-        McpToolset — pass as LlmAgent(tools=[..., toolset]) or via toolsets.
+        McpToolset - pass as LlmAgent(tools=[..., toolset]) or via toolsets.
     """
     key = api_key or os.getenv("SECTORS_API_KEY") or os.getenv("SECTORS_MCP_API_KEY") or ""
     if not key:
         raise ValueError(
-            "SECTORS_API_KEY is not set — required for Sectors MCP. "
+            "SECTORS_API_KEY is not set - required for Sectors MCP. "
             "Set SECTORS_API_KEY env or pass api_key=."
         )
     endpoint = url or SECTORS_MCP_URL

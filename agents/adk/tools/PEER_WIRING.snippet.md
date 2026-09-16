@@ -1,4 +1,4 @@
-# PEER_WIRING Snippet — Bounded Inter-Agent Comms (max 3)
+# PEER_WIRING Snippet - Bounded Inter-Agent Comms (max 3)
 
 This snippet provides the exact wiring for bounded peer communications (`request_peer_data`) across the research agents (`analyst`, `industry`, `risk`, `kpi`).
 

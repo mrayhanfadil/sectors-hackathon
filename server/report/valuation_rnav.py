@@ -1,4 +1,4 @@
-"""Opsi C — the RNAV branch of deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
+"""Opsi C - the RNAV branch of deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
 For a property / plantation / resources issuer whose value sits in identifiable assets. Unlike the DCF
 and DDM branches there is no engine repo behind this one (the owner supplied engines for DCF, DDM and
@@ -35,7 +35,7 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     if not asset_input:
         reasons.append(
             "tidak ada data aset (nama aset, ukuran, NAV per aset, % kepemilikan) di payload maupun "
-            "assumptions — Sectors tidak menyediakan cadangan/NAV per aset"
+            "assumptions - Sectors tidak menyediakan cadangan/NAV per aset"
         )
     if discount is None:
         reasons.append("discount to RNAV belum ditetapkan analis (assumptions.rnav_discount)")
@@ -55,7 +55,7 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         return {
             "available": False,
             "method": "rnav",
-            "title": "Valuasi Intrinsik — RNAV",
+            "title": "Valuasi Intrinsik - RNAV",
             "missing": reasons,
             "subtitle": "Opsi C dipilih tetapi data aset belum ada; halaman sengaja tidak diisi NAV karangan.",
             "sources": ["Sectors API", f"data/assumptions/{payload.get('ticker', '?')}.json"],
@@ -109,7 +109,7 @@ def build_rnav_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     page = {
         "available": True,
         "method": "rnav",
-        "title": "Valuasi Intrinsik — RNAV",
+        "title": "Valuasi Intrinsik - RNAV",
         "subtitle": (
             "Opsi C (RNAV) aktif: nilai berdiri di aset yang teridentifikasi (NAV per aset x porsi "
             "kepemilikan), lalu bridge ke ekuitas dan satu discount to RNAV sebagai judgment call analis."
@@ -188,11 +188,11 @@ def _rnav_notes(assum: dict, assets: list, discount, rnav_per_share) -> list[str
     if not any(a["discount_rate"] is not None for a in assets):
         notes.append(
             "Discount rate per aset belum tersedia, jadi Exhibit 9 menampilkan parameter bridge dan grid "
-            "memakai rentang discount rate indikatif — bukan WACC hasil perhitungan per proyek."
+            "memakai rentang discount rate indikatif - bukan WACC hasil perhitungan per proyek."
         )
     if outside:
         notes.append(
-            "NAV dari luar Sectors terdeteksi pada: " + ", ".join(outside) + " — aturan proyek hanya "
+            "NAV dari luar Sectors terdeteksi pada: " + ", ".join(outside) + " - aturan proyek hanya "
             "mengizinkan data Sectors, jadi baris ini harus diganti sumber Sectors atau dihapus."
         )
     notes.append(
@@ -235,7 +235,7 @@ def _view_rnav(page: dict) -> dict:
     ]
     page["block1_headers"] = ["Aset / proyek", "Ukuran", "NAV per aset (Rp bn)", "% kepemilikan",
                               "NAV attributable (Rp bn)", "Sumber NAV"]
-    page["block2_headers"] = ["Blok 2 — Bridge RNAV", "Rp bn", "Per saham (Rp)"]
+    page["block2_headers"] = ["Blok 2 - Bridge RNAV", "Rp bn", "Per saham (Rp)"]
     page["block2_rows"] = [
         ("Sum of NAV (attributable ke emiten)", _fmt(b["sum_nav"]), "\u2014"),
         ("(+) Cash & Equivalents", _fmt(b["cash"]), "\u2014"),
@@ -244,7 +244,7 @@ def _view_rnav(page: dict) -> dict:
         ("Total RNAV", _fmt(b["total_rnav"]), _fmt0(b["rnav_per_share"])),
         ("(-) Discount to RNAV", _fmt(b["discount"] * 100, 1) + "%", "\u2014"),
     ]
-    page["block3_headers"] = ["Blok 3 — Target price", "Nilai", "Catatan"]
+    page["block3_headers"] = ["Blok 3 - Target price", "Nilai", "Catatan"]
     page["block3_rows"] = [
         ("RNAV per share", _fmt0(b["rnav_per_share"]), "sebelum discount"),
         ("Target Price = RNAV per share x (1 - discount)", _fmt0(b["target_price"]), "highlight: angka yang dipakai laporan"),
@@ -294,7 +294,7 @@ def _narrative_rnav(page: dict) -> list[str]:
         ),
         (
             "Dua hal harus dijaga saat aset bertambah: setiap NAV per aset wajib punya sumber (DCF per proyek "
-            "atau appraisal pihak ketiga), dan aset development-stage sebaiknya memakai discount rate berbeda — "
+            "atau appraisal pihak ketiga), dan aset development-stage sebaiknya memakai discount rate berbeda - "
             "Exhibit 9 menampilkan parameter per aset begitu datanya ada."
         ),
     ]

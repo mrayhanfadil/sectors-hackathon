@@ -25,7 +25,7 @@ def isolated_client(tmp_path, monkeypatch) -> TestClient:
     """Fresh app wired to a tmp SQLite DB.
 
     The global app reads the PROD cache file, which legitimately holds
-    rows (each one a billed credit) — emptiness assertions must never run
+    rows (each one a billed credit) - emptiness assertions must never run
     against it.
     """
     from server.storage import SectorsCache
@@ -39,7 +39,7 @@ def isolated_client(tmp_path, monkeypatch) -> TestClient:
 
 
 def test_debug_cache_endpoint_returns_stats_shape(client: TestClient) -> None:
-    """Keyless (no SECTORS_API_KEY in test env) — stats must still return."""
+    """Keyless (no SECTORS_API_KEY in test env) - stats must still return."""
     r = client.get("/api/debug/cache")
     assert r.status_code == 200, f"got {r.status_code}: {r.text[:400]}"
     body = r.json()
@@ -79,7 +79,7 @@ def test_debug_cache_bust_with_prefix_no_match(client: TestClient) -> None:
 
 
 def test_debug_cache_prune_empty_returns_zero(isolated_client: TestClient) -> None:
-    """Prune on an empty DB — no rows to delete — must be a 200, deleted=0.
+    """Prune on an empty DB - no rows to delete - must be a 200, deleted=0.
 
     Runs against the isolated tmp DB, NOT the prod cache file: the prod cache
     legitimately holds expired rows (each one a billed credit), so asserting

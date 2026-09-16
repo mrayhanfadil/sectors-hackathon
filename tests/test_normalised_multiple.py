@@ -45,7 +45,7 @@ def test_rebasing_the_multiple_does_not_rescue_this_name(history):
     assert history["trailing_mean"] and history["normalised_mean"]
     ratio = history["normalised_mean"] / history["trailing_mean"]
     assert 0.8 < ratio < 1.25, f"normalised {history['normalised_mean']:.2f}x vs trailing " \
-                               f"{history['trailing_mean']:.2f}x — the rebase now does something new"
+                               f"{history['trailing_mean']:.2f}x - the rebase now does something new"
 
 
 def test_applying_the_normalised_multiple_still_lands_far_above_the_market(history):
@@ -75,8 +75,8 @@ def test_market_ev_is_stable_while_earnings_swing(history):
 
 
 def test_no_reserve_data_in_the_licence_for_the_rnav_leg():
-    """The reserve-based leg BRIDS uses is not buildable from the licensed dataset — recorded so nobody
+    """The reserve-based leg BRIDS uses is not buildable from the licensed dataset - recorded so nobody
     'finds' reserve numbers that were never licensed."""
     blob = CACHE.read_text().lower()
     for needle in ("reserve", "ore_tonnage", "grade", "proven_probable"):
-        assert needle not in blob, f"{needle!r} appeared in the licensed payload — the RNAV leg can be built"
+        assert needle not in blob, f"{needle!r} appeared in the licensed payload - the RNAV leg can be built"

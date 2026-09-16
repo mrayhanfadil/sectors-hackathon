@@ -1,4 +1,4 @@
-"""Mock Sectors Router — server/routers/mock_sectors.py
+"""Mock Sectors Router - server/routers/mock_sectors.py
 Mirrors 4 Sectors v2 API endpoints populated strictly from free public sources:
 1. GET /api/mock/filings -> mirrors GET /v2/filings/
 2. GET /api/mock/news -> mirrors GET /v2/news/
@@ -86,7 +86,7 @@ def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
     1. Tries data/assumptions/<SYM>.json -> reads provenance.sector + archetype
     2. Falls back to data/peers.json by_ticker.<SYM>.sector
     3. Falls back to Sectors company report overview sector (keyless -> skip honestly)
-    4. Returns ("unknown", "unknown") honestly — no fabrication
+    4. Returns ("unknown", "unknown") honestly - no fabrication
     """
     sym = symbol.upper().strip().replace(".JK", "")
 
@@ -141,7 +141,7 @@ def _resolve_taxonomy(symbol: str) -> tuple[str, str]:
     except Exception:
         pass
 
-    # 4. Returns ("unknown", "unknown") honestly — no fabrication
+    # 4. Returns ("unknown", "unknown") honestly - no fabrication
     return "unknown", "unknown"
 
 
@@ -151,7 +151,7 @@ def _get_sector_and_subsector(symbol: str) -> tuple[str, str]:
 # ── Required Top-Level Helpers ──────────────────────────────────────────────
 
 # KILLED (Sep 2026, Sectors-only rule): _scrape_idx_disclosures +
-# _scrape_idx_agm_announcements lived here (Camoufox scraping of idx.co.id —
+# _scrape_idx_agm_announcements lived here (Camoufox scraping of idx.co.id -
 # external source, prohibited). Filings/AGMs come exclusively from the Sectors
 # API now; keyless endpoints return honest empty. Do not re-add scrapers.
 def _derive_sectors_dividends(symbol: str) -> list[dict[str, Any]]:
@@ -311,7 +311,7 @@ async def get_filings(
 
     if not items:
         # Sectors-only (Sep 2026): IDX Camoufox scraper killed (external
-        # source). Empty until the Sectors key lands — never scraped.
+        # source). Empty until the Sectors key lands - never scraped.
         pass
     elif transaction_type:
         items = [it for it in items if it.get("transaction_type") == transaction_type]
@@ -401,7 +401,7 @@ async def get_news(
             logger.info("sectors news skipped: %s", e)
 
         # (Sep 2026, no-fabrication sweep): curated block killed with
-        # scripts/news.py CURATED_NEWS — no hand-written news served here.
+        # scripts/news.py CURATED_NEWS - no hand-written news served here.
         # News flows from Sectors (+ IDX scrape); empty until then, never invented.
 
         # Filtering
@@ -476,7 +476,7 @@ async def get_corporate_actions(
         except Exception:
             pass
 
-        # AGMs: Sectors-only (Sep 2026) — IDX disclosure scrape killed
+        # AGMs: Sectors-only (Sep 2026) - IDX disclosure scrape killed
         # (external source). Empty until Sectors exposes meeting actions.
         agm_list: list[dict[str, Any]] = []
 

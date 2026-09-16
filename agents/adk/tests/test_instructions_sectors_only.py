@@ -7,7 +7,7 @@
 #     http://www.apache.org/licenses/LICENSE-2.0
 """Sectors-only ratchet for ADK agent instructions (13 Sep 2026).
 
-No agent prompt may PERMIT an external source — every instruction that
+No agent prompt may PERMIT an external source - every instruction that
 names a data origin must route it through Sectors (fetch-* tools,
 Sectors-backed web_search, or peer outputs). Mentions of outside outlets
 are allowed only as prohibitions (Critic REJECT examples, no-browse rules).
@@ -25,7 +25,7 @@ if str(_REPO) not in sys.path:
 
 from agents.adk.agents import instructions as ins  # noqa: E402
 
-# Every live agent instruction (social retired 14 Sep 2026 — kept as a retired
+# Every live agent instruction (social retired 14 Sep 2026 - kept as a retired
 # marker in instructions.py so old refs fail loudly; sub-agent orphans excluded).
 LIVE = {
     "collector": ins.collector_instruction,
@@ -67,7 +67,7 @@ def test_tools_field_mentions_are_sectors_scoped():
         low = text.lower()
         if ("fetch-" in low or "web_search" in low) and "sectors" not in low:
             weak.append(name)
-    # modeler/calc-only agents name no feeds at all — they are fine either way;
+    # modeler/calc-only agents name no feeds at all - they are fine either way;
     # this only fires when a prompt names tools without Sectors scope.
     assert not weak, f"tool mentions without Sectors scope: {weak}"
 

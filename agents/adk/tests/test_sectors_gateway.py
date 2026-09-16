@@ -9,7 +9,7 @@
 """Tests for the Sectors gateway stats shim (legacy removed, Lane E).
 
 Replaces the Tavily round-robin key pool tests: there is no third-party pool
-anymore — _pool_stats reports the single Sectors gateway (key present or not).
+anymore - _pool_stats reports the single Sectors gateway (key present or not).
 """
 
 from __future__ import annotations

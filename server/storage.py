@@ -303,7 +303,7 @@ class AgentRunStore:
             cur.execute(
                 "CREATE INDEX IF NOT EXISTS idx_agent_events_run ON agent_events(run_id, seq);"
             )
-            # Sectors payload cache — minimize Sectors API credit burn.
+            # Sectors payload cache - minimize Sectors API credit burn.
             # Key = sha256(endpoint_path + normalized_params), payload = raw JSON
             # blob, expires_at = unix seconds. Wrapped by sectors._get().
             cur.execute(
@@ -339,7 +339,7 @@ class AgentRunStore:
         UPDATE in place to preserve the existing event count, finished_at, and
         accumulated state. Otherwise INSERT a fresh row.
 
-        Returns base_seq — the next event seq to use (n_events of the existing row
+        Returns base_seq - the next event seq to use (n_events of the existing row
         if resuming, 0 if fresh). The SSE handler must add its local counter to
         base_seq when appending events, so new events never collide with prior seqs.
         """
@@ -384,7 +384,7 @@ class AgentRunStore:
     def append_event(self, run_id: str, seq: int, event: Any) -> None:
         """Insert one agent_events row. Extract author/node/event_type/ts from event;
         serialize full event to JSON for payload_json.
-        Skip if run_id unknown (defensive — run_id may not exist if start_run race).
+        Skip if run_id unknown (defensive - run_id may not exist if start_run race).
         Commit after each insert.
         """
         serialized = serialize_event(event)
@@ -771,7 +771,7 @@ class AgentRunStore:
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# Sectors payload cache — minimize Sectors API credit burn.
+# Sectors payload cache - minimize Sectors API credit burn.
 #
 # Lives in the same SQLite file as Storage but is a separate singleton so
 # hot-path lookups don't acquire the Storage row lock. Wrapped by sectors._get()
@@ -833,11 +833,11 @@ class SectorsCache:
         """Return (payload, hit). hit=False means absent.
 
         NO-EXPIRY (15 Sep 2026, credit-thin mode): every cached row is a HIT
-        regardless of age — Sectors data never expires from cache. The payload
+        regardless of age - Sectors data never expires from cache. The payload
         carries ``_stale_age_h`` (hours since TTL passed) so the Critic and
         callers see freshness transparently. Set SECTORS_STALE_OK=0 to restore
         strict TTL expiry (fresh pull, burns 1 credit per endpoint).
-        Absent rows still miss. Cached 404 markers are NOT unwrapped here —
+        Absent rows still miss. Cached 404 markers are NOT unwrapped here -
         server/sectors._get() re-raises them as SectorsError.
         """
         import os as _os
@@ -872,7 +872,7 @@ class SectorsCache:
         """Freshest cached payload for an endpoint, ANY params.
 
         Credit guard (15 Sep 2026): once a date-windowed endpoint has been paid
-        for, a drifting window must never burn a second credit — the caller
+        for, a drifting window must never burn a second credit - the caller
         serves the freshest cached row instead and discloses the substitution.
         Returns (payload, meta{fetched_at,expires_at}) or None when the endpoint
         has no rows. Negative-404 markers are never eligible (errors, not data).
@@ -934,7 +934,7 @@ class SectorsCache:
             return cur.rowcount
 
     def stats(self) -> dict:
-        """Inspect cache state — used by a /api/debug/cache endpoint."""
+        """Inspect cache state - used by a /api/debug/cache endpoint."""
         now = time.time()
         with self._lock:
             total = self.conn.execute("SELECT COUNT(*) AS n FROM sectors_cache;").fetchone()["n"]

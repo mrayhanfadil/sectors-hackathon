@@ -29,7 +29,7 @@ REAL_TICKERS = ["BBCA", "AMMN", "RATU", "CDIA", "MTEL", "ADRO", "IHSG"]
 
 @pytest.mark.parametrize("ticker", FAKE_TICKERS)
 def test_guard_helper_refuses_junk_tickers(ticker: str) -> None:
-    """Unit level — no request, no run, no credit."""
+    """Unit level - no request, no run, no credit."""
     res = _invalid_ticker_response(ticker)
     assert res is not None, f"{ticker!r} must be refused"
     assert res.status_code == 400

@@ -7,7 +7,7 @@
    Every chart/table carries "Exhibit N. <descriptive title>" ABOVE it, numbered by a
    GLOBAL counter that runs from the first page to the last (never reset per page and
    never hand-written at the call site), and the constant line
-   "Source: Company, Team Estimates" BELOW it — tanpa terkecuali, even for purely
+   "Source: Company, Team Estimates" BELOW it - tanpa terkecuali, even for purely
    historical data from the financial statements.
 
    The per-exhibit source an agent supplies is provenance for AUDIT; it is never
@@ -90,7 +90,7 @@
 <div class="disclaimer-block">
   <p class="disc-title">INFORMASI, BUKAN SARAN INVESTASI</p>
   <p>Laporan ini dihasilkan oleh sistem multi-agent untuk keperluan informasi dan analisis data pasar modal
-  Indonesia. Seluruh output adalah data historis dan agregat — bukan rekomendasi, prediksi, atau saran investasi.
+  Indonesia. Seluruh output adalah data historis dan agregat - bukan rekomendasi, prediksi, atau saran investasi.
   Keputusan investasi sepenuhnya tanggung jawab pembaca. Selalu lakukan riset mandiri dan konsultasikan dengan
   penasihat keuangan berlisensi sebelum berinvestasi. Performa masa lalu tidak menjamin hasil di masa depan.
   Akurasi data tunduk pada kualitas data sumber.</p>
@@ -152,7 +152,7 @@
   h2 { font-size: 14pt; color: var(--brand-dark); }
   h3 { font-size: 10.5pt; margin: 10pt 0 4pt; color: var(--ink); }
   p { margin: 4pt 0; }
-  /* Sensitivity components: the reviewer called the old block a wall of text — every value it narrated was
+  /* Sensitivity components: the reviewer called the old block a wall of text - every value it narrated was
      already in the payload, so the page now shows them as a strip, a bridge and a method spread, and keeps the
      prose for the reasoning. */
   .sens-title { font-size: 8pt; font-weight: 700; color: var(--ab-navy); margin: 0 0 2pt; }
@@ -228,7 +228,7 @@
   .fin-table tbody tr:nth-child(even) { background: var(--ab-ice-faint); }
   .fin-table tfoot td { font-weight: 700; border-top: 1pt solid var(--ab-navy); }
 
-  /* Sensitivity heatmap: colour encodes upside, the same reading as the tools' heatmap — red where the grid
+  /* Sensitivity heatmap: colour encodes upside, the same reading as the tools' heatmap - red where the grid
      prices below the market, cream at parity, navy where it prices well above. */
   .fin-table.sens td.sens-cell { text-align: right; font-variant-numeric: tabular-nums; }
   .fin-table.sens td.h-neg2 { background: rgba(192,57,43,.86); color: #fff; }
@@ -290,7 +290,7 @@
   .card-tint { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 7pt;
                background: var(--ab-ice-faint); }
   /* Investment thesis as a numbered rail: the numeral is the anchor, hairlines do the separating, and the
-     extracted figure sits on the right so each pillar is scannable. No boxes — a stack of tinted cards
+     extracted figure sits on the right so each pillar is scannable. No boxes - a stack of tinted cards
      reads as one grey block and gives every point the same weight. */
   ol.thesis-rail { list-style: none; margin: 5pt 0 0; padding: 0; }
   ol.thesis-rail > li { display: grid; grid-template-columns: 20pt 1fr auto; column-gap: 9pt;
@@ -348,7 +348,7 @@
   .para-b { font-size: 7.9pt; line-height: 1.32; text-align: justify; }
   /* A subheading must never end a page with its paragraph on the next one, and a paragraph
      must never be cut in half by a page break (cover spreads flow across pages when the copy
-     is long — the benchmark fits everything on one page only because its copy is half ours). */
+     is long - the benchmark fits everything on one page only because its copy is half ours). */
   .para-wrap { break-inside: avoid; }
 
   .rating-box { border: 1.5pt solid var(--brand); border-radius: 5pt; padding: 10pt; text-align: center; }
@@ -413,7 +413,7 @@
    `running()` keeps its arguments only as a fallback for a renderer that never
    installed the global. #}
 {% macro running(brand_label="", date="", ticker="") -%}
-{# Skipped when Chromium draws the furniture (native_furniture) — emitting it here as
+{# Skipped when Chromium draws the furniture (native_furniture) - emitting it here as
    well would print the header twice on every page. #}
 {% if not HOUSE.native_furniture %}
 <div class="rhdr">
@@ -445,15 +445,15 @@
   <table class="fin-table" style="margin:0;">
     <thead><tr><th>Kategori</th><th>Definisi</th></tr></thead>
     <tbody>
-      <tr><td><b>SECTOR / INDUSTRY — OVERWEIGHT</b></td><td>Sektor & industri berpotensi dan kondisi baik</td></tr>
-      <tr><td><b>SECTOR / INDUSTRY — NEUTRAL</b></td><td>Sektor & industri stabil atau cenderung stagnant</td></tr>
-      <tr><td><b>SECTOR / INDUSTRY — UNDERWEIGHT</b></td><td>Sektor & industri tantangan dan kondisi buruk</td></tr>
-      <tr><td><b>STOCK — BUY</b></td><td>Performa &gt; +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
-      <tr><td><b>STOCK — TRADING BUY</b></td><td>Performa +5% sampai +15%, minor sampai medium term</td></tr>
-      <tr><td><b>STOCK — HOLD</b></td><td>Performa -10% sampai +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
-      <tr><td><b>STOCK — SELL</b></td><td>Performa &lt; -15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
-      <tr><td><b>STOCK — TRADING SELL</b></td><td>Performa -5% sampai -15%, minor sampai medium term</td></tr>
-      <tr><td><b>STOCK — NOT RATED</b></td><td>Saham di luar cakupan riset reguler</td></tr>
+      <tr><td><b>SECTOR / INDUSTRY - OVERWEIGHT</b></td><td>Sektor & industri berpotensi dan kondisi baik</td></tr>
+      <tr><td><b>SECTOR / INDUSTRY - NEUTRAL</b></td><td>Sektor & industri stabil atau cenderung stagnant</td></tr>
+      <tr><td><b>SECTOR / INDUSTRY - UNDERWEIGHT</b></td><td>Sektor & industri tantangan dan kondisi buruk</td></tr>
+      <tr><td><b>STOCK - BUY</b></td><td>Performa &gt; +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK - TRADING BUY</b></td><td>Performa +5% sampai +15%, minor sampai medium term</td></tr>
+      <tr><td><b>STOCK - HOLD</b></td><td>Performa -10% sampai +15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK - SELL</b></td><td>Performa &lt; -15% dalam 12 bulan ke depan (eks-dividen)</td></tr>
+      <tr><td><b>STOCK - TRADING SELL</b></td><td>Performa -5% sampai -15%, minor sampai medium term</td></tr>
+      <tr><td><b>STOCK - NOT RATED</b></td><td>Saham di luar cakupan riset reguler</td></tr>
     </tbody>
   </table>
 </div>
@@ -767,7 +767,7 @@
 
 {% macro svg_implied_bars(rows, price, headline="") -%}
 {#- Implied price per multiple: grouped bars (1Y average in navy, 1Y median in ice) against the price now, drawn the
-    way the peers tool draws it. Geometry uses dot decimals — a comma decimal is not a number to an SVG renderer. -#}
+    way the peers tool draws it. Geometry uses dot decimals - a comma decimal is not a number to an SVG renderer. -#}
   {% set W = 660 %}{% set H = 206 %}
   {% set pad_l = 54 %}{% set pad_r = 16 %}{% set pad_t = 30 %}{% set pad_b = 46 %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
@@ -827,7 +827,7 @@
     <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 30 }}" font-size="8.5" font-weight="700" fill="{{ NAVY }}"
           text-anchor="middle">{{ r.label }}{{ " *" if headline and r.key == headline else "" }}</text>
     <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 18 }}" font-size="7.5" fill="{{ MUTED }}" text-anchor="middle">
-      {{ ("%.0f%%"|format(r.delta_pct)) if r.delta_pct else "—" }}</text>
+      {{ ("%.0f%%"|format(r.delta_pct)) if r.delta_pct else "-" }}</text>
     {% endfor %}
     <line x1="{{ pad_l }}" y1="{{ pad_t + chart_h }}" x2="{{ W - pad_r }}" y2="{{ pad_t + chart_h }}"
           stroke="{{ ICE_SOFT }}" stroke-width="0.9"/>

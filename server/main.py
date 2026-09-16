@@ -56,16 +56,16 @@ async def lifespan(app: FastAPI):
     settings = get_settings()
     # init cache (Sectors-only; IDX Postgres pool killed Sep 2026)
     get_cache(settings.cache_ttl)
-    log.info(f"server up — cache ttl {settings.cache_ttl}s (Sectors-only, no external pools)")
+    log.info(f"server up - cache ttl {settings.cache_ttl}s (Sectors-only, no external pools)")
     yield
-    log.info("server received shutdown signal (SIGTERM/SIGINT) — initiating graceful shutdown")
-    log.info("server down — cleanup complete")
+    log.info("server received shutdown signal (SIGTERM/SIGINT) - initiating graceful shutdown")
+    log.info("server down - cleanup complete")
 
 
 def create_app() -> FastAPI:
     settings = get_settings()
     app = FastAPI(
-        title="Sectors Institutional Report — API",
+        title="Sectors Institutional Report - API",
         version="t04-0.1.0",
         description=(
             "Backend solid for Institutional-Grade Equity Report (T03 Market Intelligence). "
@@ -80,7 +80,7 @@ def create_app() -> FastAPI:
     # Production Hardening Middleware: 60 req/min rate limiter + request latency logging
     app.add_middleware(ProductionHardeningMiddleware)
 
-    # CORS — allow Vite + Pages.dev (regex handles *.pages.dev preview deploys)
+    # CORS - allow Vite + Pages.dev (regex handles *.pages.dev preview deploys)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_list,
@@ -111,7 +111,7 @@ def create_app() -> FastAPI:
             "mock_sectors": mock_status,
         }
 
-    # routers — 6 endpoints per T04 spec + ADK agent stream
+    # routers - 6 endpoints per T04 spec + ADK agent stream
     app.include_router(router_health, tags=["health"])
     app.include_router(router_report, tags=["report"])
     app.include_router(router_outlook, tags=["outlook"])
@@ -148,9 +148,9 @@ def create_app() -> FastAPI:
                 "/api/mock/news?symbols=BBCA",
                 "/api/mock/corporate-actions?symbol=BBCA",
                 "/api/mock/quarterly-financials?symbol=BBCA",
-                "/api/debug/cache  — SQLite-backed Sectors payload cache stats",
-                "/api/debug/cache/bust (POST, ?prefix=…) — invalidate by prefix",
-                "/api/debug/cache/prune (POST) — drop expired rows",
+                "/api/debug/cache  - SQLite-backed Sectors payload cache stats",
+                "/api/debug/cache/bust (POST, ?prefix=…) - invalidate by prefix",
+                "/api/debug/cache/prune (POST) - drop expired rows",
             ],
         }
 

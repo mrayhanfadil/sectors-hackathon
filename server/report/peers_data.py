@@ -10,7 +10,7 @@ Contract
   actually returned.
 
 Technique notes that cost real credits to learn (keep them):
-  - Peer ratios (`pe_ttm`, `pb_mrq`) come from `company_report(ticker, 'peers')` — one snapshot, one
+  - Peer ratios (`pe_ttm`, `pb_mrq`) come from `company_report(ticker, 'peers')` - one snapshot, one
     as-of, consistent across every row. Do NOT mix them with market caps from another source: the
     peers payload's `market_cap` is a prior fiscal year's, and blending it with LTM earnings produced
     nonsense (TBMS 2.31x against Sectors' own published 12.51x).
@@ -82,7 +82,7 @@ def _num(row: dict, *names: str) -> Optional[float]:
 
 
 def _client():
-    """Sectors client with the team key loaded — only used on a cache miss."""
+    """Sectors client with the team key loaded - only used on a cache miss."""
     import sys
     root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
     if root not in sys.path:
@@ -177,7 +177,7 @@ def daily_history(ticker: str, end: Optional[str] = None, refresh: bool = False,
 
 # --------------------------------------------------------------------------- derivations
 def ttm(rows: list, *names: str) -> Optional[float]:
-    """Sum of the last four quarters — the flow driver for a trailing multiple."""
+    """Sum of the last four quarters - the flow driver for a trailing multiple."""
     last = rows[-TTM_QUARTERS:]
     vals = [_num(r, *names) for r in last]
     vals = [v for v in vals if v is not None]
@@ -193,7 +193,7 @@ def net_debt(row: dict) -> Optional[float]:
 
 
 def build_peer_table(ticker: str = "AMMN", refresh: bool = False) -> dict:
-    """Exhibit 11 payload — one arithmetic for every row, median/average from the peer set only."""
+    """Exhibit 11 payload - one arithmetic for every row, median/average from the peer set only."""
     log = CreditLog()
     ratios = peer_ratios(ticker, refresh, log)
     rows_out = []
@@ -253,8 +253,8 @@ def build_peer_table(ticker: str = "AMMN", refresh: bool = False) -> dict:
         "stats": stats,
         "pe_excluded": [r["symbol"] for r in rows_out if not r["is_covered"] and not r["pe_meaningful"]],
         "sources": [
-            f"Sectors API: company_report({ticker},'peers') — published pe_ttm / pb_mrq, as of {AS_OF}",
-            "Sectors API: quarterly financials per peer — TTM earnings, TTM EBITDA, latest equity and net debt",
+            f"Sectors API: company_report({ticker},'peers') - published pe_ttm / pb_mrq, as of {AS_OF}",
+            "Sectors API: quarterly financials per peer - TTM earnings, TTM EBITDA, latest equity and net debt",
             "market cap recovered on the published basis: pb_mrq x latest equity",
         ],
         "credit_log": log.report(),
@@ -264,7 +264,7 @@ def build_peer_table(ticker: str = "AMMN", refresh: bool = False) -> dict:
 
 
 def build_bands(ticker: str = "AMMN", refresh: bool = False) -> dict:
-    """Exhibits 12-13 payload — trailing multiples over a one-year window + implied prices."""
+    """Exhibits 12-13 payload - trailing multiples over a one-year window + implied prices."""
     log = CreditLog()
     sessions_raw = daily_history(ticker, AS_OF, refresh, log)
     q = quarterly(ticker, ticker, refresh, log)
@@ -355,7 +355,7 @@ def build_bands(ticker: str = "AMMN", refresh: bool = False) -> dict:
         "sources": [
             f"Sectors API: daily prices + market cap, {sessions[0]['date']} to {last['date']} "
             f"({len(sessions)} sessions, pulled as four 90-day windows)",
-            f"Sectors API: quarterly financials — rolling TTM ending {driver['as_of']}",
+            f"Sectors API: quarterly financials - rolling TTM ending {driver['as_of']}",
         ],
         "credit_log": log.report(),
     }

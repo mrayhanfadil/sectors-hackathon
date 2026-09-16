@@ -1,15 +1,15 @@
-"""Slide rules — shared validator for `docs/rules/house-report-format.md` §7-§9.
+"""Slide rules - shared validator for `docs/rules/house-report-format.md` §7-§9.
 
 The exhibit/header/footer rules are owned by the renderer, so agents can only break them by
 emitting layout themselves (the Critic already catches that). The slide-structure rules are
 different: they constrain CONTENT that agents produce or that the cover builders derive, and
-until now nothing checked them — the only thing standing between a bad cover and the PDF was a
+until now nothing checked them - the only thing standing between a bad cover and the PDF was a
 human reading it.
 
 This module is the single implementation of those checks, imported by:
-  - `agents/critic.py`            — the ADK gate (REJECTs the document)
-  - `server/report/slide2.py`     — attaches the audit to the render payload
-  - `tests/test_house_format_adoption.py` — adoption guards
+  - `agents/critic.py`            - the ADK gate (REJECTs the document)
+  - `server/report/slide2.py`     - attaches the audit to the render payload
+  - `tests/test_house_format_adoption.py` - adoption guards
 
 Every check returns human-readable violation strings; an empty list means compliant. Checks never
 raise: a payload that is missing a section is itself a violation, not an exception.
@@ -42,7 +42,7 @@ KF_NO_DECIMAL_ROWS = ("Revenue", "EBITDA", "Net Profit")
 KATALIS_HEADING = "News, Sentimen & Katalis"
 
 # Slide 2 (docs/ammn-slides/slide2-industry-spec.md): three narrative paragraphs, no mandatory
-# object. Paragraph 3 reads market positioning only — valuation language there is a domain
+# object. Paragraph 3 reads market positioning only - valuation language there is a domain
 # violation, not a style nit, because the numbers live on the valuation page.
 INDUSTRY_PAGE_HEADINGS = (
     "1. Kondisi Industri",
@@ -94,7 +94,7 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
     if not _text(rating.get("action")):
         out.append("cover: rating block missing (`rating.action`)")
     if not _text(rating.get("action_status")):
-        out.append("cover: rating change status missing (`rating.action_status`) — the reader "
+        out.append("cover: rating change status missing (`rating.action_status`) - the reader "
                    "scans this before reading anything else")
     labels = [_text(r[0]) for r in ((s1.get("price_box") or {}).get("rows") or []) if r]
     for needed in ("Last Price", "Target Price", "Previous TP", "Upside/Downside"):
@@ -111,7 +111,7 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
     if not _text((s1.get("analyst") or {}).get("name")):
         out.append("cover: analyst block missing a name")
     if not _text(s1.get("theme_title")):
-        out.append("cover: theme title missing — the report must state its thesis, not a "
+        out.append("cover: theme title missing - the report must state its thesis, not a "
                    "generic product name")
     elif s1["theme_title"].strip().lower() in {"company update", "update", "equity research"}:
         out.append(f"cover: theme title {s1['theme_title']!r} is generic")
@@ -121,7 +121,7 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
         out.append(f"cover: {len(bullets)} highlights, expected {COVER_BULLETS}")
     for i, b in enumerate(bullets, 1):
         if not _has_number(_text(b)):
-            out.append(f"cover: highlight {i} carries no number — every highlight is a "
+            out.append(f"cover: highlight {i} carries no number - every highlight is a "
                        "quantitative claim, not an adjective")
     if not _text((s1.get("financial_para") or {}).get("body")):
         out.append("cover: paragraph 1 (financial performance) missing")
@@ -141,7 +141,7 @@ def audit_katalis(text: str) -> list[str]:
         out.append("paragraph 2 does not identify the period's catalysts")
     if "Priced-in" not in body and "price-in" not in body:
         out.append("paragraph 2 has no verdict on whether the market has priced the "
-                   "catalysts in — required, and it must read off relative performance")
+                   "catalysts in - required, and it must read off relative performance")
     if not _has_number(body):
         out.append("paragraph 2 carries no number")
     if not any(mark in body for mark in NO_BASIS_MARKERS) and body.count("Rp") < 2:
@@ -223,7 +223,7 @@ def audit_copy_budget(bodies: Iterable[Any]) -> list[str]:
     total = sum(len(_text(b)) for b in bodies)
     if total > COVER_COPY_BUDGET:
         return [
-            f"cover copy is {total} chars, over the {COVER_COPY_BUDGET}-char one-page budget — "
+            f"cover copy is {total} chars, over the {COVER_COPY_BUDGET}-char one-page budget - "
             "the Key Financials exhibit will be pushed off page 1 and the layout contract breaks"
         ]
     return []
@@ -237,10 +237,10 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
         return ["Key Financials exhibit missing from the cover"]
     headers = [_text(h) for h in (kf.get("headers") or [])]
     if headers[:1] != [KF_HEADER_FIRST]:
-        out.append(f"Key Financials first header cell is {headers[:1]} — expected "
+        out.append(f"Key Financials first header cell is {headers[:1]} - expected "
                    f"{KF_HEADER_FIRST!r}")
     if tuple(headers[1:]) != KF_COLUMNS:
-        out.append(f"Key Financials columns are {headers[1:]} — expected two actuals and "
+        out.append(f"Key Financials columns are {headers[1:]} - expected two actuals and "
                    f"three forecasts {list(KF_COLUMNS)}")
     # The forecast columns must say WHERE they came from. An unlabelled forecast reads as the house's own.
     basis = str(kf.get("forecast_basis") or "")
@@ -249,22 +249,22 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
         out.append("Key Financials does not declare a forecast basis for the FY26F-FY28F columns")
     elif basis == "third-party-estimate":
         if not kf.get("forecast_attribution") or not kf.get("forecast_as_of"):
-            out.append("Key Financials uses a third-party path without attribution/as-of — the reader "
+            out.append("Key Financials uses a third-party path without attribution/as-of - the reader "
                        "cannot tell whose estimate is on the page")
         # The page presents the path as the team's own estimate over the licensed dataset, so it must not
         # read as realised figures; the origin is traced in docs/ammn-slides/forecast-inputs-provenance.md.
         if not any(k in notes_blob for k in ("estimasi tim", "proyeksi", "bukan realisasi")):
             out.append("Key Financials' forecast columns come from estimates but the note never says the "
-                       "columns are a projection — they would read as realised figures")
+                       "columns are a projection - they would read as realised figures")
     elif basis == "midcycle-normalised" and "normalised" not in notes_blob:
         out.append("Key Financials columns are a normalised mid-cycle level but the note does not say "
-                   "'normalised' — a flat level would read as a growth forecast")
+                   "'normalised' - a flat level would read as a growth forecast")
     elif basis == "invalid-driver-file":
         names = "; ".join(str(p) for p in (kf.get("forecast_problems") or []))
         out.append(f"Key Financials fell back because its forecast path file is unusable: {names}")
     labels = [_text(r[0]) for r in _rows_of(kf)]
     if len(labels) != len(KF_ROWS):
-        out.append(f"Key Financials has {len(labels)} rows — expected {len(KF_ROWS)}")
+        out.append(f"Key Financials has {len(labels)} rows - expected {len(KF_ROWS)}")
     for expected, got in zip(KF_ROWS, labels):
         if not got.startswith(expected):
             out.append(f"Key Financials row {got!r} where {expected!r} was expected (order is "
@@ -273,13 +273,13 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
     for row in _rows_of(kf):
         label = _text(row[0])
         if label in KF_ROWS and label in ("Revenue", "EBITDA", "Net Profit"):
-            out.append(f"Key Financials row {label!r} carries no unit — with a "
+            out.append(f"Key Financials row {label!r} carries no unit - with a "
                        f"{KF_HEADER_FIRST!r} caption every Rp figure needs (Rpbn) in its label")
     # negatives read (28,8) in a house table, never -28,8
     for row in _rows_of(kf):
         for cell in row[1:]:
             if _text(cell).startswith("-"):
-                out.append(f"Key Financials {_text(row[0])!r} prints {cell!r} — negative values "
+                out.append(f"Key Financials {_text(row[0])!r} prints {cell!r} - negative values "
                            "use the accounting parenthesis form")
                 break
     # Decimals: none for the absolute Rp rows, one for multiples, percentages and EPS. The
@@ -298,10 +298,10 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
             if digits is None:
                 continue
             if is_rpbn and digits:
-                out.append(f"Key Financials {label!r} shows {cell!r} — absolute Rp figures carry "
+                out.append(f"Key Financials {label!r} shows {cell!r} - absolute Rp figures carry "
                            "no decimals")
             elif not is_rpbn and digits != 1:
-                out.append(f"Key Financials {label!r} shows {cell!r} — percentages, multiples and "
+                out.append(f"Key Financials {label!r} shows {cell!r} - percentages, multiples and "
                            "EPS carry exactly one decimal")
     if not kf.get("notes"):
         out.append("Key Financials has no derivation note (the forecast basis must be printed)")
@@ -319,7 +319,7 @@ PERFORMANCE_PAGE_QUADRANTS = (
 def audit_performance_page(page: Optional[dict], payload: Optional[dict] = None) -> list[str]:
     """Audit slide 3 of the deck (`docs/ammn-slides/slide3-visual-spec.md`).
 
-    Four quadrants, each a chart that carries its own narrative block — the spec is explicit that the
+    Four quadrants, each a chart that carries its own narrative block - the spec is explicit that the
     narrative must sit with its chart, not collected at the end of the page. Two things make this
     page worth gating rather than trusting: the cross-exhibit tie-out rule, and the fact that a
     forecast series can be built from assumptions the page itself should be warning about.
@@ -401,7 +401,7 @@ def _parse_id_like(value: Any) -> Optional[float]:
     if isinstance(value, (int, float)):
         return float(value)
     text = str(value or "").strip()
-    if text in ("", "—", "-", "n/a", "N/A"):
+    if text in ("", "-", "-", "n/a", "N/A"):
         return None
     negative = text.startswith("(") and text.endswith(")")
     text = text.strip("()").replace("%", "")
@@ -510,7 +510,7 @@ def _audit_rnav_page(page: dict) -> list[str]:
 def audit_valuation_page(page: dict | None, payload: dict | None = None) -> list[str]:
     """Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
-    Checks the three exhibits the rules define, and — because the rules make it mandatory — that a
+    Checks the three exhibits the rules define, and - because the rules make it mandatory - that a
     material gap between the terminal methods is DISCLOSED rather than averaged away. An empty page is
     not applicable: a ticker whose assumptions carry no WACC has no intrinsic page to audit.
     """
@@ -647,7 +647,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             violations.append("slide 4 valuation does not state the basis of the level and the multiple "
                               "behind the target price (level, multiple, source, as-of)")
         if "DITOLAK" not in vnotes and "tidak dipakai" not in vrows:
-            violations.append("slide 4 valuation names no rejected basis — a silent rejection reads as "
+            violations.append("slide 4 valuation names no rejected basis - a silent rejection reads as "
                               "never considered")
     return {
         "ok": not violations,
@@ -681,7 +681,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
         # not applicable: a ticker whose deck has no slide-5 data never had this page
         return []
     if not isinstance(page, dict) or not page.get("available"):
-        return ["slide 5 has no peers page available — the page cannot be silently dropped"]
+        return ["slide 5 has no peers page available - the page cannot be silently dropped"]
     violations: list[str] = []
     a = page.get("part_a") or {}
     b = page.get("part_b") or {}
@@ -693,7 +693,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
             violations.append(f"slide 5 peer table is missing the '{required}' column the rules require")
     rows = a.get("rows") or []
     if len(rows) < 3:
-        violations.append(f"slide 5 peer table carries only {len(rows)} rows — a peer set needs comparables")
+        violations.append(f"slide 5 peer table carries only {len(rows)} rows - a peer set needs comparables")
     covered = [r for r in rows if r.get("is_covered")]
     if not covered:
         violations.append("slide 5 peer table does not flag the covered issuer's row (rules: highlight)")
@@ -702,7 +702,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
         if not stat:
             violations.append(f"slide 5 peer table is missing the {key.upper()} closing row (rules: dua baris terpisah)")
     if a.get("median") and a.get("average") and a["median"].get("pe") == a["average"].get("pe"):
-        violations.append("slide 5 median and average rows are identical — they must be two separate rows")
+        violations.append("slide 5 median and average rows are identical - they must be two separate rows")
     # the statistics must be reproducible from the printed rows
     pe_vals = sorted(r["pe"] for r in rows if not r.get("is_covered") and r.get("pe") is not None)
     med = a.get("median") or {}
@@ -729,7 +729,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
     # ---- Part B: bands + implied price ------------------------------------
     bands = b.get("bands") or []
     if len(bands) < 2:
-        violations.append(f"slide 5 shows {len(bands)} band charts — the rules require at least P/E and P/BV")
+        violations.append(f"slide 5 shows {len(bands)} band charts - the rules require at least P/E and P/BV")
     have = {blk.get("key") for blk in bands}
     for key, exhibit in (("pe", 12), ("pbv", 13)):
         if key not in have:
@@ -785,7 +785,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
             str(blk.get("narrative", "")) for blk in bands)).lower()
         if not any(k in joined for k in ("bertentangan", "berbeda arah", "tidak saling mengonfirmasi",
                                          "disagree", "opposite", "berlawanan")):
-            violations.append("slide 5 shows a peer premium while its own history reads cheap — the page "
+            violations.append("slide 5 shows a peer premium while its own history reads cheap - the page "
                               "must state that the two readings disagree instead of implying confirmation")
     return violations
 
@@ -794,13 +794,13 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
     """Deck slide 6 (docs/ammn-slides/slide6-statements-spec.md): Exhibit 14 + 15.
 
     The rules fix the row list and the column set, so this gate checks structure; then it checks the two
-    things that make the statements trustworthy — that the balance sheet ties EXACTLY, and that every
+    things that make the statements trustworthy - that the balance sheet ties EXACTLY, and that every
     figure the model could not source is disclosed rather than printed as a number.
     """
     if page is None or page == {}:
         return []
     if not isinstance(page, dict) or not page.get("available"):
-        return ["slide 6 has no statements page available — the page cannot be silently dropped"]
+        return ["slide 6 has no statements page available - the page cannot be silently dropped"]
     violations: list[str] = []
     years = [str(y) for y in (page.get("years") or [])]
     if years != ["2024A", "2025A", "2026F", "2027F", "2028F"]:
@@ -864,7 +864,7 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
         r = find("income", label)
         if r and r.get("kind") != "deduction":
             violations.append(f"slide 6 row '{label}' is a deduction and must be flagged as one")
-    # recompute the tie from the rows as printed — a reported tie-out the page could contradict is worthless
+    # recompute the tie from the rows as printed - a reported tie-out the page could contradict is worthless
     bs_rows = {str(r.get("label", "")): (r.get("cells") or [])
                for r in ((page.get("balance") or {}).get("rows") or [])}
     def longest(prefix: str):
@@ -893,7 +893,7 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
     if not page.get("tied"):
         violations.append("slide 6 balance check failed (rules: Total Liabilities & Equity must equal Total Assets)")
     if not (page.get("notes") or []):
-        violations.append("slide 6 prints no notes — the reconciling lines and the cash plug must be disclosed")
+        violations.append("slide 6 prints no notes - the reconciling lines and the cash plug must be disclosed")
     notes = " ".join(str(n) for n in (page.get("notes") or [])).lower()
     for needed, why in (("rekonsiliasi", "the residual 'Other income' line must be named as a reconciling item"),
                         ("penyeimbang", "cash as the balance-sheet plug must be stated"),
@@ -906,13 +906,13 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
 def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[str]:
     """Deck slide 7 (docs/ammn-slides/slide7-cashflow-ratio-spec.md): Exhibit 16 cash flow.
 
-    Structure first, then the tie-outs — this page exists to prove the model's sheets are linked, so a
+    Structure first, then the tie-outs - this page exists to prove the model's sheets are linked, so a
     mismatch here is a defect, not a rounding difference.
     """
     if page is None or page == {}:
         return []
     if not isinstance(page, dict) or not page.get("available"):
-        return ["slide 7 has no cash-flow page available — the page cannot be silently dropped"]
+        return ["slide 7 has no cash-flow page available - the page cannot be silently dropped"]
     violations: list[str] = []
     years = [str(y) for y in (page.get("years") or [])]
     if years != ["2024A", "2025A", "2026F", "2027F", "2028F"]:
@@ -1003,7 +1003,7 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             b = (is_net.get("cells") or [None] * 5)[i] if is_net else None
             if isinstance(a, (int, float)) and isinstance(b, (int, float)) and abs(a - b) > 1.0:
                 violations.append(f"slide 7 starts from net profit {_nf.idn(a, digits=0)} in {y} while the income "
-                                  f"statement prints {_nf.idn(b, digits=0)} — the sheets are not linked")
+                                  f"statement prints {_nf.idn(b, digits=0)} - the sheets are not linked")
         # TIE-OUT 2: ending cash == balance-sheet cash, same period
         bs_cash = next((r for r in (((payload.get("statements_page") or {}).get("balance") or {}).get("rows")
                                     or []) if str(r.get("label", "")).startswith("Cash & Cash")), {})
@@ -1012,7 +1012,7 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             b = (bs_cash.get("cells") or [None] * 5)[i] if bs_cash else None
             if isinstance(a, (int, float)) and isinstance(b, (int, float)):
                 if abs(a - b) > max(1.0, abs(b) * 0.001):
-                    violations.append(f"slide 7 ending cash {_nf.idn(a, digits=0)} vs balance-sheet cash {_nf.idn(b, digits=0)} in {y} — "
+                    violations.append(f"slide 7 ending cash {_nf.idn(a, digits=0)} vs balance-sheet cash {_nf.idn(b, digits=0)} in {y} - "
                                       f"above the 0.1% the rules allow, so the sheets are not linked")
     # TIE-OUT 3: the FCF memo must be OCF minus capex, and the FCFF gap must be explained
     memo = (page.get("memo") or [{}])[0]
@@ -1044,7 +1044,7 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
     if page is None or page == {}:
         return []
     if not isinstance(page, dict) or not page.get("available"):
-        return ["slide 7 has no key-ratio page available — the page cannot be silently dropped"]
+        return ["slide 7 has no key-ratio page available - the page cannot be silently dropped"]
     violations: list[str] = []
     want = {
         "Growth (%)": ("Sales", "EBITDA", "Operating Profit", "Net Profit"),
@@ -1065,7 +1065,7 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
         for r in rows:
             cells = r.get("cells") or []
             if not any(isinstance(c, (int, float)) for c in cells):
-                violations.append(f"Exhibit 17 row '{r.get('label')}' is n/a in every column — an exhibit "
+                violations.append(f"Exhibit 17 row '{r.get('label')}' is n/a in every column - an exhibit "
                                   f"of blanks is not an exhibit")
     if payload:
         is_rows = {str(r.get("label", "")).split(" /")[0].split(" (")[0].strip(): r.get("cells") or []
@@ -1119,7 +1119,7 @@ def audit_source_independence(payload: dict | None) -> list[str]:
     """The deck cites the licensed dataset, the issuer's filings, public news and the team's own estimates.
 
     No other research house is named anywhere a page prints. The calibration trail for the forecast inputs
-    lives in the repo (docs/ammn-slides/forecast-inputs-provenance.md), not on the page — so this checks the
+    lives in the repo (docs/ammn-slides/forecast-inputs-provenance.md), not on the page - so this checks the
     positions a reader can actually see, and the attribution form in free text, without failing on a news
     wire that reports which broker was buying (that is published flow data, not a citation of someone's
     analysis).
@@ -1130,7 +1130,7 @@ def audit_source_independence(payload: dict | None) -> list[str]:
 
     out: list[str] = []
     attribution_form = re.compile(
-        r"(" + RESEARCH_HOUSE_PATTERN.pattern + r")\s*[,\-–—]?\s*"
+        r"(" + RESEARCH_HOUSE_PATTERN.pattern + r")\s*[,\-–-]?\s*"
         r"(equity research|research|sekuritas|securities|initiation|insight|report)\b", re.I)
     attr_keys = re.compile(r"(attribution|source|sumber|basis|dikutip|provenance|cite)", re.I)
 
@@ -1149,7 +1149,7 @@ def audit_source_independence(payload: dict | None) -> list[str]:
                 hit = RESEARCH_HOUSE_PATTERN.search(node) or attribution_form.search(node)
                 if hit:
                     out.append(f"a printed source label names another research house ({hit.group(0).strip()!r} "
-                               f"at {path}) — the deck cites the licensed dataset, filings, news and team "
+                               f"at {path}) - the deck cites the licensed dataset, filings, news and team "
                                f"estimates only")
             elif attribution_form.search(node):
                 hit = attribution_form.search(node)
@@ -1162,7 +1162,7 @@ def audit_source_independence(payload: dict | None) -> list[str]:
 def audit_number_format(payload: dict | None) -> list[str]:
     """One number format per deck: dot thousands, comma decimals.
 
-    A dot with one or two digits behind it is an English decimal, and the deck is written in Indonesian — so
+    A dot with one or two digits behind it is an English decimal, and the deck is written in Indonesian - so
     `43.04` next to `17,99` reads as sloppiness at best and as a hundred-fold error at worst. Three digits after
     the dot is a thousands group and stays allowed, as do dates and domain names.
     """
@@ -1197,12 +1197,12 @@ def audit_number_format(payload: dict | None) -> list[str]:
                 return
             m = english_decimal.search(text)
             if m:
-                out.append(f"a printed figure uses an English decimal separator ({m.group(0)!r} at {path}) — "
+                out.append(f"a printed figure uses an English decimal separator ({m.group(0)!r} at {path}) - "
                            f"the deck prints dot thousands and comma decimals")
             m = ascii_multiple.search(text)
             if m:
                 out.append(f"a printed figure uses the ASCII letter x as a multiplication sign ({m.group(0)!r} at "
-                           f"{path}) — the deck writes ×")
+                           f"{path}) - the deck writes ×")
 
     walk(payload, "")
     return out[:10]

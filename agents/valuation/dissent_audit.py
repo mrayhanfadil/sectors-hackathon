@@ -1,10 +1,10 @@
-"""Deterministic dissent audit — the arithmetic behind "did the report earn its rating?"
+"""Deterministic dissent audit - the arithmetic behind "did the report earn its rating?"
 
 Why this module exists
 ----------------------
 On 15 Sep 2026 the AMMN run conceded, in Round 2 of its own red-team debate, that
 the 15.0x EV/EBITDA anchor behind the BUY target was defensible only as a
-"cautious ramp premium" and NOT as a midpoint — and the published rating stayed
+"cautious ramp premium" and NOT as a midpoint - and the published rating stayed
 BUY with `gate_flags = []`. The writer was already instructed to carry the
 dissent flag and did not. Instructions are not enforcement.
 
@@ -44,7 +44,7 @@ CONCEDE_MARKERS = ("concede", "accepted", "partially accepted")
 
 
 def rating_for(upside: float) -> str:
-    """Declared band rule — the only place a rating is decided."""
+    """Declared band rule - the only place a rating is decided."""
     if upside >= BUY_UPSIDE:
         return RATING_BUY
     if upside <= SELL_UPSIDE:
@@ -209,10 +209,10 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
         except ValueError:
             target_price = None
 
-    # 1. Required dissent flags — MECHANICAL, from the rounds themselves.
+    # 1. Required dissent flags - MECHANICAL, from the rounds themselves.
     for r in conceded:
         result.required_flags.append(
-            f"DISSENT (Round {r.n}): red team {r.mode or 'challenged'} on a rating-relevant claim — "
+            f"DISSENT (Round {r.n}): red team {r.mode or 'challenged'} on a rating-relevant claim - "
             f"{r.verdict.strip()[:140]}"
         )
 
@@ -229,7 +229,7 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
     if conceded and not declared:
         result.reasons.append(
             f"gate_flags is EMPTY while {len(conceded)} debate round(s) conceded on a "
-            "rating-relevant claim — the dissent never reached the reader"
+            "rating-relevant claim - the dissent never reached the reader"
         )
     elif result.missing_flags:
         result.reasons.append(
@@ -259,7 +259,7 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
         result.ladder = [asdict(r) for r in ladder]
 
         # Which rung is the report actually priced on? The published target price
-        # decides — not a label, which the modeler is free to name anything.
+        # decides - not a label, which the modeler is free to name anything.
         anchor = None
         if target_price:
             anchor = min(ladder, key=lambda r: abs(r.fair_value - target_price))
@@ -271,11 +271,11 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
             result.disclosure = (
                 f"The published target (Rp {target_price:,.0f}) sits on the '{anchor.label}' rung, which the "
                 "debate conceded. A directional rating cannot ship on a conceded anchor: the house's own "
-                "override slot applies — Review Required."
+                "override slot applies - Review Required."
             )
         elif anchor is None and target_price:
             result.reasons.append(
-                "published target price does not match any rung the modeler computed — the anchor "
+                "published target price does not match any rung the modeler computed - the anchor "
                 "cannot be tied to a declared basis"
             )
 
@@ -287,7 +287,7 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
     if result.rating_override_required and result.rating_actual in (RATING_BUY, RATING_SELL, RATING_HOLD):
         result.reasons.append(
             f"published rating {result.rating_actual} is directional while its own primary anchor "
-            f"was conceded in debate — expected {result.rating_override_required}"
+            f"was conceded in debate - expected {result.rating_override_required}"
         )
     if result.reasons:
         result.verdict = "REJECT"

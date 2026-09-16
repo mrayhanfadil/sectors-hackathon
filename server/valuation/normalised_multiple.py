@@ -1,4 +1,4 @@
-"""Normalised own-history multiple — the multiple and the level it multiplies must share a basis.
+"""Normalised own-history multiple - the multiple and the level it multiplies must share a basis.
 
 The deck used to apply a trailing EV/EBITDA mean (28.42x, measured in years when EBITDA was depressed by
 the smelter build) to a recovered mid-cycle level. That double-counts the recovery: the multiple was high

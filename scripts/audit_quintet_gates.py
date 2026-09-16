@@ -118,7 +118,7 @@ EXPECTATIONS = {
 
 def main() -> int:
     print("=" * 80)
-    print("VALUATION GATE AUDIT — Quintet (RATU / CDIA / MTEL / BBCA / ADRO)")
+    print("VALUATION GATE AUDIT - Quintet (RATU / CDIA / MTEL / BBCA / ADRO)")
     print("=" * 80)
     print(
         f"{'Ticker':<6} {'Primary':<28} {'Secondary':<24} "
@@ -143,7 +143,7 @@ def main() -> int:
         print("ALL QUINTET TICKERS MATCH EXPECTED METHOD VERDICTS ✓")
         return 0
     else:
-        print("ONE OR MORE TICKERS FAILED — review the table above")
+        print("ONE OR MORE TICKERS FAILED - review the table above")
         return 1
 
 

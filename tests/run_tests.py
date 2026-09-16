@@ -138,7 +138,7 @@ def test_helpers() -> None:
 
 
 def main() -> None:
-    print(f"T08 acceptance tests — repo {REPO_ROOT}\n")
+    print(f"T08 acceptance tests - repo {REPO_ROOT}\n")
     for fn in (test_writer, test_sotp, test_visualizer, test_helpers):
         try:
             fn()

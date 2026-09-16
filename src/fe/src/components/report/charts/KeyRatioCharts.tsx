@@ -7,7 +7,7 @@ export interface KeyRatioChartsProps {
 }
 
 function fmtRatioVal(v: number | null | undefined, unit: string = "%"): string {
-  if (v == null || !Number.isFinite(v)) return "—"
+  if (v == null || !Number.isFinite(v)) return "-"
   const formatted = formatIdn(Math.abs(v), 1)
   if (v < 0) {
     return `(${formatted})${unit}`

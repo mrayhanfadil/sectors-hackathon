@@ -1,6 +1,6 @@
 """Structured debate validation (ACES 2026-09-05).
 
-`debate_output` MUST be a JSON array of rounds — plain strings and
+`debate_output` MUST be a JSON array of rounds - plain strings and
 placeholders ("in progress", "review complete") are invalid. Each round's
 defense must cite calc recomputation AND url+date sources, otherwise the
 Critic must REJECT.
@@ -128,7 +128,7 @@ def extract_accepted_debate(events: list[dict]) -> list | None:
 
     Operates on serialized event dicts (store.get_events / API shape with
     function_calls + function_responses hoisted). Deterministic backfill source
-    when the agent's final narration text — not the JSON — lands in state.
+    when the agent's final narration text - not the JSON - lands in state.
 
     Calls and their responses live in DIFFERENT events (call at seq N, response
     at seq N+1), so pairing is done with a FIFO queue across the event order:

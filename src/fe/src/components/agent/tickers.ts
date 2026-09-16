@@ -1,4 +1,4 @@
-// Universe emiten IDX untuk /agent — sumber: GET /api/tickers (Sectors universe feed).
+// Universe emiten IDX untuk /agent - sumber: GET /api/tickers (Sectors universe feed).
 // (data/assumptions/*.json) kalau endpoint belum kebaca.
 
 export interface UniverseTicker {
@@ -39,7 +39,7 @@ export function fetchUniverse(apiBase: string): Promise<UniverseTicker[]> {
 }
 
 export function optionLabel(t: UniverseTicker): string {
-  return t.nama ? `${t.kode} — ${t.nama}` : t.kode
+  return t.nama ? `${t.kode} - ${t.nama}` : t.kode
 }
 
 export function isEngineTicker(kode: string): boolean {

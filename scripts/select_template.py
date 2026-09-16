@@ -1,4 +1,4 @@
-"""Template switch logic — decides which of the 4 report templates to render (T10 task item 2).
+"""Template switch logic - decides which of the 4 report templates to render (T10 task item 2).
 
 Pure function, no I/O. Mirrors plan.md §5:
     if segments>1 -> sotp, elif subsector infra/telco -> infra, else single
@@ -12,7 +12,7 @@ INFRA_KEYWORDS = ("infra", "telco", "tower", "fiber", "toll", "telekomunikasi", 
 def select_template(report_data: dict) -> tuple[str, str]:
     """Return (template_name, reason).
 
-    Precedence (revised 31 Aug 2026 after empirical check — see DATA_CONTRACT.md):
+    Precedence (revised 31 Aug 2026 after empirical check - see DATA_CONTRACT.md):
       1. meta.template explicit override (orchestrator's call wins)
       2. subsector infra/telco -> infra   (BEFORE segments: every real telco reports
          segments, so segments-first dead-codes the infra template for MTEL/TOWR-type
@@ -23,7 +23,7 @@ def select_template(report_data: dict) -> tuple[str, str]:
     """
     meta = report_data.get("meta") or {}
     if meta.get("report_kind") == "strategy" or (report_data.get("strategy") and not meta.get("ticker")):
-        return "strategy", "explicit overlay (market-level report) — never auto-selected"
+        return "strategy", "explicit overlay (market-level report) - never auto-selected"
 
     override = meta.get("template")
     if override in ("single", "sotp", "infra", "strategy"):

@@ -40,7 +40,7 @@ async def main() -> int:
 
     print(json.dumps({**report, "api_calls": calls[:10], "console": console[:6]}, indent=1, ensure_ascii=False))
     empty = report["text_len"] < 500
-    print("VERDICT:", "BLANK/SHORT — not a usable page" if empty else "renders with content")
+    print("VERDICT:", "BLANK/SHORT - not a usable page" if empty else "renders with content")
     return 1 if empty else 0
 
 

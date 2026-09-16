@@ -117,7 +117,7 @@ export function SentimentStatCards({
                   ? "text-rose-600 dark:text-rose-400"
                   : "text-amber-600 dark:text-amber-400"
               }`}>
-                {gaugeVal != null ? gaugeVal : "—"}
+                {gaugeVal != null ? gaugeVal : "-"}
               </span>
               <span className="font-mono text-[11px] text-neutral-400">/ 100</span>
             </div>
@@ -175,7 +175,7 @@ export function SentimentStatCards({
                 <TrendingUp className="h-2.5 w-2.5" /> POS
               </div>
               <div className="text-xs font-bold tabular-nums text-emerald-800 dark:text-emerald-300">
-                {distribution.bullishPct == null ? "—" : `${distribution.bullishPct}%`}
+                {distribution.bullishPct == null ? "-" : `${distribution.bullishPct}%`}
               </div>
             </div>
             <div className="border border-neutral-300 bg-neutral-100/70 p-1 dark:border-[#262930] dark:bg-[#181a1f]">
@@ -183,7 +183,7 @@ export function SentimentStatCards({
                 <MinusCircle className="h-2.5 w-2.5" /> NET
               </div>
               <div className="text-xs font-bold tabular-nums text-neutral-800 dark:text-neutral-200">
-                {distribution.neutralPct == null ? "—" : `${distribution.neutralPct}%`}
+                {distribution.neutralPct == null ? "-" : `${distribution.neutralPct}%`}
               </div>
               {distribution.unscoredItems ? (
                 <div className="mt-0.5 text-[8px] text-neutral-500 dark:text-neutral-400">
@@ -196,7 +196,7 @@ export function SentimentStatCards({
                 <TrendingDown className="h-2.5 w-2.5" /> NEG
               </div>
               <div className="text-xs font-bold tabular-nums text-rose-800 dark:text-rose-300">
-                {distribution.bearishPct == null ? "—" : `${distribution.bearishPct}%`}
+                {distribution.bearishPct == null ? "-" : `${distribution.bearishPct}%`}
               </div>
             </div>
           </div>
@@ -205,22 +205,22 @@ export function SentimentStatCards({
             <div
               className="bg-emerald-600 transition-all dark:bg-emerald-500"
               style={{ width: `${distribution.bullishPct ?? 0}%` }}
-              title={`Positif: ${distribution.bullishPct ?? "—"}%`}
+              title={`Positif: ${distribution.bullishPct ?? "-"}%`}
             />
             <div
               className="bg-neutral-400 transition-all dark:bg-neutral-600"
               style={{ width: `${distribution.neutralPct ?? 0}%` }}
-              title={`Netral: ${distribution.neutralPct ?? "—"}%`}
+              title={`Netral: ${distribution.neutralPct ?? "-"}%`}
             />
             <div
               className="bg-rose-600 transition-all dark:bg-rose-500"
               style={{ width: `${distribution.bearishPct ?? 0}%` }}
-              title={`Negatif: ${distribution.bearishPct ?? "—"}%`}
+              title={`Negatif: ${distribution.bearishPct ?? "-"}%`}
             />
           </div>
 
           <div className="flex justify-between font-mono text-[10px] text-neutral-500 dark:text-neutral-400">
-            <span>SAMPEL: {distribution.totalItems > 0 ? `${distribution.totalItems} POST` : "—"}</span>
+            <span>SAMPEL: {distribution.totalItems > 0 ? `${distribution.totalItems} POST` : "-"}</span>
             <span>BE RAW DATA</span>
           </div>
         </CardContent>
@@ -239,7 +239,7 @@ export function SentimentStatCards({
         <CardContent className="p-3 space-y-2.5">
           <div className="flex items-baseline justify-between">
             <span className="font-mono text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
-              {confidencePct == null ? "—" : `${confidencePct}%`}
+              {confidencePct == null ? "-" : `${confidencePct}%`}
             </span>
             <span className="rounded-none border border-neutral-300 bg-neutral-100 px-1.5 py-0.5 font-mono text-[10px] font-semibold text-neutral-700 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-300">
               {confidencePct == null ? "[MENUNGGU]" : confidencePct >= 70 ? "[HIGH DENSITY]" : confidencePct >= 50 ? "[SUFFICIENT]" : "[PRELIMINARY]"}
@@ -272,7 +272,7 @@ export function SentimentStatCards({
         <CardContent className="p-3 space-y-2.5">
           <div className="flex items-baseline justify-between font-mono">
             <span className="text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
-              {totalSources > 0 ? totalSources : "—"}
+              {totalSources > 0 ? totalSources : "-"}
             </span>
             <span className="text-[10px] text-neutral-500 dark:text-neutral-400">ENTRIES DETECTED</span>
           </div>

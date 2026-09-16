@@ -1,4 +1,4 @@
-"""Dividend-discount engine — the equity-side arithmetic this repo runs.
+"""Dividend-discount engine - the equity-side arithmetic this repo runs.
 
 Same contract as the FCFF engine next to it: pure calculation, no fetching, inputs from the assumptions
 file and the Sectors payload.

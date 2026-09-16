@@ -137,7 +137,7 @@ def test_challenge_endpoint(api_client):
 
 def test_report_ratu_keyless_422(api_client):
     # H1-restore (AGY-H1 reverted H1's hunks via git checkout 10:43:07; AGY-H1's
-    # own file covers BBCA/unknown/dcf-RATU/outlook/tickers/pdf — these are the
+    # own file covers BBCA/unknown/dcf-RATU/outlook/tickers/pdf - these are the
     # non-overlapping gaps). RATU file lacks WACC inputs -> strict 422 keyless.
     res = api_client.get("/api/report/RATU")
     assert res.status_code == 422, f"Expected 422, got {res.status_code}: {res.text}"

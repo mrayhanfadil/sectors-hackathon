@@ -1,5 +1,5 @@
 """
-QA Critic Agent — agents/critic.py
+QA Critic Agent - agents/critic.py
 Part of Multi-Agent Arbiter & Gate (plan.md §3, §11).
 
 Strict anti-hallucination & anti-sycophancy verification:
@@ -78,7 +78,7 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
         ex_id = str(ex.get("id") or "").strip()
         if ex_id:
             reasons.append(
-                f"{label} carries a pre-numbered id {ex_id!r} — exhibit numbers come from "
+                f"{label} carries a pre-numbered id {ex_id!r} - exhibit numbers come from "
                 "the renderer's global counter and must never be supplied in the payload"
             )
             fixes.append(f"Drop `id` from {label}; the renderer numbers it")
@@ -86,7 +86,7 @@ def audit_report_payload(report_data: Dict[str, Any]) -> Dict[str, Any]:
         title = str(ex.get("title") or "").strip()
         if title.lower() in _GENERIC_TITLES:
             reasons.append(
-                f"{label} uses a generic title {title!r} — labels must describe the object "
+                f"{label} uses a generic title {title!r} - labels must describe the object "
                 "(e.g. 'Revenue and Revenue Growth (2024A-2028F)')"
             )
             fixes.append(f"Give {label} a descriptive title")

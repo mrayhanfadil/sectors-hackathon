@@ -14,7 +14,7 @@ Limits, stated because the number invites over-reading:
 - It measures figures, not layout: a well-placed figure that renders in the wrong place still counts as present.
 - A figure the page computes (a ratio, an index, a unit conversion) will not be found verbatim; those show up as
   misses and must be read in context before being called a defect.
-- A page with almost no figures (a cover, a disclaimer) is not meaningfully measured — the row is reported as n/a.
+- A page with almost no figures (a cover, a disclaimer) is not meaningfully measured - the row is reported as n/a.
 """
 from __future__ import annotations
 
@@ -83,7 +83,7 @@ def main() -> int:
         print(f"pdf not found: {args.pdf}")
         return 1
     if not args.fe_text.exists():
-        print(f"frontend text not found: {args.fe_text} — render the page first (headless browser, inner_text)")
+        print(f"frontend text not found: {args.fe_text} - render the page first (headless browser, inner_text)")
         return 1
 
     fe = re.sub(r"\s+", " ", args.fe_text.read_text())

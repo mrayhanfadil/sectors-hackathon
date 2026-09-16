@@ -43,8 +43,8 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
   // Sensitivity matrix
   const sensRows: SensitivityRow[] = Array.isArray(sensitivity.rows) ? sensitivity.rows : []
   const sensCols: string[] = Array.isArray(sensitivity.columns) ? sensitivity.columns : []
-  const baseWacc = sensitivity.base_wacc ?? "—"
-  const baseG = sensitivity.base_g ?? "—"
+  const baseWacc = sensitivity.base_wacc ?? "-"
+  const baseG = sensitivity.base_g ?? "-"
   const baseFv = typeof sensitivity.base_fv === "number" ? sensitivity.base_fv : null
   const swing = sensitivity.swing ?? sensitivity.stats ?? {}
 
@@ -104,7 +104,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
         <div className="rounded-md border border-neutral-200 bg-neutral-50/70 p-2.5 dark:border-[#262930] dark:bg-[#121418]">
           <div className="text-[10px] font-bold uppercase tracking-wider text-neutral-400">PV TERMINAL / EV</div>
           <div className="mt-0.5 text-base font-bold text-[#0B1F3A] tabular-nums dark:text-sky-400">
-            {tvShare !== null ? `${(tvShare * 100).toFixed(1)}%` : "—"}
+            {tvShare !== null ? `${(tvShare * 100).toFixed(1)}%` : "-"}
           </div>
           <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-sans">
             Nilai wajar bertumpu di luar periode eksplisit
@@ -116,10 +116,10 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
           <div className="mt-0.5 text-base font-bold text-[#0B1F3A] tabular-nums dark:text-sky-400">
             {netDebt !== null && evGordon !== null && evGordon > 0
               ? `${((netDebt / evGordon) * 100).toFixed(1)}%`
-              : "—"}
+              : "-"}
           </div>
           <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-sans">
-            Sisa untuk pemegang saham {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "—"}
+            Sisa untuk pemegang saham {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "-"}
           </div>
         </div>
 
@@ -128,10 +128,10 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
           <div className="mt-0.5 text-base font-bold text-[#0B1F3A] tabular-nums dark:text-sky-400">
             {swing.min !== undefined && swing.max !== undefined
               ? `Rp ${formatIdn(swing.min, 0)} – ${formatIdn(swing.max, 0)}`
-              : "—"}
+              : "-"}
           </div>
           <div className="text-[10px] text-neutral-500 dark:text-neutral-400 font-sans">
-            Dasar {baseFv !== null ? `Rp ${formatIdn(baseFv, 0)}` : "—"} (WACC {baseWacc} · g {baseG})
+            Dasar {baseFv !== null ? `Rp ${formatIdn(baseFv, 0)}` : "-"} (WACC {baseWacc} · g {baseG})
           </div>
         </div>
       </div>
@@ -181,19 +181,19 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                   <tr className="bg-neutral-50/60 dark:bg-[#181a1f]/50">
                     <td className="px-3 py-1.5 text-neutral-800 dark:text-neutral-200">Enterprise Value</td>
                     <td className="px-3 py-1.5 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
-                      {evGordon !== null ? `Rp ${formatIdn(evGordon / 1e12, 2)} tn` : "—"}
+                      {evGordon !== null ? `Rp ${formatIdn(evGordon / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
                   <tr>
                     <td className="px-3 py-1.5 text-rose-700 dark:text-rose-400 font-medium">(−) Net Debt</td>
                     <td className="px-3 py-1.5 text-right font-bold text-rose-700 tabular-nums dark:text-rose-400">
-                      {netDebt !== null ? `Rp ${formatIdn(netDebt / 1e12, 2)} tn` : "—"}
+                      {netDebt !== null ? `Rp ${formatIdn(netDebt / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
                   <tr className="border-t-2 border-neutral-900 bg-neutral-100 font-bold dark:border-neutral-100 dark:bg-[#20242c]">
                     <td className="px-3 py-2 text-neutral-900 dark:text-neutral-100">Equity Value</td>
                     <td className="px-3 py-2 text-right text-neutral-900 tabular-nums dark:text-neutral-100">
-                      {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "—"}
+                      {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
                 </tbody>
@@ -265,7 +265,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
 
           {fvGordon && fvExit && (
             <p className="mt-2.5 text-[10px] leading-relaxed text-neutral-500 dark:text-neutral-400 font-sans">
-              Gap Gordon vs Exit Multiple {formatIdn(fvExit / fvGordon, 1)}× pada basis FCFF yang sama — dibaca sebagai asumsi belum tuntas, bukan dirata-rata.
+              Gap Gordon vs Exit Multiple {formatIdn(fvExit / fvGordon, 1)}× pada basis FCFF yang sama - dibaca sebagai asumsi belum tuntas, bukan dirata-rata.
             </p>
           )}
         </div>
@@ -279,7 +279,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
               HEATMAP
             </span>
             <span className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-              Analisa Sensitivitas — WACC × Terminal Growth (g)
+              Analisa Sensitivitas - WACC × Terminal Growth (g)
             </span>
           </div>
           <span className="font-mono text-[10px] text-neutral-400">
@@ -355,8 +355,8 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
 
             <p className="mt-2 font-mono text-[10px] text-neutral-500 dark:text-neutral-400 leading-normal">
               Base case (WACC {baseWacc} · g {baseG}) dibingkai; isi sel = Fair Value per saham (Rp). Rentang grid: Rp{" "}
-              {swing.min !== undefined ? formatIdn(swing.min, 0) : "—"} – Rp{" "}
-              {swing.max !== undefined ? formatIdn(swing.max, 0) : "—"}.
+              {swing.min !== undefined ? formatIdn(swing.min, 0) : "-"} – Rp{" "}
+              {swing.max !== undefined ? formatIdn(swing.max, 0) : "-"}.
             </p>
           </div>
         ) : (
@@ -374,14 +374,14 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
           </div>
           <div className="divide-y divide-neutral-200 font-sans text-xs dark:divide-[#262930]">
             {notes.map((note, nIdx) => {
-              const [head, ...rest] = note.includes(" — ") ? note.split(" — ") : [null, note]
-              const body = head ? rest.join(" — ") : note
+              const [head, ...rest] = note.includes(" - ") ? note.split(" - ") : [null, note]
+              const body = head ? rest.join(" - ") : note
 
               return (
                 <div key={nIdx} className="py-2 first:pt-1 last:pb-0 text-neutral-700 dark:text-neutral-300 leading-relaxed">
                   {head ? (
                     <>
-                      <span className="font-bold text-neutral-900 dark:text-neutral-100">{head}</span> — {body}
+                      <span className="font-bold text-neutral-900 dark:text-neutral-100">{head}</span> - {body}
                     </>
                   ) : (
                     body

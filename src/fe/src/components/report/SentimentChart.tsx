@@ -18,7 +18,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
   const [activeView, setActiveView] = useState<"gauge" | "timeline">("gauge")
 
   // LOUD policy: no invented gauge/narratives/timeline. Missing BE data
-  // renders the honest-empty state below (gauge —, no rows).
+  // renders the honest-empty state below (gauge -, no rows).
   const gauge: number | null = sentiment?.gauge != null ? Number(sentiment.gauge) : null
   const narratives: string[] = sentiment?.top_narratives?.length
     ? sentiment.top_narratives
@@ -89,7 +89,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
         ) : gauge == null && narratives.length === 0 && timeline.length === 0 ? (
           <div className="flex h-48 flex-col items-center justify-center gap-1.5 border border-dashed border-neutral-300 bg-neutral-50/50 p-6 font-mono text-xs dark:border-[#262930] dark:bg-[#15171c]">
             <span className="font-semibold text-neutral-700 dark:text-neutral-300">[NO SENTIMENT DATA DETECTED]</span>
-            <span className="text-neutral-500 dark:text-neutral-400">Menunggu Ingesti Sinyal Sectors — Menampilkan State Kosong Sesuai Data Nyata.</span>
+            <span className="text-neutral-500 dark:text-neutral-400">Menunggu Ingesti Sinyal Sectors - Menampilkan State Kosong Sesuai Data Nyata.</span>
           </div>
         ) : activeView === "gauge" ? (
           <div className="grid gap-4 md:grid-cols-12 items-center">
@@ -157,7 +157,7 @@ export function SentimentChart({ ticker, sentiment, isLoading }: SentimentChartP
 
               <div className="mt-2 text-center font-mono">
                 <div className="text-2xl font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
-                  {gauge == null ? "—" : gauge} <span className="text-xs font-normal text-neutral-400">/ 100</span>
+                  {gauge == null ? "-" : gauge} <span className="text-xs font-normal text-neutral-400">/ 100</span>
                 </div>
                 <div className="mt-1">
                   <span className={`inline-block border px-2 py-0.5 text-[10px] font-semibold tracking-wider ${

@@ -1,11 +1,11 @@
 # Copyright 2026 Sectors Hackathon
-"""ADK Agent orchestration router — streaming trace for step-by-step visibility.
+"""ADK Agent orchestration router - streaming trace for step-by-step visibility.
 
 Exposes ADK 11-agent graph (Muse Spark 1M via CommandCode bridge) as:
 
-  GET  /api/agent/health          — wiring check (spark reachable, keys, graph)
-  POST /api/agent/run             — blocking full run (BBCA → full state)
-  GET  /api/agent/stream?ticker=BBCA  — SSE live trace, one event per agent step
+  GET  /api/agent/health          - wiring check (spark reachable, keys, graph)
+  POST /api/agent/run             - blocking full run (BBCA → full state)
+  GET  /api/agent/stream?ticker=BBCA  - SSE live trace, one event per agent step
 
 Every SSE chunk is JSON: {seq, author, event_type, text, function_calls, state_delta, ts}
 Clients should use EventSource / fetch+readableStream. FE /agent page streams this.
@@ -138,7 +138,7 @@ class AgentRunRequest(BaseModel):
 
 
 # IDX equity codes are exactly 4 capital letters (BBCA, AMMN, RATU…). Anything
-# else — test fixtures like DT1A2B3C, typos, pasted junk — is rejected BEFORE a
+# else - test fixtures like DT1A2B3C, typos, pasted junk - is rejected BEFORE a
 # run spawns, because every spawned run bills Sectors: unknown symbols still cost
 # 1 credit per addressed endpoint on their 404s (15 Sep 2026: the live-BE
 # integration tests burned ~71 credits posting fake tickers at :8777).
@@ -162,7 +162,7 @@ def _invalid_ticker_response(raw: str | None) -> JSONResponse | None:
             "error": "invalid_ticker",
             "ticker": ticker,
             "message": (
-                f"'{raw}' bukan kode IDX yang valid — harus 4 huruf kapital "
+                f"'{raw}' bukan kode IDX yang valid - harus 4 huruf kapital "
                 "(contoh: BBCA, AMMN, RATU). Run dibatalkan sebelum jalan supaya "
                 "tidak membakar credit Sectors."
             ),
@@ -175,7 +175,7 @@ def _invalid_ticker_response(raw: str | None) -> JSONResponse | None:
 async def agent_health():
     """Check if ADK graph can be built with minimax (preferred) or Spark bridge."""
     started = time.time()
-    # 0. Explicit opencode-go (Muse Spark 1.3 via Responses API) — honors
+    # 0. Explicit opencode-go (Muse Spark 1.3 via Responses API) - honors
     # ADK_PROVIDER first so health reports the ACTIVE provider, not minimax.
     if os.getenv("ADK_PROVIDER", "").lower() in ("opencode-go", "opencode", "opengo", "spark-1.3", "spark13"):
         from agents.adk.providers import spark13_model
@@ -360,7 +360,7 @@ async def agent_health():
 
 @router_agent.post("/api/agent/run", summary="Blocking ADK full run (no stream)")
 async def agent_run(req: AgentRunRequest):
-    """Blocking run — drives full 11-agent graph and returns final state + event trace."""
+    """Blocking run - drives full 11-agent graph and returns final state + event trace."""
     if (bad := _invalid_ticker_response(req.ticker)) is not None:
         return bad
     ticker = (req.ticker or "").upper().strip()
@@ -406,7 +406,7 @@ async def agent_run(req: AgentRunRequest):
 
 # === Detached executor (background task, SSE-free) ===
 async def _execute_run_to_sqlite(t: str, p: str, session_id: str) -> None:
-    """Run ADK graph and persist every event to SQLite. No SSE — client-independent.
+    """Run ADK graph and persist every event to SQLite. No SSE - client-independent.
 
     Called as asyncio.Task from /api/agent/start. Run continues even if all
     clients disconnect; errors/interruptions persist with reason in SQLite so
@@ -521,7 +521,7 @@ async def agent_start(req: AgentRunRequest):
     else:
         session_id = f"{ticker.lower()}-{os.urandom(4).hex()}"
 
-    p = req.prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key — never synthetic disclosures."
+    p = req.prompt or f"Generate an institutional equity report for {ticker} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key - never synthetic disclosures."
 
     # Spawn background task; do NOT await it
     task = asyncio.create_task(_execute_run_to_sqlite(ticker, p, session_id))
@@ -557,12 +557,12 @@ def get_run_status(run_id: str):
     }
 
 
-@router_agent.get("/api/agent/stream", summary="SSE live trace — step-by-step agent activity")
+@router_agent.get("/api/agent/stream", summary="SSE live trace - step-by-step agent activity")
 async def agent_stream(
     ticker: str = Query("BBCA", description="IDX ticker, e.g. BBCA"),
     prompt: str | None = Query(None, description="optional prompt override"),
 ):
-    """SSE stream — yields one JSON per ADK Event as the graph runs.
+    """SSE stream - yields one JSON per ADK Event as the graph runs.
 
     Client: `new EventSource('/api/agent/stream?ticker=BBCA')` or
     `fetch('/api/agent/stream?ticker=BBCA').then(r=>r.body.getReader()...)`
@@ -590,7 +590,7 @@ async def agent_stream(
         else:
             session_id = f"{t.lower()}-{os.urandom(4).hex()}"
 
-        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key — never synthetic disclosures."
+        p = prompt or f"Generate an institutional equity report for {t} (IDX). Use Sectors MCP/tools for every number via calc_* tools; when SECTORS_API_KEY is absent, STOP with sectors_missing_key - never synthetic disclosures."
 
         store = store_for_resume
         lifecycle = StreamLifecycleManager(
@@ -627,7 +627,7 @@ async def agent_stream(
                     # small yield to flush
                     await asyncio.sleep(0)
             except (GeneratorExit, asyncio.CancelledError) as exc:
-                # SSE client disconnected mid-stream — mark run as interrupted with client_disconnect reason
+                # SSE client disconnected mid-stream - mark run as interrupted with client_disconnect reason
                 log.warning("agent_stream client disconnected for %s after %d events", t, seq)
                 await lifecycle.on_interrupt(exc=exc, error_msg=f"client disconnected after {seq} events")
                 raise

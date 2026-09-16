@@ -1,10 +1,10 @@
-"""SOTP Aggregator — conglomerate sum-of-parts valuation (CDIA/ADRO pattern).
+"""SOTP Aggregator - conglomerate sum-of-parts valuation (CDIA/ADRO pattern).
 
 Deterministic. For conglomerates (segments >= 2) only:
   - Each pillar gets an implied equity = peer-avg P/E x pillar net income proxy,
     falling back to peer-avg EV/EBITDA x pillar EBITDA proxy when net income is
     unavailable at pillar level (CDIA BCA Sekuritas uses peer tables per pillar).
-  - Sum of parts = 100% of pillar weights (pct column of segments) — the Critic
+  - Sum of parts = 100% of pillar weights (pct column of segments) - the Critic
     invariant: `sum(weights) == 100.0` and `sum(pcts) == 100.0`.
   - Holdco discount (the ADRO benchmark pattern) applied to the pre-discount total when
     `company.sotp.holdco_discount_pct` is present; otherwise discount = 0.
@@ -68,7 +68,7 @@ def build_sotp(ticker: str) -> dict[str, Any]:
         return {
             "ticker": ticker,
             "conglomerate": False,
-            "reason": "single-pillar / non-conglomerate — SOTP not applicable",
+            "reason": "single-pillar / non-conglomerate - SOTP not applicable",
             "meta": {"generated_at": now_iso(), "engine": ENGINE_VERSION},
         }
 
@@ -109,7 +109,7 @@ def build_sotp(ticker: str) -> dict[str, Any]:
         "discount_note": (
             holdco.get("note", "")
             if holdco.get("note")
-            else "No holdco discount in input — CDIA-style conglomerate with listed subsidiaries valued directly."
+            else "No holdco discount in input - CDIA-style conglomerate with listed subsidiaries valued directly."
         ),
         "sum_check": {
             "pct_sum": pct_sum,
@@ -140,7 +140,7 @@ def run(ticker: str) -> dict[str, Any]:
             f"| pre {_nf.idn(sotp['pre_discount_total_mn'], digits=0)} -> post {_nf.idn(sotp['post_discount_equity_mn'], digits=0)} | {status}"
         )
     else:
-        print(f"[sotp] {ticker}: not a conglomerate — skipped ({sotp.get('reason')})")
+        print(f"[sotp] {ticker}: not a conglomerate - skipped ({sotp.get('reason')})")
     return sotp
 
 

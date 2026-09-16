@@ -6,12 +6,14 @@ TEMPLATES and the rendered TEXT, which is necessary but not sufficient. A report
 every source-level guard and still ship a document where:
 
   * the house header/footer made it onto only some PHYSICAL pages (per-`<div class="page">`
-    furniture does not survive a page overflow in the HTML/Playwright path — a page that
+    furniture does not survive a page overflow in the HTML/Playwright path - a page that
     overflows produces a continuation page with no header, and the footer of the previous
     logical page gets duplicated onto it),
   * an exhibit LABEL is orphaned at the bottom of a page while its chart renders on the
     next one (the label is then not above its object),
-  * the footer page numbers are repeated/incomplete even though every page "has" a footer.
+  * the footer page numbers are repeated/incomplete even though every page "has" a footer,
+  * an em dash survived into the printed page (§12) - it can only come from text written at run
+    time, so no source-level guard can see the string that produced it.
 
 None of those are visible in the template source. They are only visible in the PDF.
 
@@ -45,7 +47,7 @@ from server.report.house_format import (  # noqa: E402
 
 SOURCE_FULL = f"Source: {SOURCE_LINE}"
 # The source line can be WRAPPED by a narrow column ("Source:\nCompany,\nTeam\nEstimates"),
-# which is a layout wart, not a missing line — match the words with any whitespace between
+# which is a layout wart, not a missing line - match the words with any whitespace between
 # them and report the wrapped occurrences separately as a warning.
 SOURCE_RE = re.compile(r"Source:\s+" + r"\s+".join(re.escape(w) for w in SOURCE_LINE.split()))
 DATE_RE = re.compile(
@@ -69,6 +71,9 @@ def check(pdf: Path) -> dict:
     all_exhibits: list[int] = []
     source_lines = 0
     detail = []
+    em_total = 0
+    em_pages: list[int] = []
+    em_samples: list[str] = []
 
     for i, page in enumerate(doc):
         pno = i + 1
@@ -88,11 +93,24 @@ def check(pdf: Path) -> dict:
         if n_src > n_src_flat:
             warn.append(
                 f"rule 1 page {pno}: {n_src - n_src_flat} source line(s) WRAPPED across lines "
-                "(column too narrow for one line) — present, but not the house one-liner"
+                "(column too narrow for one line) - present, but not the house one-liner"
             )
         source_lines += n_src
         exhibits = sorted(int(n) for n in EXHIBIT_RE.findall(text))
         all_exhibits.extend(exhibits)
+
+        # Rule 12: no em dash on the printed page. Counting per page rather than per document so
+        # the report names where it is, and keeping a sample line so the string can be traced
+        # back to the writer (a payload string, an assumptions note, an agent paragraph).
+        n_em = text.count("\u2014") + text.count("\u2015")
+        if n_em:
+            em_total += n_em
+            em_pages.append(pno)
+            if len(em_samples) < 3:
+                for line in text.split("\n"):
+                    if "\u2014" in line or "\u2015" in line:
+                        em_samples.append(f"p{pno} {line.strip()[:70]}")
+                        break
 
         if not header:
             no_header.append(pno)
@@ -103,11 +121,11 @@ def check(pdf: Path) -> dict:
         if not ftr_r:
             no_ftr_r.append(pno)
         # A source line on a page with NO exhibit label is legitimate when the object
-        # spans the page break (the line belongs under its last fragment) — surfacing it
+        # spans the page break (the line belongs under its last fragment) - surfacing it
         # as a warning keeps the case visible without failing a correct document.
         if n_src > 0 and not exhibits:
             warn.append(
-                f"rule 1 page {pno}: source line with no exhibit label on the page — correct "
+                f"rule 1 page {pno}: source line with no exhibit label on the page - correct "
                 "if the object spans the page break, a separated source line otherwise"
             )
         if n_src == 0 and exhibits:
@@ -115,7 +133,7 @@ def check(pdf: Path) -> dict:
 
         # Rule 3: the Sectors.app mark, same size and position on every page. Chromium
         # paints an SVG logo as VECTOR PATHS (4 bars, ~32 path items) and a raster logo as
-        # an image XObject — so accept either, but require something SMALL in the
+        # an image XObject - so accept either, but require something SMALL in the
         # top-right corner, otherwise the full-width
         # header divider (height 0.8pt) counts as a logo. Detecting with get_images() alone
         # reports a perfectly rendered vector logo as MISSING.
@@ -168,7 +186,7 @@ def check(pdf: Path) -> dict:
     if no_logo:
         fails.append(
             f"rule 3 Sectors.app mark missing from the top-right corner on pages {no_logo} "
-            "— check house_format.header_template() still embeds the logo (an un-resolvable "
+            "- check house_format.header_template() still embeds the logo (an un-resolvable "
             "src renders as nothing, with no error anywhere)"
         )
 
@@ -181,7 +199,7 @@ def check(pdf: Path) -> dict:
     elif found != list(range(1, pages + 1)):
         fails.append(
             f"rule 4 footer page numbers are not 1..{pages} unique and complete: {page_numbers} "
-            "— per-page furniture did not survive pagination"
+            "- per-page furniture did not survive pagination"
         )
 
     unique = sorted(set(all_exhibits))
@@ -195,12 +213,23 @@ def check(pdf: Path) -> dict:
             )
         if len(all_exhibits) != len(set(all_exhibits)):
             warn.append(
-                "rule 2 some exhibit numbers were read twice — check for an object that "
+                "rule 2 some exhibit numbers were read twice - check for an object that "
                 "labels itself as well as being labelled by the renderer"
             )
     if source_lines < len(all_exhibits):
         fails.append(
             f"rule 1 {len(all_exhibits)} exhibits but only {source_lines} `{SOURCE_FULL}` lines"
+        )
+
+    # Rule 12 typography. A FAIL, not a warning: the deck ships to readers, and the one thing
+    # that makes this rule hold for text nobody typed is the funnel
+    # (server/report/text_sanitize.py) - a hit here means a string bypassed it.
+    if em_total:
+        fails.append(
+            f"rule 12 {em_total} em dash(es) on physical pages {em_pages} "
+            f"({'; '.join(em_samples)}) - the deck uses the hyphen separator "
+            "('A - B'), so check that the payload passed through "
+            "server/report/text_sanitize.py::clean before rendering"
         )
 
     return {
@@ -213,6 +242,7 @@ def check(pdf: Path) -> dict:
             "exhibit_numbers": unique,
             "source_lines": source_lines,
             "page_numbers": page_numbers,
+            "em_dashes": em_total,
         },
         "pages_detail": detail,
     }

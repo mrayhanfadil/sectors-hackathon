@@ -1,11 +1,11 @@
-{# ===== SLIDE 6 — Income Statement + Balance Sheet (Exhibit 14 & 15) ============================
+{# ===== SLIDE 6 - Income Statement + Balance Sheet (Exhibit 14 & 15) ============================
    Rules: docs/ammn-slides/slide6-statements-spec.md. Header row shaded navy with white text, numbers
    right-aligned, subtotals bold, Net Profit highlighted, and the tie-out printed under the balance sheet. #}
 {% if statements_page and statements_page.available %}
 <div class="page">
 <div class="slide6">
   {{ m.running() }}
-  {{ m.section("Laporan Keuangan — Laba Rugi & Neraca", ns) }}
+  {{ m.section("Laporan Keuangan - Laba Rugi & Neraca", ns) }}
 
   {% for block_key in ("income", "balance") %}
   {% set B = statements_page[block_key] %}
@@ -30,7 +30,7 @@
   {% if block_key == "balance" %}
   <p class="small stmt-tie"><b>Balance check:</b> Total Liabilities &amp; Equity − Total Assets =
   {% for y in statements_page.years %}{{ statements_page.tie_out[y]|idn(0) }}{% if not loop.last %} · {% endif %}{% endfor %}
-  (Rp bn) — {{ "neraca seimbang persis di semua kolom" if statements_page.tied else "TIDAK seimbang" }}.</p>
+  (Rp bn) - {{ "neraca seimbang persis di semua kolom" if statements_page.tied else "TIDAK seimbang" }}.</p>
   {% endif %}
   {% endfor %}
 

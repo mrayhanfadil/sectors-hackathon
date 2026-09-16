@@ -193,7 +193,7 @@ function BandPanel({ block }: { block: BandBlock }) {
             {pts[0].date}
           </text>
           <text x={W - 6} y={H - 3} fontSize="8" fill={TOKENS.muted} textAnchor="end" fontFamily="monospace">
-            {cur.date} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "—"}×-{p90 !== null ? formatIdn(p90, 0) : "—"}×
+            {cur.date} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "-"}×-{p90 !== null ? formatIdn(p90, 0) : "-"}×
           </text>
         </svg>
       </div>
@@ -396,7 +396,7 @@ function ImpliedPriceBars({
               fontFamily="monospace"
               className="tabular-nums"
             >
-              {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "—"}
+              {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-"}
             </text>
           </g>
         )
@@ -426,7 +426,7 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
 
   // Price resolution:
   // Use payload.peers_page.part_b.last_close if it is a number. If it is a formatted string (e.g. "Rp 4.860"),
-  // we do not parse it into a number silently — we take the clean numeric price from payload.cover.rating_box.price
+  // we do not parse it into a number silently - we take the clean numeric price from payload.cover.rating_box.price
   // instead to avoid localization parsing errors and adhere strictly to the frozen data contract.
   let price: number | null = null
   if (typeof partB.last_close === "number" && Number.isFinite(partB.last_close)) {
@@ -445,7 +445,7 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
       <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-neutral-200 pb-1.5 dark:border-[#262930]">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-neutral-900 dark:text-neutral-100">
-            Valuasi Relatif Historis — Own History (Time-Series)
+            Valuasi Relatif Historis - Own History (Time-Series)
           </h3>
           <p className="text-[11px] text-neutral-500 dark:text-neutral-400">
             {partB.methodology ??
@@ -524,16 +524,16 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
                         {r.label}
                       </td>
                       <td className="px-3 py-1.5 text-right font-semibold text-[#0B1F3A] tabular-nums dark:text-sky-400">
-                        {typeof r.to_mean === "number" ? formatIdn(r.to_mean, 0) : "—"}
+                        {typeof r.to_mean === "number" ? formatIdn(r.to_mean, 0) : "-"}
                       </td>
                       <td className="px-3 py-1.5 text-right font-semibold text-neutral-700 tabular-nums dark:text-neutral-300">
-                        {typeof r.to_median === "number" ? formatIdn(r.to_median, 0) : "—"}
+                        {typeof r.to_median === "number" ? formatIdn(r.to_median, 0) : "-"}
                       </td>
                       <td className="px-3 py-1.5 text-right text-neutral-600 tabular-nums dark:text-neutral-400">
                         {rangeText}
                       </td>
                       <td className="px-3 py-1.5 text-right font-bold tabular-nums text-neutral-900 dark:text-neutral-100">
-                        {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "—"}
+                        {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-"}
                       </td>
                     </tr>
                   )

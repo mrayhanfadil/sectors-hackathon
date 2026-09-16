@@ -1,10 +1,10 @@
-"""Thesis Writer agent — bull case narrative with hard numbers.
+"""Thesis Writer agent - bull case narrative with hard numbers.
 
 Deterministic: every number rendered is read from company.json or computed by
 this module's pure helpers (no LLM math, no network, no credit).
 
 Responsibilities (plan.md §3):
-  1. Bull case — segment growth (CDIA Energy 55% / Logistics 34% fastest +44.7%),
+  1. Bull case - segment growth (CDIA Energy 55% / Logistics 34% fastest +44.7%),
      one-off adjustment (CDIA 15.9mn → net -72%), quantified catalysts
      (MTEL PST+UMT merger 1 Jul 2026 + spectrum → +3,000-3,500 tenants, +IDR 360-420bn).
   2. Normalizations & adjusted net income.
@@ -112,14 +112,14 @@ def segment_narrative(company: dict[str, Any]) -> dict[str, Any]:
             "id": "SEG2",
             "point": (
                 f"{fastest['pillar']} is the fastest grower at {pct(fastest['growth_yoy'])} y/y "
-                f"({_nf.dec(fastest['pct'], digits=0)}% of mix) — the re-rating engine"
+                f"({_nf.dec(fastest['pct'], digits=0)}% of mix) - the re-rating engine"
             ),
             "evidence": {"metric": "segment growth y/y", "value": fastest["growth_yoy"], "source": fastest.get("source", source_label(company))},
         })
     return {
         "headline": (
             f"Mix: {largest['pillar']} {_nf.dec(largest['pct'], digits=0)}% / {fastest['pillar']} {_nf.dec(fastest['pct'], digits=0)}% "
-            f"(fastest, {pct(fastest['growth_yoy'])}) y/y — {_nf.dec(mix_sum, digits=1)}% of revenue"
+            f"(fastest, {pct(fastest['growth_yoy'])}) y/y - {_nf.dec(mix_sum, digits=1)}% of revenue"
         ) if largest else None,
         "arguments": args,
         "mix_sum_pct": mix_sum,
@@ -127,7 +127,7 @@ def segment_narrative(company: dict[str, Any]) -> dict[str, Any]:
 
 
 def catalyst_narrative(company: dict[str, Any]) -> list[dict[str, Any]]:
-    """Quantified catalysts — the MTEL pattern (3k tenants + 360-420bn by FY27-29)."""
+    """Quantified catalysts - the MTEL pattern (3k tenants + 360-420bn by FY27-29)."""
     out = []
     for c in company.get("catalysts", []):
         q = c.get("quantified", {})
@@ -202,7 +202,7 @@ def risk_summary(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "id": "R2",
             "title": "Elevated Debt/EBITDA",
-            "detail": f"Debt/EBITDA reached {_nf.dec(max(debteb), digits=0)}× — refinancing and rate sensitivity are key risks.",
+            "detail": f"Debt/EBITDA reached {_nf.dec(max(debteb), digits=0)}× - refinancing and rate sensitivity are key risks.",
             "severity": "high",
         })
     one = company.get("one_offs")
@@ -210,7 +210,7 @@ def risk_summary(company: dict[str, Any]) -> list[dict[str, Any]]:
         out.append({
             "id": "R3",
             "title": "Earnings quality (one-offs)",
-            "detail": f"Reported net includes {fmt_idr(sum(i['amount_mn'] for i in one['items']))} one-off items ({one.get('description', '')}) — normalize before comparing.",
+            "detail": f"Reported net includes {fmt_idr(sum(i['amount_mn'] for i in one['items']))} one-off items ({one.get('description', '')}) - normalize before comparing.",
             "severity": "medium",
         })
     if not out:
@@ -256,7 +256,7 @@ def build_thesis(ticker: str) -> dict[str, Any]:
             "id": "T0",
             "point": (
                 f"Revenue {years[0]}→{years[-1]}: {fmt_idr(rev[0])} → {fmt_idr(rev[-1])} "
-                f"({_nf.dec(pct_delta(rev[-1], rev[0]), digits=0, signed=True)}% cumulative) — growth optionality across pillars"
+                f"({_nf.dec(pct_delta(rev[-1], rev[0]), digits=0, signed=True)}% cumulative) - growth optionality across pillars"
             ),
             "evidence": {"metric": "revenue CAGR proxy", "value": pct_delta(rev[-1], rev[0]), "source": source_label(company)},
         })
@@ -266,7 +266,7 @@ def build_thesis(ticker: str) -> dict[str, Any]:
         "name": company.get("name", ticker),
         "archetype": company.get("archetype", "single"),
         "bull_case": {
-            "title": f"{company.get('name', ticker)} — Institutional Bull Case",
+            "title": f"{company.get('name', ticker)} - Institutional Bull Case",
             "headline": headline,
             "arguments": args,
             "catalysts": cats,
@@ -294,18 +294,18 @@ def thesis_markdown(thesis: dict[str, Any]) -> str:
     t = thesis
     bc = t["bull_case"]
     lines = [
-        f"# {t['name']} ({t['ticker']}) — Thesis (archetype: {t['archetype']})",
+        f"# {t['name']} ({t['ticker']}) - Thesis (archetype: {t['archetype']})",
         "",
         f"> **Bull case:** {bc['headline']}",
         "",
         "## Bull case arguments",
     ]
     for a in bc["arguments"]:
-        lines.append(f"- **{a['id']}** — {a['point']}  \n  *Evidence: {a['evidence']['metric']} = {a['evidence']['value']} · source: {a['evidence']['source']}*")
+        lines.append(f"- **{a['id']}** - {a['point']}  \n  *Evidence: {a['evidence']['metric']} = {a['evidence']['value']} · source: {a['evidence']['source']}*")
     if bc["catalysts"]:
         lines += ["", "## Catalysts (quantified)"]
         for c in bc["catalysts"]:
-            lines.append(f"- **{c['id']}** — {c['title']} ({c.get('date', '')}, status: {c.get('status', '')}) → {c.get('quantified', '')}  \n  *Source: {c.get('source', '')}*")
+            lines.append(f"- **{c['id']}** - {c['title']} ({c.get('date', '')}, status: {c.get('status', '')}) → {c.get('quantified', '')}  \n  *Source: {c.get('source', '')}*")
     n = t.get("normalizations")
     if n:
         lines += ["", "## One-off normalization", f"- {n['description']}"]
@@ -324,7 +324,7 @@ def thesis_markdown(thesis: dict[str, Any]) -> str:
     if t.get("risks"):
         lines += ["", "## Risks (input-derived)"]
         for r in t["risks"]:
-            lines.append(f"- [{r['severity']}] **{r['title']}** — {r['detail']}")
+            lines.append(f"- [{r['severity']}] **{r['title']}** - {r['detail']}")
     lines += [
         "",
         "---",

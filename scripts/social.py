@@ -1,5 +1,5 @@
 """
-Social Media Sentiment Engine — scripts/social.py
+Social Media Sentiment Engine - scripts/social.py
 Part of Multi-Agent Intake (plan.md §3, §4, §11). 0 Sectors credit.
 
 Retail narrative tracker across X, Reddit, and Stockbit.
@@ -20,7 +20,7 @@ CURATED_SOCIAL: Dict[str, List[Dict[str, Any]]] = {}
 
 
 async def search_social(ticker: str, days: int = 14, limit: int = 8) -> List[Dict[str, Any]]:
-    """Retail sentiment (0 credit) — KILLED Sep 2026, always returns [] until a
+    """Retail sentiment (0 credit) - KILLED Sep 2026, always returns [] until a
     live Sectors-gated source wires in. Never fabricates Stockbit/X/Reddit URLs."""
     return []
 

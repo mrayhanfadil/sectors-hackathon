@@ -1,4 +1,4 @@
-"""FCFF / DCF engine — the valuation arithmetic this repo runs.
+"""FCFF / DCF engine - the valuation arithmetic this repo runs.
 
 A pure calculator: it fetches nothing and imports no network client, so a PDF render stays offline and
 deterministic. Inputs come from `data/assumptions/<ticker>.json` and the Sectors payload.

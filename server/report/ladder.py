@@ -1,4 +1,4 @@
-"""The valuation ladder — every rung the report computed, with the role of each.
+"""The valuation ladder - every rung the report computed, with the role of each.
 
 A single headline number hides the argument. On the 15 Sep 2026 AMMN deck the
 target (Rp 5,667) was one rung of five the modeler had actually computed:
@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 def _parse_rounds_safe(state: dict) -> list:
-    """Rounds from run state, or [] — the deck must render without a debate."""
+    """Rounds from run state, or [] - the deck must render without a debate."""
     try:
         from agents.valuation.dissent_audit import parse_rounds
 
@@ -36,7 +36,7 @@ def _parse_rounds_safe(state: dict) -> list:
 
 
 def _typographic(text: str) -> str:
-    """House rule: a printed figure writes × — the modeler's labels may carry ASCII x.
+    """House rule: a printed figure writes × - the modeler's labels may carry ASCII x.
 
     Normalising at the display layer keeps the rule satisfied without rewriting
     the agent's own output (which stays verbatim in the run state for audit).
@@ -67,7 +67,7 @@ def build_ladder(ticker: str, price: float | None = None, target: float | None =
         run = AgentRunStore().get_latest_completed(ticker)
         state = (run or {}).get("state") or {}
         rungs = ladder_from_text(state.get("valuation_output")) if state else []
-    except Exception as exc:  # noqa: BLE001 — the deck must render without a run
+    except Exception as exc:  # noqa: BLE001 - the deck must render without a run
         logger.warning("ladder unavailable for %s: %s", ticker, exc)
         rungs = []
         state = {}
@@ -118,12 +118,12 @@ def build_ladder(ticker: str, price: float | None = None, target: float | None =
         rows.append(
             {
                 # "headline" is the parser's name for a bare scalar with no basis
-                # label around it — say that plainly rather than implying it is the
+                # label around it - say that plainly rather than implying it is the
                 # headline number.
                 "label": _typographic(
                     "nilai tunggal (basis tak berlabel)" if r.label == "headline" else r.label.replace("_", " ")
                 ),
-                # The raw basis is the modeler's JSON snippet ("ev_ebitda": 17.0) —
+                # The raw basis is the modeler's JSON snippet ("ev_ebitda": 17.0) -
                 # it carries English decimal separators the deck must not print, so
                 # the printed table gets the label only. The verbatim basis stays in
                 # the run state for anyone auditing it.
@@ -143,5 +143,5 @@ def build_ladder(ticker: str, price: float | None = None, target: float | None =
         "pembanding silang. Angka identik dengan output modeler pada run terakhir."
     )
     if not any(r["is_primary"] for r in rows) and target:
-        note += " Target yang terbit tidak sama dengan rung mana pun — perlu ditelusuri."
+        note += " Target yang terbit tidak sama dengan rung mana pun - perlu ditelusuri."
     return {"available": True, "rows": rows, "source": source, "note": note}

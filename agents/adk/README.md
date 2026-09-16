@@ -1,4 +1,4 @@
-# T05 — ADK Python+MCP scaffold
+# T05 - ADK Python+MCP scaffold
 
 ## Run
 
@@ -7,7 +7,7 @@ pip install -r agents/adk/requirements.txt
 # requires: google-adk==2.8.0, mcp>=1.24,<2, litellm, google-genai
 export DEEPSEEK_API_KEY=sk-...
 export GOOGLE_API_KEY=...        # for search-grounded sub-agents (Gemini)
-export SECTORS_API_KEY=...       # for Sectors MCP (Bearer, optional — graph runs without it)
+export SECTORS_API_KEY=...       # for Sectors MCP (Bearer, optional - graph runs without it)
 
 # One-shot via Runner (no adk CLI needed, no browser):
 PYTHONPATH=. python -c "
@@ -35,7 +35,7 @@ agents/adk/
     finance_tools.py  # DETERMINISTIC_TOOLS: calc_wacc/dcf/ddm/multiples/ggm/sotp/blended/bands/ratios (FunctionTool wrappers)
     mcp_sectors.py    # sectors_mcp_toolset() via McpToolset(StreamableHTTPConnectionParams(url=https://sectors-mcp.supertype.ai/mcp, headers={Authorization: Bearer <key>}))
   tests/
-    test_adk_scaffold.py  # 17 tests (finance math + provider + graph structure + MCP wiring) — green
+    test_adk_scaffold.py  # 17 tests (finance math + provider + graph structure + MCP wiring) - green
 
 agents/stubs/         # thin re-exports so other lanes can import agents.<name> without ADK
 ```
@@ -50,7 +50,7 @@ social ────┘                   │  (calc_*)  │   industry ├─ Pa
                                     └───────────────────┘   kpi      ┘
 ```
 
-* Search isolation: news/social/industry route Google Search via AgentTool(search_subagent with GoogleSearchTool) — genai forbids GoogleSearch + FunctionTool in the same LlmAgent.
+* Search isolation: news/social/industry route Google Search via AgentTool(search_subagent with GoogleSearchTool) - genai forbids GoogleSearch + FunctionTool in the same LlmAgent.
 * Modeler is the only agent with FunctionTools (calc_wacc, calc_dcf, ... + exit_loop for adversarial).
 * Adversarial loop exits via exit_loop tool (sets escalate=true); LoopAgent hard-caps at 4.
 * MCP is best-effort: maybe_sectors_mcp_toolset() returns None without SECTORS_API_KEY so tests/CI never need a live key.

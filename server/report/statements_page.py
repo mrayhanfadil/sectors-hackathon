@@ -1,4 +1,4 @@
-"""Slide 6 payload — Exhibit 14 Income Statement + Exhibit 15 Balance Sheet (2024A-2028F).
+"""Slide 6 payload - Exhibit 14 Income Statement + Exhibit 15 Balance Sheet (2024A-2028F).
 
 Rules: docs/ammn-slides/slide6-statements-spec.md. Corporate (non-bank) variant for AMMN; the bank row
 set is recorded in the spec and switched on by `archetype`/`bank` flag rather than guessed here.
@@ -79,7 +79,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     annual = {r.get("year"): r for r in annual_rows if isinstance(r, dict)}
     if not annual:
         return {"available": False, "ticker": tk,
-                "reason": "Sectors annual statement rows not cached — run the statements harvest first"}
+                "reason": "Sectors annual statement rows not cached - run the statements harvest first"}
 
     # --- spine (deck Key Financials) -> forecast revenue / EBITDA / net profit
     spine_rows = {}
@@ -110,7 +110,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     if any(v < 1000 for v in rev_f + ebitda_f + net_f):
         return {"available": False, "ticker": tk,
                 "reason": ("the Key Financials spine parsed to an implausible magnitude "
-                           f"(revenue {rev_f}, ebitda {ebitda_f}, net {net_f}) — refusing to print it")}
+                           f"(revenue {rev_f}, ebitda {ebitda_f}, net {net_f}) - refusing to print it")}
 
     # --- drivers, each named and sourced
     a25 = annual.get(2025) or annual.get(max(annual))
@@ -202,7 +202,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     # lower COGS ratio than FY2025A; the page states that instead of hiding it.
     # Sectors' own rows do not foot in the operating block: reported EBIT is not GP - operating_expense
     # (Rp 1,359 bn apart in FY2024A, Rp 249 bn in FY2025A). EBIT is the anchor, so opex becomes the derived
-    # line and the reported figures are stated in the notes — the statement foots and nothing is hidden.
+    # line and the reported figures are stated in the notes - the statement foots and nothing is hidden.
     opex_gaps = {}
     for y in ("2024A", "2025A"):
         a = acts[y]
@@ -261,7 +261,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         r["tl"] = (r["tcl"] or 0.0) + (r["lt"] or 0.0) + other_ncl
         r["tle"] = r["tl"] + r["eq"]
         # A balance sheet assembled from floats never closes to exactly zero: the difference lands near 1e-11 and both
-        # consumers then print it — the PDF showed "-0" and the frontend showed -2.9103830456733704e-11. Snapping the
+        # consumers then print it - the PDF showed "-0" and the frontend showed -2.9103830456733704e-11. Snapping the
         # residue changes no displayed figure (the smallest account is Rp bn) and lets each print a clean 0.
         r["gap"] = 0.0 if abs(r["tle"] - r["ta"]) < 1e-6 else (r["tle"] - r["ta"])
         return r
@@ -287,18 +287,18 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         ("Gross Profit", "gp", SUB, "subtotal"),
         ("Operating Expenses / SG&A", "opex", DED, "ditampilkan sebagai pengurang"),
         ("EBIT", "ebit", SUB, "subtotal"),
-        ("Interest Income", "ii", NA, "Sectors tidak mempublikasikan baris ini untuk AMMN — tidak diisi"),
+        ("Interest Income", "ii", NA, "Sectors tidak mempublikasikan baris ini untuk AMMN - tidak diisi"),
         ("Interest Expense", "ie", DED, "ditampilkan sebagai pengurang"),
-        ("Other Income / (Expense) — non-operating", "other", "", "baris rekonsiliasi: membuat pre-tax foot (= pre-tax - EBIT + bunga)"),
+        ("Other Income / (Expense) - non-operating", "other", "", "baris rekonsiliasi: membuat pre-tax foot (= pre-tax - EBIT + bunga)"),
         ("Pre-tax Profit", "ebt", SUB, "subtotal"),
         ("Income Tax", "tax", DED, "ditampilkan sebagai pengurang"),
         ("Minority Interest", "mino", "", "= pre-tax - pajak - laba bersih (derivasi eksak Sectors)"),
-        ("Net Profit", "net", HL, "baris terpenting — di-highlight"),
+        ("Net Profit", "net", HL, "baris terpenting - di-highlight"),
     ])
     balance = rows3([
         ("ASSETS", "", "section", "penanda bagian"),
         ("Cash & Cash Equivalents", "cash", "", "forecast: item penyeimbang neraca (dinyatakan di catatan)"),
-        ("Trade Receivables", "ar", NA, "Sectors tidak mempublikasikan piutang dagang — tercakup di Other Current Assets"),
+        ("Trade Receivables", "ar", NA, "Sectors tidak mempublikasikan piutang dagang - tercakup di Other Current Assets"),
         ("Inventory", "inv", "", ""),
         ("Other Current Assets", "other_ca", "", "residual arus lancar non-kas/non-persediaan"),
         ("Total Current Assets", "tca", SUB, "subtotal"),
@@ -307,7 +307,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         ("Total Assets", "ta", SUB, "subtotal"),
         ("LIABILITIES & EQUITY", "", "section", "penanda bagian"),
         ("Short-term Debt", "st", "", "forecast: flat di level FY2025A (tidak ada jadwal pelunasan)"),
-        ("Trade Payables", "ap", NA, "Sectors tidak mempublikasikan utang dagang — tercakup di Other Current Liabilities"),
+        ("Trade Payables", "ap", NA, "Sectors tidak mempublikasikan utang dagang - tercakup di Other Current Liabilities"),
         ("Other Current Liabilities", "other_cl", "", "residual liabilitas lancar"),
         ("Total Current Liabilities", "tcl", SUB, "subtotal"),
         ("Long-term Debt", "lt", "", "forecast: flat di level FY2025A"),
@@ -319,10 +319,10 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
 
     gaps = {y: (rows[y]["gap"] or 0.0) for y in YEARS}
     notes = [
-        f"Basis aktual: Sectors annual (FY2024A, FY2025A). Baris kuartalan tidak dipakai — revenue kuartalan "
+        f"Basis aktual: Sectors annual (FY2024A, FY2025A). Baris kuartalan tidak dipakai - revenue kuartalan "
         f"tidak rekonsiliasi ke angka tahunan (jumlah 4 kuartal ±Rp 44 tn vs FY2025A Rp 30,9 tn).",
         f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {_nf.idn(rev_f[0], digits=0)} bn, EBITDA "
-        f"Rp {_nf.idn(ebitda_f[0], digits=0)} bn, laba bersih Rp {_nf.idn(net_f[0], digits=0)} bn — "
+        f"Rp {_nf.idn(ebitda_f[0], digits=0)} bn, laba bersih Rp {_nf.idn(net_f[0], digits=0)} bn - "
         f"basis kolom F: {(spine or {}).get('forecast_basis') or 'lihat catatan Key Financials'}"
         f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}, "
         f"dan angka ini identik dengan "
@@ -334,7 +334,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         "Dinyatakan eksplisit supaya pembaca tidak membacanya sebagai temuan analis.",
         ("Driver kolom proyeksi: " + ("; ".join(f"{k} {v}" for k, v in sorted(driver_rows.items())))
          if driver_rows else
-         "Tidak ada jadwal capex/utang/D&A dari sumber — D&A, utang, dan beban bunga ditahan di level "
+         "Tidak ada jadwal capex/utang/D&A dari sumber - D&A, utang, dan beban bunga ditahan di level "
          "FY2025A dan itu dinyatakan sebagai keterbatasan, bukan sebagai proyeksi."),
         ("Utang dibagi short-term/long-term memakai proporsi FY2025A "
          f"({_nf.idn(st_debt_25, digits=0)} / {_nf.idn(st_debt_25 + lt_debt_25, digits=0)}) karena sumber hanya mempublikasikan total; "
@@ -342,15 +342,15 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         if driver_rows.get("interest_expense") else "",
         "Neraca: kas adalah item penyeimbang pada kolom proyeksi (dinyatakan). Tanpa itu aset dan liabilitas+ekuitas "
         "tidak akan pernah bertemu persis, karena Sectors tidak menyediakan jadwal capex/pelunasan utang.",
-        (f"Rekonsiliasi beban usaha: baris Sectors tidak foot di blok operasi — Operating Expenses di tabel ini "
+        (f"Rekonsiliasi beban usaha: baris Sectors tidak foot di blok operasi - Operating Expenses di tabel ini "
          f"= Gross Profit - EBIT supaya barisnya menyambung. Selisih terhadap operating_expense yang dilaporkan "
          f"Sectors ({gap_txt}) berarti item itu di luar definisi EBIT mereka; dinyatakan supaya nilainya tidak "
          f"terbaca sebagai temuan baru."),
         (f"Implikasi margin: untuk mencapai EBITDA spine Rp {_nf.idn(ebitda_f[0], digits=0)} bn, rantai biaya memakai opex "
-         f"FY2025A (Rp {_nf.idn(opex_25_abs, digits=0)} bn) dan COGS sebagai baris penyeimbang — gross margin proyeksi "
+         f"FY2025A (Rp {_nf.idn(opex_25_abs, digits=0)} bn) dan COGS sebagai baris penyeimbang - gross margin proyeksi "
          f"{_nf.pcfrac(implied_gm, 1)} vs aktual FY2025A {_nf.pcfrac(actual_gm, 1)}. Perbaikan margin itu milik asumsi mid-cycle "
          f"deck, bukan temuan baru; dinyatakan supaya tidak terbaca sebagai proyeksi analis independen."),
-        "Interest Income tidak dipublikasikan Sectors untuk AMMN, jadi barisnya kosong dengan keterangan — "
+        "Interest Income tidak dipublikasikan Sectors untuk AMMN, jadi barisnya kosong dengan keterangan - "
         "bukan nol, bukan angka karangan.",
     ]
     return {
@@ -367,7 +367,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         "forecast_source_display": _display_attr((driver_path or {}).get("attribution")),
         "sources": ["Sectors API: company/report financials.historical_financials (annual, IDR)",
                     "data/assumptions/AMMN.json (tax, cost of debt, capex, payout)",
-                    "cover.slide2.key_financials — the mid-cycle forecast spine this page must tie to"],
+                    "cover.slide2.key_financials - the mid-cycle forecast spine this page must tie to"],
         "bank_variant_note": ("Varian bank (pola BBTN Exhibit 7-8: Interest Income/Expense, Net Interest Income, "
                               "Non-Interest Income, PPOP, Provisions; Gross Loans, Net Loans, Govt Bonds, "
                               "Customer Deposits, Shareholders' Funds) diaktifkan lewat flag `variant`, "

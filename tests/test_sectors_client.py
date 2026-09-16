@@ -1,4 +1,4 @@
-"""Keyless-runnable tests for server/sectors.py — no API key, no network."""
+"""Keyless-runnable tests for server/sectors.py - no API key, no network."""
 import pytest
 
 from server import sectors
@@ -15,7 +15,7 @@ def _keyless_isolated_cache(tmp_path, monkeypatch):
 
     Warm prod cache rows return without a key by design (hit saves a
     credit), which would mask the loud-failure assertions below. A key
-    inherited from the shell would do the same — force both away.
+    inherited from the shell would do the same - force both away.
     """
     import server.sectors as _S
     from server.config import get_settings
@@ -37,7 +37,7 @@ def test_bare_ticker():
 
 
 def test_no_key_raises_loud():
-    # Every helper must fail LOUD without key — never silent fallback.
+    # Every helper must fail LOUD without key - never silent fallback.
     for fn, args in [
         (sectors.daily, ("BBCA", "2026-01-01", "2026-01-02")),
         (sectors.quarterly, ("BBCA",)),

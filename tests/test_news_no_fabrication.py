@@ -1,6 +1,6 @@
 """No-fabrication gates for news path (LOUD policy, Sep 2026; rewired 14 Sep 2026).
 
-CURATED_NEWS stays killed — no hand-written items may ever come back.
+CURATED_NEWS stays killed - no hand-written items may ever come back.
 search_news() is now live-wired to Sectors v2: keyless → honest [] (this
 suite runs keyless, so [] pinned here); keyed runs hit the live feed.
 """
@@ -17,7 +17,7 @@ def test_search_news_keyless_honest_empty():
 
     if os.getenv("SECTORS_API_KEY", "").strip():
         import pytest
-        pytest.skip("keyed run — live feed expected, fabrication gates still apply")
+        pytest.skip("keyed run - live feed expected, fabrication gates still apply")
     for t in ("RATU", "CDIA", "MTEL", "BBCA", "ADRO", "ZZZZ", "GOTO", "BRIS"):
         assert _run(search_news(t)) == [], t
 

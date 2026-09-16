@@ -1,13 +1,13 @@
 """
-KPI Analyst — T07
+KPI Analyst - T07
 
-Owns: Operational KPIs per subsector — HERO for infra (MTEL archetype).
+Owns: Operational KPIs per subsector - HERO for infra (MTEL archetype).
 
 Archetype refs:
-- MTEL (KSI 27 Aug 2026) — HERO: Tower 40,563 (+2%), Colocation 23,303 (+10%), Tenant 63,866 (+5%),
+- MTEL (KSI 27 Aug 2026) - HERO: Tower 40,563 (+2%), Colocation 23,303 (+10%), Tenant 63,866 (+5%),
   Reseller tenants 2,650, Tenancy Ratio 1.57x (vs 1.53), Fiber 59,239 km (+9%), add/less per quarter
   + Catalyst Quant: PST & UMT Merger + Spectrum 700MHz/2.6GHz -> +3,000-3,500 tenants, +IDR 360-420bn
-- RATU: BOPD (Cepu 169k gross, net entitlement via PSC) — single KPI
+- RATU: BOPD (Cepu 169k gross, net entitlement via PSC) - single KPI
 - CDIA: MW / m³ / DWT / TC/COA/spot per pillar (Energy/Water/Port/Logistics)
 
 Spec: plan.md 2.3 (MTEL Operational KPIs HERO) + 3 "KPI Analyst (tenancy, fiber km)"
@@ -24,9 +24,9 @@ import json
 import os
 
 ARCHETYPE_SOURCES = {
-    "RATU": "HP Sekuritas 7 Jan 2026 — RATU (BOPD)",
-    "CDIA": "BCA Sekuritas 23 Jun 2026 — CDIA (MW/m³/DWT)",
-    "MTEL": "KSI/Kiwoom 27 Aug 2026 — MTEL (Tower/Fiber tenancy HERO)",
+    "RATU": "HP Sekuritas 7 Jan 2026 - RATU (BOPD)",
+    "CDIA": "BCA Sekuritas 23 Jun 2026 - CDIA (MW/m³/DWT)",
+    "MTEL": "KSI/Kiwoom 27 Aug 2026 - MTEL (Tower/Fiber tenancy HERO)",
 }
 
 Subsector = Literal["tower-infra", "oil-holding", "conglomerate", "bank", "coal", "property", "telco", "general"]
@@ -34,7 +34,7 @@ Subsector = Literal["tower-infra", "oil-holding", "conglomerate", "bank", "coal"
 
 @dataclass
 class TowerKPI:
-    """MTEL infra HERO — C22 template expects these exact fields."""
+    """MTEL infra HERO - C22 template expects these exact fields."""
     towers: int = 40563              # total towers
     towers_yoy_pct: float = 2.0
     colocation: int = 23303          # colocation tenants
@@ -42,7 +42,7 @@ class TowerKPI:
     tenants: int = 63866             # total tenants (colocation + anchor)
     tenants_yoy_pct: float = 5.0
     reseller_tenants: int = 2650     # reseller subset
-    tenancy_ratio: float = 1.57      # tenants / towers — THE thesis KPI
+    tenancy_ratio: float = 1.57      # tenants / towers - THE thesis KPI
     tenancy_ratio_prior: float = 1.53
     fiber_km: int = 59239
     fiber_yoy_pct: float = 9.0
@@ -70,7 +70,7 @@ class TowerKPI:
 
 @dataclass
 class OilKPI:
-    """RATU — Cepu BOPD."""
+    """RATU - Cepu BOPD."""
     gross_bopd: int = 169000
     net_bopd: float = 4056.0         # gross * PI (2.4%)
     participation_pct: float = 2.4
@@ -89,7 +89,7 @@ class OilKPI:
 
 @dataclass
 class ConglomerateKPI:
-    """CDIA — per-pillar operational specs."""
+    """CDIA - per-pillar operational specs."""
     pillars: list[dict] = field(default_factory=lambda: [
         {"pillar": "Energy", "spec": "120MW CCPP", "unit": "MW", "value": 120, "yoy_pct": 4.2},
         {"pillar": "Water", "spec": "2,000 l/s", "unit": "l/s", "value": 2000, "yoy_pct": 2.1},
@@ -111,7 +111,7 @@ class ConglomerateKPI:
 
 @dataclass
 class CatalystQuant:
-    """MTEL P1-8 catalyst quantification — tenants + IDR revenue by FY."""
+    """MTEL P1-8 catalyst quantification - tenants + IDR revenue by FY."""
     title: str                       # e.g. "PST & UMT Merger" | "Spectrum 700MHz & 2.6GHz"
     effective_date: str              # ISO
     tenants_added: tuple[int, int] = (3000, 3500)  # range
@@ -129,7 +129,7 @@ class KPIBundle:
     tower: Optional[TowerKPI] = None
     oil: Optional[OilKPI] = None
     conglomerate: Optional[ConglomerateKPI] = None
-    # generic fallback for banks/property etc — e.g. BBCA: CAR, NIM, LDR, CASA
+    # generic fallback for banks/property etc - e.g. BBCA: CAR, NIM, LDR, CASA
     generic: dict = field(default_factory=dict)
     catalysts: list[CatalystQuant] = field(default_factory=list)
     # provenance
@@ -172,10 +172,10 @@ class KPIBundle:
 
 
 # ---------------------------------------------------------------------------
-# Deterministic helpers — NEVER let LLM invent these
+# Deterministic helpers - NEVER let LLM invent these
 # ---------------------------------------------------------------------------
 def calc_tenancy_ratio(tenants: int, towers: int) -> float:
-    """THE thesis KPI — Critic validates tenant/tower."""
+    """THE thesis KPI - Critic validates tenant/tower."""
     if towers == 0:
         raise ValueError("towers cannot be 0")
     return round(tenants / towers, 2)
@@ -192,7 +192,7 @@ def calc_net_growth(added: int, removed: int) -> int:
 
 
 def calc_revenue_per_tenant(total_revenue_idr_bn: float, tenants: int) -> float:
-    """IDR bn per tenant — for catalyst revenue bridging."""
+    """IDR bn per tenant - for catalyst revenue bridging."""
     if tenants == 0:
         return 0.0
     return round(total_revenue_idr_bn / tenants, 4)
@@ -211,17 +211,17 @@ def calc_tenancy_delta_vs_prior(current: float, prior: float) -> float:
 
 
 # ---------------------------------------------------------------------------
-# Prompt contract — ADK LlmAgent (Gemini 3.7 Flash High)
+# Prompt contract - ADK LlmAgent (Gemini 3.7 Flash High)
 # ---------------------------------------------------------------------------
 KPI_SYSTEM_PROMPT = """\
-You are KPI Analyst (T07) — IDX institutional research, operational KPIs per subsector.
+You are KPI Analyst (T07) - IDX institutional research, operational KPIs per subsector.
 
 Rules:
 - JANGAN hitung. Panggil calc_tenancy_ratio / calc_yoy_pct / calc_net_growth / calc_revenue_per_tenant / calc_catalyst_revenue_bridge untuk angka.
-- MTEL infra HERO: Tower 40,563 (+2%), Colocation 23,303 (+10%), Tenant 63,866 (+5%), Reseller 2,650, Tenancy 1.57x (vs 1.53), Fiber 59,239 km (+9%), add/less per quarter. Wajib sebut semua — ini thesis KPI. Tenancy = tenant/tower — Critic akan validate sum.
+- MTEL infra HERO: Tower 40,563 (+2%), Colocation 23,303 (+10%), Tenant 63,866 (+5%), Reseller 2,650, Tenancy 1.57x (vs 1.53), Fiber 59,239 km (+9%), add/less per quarter. Wajib sebut semua - ini thesis KPI. Tenancy = tenant/tower - Critic akan validate sum.
 - RATU oil: Cepu 169k BOPD gross, net = gross * PI (2.4%), DMO 25%. Single KPI.
-- CDIA conglomerate: MW / m3 / DWT / TC/COA/spot per pillar (Energy/Water/Port/Logistics) — 4 pillars.
-- Catalyst quantification (P1-8): PST & UMT Merger eff 1 Jul 2026 + Spectrum 700MHz & 2.6GHz (TLKM 20/80 MHz) -> +3,000-3,500 tenants, +IDR 360-420bn annualized by FY27-29. Opex/capex efficiency + FWA/fiberization/IoT/power. Sebut tenants + IDR + by FY — jangan narasi tanpa angka.
+- CDIA conglomerate: MW / m3 / DWT / TC/COA/spot per pillar (Energy/Water/Port/Logistics) - 4 pillars.
+- Catalyst quantification (P1-8): PST & UMT Merger eff 1 Jul 2026 + Spectrum 700MHz & 2.6GHz (TLKM 20/80 MHz) -> +3,000-3,500 tenants, +IDR 360-420bn annualized by FY27-29. Opex/capex efficiency + FWA/fiberization/IoT/power. Sebut tenants + IDR + by FY - jangan narasi tanpa angka.
 - Tiap exhibit: source tier + url+date. Critic REJECT kalau tenancy != tenant/tower atau KPI tanpa source.
 - Bahasa default ID. Anti-sycophancy: defend(evidence: calc+source) atau concede(correction).
 """
@@ -238,7 +238,7 @@ Task: Build KPIBundle JSON for {ticker}.
 - Infra: fill tower (semua 7 KPI + quarterly flow) + catalysts[2] (PST/UMT + Spectrum) dengan tenants + IDR bridge.
 - Oil single: fill oil (gross/net/PI/DMO).
 - SOTP: fill conglomerate (4 pillars).
-- Call calc_* for tenancy/yoy/net/revenue-per-tenant — do not compute mentally.
+- Call calc_* for tenancy/yoy/net/revenue-per-tenant - do not compute mentally.
 - Return ONLY JSON.
 """
 
@@ -260,7 +260,7 @@ def build_kpi_prompt(
 
 
 # ---------------------------------------------------------------------------
-# Fixtures — offline dev / tests
+# Fixtures - offline dev / tests
 # ---------------------------------------------------------------------------
 def _load_assumptions(ticker: str, assum: Optional[dict] = None) -> dict:
     """Load data/assumptions/{ticker}.json if available, merged with passed assum dict."""

@@ -5,7 +5,7 @@ export const Route = (createFileRoute as any)("/mock-sectors/$ticker")({
   component: MockSectorsRedirect,
 })
 
-// Halaman lama sudah dipensiunkan — data tiruan dihapus, semua laporan live-only.
+// Halaman lama sudah dipensiunkan - data tiruan dihapus, semua laporan live-only.
 function MockSectorsRedirect() {
   const params = Route.useParams() as { ticker?: string }
   const rawTicker = (params?.ticker || "BBCA").toUpperCase()

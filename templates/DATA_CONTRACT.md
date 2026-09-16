@@ -1,4 +1,4 @@
-# Report Data Contract — single JSON consumed by all 4 templates (T10)
+# Report Data Contract - single JSON consumed by all 4 templates (T10)
 
 > Status: LOCKED 31 Aug 2026. Renderer `scripts/render_pdf.py` + templates `templates/*.html` both read this.
 > Sibling lanes produce pieces of this contract; the Renderer stitches them into one JSON before Jinja2 render.
@@ -20,7 +20,7 @@ gracefully via `{{ if }}` guards instead of crashing the render.
     "sector": "Telecommunication Infrastructure",
     "report_type": "Initiation",                    // LOCKED: Initiation only P0
     "date": "31 Agt 2026",                          // ID locale
-    "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+    "prepared_by": "RESEARCH - Sectors Hackathon 2026",
     "language": "id"                                // LOCKED: ID default
   },
   "cover": {
@@ -97,10 +97,10 @@ select_template(report_data):
 ```
 
 Priority note: `segments>1` wins over infra (CDIA-style conglomerates with segments + 4 pillar peer tables need
-SOTP layout even if they sit in an infra subsector). `strategy` is never auto-selected — it is passed explicitly
+SOTP layout even if they sit in an infra subsector). `strategy` is never auto-selected - it is passed explicitly
 by the orchestrator for market-level reports (JPM overlay).
 
-## Section inventories (task item 1 — "9-10 sections adaptive")
+## Section inventories (task item 1 - "9-10 sections adaptive")
 
 | # | Section (single) | sotp delta | infra delta | strategy (all different) |
 |---|---|---|---|---|
@@ -108,14 +108,14 @@ by the orchestrator for market-level reports (JPM overlay).
 | 2 | Price vs JCI + Summary | same | same | Investment Summary |
 | 3 | Thesis (4 narasi) | + segment growth | + catalyst quantified | Lessons / 5 Thematics |
 | 4 | Valuation DCF + 2nd method | DCF+DDM + 4 pillar peer tables | + blended 60/40 + bands | Sector OW/N/UW + picks |
-| 5 | Operational KPI (per subsector) | same | HERO: tenancy/fiber table | — |
-| 6 | Segments | full segment table | + QoQ + YoY | — |
+| 5 | Operational KPI (per subsector) | same | HERO: tenancy/fiber table | - |
+| 6 | Segments | full segment table | + QoQ + YoY | - |
 | 7 | Financials 6Y + ratios | same | same | Economics per sector |
 | 8 | Risks buckets | pillar-specific | infra-specific | Flows/MSCI + Danantara |
 | 9 | Exhibits (charts, auto-numbered, house source line) | same | same | 60+ exhibits paginated |
 | 10 | Disclaimer OJK | same | same | Disclosures |
 
-Every exhibit row carries `source` as **internal provenance** (audit trail) — render aborts
+Every exhibit row carries `source` as **internal provenance** (audit trail) - render aborts
 (fail-loud) if any exhibit lacks one. That field is never printed: the visible line under
 every object is always `Source: Company, Team Estimates` (house format §1).
 
@@ -123,8 +123,8 @@ every object is always `Source: Company, Team Estimates` (house format §1).
 
 1. `valuation.blended.weights` sums to 100 (Critic rule from plan §3).
 2. Every `exhibits[*]` has non-empty `source` (internal provenance) and must NOT carry a
-   pre-numbered `id` — exhibit numbers are owned by the renderer's global counter.
+   pre-numbered `id` - exhibit numbers are owned by the renderer's global counter.
 3. `segments[*].share_pct` sums to 100 ± 0.5 when >1 segment (else template must hide the pie).
 4. `rating_box.upside_pct == round((tp - price) / price * 100, 1)` (deterministic recompute, abort on mismatch).
 5. `news[*]` has url + date; `sentiment.gauge` in 0..100.
-6. ESG: `found=false` → hide box entirely (LOCKED decision — no fabricated scores).
+6. ESG: `found=false` → hide box entirely (LOCKED decision - no fabricated scores).

@@ -96,7 +96,7 @@ def _is_fe_comment(line: str) -> bool:
 
 def test_sectors_db_absent():
     assert not (REPO_ROOT / "data" / "sectors.db").exists(), (
-        "data/sectors.db resurrected — legacy sqlite was git-rm'd, "
+        "data/sectors.db resurrected - legacy sqlite was git-rm'd, "
         "Sectors v2 + data/idx dumps are the only prod sources"
     )
 
@@ -118,7 +118,7 @@ def test_no_yfinance_imports_under_server():
 def test_report_fixtures_module_absent():
     """scripts/report_fixtures.py is deleted (Sectors-only purge, Sep 2026)."""
     assert not (REPO_ROOT / "scripts" / "report_fixtures.py").exists(), (
-        "scripts/report_fixtures.py resurrected — static builders are purged, "
+        "scripts/report_fixtures.py resurrected - static builders are purged, "
         "Sectors v2 + data/assumptions files are the only prod sources"
     )
     assert not list((REPO_ROOT / "scripts" / "fixtures").glob("*.json")), (

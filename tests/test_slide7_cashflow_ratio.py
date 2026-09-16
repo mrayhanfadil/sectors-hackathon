@@ -1,4 +1,4 @@
-"""Slide 7 — cash flow + key ratio: structure, footing, the mandated tie-outs, and the gate."""
+"""Slide 7 - cash flow + key ratio: structure, footing, the mandated tie-outs, and the gate."""
 from __future__ import annotations
 
 import pathlib
@@ -190,7 +190,7 @@ def test_gate_passes_and_bites(payload):
 # ------------------------------------------------------------------ wiring guards
 def test_the_builders_run_in_order_so_the_pages_read_the_same_statements():
     """The ratio block must read the statements page the deck prints. Rebuilding it independently
-    produced a ratio block computed from a different income statement — caught once already."""
+    produced a ratio block computed from a different income statement - caught once already."""
     src = PDF.read_text()
     i_cf = src.index("build_cashflow_page(")
     i_is = src.index('payload["statements_page"] = build_statements_page(')

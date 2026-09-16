@@ -4,7 +4,7 @@ The gate stage refuses to invent gate params, so the payload must carry an expli
 `gate_inputs` block; `server/routers/pdf.py::_gate_inputs_from_assumptions` is where the
 production loader reads it from.
 These are DECLARED TEST SCENARIOS for typography/layout + gate-logic
-assertions only — never market facts, never served in prod. Each scenario is
+assertions only - never market facts, never served in prod. Each scenario is
 chosen to exercise a documented gate path in agents/valuation/gates.py:
 
 - RATU: full-pass single business -> FCFF/WACC DCF, no thin banner.
@@ -61,7 +61,7 @@ def load_demo_fixture(ticker: str) -> dict[str, Any] | None:
     """Retired Sep 2026 (Sectors-only purge): static demo fixtures deleted.
 
     Always returns None. Kept as a stub so older imports fail soft during
-    the migration window — new code must not call this. Render-path tests
+    the migration window - new code must not call this. Render-path tests
     use explicit inline scaffolding; prod loaders 422 without Sectors data.
     """
     return None
@@ -104,7 +104,7 @@ def assert_no_fixture_provenance(payload: dict[str, Any], where: str = "") -> No
         raise AssertionError(
             f"fixture provenance {FIXTURE_PROVENANCE_PREFIX!r} on payload"
             f"{(' ' + where) if where else ''}"
-            " — demo data must never claim live Sectors sourcing"
+            " - demo data must never claim live Sectors sourcing"
         )
 
 

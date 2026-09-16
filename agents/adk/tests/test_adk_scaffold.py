@@ -10,7 +10,7 @@
 
 Run: pytest agents/adk/tests/ -v
 Requires: google-adk, mcp, litellm, pytest
-No live LLM calls — all tests use fake BaseLlm / mocked McpToolset.
+No live LLM calls - all tests use fake BaseLlm / mocked McpToolset.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ import re
 import pytest
 
 # ---------------------------------------------------------------------------
-# Deterministic finance tools — no ADK needed
+# Deterministic finance tools - no ADK needed
 # ---------------------------------------------------------------------------
 
 
@@ -134,7 +134,7 @@ def test_gemini_construction_with_fake_key(monkeypatch):
 
 
 # ---------------------------------------------------------------------------
-# Graph structure — no live LLM calls
+# Graph structure - no live LLM calls
 # ---------------------------------------------------------------------------
 
 
@@ -192,9 +192,9 @@ def test_build_graph_structure(monkeypatch):
     assert not any(isinstance(t, GoogleSearchTool) for t in (collector.tools or [])), "collector must not own GoogleSearch directly"
 
     # News/industry route via Sectors web_tools (FunctionTool wrappers around
-    # Sectors v2 news + readability extract) — the legacy AgentTool wrapping was
+    # Sectors v2 news + readability extract) - the legacy AgentTool wrapping was
     # replaced by the Sectors web_tools refactor (commit b5aad41+).
-    # Social retired 14 Sep 2026 — sentiment lives in industry para 3.
+    # Social retired 14 Sep 2026 - sentiment lives in industry para 3.
     from google.adk.tools.function_tool import FunctionTool
     news = intake.sub_agents[1]
     industry = research.sub_agents[1]
@@ -219,7 +219,7 @@ def test_max_iterations_drift_guard():
 
     assert MAX_ADVERSARIAL_ITERATIONS == 4
     # instruction should mention the cap (so drift is visible), but the enforced value is the const
-    # don't assert on wording — just that the graph uses the const (checked above)
+    # don't assert on wording - just that the graph uses the const (checked above)
 
 
 def test_mcp_endpoint_constant():

@@ -1,4 +1,4 @@
-# Slide 7 — Cash Flow Statement (Exhibit 16) & Key Ratio (Exhibit 17)
+# Slide 7 - Cash Flow Statement (Exhibit 16) & Key Ratio (Exhibit 17)
 
 ## 0. Binding rule text (owner, 13 Sep 2026)
 
@@ -6,9 +6,9 @@
 > Working Capital, Other Operating Items, Net Cash from Operations bold subtotal); INVESTING ((-) Capital
 > Expenditure, Other Investing Items, Net Cash from Investing bold subtotal); FINANCING (Debt Raised/(Repaid),
 > Dividends Paid in brackets, Equity Raised/(Buyback), Net Cash from Financing bold subtotal). Closing: Net
-> Change in Cash, Beginning Cash Balance, Ending Cash Balance — must match Cash & Cash Equivalents in
+> Change in Cash, Beginning Cash Balance, Ending Cash Balance - must match Cash & Cash Equivalents in
 > Exhibit 15 for the same period. Memo below the divider: FCF = Net Cash from Operations - Capital
-> Expenditure, cross-checked to FCFF in Exhibit 8 on slide 4 (not identical — FCFF uses NOPAT — but it must
+> Expenditure, cross-checked to FCFF in Exhibit 8 on slide 4 (not identical - FCFF uses NOPAT - but it must
 > be in a sensible ballpark).
 >
 > Ex.17 key ratio, three sections: GROWTH (%) Sales/EBITDA/Operating Profit/Net Profit yoy; PROFITABILITY (%)
@@ -22,7 +22,7 @@
 
 ## 1. How the deck satisfies it
 
-* `server/report/slide7_page.py` — `build_cashflow_page` and `build_key_ratio_page`.
+* `server/report/slide7_page.py` - `build_cashflow_page` and `build_key_ratio_page`.
 * Actual columns come from Sectors' published cash-flow sections; forecast columns come from the cited driver
   path (net profit, D&A, working capital, capex, debt schedule, dividends at payout 0%).
 * `build_statements_page(..., cashflow=...)` takes the FORECAST cash from this statement, so Exhibit 15 and

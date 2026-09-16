@@ -6,14 +6,14 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Muse Spark 1.3 via OpenCode Go — OpenAI Responses-API adapter for ADK Python.
+"""Muse Spark 1.3 via OpenCode Go - OpenAI Responses-API adapter for ADK Python.
 
 Why this exists: opencode-go (`https://opencode.ai/zen/go/v1`) lists
 `muse-spark-1.3-contributor` on `/v1/models`, but serves it ONLY on the
 Responses API (`POST /v1/responses`). The chat-completions endpoint
 persistently returns `Internal server error` for this model (probed
 2026-09-05). ADK's `LiteLlm` wrapper speaks chat-completions, so it can
-never drive Muse — this `BaseLlm` subclass speaks Responses instead.
+never drive Muse - this `BaseLlm` subclass speaks Responses instead.
 
 Wire format (OpenAI Responses API):
   in:  instructions + input[] (message | function_call | function_call_output)
@@ -25,12 +25,12 @@ history (including prior function_call/function_call_output items) each
 turn, so no server-side state (`previous_response_id`) is needed.
 
 Env:
-  OPENCODE_GO_API_KEY — required (same key Hermes gateway uses).
+  OPENCODE_GO_API_KEY - required (same key Hermes gateway uses).
   Resolution order: explicit arg → env → ~/.hermes/.env.
-  NOTE: ~/.local/share/opencode/auth.json is deliberately NOT read —
+  NOTE: ~/.local/share/opencode/auth.json is deliberately NOT read -
   that CLI key 401s on inference (only good for /v1/models, probed
   2026-09-05). Fail fast instead of silently using a dead key.
-  OPENCODE_GO_BASE_URL — default https://opencode.ai/zen/go/v1
+  OPENCODE_GO_BASE_URL - default https://opencode.ai/zen/go/v1
   SPARK13_MODEL / SPARK13_MAX_TOKENS / SPARK13_TIMEOUT
 """
 
@@ -216,7 +216,7 @@ class OpenGoResponsesLlm(BaseLlm):
                 if part.function_call is not None:
                     part.function_call.id = item.get("call_id") or item.get("id")
                 parts.append(part)
-            # reasoning items carry encrypted_content only — nothing to surface.
+            # reasoning items carry encrypted_content only - nothing to surface.
         if not parts:
             raise RuntimeError(
                 f"opencode-go responses returned no usable output (status={data.get('status')!r}, "
@@ -235,7 +235,7 @@ class OpenGoResponsesLlm(BaseLlm):
         url = self.api_base.rstrip("/") + "/responses"
         # Verified live 2026-09-05: plain Bearer + JSON is all this
         # endpoint needs. No extra headers (Referer/X-Title/session are
-        # OpenRouter-isms — unneeded here, so not sent).
+        # OpenRouter-isms - unneeded here, so not sent).
         headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type": "application/json",
@@ -278,7 +278,7 @@ def spark13_model(
     key = _opencode_go_key(api_key)
     if not key:
         raise ValueError(
-            "No OpenCode Go key — set OPENCODE_GO_API_KEY in env, "
+            "No OpenCode Go key - set OPENCODE_GO_API_KEY in env, "
             "project .env, or ~/.hermes/.env (same key Hermes gateway uses)"
         )
     return OpenGoResponsesLlm(

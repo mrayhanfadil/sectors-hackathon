@@ -1,4 +1,4 @@
-"""Deterministic valuation engines — Server owns the math.
+"""Deterministic valuation engines - Server owns the math.
 Mirrors scripts/{dcf,ddm,sotp,blended,bands,ggm}.py from plan section 6.
 All formulas explicit, auditable, no LLM math.
 Units: all currency in IDR (full rupiah, not billions) unless noted. Keep consistent!
@@ -10,10 +10,10 @@ def pick_fv_anchor(assum: Dict[str, Any], dcf_fv: Any, ev_fv: Any) -> dict:
     """Which valuation leg anchors the headline fair value.
 
     The assumptions file carries the report's OWN gate decision (`gate_primary`, `dcf_role`),
-    and the anchor must be that leg — not DCF-by-default. AMMN is the case that exposed it:
+    and the anchor must be that leg - not DCF-by-default. AMMN is the case that exposed it:
     the file says `gate_primary = "EV/EBITDA mid-cycle (REL)"` and `dcf_role = "Comparison-only,
     NOT the anchor ... punitive by construction"` (that DCF subtracts Rp 110.8 tn gross debt),
-    while the headline FV came from the DCF leg — the cover read SELL at −96.97% when the
+    while the headline FV came from the DCF leg - the cover read SELL at −96.97% when the
     file's own anchor implied +20.8%. Rating, TP and every valuation table follow this number,
     so anchoring on the wrong leg is a wrong report.
 
@@ -74,7 +74,7 @@ def dcf(fcf: List[float], wacc_val: float, g_terminal: float, shares_out: float,
 
 
 def ddm(dividends: List[float], coe: float, g_terminal: float, shares_out: float = 1) -> dict:
-    """Dividend Discount Model — for banks/dividend payers (CDIA pilar)."""
+    """Dividend Discount Model - for banks/dividend payers (CDIA pilar)."""
     if coe <= g_terminal:
         raise ValueError("CoE must exceed g")
     pv_sum = 0.0
@@ -99,7 +99,7 @@ def ev_ebitda(ebitda: float, multiple: float, net_debt: float, shares_out: float
 
 
 def ggm(roe: float, g: float, coe: float, bvps: float) -> dict:
-    """Gordon Growth implied P/BV = (ROE - g)/(CoE - g) — Samuel BBCA fallback."""
+    """Gordon Growth implied P/BV = (ROE - g)/(CoE - g) - Samuel BBCA fallback."""
     if coe <= g:
         raise ValueError("CoE must exceed g")
     pbv = (roe - g) / (coe - g)
@@ -116,7 +116,7 @@ def sotp(segments: List[dict]) -> dict:
 
 
 def blended(valuations: Dict[str, float], weights: Dict[str, float]) -> dict:
-    """Blended weighted TP — MTEL 60/40. weights must sum to 1.0"""
+    """Blended weighted TP - MTEL 60/40. weights must sum to 1.0"""
     s = sum(weights.values())
     if abs(s - 1.0) > 1e-6:
         raise ValueError(f"weights sum {s} != 1.0")
@@ -125,7 +125,7 @@ def blended(valuations: Dict[str, float], weights: Dict[str, float]) -> dict:
 
 
 def historical_bands(prices: List[float]) -> dict:
-    """PBV/EV bands: STD+2/+1/AVG/-1/-2 — needs 3Y daily. Fallback if short."""
+    """PBV/EV bands: STD+2/+1/AVG/-1/-2 - needs 3Y daily. Fallback if short."""
     import statistics
 
     if len(prices) < 10:
@@ -144,7 +144,7 @@ def historical_bands(prices: List[float]) -> dict:
 
 
 def ratios(fin: dict) -> dict:
-    """Key ratios from a minimal financial snapshot — deterministic."""
+    """Key ratios from a minimal financial snapshot - deterministic."""
     out: dict[str, Any] = {}
     try:
         if fin.get("revenue"):

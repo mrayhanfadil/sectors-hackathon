@@ -1,7 +1,7 @@
 """Rendered-output hygiene: catch literal escape sequences that leak into the page as visible text.
 
 A stray \\n in a template prints the two characters backslash-n into the PDF. Syntax checks pass, the
-deployment succeeds, and the defect only shows up when a human reads the footer of page 11 — so it gets a
+deployment succeeds, and the defect only shows up when a human reads the footer of page 11 - so it gets a
 test instead of a habit of looking.
 """
 from __future__ import annotations

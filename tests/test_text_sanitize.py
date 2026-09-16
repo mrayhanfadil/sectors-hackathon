@@ -1,7 +1,7 @@
 """The reader must never be handed a path inside the repository.
 
 The payload's source and note strings are written for the people maintaining the pipeline, so they used to name
-`data/drivers/AMMN.json`, `server/report/engines/dcf_engine` and `company_report(AMMN,'peers') — published_pe_ttm`.
+`data/drivers/AMMN.json`, `server/report/engines/dcf_engine` and `company_report(AMMN,'peers') - published_pe_ttm`.
 Both surfaces render those strings, so a reader met the machinery instead of the attribution. One pass cleans them in
 the funnel both surfaces share; this guard keeps the list from creeping back, and it checks the funnel itself rather
 than a copy of the strings.
@@ -30,9 +30,9 @@ def test_no_repo_shaped_string_survives_in_the_rendered_payload():
 
 
 def test_a_placeholder_cell_is_not_treated_as_a_leftover_separator():
-    """An earlier version of the cleaner turned every "—" in the peer table into a space, deleting the meaning of a
+    """An earlier version of the cleaner turned every "-" in the peer table into a space, deleting the meaning of a
     column while every test still passed."""
-    for placeholder in ("—", "–", "-", "n/a", "N/A"):
+    for placeholder in ("-", "–", "-", "n/a", "N/A"):
         assert text_sanitize.clean_text(placeholder) == placeholder
 
 

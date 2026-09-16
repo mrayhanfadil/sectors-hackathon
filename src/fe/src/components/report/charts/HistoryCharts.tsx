@@ -317,7 +317,7 @@ function extractHighlightsRows(fh: any) {
     return row.slice(1).map(parseIdnNumber)
   }
 
-  return { years, rows, findRow, cleanRow, source: fh.source || "Sectors — laporan keuangan tahunan (IDR bn)" }
+  return { years, rows, findRow, cleanRow, source: fh.source || "Sectors - laporan keuangan tahunan (IDR bn)" }
 }
 
 /**
@@ -341,7 +341,7 @@ function getRevenuePanel(payload: Record<string, any>): HistoryPanelData | null 
       line,
       barUnit: "Rp bn",
       lineUnit: "% yoy",
-      source: rc.source || "Sectors — laporan keuangan tahunan (IDR bn)",
+      source: rc.source || "Sectors - laporan keuangan tahunan (IDR bn)",
       sourceOrigin: "revenue_combo",
     }
   }
@@ -429,7 +429,7 @@ function getEbitdaPanel(payload: Record<string, any>): HistoryPanelData | null {
       line,
       barUnit: "Rp bn",
       lineUnit: "% margin",
-      source: ec.source || "Sectors — laporan keuangan tahunan (IDR bn)",
+      source: ec.source || "Sectors - laporan keuangan tahunan (IDR bn)",
       sourceOrigin: "ebitda_combo",
     }
   }
@@ -497,7 +497,7 @@ function getNetProfitPanel(payload: Record<string, any>): HistoryPanelData | nul
       line,
       barUnit: "Rp bn",
       lineUnit: "% margin",
-      source: npc.source || "Sectors — laporan keuangan tahunan (IDR bn)",
+      source: npc.source || "Sectors - laporan keuangan tahunan (IDR bn)",
       sourceOrigin: "netprofit_combo",
     }
   }
@@ -557,7 +557,7 @@ export function HistoryCharts({ payload }: { payload?: ReportPayload | null }) {
     return <PendingBlock label="Historis Kinerja Keuangan" message="data historis keuangan belum tersedia di payload." />
   }
 
-  const sourceFootnote = panels[0]?.source || "Sectors — laporan keuangan tahunan (IDR bn)"
+  const sourceFootnote = panels[0]?.source || "Sectors - laporan keuangan tahunan (IDR bn)"
 
   return (
     <div className="space-y-3 font-sans">

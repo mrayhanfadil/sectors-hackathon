@@ -1,4 +1,4 @@
-# agents/adk — ADK Python orchestrator (T05)
+# agents/adk - ADK Python orchestrator (T05)
 # Run: adk run agents/adk  |  adk web --port 8080
 # Or programmatically:
 #   from agents.adk.app import build_graph

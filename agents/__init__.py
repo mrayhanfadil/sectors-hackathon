@@ -1,4 +1,4 @@
-"""T07 — Analyst + Industry + Risk + KPI agents.
+"""T07 - Analyst + Industry + Risk + KPI agents.
 
 Branch: wt/t07-analyst
 Owners: analyst.py, industry.py, risk.py, kpi.py

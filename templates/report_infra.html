@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{# TEMPLATE: infra — MTEL archetype (recurring infra/telco, 10 sections).
+{# TEMPLATE: infra - MTEL archetype (recurring infra/telco, 10 sections).
    Hero additions vs single: Key Takeaways box, ESG box, Operational KPI table (tenancy/fiber),
    Catalyst quantified, Blended valuation 60/40, Historical bands STD±2, Shareholder pie.
    Data contract: templates/DATA_CONTRACT.md #}
@@ -9,12 +9,12 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>{{ meta.ticker }} — {{ meta.report_type }} (infra)</title>
+<title>{{ meta.ticker }} - {{ meta.report_type }} (infra)</title>
 {{ m.styles(palette) }}
 </head>
 <body>
 
-{# ================= PAGE 1 — COVER ================= #}
+{# ================= PAGE 1 - COVER ================= #}
 <div class="page">
   {{ m.running() }}
   <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
@@ -88,11 +88,11 @@
   {{ m.pagefoot(1, ns) }}
 </div>
 
-{# ================= PAGE 2 — OPERATIONAL KPIs (HERO) ================= #}
+{# ================= PAGE 2 - OPERATIONAL KPIs (HERO) ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("KPI Operasional — Hero Section", ns) }}
-  <p class="small muted">KPI per subsector (tenancy ratio = tenant/tower, fiber km) adalah tesis utama bisnis recurring infra — bukan hanya P&amp;L.</p>
+  {{ m.section("KPI Operasional - Hero Section", ns) }}
+  <p class="small muted">KPI per subsector (tenancy ratio = tenant/tower, fiber km) adalah tesis utama bisnis recurring infra - bukan hanya P&amp;L.</p>
 
   {% if kpis %}
   {{ m.exhibit_auto(ns, "KPI Operasional vs Periode Lalu", kpis_src or "Company data, data diolah") }}
@@ -104,7 +104,7 @@
   {{ m.section("Katalis Terkuantifikasi", ns) }}
   {% for c in catalysts %}
   <div class="card-tint" style="margin:5pt 0;">
-    <b>{{ c.name }}</b> — {{ c.effect }}
+    <b>{{ c.name }}</b> - {{ c.effect }}
     {% if c.quantified %}
     <div class="grid-3" style="margin-top:3pt;">
       {% for k, v in c.quantified.items() %}
@@ -118,7 +118,7 @@
   {{ m.pagefoot(2, ns) }}
 </div>
 
-{# ================= PAGE 3 — SEGMENTS + QUARTERLY P&L ================= #}
+{# ================= PAGE 3 - SEGMENTS + QUARTERLY P&L ================= #}
 <div class="page">
   {{ m.running() }}
   {% if segments %}
@@ -129,13 +129,13 @@
   {% endif %}
 
   {% if quarterly_pl %}
-  {{ m.exhibit_auto(ns, "Income Statement Kuartalan — 1H26 vs 1H25 + Q2-26 vs Q1-26", quarterly_pl.source) }}
+  {{ m.exhibit_auto(ns, "Income Statement Kuartalan - 1H26 vs 1H25 + Q2-26 vs Q1-26", quarterly_pl.source) }}
   {{ m.table(quarterly_pl.headers, quarterly_pl.rows) }}
   {% endif %}
   {{ m.pagefoot(3, ns) }}
 </div>
 
-{# ================= PAGE 4 — QUARTERLY BALANCE + RATIOS + OPERATIONAL KPI ================= #}
+{# ================= PAGE 4 - QUARTERLY BALANCE + RATIOS + OPERATIONAL KPI ================= #}
 <div class="page">
   {{ m.running() }}
   {% if quarterly_balance %}
@@ -145,7 +145,7 @@
   {% endif %}
 
   {% if quarterly_ratios %}
-  {{ m.exhibit_auto(ns, "Rasio Kuartalan — Margin, Profitability, Leverage", quarterly_ratios.source) }}
+  {{ m.exhibit_auto(ns, "Rasio Kuartalan - Margin, Profitability, Leverage", quarterly_ratios.source) }}
   {{ m.table(quarterly_ratios.headers, quarterly_ratios.rows) }}
   {% endif %}
 
@@ -156,10 +156,10 @@
   {{ m.pagefoot(4, ns) }}
 </div>
 
-{# ================= PAGE 5 — VALUATION: DCF + BLENDED + BANDS ================= #}
+{# ================= PAGE 5 - VALUATION: DCF + BLENDED + BANDS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("Valuasi — DCF Detail + Blended + Bands", ns) }}
+  {{ m.section("Valuasi - DCF Detail + Blended + Bands", ns) }}
 
   {% for vm in valuation.methods %}
   <h3>{{ vm.method }}</h3>
@@ -170,7 +170,7 @@
     {% endfor %}
   </div>
   {% endif %}
-  {{ m.exhibit_auto(ns, "Valuation Method — " ~ vm.method, vm.source) }}
+  {{ m.exhibit_auto(ns, "Valuation Method - " ~ vm.method, vm.source) }}
   {% if vm.table %}{{ m.table(vm.table.headers, vm.table.rows, vm.table.footers or []) }}{% endif %}
   <div class="card-tint" style="margin:6pt 0;">
     <div class="kv"><span class="kv-l">Fair value ({{ vm.method }})</span>
@@ -185,7 +185,7 @@
   {% endif %}
 
   {% if valuation.bands and valuation.bands.pbv_3y %}
-  {{ m.exhibit_auto(ns, "Historical Band P/BV 3Y — Mean Reversion", valuation.bands.source or "IDX, data diolah") }}
+  {{ m.exhibit_auto(ns, "Historical Band P/BV 3Y - Mean Reversion", valuation.bands.source or "IDX, data diolah") }}
   {{ m.table(["STD+2", "STD+1", "AVG", "STD-1", "STD-2", "Kini", "Posisi"],
      [[valuation.bands.pbv_3y["std+2"], valuation.bands.pbv_3y["std+1"], valuation.bands.pbv_3y.avg,
        valuation.bands.pbv_3y["std-1"], valuation.bands.pbv_3y["std-2"],
@@ -197,7 +197,7 @@
   {% if dcf_engine %}
   <section class="dcf-engine" style="margin-top:10pt;">
     <h3 style="color:var(--brand-dark); font-size:11pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
-    <p class="small muted">DCF dihitung oleh engine valuasi internal — aritmetika deterministik, audit-friendly.</p>
+    <p class="small muted">DCF dihitung oleh engine valuasi internal - aritmetika deterministik, audit-friendly.</p>
 
     {% if dcf_engine.wacc_table %}
     <h4 class="small" style="margin-top:6pt; font-weight:700;">WACC Breakdown</h4>
@@ -239,14 +239,14 @@
   {{ m.pagefoot(4, ns) }}
 </div>
 
-{# ================= PAGE 5 — VALUATION continued (DCF friend + recom) ================= #}
-{# Above page 5 already opens; this block intentionally empty — exhibits+financials moved to pages 8/9 #}
+{# ================= PAGE 5 - VALUATION continued (DCF friend + recom) ================= #}
+{# Above page 5 already opens; this block intentionally empty - exhibits+financials moved to pages 8/9 #}
 
-{# ================= PAGE 6 — FINANCIAL HIGHLIGHTS + THESIS + EXHIBITS ================= #}
+{# ================= PAGE 6 - FINANCIAL HIGHLIGHTS + THESIS + EXHIBITS ================= #}
 <div class="page">
   {{ m.running() }}
   {% if financial_highlights %}
-  {{ m.section("Ringkasan Investasi — Financial Highlights (6 tahun)", ns) }}
+  {{ m.section("Ringkasan Investasi - Financial Highlights (6 tahun)", ns) }}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
   {{ m.table([""] + financial_highlights.years, financial_highlights.rows) }}
   {% endif %}
@@ -262,7 +262,7 @@
   {{ m.pagefoot(6, ns) }}
 </div>
 
-{# ================= PAGE 8 — FULL FINANCIALS (Income / Balance / CF / Ratios) ================= #}
+{# ================= PAGE 8 - FULL FINANCIALS (Income / Balance / CF / Ratios) ================= #}
 <div class="page">
   {{ m.running() }}
   {% if financials %}
@@ -278,7 +278,7 @@
   {{ m.pagefoot(8, ns) }}
 </div>
 
-{# ================= PAGE 9 — FINANCIAL RATIOS (30+) ================= #}
+{# ================= PAGE 9 - FINANCIAL RATIOS (30+) ================= #}
 <div class="page">
   {{ m.running() }}
   {% if financials %}
@@ -293,26 +293,26 @@
   {{ m.pagefoot(9, ns) }}
 </div>
 
-{# ================= PAGE 7 — PEERS + RISKS ================= #}
+{# ================= PAGE 7 - PEERS + RISKS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section("Perbandingan Peers", ns) }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
-    {{ m.exhibit_auto(ns, "Peer Comparison — " ~ (meta.sector or pt.pillar), pt.source) }}
+    {{ m.exhibit_auto(ns, "Peer Comparison - " ~ (meta.sector or pt.pillar), pt.source) }}
     {{ m.table(pt.headers, pt.rows) }}
     {% endfor %}
   {% endif %}
 
   {# rule 1: source line directly under its object, before the risk section. #}
   {{ m.exhibit_source(ns) }}
-  {{ m.section("Faktor Risiko — Spesifik Infra", ns) }}
+  {{ m.section("Faktor Risiko - Spesifik Infra", ns) }}
   {{ m.risks(risks, ns) }}
   {{ m.pagefoot(6, ns) }}
 </div>
 
-{# ================= PAGE 7 — RATING GUIDE + DISCLAIMER + CONTACT ================= #}
+{# ================= PAGE 7 - RATING GUIDE + DISCLAIMER + CONTACT ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section("Rating Guide, Disclaimer & Kontak", ns) }}

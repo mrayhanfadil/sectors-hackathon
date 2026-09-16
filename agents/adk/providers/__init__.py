@@ -12,17 +12,17 @@ DeepSeek (deepseek-chat / deepseek-reasoner) is OpenAI-compatible.
 We route it via LiteLlm so ADK's BaseLlm plumbing handles tools/prompts.
 Muse Spark via CommandCode bridge (127.0.0.1:9992) is PREFERRED when available.
 
-Gemini is native (google-genai) — used for search-grounded sub-agents
+Gemini is native (google-genai) - used for search-grounded sub-agents
 where GoogleSearchTool requires a Gemini model.
 
 Env:
-  COMMANDCODE_BRIDGE_KEY / BRIDGE_API_KEY — CommandCode bridge bearer (preferred)
-  DEEPSEEK_API_KEY  — required for DeepSeek fallback
-  GOOGLE_API_KEY    — required for Gemini search sub-agent (also GEMINI_API_KEY)
-  DEEPSEEK_MODEL    — default deepseek-chat (also supports deepseek-reasoner)
-  GEMINI_MODEL      — default gemini-2.0-flash
-  SPARK_MODEL       — default meta/muse-spark-1.2-contributor
-  SPARK_API_BASE    — default http://127.0.0.1:9992/v1
+  COMMANDCODE_BRIDGE_KEY / BRIDGE_API_KEY - CommandCode bridge bearer (preferred)
+  DEEPSEEK_API_KEY  - required for DeepSeek fallback
+  GOOGLE_API_KEY    - required for Gemini search sub-agent (also GEMINI_API_KEY)
+  DEEPSEEK_MODEL    - default deepseek-chat (also supports deepseek-reasoner)
+  GEMINI_MODEL      - default gemini-2.0-flash
+  SPARK_MODEL       - default meta/muse-spark-1.2-contributor
+  SPARK_API_BASE    - default http://127.0.0.1:9992/v1
 """
 
 from __future__ import annotations
@@ -44,7 +44,7 @@ _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
 
 # CommandCode bridge defaults
 _SPARK_DEFAULT_MODEL = "meta/muse-spark-1.2-contributor"
-# Minimax DIRECT (like hermes custom_providers minimax-v1) — hermes config has
+# Minimax DIRECT (like hermes custom_providers minimax-v1) - hermes config has
 # custom_providers: name minimax-v1, base https://api.minimax.io/v1, key MINIMAX_API_KEY, model MiniMax-M3.
 # We use the same direct endpoint so the full 11-agent graph doesn't hop through
 # the overloaded CommandCode free tier (minimax-m3-free @ api.commandcode.ai 503'd).
@@ -109,7 +109,7 @@ def deepseek_model(
     the OpenAI provider and respects api_base/api_key.
     """
     if not _litellm_available():
-        raise ImportError("litellm not installed — pip install litellm or google-adk[extensions]")
+        raise ImportError("litellm not installed - pip install litellm or google-adk[extensions]")
     from google.adk.models.lite_llm import LiteLlm
 
     api_key = (api_key if api_key is not None else os.getenv("DEEPSEEK_API_KEY") or os.getenv("OPENAI_API_KEY") or "")
@@ -131,16 +131,16 @@ def spark_model(
 ) -> BaseLlm:
     """Return a LiteLlm BaseLlm bound to CommandCode bridge (Muse Spark).
 
-    Preferred provider for ADK — uses Muse Spark 1M context via local bridge.
+    Preferred provider for ADK - uses Muse Spark 1M context via local bridge.
     Falls back to reading BRIDGE_API_KEY from env or ~/.config/commandcode-bridge/env.
     """
     if not _litellm_available():
-        raise ImportError("litellm not installed — pip install litellm or google-adk[extensions]")
+        raise ImportError("litellm not installed - pip install litellm or google-adk[extensions]")
     from google.adk.models.lite_llm import LiteLlm
 
     key = api_key or _bridge_key() or os.getenv("DEEPSEEK_API_KEY") or ""
     if not key:
-        raise ValueError("No bridge key — set BRIDGE_API_KEY or check ~/.config/commandcode-bridge/env")
+        raise ValueError("No bridge key - set BRIDGE_API_KEY or check ~/.config/commandcode-bridge/env")
     model_id = model or os.getenv("SPARK_MODEL") or _SPARK_DEFAULT_MODEL
     base = api_base or os.getenv("SPARK_API_BASE") or _SPARK_DEFAULT_BASE
     return LiteLlm(
@@ -183,7 +183,7 @@ def minimax_model(
     api_base: str | None = None,
     num_retries: int | None = None,
 ) -> BaseLlm:
-    """Return a LiteLlm BaseLlm for MiniMax — DIRECT, like hermes custom_providers minimax-v1.
+    """Return a LiteLlm BaseLlm for MiniMax - DIRECT, like hermes custom_providers minimax-v1.
 
     Direct: MiniMax-M3 @ https://api.minimax.io/v1 with MINIMAX_API_KEY from
     ~/.hermes/.env (same key hermes uses for minimax-v1). Proven: tool calling
@@ -195,11 +195,11 @@ def minimax_model(
     num_retries: default 2 for direct (stable), 3 for CommandCode free (503-prone).
     """
     if not _litellm_available():
-        raise ImportError("litellm not installed — pip install litellm or google-adk[extensions]")
+        raise ImportError("litellm not installed - pip install litellm or google-adk[extensions]")
     from google.adk.models.lite_llm import LiteLlm
     import pathlib, re as _re
 
-    # Prefer direct MiniMax (hermes style) — stable, tool calling verified
+    # Prefer direct MiniMax (hermes style) - stable, tool calling verified
     direct_key = api_key or _minimax_api_key()
     if direct_key:
         model_id = model or os.getenv("MINIMAX_MODEL") or _MINIMAX_DIRECT_MODEL
@@ -214,7 +214,7 @@ def minimax_model(
             model=f"minimax/{model_id}",
             api_base=base,
             api_key=direct_key,
-            # 24k headroom (15 Sep 2026): MiniMax-M3 thinking eats budget —
+            # 24k headroom (15 Sep 2026): MiniMax-M3 thinking eats budget -
             # Turn-2 synthesis ~8k chars truncated at 4096 (see run ammn-b93bac07).
             # Model ceiling is 128k, so 24k is safe. Override via MINIMAX_MAX_TOKENS.
             max_tokens=int(os.getenv("MINIMAX_MAX_TOKENS", "24576")),
@@ -234,7 +234,7 @@ def minimax_model(
             except Exception:
                 pass
     if not key:
-        raise ValueError("No MiniMax key — set MINIMAX_API_KEY in ~/.hermes/.env (preferred, like hermes minimax-v1) or COMMANDCODE_API_KEY")
+        raise ValueError("No MiniMax key - set MINIMAX_API_KEY in ~/.hermes/.env (preferred, like hermes minimax-v1) or COMMANDCODE_API_KEY")
     model_id = model or os.getenv("MINIMAX_MODEL") or _MINIMAX_FREE_MODEL
     base = api_base or os.getenv("MINIMAX_API_BASE") or _MINIMAX_FREE_BASE
     retries = num_retries if num_retries is not None else int(os.getenv("MINIMAX_NUM_RETRIES", "3"))
@@ -284,7 +284,7 @@ def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
         "muse-spark-1.3-contributor", "meta/muse-spark-1.3-contributor",
     ):
         # Muse Spark 1.3 lives on opencode-go Responses API (Hermes-style),
-        # NOT on chat-completions — see providers/opencode_responses.py.
+        # NOT on chat-completions - see providers/opencode_responses.py.
         return spark13_model(**kw)
     if name in ("minimax", "minimax-m3", "minimax-m3-free", "minimax/minimax-m3-free", "minimax-free", "minimax_m3_free"):
         return minimax_model(**kw)
@@ -296,4 +296,4 @@ def provider_model(name: str = "deepseek", **kw) -> BaseLlm:
         return deepseek_model(model=model, **kw)
     if name in ("gemini", "google", "gemini-2.0-flash", "gemini-flash", "gemini-2.5-flash"):
         return gemini_model(**kw)
-    raise ValueError(f"Unknown provider {name!r} — expected 'spark'|'deepseek'|'gemini'")
+    raise ValueError(f"Unknown provider {name!r} - expected 'spark'|'deepseek'|'gemini'")

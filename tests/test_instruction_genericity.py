@@ -14,7 +14,7 @@ from agents.adk.agents import instructions as I
 PAGE_RULES = ("HOUSE_FORMAT_RULE", "SLIDE_PAGES_RULE", "SLIDE5_RULE", "SLIDE6_RULE", "VALUATION_BASIS_RULE")
 #: every agent instruction that builds or judges a PAGE
 PAGE_BUILDERS = ("industry_instruction", "writer_instruction", "critic_instruction")
-#: agents that only gather data — a page rule here is noise that dilutes their instruction
+#: agents that only gather data - a page rule here is noise that dilutes their instruction
 DATA_GATHERERS = ("collector_instruction", "news_harvester_instruction",
                   "modeler_instruction", "risk_instruction", "kpi_instruction")
 
@@ -52,12 +52,12 @@ def test_page_builders_carry_the_basis_rule(name: str):
 @pytest.mark.parametrize("name", DATA_GATHERERS)
 def test_data_gatherers_do_not_carry_page_rules(name: str):
     text = getattr(I, name)
-    for marker in ("VALUATION BASIS DISCIPLINE", "SLIDE 5 — PEER VALUATION", "SLIDE 6 — INCOME STATEMENT"):
+    for marker in ("VALUATION BASIS DISCIPLINE", "SLIDE 5 - PEER VALUATION", "SLIDE 6 - INCOME STATEMENT"):
         assert marker not in text, f"{name} carries page rules it does not use: {marker}"
 
 
 def test_every_rule_constant_is_composed_into_at_least_one_instruction():
-    """A rule nobody concatenates is documentation, not enforcement — the exact failure mode this
+    """A rule nobody concatenates is documentation, not enforcement - the exact failure mode this
     file exists for."""
     for rule in PAGE_RULES:
         text = getattr(I, rule)

@@ -30,7 +30,7 @@ const RETAIL_SUBTITLE: Record<string, string> = {
 function retailLine(ev: TraceEvent): string | null {
   if (ev.function_calls && ev.function_calls.length > 0) {
     const t = translateFunctionName(ev.function_calls[0].name)
-    // translateFunctionName kadang masih bawa "(name)" dari caller — RetailStory selalu bersih
+    // translateFunctionName kadang masih bawa "(name)" dari caller - RetailStory selalu bersih
     return t.replace(/\s*\([a-z_]+\)\s*$/i, "").trim()
   }
   if (ev.function_responses && ev.function_responses.length > 0) {
@@ -125,7 +125,7 @@ export const RetailStory = memo(function RetailStory({
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
             <h2 className="text-sm font-bold text-neutral-900 sm:text-base dark:text-neutral-100">
-              Cerita analisis {t} — 5 langkah
+              Cerita analisis {t} - 5 langkah
             </h2>
             <p className="mt-0.5 text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
               {done

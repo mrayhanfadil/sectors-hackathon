@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Web tools — FunctionTool wrapper for Sectors search (Sectors-only).
+"""Web tools - FunctionTool wrapper for Sectors search (Sectors-only).
 
 Sectors-only search (extract killed Sep 2026, Sectors-only rule):
   web_search → Sectors v2 news (single gateway, extension=idx). No other tool:
@@ -14,7 +14,7 @@ Sectors-only search (extract killed Sep 2026, Sectors-only rule):
   as external sources. Agents cite Sectors urls only.
 
 Env:
-  SECTORS_API_KEY — required for live search; missing key returns honest empty result
+  SECTORS_API_KEY - required for live search; missing key returns honest empty result
 
 Honest provenance:
   Every result row carries (source, tier, fetched_at). Without SECTORS_API_KEY
@@ -23,7 +23,7 @@ Honest provenance:
 
 FunctionTool wrapping:
   google.adk.tools.function_tool.FunctionTool(func) is applied at import time
-  in agents/adk/app.py. We expose plain callables here — ADK introspects them.
+  in agents/adk/app.py. We expose plain callables here - ADK introspects them.
 
 Usage:
     from .web_tools import web_search
@@ -43,7 +43,7 @@ logger = logging.getLogger(__name__)
 
 
 # ----------------------------------------------------------------------------
-# Tier domain allowlist — Indonesian equity research priority
+# Tier domain allowlist - Indonesian equity research priority
 # ----------------------------------------------------------------------------
 TIER_DOMAINS: dict[str, list[str]] = {
     "t1": [  # Highest trust: official IDX + major Indonesian finance outlets
@@ -61,7 +61,7 @@ TIER_DOMAINS: dict[str, list[str]] = {
         "jakartaglobe.id",
         "nikkei.com",
     ],
-    "t3": [  # Retail / blog — include only if T1/T2 < 3
+    "t3": [  # Retail / blog - include only if T1/T2 < 3
         "stockbit.com",
         "ipotan.co.id",
         "infovesta.com",
@@ -92,7 +92,7 @@ def _domain_tier(url: str) -> str:
 
 
 # ----------------------------------------------------------------------------
-# IDX ticker allowlist — failed-closed extraction (Lane A).
+# IDX ticker allowlist - failed-closed extraction (Lane A).
 # The old heuristic (first ALL-CAPS token >= 4 chars) misfired on English
 # words (BUY, TARGET, EARNINGS...). Now: only known IDX codes extract;
 # unknown tokens yield NO ticker rather than a wrong ticker.
@@ -128,7 +128,7 @@ def _known_tickers() -> frozenset[str]:
 
 
 def _extract_tickers(query: str, limit: int = 3) -> list[str]:
-    """Extract known IDX tickers from free text — failed-closed.
+    """Extract known IDX tickers from free text - failed-closed.
 
     Accepts 3-4 char bare codes, comma/space-separated, case-insensitive,
     with optional `.JK` suffix. Tokens not on the allowlist are ignored;
@@ -185,7 +185,7 @@ def _pool_stats() -> dict[str, Any]:
 
 
 # ----------------------------------------------------------------------------
-# Tool 1: web_search — Sectors v2 news wrapper (single gateway)
+# Tool 1: web_search - Sectors v2 news wrapper (single gateway)
 # ----------------------------------------------------------------------------
 async def web_search(
     query: Annotated[str, "Search query. Include ticker + topic for best IDX results, e.g. 'BBCA IDX earnings target price 2026'."],
@@ -215,7 +215,7 @@ async def web_search(
     can rank by signal density instead of a hardcoded 0.0.
 
     Honest behavior: without SECTORS_API_KEY returns empty results with
-    source='sectors_missing_key' (legacy removed — no third-party search).
+    source='sectors_missing_key' (legacy removed - no third-party search).
     """
     from server.sectors import SectorsNotConfigured as _SNC
     from server.sectors import news as _sectors_news
@@ -271,7 +271,7 @@ async def web_search(
                 "date": str(it.get("timestamp") or it.get("date") or "")[:10],
                 "symbols": it.get("symbols") or [],
             })
-        # Tier filter is advisory — applied post-hoc, never fabricates.
+        # Tier filter is advisory - applied post-hoc, never fabricates.
         if tier and tier != "all" and tier in TIER_DOMAINS:
             _tf = [r for r in out if r.get("tier") == tier]
             out = _tf or out
@@ -305,7 +305,7 @@ async def web_search(
 # ----------------------------------------------------------------------------
 # ----------------------------------------------------------------------------
 # KILLED (Sep 2026, Sectors-only rule): web_extract + web_search_and_extract
-# lived here (arbitrary-URL fetching via httpx+readability — external source,
+# lived here (arbitrary-URL fetching via httpx+readability - external source,
 # prohibited). Only Sectors-backed web_search survives below. Agents must cite
 # Sectors urls; no third-party page extraction. Do not re-add fetchers.
 # Smoke test (run as: .venv/bin/python -m agents.adk.tools.web_tools)
@@ -315,7 +315,7 @@ if __name__ == "__main__":
     import sys
 
     if not os.environ.get("SECTORS_API_KEY"):
-        print("SECTORS_API_KEY not set — web_search returns honest empty (extract killed Sep 2026)")
+        print("SECTORS_API_KEY not set - web_search returns honest empty (extract killed Sep 2026)")
         out = asyncio.run(web_search("BBCA IDX earnings 2026", n_results=3))
         print(json.dumps(out, indent=2)[:800])
         sys.exit(0)

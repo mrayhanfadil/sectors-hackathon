@@ -110,7 +110,7 @@ def test_peers_news_risks_catalysts():
     assert pt["median"][2] == 12.51
     assert pt["median"][4] == 2.16
     assert pt["average"][2] == 1003.88
-    assert all(r[3] == "—" for r in pt["rows"])  # GAP G8: no peer EV/EBITDA
+    assert all(r[3] == "-" for r in pt["rows"])  # GAP G8: no peer EV/EBITDA
     assert len(d["news"]) == 8
     assert all(n["url"] and n["date"] for n in d["news"])
     assert len(d["risks"]) == 6

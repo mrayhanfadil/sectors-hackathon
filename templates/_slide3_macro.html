@@ -40,7 +40,7 @@
         {% set bh = (v / bmax) * ch if bmax else 0 %}
         {% set bx = pad_l + (loop.index0 * step) + (step - bw) / 2 %}
         {% set by = pad_t + ch - bh %}
-        {# Spec: forecast bars are navy at reduced opacity OR a hatch — one of the two, never mixed. #}
+        {# Spec: forecast bars are navy at reduced opacity OR a hatch - one of the two, never mixed. #}
         <rect x="{{ bx }}" y="{{ by }}" width="{{ bw }}" height="{{ bh }}" fill="#0B1F3A"
               opacity="{{ 1 if loop.index <= actual_n else 0.4 }}"/>
       {% endif %}

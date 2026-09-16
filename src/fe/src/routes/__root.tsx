@@ -180,7 +180,7 @@ function RootComponent() {
               </span>
             </Link>
 
-            <div className="hidden items-center gap-1.5 rounded-md border border-neutral-800 bg-[#121418] px-2 py-0.5 font-mono text-[10px] text-amber-300 lg:flex" title="Snapshot data terverifikasi — tanpa data sintetis">
+            <div className="hidden items-center gap-1.5 rounded-md border border-neutral-800 bg-[#121418] px-2 py-0.5 font-mono text-[10px] text-amber-300 lg:flex" title="Snapshot data terverifikasi - tanpa data sintetis">
               <span className="h-1.5 w-1.5 rounded-full bg-amber-400" />
               <span className="font-semibold tracking-wide">DATA TERAKHIR</span>
             </div>
@@ -409,7 +409,7 @@ function RootComponent() {
               </span>
               Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis kompetisi
               Sectors Hackathon. Kalkulasi Nilai Wajar (Fair Value) dan WACC memakai snapshot asumsi terverifikasi dari data historis
-              IDX (Sectors API pending — bukan data live maupun rekomendasi resmi).
+              IDX (Sectors API pending - bukan data live maupun rekomendasi resmi).
             </p>
             <p>
               Bukan rekomendasi transaksi efek maupun nasihat investasi finansial berlisensi. Keputusan alokasi modal

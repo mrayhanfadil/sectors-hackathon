@@ -1,5 +1,5 @@
 """
-Sectors backfill — scripts/sectors_backfill.py (replaces yfinance_fallback.py, Lane E).
+Sectors backfill - scripts/sectors_backfill.py (replaces yfinance_fallback.py, Lane E).
 
 Sectors v2 is the single gateway: daily bars + quarterly fundamentals.
 Keyless -> honest empty rows + error 'sectors_missing_key' (never a silent
@@ -56,7 +56,7 @@ def _honest_empty(base: str, extra: dict | None = None) -> dict:
         "row_count": 0,
         "fetched_at": datetime.now(JKT).isoformat(),
         "cache_hit": False,
-        "error": "SECTORS_API_KEY missing — onboard at sectors.app/api, save key to .env. No fallback wired on purpose.",
+        "error": "SECTORS_API_KEY missing - onboard at sectors.app/api, save key to .env. No fallback wired on purpose.",
     }
     if extra:
         payload.update(extra)
@@ -117,7 +117,7 @@ def get_sectors_prices(ticker: str, days: int = 90, force_refresh: bool = False)
             _write_cache(cache_path, payload)
         return payload
     except Exception as e:
-        # SectorsNotConfigured or transport error — try stale cache, else honest empty
+        # SectorsNotConfigured or transport error - try stale cache, else honest empty
         if "SectorsNotConfigured" in type(e).__name__:
             if cache_path.exists():
                 try:
@@ -206,7 +206,7 @@ def get_sectors_fundamentals(ticker: str, force_refresh: bool = False) -> dict:
                 "fetched_at": datetime.now(JKT).isoformat(),
                 "cache_hit": False,
                 "error": str(e),
-                "warnings": warnings + ["SECTORS_API_KEY missing — no fallback wired"],
+                "warnings": warnings + ["SECTORS_API_KEY missing - no fallback wired"],
             }
         return {
             "ticker": base,
@@ -225,11 +225,11 @@ def get_sectors_fundamentals(ticker: str, force_refresh: bool = False) -> dict:
 SECTORS_COVERAGE = {
     "note": "Sectors v2 is the single gateway (IDX full coverage: daily, quarterly, news, filings, corporate actions, foreign flow). Keyless runs return honest empty with source=sectors_missing_key.",
     "keyed": {
-        "RATU": "full — IPO 2025 covered via quarterly + daily",
-        "CDIA": "full — 2025 listing covered via quarterly + daily",
-        "MTEL": "full — infra KPIs via company report sections",
-        "BBCA": "full — bank extras (net interest income, CASA) free in quarterly",
-        "ADRO": "full — cross-check vs foreign-flow endpoint",
+        "RATU": "full - IPO 2025 covered via quarterly + daily",
+        "CDIA": "full - 2025 listing covered via quarterly + daily",
+        "MTEL": "full - infra KPIs via company report sections",
+        "BBCA": "full - bank extras (net interest income, CASA) free in quarterly",
+        "ADRO": "full - cross-check vs foreign-flow endpoint",
     },
 }
 

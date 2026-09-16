@@ -1,4 +1,4 @@
-"""GET /api/tickers — universe comes from the Sectors screener post-key.
+"""GET /api/tickers - universe comes from the Sectors screener post-key.
 
 IDX Postgres killed Sep 2026 (external source): this endpoint is honest 503
 until SECTORS_API_KEY lands and companies/?where=&order_by= is wired.

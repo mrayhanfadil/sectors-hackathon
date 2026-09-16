@@ -1,4 +1,4 @@
-"""IDX Morning Brief — Sectors-backed edition (rewritten Lane E, stubbed Lane A).
+"""IDX Morning Brief - Sectors-backed edition (rewritten Lane E, stubbed Lane A).
 
 Was: Yahoo global quotes + Postgres stockdata:15437 + investing.com scraping.
 Now: Sectors v2 universe feed for IDX breadth + daily bars for benchmarks.
@@ -41,13 +41,13 @@ async def fetch_camoufox_snapshot(url, semaphore):
 
 
 async def get_investing_quote(path, semaphore):
-    # REMOVED (Sectors-only rule): investing.com scraping deleted — benchmarks
+    # REMOVED (Sectors-only rule): investing.com scraping deleted - benchmarks
     # come from fetch_sectors_data() (Sectors daily bars) instead.
     return None
 
 
 async def get_jisdor(semaphore=None):
-    """Honest stub — BI JISDOR live scrape removed (Sectors-only rule). Forex is
+    """Honest stub - BI JISDOR live scrape removed (Sectors-only rule). Forex is
     not in the Sectors universe feed. Returns sectors_missing_key marker."""
     return {"val": 0, "source": "sectors_missing_key"}
 
@@ -170,10 +170,10 @@ async def main():
         for s_name, pct in sorted(db_sectors_dict.items(), key=lambda x: x[1], reverse=True):
             brief += f"{str(s_name)[:20]:<20} .. {pct:>+10.2f}% {get_emoji(pct)}\n"
     else:
-        brief += "(source=sectors_missing_key — set SECTORS_API_KEY)\n"
+        brief += "(source=sectors_missing_key - set SECTORS_API_KEY)\n"
 
     brief += f"\n── MACRO, BONDS & FOREX ──────────────────────────────────────────────\n"
-    brief += f"{'JISDOR (BI)':<14} .. {'N/A':>11} {'':>9} {'':>9} (source=sectors_missing_key — forex not in Sectors feed)\n"
+    brief += f"{'JISDOR (BI)':<14} .. {'N/A':>11} {'':>9} {'':>9} (source=sectors_missing_key - forex not in Sectors feed)\n"
 
     if len(df) > 0:
         brief += "\n── TOP TURNOVER (IDX) ────────────────────────────────────────────────\n"
@@ -182,7 +182,7 @@ async def main():
             brief += f"{row[0]:<14} .. {row[1]:>11,.0f} {row[5]:>+9.2f}% {get_emoji(row[5])}\n"
 
     brief += "\n══════════════════════════════════════════════════════════════════════\n"
-    brief += " SOURCE: SECTORS V2 UNIVERSE FEED (forex unavailable — sectors_missing_key)\n"
+    brief += " SOURCE: SECTORS V2 UNIVERSE FEED (forex unavailable - sectors_missing_key)\n"
     brief += "══════════════════════════════════════════════════════════════════════"
 
     print(brief)

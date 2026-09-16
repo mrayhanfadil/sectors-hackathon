@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-DASH = "—"
+DASH = "-"
 
 
 def _swap(text: str) -> str:
@@ -56,7 +56,7 @@ def pct(value: Any, digits: int = 1, signed: bool = True, na: str = DASH) -> str
     return dec(value, digits, signed=signed) + "%"
 
 
-def auto(value: Any, na: str = "—") -> str:
+def auto(value: Any, na: str = "-") -> str:
     """Group and comma-decimal a raw value while keeping its own precision.
 
     Table cells arrive as raw floats with whatever precision the series has (8.61, 28.3, 14093.6). Formatting

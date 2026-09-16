@@ -1,4 +1,4 @@
-"""DDM/CoE lock — every calc_ddm caller must discount at cost_of_equity, never WACC.
+"""DDM/CoE lock - every calc_ddm caller must discount at cost_of_equity, never WACC.
 
 Covers:
   1. calc_ddm discounts at CoE: hand-recomputed Gordon case + WACC-contrast.

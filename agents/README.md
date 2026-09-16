@@ -1,10 +1,10 @@
-# T08 Agent Contracts — Writer / Visualizer / SOTP Aggregator
+# T08 Agent Contracts - Writer / Visualizer / SOTP Aggregator
 
-Status: v1 (31 Aug 2026) — owned by branch `wt/t08-writer` off `feat/institutional-report`.
+Status: v1 (31 Aug 2026) - owned by branch `wt/t08-writer` off `feat/institutional-report`.
 
 These three agents are the **narrative + visual + aggregation layer** of the pipeline
 (downstream of Data Collector T01 and Financial Modeler T02; upstream of the PDF
-Renderer P4). They are **pure functions of a deterministic input JSON** — no LLM math,
+Renderer P4). They are **pure functions of a deterministic input JSON** - no LLM math,
 no network I/O, no credit spend. Every number they emit must already exist in the input
 or be computed by the deterministic engines in `scripts/` (T02).
 
@@ -12,15 +12,15 @@ or be computed by the deterministic engines in `scripts/` (T02).
 
 | File | Role | I/O |
 |---|---|---|
-| `agents/common.py` | Shared: load company.json, source labels, exhibit registry, rounding, JSON write | — |
+| `agents/common.py` | Shared: load company.json, source labels, exhibit registry, rounding, JSON write | - |
 | `agents/writer.py` | Thesis Writer | `company.json` → `out/<ticker>/thesis.json` + `thesis.md` |
 | `agents/visualizer.py` | Visualizer | `company.json` + `out/<ticker>/financials.json` (optional) → `out/<ticker>/charts/*.png` + `charts.json` manifest |
 | `agents/sotp.py` | SOTP Aggregator (conglomerate only) | `company.json` (segments>1) → `out/<ticker>/sotp.json` |
 | `templates/helpers.py` | Exhibit format helpers for the PDF renderer (P4) | import-time, pure |
-| `tests/fixtures/company/*.json` | Deterministic fixtures: CDIA (sotp), MTEL (infra), ADRO (sotp+holdco) | — |
-| `tests/run_tests.py` | Deterministic acceptance asserts (no pytest dependency) | — |
+| `tests/fixtures/company/*.json` | Deterministic fixtures: CDIA (sotp), MTEL (infra), ADRO (sotp+holdco) | - |
+| `tests/run_tests.py` | Deterministic acceptance asserts (no pytest dependency) | - |
 
-## Canonical input schema — `company.json`
+## Canonical input schema - `company.json`
 
 T01 Collector writes one file per ticker. Required keys for these agents:
 
@@ -80,12 +80,12 @@ T01 Collector writes one file per ticker. Required keys for these agents:
   "price_history": {"jci": {"dates": [...], "close": [...]}, "ticker": {"dates": [...], "close": [...]}, "ytd_perf": {...}},
   "peers": [{"ticker": "POWR", "name": "...", "pe": 8.5, "ev_ebitda": 6.2, "sector": "Energy"}],
   "bands": {"pbv": {"dates": [...], "values": [...], "mean": 1.7, "std": 0.3}, "ev_ebitda": {...}},
-  "esg": {"source": "MSCI", "date": "2026-08-01", "score": "2.23/3.03/5.08"}   // optional — hide if absent
+  "esg": {"source": "MSCI", "date": "2026-08-01", "score": "2.23/3.03/5.08"}   // optional - hide if absent
 }
 ```
 
 **Anti-hallucination rule:** any number rendered in `thesis.json` / charts / SOTP must
-trace to a key in `company.json` (or a `scripts/` engine result) — writers never invent.
+trace to a key in `company.json` (or a `scripts/` engine result) - writers never invent.
 
 ## Output schemas
 
@@ -126,6 +126,6 @@ trace to a key in `company.json` (or a `scripts/` engine result) — writers nev
 
 1. Thesis writer emits CDIA normalized net delta **-72%** from the 15.9 one-off → `adjusted_net_income_mn = 4,823mn` (reported 17,225 − 15,900×(1−22%)), Δ = −72.0%.
 2. Catalyst quantified: MTEL PST+UMT merger 1 Jul 2026 + spectrum → **3,000–3,500 tenants** and **IDR 360,000–420,000 mn (+360–420bn)** annualized by FY27-29, both present in thesis output.
-3. SOTP: segments pct **sum to 100%**; pillar weights sum to **100%**; `sum_check.ok == true`; holdco discount applied. **Conglomerate-only** — archetype must be `sotp` (CDIA/ADRO); MTEL (infra) is skipped with a non-conglomerate reason.
+3. SOTP: segments pct **sum to 100%**; pillar weights sum to **100%**; `sum_check.ok == true`; holdco discount applied. **Conglomerate-only** - archetype must be `sotp` (CDIA/ADRO); MTEL (infra) is skipped with a non-conglomerate reason.
 4. Visualizer emits exactly the 8 mandated PNGs (revenue mix pie, trend, margin, leverage, ROE/ROA, vs JCI, peer multiples + bands, KPI) with a `charts.json` manifest; infra (MTEL) additionally gets a bands chart.
 5. Every chart file exists, non-empty, and is a valid PNG (`\x89PNG` magic).

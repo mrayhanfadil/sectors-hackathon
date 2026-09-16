@@ -8,7 +8,7 @@
 
 """Cross-run memory: verdicts persisted to SQLite (NOT vector DB).
 
-Decision D3 (locked 2026-09-05): state per run is ~13 small keys —
+Decision D3 (locked 2026-09-05): state per run is ~13 small keys -
 exact queries (ticker, date, rating) beat semantic search for audit.
 Table lives in the existing data/agent_runs.db next to run storage.
 `embedding BLOB NULL` column reserved so a future vector pass needs

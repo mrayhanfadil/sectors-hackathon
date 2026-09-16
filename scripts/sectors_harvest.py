@@ -1,8 +1,8 @@
-"""Bulk Sectors harvest — pull once, store in the lake, reuse everywhere.
+"""Bulk Sectors harvest - pull once, store in the lake, reuse everywhere.
 
 Lake layout (.cache/sectors/):
-  manifest.json                  — harvest id, timestamp, credit estimate/actual
-  universe/close-{date}.json     — full-universe close (1 call, not per-ticker)
+  manifest.json                  - harvest id, timestamp, credit estimate/actual
+  universe/close-{date}.json     - full-universe close (1 call, not per-ticker)
   {TICKER}/report-{sections}.json, daily-90d.json, quarterly-8.json,
     news.json, filings.json, actions.json, flow-90d.json, brokertop.json,
     suspensions.json, listing.json
@@ -125,7 +125,7 @@ def main() -> int:
         print(json.dumps(plan, indent=2))
         return 0
     if not os.environ.get("SECTORS_API_KEY"):
-        print("SECTORS_API_KEY missing — refusing to burn blind. Run --dry-run.")
+        print("SECTORS_API_KEY missing - refusing to burn blind. Run --dry-run.")
         return 2
     print(json.dumps(execute(plan), indent=2))
     return 0

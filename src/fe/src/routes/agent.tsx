@@ -507,7 +507,7 @@ function AgentTrace() {
         return
       }
       if (!knownTickers.includes(targetT)) {
-        setError(`Kode ${targetT} tidak ada di universe IDX (${knownTickers.length} emiten) — pilih dari daftar saran.`)
+        setError(`Kode ${targetT} tidak ada di universe IDX (${knownTickers.length} emiten) - pilih dari daftar saran.`)
         setRunning(false)
         return
       }

@@ -1,23 +1,23 @@
-"""Forecast-path resolver — one place that decides where the deck's FY26F-FY28F numbers come from.
+"""Forecast-path resolver - one place that decides where the deck's FY26F-FY28F numbers come from.
 
 Every page that shows a forecast column (cover Key Financials, the performance quadrants, the valuation
 legs, the statement page) reads the same resolved path, so the deck cannot disagree with itself.
 
 Resolution order, and every branch is labelled so the page can say which one it used:
 
-  1. `analyst`               — Sectors carries a per-year company forecast (`company_value_forecasts` /
+  1. `analyst`               - Sectors carries a per-year company forecast (`company_value_forecasts` /
                                `company_growth_forecasts`). Best case: a third party's own numbers, already
                                inside the licensed dataset.
-  2. `third-party-estimate`  — a per-ticker driver file in `data/drivers/<TICKER>.json` that cites a
+  2. `third-party-estimate`  - a per-ticker driver file in `data/drivers/<TICKER>.json` that cites a
                                published estimate (broker initiation, company guidance) per driver, with an
                                attribution and an as-of date. The file is REJECTED rather than half-used.
-  3. `midcycle-normalised`   — no path available: FY26F is last actual x the sector growth forecast and the
+  3. `midcycle-normalised`   - no path available: FY26F is last actual x the sector growth forecast and the
                                level is then held flat, EBITDA at the mid-cycle average. This is the honest
                                fallback, and the page must print that the columns are a normalised level,
                                not a growth path.
 
 Rules this module enforces (the reason it exists):
-  * A driver without a `source` invalidates the file — a forecast nobody can trace is not a forecast.
+  * A driver without a `source` invalidates the file - a forecast nobody can trace is not a forecast.
   * A third-party path without `attribution` + `as_of` invalidates the file.
   * Cross-currency paths declare the FX rate and how it was derived.
   * Magnitudes are sanity-checked (margins, growth, net <= EBITDA) so a percentage can never be read as a
@@ -91,7 +91,7 @@ def _validate(doc: dict, ticker: str) -> tuple[list[str], dict]:
             continue
         vals = [float(v) for v in raw if v is not None]
         if not str(block.get("source") or "").strip():
-            problems.append(f"`{key}` has no `source` — an untraceable forecast is not a forecast")
+            problems.append(f"`{key}` has no `source` - an untraceable forecast is not a forecast")
             continue
         out[key] = {
             "rp_bn": [v * fx for v in vals],
@@ -106,7 +106,7 @@ def _validate(doc: dict, ticker: str) -> tuple[list[str], dict]:
         for i, _y in enumerate(years):
             m = out["ebitda"]["rp_bn"][i] / out["revenue"]["rp_bn"][i] if out["revenue"]["rp_bn"][i] else 0
             if not 0.02 <= m <= 0.95:
-                problems.append(f"EBITDA margin reads {_nf.pcfrac(m, 1)} in {years[i]} — implausible, refusing the file")
+                problems.append(f"EBITDA margin reads {_nf.pcfrac(m, 1)} in {years[i]} - implausible, refusing the file")
     if out.get("net_profit") and out.get("ebitda"):
         for i, _y in enumerate(years):
             if out["net_profit"]["rp_bn"][i] > out["ebitda"]["rp_bn"][i]:
@@ -164,7 +164,10 @@ def display_attribution(text: str | None, fallback: str = "estimasi tim") -> str
                      "", cleaned, flags=re.I)
     cleaned = re.sub(r"\(?\b(as of )?\d{1,2}\s+[A-Z][a-z]{2,8}\s+\d{4}\b\)?", "", cleaned, flags=re.I)
     cleaned = re.sub(r"\b\d{4}-\d{2}-\d{2}\b", "", cleaned)
-    cleaned = re.sub(r"[\s,;:\-—\(\).]+$", "", re.sub(r"^[\s,;:\-—\(\).]+", "", cleaned)).strip()
+    # A literal hyphen inside a character class has to be escaped when it follows an escape: the
+    # dash sweep that removed the two dash codepoints here left "[\s,;:\--\(\)\.]", which Python
+    # reads as the descending range "\-".."\(" and refuses to compile at all.
+    cleaned = re.sub(r"[\s,;:\-\(\)\.]+$", "", re.sub(r"^[\s,;:\-\(\)\.]+", "", cleaned)).strip()
     return cleaned if len(cleaned) >= 8 else fallback
 
 

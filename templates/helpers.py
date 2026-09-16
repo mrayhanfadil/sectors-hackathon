@@ -4,7 +4,7 @@ Pure functions: convert the deterministic agent outputs (thesis.json, sotp.json,
 charts.json) and company.json into HTML fragments / formatted values the
 4 HTML templates (single / sotp / infra / strategy) consume.
 
-Nothing here does math the agents already did — it only formats.
+Nothing here does math the agents already did - it only formats.
 """
 
 from __future__ import annotations
@@ -54,7 +54,7 @@ def esc(text: Any) -> str:
 
 def exhibit_source(company: dict[str, Any], note: str = "") -> str:
     """Provenance line required under every exhibit (plan.md upgrade #6)."""
-    src = company.get("source", {}).get("label", "—")
+    src = company.get("source", {}).get("label", "-")
     return f'<div class="text-xs text-slate-400 mt-1">Source: {esc(src)}{" · " + esc(note) if note else ""}</div>'
 
 
@@ -122,7 +122,7 @@ def sotp_exhibit(sotp: dict[str, Any]) -> str:
     sc = sotp.get("sum_check", {})
     badge = '<span class="text-green-700 font-bold">✓ sum = 100%</span>' if sc.get("ok") else '<span class="text-red-700 font-bold">✗ MISMATCH</span>'
     return (
-        '<div class="border rounded-lg p-4"><h3 class="font-bold text-lg mb-2">SOTP — Sum of Parts</h3>'
+        '<div class="border rounded-lg p-4"><h3 class="font-bold text-lg mb-2">SOTP - Sum of Parts</h3>'
         f'<p class="text-sm mb-2">{esc(sotp.get("method", ""))} {badge}</p>'
         '<table class="w-full text-sm"><thead><tr class="text-left text-slate-500 border-b">'
         '<th>Pillar</th><th>Revenue</th><th>Mix %</th><th>Peer P/E</th><th>Implied equity</th><th>Weight %</th><th>Peer set</th>'
@@ -139,7 +139,7 @@ def sotp_exhibit(sotp: dict[str, Any]) -> str:
 
 
 def charts_block(ticker: str, charts: list[dict[str, Any]]) -> str:
-    """Grid of chart <img> tags — paths are relative to out/<TICKER>/charts/."""
+    """Grid of chart <img> tags - paths are relative to out/<TICKER>/charts/."""
     if not charts:
         return ""
     imgs = "".join(

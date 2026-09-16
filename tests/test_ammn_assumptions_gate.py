@@ -9,7 +9,7 @@ data/assumptions/AMMN.json the production loaders raised
 This file pins the positive state: the file exists, carries all 15 gate keys with
 per-field provenance, and server/routers/pdf.py:_build_live_payload clears the
 assumptions gate (no HTTP 422). Later-stage gaps (charts, statements) are NOT
-asserted here — those belong to the rendering lane.
+asserted here - those belong to the rendering lane.
 """
 from __future__ import annotations
 
@@ -43,7 +43,7 @@ def test_ammn_assumptions_file_is_git_tracked_not_ignored():
         ["git", "check-ignore", "-q", str(AMMN)],
         cwd=REPO_ROOT, capture_output=True, check=False,
     )
-    assert res.returncode != 0, "data/assumptions/AMMN.json is git-ignored — cannot be shipped"
+    assert res.returncode != 0, "data/assumptions/AMMN.json is git-ignored - cannot be shipped"
 
 
 def test_ammn_assumptions_file_present_with_typed_gate_fields(ammn: dict):
@@ -79,7 +79,7 @@ def test_ammn_mid_cycle_ebitda_cites_three_constituents(ammn: dict):
     avg = sum(cons.values()) / 3
     # The constituents remain the historical record (used as a cross-check on the page). The level the
     # gate-primary multiple multiplies is the FORWARD one from the cited path, so `ebitda` no longer
-    # equals the 3Y average — assert the relationship the deck actually runs on.
+    # equals the 3Y average - assert the relationship the deck actually runs on.
     assert avg > 0
     assert ammn["ebitda"] != avg, "ebitda must be the forward level, not the historic average"
     assert "level forward" in str(ammn.get("ebitda_leg_level_note", "")).lower()

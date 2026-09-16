@@ -1,4 +1,4 @@
-"""Test Sectors-only collector (LOUD policy, Sep 2026) — no synthetic fallback.
+"""Test Sectors-only collector (LOUD policy, Sep 2026) - no synthetic fallback.
 
 Keyless runs raise RuntimeError(sectors_missing_key); keyed runs return
 source=sectors. No yfinance, no IDX Postgres, no silent fallbacks, no seed-42.
@@ -60,7 +60,7 @@ def test_collect_unknown_ticker_keyless_raises_loud():
 
 
 def test_synthetic_generator_retired():
-    """_synthetic() raises — seed-42 invention is gone."""
+    """_synthetic() raises - seed-42 invention is gone."""
     from agents.collector import _synthetic
     with pytest.raises(RuntimeError, match="synthetic fallback retired"):
         _synthetic("BBCA")

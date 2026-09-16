@@ -1,6 +1,6 @@
-"""Deterministic SOTP (Sum-Of-The-Parts) engine — CDIA 4-pillar + ADRO holdco discount.
+"""Deterministic SOTP (Sum-Of-The-Parts) engine - CDIA 4-pillar + ADRO holdco discount.
 
-Part of T02 — Deterministic Engines. Formulas explicit, no LLM math.
+Part of T02 - Deterministic Engines. Formulas explicit, no LLM math.
 Mirrors server/engines/__init__.py sotp() + finance_tools.calc_sotp().
 
 Benchmarks:

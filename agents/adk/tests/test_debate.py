@@ -48,8 +48,8 @@ def test_dict_wrapper_passes():
 
 def test_placeholder_strings_fail():
     for bad in [
-        "Red-team challenge in progress — stress-testing WACC.",
-        "Red-team review complete — exiting the loop.",
+        "Red-team challenge in progress - stress-testing WACC.",
+        "Red-team review complete - exiting the loop.",
         "",
         "agree, looks good",
     ]:
@@ -100,7 +100,7 @@ def test_submit_debate_tool():
 
     good = submit_debate(json.dumps(VALID))
     assert good == {"ok": True, "n_rounds": 1}
-    bad = submit_debate("Red-team review complete — exiting the loop.")
+    bad = submit_debate("Red-team review complete - exiting the loop.")
     assert bad["ok"] is False
     assert bad["errors"]
 

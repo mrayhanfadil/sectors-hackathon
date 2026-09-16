@@ -47,7 +47,7 @@ CONSTANT_SOURCE = "Source: Company, Team Estimates"
 
 def test_rule_doc_exists_and_is_canonical() -> None:
     assert RULE_DOC.exists(), (
-        "docs/rules/house-report-format.md is missing — the rules then live only in "
+        "docs/rules/house-report-format.md is missing - the rules then live only in "
         "chat and in code, with nothing for a contributor or an agent to read"
     )
     txt = RULE_DOC.read_text(encoding="utf-8")
@@ -67,7 +67,7 @@ def test_rule_doc_exists_and_is_canonical() -> None:
 
 def test_data_contract_forbids_pre_numbered_exhibits() -> None:
     """A payload carrying `id: "Exhibit 1"` is a local variable pretending to be the
-    global counter — numbering desyncs the moment a chart moves."""
+    global counter - numbering desyncs the moment a chart moves."""
     txt = DATA_CONTRACT.read_text(encoding="utf-8")
     assert not re.search(r'"id"\s*:\s*"Exhibit\s*\d', txt), (
         "DATA_CONTRACT.md still shows a pre-numbered exhibit id in its schema example"
@@ -114,7 +114,7 @@ def test_each_agent_instruction_carries_the_house_format_rule(agent: str) -> Non
 
 def test_writer_source_instruction_is_reconciled_with_the_house_line() -> None:
     """The writer used to be told to print `Source: <outlet>, <date>`. That is the
-    audit field, not the printed line — leaving both in place would put two
+    audit field, not the printed line - leaving both in place would put two
     contradictory instructions in the same prompt."""
     txt = _instructions_module().writer_instruction
     assert "Quote provenance per exhibit" in txt, "reconciled wording missing"
@@ -206,7 +206,7 @@ def test_challenge_engine_does_not_hand_number_exhibits() -> None:
     # closing quote would miss the real shape `"Exhibit 4: <title>"` entirely.
     offenders = re.findall(r'"[^"]*?Exhibit\s+\d[^"]*"', src)
     assert not offenders, (
-        f"challenge engine still hand-numbers exhibits: {offenders} — cite them by title"
+        f"challenge engine still hand-numbers exhibits: {offenders} - cite them by title"
     )
 
 
@@ -215,7 +215,7 @@ def test_front_end_never_hand_numbers_exhibits() -> None:
 
     The challenge form falls back to a hard-coded reference when the backend does not
     return one. A literal `Exhibit 3.1` there keeps pointing at a chart that has moved
-    (or no longer exists) the moment the report is revised — the PDF counter is owned by
+    (or no longer exists) the moment the report is revised - the PDF counter is owned by
     the renderer and the FE cannot see it. Cite the exhibit by title instead.
     """
     fe_src = REPO_ROOT / "src" / "fe" / "src"
@@ -230,7 +230,7 @@ def test_front_end_never_hand_numbers_exhibits() -> None:
         for m in re.finditer(r"""["'`][^"'`]*?(?:Exhibit|Ekshibit)\s+\d[^"'`]*["'`]""", src):
             offenders.append(f"{path.relative_to(REPO_ROOT)}: {m.group(0)}")
     assert not offenders, (
-        "the front end hand-numbers exhibits (drifts from the PDF counter) — cite by title:\n  "
+        "the front end hand-numbers exhibits (drifts from the PDF counter) - cite by title:\n  "
         + "\n  ".join(offenders)
     )
 
@@ -240,7 +240,7 @@ def test_any_agent_that_mentions_exhibits_carries_the_rule() -> None:
     hard-coded roster: the moment someone adds an agent that talks about exhibits, this
     fails until that agent is given the rule. Data-producing agents (collector, news
     harvester, social sentiment, risk) mention exhibits zero times and are correctly
-    absent from the list — they hand payloads to the agents above, they do not label them."""
+    absent from the list - they hand payloads to the agents above, they do not label them."""
     instructions = _instructions_module()
     offenders = []
     for name in dir(instructions):
@@ -265,7 +265,7 @@ def test_agents_that_do_not_produce_exhibits_are_not_given_the_rule() -> None:
     for name in data_only:
         txt = getattr(instructions, f"{name}_instruction")
         assert "HOUSE REPORT FORMAT" not in txt, (
-            f"{name} produces data for other agents, not exhibits — it should not carry "
+            f"{name} produces data for other agents, not exhibits - it should not carry "
             "the house format rule"
         )
         assert not re.search(r"\bexhibit", txt, re.I)
@@ -329,7 +329,7 @@ def test_theme_carries_the_brand_mark() -> None:
 _JINJA_PAYLOAD = {
     "meta": {
         "template": "single", "ticker": "TEST", "company_name": "Test Persero",
-        "sector": "Energi — Uji", "report_type": "Initiation",
+        "sector": "Energi - Uji", "report_type": "Initiation",
         "date": "31 Agt 2026", "language": "id",
     },
     "cover": {
@@ -401,7 +401,7 @@ def test_live_html_path_prints_the_constant_source_line_below_every_object() -> 
     html = _render_jinja_html(dict(_JINJA_PAYLOAD))
     labels = len(re.findall(r'class="exhibit-id">Exhibit \d+\.</span>', html))
     assert html.count(CONSTANT_SOURCE) == labels, (
-        f"{labels} exhibits but {html.count(CONSTANT_SOURCE)} constant source lines — "
+        f"{labels} exhibits but {html.count(CONSTANT_SOURCE)} constant source lines - "
         "one exhibit never had its source flushed (check pagefoot(ns=...))"
     )
     # the source line is a sibling AFTER the label, never inside the label row
@@ -491,7 +491,7 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
     it. Skips honestly when the only renderable ticker has no verified assumptions file.
     """
     if not (REPO_ROOT / "data" / "assumptions" / "AMMN.json").exists():
-        pytest.skip("no verified assumptions for AMMN — nothing to render")
+        pytest.skip("no verified assumptions for AMMN - nothing to render")
 
     import asyncio
 
@@ -540,8 +540,8 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
     # Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md): the DCF page carries the three blocks
     # and the WACC components, and the sensitivity grid with its narrative lands on the following page.
     val = doc[4].get_text()
-    for marker in ("Blok 1 — Periode proyeksi eksplisit", "Blok 2 — Terminal value",
-                   "Blok 3 — Bridge ke equity value", "WACC Components", "Fair Value per Share"):
+    for marker in ("Blok 1 - Periode proyeksi eksplisit", "Blok 2 - Terminal value",
+                   "Blok 3 - Bridge ke equity value", "WACC Components", "Fair Value per Share"):
         assert marker in val, f"slide 4 lost {marker!r} on paper"
     val2 = doc[5].get_text()
     assert "Sensitivity Analysis" in val2, "the sensitivity grid moved off the valuation spread"
@@ -571,7 +571,7 @@ def test_no_template_hardcodes_an_exhibit_number(template: Path) -> None:
     "template", sorted(TEMPLATES_DIR.glob("report_*.html")), ids=lambda p: p.name
 )
 def test_no_template_renders_its_own_source_label(template: Path) -> None:
-    """Only one source label exists — the constant house line. A template that prints its own
+    """Only one source label exists - the constant house line. A template that prints its own
     drifts the moment the rule changes."""
     assert "Sumber:" not in template.read_text(encoding="utf-8"), (
         f"{template.name} still renders a 'Sumber:' source line"

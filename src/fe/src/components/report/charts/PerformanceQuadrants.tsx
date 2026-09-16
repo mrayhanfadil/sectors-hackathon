@@ -220,7 +220,7 @@ function SvgComboChart({
         return (
           <g key={`pt-${idx}`}>
             <circle cx={p.x} cy={p.y} r="2.8" fill={TOKENS.buy} stroke="#ffffff" strokeWidth="1" />
-            {text && text !== "—" && (
+            {text && text !== "-" && (
               <g>
                 <rect
                   x={p.x - text.length * 2.2 - 2}

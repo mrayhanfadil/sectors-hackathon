@@ -36,7 +36,7 @@ type NormalizedRow = {
 }
 
 function fmtStatementNumber(v: number | string | null | undefined): string {
-  if (v == null || v === "" || v === "—" || v === "-") return "—"
+  if (v == null || v === "" || v === "-" || v === "-") return "-"
   if (typeof v === "string") {
     const lower = v.trim().toLowerCase()
     if (lower === "n/a" || lower === "na") return "n/a"
@@ -45,7 +45,7 @@ function fmtStatementNumber(v: number | string | null | undefined): string {
     v = num
   }
   if (typeof v === "number") {
-    if (Number.isNaN(v)) return "—"
+    if (Number.isNaN(v)) return "-"
     if (Math.abs(v) < 1e-6) return "0"
     const rounded = Math.round(Math.abs(v))
     const formatted = rounded.toLocaleString("id-ID")
@@ -55,7 +55,7 @@ function fmtStatementNumber(v: number | string | null | undefined): string {
 }
 
 function fmtRatioNumber(v: number | string | null | undefined, digits: number = 1): string {
-  if (v == null || v === "" || v === "—" || v === "-") return "—"
+  if (v == null || v === "" || v === "-" || v === "-") return "-"
   if (typeof v === "string") {
     const lower = v.trim().toLowerCase()
     if (lower === "n/a" || lower === "na") return "n/a"
@@ -64,7 +64,7 @@ function fmtRatioNumber(v: number | string | null | undefined, digits: number = 
     v = num
   }
   if (typeof v === "number") {
-    if (Number.isNaN(v)) return "—"
+    if (Number.isNaN(v)) return "-"
     const isZero = Math.abs(v) < 1e-6
     const fixed = (isZero ? 0 : Math.abs(v)).toFixed(digits).replace(".", ",")
     return v < 0 ? `(${fixed})` : fixed
@@ -143,7 +143,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
   return (
     <div className="space-y-6">
       {/* ========================================================================= */}
-      {/* BAB 7: LAPORAN KEUANGAN — LABA RUGI & NERACA                             */}
+      {/* BAB 7: LAPORAN KEUANGAN - LABA RUGI & NERACA                             */}
       {/* ========================================================================= */}
       <section id="financial-statements" className="scroll-mt-28 space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
@@ -152,7 +152,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
               07
             </span>
             <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Laporan Keuangan — Laba Rugi &amp; Neraca // {tk}
+              Laporan Keuangan - Laba Rugi &amp; Neraca // {tk}
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
@@ -318,7 +318,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                           {i < (stmts.years?.length || 1) - 1 ? " · " : ""}
                         </span>
                       ))}{" "}
-                      (Rp bn) — {stmts.tied ? "neraca seimbang persis di semua kolom" : "selisih pembulatan"}.
+                      (Rp bn) - {stmts.tied ? "neraca seimbang persis di semua kolom" : "selisih pembulatan"}.
                     </div>
                   )}
 
@@ -510,7 +510,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                       {keyRatio?.exhibit_title || finRatios?.title || "Key Ratio (Rasio Kunci & Efisiensi)"}
                     </CardTitle>
                     <span className="font-mono text-[10px] text-[#63748A]">
-                      {keyRatio?.sources?.[0] || finRatios?.source || "Sectors — data historis & proyeksi"}
+                      {keyRatio?.sources?.[0] || finRatios?.source || "Sectors - data historis & proyeksi"}
                     </span>
                   </div>
                 </CardHeader>
@@ -788,7 +788,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                       <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
                         {sectorData.growth_forecast_2026.revenue_pct != null
                           ? `${sectorData.growth_forecast_2026.revenue_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.revenue_pct}%`
-                          : "—"}
+                          : "-"}
                       </div>
                     </div>
                     <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
@@ -796,7 +796,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                       <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
                         {sectorData.growth_forecast_2026.eps_pct != null
                           ? `${sectorData.growth_forecast_2026.eps_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.eps_pct}%`
-                          : "—"}
+                          : "-"}
                       </div>
                     </div>
                   </>
@@ -808,7 +808,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                       <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
                         {sectorData.growth_actual_2025.revenue_pct != null
                           ? `${sectorData.growth_actual_2025.revenue_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.revenue_pct}%`
-                          : "—"}
+                          : "-"}
                       </div>
                     </div>
                     <div className="rounded border border-[#D6E2EE] bg-[#F4F8FC] p-2 text-center dark:border-[#262930] dark:bg-[#181a1f]">
@@ -816,7 +816,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                       <div className="font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
                         {sectorData.growth_actual_2025.eps_pct != null
                           ? `${sectorData.growth_actual_2025.eps_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.eps_pct}%`
-                          : "—"}
+                          : "-"}
                       </div>
                     </div>
                   </>
@@ -834,7 +834,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
           </div>
           <p className="leading-relaxed text-[#63748A] dark:text-neutral-300 font-sans">
             Laporan ini dihasilkan oleh sistem multi-agent untuk keperluan informasi dan analisis data pasar modal
-            Indonesia. Seluruh output adalah data historis dan agregat — bukan rekomendasi, prediksi, atau saran investasi.
+            Indonesia. Seluruh output adalah data historis dan agregat - bukan rekomendasi, prediksi, atau saran investasi.
             Keputusan investasi sepenuhnya tanggung jawab pembaca. Selalu lakukan riset mandiri dan konsultasikan dengan
             penasihat keuangan berlisensi sebelum berinvestasi. Performa masa lalu tidak menjamin hasil di masa depan.
             Akurasi data tunduk pada kualitas data sumber.

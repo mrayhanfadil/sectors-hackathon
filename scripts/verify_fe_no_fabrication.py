@@ -260,7 +260,7 @@ class FrontendFabricationScanner:
                             matched_text=m.group(0),
                             line_content=raw.strip(),
                             reason=f"Substitutes default figure '{val}' when '{lhs}' is missing, masking absent backend data",
-                            remediation="Render honest pending block (PendingBlock) or format null as '—'",
+                            remediation="Render honest pending block (PendingBlock) or format null as '-'",
                         )
                     )
 

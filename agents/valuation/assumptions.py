@@ -1,7 +1,7 @@
 """Forward-looking assumption modulation based on news signals.
 
 Wires the news engine (news_harvester) into forward-looking revenue growth
-and capex projections. (social_sentiment retired 14 Sep 2026 — Sectors has
+and capex projections. (social_sentiment retired 14 Sep 2026 - Sectors has
 no retail-social feed; the sentiment arg stays optional and falls back
 cleanly when None.)
 

@@ -1,4 +1,4 @@
-"""Deck page 3 — the investment-thesis rail: layout, the declared anchors, and the extraction rule."""
+"""Deck page 3 - the investment-thesis rail: layout, the declared anchors, and the extraction rule."""
 from __future__ import annotations
 
 import pathlib
@@ -24,7 +24,7 @@ def test_every_declared_anchor_is_a_figure_the_line_already_prints(payload):
         stat = str(t.get("stat") or "")
         assert stat, f"{t['headline']!r} has no anchor"
         assert stat in f"{t['headline']} {t['detail']}", \
-            f"anchor {stat!r} does not appear in its own line — that would be a fabricated figure"
+            f"anchor {stat!r} does not appear in its own line - that would be a fabricated figure"
         assert t.get("stat_label"), f"{t['headline']!r} has an unlabelled anchor"
 
 

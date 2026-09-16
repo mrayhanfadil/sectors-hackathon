@@ -1,4 +1,4 @@
-"""Slide 3 — Visualisasi Kinerja Keuangan dan Forecasting (2×2 grid, Exhibits 4–7).
+"""Slide 3 - Visualisasi Kinerja Keuangan dan Forecasting (2×2 grid, Exhibits 4–7).
 
 Four combo charts, each with its own narrative block attached to the chart, per
 `docs/ammn-slides/slide3-visual-spec.md`:
@@ -17,7 +17,7 @@ Financials exhibit for the same period") is checkable rather than aspirational:
 The narratives are derived, not written by hand: they compute the growth rates, compare the forecast
 margin with the realised average, and name the below-the-line items that explain a profit gap. Where
 the forecast columns rest on an assumption that the narrative disagrees with, the narrative says so
-in the copy — a quadrant that quietly repeats an over-optimistic margin is worse than useless.
+in the copy - a quadrant that quietly repeats an over-optimistic margin is worse than useless.
 """
 
 from __future__ import annotations
@@ -37,7 +37,7 @@ def _num(value: Any, digits: int = 1) -> str:
     try:
         text = f"{float(value):,.{digits}f}"
     except (TypeError, ValueError):
-        return "—"
+        return "-"
     return text.replace(",", "\u00a0").replace(".", ",").replace("\u00a0", ".")
 
 
@@ -46,16 +46,16 @@ def _idr_tn(value: Any, digits: int = 1) -> str:
     try:
         return "Rp " + _num(float(value) / 1000, digits) + " tn"
     except (TypeError, ValueError):
-        return "—"
+        return "-"
 
 
 def _pct(value: Any, digits: int = 1) -> str:
     if value is None:
-        return "—"
+        return "-"
     try:
         return ("+" if float(value) > 0 else "") + _num(value, digits) + "%"
     except (TypeError, ValueError):
-        return "—"
+        return "-"
 
 
 def _row(rows: list, *needles: str) -> Optional[list]:
@@ -73,14 +73,14 @@ def _parse_id(value: Any) -> Optional[float]:
 
     The cover's Key Financials rows are PRE-FORMATTED strings: "43.036" is 43,036 (dot =
     thousands), "141,9" is 141.9 (comma = decimal) and "(28,8)" is -28.8. Reading them with
-    float() silently turns 43,036 into 43.036 — a factor-of-1000 error that would then fail the
+    float() silently turns 43,036 into 43.036 - a factor-of-1000 error that would then fail the
     cross-exhibit tie-out in a way nobody could explain. Values that are already numeric pass
     through untouched.
     """
     if isinstance(value, (int, float)):
         return float(value)
     text = str(value or "").strip()
-    if text in ("", "—", "-", "n/a", "N/A", "na"):
+    if text in ("", "-", "-", "n/a", "N/A", "na"):
         return None
     negative = text.startswith("(") and text.endswith(")")
     text = text.strip("()").replace("%", "").replace("\u00a0", "").replace(" ", "")
@@ -96,7 +96,7 @@ def _parse_id(value: Any) -> Optional[float]:
 
 
 def _clean(values: list) -> list:
-    """Payload cells -> floats, keeping the series length. '—'/''/None become None."""
+    """Payload cells -> floats, keeping the series length. '-'/''/None become None."""
     return [_parse_id(v) for v in values]
 
 
@@ -212,7 +212,7 @@ def _narrative_revenue(headers: list[str], rev: list, growth: list, payload: dic
         parts.append(
             f"CAGR periode aktual {_pct(actual_cagr)} vs CAGR periode proyeksi {_pct(forecast_cagr)}: "
             f"lajunya berbeda karena periode proyeksi menyusut lebih lambat "
-            f"({_pct(growth[idx_fy26]) if idx_fy26 is not None else '—'} di tahun proyeksi pertama)."
+            f"({_pct(growth[idx_fy26]) if idx_fy26 is not None else '-'} di tahun proyeksi pertama)."
         )
     first_flat = headers[index_of_flat_growth(growth)]
     if first_flat:
@@ -249,7 +249,7 @@ def _narrative_ebitda(headers: list[str], ebitda: list, rev: list, margins: list
             f"Sanity check terhadap track record: marjin proyeksi {_num(forecast[0])}% berada "
             f"{_num(forecast[0] - avg3, 1)} poin persentase di atas rata-rata tiga tahun aktual "
             f"({_num(avg3)}%), dan belum pernah tercatat setinggi itu pada periode aktual di tabel "
-            f"ini — asumsinya terlalu optimistis untuk dipakai apa adanya."
+            f"ini - asumsinya terlalu optimistis untuk dipakai apa adanya."
         )
         parts.append(
             "Mekanismenya layak disebut: EBITDA proyeksi dipegang pada rata-rata tiga tahun aktual "
@@ -268,7 +268,7 @@ def _narrative_profit(headers: list[str], net: list, ebitda: list, eps_growth: l
         net_g = _growth(net)[idx_fy25]
         parts.append(
             f"Gap di bawah garis: pada {headers[idx_fy25]} EBITDA bergerak {_pct(ebitda_g)} sementara "
-            f"laba bersih {_pct(net_g)} — laba bersih turun sekitar "
+            f"laba bersih {_pct(net_g)} - laba bersih turun sekitar "
             f"{_num(abs((net_g or 0) - (ebitda_g or 0)))} poin persentase lebih dalam."
         )
         kpis = {str(k.get("name", "")): k for k in (payload.get("kpis") or []) if isinstance(k, dict)}
@@ -309,7 +309,7 @@ def _narrative_leverage(headers: list[str], de: list, roe: list) -> str:
         if last[1] > first[1] and last[2] < first[2]:
             parts.append(
                 "Arahnya berlawanan: utang bertambah sementara return ke ekuitas turun, sehingga "
-                "pertumbuhan yang ada tidak sedang didanai leverage yang sehat — risiko finansial naik "
+                "pertumbuhan yang ada tidak sedang didanai leverage yang sehat - risiko finansial naik "
                 "tanpa imbalan return yang sepadan."
             )
         elif last[1] < first[1] and last[2] > first[2]:

@@ -1,8 +1,8 @@
-"""Sectors payload cache — minimize Sectors API credit burn.
+"""Sectors payload cache - minimize Sectors API credit burn.
 
 Round-trip tests against server.storage.SectorsCache. Uses a per-test tmp DB
 so a populated cache never bleeds across tests. No fixture, no Sectors key
-needed — these tests target the cache class directly.
+needed - these tests target the cache class directly.
 
 Gate: every assertion is on the cache layer itself. The Sectors API is wrapped
 transparently in production; one Sectors _get() call -> one credit saved on hit.
@@ -52,7 +52,7 @@ def test_distinct_params_distinct_keys(cache: SectorsCache) -> None:
 
 
 def test_expired_entry_serves_stale_by_default(cache: SectorsCache) -> None:
-    """NO-EXPIRY (15 Sep 2026, credit-thin mode): cached rows NEVER expire —
+    """NO-EXPIRY (15 Sep 2026, credit-thin mode): cached rows NEVER expire -
     TTL=0 + sleep, then get() must still HIT with _stale flag."""
     import os
 
@@ -131,13 +131,13 @@ def test_endpoint_classification_tiers():
     """TTL classification honors the 4-tier policy in server/sectors.py."""
     from server.sectors import _ttl_for
 
-    # TIER 1 — intra-day (6h)
+    # TIER 1 - intra-day (6h)
     assert _ttl_for("/daily/BBCA/") == 6 * 3600
     assert _ttl_for("/foreign-flow/BBCA/") == 6 * 3600
-    # TIER 2 — fundamentals/news (12h)
+    # TIER 2 - fundamentals/news (12h)
     assert _ttl_for("/financials/quarterly/BBCA/") == 12 * 3600
     assert _ttl_for("/news/") == 12 * 3600
-    # TIER 3 — slow-moving (24h)
+    # TIER 3 - slow-moving (24h)
     assert _ttl_for("/subsector/report/banks/") == 24 * 3600
     assert _ttl_for("/companies/") == 24 * 3600
     # Universe feed (4h)
@@ -147,7 +147,7 @@ def test_endpoint_classification_tiers():
 
 
 def test_persistence_across_sessions(tmp_path: Path) -> None:
-    """Two cache instances on same DB file must share state — proves SQLite
+    """Two cache instances on same DB file must share state - proves SQLite
     actually persists (not in-memory). Without this, the whole storage layer
     is just a more complicated cache.py."""
     db = str(tmp_path / "persist_test.db")
@@ -161,7 +161,7 @@ def test_persistence_across_sessions(tmp_path: Path) -> None:
 
 
 def test_cache_does_not_store_errors(tmp_path: Path) -> None:
-    """When Sectors returns 4xx/5xx we raise — nothing must land in the cache,
+    """When Sectors returns 4xx/5xx we raise - nothing must land in the cache,
     so the next call retries the API."""
     cache = SectorsCache(db_path=str(tmp_path / "no_err_cache.db"))
     # Simulate the cache-miss path: nothing was set, get returns no-hit.
@@ -195,7 +195,7 @@ def test_latest_for_endpoint_serves_freshest_row_any_params(cache: SectorsCache)
 
 
 def test_latest_for_endpoint_ignores_neg404_markers(cache: SectorsCache) -> None:
-    """A cached 404 is an error marker, never data — must not be served."""
+    """A cached 404 is an error marker, never data - must not be served."""
     cache.set("/company/get-segments/AMMN/", {}, {"data": [], "_neg404": True}, ttl_seconds=3600)
     assert cache.latest_for_endpoint("/company/get-segments/AMMN/") is None
 
@@ -225,7 +225,7 @@ def test_window_drift_serves_cache_and_never_calls_http(monkeypatch) -> None:
 
 
 def test_exact_params_still_hit_without_substitution_flag(monkeypatch) -> None:
-    """Substitution is a fallback, not the norm — same params = plain cache HIT."""
+    """Substitution is a fallback, not the norm - same params = plain cache HIT."""
     import server.sectors as S
 
     S._cache.set("/index-daily/ihsg/", {"start": "2021-01-01", "end": "2026-09-06"},
@@ -238,7 +238,7 @@ def test_exact_params_still_hit_without_substitution_flag(monkeypatch) -> None:
 
 @pytest.mark.skipif(os.getenv("SECTORS_LIVE") == "1", reason="keyless-only assertion")
 def test_window_guard_is_opt_in_per_endpoint(monkeypatch) -> None:
-    """Non-window endpoints (e.g. /close/{date}) must NOT inherit the guard —
+    """Non-window endpoints (e.g. /close/{date}) must NOT inherit the guard -
     a different date there is genuinely different data."""
     import server.sectors as S
     from server.sectors import SectorsNotConfigured

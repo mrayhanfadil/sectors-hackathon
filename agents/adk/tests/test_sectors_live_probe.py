@@ -1,9 +1,9 @@
-"""Lane C live-probe — single cheap Sectors call (opt-in live billing).
+"""Lane C live-probe - single cheap Sectors call (opt-in live billing).
 
-Probe: company_report("BBCA", "dividend") — one section = ~1 credit.
+Probe: company_report("BBCA", "dividend") - one section = ~1 credit.
 Gated on SECTORS_LIVE=1 (explicit opt-in, mirrors OPENCODE_GO_LIVE=1):
 absent → module skips, zero network, zero credits. Bare SECTORS_API_KEY
-presence must NOT gate it — server/main.py force-loads the BE env file at
+presence must NOT gate it - server/main.py force-loads the BE env file at
 import, which would billing-fire the suite as a side effect.
 """
 
@@ -43,11 +43,11 @@ def test_live_company_report_bbca_dividend():
     if os.getenv("SECTORS_LIVE") != "1":
         pytest.skip("gated (SECTORS_LIVE=1)")
     if not os.getenv("SECTORS_API_KEY"):
-        pytest.skip("SECTORS_API_KEY absent — nothing to probe")
+        pytest.skip("SECTORS_API_KEY absent - nothing to probe")
     out = _probe_dividend()
     assert out["source"] == "sectors", f"expected live sectors source, got {out['source']}"
     data = out["data"]
     assert isinstance(data, (dict, list)), f"unexpected shape: {type(data).__name__}"
-    assert data, "empty live response (billed anyway — check sections=)"
+    assert data, "empty live response (billed anyway - check sections=)"
     if isinstance(data, dict):
         assert len(data) >= 1

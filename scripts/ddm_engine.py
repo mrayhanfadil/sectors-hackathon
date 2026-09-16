@@ -1,6 +1,6 @@
-"""Deterministic DDM (Dividend Discount Model) engine — CDIA DDM 810.
+"""Deterministic DDM (Dividend Discount Model) engine - CDIA DDM 810.
 
-Part of T02 — Deterministic Engines. Formulas explicit, no LLM math.
+Part of T02 - Deterministic Engines. Formulas explicit, no LLM math.
 Mirrors server/engines/__init__.py ddm() and finance_tools.calc_ddm().
 
 CDIA benchmark (BCA Sekuritas 23 Jun 2026, plan §2.2):

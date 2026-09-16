@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{# TEMPLATE: sotp — CDIA archetype (conglomerate, 10 sections, 4 pillar peer tables, DCF+DDM).
+{# TEMPLATE: sotp - CDIA archetype (conglomerate, 10 sections, 4 pillar peer tables, DCF+DDM).
    Extends single with: segment mix + pie, SOTP bridge, per-pillar peers, forecast note (P0=Initiation: shown as context only).
    Data contract: templates/DATA_CONTRACT.md #}
 {% import "macros.html" as m %}
@@ -8,12 +8,12 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>{{ meta.ticker }} — {{ meta.report_type }} (SOTP)</title>
+<title>{{ meta.ticker }} - {{ meta.report_type }} (SOTP)</title>
 {{ m.styles(palette) }}
 </head>
 <body>
 
-{# ================= PAGE 1 — COVER ================= #}
+{# ================= PAGE 1 - COVER ================= #}
 <div class="page">
   {{ m.running() }}
   <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
@@ -72,16 +72,16 @@
   {{ m.pagefoot(1, ns) }}
 </div>
 
-{# ================= PAGE 2 — SEGMENT BREAKDOWN ================= #}
+{# ================= PAGE 2 - SEGMENT BREAKDOWN ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("Segment Breakdown — 4 Pilar", ns) }}
+  {{ m.section("Segment Breakdown - 4 Pilar", ns) }}
   {% if segments %}
   {{ m.exhibit_auto(ns, "Pendapatan per Segmen: YoY + QoQ + Bauran", segments_src or "IDX Financial Reports") }}
   {{ m.table(["Segmen", "Pendapatan (Rp bn)", "YoY", "QoQ", "Bauran"],
      segments | map(attribute="row") | list) }}
   {% for s in segments %}{% if s.one_off %}
-  <p class="small muted">Catatan one-off: {{ s.one_off }} — dinormalisasi sebelum masuk SOTP.</p>
+  <p class="small muted">Catatan one-off: {{ s.one_off }} - dinormalisasi sebelum masuk SOTP.</p>
   {% endif %}{% endfor %}
   {% endif %}
 
@@ -102,10 +102,10 @@
   {{ m.pagefoot(2, ns) }}
 </div>
 
-{# ================= PAGE 3 — VALUATION DCF+DDM+SOTP ================= #}
+{# ================= PAGE 3 - VALUATION DCF+DDM+SOTP ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("Valuasi — DCF + DDM + SOTP", ns) }}
+  {{ m.section("Valuasi - DCF + DDM + SOTP", ns) }}
 
   {% for vm in valuation.methods %}
   <h3>{{ vm.method }}</h3>
@@ -116,7 +116,7 @@
     {% endfor %}
   </div>
   {% endif %}
-  {{ m.exhibit_auto(ns, "Valuation Method — " ~ vm.method, vm.source) }}
+  {{ m.exhibit_auto(ns, "Valuation Method - " ~ vm.method, vm.source) }}
   {% if vm.table %}{{ m.table(vm.table.headers, vm.table.rows, vm.table.footers or []) }}{% endif %}
   <div class="card-tint" style="margin:6pt 0;">
     <div class="kv"><span class="kv-l">Fair value ({{ vm.method }})</span>
@@ -134,7 +134,7 @@
   {% if dcf_engine %}
   <section class="dcf-engine" style="margin-top:10pt;">
     <h3 style="color:var(--brand-dark); font-size:11pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
-    <p class="small muted">DCF dihitung oleh engine valuasi internal — aritmetika deterministik, audit-friendly.</p>
+    <p class="small muted">DCF dihitung oleh engine valuasi internal - aritmetika deterministik, audit-friendly.</p>
 
     {% if dcf_engine.wacc_table %}
     <h4 class="small" style="margin-top:6pt; font-weight:700;">WACC Breakdown</h4>
@@ -176,7 +176,7 @@
   {{ m.pagefoot(3, ns) }}
 </div>
 
-{# ================= PAGE 4 — FINANCIALS + EXHIBITS ================= #}
+{# ================= PAGE 4 - FINANCIALS + EXHIBITS ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section("Financials 6Y + Rasio", ns) }}
@@ -193,19 +193,19 @@
   {{ m.pagefoot(4, ns) }}
 </div>
 
-{# ================= PAGE 5 — PEERS PER PILAR + RISKS + DISCLAIMER ================= #}
+{# ================= PAGE 5 - PEERS PER PILAR + RISKS + DISCLAIMER ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("Peer Comparison — Per Pilar", ns) }}
+  {{ m.section("Peer Comparison - Per Pilar", ns) }}
   {% if peers and peers.tables %}
     {% for pt in peers.tables %}
     <h3>{{ pt.pillar }}</h3>
-    {{ m.exhibit_auto(ns, "Peer Comparison — " ~ (meta.sector or pt.pillar), pt.source) }}
+    {{ m.exhibit_auto(ns, "Peer Comparison - " ~ (meta.sector or pt.pillar), pt.source) }}
     {{ m.table(pt.headers, pt.rows) }}
     {% endfor %}
   {% endif %}
 
-  {{ m.section("Faktor Risiko — Spesifik Pilar", ns) }}
+  {{ m.section("Faktor Risiko - Spesifik Pilar", ns) }}
   {{ m.risks(risks, ns) }}
 
   {# rule 1: source line directly under its object, before the closing blocks. #}

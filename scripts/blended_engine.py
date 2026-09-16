@@ -1,6 +1,6 @@
-"""Deterministic Blended Valuation engine — MTEL 60/40 DCF + EV/EBITDA.
+"""Deterministic Blended Valuation engine - MTEL 60/40 DCF + EV/EBITDA.
 
-Part of T02 — Deterministic Engines. Formulas explicit, no LLM math.
+Part of T02 - Deterministic Engines. Formulas explicit, no LLM math.
 Mirrors server/engines/__init__.py blended() + finance_tools.calc_blended().
 
 MTEL benchmark (KSI 27 Aug 2026, plan §2.3):

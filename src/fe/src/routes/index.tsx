@@ -30,7 +30,7 @@ import {
 export const Route = (createFileRoute as any)("/")({ component: MarketMonitorHub })
 
 // The hub lists only what has actually run. A ticker whose pipeline never ran, or whose last attempt failed, has no
-// report behind it — listing it just hands the reader an error page.
+// report behind it - listing it just hands the reader an error page.
 const VISIBLE_STATUS = new Set(["running", "completed"])
 // Four uppercase letters, IDX-style. The run store also holds rows from the test suite (DT1ABD957, LOCK69786C,
 // OTH5F0F99) which are not emiten anything and would otherwise flood the list.
@@ -58,7 +58,7 @@ function parseUpside(upside: string | null | undefined): {
   isNegative: boolean
   isPending: boolean
 } {
-  if (!upside || upside === "-" || upside === "—") {
+  if (!upside || upside === "-" || upside === "-") {
     return { text: "MENUNGGU", isPositive: false, isNegative: false, isPending: true }
   }
   const clean = upside.replace(/\./g, "").replace(",", ".").replace(/[^0-9.\-]/g, "")
@@ -357,7 +357,7 @@ function MarketMonitorHub() {
   const listedCount = listed.length
   // A finished pipeline is not a readable report: 8 of the 9 tickers whose run completed answer 422 because their
   // assumptions file does not exist. The backend marks that per ticker (`report_ready`), so no per-ticker probe is
-  // needed here — probing used to leave one console error per unavailable ticker.
+  // needed here - probing used to leave one console error per unavailable ticker.
   const readyKnown = listed.some((t) => typeof t.report_ready === "boolean")
   const shown = listed.filter((t) => t.report_ready === true)
   const shownCount = shown.length
@@ -386,12 +386,12 @@ function MarketMonitorHub() {
               </h1>
             </div>
             <p className="font-sans text-xs leading-relaxed text-neutral-600 dark:text-neutral-400 max-w-2xl">
-              Hanya emiten yang pipeline-nya sudah selesai (atau sedang berjalan) dan laporannya siap dibuka yang muncul di sini — supaya tidak ada tautan yang berujung halaman kosong.
+              Hanya emiten yang pipeline-nya sudah selesai (atau sedang berjalan) dan laporannya siap dibuka yang muncul di sini - supaya tidak ada tautan yang berujung halaman kosong.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <div className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-mono text-amber-600 dark:text-amber-400" title="Cakupan pantau — hanya emiten yang pipeline-nya berjalan atau selesai">
+            <div className="flex items-center gap-1.5 rounded-md border border-amber-500/30 bg-amber-500/10 px-3 py-1 font-mono text-amber-600 dark:text-amber-400" title="Cakupan pantau - hanya emiten yang pipeline-nya berjalan atau selesai">
               <span className="h-2 w-2 rounded-full bg-amber-500" />
               <span className="font-bold">
                 {runningCount} BERJALAN · {completedCount} SELESAI
@@ -413,13 +413,13 @@ function MarketMonitorHub() {
             {runsQuery.isLoading
               ? "MEMUAT STATUS PIPELINE…"
               : runsQuery.isError
-                ? "STATUS PIPELINE TIDAK TERBACA — DAFTAR BELUM TENTU LENGKAP"
+                ? "STATUS PIPELINE TIDAK TERBACA - DAFTAR BELUM TENTU LENGKAP"
                 : `${pendingReportCount} EMITEN PIPELINE SELESAI TAPI LAPORAN BELUM ADA · ${hiddenCount} BELUM SELESAI`}
           </div>
         </div>
       </div>
 
-      {/* 2. Listed Equities Cards Grid — derived from the run store, not a fixed list */}
+      {/* 2. Listed Equities Cards Grid - derived from the run store, not a fixed list */}
       <section aria-label="Emiten yang pipeline-nya siap dibaca" className="space-y-3.5">
         <div className="flex items-center justify-between font-mono text-xs font-bold uppercase text-neutral-700 dark:text-neutral-300">
           <div className="flex items-center gap-2">
@@ -443,9 +443,9 @@ function MarketMonitorHub() {
           ) : shown.length === 0 ? (
             <div className="rounded-lg border border-dashed border-neutral-300 p-5 font-mono text-xs leading-relaxed text-neutral-500 dark:border-[#262930] sm:col-span-2 lg:col-span-3">
               {listedCount > 0 && !readyKnown
-                ? "Backend belum mengirim status ketersediaan laporan (report_ready). Restart BE ke versi terbaru — daftar sengaja dibiarkan kosong daripada menampilkan laporan yang belum tentu bisa dibuka."
+                ? "Backend belum mengirim status ketersediaan laporan (report_ready). Restart BE ke versi terbaru - daftar sengaja dibiarkan kosong daripada menampilkan laporan yang belum tentu bisa dibuka."
                 : listedCount === 0
-                  ? "Belum ada pipeline yang berjalan atau selesai. Jalankan dulu dari halaman [F2] MESIN — daftar ini terisi sendiri begitu sebuah run selesai."
+                  ? "Belum ada pipeline yang berjalan atau selesai. Jalankan dulu dari halaman [F2] MESIN - daftar ini terisi sendiri begitu sebuah run selesai."
                   : `${listedCount} emiten pipeline-nya sudah selesai, tapi laporannya belum bisa dibuka karena asumsinya belum dibuat. Daftar terisi sendiri begitu laporan tersedia.`}
             </div>
           ) : (

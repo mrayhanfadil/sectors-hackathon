@@ -18,7 +18,7 @@ class Settings(BaseSettings):
 
     @property
     def cors_list(self) -> list[str]:
-        # strip wildcards — those go via regex, not literal match
+        # strip wildcards - those go via regex, not literal match
         return [o.strip() for o in self.cors_origins.split(",") if o.strip() and "*" not in o.strip()]
 
 

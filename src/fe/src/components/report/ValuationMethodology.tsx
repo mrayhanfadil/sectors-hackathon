@@ -11,12 +11,12 @@ export interface ValuationMethodologyProps {
 }
 
 function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
+  if (n == null || Number.isNaN(Number(n))) return "-"
   return Number(n).toLocaleString("id-ID")
 }
 
 function fmtDec(n: number | null | undefined, digits: number = 2): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
+  if (n == null || Number.isNaN(Number(n))) return "-"
   return Number(n).toLocaleString("id-ID", {
     minimumFractionDigits: digits,
     maximumFractionDigits: digits,
@@ -42,31 +42,31 @@ function renderPeerCell(r: PeerRow, col: string, idx: number): React.ReactNode {
   const type = getPeerColumnType(col, idx)
   switch (type) {
     case "symbol":
-      return <span className="font-bold">{r.symbol || "—"}</span>
+      return <span className="font-bold">{r.symbol || "-"}</span>
     case "name":
-      return <span className="font-sans truncate max-w-[160px] block">{r.name || r.symbol || "—"}</span>
+      return <span className="font-sans truncate max-w-[160px] block">{r.name || r.symbol || "-"}</span>
     case "pe":
       if (r.pe_nm) return "n.m."
       if (r.pe != null) return fmtDec(r.pe, 2)
-      return "—"
+      return "-"
     case "pbv":
       if (r.pbv != null) return fmtDec(r.pbv, 2)
-      return "—"
+      return "-"
     case "ev_ebitda":
       if (r.ev_ebitda_nm) return "n.m."
       if (r.ev_ebitda != null) return fmtDec(r.ev_ebitda, 2)
-      return "—"
+      return "-"
     case "roe":
       if (r.roe != null) return fmtDec(r.roe * 100, 1)
-      return "—"
+      return "-"
     case "market_cap":
       if (r.market_cap != null) return `${fmtDec(r.market_cap / 1e12, 2)} tn`
-      return "—"
+      return "-"
     case "other": {
       const raw = (r as Record<string, unknown>)[col]
       if (typeof raw === "number") return fmtDec(raw, 2)
       if (raw != null) return String(raw)
-      return "—"
+      return "-"
     }
   }
 }
@@ -90,20 +90,20 @@ function renderPeerStatCell(
         : "Peer set"
     case "pe":
       if (stat?.pe != null) return fmtDec(stat.pe, 2)
-      return "—"
+      return "-"
     case "pbv":
       if (stat?.pbv != null) return fmtDec(stat.pbv, 2)
-      return "—"
+      return "-"
     case "ev_ebitda":
       if (stat?.ev_ebitda != null) return fmtDec(stat.ev_ebitda, 2)
-      return "—"
+      return "-"
     case "roe":
       if (stat?.roe != null) return fmtDec(stat.roe * 100, 1)
-      return "—"
+      return "-"
     case "market_cap":
-      return "—"
+      return "-"
     case "other":
-      return "—"
+      return "-"
   }
 }
 
@@ -180,7 +180,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                           <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
                             {(
                               valPage.block1_headers || [
-                                "Blok 1 — Periode proyeksi eksplisit (Rp bn)",
+                                "Blok 1 - Periode proyeksi eksplisit (Rp bn)",
                                 ...(valPage.periods || []),
                               ]
                             ).map((h, idx) => (
@@ -207,7 +207,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 {Array.isArray(series) ? (
                                   series.map((val, cIdx) => (
                                     <td key={cIdx} className="py-1.5 px-3 text-right tabular-nums">
-                                      {val != null ? String(val) : "—"}
+                                      {val != null ? String(val) : "-"}
                                     </td>
                                   ))
                                 ) : (
@@ -231,7 +231,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                           <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
                             {(
                               valPage.block2_headers || [
-                                "Blok 2 — Terminal value",
+                                "Blok 2 - Terminal value",
                                 "Gordon Growth",
                                 `Exit Multiple ${valPage.drivers?.multiple != null ? valPage.drivers.multiple.toFixed(1) : ""}×`,
                               ]
@@ -253,8 +253,8 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 } ${isBold ? "font-bold text-[#0B1F3A] dark:text-neutral-100" : "text-[#0B1F3A] dark:text-neutral-300"}`}
                               >
                                 <td className="py-1.5 px-3 text-left">{label}</td>
-                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "—"}</td>
-                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "—"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "-"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "-"}</td>
                               </tr>
                             )
                           })}
@@ -273,7 +273,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                           <tr className="bg-[#0B1F3A] text-white text-right text-[11px]">
                             {(
                               valPage.block3_headers || [
-                                "Blok 3 — Bridge ke equity value",
+                                "Blok 3 - Bridge ke equity value",
                                 "Rp bn",
                                 "Per saham (Rp)",
                               ]
@@ -300,8 +300,8 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 }`}
                               >
                                 <td className="py-1.5 px-3 text-left">{label}</td>
-                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "—"}</td>
-                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "—"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{a != null ? String(a) : "-"}</td>
+                                <td className="py-1.5 px-3 text-right tabular-nums">{b != null ? String(b) : "-"}</td>
                               </tr>
                             )
                           })}
@@ -364,7 +364,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                 <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-3.5 pb-2.5 dark:border-[#1f2228] dark:bg-[#181a1f]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                      Sensitivity Analysis — WACC × Terminal Growth
+                      Sensitivity Analysis - WACC × Terminal Growth
                     </CardTitle>
                     <span className="font-mono text-[10px] text-[#63748A]">
                       Base case (WACC {sens.base_wacc} · g {sens.base_g}) dibingkai
@@ -399,7 +399,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                     : "text-[#0B1F3A] dark:text-neutral-200"
                                 }`}
                               >
-                                {c.value != null ? String(c.value) : "—"}
+                                {c.value != null ? String(c.value) : "-"}
                               </td>
                             ))}
                           </tr>
@@ -429,7 +429,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
                     <div className="text-[10px] font-bold uppercase text-[#63748A]">PV TERMINAL / EV</div>
                     <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
-                      {br.tv_share != null ? formatPct(br.tv_share * 100, 1, true) : "—"}
+                      {br.tv_share != null ? formatPct(br.tv_share * 100, 1, true) : "-"}
                     </div>
                     <div className="text-[10px] text-[#63748A] mt-0.5">nilai wajar bertumpu di luar proyeksi</div>
                   </div>
@@ -437,7 +437,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
                     <div className="text-[10px] font-bold uppercase text-[#63748A]">NET DEBT / EV</div>
                     <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
-                      {br.net_debt_share != null ? formatPct(br.net_debt_share * 100, 1, true) : "—"}
+                      {br.net_debt_share != null ? formatPct(br.net_debt_share * 100, 1, true) : "-"}
                     </div>
                     <div className="text-[10px] text-[#63748A] mt-0.5">
                       sisa ekuitas Rp {formatIdn(br.equity_gordon != null ? br.equity_gordon / 1e12 : null, 2)} tn
@@ -447,7 +447,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   <div className="rounded border border-[#D6E2EE] bg-white p-2.5 dark:border-[#262930] dark:bg-[#181a1f]">
                     <div className="text-[10px] font-bold uppercase text-[#63748A]">RENTANG GRID WACC × G</div>
                     <div className="text-sm font-bold text-[#0B1F3A] tabular-nums mt-0.5 dark:text-neutral-100">
-                      Rp {sens.swing ? `${fmtIDR(sens.swing.min)} – ${fmtIDR(sens.swing.max)}` : "—"}
+                      Rp {sens.swing ? `${fmtIDR(sens.swing.min)} – ${fmtIDR(sens.swing.max)}` : "-"}
                     </div>
                     <div className="text-[10px] text-[#63748A] mt-0.5">
                       dasar Rp {fmtIDR(sens.base_fv)} ({sens.base_wacc} · g {sens.base_g})
@@ -528,7 +528,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
       </section>
 
       {/* ========================================================================= */}
-      {/* BAB 5: PEERS 5A — CROSS-SECTIONAL VALUATION                               */}
+      {/* BAB 5: PEERS 5A - CROSS-SECTIONAL VALUATION                               */}
       {/* ========================================================================= */}
       <section id="peers-5a" className="scroll-mt-28 space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
@@ -537,7 +537,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
               05
             </span>
             <h2 className="font-sans text-sm font-bold tracking-tight text-[#0B1F3A] dark:text-neutral-100 uppercase">
-              Peer Valuation — Cross-Sectional // {tk}
+              Peer Valuation - Cross-Sectional // {tk}
             </h2>
           </div>
           <span className="font-mono text-[11px] text-[#63748A]">
@@ -550,7 +550,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
             <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]">
               <div className="flex items-center justify-between">
                 <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                  {partA.title || "Peer Valuation — Cross-Sectional"}
+                  {partA.title || "Peer Valuation - Cross-Sectional"}
                 </CardTitle>
                 <span className="font-mono text-[10px] text-[#63748A]">
                   {partA.sources?.[0] || "Sectors API"}
@@ -683,7 +683,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
       </section>
 
       {/* ========================================================================= */}
-      {/* BAB 6: OWN HISTORY 5B — RELATIVE VALUATION                                */}
+      {/* BAB 6: OWN HISTORY 5B - RELATIVE VALUATION                                */}
       {/* ========================================================================= */}
       <section id="peers-5b" className="scroll-mt-28 space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D6E2EE] pb-2 dark:border-[#262930]">
@@ -752,7 +752,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 : "konvergen"}
                             </td>
                             <td className="py-1.5 px-3 text-right font-bold tabular-nums">
-                              {r.delta_pct != null ? `${r.delta_pct.toFixed(0)}%` : "—"}
+                              {r.delta_pct != null ? `${r.delta_pct.toFixed(0)}%` : "-"}
                             </td>
                           </tr>
                         ))}
@@ -761,7 +761,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   </div>
 
                   <div className="text-[11px] text-[#63748A]">
-                    Harga terakhir: {partB.last_close != null ? `Rp ${fmtIDR(partB.last_close)}` : "—"} ·{" "}
+                    Harga terakhir: {partB.last_close != null ? `Rp ${fmtIDR(partB.last_close)}` : "-"} ·{" "}
                     {partB.driver_note}
                   </div>
 

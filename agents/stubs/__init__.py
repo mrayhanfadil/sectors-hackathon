@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Stub agents — thin wrappers that delegate to agents/adk/ for single-ticker runs.
+"""Stub agents - thin wrappers that delegate to agents/adk/ for single-ticker runs.
 
 These stubs exist so other lanes (writer, backend, engines) can import
 `agents.<name>` without depending on ADK. Each stub exposes a simple

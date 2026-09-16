@@ -1,4 +1,4 @@
-"""Upfront valuation-method pre-filter gate (N-GATE) — single entry path.
+"""Upfront valuation-method pre-filter gate (N-GATE) - single entry path.
 
 Runs BEFORE the full pipeline: intake/modeler calls run_method_gate() first,
 emits an ordered method list with skip reasons, and every downstream consumer
@@ -12,7 +12,7 @@ verdict underneath lives in agents/valuation/gates.py; this module maps that
 verdict + dividend/earnings eligibility onto executable engine keys.
 
 METHOD-ORDER TABLE (PDF decision flow, top to bottom):
-  1. Financial institution?            -> DDM / Excess Return (anchor DDM; NO DCF — EV undefined, Gate 0)
+  1. Financial institution?            -> DDM / Excess Return (anchor DDM; NO DCF - EV undefined, Gate 0)
   2. REIT / property vehicle?          -> NAV (anchor NAV; DCF only as comparison if FCF exists)
   3. Holding company with NCI > 40%?   -> SOTP (anchor SOTP; DCF rough reference only)
   4. Mining/commodity price-driven?    -> NAV/reserve-based primary, DCF as comparison
@@ -77,7 +77,7 @@ _VERDICT_TO_ENGINE = {
 }
 
 # Relative-multiple applicability table (PDF pp.407-428).
-# Each entry: (USE WHEN, AVOID WHEN) — enforced by relative_extra().
+# Each entry: (USE WHEN, AVOID WHEN) - enforced by relative_extra().
 RELATIVE_APPLICABILITY: dict[str, dict[str, str]] = {
     REL_PE: {
         "use_when": "earnings are stable and there is a clear peer group",
@@ -103,7 +103,7 @@ RELATIVE_APPLICABILITY: dict[str, dict[str, str]] = {
 
 @dataclass
 class MethodGate:
-    """Ordered, gated method list — the single contract downstream honors."""
+    """Ordered, gated method list - the single contract downstream honors."""
 
     ticker: str
     ordered: list[str]  # engine keys, anchor first
@@ -128,7 +128,7 @@ class MethodGate:
 
 
 def _num(name: str, v: Any) -> float:
-    """Loud numeric coercion — None/NaN/non-numeric fundamentals raise."""
+    """Loud numeric coercion - None/NaN/non-numeric fundamentals raise."""
     if isinstance(v, bool) or not isinstance(v, (int, float)):
         raise ValueError(f"method-gate input '{name}' must be numeric, got {v!r}")
     f = float(v)
@@ -179,7 +179,7 @@ def run_method_gate(
     Must be called BEFORE any valuation math (intake/modeler pre-filter).
     DCF runs as anchor on every path where firm FCF is defined; the sole
     exception is financials (bank/insurance/multifinance/securities) where EV
-    is undefined per PDF Gate 0 — there DDM is the anchor and DCF is skipped
+    is undefined per PDF Gate 0 - there DDM is the anchor and DCF is skipped
     with an explicit reason (never silently dropped).
     """
     # Loud-fail on garbage fundamentals first (no silent defaults).
@@ -216,7 +216,7 @@ def run_method_gate(
     def _add(key: str, why: str) -> None:
         if key not in ordered:
             ordered.append(key)
-            reasons.append(f"method-gate: {key} gated — {why}")
+            reasons.append(f"method-gate: {key} gated - {why}")
 
     def _skip(key: str, why: str) -> None:
         if key not in ordered and key not in skipped:
@@ -227,15 +227,15 @@ def run_method_gate(
     # --- Anchor (decision-flow steps 1-9): DCF always runs unless EV undefined.
     if is_financial:
         anchor = DDM
-        _add(DDM, "anchor for financials — debt is raw material, EV undefined (PDF Gate 0)")
-        _skip(DCF, "FCFF/WACC DCF undefined for financials — EV not well defined (PDF Gate 0)")
+        _add(DDM, "anchor for financials - debt is raw material, EV undefined (PDF Gate 0)")
+        _skip(DCF, "FCFF/WACC DCF undefined for financials - EV not well defined (PDF Gate 0)")
     else:
         anchor = DCF
         if fcf_available:
-            note = "shortened horizon + Thin Data" if verdict.thin_data else "anchor — always runs"
+            note = "shortened horizon + Thin Data" if verdict.thin_data else "anchor - always runs"
             _add(DCF, note)
         else:
-            _skip(DCF, "no FCF history — anchor waived, relative methods carry the valuation")
+            _skip(DCF, "no FCF history - anchor waived, relative methods carry the valuation")
 
     # --- Verdict primary / secondary (authoritative for WHICH method).
     prim_key = _VERDICT_TO_ENGINE.get(verdict.primary)
@@ -253,43 +253,43 @@ def run_method_gate(
     failed = set(verdict.gates_failed)
     if "1c_capital_structure" in failed and not is_financial:
         _add(_resolve_relative(ebitda, net_income, earnings_stable, has_peers, revenue),
-             "mandatory Relative cross-check — Gate 1c leverage breach")
+             "mandatory Relative cross-check - Gate 1c leverage breach")
     if 15.0 < nci_pct <= 40.0 and SOTP not in ordered:
-        _add(SOTP, "mandatory SOTP cross-check — NCI in 15-40% band (PDF Gate 2)")
+        _add(SOTP, "mandatory SOTP cross-check - NCI in 15-40% band (PDF Gate 2)")
     if DCF in ordered and not any(k.startswith("REL_") for k in ordered) and not is_financial:
         # PDF step 10: a valid DCF is still paired with a Relative second check.
         _add(_resolve_relative(ebitda, net_income, earnings_stable, has_peers, revenue),
-             "Relative second check — Relative Valuation is never fully optional (PDF step 10)")
+             "Relative second check - Relative Valuation is never fully optional (PDF step 10)")
 
     # --- Eligibility extras with skip reasons (task-mandated pre-filter rules).
     if DDM not in ordered:
         if payout_ratio > 0 and dps_history_years >= 1:
-            _add(DDM, "eligible dividend payer — tertiary cross-check")
+            _add(DDM, "eligible dividend payer - tertiary cross-check")
         elif payout_ratio <= 0:
-            _skip(DDM, f"requires payout>0 and DPS history — payout_ratio={payout_ratio:g}")
+            _skip(DDM, f"requires payout>0 and DPS history - payout_ratio={payout_ratio:g}")
         else:
-            _skip(DDM, f"requires payout>0 and DPS history — dps_history_years={dps_history_years}")
+            _skip(DDM, f"requires payout>0 and DPS history - dps_history_years={dps_history_years}")
     if REL_EBITDA not in ordered:
         if ebitda > 0:
-            pass  # applicable but not required on this path — leave ungated, no skip claim
+            pass  # applicable but not required on this path - leave ungated, no skip claim
         else:
-            _skip(REL_EBITDA, f"requires positive EBITDA — ebitda={ebitda:g} "
+            _skip(REL_EBITDA, f"requires positive EBITDA - ebitda={ebitda:g} "
                               f"({RELATIVE_APPLICABILITY[REL_EBITDA]['avoid_when']})")
     if REL_PE not in ordered:
         if net_income <= 0:
-            _skip(REL_PE, "requires positive stable earnings — net_income<=0 "
+            _skip(REL_PE, "requires positive stable earnings - net_income<=0 "
                            f"({RELATIVE_APPLICABILITY[REL_PE]['avoid_when']})")
         elif not (earnings_stable and has_peers):
             _skip(REL_PE, "requires stable earnings + clear peer group")
     if REL_PBV not in ordered and shareholders_equity <= 0:
-        _skip(REL_PBV, "requires positive equity — P/BV undefined on negative equity (PDF Gate 1d)")
+        _skip(REL_PBV, "requires positive equity - P/BV undefined on negative equity (PDF Gate 1d)")
     if REL_SALES not in ordered and revenue <= 0:
         _skip(REL_SALES, "requires a revenue base to scale from")
     if SOTP not in ordered and segments_count <= 1:
-        _skip(SOTP, "requires multiple dissimilar segments — single-pillar company")
+        _skip(SOTP, "requires multiple dissimilar segments - single-pillar company")
     if NAV not in ordered and domain not in _FINITE_RESERVE_DOMAINS \
             and domain != DOMAIN_REIT and domain != DOMAIN_HOLDING_DISSIMILAR:
-        _skip(NAV, "no reserve/asset base routing — NAV is for REIT/finite-reserve/Holding paths")
+        _skip(NAV, "no reserve/asset base routing - NAV is for REIT/finite-reserve/Holding paths")
 
     return MethodGate(
         ticker=ticker,
@@ -313,10 +313,10 @@ def _normalize(method: str) -> str:
         return mapped
     if m == "Relative Valuation":
         raise ValueError(
-            "ambiguous method 'Relative Valuation' — resolve to REL_PE/REL_PBV/REL_EBITDA/REL_SALES "
+            "ambiguous method 'Relative Valuation' - resolve to REL_PE/REL_PBV/REL_EBITDA/REL_SALES "
             "via the applicability table before gating"
         )
-    raise ValueError(f"unknown valuation method {method!r} — known: {list(ALL_METHODS)}")
+    raise ValueError(f"unknown valuation method {method!r} - known: {list(ALL_METHODS)}")
 
 
 def check_fv_gated(method: str, gate: MethodGate) -> str:
@@ -328,7 +328,7 @@ def check_fv_gated(method: str, gate: MethodGate) -> str:
     if key not in gate.ordered:
         why = gate.skipped.get(key, "not selected by the method gate")
         raise ValueError(
-            f"critic REJECT: FV from non-gated method {key} for {gate.ticker} — {why}. "
+            f"critic REJECT: FV from non-gated method {key} for {gate.ticker} - {why}. "
             f"Gated list: {gate.ordered}"
         )
     return key

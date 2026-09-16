@@ -1,4 +1,4 @@
-"""Slide 5 — peer valuation + own-history bands: the rules, the arithmetic, and the cache contract."""
+"""Slide 5 - peer valuation + own-history bands: the rules, the arithmetic, and the cache contract."""
 from __future__ import annotations
 
 import json
@@ -190,30 +190,30 @@ def test_prompt_rule_and_data_technique_reach_the_agents():
     from agents.adk.agents import instructions as I
 
     rule = I.SLIDE5_RULE
-    for marker in ("SLIDE 5 — PEER VALUATION", "DATA TECHNIQUE", "peers_data.py", "quarterly(symbol)",
+    for marker in ("SLIDE 5 - PEER VALUATION", "DATA TECHNIQUE", "peers_data.py", "quarterly(symbol)",
                    "90 days", "n.m.", "net debt PER SHARE", "Median and Average", "RANGE"):
         assert marker in rule, f"the slide-5 rule lost: {marker}"
     # it reaches the prompts that build pages, and stays out of the ones that only gather data
     for name in ("industry_instruction", "writer_instruction", "critic_instruction"):
-        assert "SLIDE 5 — PEER VALUATION" in getattr(I, name), f"{name} lost the slide-5 rule"
+        assert "SLIDE 5 - PEER VALUATION" in getattr(I, name), f"{name} lost the slide-5 rule"
     for name in ("news_harvester_instruction",):
-        assert "SLIDE 5 — PEER VALUATION" not in getattr(I, name), f"{name} should not carry page rules"
+        assert "SLIDE 5 - PEER VALUATION" not in getattr(I, name), f"{name} should not carry page rules"
 
 
 def test_template_renders_slide_5_and_drops_the_old_peer_table():
     single = TEMPLATE.read_text()
     partial = PARTIAL.read_text()
     assert '_slide5_peers.html' in single
-    assert "Peer Comparison —" not in single, "the superseded peer table is still in the deck"
+    assert "Peer Comparison -" not in single, "the superseded peer table is still in the deck"
     # two consecutive pages: 5A cross-sectional (section 6), 5B time-series (section 7)
     assert partial.count('<div class="page">') == 2, "slide 5A and 5B must be separate pages"
-    assert '{{ m.section("Peer Valuation — Cross-Sectional", ns) }}' in partial
-    assert '{{ m.section("Valuasi Relatif Historis — Own History", ns) }}' in partial
+    assert '{{ m.section("Peer Valuation - Cross-Sectional", ns) }}' in partial
+    assert '{{ m.section("Valuasi Relatif Historis - Own History", ns) }}' in partial
     # the owner removed the scaffolding banner (13 Sep 2026): the requires-text says the two
     # methodologies must be separated by a divider OR a section header, and the 5B section header is it.
     assert "metodologi time-series, berbeda filosofi" not in partial, \
         "the sidebar-style method banner must not come back"
-    assert 'm.section("Valuasi Relatif Historis — Own History", ns)' in partial, "5B still needs its own section header as the separation"
+    assert 'm.section("Valuasi Relatif Historis - Own History", ns)' in partial, "5B still needs its own section header as the separation"
     for marker in ("MEDIAN", "AVERAGE", "Implied Price Judgement", "peer-self", "band_svg",
                    "keduanya tidak saling mengonfirmasi"):
         assert marker in partial, f"slide-5 partial lost: {marker}"

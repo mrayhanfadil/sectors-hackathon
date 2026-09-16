@@ -1,10 +1,10 @@
-"""Deck slide 4 — intrinsic valuation (docs/ammn-slides/slide4-valuation-spec.md).
+"""Deck slide 4 - intrinsic valuation (docs/ammn-slides/slide4-valuation-spec.md).
 
 The arithmetic is the internal FCFF engine (server/report/engines/dcf_engine). This module
 only decides WHICH numbers go in, reads them from the Sectors payload + data/assumptions/<ticker>.json,
 and assembles the three exhibits the owner's rules define:
 
-    Exhibit 8  FCFF forecast and terminal value — one table, three blocks
+    Exhibit 8  FCFF forecast and terminal value - one table, three blocks
     Exhibit 9  WACC components, two columns plus the source of every parameter
     Exhibit 10 Sensitivity grid, base case highlighted
 
@@ -62,7 +62,7 @@ def _num(value) -> float | None:
     if isinstance(value, (int, float)):
         return float(value)
     text = str(value or "").strip()
-    if text in ("", "—", "-", "n/a", "N/A"):
+    if text in ("", "-", "-", "n/a", "N/A"):
         return None
     negative = text.startswith("(") and text.endswith(")")
     text = text.strip("()").replace("%", "")
@@ -86,8 +86,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     """Assemble deck slide 4 for whichever option the analyst activated.
 
     The rules make the choice manual: `valuation_method` in data/assumptions/<ticker>.json decides. With
-    no explicit choice the page falls back to the DCF and says so, and — when the issuer looks like a
-    financial — it says on the page that the DDM would be the expected default for that sector. A cheap
+    no explicit choice the page falls back to the DCF and says so, and - when the issuer looks like a
+    financial - it says on the page that the DDM would be the expected default for that sector. A cheap
     sector heuristic never silently switches the model.
     """
     assum = assumptions or {}
@@ -325,10 +325,10 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     page = {
         "available": True,
         "method": "dcf",
-        "title": "Valuasi Intrinsik — DCF (FCFF)",
+        "title": "Valuasi Intrinsik - DCF (FCFF)",
         "subtitle": (
-            "Metode dipilih manual: Opsi A — DCF FCFF. DDM tidak berlaku (emiten tidak membagi dividen) dan "
-            "RNAV tidak dapat disusun (tidak ada data NAV per aset di Sectors) — lihat catatan metode."
+            "Metode dipilih manual: Opsi A - DCF FCFF. DDM tidak berlaku (emiten tidak membagi dividen) dan "
+            "RNAV tidak dapat disusun (tidak ada data NAV per aset di Sectors) - lihat catatan metode."
         ),
         "periods": list(PERIODS),
         "blocks": {
@@ -374,7 +374,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "Engine valuasi internal: server/report/engines/dcf_engine",
         ],
     }
-    # Valuation ladder — appended here so BOTH payload paths (PDF render and the
+    # Valuation ladder - appended here so BOTH payload paths (PDF render and the
     # /payload endpoint) carry it, and so the frozen top-level key contract stays
     # at its declared count. Failure is non-fatal: a missing ladder must not cost
     # the deck its page.
@@ -399,7 +399,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     """The disclosures the rules require: finite reserve, the terminal gap, and what was not modelled."""
     notes: list[str] = []
     # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
-    # basis named — a target price whose basis is only in the payload is not disclosed to the reader.
+    # basis named - a target price whose basis is only in the payload is not disclosed to the reader.
     _basis = assum.get("ev_multiple_basis")
     if _basis:
         own = assum.get("ev_multiple_own_history") or {}
@@ -417,7 +417,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         _gap = max(float(anchor_fv), primary["fv_gordon"]) / min(float(anchor_fv), primary["fv_gordon"])
         if _gap > 1.5:
             notes.append(
-                f"BASIS TARGET PRICE — DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
+                f"BASIS TARGET PRICE - DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
                 f"{_rp(primary['fv_gordon'])} sementara anchor EV/EBITDA {_fmt(multiple, 2)}× "
                 f"(basis gate-primary) memberi Rp "
                 f"{_rp(float(anchor_fv))}: selisih {_nf.dec(_gap, digits=1)}×. Keduanya tidak dirata-rata; "
@@ -426,7 +426,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
-            f"UNRESOLVED ASSUMPTION — terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
+            f"UNRESOLVED ASSUMPTION - terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
             f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}× memberi Rp {_rp(primary['fv_exit'])}: selisih "
             f"{_nf.dec(ratio, digits=1)}× pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
         )
@@ -434,7 +434,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         notes.append(
             "Basis build-up EBIT-based menghasilkan equity value negatif: net debt (Rp "
             f"{_bn(net_debt_bn)}) melebihi value operasi pada FCFF build-up, jadi lapisan "
-            "steady-state asumsi (FCFF normalised) yang menjaga hasil tetap positif — perbedaan basis ini "
+            "steady-state asumsi (FCFF normalised) yang menjaga hasil tetap positif - perbedaan basis ini "
             "dinyatakan, bukan disembunyikan."
         )
     notes.append(
@@ -448,7 +448,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     )
     notes.append(
         "Delta NWC dimodelkan nol (working capital FY25A di-hold) dan capex memakai capex sustaining, bukan "
-        "capex build-out FY25A — kedua baris ini adalah asumsi, bukan keluaran engine."
+        "capex build-out FY25A - kedua baris ini adalah asumsi, bukan keluaran engine."
     )
     return notes
 

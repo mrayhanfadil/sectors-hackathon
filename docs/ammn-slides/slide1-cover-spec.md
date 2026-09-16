@@ -1,7 +1,7 @@
-# Slide 1 — Cover / Main Page spec (AMMN)
+# Slide 1 - Cover / Main Page spec (AMMN)
 
 Ticker: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ). Sector: copper-gold mining.
-Valuation lens for AMMN: RNAV for finite reserve + shortened DCF (mining extension —
+Valuation lens for AMMN: RNAV for finite reserve + shortened DCF (mining extension -
 reserve life, copper/gold price deck, smelter capex/progress). Bank-style GGM does NOT apply.
 
 ## 1. Purpose
@@ -41,12 +41,12 @@ final TP to the rupiah. Critic check: recompute upside from the two printed numb
 - Avg Daily T/O (Rpbn/US$mn): average daily turnover value. DEFINE the window once
   (3 or 6 months) and use it consistently across ALL reports. Recommended: 6 months
   for AMMN (large-cap post-IPO liquidity normalisation). Record chosen window here.
-- Free Float %: public holders with <5% each ONLY — NOT total non-controller.
+- Free Float %: public holders with <5% each ONLY - NOT total non-controller.
   Source: `shareholders_composition()` (GET /company/shareholders-composition/).
   If two sources conflict (e.g. IDX fact sheet vs Sectors), emit BOTH figures +
   explicit flag, never silently pick one.
 - Major Shareholder name + %: top holder; second row if >1 significant holder >5%.
-  (AMMN note: expect concentrated ownership — verify, do not assume names.)
+  (AMMN note: expect concentrated ownership - verify, do not assume names.)
 
 ### 2.4 Sidebar footer
 
@@ -57,7 +57,7 @@ Analyst name (bold) + "Equity Analyst" beneath. Renderer-owned layout.
 ### 3.1 Company header
 
 Full name + (AMMN IJ), big bold navy. Thesis subheading beneath (italic/different
-colour, MAPA pattern e.g. "Conservative Guidance, Sustained Growth Ahead") — must
+colour, MAPA pattern e.g. "Conservative Guidance, Sustained Growth Ahead") - must
 reflect the actual thesis (e.g. copper-price leverage, smelter ramp, Batu Hijau
 phase), never generic ("AMMN Company Update").
 
@@ -68,7 +68,7 @@ Bold, one dense sentence each, each with a quantitative claim. Fixed roles:
 1. Last quarter result vs expectations (actual vs BRIDS est vs consensus, with
    running-rate % where available).
 2. Specific driver (copper/gold realised price, sales volume, cash cost / AISC,
-   smelter milestone — name the number).
+   smelter milestone - name the number).
 3. Rating action + TP (e.g. "Maintain Buy, raise TP to RpX on ...").
 
 Must stand alone: a reader who reads only these 3 lines knows result, driver, call.
@@ -88,7 +88,7 @@ Must stand alone: a reader who reads only these 3 lines knows result, driver, ca
   progress, ESDM royalty/DMO/export policy change, macro assumption change.
 - Quantified earnings/valuation impact WITH calculation basis where possible
   (e.g. "every +US$100/t copper ≈ +RpY net profit FY26F at Z% margin"); if no basis
-  exists, state explicitly qualitative — never force numbers.
+  exists, state explicitly qualitative - never force numbers.
 - Priced-in assessment vs sector/JCI price action (reference Exhibit 2 relatively).
 
 ### 3.5 P3 Valuation (bold subheading, mandatory 4 elements)
@@ -104,12 +104,12 @@ Must stand alone: a reader who reads only these 3 lines knows result, driver, ca
    with direction (e.g. downside: copper -10% ≈ -RpY earnings; upside: smelter
    early commissioning).
 
-## 4. Exhibit specs (titles + data only — NO literal numbers, NO id field)
+## 4. Exhibit specs (titles + data only - NO literal numbers, NO id field)
 
 House rule: renderer owns the global `Exhibit N` counter (Typst figure counter
 `kind: "exhibit"`). Agent supplies title + data only.
 
-### Exhibit — SKIPPED (template Exhibit 1, EPS Consensus table)
+### Exhibit - SKIPPED (template Exhibit 1, EPS Consensus table)
 
 SKIP with rationale: the EPS-consensus transparency device (BRIDS vs Consensus vs
 BRIDS/Cons %) assumes meaningful sell-side consensus coverage. AMMN is a single-name
@@ -118,18 +118,18 @@ violate the no-synthetic rule. Skipping keeps the global counter honest: the
 relative-performance chart becomes the FIRST emitted exhibit and the renderer
 numbers it accordingly. Revisit if a consensus source is wired.
 
-### Exhibit — `[AMMN] relative to JCI Index` (dual-axis chart)
+### Exhibit - `[AMMN] relative to JCI Index` (dual-axis chart)
 
 - LHS: AMMN absolute price line (navy). RHS: relative performance vs JCI (%).
 - Trailing window 18–24 months; X labels short month-year (Sep-24).
 - Label above (descriptive, never generic "Chart"); source line below exactly
   `Source: Company, Team Estimates`.
-- Dependency (blocking): granular price time series — Sectors `daily("AMMN", start,
+- Dependency (blocking): granular price time series - Sectors `daily("AMMN", start,
   end)` (fetch-daily-transaction) + `index_daily("JCI"/"COMPOSITE", start, end)`
   (fetch-index-daily). Never web magic numbers. If either leg missing →
   loud STOP, never synthetic.
 
-### Exhibit — Key Financials table (tie-out source of truth for Slide 3)
+### Exhibit - Key Financials table (tie-out source of truth for Slide 3)
 
 - Columns: 2024A 2025A 2026F 2027F 2028F (2 actual + 3 forecast, rolling).
 - Rows: Revenue, EBITDA, EBITDA Growth %, Net Profit, EPS, EPS Growth %,
@@ -140,25 +140,25 @@ numbers it accordingly. Revisit if a consensus source is wired.
   must reconcile cell-for-cell (revenue/EBITDA/net profit forecast years).
   Any Slide 3 revision re-exports this table; Critic rejects mismatches.
 - Mining extension rows live on Slide 3 (production, realised prices, AISC),
-  NOT here — this table keeps the 9 canonical rows.
+  NOT here - this table keeps the 9 canonical rows.
 
 ## 5. Data dependencies (Sectors primary; web_search colour only)
 
 | Need | Sectors (server/sectors.py wrapper → endpoint) | Fields | Fallback |
 |---|---|---|---|
-| Last price / price history | `daily()` → daily-transaction | close, date, volume/value | NONE for numbers — loud STOP on sectors_missing_key; web_search backup for narrative colour only |
+| Last price / price history | `daily()` → daily-transaction | close, date, volume/value | NONE for numbers - loud STOP on sectors_missing_key; web_search backup for narrative colour only |
 | JCI history (Exhibit 2 RHS) | `index_daily()` → GET /index-daily/ | index close, date | same as above |
 | Shares, mkt cap inputs | `company_report()` / `report_sections()` → /company/report/ | shares outstanding, company snapshot | same |
 | Quarterly result (P1, bullets) | `quarterly()` → /financials/quarterly/ + `quarterly_dates()` | revenue, net profit, qoq/yoy | same |
 | Shareholders / free float | `shareholders_composition()` → /company/shareholders-composition/ | holder name, %, <5% public float | emit BOTH + flag on conflict; never silent-pick |
-| Segments (mining ops context) | `segments()` → /company/get-segments/ (known 404 for some names — billed 1 credit, handle honestly) | segment revenue | Slide 3 mining financials |
+| Segments (mining ops context) | `segments()` → /company/get-segments/ (known 404 for some names - billed 1 credit, handle honestly) | segment revenue | Slide 3 mining financials |
 | AMMN mining financials | `mining_company_financials()` → /mining/companies/financials/ | year, production, cost | same |
 | Peers (P3 multiple) | `peers()` → peers section | PER/PBV/EV-EBITDA | global copper peers via web_search, labelled qualitative |
 | Catalysts/news (P2) | `news()` → news endpoint; `corporate_actions()` | url+date (Critic requires both) | web_search T1 IDX/Kontan T2 Reuters/Bloomberg, url+date mandatory |
-| FX for US$mn legs | Slide 4 assumption (state rate + date) | USDIDR | — |
+| FX for US$mn legs | Slide 4 assumption (state rate + date) | USDIDR | - |
 
 Rules: if `sectors_missing_key` → loud STOP, never synthetic. Empty-result 200
-still bills — cache aggressively. Dividend freshness: N/A on cover (no dividend
+still bills - cache aggressively. Dividend freshness: N/A on cover (no dividend
 field emitted here); payout discussion belongs to Slide 3/4 if raised.
 
 ## 6. Tie-outs
@@ -168,7 +168,7 @@ field emitted here); payout discussion belongs to Slide 3/4 if raised.
 3. Key Financials table == Slide 3 model output cell-for-cell (forecast years).
 4. P3 methodology (RNAV/DCF, WACC/CoE, price deck) == Slide 4 assumptions.
 5. Exhibit order: relative-performance chart emitted before Key Financials table;
-   renderer numbers sequentially — no literal "Exhibit N" anywhere in payloads.
+   renderer numbers sequentially - no literal "Exhibit N" anywhere in payloads.
 
 ## 7. Critic checks (gate before ship)
 

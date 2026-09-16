@@ -1,4 +1,4 @@
-# Slide 6 & 7 — Financial Statements & Key Ratios spec (AMMN)
+# Slide 6 & 7 - Financial Statements & Key Ratios spec (AMMN)
 
 Ticker: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ). Sector: copper-gold mining (non-bank general corporate miner).
 Archetype: Non-bank capital-intensive resources / mining (Batu Hijau open pit Phase 7/8, copper/gold concentrate, smelter ramp-up). Bank-style financial structure does NOT apply (bank sector switch noted as architectural record only).
@@ -7,17 +7,17 @@ Archetype: Non-bank capital-intensive resources / mining (Batu Hijau open pit Ph
 
 ## 0. Binding rule text (owner, 12 Sep 2026)
 
-> SLIDE 6 — Income Statement & Balance Sheet
+> SLIDE 6 - Income Statement & Balance Sheet
 > Dua exhibit di-stack dalam satu slide, format tabel konsisten dengan pola BBTN Exhibit 7-8 di project
 > (header row shading navy dengan teks putih, angka rata kanan, kolom tahun di header row).
 >
-> **Exhibit 14. Income Statement** — Kolom: 2024A, 2025A, 2026F, 2027F, 2028F. Baris berurutan:
+> **Exhibit 14. Income Statement** - Kolom: 2024A, 2025A, 2026F, 2027F, 2028F. Baris berurutan:
 > Revenue/Sales, Cost of Goods Sold (dalam kurung sebagai deduction), Gross Profit (bold subtotal),
 > Operating Expenses/SG&A (dalam kurung), EBIT (bold subtotal), Interest Income, Interest Expense
 > (dalam kurung), Other Income/(Expense) non-operating, Pre-tax Profit (bold subtotal), Income Tax
 > (dalam kurung), Minority Interest, Net Profit (bold, highlight sebagai baris paling penting).
 >
-> **Exhibit 15. Balance Sheet** — Kolom sama. Bagian Assets: Cash & Cash Equivalents, Trade Receivables,
+> **Exhibit 15. Balance Sheet** - Kolom sama. Bagian Assets: Cash & Cash Equivalents, Trade Receivables,
 > Inventory, Other Current Assets, Total Current Assets (subtotal), Fixed Assets (Net), Other Non-Current
 > Assets, Total Assets (bold). Bagian Liabilities & Equity: Short-term Debt, Trade Payables, Other Current
 > Liabilities, Total Current Liabilities (subtotal), Long-term Debt, Other Non-Current Liabilities, Total
@@ -80,11 +80,11 @@ Every table and element emitted under this specification must strictly comply wi
 
 ---
 
-## 3. Slide 6 Specification — Exhibit 14 & Exhibit 15 (Stacked)
+## 3. Slide 6 Specification - Exhibit 14 & Exhibit 15 (Stacked)
 
 Slide 6 presents the income and financial position statements stacked vertically.
 
-### 3.1 Exhibit 14 — Income Statement (2024A-2028F)
+### 3.1 Exhibit 14 - Income Statement (2024A-2028F)
 
 #### Layout & Hierarchy
 - Label: `Exhibit 14. Income Statement (2024A-2028F)`
@@ -116,7 +116,7 @@ Rows must appear in the following exact sequence:
 
 ---
 
-### 3.2 Exhibit 15 — Balance Sheet (2024A-2028F)
+### 3.2 Exhibit 15 - Balance Sheet (2024A-2028F)
 
 #### Layout & Hierarchy
 - Label: `Exhibit 15. Balance Sheet (2024A-2028F)`
@@ -154,7 +154,7 @@ Rows must appear in the following exact sequence:
 
 ---
 
-### 3.3 Bank Variant Specification (Record Switch Note — NOT built for AMMN)
+### 3.3 Bank Variant Specification (Record Switch Note - NOT built for AMMN)
 
 For banking and financial institution archetypes (e.g. BBTN, BBCA), the general corporate structure above is replaced by the banking-specific presentation:
 
@@ -189,11 +189,11 @@ When activated for banking tickers, the engine applies the following canonical s
 
 ---
 
-## 4. Slide 7 Specification — Exhibit 16 & Exhibit 17
+## 4. Slide 7 Specification - Exhibit 16 & Exhibit 17
 
 Slide 7 presents the cash generation statement and key financial ratios.
 
-### 4.1 Exhibit 16 — Cash Flow Statement (2024A-2028F)
+### 4.1 Exhibit 16 - Cash Flow Statement (2024A-2028F)
 
 #### Layout & Hierarchy
 - Label: `Exhibit 16. Cash Flow Statement (2024A-2028F)`
@@ -206,7 +206,7 @@ Rows must appear in the following exact sequence:
 
 | Section | # | Line Item | Display Style | Accounting Definition / Link |
 |---|---|---|---|---|
-| **Cash Flow from Operations** | 1 | Net Profit | Regular | **Starting point** — MUST equal Exhibit 14 Net Profit |
+| **Cash Flow from Operations** | 1 | Net Profit | Regular | **Starting point** - MUST equal Exhibit 14 Net Profit |
 | | 2 | (+) Depreciation & Amortization | Regular | Non-cash D&A addback (mining equipment, plant, smelter) |
 | | 3 | (-)/(+) Working Capital change | Regular | Net change in operating assets and liabilities `(ΔReceivables + ΔInventory - ΔPayables)` |
 | | 4 | Other Operating Items | Regular | Non-cash provisions, rehabilitation accruals, other items |
@@ -238,7 +238,7 @@ Rows must appear in the following exact sequence:
 
 ---
 
-### 4.2 Exhibit 17 — Key Financial Ratios (2024A-2028F)
+### 4.2 Exhibit 17 - Key Financial Ratios (2024A-2028F)
 
 #### Layout & Precision Standards
 - Label: `Exhibit 17. Key Financial Ratios (2024A-2028F)`
@@ -246,7 +246,7 @@ Rows must appear in the following exact sequence:
 - Columns: `Ratio`, `2024A`, `2025A`, `2026F`, `2027F`, `2028F`
 - **Formatting Rules (Strictly Enforced)**:
   - **ONE decimal place everywhere** (`0.0%`, `0.0x`).
-  - **Negatives in parentheses `(x.x)`** — sell-side convention, NO minus signs (`-`).
+  - **Negatives in parentheses `(x.x)`** - sell-side convention, NO minus signs (`-`).
   - **Section headers**: Bold font with distinct vertical spacing before each section.
 
 #### Row Order Specification
@@ -271,7 +271,7 @@ Divided into 3 distinct sections:
 
 ---
 
-### 4.3 Bank Variant Key Ratios Note (Record Switch Only — NOT built for AMMN)
+### 4.3 Bank Variant Key Ratios Note (Record Switch Only - NOT built for AMMN)
 
 For banking archetypes (e.g. BBTN/BBCA), Exhibit 17 is completely replaced by banking performance metrics:
 
@@ -366,13 +366,13 @@ Before emitting the document or approving the model output, the Critic gate vali
   - Capex aligns between Exhibit 16 and Slide 4 DCF.
 - [ ] **Sector Switch Verification**: Bank variant is documented as a dormant switch; AMMN cleanly uses the non-bank mining general corporate schema.
 
-## 6. Decision log — statement build (12 Sep 2026)
+## 6. Decision log - statement build (12 Sep 2026)
 
 | Decision | Why | Alternative rejected |
 |---|---|---|
 | Actuals from Sectors annual rows, never from the quarterly payload | The quarterly revenue field does not reconcile to the annual figures (four quarters ≈ Rp 44 tn vs FY2025A Rp 30.9 tn). Mixing bases misstates every ratio | Quarterly TTM actuals: fresher, but they contradict the annual audited numbers |
 | Forecast columns tie to the deck's Key Financials spine (revenue 27,236 · EBITDA 18,396 · net profit 7,004, flat FY26F-28F) | The valuation page is built on those anchors; statements that disagree would make the deck contradict itself | Re-deriving revenue/EBITDA from the FY2025A cost structure: gives ≈ Rp 11.7 tn EBITDA, contradicting the TP |
-| Opex held at the FY2025A run-rate; **COGS is the balancing line** | The only chain that both foots vertically and lands on the spine's EBITDA. It implies a gross margin of 59.6% vs 45.3% actual — the page states that, because the improvement belongs to the mid-cycle assumption, not to a new finding | Holding the FY2025A COGS ratio: EBIT goes negative and the statements stop footing |
+| Opex held at the FY2025A run-rate; **COGS is the balancing line** | The only chain that both foots vertically and lands on the spine's EBITDA. It implies a gross margin of 59.6% vs 45.3% actual - the page states that, because the improvement belongs to the mid-cycle assumption, not to a new finding | Holding the FY2025A COGS ratio: EBIT goes negative and the statements stop footing |
 | `Other income/(expense)` is the reconciling line, named as such in print | Actuals: it is what makes pre-tax foot (= pre-tax − EBIT + interest; Rp −780 bn in FY2024A, Rp 0 in FY2025A). Forecasts: it reconciles to the mid-cycle net-profit path (Rp 1,753 bn/yr) | Printing Sectors' `non_operating_income_or_loss` (−6,212 bn in FY2025A): it does not enter the bridge, so pre-tax would not foot |
 | Cash is the balance-sheet plug in forecast columns | With no capex/repayment schedule from Sectors, assets and L+E cannot meet exactly any other way; the page names the plug | Plugging a hidden line: the tie-out would be cosmetic |
 | Trade receivables, trade payables and interest income print `n/a` with the reason | Sectors publishes no such fields for AMMN (checked across every cached payload). The amount they carry sits in the matching "Other" row so the statement still foots | Inventing percentages of revenue for them |

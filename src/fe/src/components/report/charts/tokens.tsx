@@ -28,11 +28,11 @@ export function PendingBlock({ label, message }: { label: string; message?: stri
 
 /**
  * Format a number using Indonesian separators (dot for thousands, comma for decimals).
- * Returns '—' if value is null or undefined (no substitute zeros).
+ * Returns '-' if value is null or undefined (no substitute zeros).
  */
 export function formatIdn(value: number | null | undefined, digits: number = 0): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "—"
+    return "-"
   }
   const parts = Math.abs(value).toFixed(digits).split(".")
   const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".")
@@ -46,7 +46,7 @@ export function formatIdn(value: number | null | undefined, digits: number = 0):
  */
 export function formatPct(value: number | null | undefined, digits: number = 1, showSign: boolean = true): string {
   if (value === null || value === undefined || !Number.isFinite(value)) {
-    return "—"
+    return "-"
   }
   const sign = value > 0 && showSign ? "+" : ""
   return `${sign}${formatIdn(value, digits)}%`
@@ -65,7 +65,7 @@ export function parseIdnNumber(raw: unknown): number | null {
     return null
   }
   const text = String(raw).trim()
-  if (text === "" || text === "—" || text === "-" || text.toLowerCase() === "n/a" || text.toLowerCase() === "na") {
+  if (text === "" || text === "-" || text === "-" || text.toLowerCase() === "n/a" || text.toLowerCase() === "na") {
     return null
   }
   const isNegative = (text.startsWith("(") && text.endsWith(")")) || text.startsWith("-")

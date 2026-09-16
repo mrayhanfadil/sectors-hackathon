@@ -20,14 +20,14 @@ export interface ExecutiveSummaryProps {
 }
 
 function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
+  if (n == null || Number.isNaN(Number(n))) return "-"
   return Number(n).toLocaleString("id-ID")
 }
 
 function formatHighlightCell(c: unknown): string {
-  if (c == null) return "—"
+  if (c == null) return "-"
   if (typeof c === "number") {
-    if (!Number.isFinite(c)) return "—"
+    if (!Number.isFinite(c)) return "-"
     const hasDecimals = !Number.isInteger(c)
     const decStr = String(c).split(".")[1] || ""
     const digits = Math.min(Math.max(decStr.length, hasDecimals ? 1 : 0), 2)
@@ -283,7 +283,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
   const highlights6y: FinancialHighlights | undefined = payload?.financial_highlights
 
   // Rating and key info
-  const action = s1?.rating?.action || cover?.rating_box?.action || "—"
+  const action = s1?.rating?.action || cover?.rating_box?.action || "-"
   const actionStatus = s1?.rating?.action_status || "Institutional Research"
   const prevAction = s1?.rating?.prev_action
   const prevTp = s1?.rating?.prev_tp ?? cover?.rating_box?.prev_tp
@@ -363,13 +363,13 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                           <tr className="border-b border-[#D6E2EE]/60">
                             <td className="py-1 text-[#63748A]">Harga Pasar</td>
                             <td className="py-1 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
-                              {price != null ? `Rp ${fmtIDR(price)}` : "—"}
+                              {price != null ? `Rp ${fmtIDR(price)}` : "-"}
                             </td>
                           </tr>
                           <tr className="border-b border-[#D6E2EE]/60">
                             <td className="py-1 text-[#63748A]">Target Price (TP)</td>
                             <td className="py-1 text-right font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
-                              {tp != null ? `Rp ${fmtIDR(tp)}` : "—"}
+                              {tp != null ? `Rp ${fmtIDR(tp)}` : "-"}
                             </td>
                           </tr>
                           {prevTp != null && (
@@ -383,7 +383,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                           <tr>
                             <td className="py-1 text-[#63748A]">Potensi Return</td>
                             <td className="py-1 text-right font-bold text-[#1E8F5F] tabular-nums">
-                              {upsidePct != null ? `${upsidePct > 0 ? "+" : ""}${upsidePct.toFixed(1)}%` : "—"}
+                              {upsidePct != null ? `${upsidePct > 0 ? "+" : ""}${upsidePct.toFixed(1)}%` : "-"}
                             </td>
                           </tr>
                         </>
@@ -598,7 +598,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                               key={cIdx}
                               className={`py-1.5 px-3 tabular-nums ${cIdx === 0 ? "text-left font-medium" : "text-right"}`}
                             >
-                              {cIdx === 0 ? (cell != null ? String(cell) : "—") : formatHighlightCell(cell)}
+                              {cIdx === 0 ? (cell != null ? String(cell) : "-") : formatHighlightCell(cell)}
                             </td>
                           ))}
                         </tr>
@@ -660,7 +660,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                             key={cIdx}
                             className={`py-1.5 px-3 tabular-nums ${cIdx === 0 ? "text-left font-medium text-[#0B1F3A]" : "text-right"}`}
                           >
-                            {cIdx === 0 ? (c != null ? String(c) : "—") : formatHighlightCell(c)}
+                            {cIdx === 0 ? (c != null ? String(c) : "-") : formatHighlightCell(c)}
                           </td>
                         ))}
                       </tr>
@@ -710,7 +710,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
           <Card className="rounded-lg border border-[#D6E2EE] bg-white shadow-xs dark:border-[#262930] dark:bg-[#121418]">
             <CardHeader className="border-b border-[#D6E2EE] bg-[#F4F8FC] p-4 pb-3 dark:border-[#1f2228] dark:bg-[#181a1f]">
               <CardTitle className="font-mono text-xs font-bold uppercase tracking-wider text-[#0B1F3A] dark:text-neutral-100">
-                Tesis Investasi — 4 Pilar Utama
+                Tesis Investasi - 4 Pilar Utama
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4 sm:p-5">

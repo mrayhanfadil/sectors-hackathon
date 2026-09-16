@@ -6,13 +6,13 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Sectors financial tools — FunctionTool wrappers for read-only Sectors v2 data.
+"""Sectors financial tools - FunctionTool wrappers for read-only Sectors v2 data.
 
 These tools are the ONLY way the Collector agent fetches fundamentals.
 LLMs must call them rather than inventing financial figures in-text.
 
 Each function delegates to server/sectors.py (sync httpx, run via
-asyncio.to_thread so ADK can await them). Plain callables here —
+asyncio.to_thread so ADK can await them). Plain callables here -
 google.adk.tools.function_tool.FunctionTool wraps them in agents/adk/app.py,
 mirroring agents/adk/tools/finance_tools.py conventions.
 
@@ -22,7 +22,7 @@ Tools:
   sectors_index_daily
 
 Env:
-  SECTORS_API_KEY — required for live data; missing key returns an honest
+  SECTORS_API_KEY - required for live data; missing key returns an honest
   empty result ({data: [], source: 'sectors_missing_key'}), never fabricated
   figures, never raised exceptions.
 
@@ -114,7 +114,7 @@ async def sectors_company_report(
 
     Args:
         ticker: Bare IDX code.
-        sections: Minimal section list — one call per section set (1 credit each).
+        sections: Minimal section list - one call per section set (1 credit each).
 
     Returns:
         Dict with ticker, sections, source, fetched_at, data.
@@ -202,8 +202,8 @@ async def sectors_foreign_flow(
 
     Args:
         ticker: Bare IDX code.
-        start: Window start (YYYY-MM-DD). Required — returned as error dict if missing.
-        end: Window end (YYYY-MM-DD). Required — returned as error dict if missing.
+        start: Window start (YYYY-MM-DD). Required - returned as error dict if missing.
+        end: Window end (YYYY-MM-DD). Required - returned as error dict if missing.
         top_n: When > 0, also fetch top-N brokers into 'broker_top'.
 
     Returns:
@@ -293,7 +293,7 @@ async def sectors_index_daily(
         return {"ticker": code, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
 
 
-# Export list for ADK registration (collector only — see agents/adk/app.py)
+# Export list for ADK registration (collector only - see agents/adk/app.py)
 SECTORS_FINANCIAL_TOOLS = [
     sectors_quarterly,
     sectors_company_report,

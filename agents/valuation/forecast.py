@@ -1,15 +1,15 @@
-"""2A+4F financial-exhibit projection math — the SINGLE home for forecast arithmetic.
+"""2A+4F financial-exhibit projection math - the SINGLE home for forecast arithmetic.
 
 Scheme (reviewer demand): financial exhibits carry the last 2 actual fiscal years
 only (FY-1A, FY0A e.g. FY24A/FY25A) plus a minimum 4 forecast years
-(FY+1F..FY+4F e.g. FY26F..FY29F) — 6 columns total with explicit A/F labels.
+(FY+1F..FY+4F e.g. FY26F..FY29F) - 6 columns total with explicit A/F labels.
 
 Formula (every cell traceable):
     forecast_t = last_actual x (1 + g)^t,   t = 1..4
 where g comes from the ticker assumptions (revenue_growth et al.) modulated by
 the news/sentiment overlay in `.assumptions.adjust_assumptions` when news or
 sentiment payloads are present. Each projected cell records its base, g, t,
-formula and source string — no silent numbers.
+formula and source string - no silent numbers.
 
 Callers: server/routers/pdf.py (live inline payload), scripts/report_fixtures.py
 helpers, and the ACES JSON fixture (pre-computed with this module; growth rates

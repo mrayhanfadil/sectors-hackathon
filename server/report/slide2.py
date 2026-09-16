@@ -1,6 +1,6 @@
 """Page-2 contract: catalysts paragraph, valuation paragraph, Key Financials exhibit.
 
-Everything here derives from artifacts that already exist — the payload's own
+Everything here derives from artifacts that already exist - the payload's own
 `financial_highlights` (Sectors actuals), `catalysts`/`news` (harvest), `risks`, and the
 assumptions file (mid-cycle EBITDA, the subsector growth forecast, equity, net debt, the
 anchored FV). No number is typed by hand, so the exhibit and the paragraphs cannot drift
@@ -186,7 +186,7 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     if path_used:
         # The shipped page never names another research house: the path is presented as the team's estimate
         # over the licensed dataset, and the calibration trail lives in the repo
-        # (docs/ammn-slides/forecast-inputs-provenance.md). The substance stays disclosed — column F is a
+        # (docs/ammn-slides/forecast-inputs-provenance.md). The substance stays disclosed - column F is a
         # projection, not a realised figure, and every driver carries its own provenance.
         note = (
             f"Asumsi kolom F: jalur 3 tahun, estimasi tim yang diselaraskan ke basis data berlisensi "
@@ -203,7 +203,7 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         )
     else:
         note = (
-            f"Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan — revenue & EPS FY26F = FY25A x "
+            f"Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan - revenue & EPS FY26F = FY25A x "
             f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector "
             f"Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; FY27F-FY28F ditahan flat "
             f"mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi."
@@ -246,7 +246,7 @@ QKEY_LABEL = {
     "broker": "arus beli broker {}",
     "note": "{}",
 }
-#: keys deliberately NOT printed in the catalyst list — capex/FCF are stated in the impact
+#: keys deliberately NOT printed in the catalyst list - capex/FCF are stated in the impact
 #: sentence instead, and the "by" date already appears in the catalyst name.
 QKEY_SKIP = {"capex_q1", "fcf_q1", "by"}
 
@@ -268,7 +268,7 @@ def _quant_phrase(q: dict) -> str:
 
 
 def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
-    """Paragraph 2 — News, Sentimen & Katalis, with a priced-in verdict."""
+    """Paragraph 2 - News, Sentimen & Katalis, with a priced-in verdict."""
     cats = payload.get("catalysts") or []
     news = payload.get("news") or []
     jci = payload.get("cover", {}).get("vs_jci") or {}
@@ -279,15 +279,15 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     for i, c in enumerate(cats[:4], 1):
         name = str(c.get("name") or "").strip().rstrip(".")
         q = _quant_phrase(c.get("quantified") or {})
-        listed.append(f"({i}) {name}" + (f" — {q}" if q else ""))
+        listed.append(f"({i}) {name}" + (f" - {q}" if q else ""))
     if listed:
         parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
 
     parts.append(
         "Dampak: capex Q1-2026 turun 69,6% qoq (Rp 5,26 tn ke Rp 1,60 tn) dan arus kas bebas "
-        "berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal sustaining Rp 6,39 tn/tahun — "
+        "berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal sustaining Rp 6,39 tn/tahun - "
         "bukan upside baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
-        "rekor tidak dapat dikuantifikasi ke laba (pipeline tanpa tonase/grade/C1, GAP G10) — "
+        "rekor tidak dapat dikuantifikasi ke laba (pipeline tanpa tonase/grade/C1, GAP G10) - "
         "yang tersedia hanya sensitivitas EBITDA di paragraf Valuasi."
     )
 
@@ -307,7 +307,7 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     if priced:
         parts.append(
             "Priced-in: " + "; ".join(priced) +
-            " — katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99× masih ~37% "
+            " - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99× masih ~37% "
             "di bawah rata-rata 4 tahun 28,42×."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
@@ -327,7 +327,7 @@ def _shares_to_juta(match: "re.Match") -> str:
 
 
 def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
-    """Paragraph 3 — Valuasi, in the four mandated sentence blocks."""
+    """Paragraph 3 - Valuasi, in the four mandated sentence blocks."""
     raw = kf.get("raw") or {}
     cover = payload.get("cover") or {}
     rbox = cover.get("rating_box") or {}
@@ -360,7 +360,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
 
     def as_pct(v):
         """wacc arrives as a fraction from the assumptions file and as a percent from the render
-        payload — normalize instead of printing 1.377,00%."""
+        payload - normalize instead of printing 1.377,00%."""
         if not isinstance(v, (int, float)):
             return None
         return v * 100.0 if abs(v) <= 1.5 else v
@@ -394,7 +394,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         f"{_num(_div(ev_at_tp, mid_eb), 1)}× dibandingkan "
         f"rata-rata historis 4 tahun {_num(multiple, 2)}× (band {_num(sens.get('low'), 2)}×-"
         f"{_num(sens.get('high'), 2)}×) atau PER 2026F {_num(per_f, 1)}× vs PE subsector "
-        f"{_num(peer_pe, 2)}× — peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
+        f"{_num(peer_pe, 2)}× - peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
         f"re-rating EV/EBITDA, bukan PER."
     )
     # 4. risks to the view
@@ -415,9 +415,9 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
                 bucket, bucket)
             risk_tail = f"; (c) {bucket}: {first}" if first else f"; (c) {bucket}"
     parts.append(
-        f"Risiko terhadap pandangan ini: (a) downside — tembaga atau emas turun 10% menekan "
+        f"Risiko terhadap pandangan ini: (a) downside - tembaga atau emas turun 10% menekan "
         f"EBITDA mid-cycle 10%, TP turun ke Rp {_num(fv_down, 0)} "
-        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) downside — "
+        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) downside - "
         f"multiple bertahan di print 2026 "
         f"{_num(assum.get('ev_multiple_latest_print'), 2)}×, TP jatuh ke Rp "
         f"{_num(fv_print, 0)}{risk_tail}."

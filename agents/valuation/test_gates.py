@@ -1,4 +1,4 @@
-"""Tests for agents/valuation/gates.py — 6-gate Valuation Method Selection Framework.
+"""Tests for agents/valuation/gates.py - 6-gate Valuation Method Selection Framework.
 
 ≥18 tests covering each gate's decision branches + 5 quintet ticker integration.
 """
@@ -17,7 +17,7 @@ from agents.valuation.gates import (
 )
 
 
-# ---------- Gate 0 — Business Model ----------
+# ---------- Gate 0 - Business Model ----------
 
 def test_gate0_bank_goes_to_ddm():
     v = evaluate(
@@ -113,7 +113,7 @@ def test_gate0_single_business_passes_through():
     assert "0_business_model" in v.gates_passed
 
 
-# ---------- Gate 1 — Data Eligibility ----------
+# ---------- Gate 1 - Data Eligibility ----------
 
 def test_gate1_thin_data_triggers_shortened_dcf_and_disclosure():
     """User decision: Gate 1a fail → shortened DCF + thin_data=True (NOT pure Relative)."""
@@ -193,7 +193,7 @@ def test_gate1_negative_equity_forces_relative():
     assert "1d_equity_base" in v.gates_failed
 
 
-# ---------- Gate 2 — Ownership Structure ----------
+# ---------- Gate 2 - Ownership Structure ----------
 
 def test_gate2_low_nci_no_change():
     v = evaluate(
@@ -252,7 +252,7 @@ def test_gate2_high_nci_flips_to_sotp():
     assert "2_nci" in v.gates_failed
 
 
-# ---------- Gate 3 — Cyclicality ----------
+# ---------- Gate 3 - Cyclicality ----------
 
 def test_gate3_commodity_driven_uses_nav():
     v = evaluate(
@@ -291,7 +291,7 @@ def test_gate3_newly_commissioned_uses_forward_relative():
     assert v.primary in {"DCF (shortened horizon)", "Relative Valuation"}
 
 
-# ---------- Gate 4 — Life Cycle ----------
+# ---------- Gate 4 - Life Cycle ----------
 
 def test_gate4_pre_revenue_uses_ev_sales():
     v = evaluate(
@@ -329,7 +329,7 @@ def test_gate4_decline_uses_pbv():
     assert v.primary == "P/BV"
 
 
-# ---------- Gate 5 — Output Sanity ----------
+# ---------- Gate 5 - Output Sanity ----------
 
 def test_gate5_extreme_upside_overrides_rating():
     v = evaluate(

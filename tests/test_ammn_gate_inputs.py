@@ -4,7 +4,7 @@ This file pins the wiring: gate inputs are READ from ``data/assumptions/{T}.json
 (nested ``gate_inputs`` block, the same key at top level, or a restatement of a
 quantity the file already declares) and passed through to the payload that
 ``agents/valuation/gates.py::evaluate`` consumes. Keys the file does not support stay
-ABSENT — nothing may be handed an invented filing history / equity base / coverage
+ABSENT - nothing may be handed an invented filing history / equity base / coverage
 ratio (LOUD policy).
 """
 from __future__ import annotations
@@ -18,7 +18,7 @@ import pytest
 REPO_ROOT = pathlib.Path(__file__).resolve().parents[1]
 AMMN = REPO_ROOT / "data" / "assumptions" / "AMMN.json"
 
-# agents/valuation/gates.py:evaluate — the keyword arguments the gate stage needs.
+# agents/valuation/gates.py:evaluate - the keyword arguments the gate stage needs.
 GATE_KEYS = (
     "filing_history_years",
     "ebit_positive_count",
@@ -150,7 +150,7 @@ def test_ammn_live_payload_gate_inputs_are_file_backed(ammn: dict):
         if declared is not None:
             # The leverage gate input is declared, on the historic mid-cycle EBITDA (conservative). The
             # pricing leg runs on the forward level, so the two denominators differ on purpose and the
-            # file has to say so — otherwise the next reader "corrects" the gate.
+            # file has to say so - otherwise the next reader "corrects" the gate.
             assert gi["net_debt_to_ebitda"] == pytest.approx(float(declared), rel=1e-4)
             assert str(ammn.get("gate_inputs_basis_note") or "").strip(), \
                 "a declared gate input on a different basis than the pricing leg must be annotated"
@@ -189,7 +189,7 @@ def test_payload_gate_inputs_are_never_invented(ammn: dict):
 # ------------------------------------------------- file -> gate passthrough (end-to-end)
 
 def test_unassisted_render_passes_the_files_gate_inputs_through(tmp_path, monkeypatch):
-    """The production loader, unassisted — no gate_inputs injected into the payload.
+    """The production loader, unassisted - no gate_inputs injected into the payload.
 
     The assumptions file (a tmp ``data/assumptions/TESTX.json``, the loader's real source)
     carries the ten keys, so the payload must carry them verbatim and the gate engine must

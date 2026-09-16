@@ -28,7 +28,7 @@ export interface ADKRunSidebarProps {
 }
 
 function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
+  if (n == null || Number.isNaN(Number(n))) return "-"
   return Number(n).toLocaleString("id-ID")
 }
 
@@ -91,13 +91,13 @@ export function ADKRunSidebar({
             <div className="flex items-center justify-between text-xs">
               <span className="text-neutral-500 dark:text-neutral-400 font-sans">Harga Pasar</span>
               <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100 font-mono">
-                {price != null ? `Rp ${fmtIDR(price)}` : "—"}
+                {price != null ? `Rp ${fmtIDR(price)}` : "-"}
               </span>
             </div>
             <div className="flex items-center justify-between text-xs">
               <span className="text-neutral-500 dark:text-neutral-400 font-sans">Nilai Wajar (TP)</span>
               <span className="font-bold text-neutral-900 tabular-nums dark:text-neutral-100 font-mono">
-                {target != null ? `Rp ${fmtIDR(target)}` : "—"}
+                {target != null ? `Rp ${fmtIDR(target)}` : "-"}
               </span>
             </div>
             <div className="flex items-center justify-between border-t border-neutral-200 pt-2 text-xs dark:border-[#262930]">

@@ -1,9 +1,9 @@
 """
-Collector — Sectors-first, LOUD on gaps (synthetic fallback RETIRED, Sep 2026).
+Collector - Sectors-first, LOUD on gaps (synthetic fallback RETIRED, Sep 2026).
 
 Sectors API v2 is the single gateway (overview, quarterly, daily prices,
 corporate actions). Keyless or mis-shaped responses raise RuntimeError with
-sectors_missing_key — gaps stay missing, never invented. Output feeds Modeler
+sectors_missing_key - gaps stay missing, never invented. Output feeds Modeler
 (blocking) and downstream analysts. Every exhibit must disclose source.
 
 ADK wrapper: exposes collector_as_tool() for google-adk LlmAgent + plain
@@ -22,7 +22,7 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
-# Paths — relative to repo root (where plan.md lives)
+# Paths - relative to repo root (where plan.md lives)
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_IDX_DIR = REPO_ROOT / "data" / "idx"
 OUTPUT_DIR = REPO_ROOT / "data" / "output"
@@ -36,7 +36,7 @@ QUINTET = ["RATU", "CDIA", "MTEL", "BBCA", "ADRO"]
 
 # NOTE (Sep 2026): seed-42 synthetic fallback retired (LOUD policy).
 # _synthetic() below raises RuntimeError by design (pinned by tests);
-# no SYNTHETIC_SEED/UNIVERSE constants — do not reintroduce invention paths.
+# no SYNTHETIC_SEED/UNIVERSE constants - do not reintroduce invention paths.
 
 TIER1_SOURCES = [
     "idx.co.id", "kontan.co.id", "bisnis.com", "idxchannel.com",
@@ -94,7 +94,7 @@ def _save_cache(ticker: str, payload: Dict[str, Any]) -> None:
 # ── IDX local ──────────────────────────────────────────────────────────────
 
 def _try_idx(ticker: str) -> Optional[Dict[str, Any]]:
-    """Try data/idx/{TICKER}.json or .csv or .parquet — user-owned dumps."""
+    """Try data/idx/{TICKER}.json or .csv or .parquet - user-owned dumps."""
     t = _ticker_norm(ticker)
     candidates = [
         DATA_IDX_DIR / f"{t}.json",
@@ -199,7 +199,7 @@ def _synthetic(ticker: str) -> Dict[str, Any]:
     into Sectors-stamped payloads. Callers must use Sectors v2 or fail loud.
     """
     raise RuntimeError(
-        "sectors_missing_key: synthetic fallback retired — set SECTORS_API_KEY "
+        "sectors_missing_key: synthetic fallback retired - set SECTORS_API_KEY "
         "or provide user-owned data/idx/{TICKER}.json"
     )
 
@@ -219,7 +219,7 @@ def _peers_for(ticker: str) -> Dict[str, Any]:
         except Exception as e:
             logger.warning("peers.json parse failed: %s", e)
 
-    # LOUD policy: no invented peer multiples — Sectors peers only.
+    # LOUD policy: no invented peer multiples - Sectors peers only.
     peers = []
     return {"mode": "single", "peers": peers, "source": "sectors_missing_key",
             "note": "peer multiples await Sectors peers (no uniform() invention)"}
@@ -229,7 +229,7 @@ def _peers_for(ticker: str) -> Dict[str, Any]:
 
 def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) -> Dict[str, Any]:
     """
-    Collect all data for a ticker — local IDX dumps → Sectors v2 → LOUD raise.
+    Collect all data for a ticker - local IDX dumps → Sectors v2 → LOUD raise.
 
     No synthetic fallback (retired LOUD policy): no source -> RuntimeError
     with sectors_missing_key. Gaps stay None with *_source flags.
@@ -267,7 +267,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "peers": _peers_for(t),
             "jci": raw.get("jci"),
             "prices": raw.get("prices"),
-            "esg": raw.get("esg") or {"found": False, "note": "Sectors tidak provide ESG — try search, kalau tidak ada hide"},
+            "esg": raw.get("esg") or {"found": False, "note": "Sectors tidak provide ESG - try search, kalau tidak ada hide"},
             "ratios": raw.get("ratios"),
             "kpi": raw.get("kpi"),
             "_cache_hit": False,
@@ -279,7 +279,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         _save_cache(t, payload)
         return payload
 
-    # 2) Sectors v2 (single gateway) — Sectors fields only, gaps stay empty.
+    # 2) Sectors v2 (single gateway) - Sectors fields only, gaps stay empty.
     sec_hit = _try_sectors(t)
     if sec_hit is not None:
         payload = {
@@ -304,7 +304,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "ratios_source": "sectors_missing_key",
             "kpi": None,
             "kpi_source": "sectors_missing_key",
-            "esg": {"found": False, "note": "Sectors tidak provide ESG — hide if not found"},
+            "esg": {"found": False, "note": "Sectors tidak provide ESG - hide if not found"},
             "sectors_history_rows": sec_hit.get("history_rows"),
             "_cache_hit": False,
         }
@@ -314,10 +314,10 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         _save_cache(t, payload)
         return payload
 
-    # 3) No source available — LOUD (synthetic fallback retired).
+    # 3) No source available - LOUD (synthetic fallback retired).
     raise RuntimeError(
         "sectors_missing_key: no IDX dump and no Sectors key for "
-        f"{t} — set SECTORS_API_KEY or provide data/idx/{t}.json (synthetic fallback retired)"
+        f"{t} - set SECTORS_API_KEY or provide data/idx/{t}.json (synthetic fallback retired)"
     )
 
 
@@ -387,13 +387,13 @@ def build_collector_agent(model=None):
         agent = LlmAgent(
             name="collector",
             model=model,
-            description="Data Collector — Sectors v2 + peers + JCI + KPI (cache 4h)",
+            description="Data Collector - Sectors v2 + peers + JCI + KPI (cache 4h)",
             instruction=(
                 "You are the Data Collector. Given a ticker, call collect(ticker) "
                 "and return the JSON. Sectors v2 is the single gateway; "
-                "no synthetic fallback — gaps stay missing with "
+                "no synthetic fallback - gaps stay missing with "
                 "sectors_missing_key. Always disclose source per exhibit. "
-                "Cache 4h. Never hallucinate prices — call the tool."
+                "Cache 4h. Never hallucinate prices - call the tool."
             ),
             tools=[tool] if tool is not None else [],
         )
@@ -401,7 +401,7 @@ def build_collector_agent(model=None):
     except ImportError:
         return {
             "name": "collector",
-            "description": "Data Collector (ADK not installed — use collect() directly)",
+            "description": "Data Collector (ADK not installed - use collect() directly)",
             "tool": collector_as_tool(),
         }
 

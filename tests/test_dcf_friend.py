@@ -210,7 +210,7 @@ def test_scenarios_order():
 
 def test_dcf_full_smoke_mtel_overrides_backed():
     # Loud policy Sep 2026: dcf_full requires explicit inputs (file or overrides).
-    # No data/assumptions/*.json exist post-purge — all MTEL math flows via overrides.
+    # No data/assumptions/*.json exist post-purge - all MTEL math flows via overrides.
     res = dcf_full(
         "MTEL",
         overrides={

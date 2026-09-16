@@ -2,14 +2,14 @@
 agents/adk/tests/).
 
 Why this exists: server/main.py force-loads ~/.config/sectors-be/env into
-os.environ at import (setdefault), so any test process importing the app —
-or any shell with keys exported — would live-fire billable Sectors calls
+os.environ at import (setdefault), so any test process importing the app -
+or any shell with keys exported - would live-fire billable Sectors calls
 and warm the prod SQLite cache, masking keyless loud-failure assertions.
 Validated Sep 2026: a keyed suite run burned ~12 credits and broke 8 tests.
 
 Live tests stay opt-in via collection-time SECTORS_API_KEY skipif; this
 fixture only scrubs the key per-test so everything else runs keyless
-against a tmp SQLite cache. It cannot un-skip collection-time skipifs —
+against a tmp SQLite cache. It cannot un-skip collection-time skipifs -
 run keyed shells only when you intend live billing.
 """
 from __future__ import annotations

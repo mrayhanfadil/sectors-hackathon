@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Main ADK Python graph — 10 agents → Sequential/Parallel/LoopAgent(max=4).
+"""Main ADK Python graph - 10 agents → Sequential/Parallel/LoopAgent(max=4).
 
 Orchestrator wiring per plan.md §3 + task T05:
 
@@ -28,7 +28,7 @@ Gemini gemini-2.0-flash for search-grounded sub-agents. Falls back to LiteLlm
 if Gemini key missing.
 
 MCP: Sectors MCP streamable HTTP via McpToolset(StreamableHTTPConnectionParams)
-with Authorization: Bearer <SECTORS_API_KEY> — lazy-connect (best-effort).
+with Authorization: Bearer <SECTORS_API_KEY> - lazy-connect (best-effort).
 """
 
 from __future__ import annotations
@@ -135,7 +135,7 @@ def _deepseek_or_gemini(api_key: str | None = None, gemini_api_key: str | None =
         except Exception as e:
             logger.warning("Gemini fallback also failed: %s", e)
             raise
-    raise ValueError("No LLM key set — need ADK_PROVIDER=minimax or CommandCode bridge (BRIDGE_API_KEY), DEEPSEEK_API_KEY or GOOGLE_API_KEY")
+    raise ValueError("No LLM key set - need ADK_PROVIDER=minimax or CommandCode bridge (BRIDGE_API_KEY), DEEPSEEK_API_KEY or GOOGLE_API_KEY")
 
 
 def _has_commandcode_key_on_disk() -> bool:
@@ -171,7 +171,7 @@ def _assumptions_block(ticker: str) -> str:
         return (
             f"\n\nBINDING ASSUMPTIONS FOR {t}: NO data/assumptions/{t}.json EXISTS. "
             "You MUST derive beta/rf/erp/g from live collector data and disclose "
-            "every parameter as estimated with its source — never present invented "
+            "every parameter as estimated with its source - never present invented "
             "parameters as file-loaded.\n"
         )
     try:
@@ -181,7 +181,7 @@ def _assumptions_block(ticker: str) -> str:
             f"\n\nBINDING ASSUMPTIONS FOR {t}: file exists but UNPARSEABLE ({e}). "
             "Treat as missing: derive + disclose per above.\n"
         )
-    lines = [f"\n\nBINDING ASSUMPTIONS FOR {t} (from data/assumptions/{t}.json — these OVERRIDE your priors):"]
+    lines = [f"\n\nBINDING ASSUMPTIONS FOR {t} (from data/assumptions/{t}.json - these OVERRIDE your priors):"]
     for k in sorted(a.keys()):
         if k in ("source",):
             continue
@@ -197,7 +197,7 @@ def _assumptions_block(ticker: str) -> str:
 
 
 def _web_composite_tools() -> list[Any]:
-    """Sectors search toolset — web_search only (Sectors-only rule, Sep 2026).
+    """Sectors search toolset - web_search only (Sectors-only rule, Sep 2026).
 
     web_extract + web_search_and_extract killed (arbitrary-URL fetching =
     external source). Agents cite Sectors urls; keyless runs get honest
@@ -224,7 +224,7 @@ def build_graph(
     The root is a SequentialAgent so callers can run it via Runner/InMemorySession.
     """
     def _fmt(tmpl: str) -> str:
-        # Safe ticker substitution — do NOT use str.format() because instruction
+        # Safe ticker substitution - do NOT use str.format() because instruction
         # templates contain JSON examples with braces like {url, title, ...}
         return tmpl.replace("{ticker}", ticker)
 
@@ -252,7 +252,7 @@ def build_graph(
     # host. All Sectors reads go through cached FunctionTools
     # (sectors_financial_tools + web_search, both delegating to
     # server/sectors._get). maybe_sectors_mcp_toolset kept in
-    # tools/mcp_sectors.py for manual/opt-in use only — never in the graph.
+    # tools/mcp_sectors.py for manual/opt-in use only - never in the graph.
     # To re-enable: SECTORS_MCP=1 env.
     import os as _os_mcp
 
@@ -264,7 +264,7 @@ def build_graph(
     if sectors_toolset is not None:
         logger.info("Sectors MCP toolset attached (SECTORS_MCP=1 opt-in)")
     else:
-        logger.info("Sectors MCP disabled — cached FunctionTools only (0-credit e2e)")
+        logger.info("Sectors MCP disabled - cached FunctionTools only (0-credit e2e)")
 
     # -- Leaf LlmAgents -------------------------------------------------------
     # Composite web tools (Sectors search + readability extract) attached to any
@@ -301,7 +301,7 @@ def build_graph(
     modeler = LlmAgent(
         name="modeler",
         model=main_model,
-        description="THE BRAIN — deterministic valuation via calc_* tools only.",
+        description="THE BRAIN - deterministic valuation via calc_* tools only.",
         instruction=_fmt(modeler_instruction) + _assumptions_block(ticker),
         tools=ft,
         output_key="valuation_output",
@@ -346,7 +346,7 @@ def build_graph(
     writer = LlmAgent(
         name="writer",
         model=main_model,
-        description="Investment thesis — 4 bullets, every number cited from valuation/kpi.",
+        description="Investment thesis - 4 bullets, every number cited from valuation/kpi.",
         instruction=_fmt(writer_instruction) + _assumptions_block(ticker),
         output_key="writer_output",
     )
@@ -362,7 +362,7 @@ def build_graph(
     sotp_agent = LlmAgent(
         name="sotp",
         model=main_model,
-        description="SOTP aggregator — 4 pillars, peer multiples, holdco discount (skip if single).",
+        description="SOTP aggregator - 4 pillars, peer multiples, holdco discount (skip if single).",
         instruction=_fmt(sotp_instruction),
         tools=[FunctionTool(calc) for calc in DETERMINISTIC_TOOLS if calc.__name__ in ("calc_sotp", "calc_multiples")],
         output_key="sotp_output",
@@ -371,7 +371,7 @@ def build_graph(
     adversarial = LlmAgent(
         name="adversarial",
         model=main_model,
-        description="Red Team — challenges one claim per iteration, defender must evidence or concede.",
+        description="Red Team - challenges one claim per iteration, defender must evidence or concede.",
         instruction=_fmt(adversarial_instruction),
         tools=[FunctionTool(exit_loop), FunctionTool(submit_debate)]
         + [
@@ -393,14 +393,14 @@ def build_graph(
     critic = LlmAgent(
         name="critic",
         model=main_model,
-        description="QA arbiter — REJECT on any mismatch, PASS when institutional-grade.",
+        description="QA arbiter - REJECT on any mismatch, PASS when institutional-grade.",
         instruction=_fmt(critic_instruction),
         output_key="critic_output",
     )
 
     # -- Workflow composition -------------------------------------------------
     # Parallel 1: Collector + News (blocking inputs to Modeler; social killed
-    # 14 Sep 2026 — Sectors carries no X/Reddit/Stockbit, sentiment lives in
+    # 14 Sep 2026 - Sectors carries no X/Reddit/Stockbit, sentiment lives in
     # industry para 3 from foreign flow + broker + relative price).
     if free_tier:
         # Sequential for free tier: avoids 3 concurrent minimax calls that 503.
@@ -428,12 +428,12 @@ def build_graph(
             description="Parallel research: analyst + industry + risk + KPI.",
         )
 
-    # Adversarial loop — hard cap 4 iterations, exits via exit_loop tool
+    # Adversarial loop - hard cap 4 iterations, exits via exit_loop tool
     adversarial_loop = LoopAgent(
         name="adversarial_loop",
         sub_agents=[adversarial],
         max_iterations=MAX_ADVERSARIAL_ITERATIONS,
-        description="Red Team loop — max 4 iterations, exit_loop to stop early.",
+        description="Red Team loop - max 4 iterations, exit_loop to stop early.",
     )
 
     # Root Sequential graph
@@ -449,7 +449,7 @@ def build_graph(
             adversarial_loop,
             critic,
         ],
-        description="Institutional equity report — 10 agents, Sequential + Parallel + Loop(max=4), ADK Python (MCP removed 15 Sep 2026, cached tools only).",
+        description="Institutional equity report - 10 agents, Sequential + Parallel + Loop(max=4), ADK Python (MCP removed 15 Sep 2026, cached tools only).",
     )
 
     return root
@@ -464,7 +464,7 @@ def get_root_agent(ticker: str = "BBCA") -> SequentialAgent:
 try:
     root_agent = build_graph()
 except Exception as _e:
-    # Allow import without keys (e.g. in CI/tests) — tests construct with explicit keys
+    # Allow import without keys (e.g. in CI/tests) - tests construct with explicit keys
     logger.warning("root_agent not built at import (missing keys?): %s", _e)
     root_agent = None  # type: ignore[assignment]
 

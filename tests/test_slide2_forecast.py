@@ -2,7 +2,7 @@
 
 These are tie-out tests, not snapshot tests. The exhibit's forecast columns are derived at
 render time, so the way this breaks silently is a drift between the exhibit and the file the
-rest of the report is priced off — e.g. someone re-points the revenue growth at a different
+rest of the report is priced off - e.g. someone re-points the revenue growth at a different
 source, or a "forecast curve" creeps in where the file asserts a flat FCFF path.
 """
 from __future__ import annotations
@@ -73,7 +73,7 @@ DRIVER_PATH = REPO_ROOT / "data" / "drivers" / "AMMN.json"
 
 
 def test_forecast_columns_trace_to_the_declared_basis(payload, assum):
-    """Every forecast column must be traceable to the basis the exhibit declares — a cited path, an
+    """Every forecast column must be traceable to the basis the exhibit declares - a cited path, an
     analyst series, or the labelled normalised fallback. Nothing else may reach the page."""
     kf = _kf(payload)
     basis = kf.get("forecast_basis")
@@ -87,7 +87,7 @@ def test_forecast_columns_trace_to_the_declared_basis(payload, assum):
                 assert _num(_cell(kf, row, col)) == pytest.approx(want, abs=1.5), (row, col)
         assert kf.get("forecast_attribution"), "a forecast path must be attributed"
         assert kf.get("forecast_as_of"), "a forecast path must carry an as-of date"
-        # Owner instruction 13 Sep 2026: the deck is independent — the path is presented as the team's
+        # Owner instruction 13 Sep 2026: the deck is independent - the path is presented as the team's
         # estimate over the licensed dataset and no other research house is named. The disclosure that
         # survives is the substantive one: the columns are a projection, not realised figures.
         notes = " ".join(str(n) for n in kf.get("notes") or []).lower()

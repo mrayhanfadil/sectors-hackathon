@@ -349,7 +349,7 @@ export const PhaseTimeline = memo(function PhaseTimeline({
                                   ? "border-neutral-700 bg-neutral-900 text-neutral-300 hover:border-neutral-500 hover:text-white"
                                   : "border-neutral-800 bg-neutral-950 text-neutral-400 hover:border-neutral-700 hover:text-neutral-300"
                               )}
-                              title={`${aMeta.title} (${STATUS_ID[aStatus] ?? aStatus}) — klik untuk saring catatan`}
+                              title={`${aMeta.title} (${STATUS_ID[aStatus] ?? aStatus}) - klik untuk saring catatan`}
                             >
                               {aStatus === "running" ? (
                                 <Loader2 className="h-3 w-3 animate-spin text-amber-400 shrink-0" />

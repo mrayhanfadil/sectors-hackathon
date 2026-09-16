@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Ratchet the no-fabrication scanner: the current findings are judged and documented, anything new fails.
 
-The scanner is a heuristic — it cannot tell an axis-tick fraction from an invented data series, or the agent page's
+The scanner is a heuristic - it cannot tell an axis-tick fraction from an invented data series, or the agent page's
 own elapsed-time clock from a fabricated timestamp. Judging every hit by hand is right once and useless at scale, so
 each hit is recorded here with a reason and the gate compares against this file: a finding that is not on the list is
 a regression, and a listed finding that disappears is also reported (the list must not rot).
@@ -25,7 +25,7 @@ ALLOW = ROOT / "scripts/fe_fabrication_allowlist.txt"
 # Judged by hand, by surface. A reason is mandatory: "it was already there" is not a reason.
 REASONS = {
     "PeersCharts.tsx:251:RULE_B_NUMERIC_ARRAY":
-        "axis tick fractions (1.0 / 0.5 / 0.0 of the plot height) — the same fractions the PDF's SVG macro draws; "
+        "axis tick fractions (1.0 / 0.5 / 0.0 of the plot height) - the same fractions the PDF's SVG macro draws; "
         "no series is invented from them",
     "HistoryCharts.tsx:123:RULE_B_NUMERIC_ARRAY":
         "left-axis gridline fractions (0 / 0.5 / 1 of the plot height) for the revenue panel; every plotted value is "
@@ -41,7 +41,7 @@ REASONS = {
         "layout scale only (Math.max of the bars with a floor of 1); both the market-price label and its reference "
         "line are rendered only when the price is non-null, so no figure is ever defaulted",
     "routeTree.gen.ts:14:RULE_A_MOCK_IMPORT":
-        "generated router tree (TanStack codegen) referencing the demo route — no value is imported from it",
+        "generated router tree (TanStack codegen) referencing the demo route - no value is imported from it",
     "DividendTimeline.tsx:22:RULE_D_PLACEHOLDER_STRING":
         "the mock-sectors demo surface, not the report page: the route exists to show synthetic data",
     "NewsFeedCard.tsx:28:RULE_D_PLACEHOLDER_STRING":
@@ -86,7 +86,7 @@ def main() -> int:
     present = {key(f): f for f in findings}
 
     if args.update:
-        payload = {k: {"reason": REASONS.get(k, "NOT JUDGED — write a reason before accepting"), **v}
+        payload = {k: {"reason": REASONS.get(k, "NOT JUDGED - write a reason before accepting"), **v}
                    for k, v in present.items()}
         KNOWN.write_text(json.dumps(payload, indent=2))
         unjudged = [k for k in payload if payload[k]["reason"].startswith("NOT JUDGED")]
@@ -109,7 +109,7 @@ def main() -> int:
         print(f"  no longer found (remove from {KNOWN.name}): {k}")
 
     if new:
-        print("\nA new finding is not automatically fabrication — judge it, add a reason, then --update.")
+        print("\nA new finding is not automatically fabrication - judge it, add a reason, then --update.")
         return 1
     if gone:
         print("\nNo new fabrication, but the accepted list is stale.")

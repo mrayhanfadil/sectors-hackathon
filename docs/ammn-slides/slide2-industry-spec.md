@@ -1,4 +1,4 @@
-# Slide 2 — Kondisi Industri dan Katalis/Sentimen Emiten spec (AMMN)
+# Slide 2 - Kondisi Industri dan Katalis/Sentimen Emiten spec (AMMN)
 
 Ticker: AMMN (PT Amman Mineral Internasional Tbk, AMMN IJ). Subsector: Copper & Gold Mining (`metals-mining`).
 Asset Scope: Batu Hijau open-pit mine (Phase 7 completion, Phase 8 high-grade mining), Elang porphyry exploration/development asset, and PT AMIN Sumbawa copper smelter & precious metals refinery (PMR) downstream processing.
@@ -26,26 +26,26 @@ Slide 2 establishes the macro industry reality, issuer-specific operational cata
 
 The paragraphs below are the owner's wording and outrank any paraphrase in this document.
 
-> **SLIDE 2 — Kondisi Industri dan Katalis/Sentimen Emiten**
+> **SLIDE 2 - Kondisi Industri dan Katalis/Sentimen Emiten**
 >
 > Tidak ada tabel/chart wajib di slide ini secara default (murni narasi tiga paragraf), tapi kalau ada data pendukung visual (misal sector growth trend chart atau fund flow chart), tetap ikut aturan Exhibit sequential dan wajib source line.
 >
-> **Paragraf 1 — Kondisi Industri.** Buka dengan snapshot kondisi sektor secara makro: growth rate sektor tahun berjalan dan/atau forecast (dalam persen, dari data BPS/asosiasi industri/riset internal), demand-supply balance kalau relevan (contoh: utilization rate industri, oversupply/undersupply signal), backdrop makro yang paling material ke sektor tersebut (bisa suku bunga untuk banking/property, nilai tukar untuk emiten net importer/exporter, harga komoditas untuk mining/plantation, atau perubahan daya beli untuk consumer). Tutup paragraf dengan positioning emiten yang dicover relatif terhadap tren sektor ini, apakah dia outperform, in-line, atau underperform sektornya, dan alasan strukturalnya.
+> **Paragraf 1 - Kondisi Industri.** Buka dengan snapshot kondisi sektor secara makro: growth rate sektor tahun berjalan dan/atau forecast (dalam persen, dari data BPS/asosiasi industri/riset internal), demand-supply balance kalau relevan (contoh: utilization rate industri, oversupply/undersupply signal), backdrop makro yang paling material ke sektor tersebut (bisa suku bunga untuk banking/property, nilai tukar untuk emiten net importer/exporter, harga komoditas untuk mining/plantation, atau perubahan daya beli untuk consumer). Tutup paragraf dengan positioning emiten yang dicover relatif terhadap tren sektor ini, apakah dia outperform, in-line, atau underperform sektornya, dan alasan strukturalnya.
 >
-> **Paragraf 2 — Katalis Spesifik Emiten.** Fokus ke katalis yang applicable langsung ke emiten yang dicover, bukan katalis generik sektor. Contoh kategori katalis: perubahan regulasi (POJK, OJK, Bank Indonesia, kebijakan Kementerian terkait), siklus harga komoditas untuk emiten yang exposure ke commodity price, rencana ekspansi kapasitas atau capex besar, aktivitas konsolidasi/M&A di sektor yang bisa mengubah competitive landscape. Setiap katalis yang disebut harus, kalau memungkinkan, dikuantifikasi dampaknya (ke earnings, margin, atau volume emiten), dengan basis perhitungan yang jelas, bukan asumsi tanpa dasar. Kalau tidak ada basis data untuk kuantifikasi, state itu sebagai kualitatif eksplisit, jangan dipaksa kasih angka.
+> **Paragraf 2 - Katalis Spesifik Emiten.** Fokus ke katalis yang applicable langsung ke emiten yang dicover, bukan katalis generik sektor. Contoh kategori katalis: perubahan regulasi (POJK, OJK, Bank Indonesia, kebijakan Kementerian terkait), siklus harga komoditas untuk emiten yang exposure ke commodity price, rencana ekspansi kapasitas atau capex besar, aktivitas konsolidasi/M&A di sektor yang bisa mengubah competitive landscape. Setiap katalis yang disebut harus, kalau memungkinkan, dikuantifikasi dampaknya (ke earnings, margin, atau volume emiten), dengan basis perhitungan yang jelas, bukan asumsi tanpa dasar. Kalau tidak ada basis data untuk kuantifikasi, state itu sebagai kualitatif eksplisit, jangan dipaksa kasih angka.
 >
-> **Paragraf 3 — Sentimen Pasar.** Fokus murni ke bagaimana pasar sedang memandang sektor dan emiten ini saat ini, tanpa menyentuh valuasi atau target price sama sekali (itu domain Slide 4-5). Elemen yang bisa dibahas: net buy/sell asing atau domestik di sektor terkait (kalau data tersedia dari KSEI atau Bloomberg), pergerakan saham atau indeks sektor relatif terhadap JCI dalam periode berjalan (bisa refer ke Exhibit 2 di Slide 1 kalau relevan), tone pemberitaan media terhadap sektor (positif/negatif/netral, dengan sedikit konteks kenapa), dan agregat consensus rating di sektor tersebut (berapa banyak broker yang Buy/Hold/Sell untuk saham-saham di sektor ini, sebagai proxy risk appetite investor institusional).
+> **Paragraf 3 - Sentimen Pasar.** Fokus murni ke bagaimana pasar sedang memandang sektor dan emiten ini saat ini, tanpa menyentuh valuasi atau target price sama sekali (itu domain Slide 4-5). Elemen yang bisa dibahas: net buy/sell asing atau domestik di sektor terkait (kalau data tersedia dari KSEI atau Bloomberg), pergerakan saham atau indeks sektor relatif terhadap JCI dalam periode berjalan (bisa refer ke Exhibit 2 di Slide 1 kalau relevan), tone pemberitaan media terhadap sektor (positif/negatif/netral, dengan sedikit konteks kenapa), dan agregat consensus rating di sektor tersebut (berapa banyak broker yang Buy/Hold/Sell untuk saham-saham di sektor ini, sebagai proxy risk appetite investor institusional).
 
 **Implementation (this repo).** The page is built by `server/report/industry_page.py` and rendered as
 deck page 2 by `templates/report_single.html`; it is audited by
 `server/report/house_rules.py::audit_industry_page` (three paragraphs mandatory, paragraph 3 free of
 valuation language) inside `audit_house_rules`, which is the same audit the Critic gate runs.
-Elements the data does not carry are stated as unavailable in the copy — paragraph 3 names the
+Elements the data does not carry are stated as unavailable in the copy - paragraph 3 names the
 absent consensus breadth and the 90-day window cap instead of inventing either.
 
 ---
 
-## 2. Paragraph 1 — Kondisi Industri (Industry Conditions)
+## 2. Paragraph 1 - Kondisi Industri (Industry Conditions)
 
 ### 2.1 Narrative Specification & Guidelines
 P1 establishes the external environment for AMMN. It must cover four core thematic pillars:
@@ -78,7 +78,7 @@ Sektor pertambangan tembaga dan emas global berada dalam fase [P1_COMMODITY_CYCL
 
 ---
 
-## 3. Paragraph 2 — Katalis Spesifik Emiten (Issuer-Specific Catalysts)
+## 3. Paragraph 2 - Katalis Spesifik Emiten (Issuer-Specific Catalysts)
 
 ### 3.1 Narrative Specification & Guidelines
 P2 focuses **exclusively on catalysts applicable to AMMN**. Generic sector themes (e.g. "copper demand is rising") are forbidden here. Every catalyst must fall into one of four mandatory categories and follow the **Strict Quantification Discipline**:
@@ -121,7 +121,7 @@ Kinerja operasional dan profil profitabilitas AMMN didorong oleh empat katalis s
 
 ---
 
-## 4. Paragraph 3 — Sentimen Pasar (Market Sentiment)
+## 4. Paragraph 3 - Sentimen Pasar (Market Sentiment)
 
 ### 4.1 Narrative Specification & Guidelines
 P3 captures institutional positioning, trading flow dynamics, and media perception.
@@ -136,7 +136,7 @@ P3 captures institutional positioning, trading flow dynamics, and media percepti
 ### 4.2 FLOAT / MSCI DISCIPLINE RULE (AGY Audit Binding Guard)
 - **Source of Truth**: Free float % and index-inclusion/exclusion claims (MSCI Emerging Markets, FTSE) **MUST** originate strictly from `collector_output` in the pipeline state (sourced from Sectors `shareholders_composition` / filings feed).
 - **Unverified Guard**: If collector data is absent, conflicting, or marked unverified, the agent **MUST** emit:
-  $$\text{"UNVERIFIED — requires IDX fact sheet/KSEI"}$$
+  $$\text{"UNVERIFIED - requires IDX fact sheet/KSEI"}$$
 - **Anti-Speculation**: Agents must **NEVER** invent a free-float percentage (e.g. arbitrarily writing 11.8% or 17.5%) and must **NEVER** assert index exclusion or disqualification (e.g. "MSCI <15% exclusion risk") based on unverified figures. Violating this rule triggers an immediate Critic **REJECT**.
 
 ### 4.3 Paragraph Template with AMMN Mining Slots
@@ -166,7 +166,7 @@ Sectors API tools are **PRIMARY**. Agents must operate under the **Max 2 fetch c
 | **Broker Concentration** | `fetch-broker-summary-top(symbol="AMMN", start=DATE_START, end=DATE_END, n_brokers=20)` | `top_buyers`, `top_sellers`, `broker_code`, `volume`, `value` | Paired with foreign flow call. Max 2 calls per turn. | If empty, omit specific broker codes and rely solely on foreign net aggregate. |
 | **Stock & Index Trajectory** | `fetch-daily-transaction(symbol="AMMN", ...)` and `fetch-index-daily(index_code="COMPOSITE", ...)` | `close`, `date`, `volume`, `index_close` | Cache from Slide 1 collector data. Do not re-fetch if already in pipeline state. | Calculate relative % move vs JCI directly from cached time series. |
 | **News Sentiment & Media Tone** | `fetch-news(symbols="AMMN", extension="idx")` | `sentiment_score`, `results[].url`, `results[].date`, `results[].content` | Max 8 items, 30-day trailing window. Extract sentiment dimension. | Web search (T1: Bisnis, Kontan, Investor Daily; T2: Reuters). Require exact url+date. |
-| **Corporate Filings & Free Float** | `fetch-filings(symbol="AMMN")` + `shareholders_composition("AMMN")` | `shareholders_data`, `public_ownership_pct`, `filing_date`, `filing_type` | Retrieved once during collector phase. | If float missing or conflicted, emit `"UNVERIFIED — requires IDX fact sheet/KSEI"`. NEVER guess. |
+| **Corporate Filings & Free Float** | `fetch-filings(symbol="AMMN")` + `shareholders_composition("AMMN")` | `shareholders_data`, `public_ownership_pct`, `filing_date`, `filing_type` | Retrieved once during collector phase. | If float missing or conflicted, emit `"UNVERIFIED - requires IDX fact sheet/KSEI"`. NEVER guess. |
 | **Smelter Milestone & Capex** | `fetch-news` + `mining_company_financials("AMMN")` | `smelter_progress_pct`, `capex_spent`, `commissioning_target` | Cross-reference ESDM physical verification report in news feed. | Company disclosure / quarterly report via IDX filing feed. |
 
 ### 5.2 Provenance & Missing Key Discipline
@@ -184,11 +184,11 @@ list below is also the list of things the page can honestly be missing.
 
 | Block (payload key) | Sectors endpoint / cache file | Feeds |
 |---|---|---|
-| `sector_data` | `subsector-report` (basic-materials) — `output/cache/ammn_fill/subsector_report_basic-materials.json` | P1: growth 2025 aktual + proyeksi 2026F, lima kapitalisasi terbesar, peringkat emiten |
-| `filings_digest` | `filings` — `filings_AMMN.json` | P2: transaksi beli DAN jual pemegang saham terkait, dengan jumlah, nilai, dan rentang tanggal |
-| `corporate_actions` | `corporate-actions` — `corporate_actions_AMMN.json` | P2: RUPS terakhir, status dividen/bonus/right issue/stock split |
-| `ownership_mix` | `shareholders-composition` — `shareholders_composition_AMMN.json` | P3: kepemilikan asing vs domestik bulanan, rincian tipe investor asing |
-| `free_float` | `screener` free-float — `screener_free_float_top25.json` | P3: keanggotaan daftar free float terbesar (daftar tanpa persentase) |
+| `sector_data` | `subsector-report` (basic-materials) - `output/cache/ammn_fill/subsector_report_basic-materials.json` | P1: growth 2025 aktual + proyeksi 2026F, lima kapitalisasi terbesar, peringkat emiten |
+| `filings_digest` | `filings` - `filings_AMMN.json` | P2: transaksi beli DAN jual pemegang saham terkait, dengan jumlah, nilai, dan rentang tanggal |
+| `corporate_actions` | `corporate-actions` - `corporate_actions_AMMN.json` | P2: RUPS terakhir, status dividen/bonus/right issue/stock split |
+| `ownership_mix` | `shareholders-composition` - `shareholders_composition_AMMN.json` | P3: kepemilikan asing vs domestik bulanan, rincian tipe investor asing |
+| `free_float` | `screener` free-float - `screener_free_float_top25.json` | P3: keanggotaan daftar free float terbesar (daftar tanpa persentase) |
 | `sentiment` | `foreign-flow` + `broker-summary` | P3: neto asing 30d/90d, konsentrasi broker, hari positif |
 | `news` | `news` (30d) | P3: judul untuk tone kualitatif |
 | `cover.vs_jci.chart` | `daily` 90d + `index-daily` IHSG | P3: kinerja harga relatif, dihitung dari seri yang sama dengan grafik halaman 1 |
@@ -250,7 +250,7 @@ Before publishing P3 (Sentimen Pasar), the agent must audit the draft against th
 - [ ] **Consensus Count Verification**: Sell-side consensus breakdown (Buy / Hold / Sell) reflects institutional breadth without extrapolating individual firm target prices.
 - [ ] **Float & Index Discipline Check**:
   - [ ] Free float % matches verified `collector_output`.
-  - [ ] If float is absent or disputed, exactly `"UNVERIFIED — requires IDX fact sheet/KSEI"` is emitted.
+  - [ ] If float is absent or disputed, exactly `"UNVERIFIED - requires IDX fact sheet/KSEI"` is emitted.
   - [ ] Zero claims asserting MSCI/FTSE exclusion or inclusion unless corroborated by verified regulatory filings.
 
 ---

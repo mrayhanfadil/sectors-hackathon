@@ -1,10 +1,10 @@
-"""Slide 2 — Kondisi Industri, Katalis Spesifik Emiten, Sentimen Pasar.
+"""Slide 2 - Kondisi Industri, Katalis Spesifik Emiten, Sentimen Pasar.
 
 Three narrative paragraphs, no mandatory object, per
 `docs/ammn-slides/slide2-industry-spec.md`. The page bridges the cover's terse takeaways and the
-valuation pages by using the widest Sectors evidence the fill carries — the subsector report, the
+valuation pages by using the widest Sectors evidence the fill carries - the subsector report, the
 IDX filings digest, corporate actions, the monthly ownership composition and the free-float
-screener — instead of only the four headline catalysts.
+screener - instead of only the four headline catalysts.
 
 Discipline this module keeps, because the page is read as prose and prose hides its own holes:
 
@@ -12,7 +12,7 @@ Discipline this module keeps, because the page is read as prose and prose hides 
   returned values, which the copy labels as a sum);
 * a slot whose data is absent says so in words. Nothing is estimated, interpolated, or carried over
   from a neighbouring year;
-* paragraph 3 stays out of valuation — no multiple, no target price, no fair value. That is the
+* paragraph 3 stays out of valuation - no multiple, no target price, no fair value. That is the
   valuation pages' domain, and `house_rules.audit_industry_page` enforces it;
 * both directions of insider activity are reported when the filings carry both. A page that lists
   the buys and drops the sells would be technically sourced and still misleading.
@@ -48,7 +48,7 @@ def _num(value: Any, digits: int = 2) -> str:
     try:
         text = f"{float(value):,.{digits}f}"
     except (TypeError, ValueError):
-        return "—"
+        return "-"
     return text.replace(",", "\u00a0").replace(".", ",").replace("\u00a0", ".")
 
 
@@ -57,7 +57,7 @@ def _idr_bn(value: Any, digits: int = 2) -> str:
     try:
         amount = float(value) / 1e9
     except (TypeError, ValueError):
-        return "—"
+        return "-"
     sign = "-" if amount < 0 else ""
     return sign + "Rp " + _num(abs(amount), digits) + " md"
 
@@ -66,7 +66,7 @@ def _idr_tn(value: Any, digits: int = 1) -> str:
     try:
         amount = float(value) / 1e12
     except (TypeError, ValueError):
-        return "—"
+        return "-"
     sign = "-" if amount < 0 else ""
     return sign + "Rp " + _num(abs(amount), digits) + " tn"
 
@@ -75,18 +75,18 @@ def _shares(value: Any, signed: bool = False) -> str:
     try:
         amount = float(value) / 1e6
     except (TypeError, ValueError):
-        return "—"
+        return "-"
     sign = "+" if signed and amount > 0 else ("-" if amount < 0 else "")
     return sign + _num(abs(amount), 2) + " jt saham"
 
 
 def _pct(value: Any, digits: int = 2) -> str:
     if value is None:
-        return "—"
+        return "-"
     try:
         return ("+" if float(value) > 0 else "") + _num(value, digits) + "%"
     except (TypeError, ValueError):
-        return "—"
+        return "-"
 
 
 def _human_date(value: Any) -> str:
@@ -260,7 +260,7 @@ def _paragraph_catalysts(payload: dict) -> tuple[str, str]:
             )
             label = "terkuantifikasi" if numeric else "kualitatif eksplisit"
             listed.append(
-                f"{item.get('name')} ({label}: {detail}; sumber: {item.get('source')}) — "
+                f"{item.get('name')} ({label}: {detail}; sumber: {item.get('source')}) - "
                 f"efek: {item.get('effect')}"
             )
         parts.append("Katalis yang langsung menyentuh emiten ini: " + "; ".join(listed) + ".")
@@ -516,7 +516,7 @@ def build_industry_page(payload: dict, assumptions: Optional[dict] = None) -> di
         if source and source not in sources:
             sources.append(str(source))
     return {
-        "title": f"Kondisi Industri, Katalis & Sentimen — {payload.get('meta', {}).get('ticker', '')}".strip(" —"),
+        "title": f"Kondisi Industri, Katalis & Sentimen - {payload.get('meta', {}).get('ticker', '')}".strip(" -"),
         "paragraphs": paragraphs,
         "sources": sources,
         "notes": [

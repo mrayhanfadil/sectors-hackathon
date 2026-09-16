@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Tests for peer tools — bounded inter-agent communication (max 3×)."""
+"""Tests for peer tools - bounded inter-agent communication (max 3×)."""
 
 import pytest
 from agents.adk.tools.peer_tools import (
@@ -87,7 +87,7 @@ def test_request_peer_data_lifecycle_with_state():
         "peer_requests": [],
     }
 
-    # 1st request — should be fulfilled
+    # 1st request - should be fulfilled
     res1 = request_peer_data(
         target_agent="collector",
         needed_fields=["segments"],
@@ -99,7 +99,7 @@ def test_request_peer_data_lifecycle_with_state():
     assert res1["data"]["segments"] == ["Banking", "Treasury"]
     assert len(state["peer_requests"]) == 1
 
-    # 2nd request — recorded
+    # 2nd request - recorded
     res2 = request_peer_data(
         target_agent="news_harvester",
         needed_fields=["catalysts"],
@@ -110,7 +110,7 @@ def test_request_peer_data_lifecycle_with_state():
     assert res2["status"] in ("fulfilled", "recorded")
     assert len(state["peer_requests"]) == 2
 
-    # 3rd request — recorded
+    # 3rd request - recorded
     res3 = request_peer_data(
         target_agent="collector",
         needed_fields=["peers"],
@@ -122,7 +122,7 @@ def test_request_peer_data_lifecycle_with_state():
     assert res3["data"]["peers"] == ["BBRI", "BMRI"]
     assert len(state["peer_requests"]) == 3
 
-    # 4th request — rejected (quota exceeded)
+    # 4th request - rejected (quota exceeded)
     res4 = request_peer_data(
         target_agent="collector",
         needed_fields=["financials_5y"],

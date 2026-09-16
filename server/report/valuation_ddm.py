@@ -1,8 +1,8 @@
-"""Opsi B — the DDM branch of deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
+"""Opsi B - the DDM branch of deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md).
 
 Arithmetic from the internal dividend-discount engine (server/report/engines/ddm_engine). The page
-contract is deliberately identical to the DCF branch — same `blocks` / `bridge` / `sensitivity` shapes
-and the same `_view()` — so the markup and the gate treat one option at a time without branching on
+contract is deliberately identical to the DCF branch - same `blocks` / `bridge` / `sensitivity` shapes
+and the same `_view()` - so the markup and the gate treat one option at a time without branching on
 the markup side. In the two-column terminal block the left column is the Gordon DDM value and the
 right column is the owner's alternative path (Inverse Cost of Equity: fair P/BV x BVPS).
 """
@@ -62,7 +62,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         return {
             "available": False,
             "method": "ddm",
-            "title": "Valuasi Intrinsik — DDM",
+            "title": "Valuasi Intrinsik - DDM",
             "missing": reasons,
             "subtitle": "Opsi B dipilih tetapi datanya tidak cukup; halaman sengaja tidak diisi angka pengganti.",
             "sources": ["Sectors API", f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json"],
@@ -126,10 +126,10 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     page = {
         "available": True,
         "method": "ddm",
-        "title": "Valuasi Intrinsik — DDM",
+        "title": "Valuasi Intrinsik - DDM",
         "subtitle": (
             "Opsi B (DDM) aktif: emiten membagi dividen, jadi ekuitas dinilai langsung dari arus dividen "
-            "dengan Cost of Equity — bukan WACC (DDM menilai ekuitas, bukan enterprise)."
+            "dengan Cost of Equity - bukan WACC (DDM menilai ekuitas, bukan enterprise)."
         ),
         "periods": list(PERIODS),
         "blocks": {"build_up": {
@@ -220,7 +220,7 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
         notes.append(
             f"Uji konsistensi payout fase stabil: payout proyeksi {_nf.dec(tv.get('payout_projected', 0)*100, digits=1)}% "
             f"vs payout yang konsisten dengan g/ROE ({_nf.dec(tv.get('payout_consistent', 0)*100, digits=1)}%), selisih "
-            f"{_nf.dec(abs(gap)*100, digits=1)}pp — kalau payout lebih tinggi, nilai cenderung overstated."
+            f"{_nf.dec(abs(gap)*100, digits=1)}pp - kalau payout lebih tinggi, nilai cenderung overstated."
         )
     notes.append(
         "DDM menilai ekuitas langsung, jadi discount factor memakai Cost of Equity dan tidak ada bridge "
@@ -267,7 +267,7 @@ def _view_ddm(page: dict) -> dict:
     ]
     pbv = page.get("pbv") or {}
     tv = b["tv_gordon"]
-    page["block2_headers"] = ["Blok 2 — Terminal value", "Gordon DDM", "Inverse CoE (fair P/BV x BVPS)"]
+    page["block2_headers"] = ["Blok 2 - Terminal value", "Gordon DDM", "Inverse CoE (fair P/BV x BVPS)"]
     page["block2_rows"] = [
         ("Terminal DPS (DPS terakhir x (1+g))", _fmt(b["fcff"][-1] * 1.0), "\u2014"),
         ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", _fmt(av["g"] * 100, 2) + "%"),
@@ -279,7 +279,7 @@ def _view_ddm(page: dict) -> dict:
         ("Forward ROE (basis Inverse CoE)", _fmt(av.get("forward_roe") and av["forward_roe"] * 100, 2) + "%" if av.get("forward_roe") else "\u2014",
          _fmt(pbv.get("forward_roe") and pbv["forward_roe"] * 100, 2) + "%" if pbv else "\u2014"),
     ]
-    page["block3_headers"] = ["Blok 3 — Nilai ekuitas per saham", "Rp per saham", "Pembanding"]
+    page["block3_headers"] = ["Blok 3 - Nilai ekuitas per saham", "Rp per saham", "Pembanding"]
     page["block3_rows"] = [
         ("Sum PV of DPS (periode eksplisit)", _fmt0(b["pv_explicit"]), "\u2014"),
         ("(+) PV of Terminal Value", _fmt0(b["pv_tv_gordon"]), "\u2014"),

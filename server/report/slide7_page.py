@@ -1,4 +1,4 @@
-"""Slide 7 — Exhibit 16 Cash Flow Statement + Exhibit 17 Key Ratio (non-bank variant).
+"""Slide 7 - Exhibit 16 Cash Flow Statement + Exhibit 17 Key Ratio (non-bank variant).
 
 Rules: docs/ammn-slides/slide7-cashflow-ratio-spec.md.
 
@@ -120,7 +120,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             values[key].append(val)
         if abs(residual or 0.0) > 1.0:
             notes.append(
-                f"FY{y}A: section arus kas Sectors tidak foot ke saldo kasnya — OCF {_nf.idn(ocf, digits=0)} + investasi "
+                f"FY{y}A: section arus kas Sectors tidak foot ke saldo kasnya - OCF {_nf.idn(ocf, digits=0)} + investasi "
                 f"{_nf.idn(icf, digits=0)} + pendanaan {_nf.idn(fcf_fin, digits=0)} = {_nf.idn(net_change, digits=0)}, sedangkan kas tercatat berubah "
                 f"{_nf.idn(cash - begin, digits=0)}. Selisih {_nf.idn(residual, digits=0)} dinyatakan sebagai baris rekonsiliasi supaya "
                 f"Ending Cash identik dengan neraca; angka section-nya tidak diubah.")
@@ -192,7 +192,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
     ]
     if any(v is not None and abs(v) > 1.0 for v in values["residual"]):
         closing.append(row("Selisih tidak terjelaskan di sumber Sectors", "residual",
-                           note="baris rekonsiliasi ke saldo kas terpublikasi — bukan pembulatan"))
+                           note="baris rekonsiliasi ke saldo kas terpublikasi - bukan pembulatan"))
     memo = [row("Free Cash Flow = Net Cash from Operations - Capital Expenditure", "fcf_memo", "memo")]
 
     # cross-check against the FCFF this deck's DCF actually uses (Slide 4 / Exhibit 8)
@@ -211,7 +211,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
                 f"karena FCFF memakai NOPAT sementara baris ini mulai dari laba bersih dan beban bunga "
                 f"diperlakukan berbeda"
                 + ("; selisih sebesar ini perlu dicek ulang sebelum publish." if abs(gap) > 0.6 else
-                   " — masih dalam ballpark yang wajar.")
+                   " - masih dalam ballpark yang wajar.")
             )
     except Exception:
         pass
@@ -229,7 +229,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         "sources": [
             "Sectors company/report financials.historical_financials (section arus kas, IDR)",
             "data/drivers/AMMN.json (D&A, capex, working capital, jadwal utang untuk kolom proyeksi)"
-            if dp else "jalur proyeksi tidak tersedia — kolom F ditandai",
+            if dp else "jalur proyeksi tidak tersedia - kolom F ditandai",
         ],
     }
 
@@ -252,7 +252,7 @@ def build_key_ratio_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         return _num(str(row[i]).replace(".", "").replace(",", "."))
 
     # Use the statements page the deck actually prints. Rebuilding it here without the same driver inputs
-    # produced a ratio block computed from a DIFFERENT income statement than the one on the page — the exact
+    # produced a ratio block computed from a DIFFERENT income statement than the one on the page - the exact
     # cross-sheet drift Exhibit 17 exists to expose.
     is_page = statements or {}
     if not is_page:

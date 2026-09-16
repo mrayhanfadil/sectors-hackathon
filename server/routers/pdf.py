@@ -1,4 +1,4 @@
-"""PDF report router — staged to avoid merge collision with sa-0 (BE enrichment lane).
+"""PDF report router - staged to avoid merge collision with sa-0 (BE enrichment lane).
 
 Exposes:
   GET /api/report/{ticker}/pdf  -> FileResponse application/pdf (%PDF magic)
@@ -27,7 +27,7 @@ logger = logging.getLogger(__name__)
 
 #: Slide-rule violations that do NOT block the render: they make the document imperfect, not
 #: incomplete. A document missing a mandated section or a derivation note is a different
-#: matter — that one blocks (see the gate at the end of _build_live_payload).
+#: matter - that one blocks (see the gate at the end of _build_live_payload).
 _ADVISORY_VIOLATIONS = (
     "carries no unit",
     "exactly one decimal",
@@ -39,7 +39,7 @@ _ADVISORY_VIOLATIONS = (
 REPO_ROOT = Path(__file__).resolve().parents[2]
 
 # Dissent audit (15 Sep 2026): a run whose own red team conceded the anchor must
-# not publish a directional rating. Deterministic — reads run state, no LLM.
+# not publish a directional rating. Deterministic - reads run state, no LLM.
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
@@ -63,7 +63,7 @@ def _publish_audit(ticker: str) -> dict | None:
 
             price = _json.loads(apath.read_text(encoding="utf-8")).get("last_price")
         return _audit(state, price=float(price or 0.0)).to_dict()
-    except Exception as exc:  # noqa: BLE001 — the gate must never break rendering by itself
+    except Exception as exc:  # noqa: BLE001 - the gate must never break rendering by itself
         logger.warning("publish audit unavailable for %s: %s", ticker, exc)
         return None
 SCRIPTS_DIR = REPO_ROOT / "scripts"
@@ -100,7 +100,7 @@ def _pct(value, dec: int = 1) -> str:
         return str(value)
 
 # Gate-0..5 inputs passed through to the payload for agents/valuation/gates.py.
-# The assumptions file is the ONLY permitted source for them — read the file,
+# The assumptions file is the ONLY permitted source for them - read the file,
 # never invent values.
 _GATE_INPUT_KEYS = (
     "filing_history_years",
@@ -123,7 +123,7 @@ def _gate_inputs_from_assumptions(assum: dict) -> dict:
     """Read-or-restate the Gate-0..5 inputs from data/assumptions/{T}.json.
 
     Sources, in order:
-      1. ``assum["gate_inputs"]`` — the file's own gate block (authoritative,
+      1. ``assum["gate_inputs"]`` - the file's own gate block (authoritative,
          may also carry ``domain``);
       2. the same keys at the file's top level;
       3. restatements of a quantity the file *already* declares, so the file's
@@ -132,7 +132,7 @@ def _gate_inputs_from_assumptions(assum: dict) -> dict:
          - ``net_debt_after_cash`` / ``ebitda`` -> gate 1c ``net_debt_to_ebitda``
            (the file labels ``net_debt_after_cash`` the economically net figure
            and ``net_debt`` the gross bridge leg, which dcf()/ev_ebitda() add
-           cash back against — so the gross leg is NOT used here).
+           cash back against - so the gross leg is NOT used here).
 
     Nothing else is inferred. A key the file does not support is left absent on
     purpose: the gate stage raises ValueError naming it rather than being handed
@@ -185,7 +185,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                 "ticker": t,
                 "missing": list(_required),
                 "summary": (
-                    f"no verified assumptions for {t} — refusing generic fallback "
+                    f"no verified assumptions for {t} - refusing generic fallback "
                     f"(add data/assumptions/{t}.json or set SECTORS_API_KEY)"
                 ),
             },
@@ -195,7 +195,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
 
     # Inline _assumptions_for (same loud-failure policy as endpoints.py).
     # No fabricated archetype numbers: only keys present in
-    # data/assumptions/{T}.json are used — missing keys stay missing and 422
+    # data/assumptions/{T}.json are used - missing keys stay missing and 422
     # below instead of being silently completed with generic numbers.
     def _assumptions_for_inner(ticker: str) -> dict:
         tt = ticker.upper().strip()
@@ -224,7 +224,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                 "ticker": t,
                 "missing": _missing or list(_required),
                 "summary": (
-                    f"no verified assumptions for {t} — refusing generic fallback "
+                    f"no verified assumptions for {t} - refusing generic fallback "
                     f"(missing={_missing or ['assumptions file']}; add data/assumptions/{t}.json)"
                 ),
             },
@@ -258,13 +258,13 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                 raise HTTPException(
                     422,
                     f"fv anchor '{fv_anchor['leg']}' produced no value for {t} "
-                    f"({fv_anchor['basis']}) — refusing to rate on a missing leg.",
+                    f"({fv_anchor['basis']}) - refusing to rate on a missing leg.",
                 )
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(
-            422, f"valuation engine failed for {t}: {e} — refusing generic fallback "
+            422, f"valuation engine failed for {t}: {e} - refusing generic fallback "
             f"(check data/assumptions/{t}.json inputs; no silent last_price FV)")
 
     last_price = assum["last_price"]  # guaranteed by required-key 422 above; never invented
@@ -307,7 +307,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             "sector": "Infrastruktur Telekomunikasi" if is_infra else "General",
             "report_type": "Initiation",
             "date": "31 Agt 2026",
-            "prepared_by": "RESEARCH — Sectors Hackathon 2026",
+            "prepared_by": "RESEARCH - Sectors Hackathon 2026",
             "language": "id",
             "subsector": "telco-infra" if is_infra else "",
         },
@@ -339,7 +339,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "valuation": {
             # Which leg anchors the headline FV (server/engines pick_fv_anchor). Without this
             # the cover's TP provenance is unknowable, and methods[] used to label the ANCHORED
-            # value as "DCF" even when the anchor was EV/EBITDA — the table named the wrong leg
+            # value as "DCF" even when the anchor was EV/EBITDA - the table named the wrong leg
             # as the source of the number it printed.
             "anchor": fv_anchor["leg"],
             "anchor_basis": fv_anchor["basis"],
@@ -368,7 +368,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "gate_inputs": gate_inputs,
     }
     # 2A+4F forecast expansion RETIRED (LOUD policy): it projected FY26F-FY29F
-    # from placeholder actuals [1000, 1100] — fabricated trend presented as IDX
+    # from placeholder actuals [1000, 1100] - fabricated trend presented as IDX
     # financials. Re-enable only with real Sectors quarterly actuals as base.
     # financial_highlights stays honest-empty (set above).
     if t == "AMMN":
@@ -389,7 +389,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # Slide-1 contract (rating status, price box, secondary stats, analyst, theme title,
     # 24M price-vs-IHSG series, quarterly performance paragraph). Runs for every ticker,
     # after the AMMN fill so it reads the filled cover. A leg with no source renders as an
-    # honest "n/a" (see server/report/cover_slide1.py) — but a builder that CRASHES is
+    # honest "n/a" (see server/report/cover_slide1.py) - but a builder that CRASHES is
     # recorded, not swallowed: a missing section would otherwise make the §7-§9 audit
     # "not applicable" and slip past the gate.
     build_errors: list[str] = []
@@ -406,11 +406,11 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         build_slide2(payload, assum if _has_assump else {})
     except Exception as exc:
         build_errors.append(f"slide2 builder failed: {type(exc).__name__}: {exc}")
-    # Deck page 2 (the owner's "slide 2"): Kondisi Industri / Katalis Emiten / Sentimen — three
+    # Deck page 2 (the owner's "slide 2"): Kondisi Industri / Katalis Emiten / Sentimen - three
     # narrative paragraphs, no mandatory object. NOTE the naming: `cover.slide1/slide2` above are
     # the cover's two COLUMNS, while the slide numbers in docs/ammn-slides are PAGES. Built after
     # the fills so it reads the filled catalysts/sentiment blocks; a crash is recorded, never
-    # swallowed — a page that silently vanished would take the §7-§9 audit with it.
+    # swallowed - a page that silently vanished would take the §7-§9 audit with it.
     try:
         from server.report.industry_page import build_industry_page
 
@@ -428,7 +428,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         # The valuation ladder is attached inside build_valuation_page (nested, so
         # the deck's frozen top-level key contract is unchanged).
 
-        # Deck slide 5: peer table + own-history bands. Cache-only — the builder performs no network
+        # Deck slide 5: peer table + own-history bands. Cache-only - the builder performs no network
         # call, so a render never spends a Sectors credit (see server/report/peers_data.py).
         from server.report.peers_page import build_peers_page
 
@@ -453,12 +453,12 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     if build_errors:
         payload.setdefault("cover", {})["build_errors"] = build_errors
 
-    # Deterministic Critic gate — the same audit `agents/critic.py` exposes, run here because
+    # Deterministic Critic gate - the same audit `agents/critic.py` exposes, run here because
     # this is the single choke point every render path goes through. The
     # verdict rides on the payload, so output/cache/render_<TICKER>/report_data.json shows it
     # instead of leaving it in a log nobody reads.
     #
-    # Severity: a builder that CRASHED blocks the render — a section silently vanished and the
+    # Severity: a builder that CRASHED blocks the render - a section silently vanished and the
     # document is incomplete. Content violations (a paragraph missing its mandate, a misplaced
     # decimal, the copy budget) are reported rather than thrown: a sparse ticker renders an
     # honest "n/a" cover, and taking the report offline over a style defect would be worse than
@@ -483,7 +483,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                     if not any(m in v for m in _ADVISORY_VIOLATIONS)]
         if blocking:
             logger.warning(
-                "house slide rules (§7-§9): %d structural violation(s) for %s — first: %s",
+                "house slide rules (§7-§9): %d structural violation(s) for %s - first: %s",
                 len(blocking), payload.get("meta", {}).get("ticker"), blocking[0],
             )
     except RuntimeError:
@@ -491,7 +491,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     except Exception as exc:
         logger.warning("house gate unavailable: %s", exc)
     # The strings above were written for maintainers and name repository paths, module paths and API call shapes.
-    # They are rendered, so they are cleaned once here — the funnel the PDF and the frontend payload both pass through.
+    # They are rendered, so they are cleaned once here - the funnel the PDF and the frontend payload both pass through.
     from server.report import text_sanitize
 
     payload = text_sanitize.clean(payload)
@@ -536,14 +536,14 @@ def render_html_for_ticker(
     """Return (template_name, html, report_data).
 
     `native_furniture=True` omits the per-`<div class="page">` header/footer and leaves the
-    furniture to Chromium (see `render_pdf_bytes_for_ticker`) — only the PDF path wants
+    furniture to Chromium (see `render_pdf_bytes_for_ticker`) - only the PDF path wants
     that. The `/html` debug endpoint and the tests keep the per-div furniture because a
     browser (which does not paginate) has no other way to show a header.
     """
     from jinja2 import Environment, FileSystemLoader, select_autoescape
 
     t = ticker.upper().strip()
-    # LOUD policy: no fixture preference in prod — fixtures are declared demo
+    # LOUD policy: no fixture preference in prod - fixtures are declared demo
     # data (scripts/report_fixtures.py), never live responses. Tests that need
     # demo payloads load them explicitly (tests/_loud_test_inputs.py).
     data = _build_live_payload(t, template_override)
@@ -581,7 +581,7 @@ def render_html_for_ticker(
 def _minimal_pdf_bytes(title: str, text_lines: Optional[list[str]] = None) -> bytes:
     """Generate minimal valid PDF (no deps) with title text. Satisfies %PDF magic check."""
     # Very small PDF 1.4 with one page, Helvetica, text
-    lines = text_lines or [title, "RESEARCH — Sectors Hackathon 2026", "Informasi, bukan saran investasi"]
+    lines = text_lines or [title, "RESEARCH - Sectors Hackathon 2026", "Informasi, bukan saran investasi"]
     # Escape parens
     def esc(s: str) -> str:
         return s.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
@@ -664,7 +664,7 @@ async def _html_to_pdf_bytes(
     except Exception as exc:
         # Loud: a failure here silently downgrades the document to per-div furniture (or
         # to weasyprint), which is the exact bug this function exists to prevent. The
-        # usual cause is an invalid margin unit — Chromium rejects `pt`.
+        # usual cause is an invalid margin unit - Chromium rejects `pt`.
         print(f"[warn] Playwright PDF render failed, falling back: {exc}", file=sys.stderr)
 
     # 2) WeasyPrint
@@ -688,7 +688,7 @@ async def render_pdf_bytes_for_ticker(
 
     Two passes by design. Pass 1 renders with the furniture left to Chromium
     (`native_furniture=True`), which is the only variant that reaches EVERY physical page
-    — per-`<div class="page">` furniture sits inside the content flow, so any page that
+    - per-`<div class="page">` furniture sits inside the content flow, so any page that
     overflows produces a continuation page with no header and a duplicated footer
     (house-report-format.md §3-4: header and footer on every slide). Pass 2 only runs if
     Chromium was unavailable, re-rendering with the per-div furniture so the weasyprint
@@ -696,7 +696,7 @@ async def render_pdf_bytes_for_ticker(
     """
     from server.report import house_format
 
-    title = f"{ticker.upper().strip()} — institutional report"
+    title = f"{ticker.upper().strip()} - institutional report"
     tpl_name, html, data = render_html_for_ticker(ticker, template_override, native_furniture=True)
     date_str = house_format.format_house_date((data.get("meta") or {}).get("date"), short=True)
     pdf, engine = await _html_to_pdf_bytes(
@@ -713,7 +713,7 @@ async def render_pdf_bytes_for_ticker(
 
 
 # ---------------------------------------------------------------- routes
-@router_pdf.get("/api/report/{ticker}/pdf", summary="Institutional PDF — Playwright else weasyprint else minimal (always %PDF)")
+@router_pdf.get("/api/report/{ticker}/pdf", summary="Institutional PDF - Playwright else weasyprint else minimal (always %PDF)")
 async def report_pdf(
     ticker: str,
     template: Optional[str] = Query(None, description="force single|sotp|infra|strategy"),
@@ -754,7 +754,7 @@ async def report_pdf(
         )
 
     pdf_bytes, engine, tpl_name, data = await render_pdf_bytes_for_ticker(t, template)
-    title = f"{t} — {data.get('meta', {}).get('report_type', 'Report')} ({tpl_name})"
+    title = f"{t} - {data.get('meta', {}).get('report_type', 'Report')} ({tpl_name})"
 
     # Write to temp file for FileResponse (ensures proper streaming + Content-Disposition)
     tmp = tempfile.NamedTemporaryFile(delete=False, suffix=".pdf", prefix=f"{t}_")

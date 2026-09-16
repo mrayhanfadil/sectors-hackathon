@@ -1,4 +1,4 @@
-"""PDF renderer — Jinja2 templates + Chart.js via Playwright chromium (T10 task item 1).
+"""PDF renderer - Jinja2 templates + Chart.js via Playwright chromium (T10 task item 1).
 
 Pipeline: report_data.json -> select_template() -> Jinja2 HTML -> chromium pdf().
 Header "RESEARCH + tanggal" and OJK footer are baked per page (Playwright
@@ -38,7 +38,7 @@ def ensure_industry_page(report_data: dict) -> dict:
     """Attach deck page 2 when the payload does not carry it yet.
 
     The API builds the page itself; this keeps the CLI/native path from rendering a payload that
-    predates the page. Never raises here — a builder failure shows up in `validate()`.
+    predates the page. Never raises here - a builder failure shows up in `validate()`.
     """
     if report_data.get("industry_page"):
         return report_data
@@ -124,7 +124,7 @@ def render_html(report_data: dict, native_furniture: bool = False) -> tuple[str,
 
     env.filters["idr"] = _idr
     env.filters["pct"] = _pct
-    # Same house furniture as the API path — one implementation, so the two Jinja
+    # Same house furniture as the API path - one implementation, so the two Jinja
     # environments cannot drift into rendering different documents from one payload.
     _root = HERE.parent
     if str(_root) not in sys.path:

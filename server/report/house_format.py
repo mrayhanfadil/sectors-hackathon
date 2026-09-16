@@ -1,4 +1,4 @@
-"""House document furniture — single source of truth for the Jinja/HTML report path.
+"""House document furniture - single source of truth for the Jinja/HTML report path.
 
 The house rules are specified in `docs/rules/house-report-format.md` and implemented
 by the Jinja/HTML template tree that the report API and the FE serve. Template
@@ -101,7 +101,7 @@ def logo_data_uri() -> str:
     """Inline the Sectors mark so no renderer has to resolve a relative path.
 
     The Playwright path and the weasyprint fallback disagree about base URLs, and an
-    un-resolvable image silently renders as nothing — the header would lose the logo
+    un-resolvable image silently renders as nothing - the header would lose the logo
     with no error. Inlining removes that failure mode.
     """
     if not LOGO_PATH.exists():
@@ -123,11 +123,11 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
       the furniture themselves, once per `<div class="page">`.
     * True (Chromium/Playwright): the furniture is drawn by the PDF engine through
       `header_template()` / `footer_template()` + `PDF_MARGIN`. This is the only variant
-      that survives pagination — per-div furniture lives inside the content flow, so a
+      that survives pagination - per-div furniture lives inside the content flow, so a
       page that overflows produces a continuation page with NO header, and the previous
       logical page's footer gets carried onto it (measured: 3 of 8 physical pages without
       a header, footer page numbers `[1,2,-,3,-,4,-,5]`). Per-div furniture is not
-      "wrong" — it is simply only correct when one div is exactly one physical page.
+      "wrong" - it is simply only correct when one div is exactly one physical page.
     """
     meta = (report_data or {}).get("meta") or {}
     # The investment-thesis anchor is part of the house layout, so it rides with the furniture: every
@@ -139,18 +139,18 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
     # convention: a negative reads (28,8) rather than -28,8.
     from server.report import numfmt as _nf
 
-    def _f_idn(value, digits=0, na="—"):
+    def _f_idn(value, digits=0, na="-"):
         return _nf.idn(value, digits, na=na)
 
-    def _f_dec(value, digits=1, na="—"):
+    def _f_dec(value, digits=1, na="-"):
         return _nf.dec(value, digits, na=na)
 
     def _f_auto(value):
         from server.report import numfmt as _n
 
-        return _n.auto(value, na="—")
+        return _n.auto(value, na="-")
 
-    def _f_acct(value, digits=0, na="—"):
+    def _f_acct(value, digits=0, na="-"):
         text = _nf.idn(abs(value) if isinstance(value, (int, float)) else value, digits, na=na)
         return f"({text})" if isinstance(value, (int, float)) and value < 0 else text
 
@@ -187,7 +187,7 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
 # classes from macros.html, and any derived value (the formatted date, the inlined logo)
 # has to be passed in from Python.
 #
-# The page-number span is Chromium's own substitution — `class="pageNumber"` is replaced
+# The page-number span is Chromium's own substitution - `class="pageNumber"` is replaced
 # with the physical page index at render time, which is exactly the "real page counter,
 # not a per-page literal" the house rule asks for.
 FONT_STACK = "Helvetica Neue, Arial, sans-serif"
@@ -196,7 +196,7 @@ PAGE_SIDE_PAD = "40pt"
 # Space reserved OUTSIDE the content flow for the furniture. Header content is
 # ~40pt tall (title + date + logo + divider), footer ~24pt.
 # NOTE: Chromium's printToPDF rejects `pt` margins ("Failed to parse parameter value:
-# 58pt") and silently drops the whole call — use px/in/mm/cm. Values in px here.
+# 58pt") and silently drops the whole call - use px/in/mm/cm. Values in px here.
 PDF_MARGIN = {"top": "77px", "bottom": "61px", "left": "0px", "right": "0px"}
 
 

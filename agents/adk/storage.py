@@ -270,8 +270,8 @@ class AgentRunStore:
     def append_event(self, run_id: str, seq: int, event: Any) -> None:
         """Insert one agent_events row. Extract author/node/event_type/ts from event;
         serialize full event to JSON for payload_json.
-        Skip if run_id unknown (defensive — run_id may not exist if start_run race).
-        Commit after each insert (no batching — durability > perf for ~50 events/run).
+        Skip if run_id unknown (defensive - run_id may not exist if start_run race).
+        Commit after each insert (no batching - durability > perf for ~50 events/run).
         """
         serialized = serialize_event(event)
         author = serialized.get("author", "")

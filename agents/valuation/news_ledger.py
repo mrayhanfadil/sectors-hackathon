@@ -3,12 +3,12 @@
 Bridges ``news_output`` (ADK state key, see
 ``agents/adk/agents/instructions.py`` news schema) into quantified
 forward drivers consumed by the modeler. The social leg is retired
-(14 Sep 2026) — ``extract_drivers`` keeps its ``social`` param for
+(14 Sep 2026) - ``extract_drivers`` keeps its ``social`` param for
 back-compat and treats None as no social drivers.
 
 Placement: ``agents/valuation/`` (not ``agents/adk/tools/``) because this is
 deterministic valuation input math consumed by the modeler / ``dcf_full``
-path — same reason ``assumptions.py`` and ``gates.py`` live here.
+path - same reason ``assumptions.py`` and ``gates.py`` live here.
 
 LOUD rules (enforced, never silent):
   1. No driver without citation (url + date + verbatim quote) becomes an
@@ -21,7 +21,7 @@ LOUD rules (enforced, never silent):
 
 Schema extension (never breaks existing keys):
   - Numeric assumption keys stay plain floats (``dcf_full`` does
-    ``float(...)`` casts) — provenance travels in parallel
+    ``float(...)`` casts) - provenance travels in parallel
     ``{key}_overlay`` detail objects plus a top-level ``news_overlays`` block.
   - New keys introduced only as additions: ``ni_growth`` (+ provenance),
     ``news_overlays``, ``assumption_ledger``.
@@ -370,7 +370,7 @@ def apply_ledger_overlays(
             "value_pct": conservative,
             "conflict": bool(conflict),
             "conflict_note": (
-                f"Conflicting revenue guides {conflict['values_pct']} — "
+                f"Conflicting revenue guides {conflict['values_pct']} - "
                 f"using conservative {conservative}%." if conflict else ""
             ),
         })
@@ -392,7 +392,7 @@ def apply_ledger_overlays(
             "value_pct": conservative,
             "conflict": bool(conflict),
             "conflict_note": (
-                f"Conflicting NI guides {conflict['values_pct']} — "
+                f"Conflicting NI guides {conflict['values_pct']} - "
                 f"using conservative {conservative}%." if conflict else ""
             ),
         })
@@ -417,7 +417,7 @@ def apply_ledger_overlays(
             "relative_shift": round(conservative_shift, 6),
             "conflict": bool(conflict),
             "conflict_note": (
-                f"Conflicting capex signals {conflict.get('directions')} — "
+                f"Conflicting capex signals {conflict.get('directions')} - "
                 "using highest capex (conservative for FCF)." if conflict else ""
             ),
         })
@@ -427,11 +427,11 @@ def apply_ledger_overlays(
         applied.append("capex")
     elif cap:
         # Directional-only signal: recorded, NO numeric overlay (LOUD rule 1
-        # extended — never invent a magnitude).
+        # extended - never invent a magnitude).
         overlays["capex"] = _prov(cap, {
             "value": None,
             "non_quantified": True,
-            "note": "Cited capex direction without explicit % magnitude — "
+            "note": "Cited capex direction without explicit % magnitude - "
                     "recorded for modeler judgment, no numeric overlay applied.",
             "conflict": bool(conflicts.get("capex")),
         })

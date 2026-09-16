@@ -1,4 +1,4 @@
-# Slide 4 — Valuasi Intrinsik (DCF / DDM / RNAV)
+# Slide 4 - Valuasi Intrinsik (DCF / DDM / RNAV)
 
 ## 0. Binding rule text (owner, 12 Sep 2026)
 
@@ -9,7 +9,7 @@ hand, never the system.
 
 > Metode dipilih manual oleh analis berdasarkan karakteristik emiten (bank pakai DDM, property/resources pakai RNAV, general corporate pakai DCF), bukan otomatis dari sistem. Struktur berikut generik, hanya satu opsi yang aktif per report sesuai emiten yang dicover.
 
-### Opsi A — DCF (FCFF-based)
+### Opsi A - DCF (FCFF-based)
 
 > **Exhibit 8. FCFF Forecast and Terminal Value.** Satu tabel gabungan dengan tiga blok:
 >
@@ -25,7 +25,7 @@ hand, never the system.
 >
 > Narasi (di bawah ketiga exhibit, satu blok terpadu): sebutkan parameter mana yang paling sensitif terhadap valuasi (biasanya terminal growth di DCF perpetual), justifikasi asumsi growth/margin di forecast FCFF dikaitkan ke driver bisnis riil yang sudah dibahas di Slide 2-3 (bukan angka yang berdiri sendiri tanpa linkage), dan kalau ada gap material antara hasil Gordon Growth dan Exit Multiple, itu wajib di-flag eksplisit sebagai unresolved assumption yang perlu disclosure ke reader, bukan dirata-rata diam-diam.
 
-### Opsi B — DDM (bank/institusi keuangan)
+### Opsi B - DDM (bank/institusi keuangan)
 
 > **Exhibit 8. Dividend Forecast and Terminal Value.** Blok 1 explicit period: Net Profit, Payout Ratio (%) asumsi berdasarkan historical payout perusahaan atau kebijakan dividen yang diumumkan, DPS, DPS growth (%), Discount Factor (menggunakan Cost of Equity bukan WACC karena DDM adalah equity valuation langsung), PV of DPS. Blok 2 terminal value: Terminal DPS, Terminal Growth, Terminal Value, PV of Terminal Value, Fair Value per Share (Gordon Growth formula: Terminal DPS x (1+g) / (CoE-g)).
 >
@@ -37,7 +37,7 @@ hand, never the system.
 >
 > Narasi: fokus ke ROE trajectory sebagai driver utama (bukan cash flow generation seperti DCF), dan sustainability payout ratio ke depan mengingat kebutuhan modal untuk pertumbuhan kredit/aset bank.
 
-### Opsi C — RNAV (property / plantation / resources dengan aset dominan)
+### Opsi C - RNAV (property / plantation / resources dengan aset dominan)
 
 > **Exhibit 8. Asset Breakdown and RNAV Bridge.** Blok 1 per-aset: daftar aset/proyek/tambang/landbank, dengan kolom nama aset, ukuran (landbank hectare, cadangan ton/barrel, atau kapasitas produksi tergantung jenis aset), NAV per aset (hasil DCF per proyek atau appraisal value pihak independen), persentase kepemilikan emiten di aset tersebut, NAV attributable ke emiten (NAV per aset x % kepemilikan).
 >
@@ -63,21 +63,21 @@ the data the Sectors API carries, the choice is constrained:
 
 | Option | Verdict for AMMN | Evidence |
 |---|---|---|
-| B — DDM | not applicable | AMMN pays no dividend: every dividend field in `company_report` is null (`historical_dividends`, `upcoming_dividends`, `yield_ttm`, `payout_ratio`), and `payout` is 0.0 in the assumptions. There is no DPS to discount. |
-| C — RNAV | blocked by data | Sectors carries no asset-level data: no reserve tonnage, no per-asset production, no NAV per asset. RNAV needs reserve statements, ownership per asset, a commodity price deck and a discount rate per asset — annual/technical report material, not API material. |
-| A — DCF | active | The engine runs on the Sectors inputs and produces all three exhibits. Modified as the rules require for finite resources: Gordon and the exit multiple are shown side by side and the gap is disclosed, never averaged. |
+| B - DDM | not applicable | AMMN pays no dividend: every dividend field in `company_report` is null (`historical_dividends`, `upcoming_dividends`, `yield_ttm`, `payout_ratio`), and `payout` is 0.0 in the assumptions. There is no DPS to discount. |
+| C - RNAV | blocked by data | Sectors carries no asset-level data: no reserve tonnage, no per-asset production, no NAV per asset. RNAV needs reserve statements, ownership per asset, a commodity price deck and a discount rate per asset - annual/technical report material, not API material. |
+| A - DCF | active | The engine runs on the Sectors inputs and produces all three exhibits. Modified as the rules require for finite resources: Gordon and the exit multiple are shown side by side and the gap is disclosed, never averaged. |
 
-The anchor (target price) stays the relative leg — `data/assumptions/AMMN.json` already records
-`anchor: ev_ebitda`, `anchor_basis: gate_primary: EV/EBITDA mid-cycle (REL)` — and this page exists to
+The anchor (target price) stays the relative leg - `data/assumptions/AMMN.json` already records
+`anchor: ev_ebitda`, `anchor_basis: gate_primary: EV/EBITDA mid-cycle (REL)` - and this page exists to
 show how far the cash-flow model reads below it.
 
 ## 2. Engine
 
 Intrinsic value is computed by the repo's own engine modules under `server/report/engines/`:
 
-* `dcf_engine/` — FCFF arithmetic (CAPM cost of equity, cost of debt, Gordon terminal value with the
+* `dcf_engine/` - FCFF arithmetic (CAPM cost of equity, cost of debt, Gordon terminal value with the
   implied exit multiple, discounting and the bridge to equity, the WACC x growth grid).
-* `ddm_engine/` — the equity-side arithmetic (dividend discounting, terminal value with the
+* `ddm_engine/` - the equity-side arithmetic (dividend discounting, terminal value with the
   stable-phase payout test, fair P/BV for the inverse cost-of-equity cross-check).
 
 Both are pure calculators: they fetch nothing, import no network client, and take every input from
@@ -97,40 +97,40 @@ Which numbers go in is the analyst's job; the engines only do the arithmetic.
 | The method choice is auditable | `audit_valuation_page` | the subtitle must name DDM and RNAV and why they were excluded |
 | No re-derivation of the numbers | `server/report/valuation_page.py` | the projection columns come from the same cover table the reader sees, and the gate compares slide 4 against the cover's DCF leg |
 
-### 4.1 Opsi C (RNAV) — the data contract
+### 4.1 Opsi C (RNAV) - the data contract
 
 Wired as `server/report/valuation_rnav.py` with its own gate arm (`_audit_rnav_page`). It needs, per
 asset: `name`, `size` + `size_unit` (ha / ton / boe / MW), `nav_bn` (per-project DCF or an independent
 appraisal), `ownership_pct`, a `nav_source`, and optionally `discount_rate`. The assumptions file also
 carries `rnav_discount` and either `rnav_discount_comparables` (a benchmark: peer or sector discount
-levels) or nothing — in which case the page declares the discount a PURE JUDGMENT, as the rules demand.
+levels) or nothing - in which case the page declares the discount a PURE JUDGMENT, as the rules demand.
 
 No engine repo covers RNAV (the owner supplied DCF, DDM and relative peers), so the arithmetic is the
 open identity: SUM(NAV x ownership) + cash - total debt - PV(corporate overhead), divided by shares,
 minus the discount to RNAV. With no asset data at all the branch returns `available: False` and lists
-what is missing — it never invents a NAV, and it says so when the bridge leaves a non-positive RNAV.
+what is missing - it never invents a NAV, and it says so when the bridge leaves a non-positive RNAV.
 
 **Verified 12 Sep 2026: Sectors cannot supply this.** `GET /v2/news/filings/` is an insider-filing feed
 (`references/sectors-api-and-mcp.md`: "insider buy/sell + holder_type"; filters are transaction_type,
-holder_type, sector and dates). The cached AMMN pull returns 22 filings — 11 buys worth Rp 1,901 bn
-against 9 sells worth Rp 5,442 bn between 2025-08-15 and 2026-07-22 — each carrying an IDX PDF link in
+holder_type, sector and dates). The cached AMMN pull returns 22 filings - 11 buys worth Rp 1,901 bn
+against 9 sells worth Rp 5,442 bn between 2025-08-15 and 2026-07-22 - each carrying an IDX PDF link in
 `source`, and nothing else: no annual report, no reserve statement, no per-asset production. Asset-level
 NAV has to come from the issuer's annual report (amman.co.id/annual-report) or from the analyst.
 
-## 3.1 Decision log — RNAV stays dormant for AMMN
+## 3.1 Decision log - RNAV stays dormant for AMMN
 
 **Decision (owner, 12 Sep 2026):** do not populate AMMN's RNAV page. Keep Opsi A (DCF) as the intrinsic
 branch and the relative leg as the anchor; Opsi C remains implemented and generic, but no AMMN asset
 table is built.
 
 **Why:** the project uses Sectors data only. Sectors carries no reserve tonnage, no per-asset production
-and no NAV per asset — verified against both the live endpoint and the cached pull (see §4.1). The other
+and no NAV per asset - verified against both the live endpoint and the cached pull (see §4.1). The other
 candidate sources (the annual report at amman.co.id/annual-report, technical reports, KJPP appraisals)
 are outside that boundary, so an AMMN RNAV would be built on inputs the project has ruled out.
 
-**Alternatives rejected:** (a) pulling the annual report and extracting reserves — cheap to do, but it
+**Alternatives rejected:** (a) pulling the annual report and extracting reserves - cheap to do, but it
 breaks the Sectors-only rule and would put non-Sectors numbers in a deck whose every other figure traces
-to Sectors; (b) filling the asset table with analyst judgment NAVs — the gate would pass but the number
+to Sectors; (b) filling the asset table with analyst judgment NAVs - the gate would pass but the number
 would not be reproducible from data.
 
 **Consequence, enforced in code:** `valuation_rnav.py` now refuses any asset whose `nav_source` does not
@@ -143,9 +143,9 @@ data does live in Sectors can still activate `valuation_method: "rnav"`.
 the page falls back to the DCF and says so on the page itself; a sector heuristic never switches the
 model silently, because the rules make the choice the analyst's. The DDM branch ships with its own
 builder (`server/report/valuation_ddm.py`), its own gate arm (`_audit_ddm_page`) and guard tests on a
-synthetic dividend payer — an issuer that pays nothing gets a loud empty page, not invented dividends.
+synthetic dividend payer - an issuer that pays nothing gets a loud empty page, not invented dividends.
 
-## 7. Decision log — multiple basis after the earnings path changed (12 Sep 2026)
+## 7. Decision log - multiple basis after the earnings path changed (12 Sep 2026)
 
 Adopting a cited 3-year earnings path (Rp 66.9 / 71.7 / 81.4 tn revenue, EBITDA 33.9 / 44.7 / 55.2 tn) made
 the deck's own multiple unusable, because the multiple and the level it multiplies were measured on
@@ -165,9 +165,9 @@ verified exact against the dataset's own prints, max gap 0.00x):
 | 2024 | 672,501 | 23,040 | 20,984 | 29.19x | 32.05x |
 | 2025 | 562,973 | 16,410 | 18,396 | 34.31x | 30.60x |
 
-Trailing mean 31.90x vs normalised mean **31.48x** — the rebase moves nothing. A forward-consistent series
+Trailing mean 31.90x vs normalised mean **31.48x** - the rebase moves nothing. A forward-consistent series
 (EV_t / realised EBITDA_t+1: 22.0x for 2023, 41.0x for 2024) is no better. The reason is visible in the same
-table: **EV has sat between Rp 506-672 tn across the cycle while EBITDA halved and doubled** — the market
+table: **EV has sat between Rp 506-672 tn across the cycle while EBITDA halved and doubled** - the market
 prices the asset base, not trailing earnings, so an earnings-multiple anchor is the wrong instrument for
 this name. Applying the rebased multiple to the new path gives Rp 13,362-20,564 per share, i.e. 2.7-4.2x the
 market price: unusable, and now recorded as such in `tests/test_normalised_multiple.py`.
@@ -179,14 +179,14 @@ market price: unusable, and now recorded as such in `tests/test_normalised_multi
 | DCF on the cited FCF path (Rp 11.0/26.1/35.1 tn) | Rp **2,392**/share (g 2.5%) · Rp 1,790 (g 0%) | our WACC 13.77%, our bridge |
 | Market's own multiple today | EV/EBITDA **13.3x** FY26F · 10.0x FY27F · 9.0x mid-cycle | fact, not assumption |
 | BRIDS' published TP | Rp 6,000 | implies **15.7x** FY26F + Elang NAV Rp 4,522/share (75% of their value) |
-| The deck's TP before this change | Rp 5,873 | implies **15.4x** FY26F — same neighbourhood, weaker derivation |
+| The deck's TP before this change | Rp 5,873 | implies **15.4x** FY26F - same neighbourhood, weaker derivation |
 
 **Reserve-based leg: not buildable from the licence.** A case-insensitive scan of the licensed payload for
 `reserve`, `ore_tonnage`, `grade`, `proven_probable` finds nothing, so an RNAV/EV-per-reserve leg requires an
 externally cited input; it is disclosed as excluded rather than estimated.
 
 **Recommendation (pending owner sign-off, because it is the deck's headline number):** lead with a target
-multiple on a stated basis — 15.0x FY26F EBITDA gives **Rp 5,667**/share, 15.7x gives Rp 5,994 — justified as
+multiple on a stated basis - 15.0x FY26F EBITDA gives **Rp 5,667**/share, 15.7x gives Rp 5,994 - justified as
 the market's current forward multiple (13.3x) plus the ramp not yet printed, cross-checked against BRIDS'
 implied 15.7x. Then print the DCF (Rp 2,392) and the excluded Elang optionality as the counter-view instead
 of hiding them. What must NOT ship is the 28.42x pairing, or a rebased multiple presented as the fix.

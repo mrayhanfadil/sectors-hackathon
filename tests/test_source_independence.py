@@ -29,7 +29,7 @@ def payload():
 
 
 def test_no_research_house_is_named_in_the_rendered_deck(payload):
-    """A news wire naming which broker was buying is published flow data, not a citation — so this looks for
+    """A news wire naming which broker was buying is published flow data, not a citation - so this looks for
     the attribution form ('<house> Equity Research', '<house> Sekuritas', '<house> initiation')."""
     html = render_html_for_ticker("AMMN", None)[1]
     # Render the document here instead of reading a leftover /tmp file: a stale artifact made this guard pass on one
@@ -39,7 +39,7 @@ def test_no_research_house_is_named_in_the_rendered_deck(payload):
     for name in ("BRIDS", "BRI Danareksa", "Danareksa"):
         assert name.lower() not in text.lower(), f"{name} still reaches the page"
     for name in NAMES:
-        form = re.compile(re.escape(name) + r"\s*[,\-–—]?\s*(equity research|research|sekuritas|securities|"
+        form = re.compile(re.escape(name) + r"\s*[,\-–-]?\s*(equity research|research|sekuritas|securities|"
                           r"initiation)\b", re.I)
         assert not form.search(text), f"the page cites {name}"
 
@@ -56,14 +56,14 @@ def test_the_printed_attribution_carries_no_house_name(payload):
 
 
 def test_display_attribution_strips_a_house_name():
-    assert "brids" not in display_attribution("BRIDS Equity Research — initiation 29 Jun 2026").lower()
+    assert "brids" not in display_attribution("BRIDS Equity Research - initiation 29 Jun 2026").lower()
     assert display_attribution("BRIDS Equity Research") == "estimasi tim"
     assert display_attribution(None) == "estimasi tim"
 
 
 def test_gate_flags_an_injected_house_name(payload):
     assert audit_source_independence(payload) == []
-    for inject in ("BRIDS Equity Research — initiation 29 Jun 2026",
+    for inject in ("BRIDS Equity Research - initiation 29 Jun 2026",
                    "Maybank Sekuritas, AMMN initiation",
                    "source: Samuel Sekuritas report"):
         broken = copy.deepcopy(payload)

@@ -261,7 +261,7 @@ def _collect_all_strings(obj: Any) -> list[str]:
 def test_negative_control_builder_module_absent():
     """Positive control: scripts/report_fixtures.py is deleted (purge, Sep 2026)."""
     assert not (REPO_ROOT / "scripts" / "report_fixtures.py").exists(), (
-        "scripts/report_fixtures.py resurrected — static builders stay purged"
+        "scripts/report_fixtures.py resurrected - static builders stay purged"
     )
 
 

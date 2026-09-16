@@ -11,13 +11,13 @@ Generates minimalist, publication-grade PNG charts for research reports:
 8. chart_ev_equity_waterfall: EV to Equity valuation waterfall bridge
 9. chart_index_trend: Macro trend line with shaded area
 10. chart_margin_trajectory: Revenue bars + multi-margin trajectory time-series
-#11. chart_production_cost: Mining Exhibit-7 — production volume bars (actual vs
+#11. chart_production_cost: Mining Exhibit-7 - production volume bars (actual vs
 #    forecast) + cash-cost line (C1/AISC), both unit-parameterized
-#12. chart_fin_combo: generic Slide-3 combo — bars actual-solid vs forecast-tinted/hatched
+#12. chart_fin_combo: generic Slide-3 combo - bars actual-solid vs forecast-tinted/hatched
 #    + line on a secondary axis (one visual grammar for Revenue/EBITDA/Net Profit)
 #13. chart_revenue_combo / chart_ebitda_combo / chart_netprofit_combo: thin wrappers
 #    binding the canonical Slide-3 labels/units onto chart_fin_combo
-#14. chart_history_band: generic own-history band — trailing line + 1Y mean (dashed) +
+#14. chart_history_band: generic own-history band - trailing line + 1Y mean (dashed) +
 #    1Y median (dotted) + current-level marker at the right edge
 #15. chart_pe_band_1y / chart_pbv_band_1y: thin wrappers binding the P/E and P/BV
 #    trailing-band titles onto chart_history_band
@@ -1184,7 +1184,7 @@ def peer_pe_bar(
 
     ax.set_xlabel("Forward P/E (x)", fontsize=7.8, color=p["muted"], labelpad=6)
     title_fp = fm.FontProperties(family=_FONT_SERIF_NAME)
-    ax.set_title(f"Peer Comparison — Forward P/E Multiple ({ticker.upper()})", loc="left", fontsize=8.8, fontproperties=title_fp, color=p["ink"], pad=8)
+    ax.set_title(f"Peer Comparison - Forward P/E Multiple ({ticker.upper()})", loc="left", fontsize=8.8, fontproperties=title_fp, color=p["ink"], pad=8)
 
     ticker_lower = ticker.strip().lower()
     target_out = out if out is not None else Path(f"output/cache/render_{ticker_lower}/charts/peer_pe.png")
@@ -1269,7 +1269,7 @@ def peer_evebitda_bar(
 
     ax.set_xlabel("EV/EBITDA (x)", fontsize=7.8, color=p["muted"], labelpad=6)
     title_fp = fm.FontProperties(family=_FONT_SERIF_NAME)
-    ax.set_title(f"Peer Comparison — EV/EBITDA Multiple ({ticker.upper()})", loc="left", fontsize=8.8, fontproperties=title_fp, color=p["ink"], pad=8)
+    ax.set_title(f"Peer Comparison - EV/EBITDA Multiple ({ticker.upper()})", loc="left", fontsize=8.8, fontproperties=title_fp, color=p["ink"], pad=8)
 
     ticker_lower = ticker.strip().lower()
     target_out = out if out is not None else Path(f"output/cache/render_{ticker_lower}/charts/peer_evebitda.png")
@@ -1531,7 +1531,7 @@ def relval_bars(
     ax.legend(frameon=False, fontsize=7.2, loc="upper right")
 
     title_fp = fm.FontProperties(family=_FONT_SERIF_NAME)
-    ax.set_title(f"Valuasi Relatif — Komparasi P/E & EV/EBITDA ({ticker.upper()} vs Peers)", loc="left", fontsize=8.6, fontproperties=title_fp, color=p["ink"], pad=8)
+    ax.set_title(f"Valuasi Relatif - Komparasi P/E & EV/EBITDA ({ticker.upper()} vs Peers)", loc="left", fontsize=8.6, fontproperties=title_fp, color=p["ink"], pad=8)
 
     ticker_lower = ticker.strip().lower()
     target_out = outfile if outfile is not None else Path(f"output/cache/render_{ticker_lower}/charts/relval_bars.png")

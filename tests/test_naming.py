@@ -44,7 +44,7 @@ def _render_html_or_skip(ticker: str) -> str:
 
 @pytest.fixture(autouse=True)
 def _loud_gate_inputs(monkeypatch):
-    """LOUD policy: the loader refuses invented gate params — inject explicit
+    """LOUD policy: the loader refuses invented gate params - inject explicit
     test-owned inputs into whatever it returns (see tests/_loud_test_inputs.py).
     Text assertions only."""
     import server.routers.pdf as PDF

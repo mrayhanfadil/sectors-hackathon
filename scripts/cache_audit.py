@@ -11,7 +11,7 @@ recovers that call set from the ticker's own run history instead of guessing:
    out, capturing the exact (endpoint, params) each wrapper would request,
 3. look each key up in the cache and report fresh / expired / missing.
 
-`--pin` extends `expires_at` on the rows it can see (free — an UPDATE, not a
+`--pin` extends `expires_at` on the rows it can see (free - an UPDATE, not a
 fetch). `--clean-junk` drops rows left behind by test fixtures with fake tickers.
 
 Usage:
@@ -49,7 +49,7 @@ def calls_from_run_history(ticker: str) -> list[tuple[str, str, dict]]:
         (ticker.upper(),),
     ).fetchone()
     if not row:
-        raise SystemExit(f"no run found for {ticker} — run the pipeline once, then audit")
+        raise SystemExit(f"no run found for {ticker} - run the pipeline once, then audit")
     run_id = row[0]
 
     recorded: list[tuple[str, dict]] = []
@@ -149,7 +149,7 @@ def main() -> int:
         fetched, expires, n = r
         age = (now - fetched) / 3600
         ttl = (expires - fetched) / 3600
-        # An aged row is still a HIT unless SECTORS_STALE_OK=0 — say so, or the
+        # An aged row is still a HIT unless SECTORS_STALE_OK=0 - say so, or the
         # audit reports a pending charge that the next run will never make.
         state = "aged*" if expires < now else "fresh"
         print(f"{tool:26s} {state:9s} {age:7.1f} {ttl:6.1f} {n:8d}")
@@ -188,9 +188,9 @@ def main() -> int:
               f"{len(missing)} have NO row and would BILL on the next run:")
         for tool, endpoint, params in missing:
             print(f"  {tool}: {endpoint} {json.dumps(params, sort_keys=True)}")
-        print("\nDo NOT fetch blindly with thin credit — decide per endpoint whether the data is worth the credit.")
+        print("\nDo NOT fetch blindly with thin credit - decide per endpoint whether the data is worth the credit.")
         return 1
-    print(f"VERDICT: all {len(calls)} calls serve from cache — the next {ticker} run costs 0 credits.")
+    print(f"VERDICT: all {len(calls)} calls serve from cache - the next {ticker} run costs 0 credits.")
     print("aged* rows are HITS too: SECTORS_STALE_OK defaults to 1, so only a MISSING key can bill.")
     return 0
 

@@ -1,6 +1,6 @@
 """Deterministic DCF + WACC engine (FCFF/FCFE, Gordon terminal).
 
-Part of T02 — Deterministic Engines (Python, NOT LLM math).
+Part of T02 - Deterministic Engines (Python, NOT LLM math).
 Mirrors server/engines/__init__.py and agents/adk/tools/finance_tools.py signatures
 so the FastAPI backend and the ADK Modeler agent can import this file directly.
 
@@ -789,7 +789,7 @@ def scenarios_bull_bear(
 
 
 def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
-    """Load valuation assumptions for ticker — FILE ONLY (LOUD, Sep 2026).
+    """Load valuation assumptions for ticker - FILE ONLY (LOUD, Sep 2026).
 
     KILLED: the five hardcoded per-ticker seed bases (MTEL/TOWR/TLKM, RATU,
     CDIA, BBCA, ADRO with invented revenue/ebitda/shares/last_price) plus the
@@ -813,7 +813,7 @@ def _load_ticker_assumptions(ticker: str) -> Dict[str, Any]:
     if len(base) <= 1:
         raise ValueError(
             f"no assumptions for {t}: add data/assumptions/{t}.json "
-            f"(hardcoded seed bases killed Sep 2026 — refusing invented DCF)")
+            f"(hardcoded seed bases killed Sep 2026 - refusing invented DCF)")
     return base
 
 
@@ -832,7 +832,7 @@ def dcf_full(ticker: str, overrides: Optional[Dict[str, Any]] = None) -> Dict[st
         assum.update(overrides)
 
     # LOUD gate (Sep 2026, no-fabrication sweep): valuation-driving inputs must
-    # be explicit (file or overrides) — no silent .get() invention. Display /
+    # be explicit (file or overrides) - no silent .get() invention. Display /
     # scenario knobs (years, sens steps, thresholds, sds) keep safe defaults.
     _need = ["rf", "beta", "erp", "cod", "revenue", "ebit_margin", "g1",
              "tax", "capex_pct", "nwc_pct"]

@@ -1,4 +1,4 @@
-"""Tests for agents.valuation.assumptions — news & sentiment assumption modulation."""
+"""Tests for agents.valuation.assumptions - news & sentiment assumption modulation."""
 
 import pytest
 from agents.valuation.assumptions import adjust_assumptions

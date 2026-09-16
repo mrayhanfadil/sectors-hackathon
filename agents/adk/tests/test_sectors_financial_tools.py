@@ -1,4 +1,4 @@
-"""Tests for Sectors financial FunctionTools (gap-fix Lane A) — keyless CI green.
+"""Tests for Sectors financial FunctionTools (gap-fix Lane A) - keyless CI green.
 
 - All 6 tools keyless -> {data: [], source: 'sectors_missing_key'}, never raise.
 - Ticker normalization: '.JK' suffix + lowercase -> bare upper code.

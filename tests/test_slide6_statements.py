@@ -1,4 +1,4 @@
-"""Slide 6 — statements page: the rule's structure, the tie-outs, and the disclosures that keep it honest."""
+"""Slide 6 - statements page: the rule's structure, the tie-outs, and the disclosures that keep it honest."""
 from __future__ import annotations
 
 import pathlib
@@ -34,7 +34,7 @@ def page_payload():
 def rows(page, block):
     """Key by the rule's own row name: strip the parenthetical tails the page adds."""
     def norm(label: str) -> str:
-        return str(label).split(" —")[0].split(" / ")[0].split(" (")[0].strip()
+        return str(label).split(" -")[0].split(" / ")[0].split(" (")[0].strip()
 
     out = {}
     for r in page[block]["rows"]:
@@ -233,14 +233,14 @@ def test_spec_carries_the_binding_text_and_the_decisions():
 def test_prompt_rule_reaches_the_page_builders_only():
     from agents.adk.agents import instructions as I
 
-    for marker in ("SLIDE 6 — INCOME STATEMENT", "Net Profit (bold AND highlighted",
+    for marker in ("SLIDE 6 - INCOME STATEMENT", "Net Profit (bold AND highlighted",
                    "Total Liabilities & Equity (bold) which MUST equal Total Assets exactly",
                    "BBTN pattern", "RECONCILING line", "key_financials", "n/a WITH the reason"):
         assert marker in I.SLIDE6_RULE, f"slide-6 rule lost: {marker}"
     for name in ("writer_instruction", "critic_instruction", "industry_instruction"):
-        assert "SLIDE 6 — INCOME STATEMENT" in getattr(I, name), f"{name} lost the slide-6 rule"
+        assert "SLIDE 6 - INCOME STATEMENT" in getattr(I, name), f"{name} lost the slide-6 rule"
     for name in ("news_harvester_instruction",):
-        assert "SLIDE 6 — INCOME STATEMENT" not in getattr(I, name)
+        assert "SLIDE 6 - INCOME STATEMENT" not in getattr(I, name)
 
 
 def test_template_and_router_wire_slide_six():

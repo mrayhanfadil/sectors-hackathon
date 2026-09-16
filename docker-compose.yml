@@ -29,7 +29,7 @@ services:
     volumes:
       - ./data:/app/data
       - ./output:/app/output
-    # The container IS production now (systemd unit retired 15 Sep 2026), so it owns 8777 —
+    # The container IS production now (systemd unit retired 15 Sep 2026), so it owns 8777 -
     # the port the Cloudflare tunnel already targets, which is why the cutover needs no
     # dashboard change. cloudflared runs on this host, so all-interface publishing matches
     # the exposure the retired unit had (0.0.0.0:8777).

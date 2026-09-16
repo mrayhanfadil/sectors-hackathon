@@ -6,7 +6,7 @@
 #
 #     http://www.apache.org/licenses/LICENSE-2.0
 
-"""Deterministic finance tools — FunctionTool wrappers for the valuation engines.
+"""Deterministic finance tools - FunctionTool wrappers for the valuation engines.
 
 These tools are the ONLY way the Modeler agent does math. LLMs must call
 them rather than computing in-text.
@@ -25,7 +25,7 @@ import json
 import math
 from typing import Any
 
-# We expose plain callables — google.adk.tools.function_tool.FunctionTool
+# We expose plain callables - google.adk.tools.function_tool.FunctionTool
 # will wrap them. No import-time dependency on scripts/.
 
 
@@ -199,7 +199,7 @@ def calc_ggm(
     growth: float,
     book_value_per_share: float,
 ) -> dict[str, Any]:
-    """Gordon Growth Model (GGM) for P/BV — used for banks (e.g. BBCA).
+    """Gordon Growth Model (GGM) for P/BV - used for banks (e.g. BBCA).
 
     P/BV = (ROE - g) / (CoE - g);  P = P/BV * BVPS
     """

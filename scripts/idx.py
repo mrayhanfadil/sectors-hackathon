@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""IDX Morning Brief data layer — Sectors-backed CLI (rewritten Lane E).
+"""IDX Morning Brief data layer - Sectors-backed CLI (rewritten Lane E).
 
 Standalone CLI for the institutional-grade equity report data pipeline.
 Reads from the Sectors v2 universe feed (legacy removed: no Postgres stockdata).

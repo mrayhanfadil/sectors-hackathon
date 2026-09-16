@@ -1,7 +1,7 @@
 """Shared helpers for T08 agents (Writer / Visualizer / SOTP Aggregator).
 
 Pure, deterministic, no network. Every rendered number must trace to the input
-company.json (or a scripts/ engine result) — anti-hallucination contract.
+company.json (or a scripts/ engine result) - anti-hallucination contract.
 
 Path conventions:
     repo/
@@ -68,9 +68,9 @@ def load_financials(ticker: str) -> dict[str, Any] | None:
 PRIMARY_SOURCES = {
     "idx": "IDX / company filings",
     "sectors": "Sectors API v2",
-    "yfinance": "yfinance (legacy, pre-Sectors — not Sectors data)",
+    "yfinance": "yfinance (legacy, pre-Sectors - not Sectors data)",
     "broker": "broker research (BCA Sekuritas / KSI)",
-    "synthetic": "synthetic (seed=42, disclosed — IDX fundamentals gap)",
+    "synthetic": "synthetic (seed=42, disclosed - IDX fundamentals gap)",
     "news": "news harvester (T01)",
     "sentiment": "social sentiment (T01)",
 }
@@ -85,7 +85,7 @@ def source_label(company: dict[str, Any]) -> str:
         # avoid duplication when the label already carries the source name
         if extra.startswith(label):
             return str(extra)
-        return f"{label} — {extra}"
+        return f"{label} - {extra}"
     return label
 
 

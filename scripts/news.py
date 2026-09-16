@@ -1,5 +1,5 @@
 """
-News Harvester Engine — scripts/news.py
+News Harvester Engine - scripts/news.py
 Part of Multi-Agent Intake (plan.md §3, §4, §11). Live Sectors v2 news.
 
 Rewired 14 Sep 2026: search_news() now calls server/sectors.py news()
@@ -25,7 +25,7 @@ logger = logging.getLogger(__name__)
 CURATED_NEWS: Dict[str, List[Dict[str, Any]]] = {}
 # KILLED (Sep 2026, no-fabrication sweep): the 8 hand-written items lived here
 # (RATU/CDIA/MTEL/BBCA/ADRO with plausible-but-unverifiable urls + numeric
-# claims). Do not re-add hand-written news — live Sectors feed below.
+# claims). Do not re-add hand-written news - live Sectors feed below.
 
 _TIER_MAP: Dict[str, List[str]] = {
     "T1": ["idx.co.id", "kontan.co.id", "bisnis.com", "idxchannel.com",

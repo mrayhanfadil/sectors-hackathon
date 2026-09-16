@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-{# TEMPLATE: strategy — JPM 2026 Outlook archetype (top-down market report, NOT single-stock).
+{# TEMPLATE: strategy - JPM 2026 Outlook archetype (top-down market report, NOT single-stock).
    Sections: Cover w/ index target bull/base/bear + methodology, Investment Summary, 5 Thematics,
    Sector OW/N/UW + Top Picks, Flows/MSCI + Danantara, Disclosures.
    Data contract: templates/DATA_CONTRACT.md #}
@@ -9,7 +9,7 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
-<title>{{ strategy.title }} — Strategy Outlook</title>
+<title>{{ strategy.title }} - Strategy Outlook</title>
 {{ m.styles(palette) }}
 <style>
   .idx-target { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; margin: 10pt 0; }
@@ -23,7 +23,7 @@
 </head>
 <body>
 
-{# ================= PAGE 1 — COVER: INDEX TARGET ================= #}
+{# ================= PAGE 1 - COVER: INDEX TARGET ================= #}
 <div class="page">
   {{ m.running() }}
   <div class="small muted" style="letter-spacing:.12em;">STRATEGY OUTLOOK · MARKET LEVEL · TOP-DOWN</div>
@@ -31,7 +31,7 @@
   <p class="muted">{{ strategy.subtitle }}</p>
 
   {% if strategy.index_target %}
-  {{ m.exhibit_auto(ns, "Target Indeks 12 Bulan — Bull / Base / Bear", strategy.index_target.source or "IDX, data diolah") }}
+  {{ m.exhibit_auto(ns, "Target Indeks 12 Bulan - Bull / Base / Bear", strategy.index_target.source or "IDX, data diolah") }}
   <div class="idx-target">
     {% for s in strategy.index_target.scenarios %}
     <div class="scenario {{ 'base' if s.name|lower == 'base' else '' }}">
@@ -60,7 +60,7 @@
   {{ m.pagefoot(1, ns) }}
 </div>
 
-{# ================= PAGE 2 — INVESTMENT SUMMARY ================= #}
+{# ================= PAGE 2 - INVESTMENT SUMMARY ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section("Investment Summary", ns) }}
@@ -83,10 +83,10 @@
   {{ m.pagefoot(2, ns) }}
 </div>
 
-{# ================= PAGE 3 — SECTOR ALLOCATION + PICKS ================= #}
+{# ================= PAGE 3 - SECTOR ALLOCATION + PICKS ================= #}
 <div class="page">
   {{ m.running() }}
-  {{ m.section("Alokasi Sektor — OW / N / UW", ns) }}
+  {{ m.section("Alokasi Sektor - OW / N / UW", ns) }}
   {% if strategy.sectors %}
   {{ m.exhibit_auto(ns, "Sektor & View", strategy.sectors_src or "IDX-IC, penilaian internal") }}
   <div class="grid-2">
@@ -115,7 +115,7 @@
   {{ m.pagefoot(3, ns) }}
 </div>
 
-{# ================= PAGE 4 — FLOWS + DANANTARA ================= #}
+{# ================= PAGE 4 - FLOWS + DANANTARA ================= #}
 <div class="page">
   {{ m.running() }}
   {{ m.section("Flows, Kepemilikan Asing & Risiko MSCI", ns) }}

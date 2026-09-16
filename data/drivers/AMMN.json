@@ -27,7 +27,7 @@
         3300
       ],
       "source": "BRIDS Exhibit 41, EBITDA",
-      "note": "margin 50.6% / 62.3% / 67.8% — the ramp dilutes cost per tonne as volumes normalise"
+      "note": "margin 50.6% / 62.3% / 67.8%; the ramp dilutes cost per tonne as volumes normalise"
     },
     "net_profit": {
       "path": [
@@ -52,7 +52,7 @@
         318
       ],
       "source": "BRIDS Exhibit 24 (DCF), Less capex",
-      "note": "post-build normalisation — 1,424 in FY2025A, 498 in FY26F"
+      "note": "post-build normalisation: 1,424 in FY2025A, 498 in FY26F"
     },
     "interest_expense": {
       "path": [
@@ -78,7 +78,7 @@
         2936
       ],
       "source": "BRIDS Exhibit 42, ST Debt + Long Term Debt",
-      "note": "deleveraging out of free cash flow — 6,258 in FY26F to 2,936 in FY28F"
+      "note": "deleveraging out of free cash flow: 6,258 in FY26F to 2,936 in FY28F"
     },
     "inventory": {
       "path": [
@@ -130,5 +130,5 @@
   },
   "independence_note": "Jalur earnings FY26F-FY28F mengikuti estimasi pihak ketiga yang dikutip per driver di atas; multiple, WACC, beta, dan keputusan gate tetap milik rumah, bukan milik sumber estimasi.",
   "fx_rp_bn_per_usd_mn": 16.73,
-  "attribution_internal": "BRIDS Equity Research — 'From Pit to Cathode: Unlocking a New Earnings Cycle', initiation 29 Jun 2026 (Exhibit 41 Income Statement, Exhibit 42 Balance Sheet, Exhibit 43 Cash Flow, Exhibit 24 DCF)"
+  "attribution_internal": "BRIDS Equity Research, 'From Pit to Cathode: Unlocking a New Earnings Cycle', initiation 29 Jun 2026 (Exhibit 41 Income Statement, Exhibit 42 Balance Sheet, Exhibit 43 Cash Flow, Exhibit 24 DCF)"
 }

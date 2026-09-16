@@ -3,7 +3,7 @@
 Locks the DCF-deep-dive exhibits filled by server/report/ammn_fill.py to real
 engine output (scripts/dcf_engine = the same year-end Gordon math the live
 /api/report path uses) recomputed from data/assumptions/AMMN.json + the Sectors
-harvest — the 38 baked template numbers (sensitivity 25 cells, scenarios,
+harvest - the 38 baked template numbers (sensitivity 25 cells, scenarios,
 EV bridge, mock WACC 11,83% / g 5,00%) must stay dead on BOTH render paths.
 
 Keyless: reads the local harvest dir only (0 credits) and skips honestly when
@@ -88,7 +88,7 @@ def test_scenarios_use_harvested_ebitda_band_not_generic_growth():
 
     sc = d["dcf_deep_dive"]["scenarios"]
     assert len(sc["rows"]) == 3
-    assert [r[0].split(" — ")[0] for r in sc["rows"]] == ["BEAR", "BASE", "BULL"]
+    assert [r[0].split(" - ")[0] for r in sc["rows"]] == ["BEAR", "BASE", "BULL"]
     blob = json.dumps(sc, ensure_ascii=False)
     for generic in ("Rev +", "EBIT 29%", "EBIT 32%", "EBIT 35%"):
         assert generic not in blob
@@ -116,7 +116,7 @@ def test_scenarios_use_harvested_ebitda_band_not_generic_growth():
     assert (out["BEAR"]["fair_value_per_share"] < out["BASE"]["fair_value_per_share"]
             < out["BULL"]["fair_value_per_share"])
     # The scenario band multiplies the historic mid-cycle constituents by the CURRENT target multiple,
-    # while the headline TP uses the forward level — so BASE is not the TP, and the exhibit says which
+    # while the headline TP uses the forward level - so BASE is not the TP, and the exhibit says which
     # basis drives which number.
     base_ps = out["BASE"]["fair_value_per_share"]
     mid = " ".join(str(c) for r in d["valuation"]["midcycle"]["rows"] for c in r)
@@ -197,9 +197,9 @@ def test_html_path_kills_mocks_and_shows_live_engine():
     # live markers are the three exhibits and the narrative the rules ask for.
     assert "FCFF Forecast, Terminal Value and Bridge to Equity" in html
     assert "Exhibit 8." in html and "Exhibit 9." in html and "Exhibit 10." in html
-    assert "Blok 1 — Periode proyeksi eksplisit" in html
-    assert "Blok 2 — Terminal value" in html
-    assert "Blok 3 — Bridge ke equity value" in html
+    assert "Blok 1 - Periode proyeksi eksplisit" in html
+    assert "Blok 2 - Terminal value" in html
+    assert "Blok 3 - Bridge ke equity value" in html
     assert "WACC Components" in html
     assert "Sensitivity Analysis" in html
     assert "Parameter paling sensitif" in html

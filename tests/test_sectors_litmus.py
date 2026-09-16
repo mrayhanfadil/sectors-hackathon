@@ -1,4 +1,4 @@
-"""Sectors Litmus Test — MCP is deliberately OFF (credit-thin mode, 15 Sep 2026).
+"""Sectors Litmus Test - MCP is deliberately OFF (credit-thin mode, 15 Sep 2026).
 
 History: the graph used to attach a Sectors MCP toolset to the collector. MCP
 bypasses the SQLite credit-saving cache (every call = 1 credit, no stale-serve,
@@ -7,9 +7,9 @@ graph. `maybe_sectors_mcp_toolset` still lives in tools/mcp_sectors.py for
 manual/opt-in use and is now reachable only via SECTORS_MCP=1.
 
 What this litmus proves:
-1. Default (SECTORS_MCP unset) — graph builds, collector carries NO MCP toolset,
+1. Default (SECTORS_MCP unset) - graph builds, collector carries NO MCP toolset,
    and the log states the cached-FunctionTools-only (0-credit) path.
-2. SECTORS_MCP=1 — the opt-in escape hatch attaches the toolset for real.
+2. SECTORS_MCP=1 - the opt-in escape hatch attaches the toolset for real.
 
 Run: .venv/bin/python -m pytest tests/test_sectors_litmus.py -v
 """
@@ -53,7 +53,7 @@ def test_sectors_mcp_is_off_by_default_and_graph_still_builds(caplog, monkeypatc
 
     collector = _collector(graph)
     assert [t for t in collector.tools if isinstance(t, McpToolset)] == [], (
-        "Collector must carry NO Sectors MCP toolset by default — every MCP call bills a credit"
+        "Collector must carry NO Sectors MCP toolset by default - every MCP call bills a credit"
     )
 
 

@@ -35,7 +35,7 @@ export type ReportHeaderProps = {
 }
 
 function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "—"
+  if (n == null || Number.isNaN(Number(n))) return "-"
   return Number(n).toLocaleString("id-ID")
 }
 
@@ -82,7 +82,7 @@ export function ReportHeader({
   const upsideNegative = upsideNum != null && upsideNum < 0
 
   const upsideDisplay = (() => {
-    if (upside == null) return "—"
+    if (upside == null) return "-"
     if (typeof upside === "number") {
       return `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%`
     }
@@ -210,7 +210,7 @@ export function ReportHeader({
               <div>
                 <div className="text-[10px] uppercase text-[#63748A] font-sans font-medium">HARGA PASAR</div>
                 <div className="text-sm font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
-                  {price != null ? `Rp ${fmtIDR(price)}` : "—"}
+                  {price != null ? `Rp ${fmtIDR(price)}` : "-"}
                 </div>
               </div>
 
@@ -220,7 +220,7 @@ export function ReportHeader({
               <div>
                 <div className="text-[10px] uppercase text-[#63748A] font-sans font-medium">NILAI WAJAR (TP)</div>
                 <div className="text-sm font-bold text-[#0B1F3A] tabular-nums dark:text-neutral-100">
-                  {finalTarget != null ? `Rp ${fmtIDR(finalTarget)}` : "—"}
+                  {finalTarget != null ? `Rp ${fmtIDR(finalTarget)}` : "-"}
                 </div>
               </div>
 

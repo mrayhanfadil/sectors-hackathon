@@ -1,5 +1,5 @@
 """
-Company Analyst Agent — T07
+Company Analyst Agent - T07
 
 Owns: Company history, IPO, BOD, PSC/ownership structure for institutional equity reports.
 
@@ -10,7 +10,7 @@ Archetype refs:
 
 Spec: plan.md §2.1-2.3 + §3 Architecture "Company Analyst (bisnis+ops specs/MW/DWT)"
 Branch: wt/t07-analyst
-Provider: AGY Gemini 3.7 Flash High — deterministic Python when math, LLM when narasi + source.
+Provider: AGY Gemini 3.7 Flash High - deterministic Python when math, LLM when narasi + source.
 """
 from __future__ import annotations
 
@@ -22,17 +22,17 @@ import os
 from server.report import numfmt as _nf
 
 # ---------------------------------------------------------------------------
-# Provenance helper — every exhibit must carry source
+# Provenance helper - every exhibit must carry source
 # ---------------------------------------------------------------------------
 ARCHETYPE_SOURCES = {
-    "RATU": "HP Sekuritas 7 Jan 2026 — RATU (11p, 819KB)",
-    "CDIA": "BCA Sekuritas 23 Jun 2026 — CDIA (4-pilar, 1.58MB)",
-    "MTEL": "KSI/Kiwoom 27 Aug 2026 — MTEL (infra recurring, 302p)",
-    "JPM": "J.P. Morgan 02 Dec 2025 — Indonesia Equity 2026 Outlook (52p)",
+    "RATU": "HP Sekuritas 7 Jan 2026 - RATU (11p, 819KB)",
+    "CDIA": "BCA Sekuritas 23 Jun 2026 - CDIA (4-pilar, 1.58MB)",
+    "MTEL": "KSI/Kiwoom 27 Aug 2026 - MTEL (infra recurring, 302p)",
+    "JPM": "J.P. Morgan 02 Dec 2025 - Indonesia Equity 2026 Outlook (52p)",
 }
 
 # ---------------------------------------------------------------------------
-# Data models — input is ticker + resolved context from Collector/Modeler
+# Data models - input is ticker + resolved context from Collector/Modeler
 # ---------------------------------------------------------------------------
 Archetype = Literal["single", "sotp", "infra", "bank", "coal", "unknown"]
 
@@ -97,7 +97,7 @@ class BusinessSegment:
 class CompanyProfile:
     ticker: str
     name: str
-    archetype: Archetype       # single | sotp | infra — drives template switch
+    archetype: Archetype       # single | sotp | infra - drives template switch
     subsector: str             # e.g. "oil-holding" | "conglomerate" | "tower-infra" | "bank" | "coal"
     established: Optional[int] = None  # RATU 2006
     listing_board: str = "IDX Main"
@@ -115,7 +115,7 @@ class CompanyProfile:
     source_tier: str = "T1"    # T1 IDX disclosure/Kontan/Bisnis, T2 Reuters/Bloomberg, T3 blog
 
     def validate(self) -> list[str]:
-        """Critic checks — returns error strings (empty = pass)."""
+        """Critic checks - returns error strings (empty = pass)."""
         errors: list[str] = []
         if not self.ticker:
             errors.append("ticker required")
@@ -150,7 +150,7 @@ class CompanyProfile:
 
 
 # ---------------------------------------------------------------------------
-# Deterministic helpers — NEVER let LLM invent these numbers
+# Deterministic helpers - NEVER let LLM invent these numbers
 # ---------------------------------------------------------------------------
 def calc_free_float_pct(public_shares_bn: float, outstanding_bn: float) -> float:
     """Critic validates: free_float = public / outstanding * 100."""
@@ -174,21 +174,21 @@ def calc_net_entitlement_bopd(gross_bopd: int, participation_pct: float) -> floa
 
 
 # ---------------------------------------------------------------------------
-# Prompt contract — what the LLM sub-agent receives (ADK LlmAgent)
+# Prompt contract - what the LLM sub-agent receives (ADK LlmAgent)
 # ---------------------------------------------------------------------------
 ANALYST_SYSTEM_PROMPT = """\
-You are Company Analyst (T07) — institutional equity research for IDX retail.
+You are Company Analyst (T07) - institutional equity research for IDX retail.
 
 Rules:
 - JANGAN hitung. Panggil calc_*() untuk angka (free float, BOPD, proceeds).
 - Setiap klaim butuh source tier + url+date. Tier1: IDX disclosure/Kontan/Bisnis/IDX Channel. Tier2: Reuters/Bloomberg/JP. Tier3: blog (flag).
-- History: tulis 2006→2023 timeline faktual. RATU: founded 2006, PSC Cepu, IPO 88% ke RETJ/PJUC — jangan ngarang untuk ticker lain.
+- History: tulis 2006→2023 timeline faktual. RATU: founded 2006, PSC Cepu, IPO 88% ke RETJ/PJUC - jangan ngarang untuk ticker lain.
 - BOD: sebut 6 anggota RATU kalau ticker RATU. Untuk ticker lain, ambil dari Sectors company_report/filings, jangan hallucinate names.
 - PSC: sebut block, operator, SKK Migas, DMO%, expiry. Kalau tidak ada PSC (e.g. MTEL infra, BBCA bank), isi psc=[] dan jelaskan why N/A.
-- Holders: urut desc %. MTEL TLKM 71.83% — sebut kalau MTEL. CDIA 60% — sebut kalau CDIA.
-- Segments: kalau single-pilar hide % (sotp/infra tampilkan). Sum 100% — Critic akan reject jika tidak.
+- Holders: urut desc %. MTEL TLKM 71.83% - sebut kalau MTEL. CDIA 60% - sebut kalau CDIA.
+- Segments: kalau single-pilar hide % (sotp/infra tampilkan). Sum 100% - Critic akan reject jika tidak.
 - Output: JSON CompanyProfile (as_dict). Bahasa default ID (EN kalau diminta). Tambah as_of ISO date.
-- Anti-sycophancy: defend(evidence: calc+source) atau concede(correction) kalau di-challenge Adversarial — jangan agree tanpa bukti.
+- Anti-sycophancy: defend(evidence: calc+source) atau concede(correction) kalau di-challenge Adversarial - jangan agree tanpa bukti.
 """
 
 ANALYST_USER_TEMPLATE = """\
@@ -196,15 +196,15 @@ Ticker: {ticker} | Archetype: {archetype} | Subsector: {subsector}
 Collector snapshot (as_of {as_of}):
 {collector_json}
 
-Assumptions (WACC/beta — for cross-check only, do not recompute):
+Assumptions (WACC/beta - for cross-check only, do not recompute):
 {assumptions_json}
 
 News context (last 30d, max 8):
 {news_json}
 
 Task: Build CompanyProfile JSON for {ticker}. Fill history+IPO+BOD+PSC+holders+segments+specs.
-- Search Sectors company_report/filings ("{ticker} IDX IPO history BOD") if holder/BOD missing — cite source+date.
-- Use calc_free_float_pct / calc_proceeds_allocation / calc_net_entitlement_bopd for math — do not compute mentally.
+- Search Sectors company_report/filings ("{ticker} IDX IPO history BOD") if holder/BOD missing - cite source+date.
+- Use calc_free_float_pct / calc_proceeds_allocation / calc_net_entitlement_bopd for math - do not compute mentally.
 - Return ONLY JSON (no prose wrapper). Critic will validate sum checks.
 """
 

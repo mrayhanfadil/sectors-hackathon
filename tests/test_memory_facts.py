@@ -1,6 +1,6 @@
 """Tests for server/routers/memory.py (cross-run verdict store).
 
-Uses an isolated tmp SQLite file — never touches data/agent_runs.db.
+Uses an isolated tmp SQLite file - never touches data/agent_runs.db.
 """
 
 from __future__ import annotations

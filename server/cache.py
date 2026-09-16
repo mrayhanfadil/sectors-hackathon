@@ -1,8 +1,8 @@
-"""KV cache 4h — in-memory TTL + Cloudflare KV placeholder (P2)
+"""KV cache 4h - in-memory TTL + Cloudflare KV placeholder (P2)
 and TTLCache (5m) for /api/mock/* endpoints with X-Cache HIT/MISS headers.
 
 Cache versioning: gateway keys go through cache_key(), which prefixes
-CACHE_VERSION — bump the version to instantly invalidate stale (e.g. pre-key)
+CACHE_VERSION - bump the version to instantly invalidate stale (e.g. pre-key)
 entries. Flush procedure: restart the worker (in-memory store, nothing to purge).
 """
 from __future__ import annotations

@@ -1,11 +1,11 @@
-"""Slide-1 (cover) contract — the rating / price / stats / thesis block layout.
+"""Slide-1 (cover) contract - the rating / price / stats / thesis block layout.
 
 The cover carries the report's headline call (rating, TP, upside) plus the numbers a PM scans
 before reading anything: shares, market cap, turnover, free float, controlling holders. Every
 value here is derived from an artifact that already exists (Sectors quarterly 8Q, Sectors daily
 90d, Sectors ownership, the assumptions file) or from the market harvest script
 (``scripts/build_cover_market.py``), which is where the 24-month price-vs-IHSG series and the
-USD/IDR rate come from — this module reads files only, so the render path stays offline and
+USD/IDR rate come from - this module reads files only, so the render path stays offline and
 deterministic. Nothing is invented: a value with no source renders as an honest "n/a" plus the
 reason, per the LOUD policy.
 
@@ -117,7 +117,7 @@ def _chg(cur: Any, base: Any) -> Optional[float]:
 def _sane_base(base_q: Optional[dict], rows: list[dict]) -> tuple[bool, str]:
     """Is a quarter usable as a YoY base?
 
-    AMMN's Q1-2025 prints revenue of Rp 35,3 miliar and negative EBITDA — the smelter ramp
+    AMMN's Q1-2025 prints revenue of Rp 35,3 miliar and negative EBITDA - the smelter ramp
     quarter, where the quarterly feed has almost no revenue. Dividing by it produces a
     +38.000% "growth" number that is worse than useless in a research note, so the honest move
     is to say why the comparator is unusable instead of printing the artifact.
@@ -154,7 +154,7 @@ def fx_usdidr(refresh: bool = False) -> Optional[dict]:
 
 
 def monthly_vs_jci(ticker: str, months: int = 24) -> Optional[dict]:
-    """`TICKER` vs IHSG, monthly closes, rebased at t0 — the cover's Exhibit 1 series.
+    """`TICKER` vs IHSG, monthly closes, rebased at t0 - the cover's Exhibit 1 series.
 
     Two series in one frame: the left axis is the absolute close (navy line), the right axis is
     the relative performance against the index in percent (grey line), which is what a PM reads
@@ -318,7 +318,7 @@ def _highlights(payload: dict) -> list[str]:
 
 
 def _financial_para(payload: dict, ticker: str) -> dict:
-    """Paragraph 1 — Kinerja Keuangan: qoq / yoy / running rate / drivers.
+    """Paragraph 1 - Kinerja Keuangan: qoq / yoy / running rate / drivers.
 
     Every clause carries an explicit figure, derived here rather than written by hand, so the
     paragraph cannot drift from the artifact it cites.
@@ -339,7 +339,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     if not rows:
         return {
             "heading": "Kinerja Keuangan",
-            "body": ("Data kuartalan tidak tersedia untuk emiten ini — tidak ada paragraf "
+            "body": ("Data kuartalan tidak tersedia untuk emiten ini - tidak ada paragraf "
                      "kinerja yang bisa disusun tanpa angka (LOUD policy)."),
         }
 
@@ -391,7 +391,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     capex, prev_capex = cur.get("capital_expenditure"), (prev or {}).get("capital_expenditure")
     if isinstance(capex, (int, float)) and isinstance(prev_capex, (int, float)) and prev_capex:
         parts.append(f"Belanja modal {_rp_bn(capex / 1e9)} "
-                     f"({_pct(_chg(capex, prev_capex))} qoq) — ramp smelter mereda.")
+                     f"({_pct(_chg(capex, prev_capex))} qoq) - ramp smelter mereda.")
 
     if yoy_base is not None:
         ok, why = _sane_base(yoy_base, rows)
@@ -401,7 +401,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
                          f"{_pct(_chg(ni, yoy_base.get('earnings')))}.")
         else:
             parts.append(f"Pembanding yoy tidak dipakai: {why} (Q1-2025 adalah kuartal ramp "
-                         "smelter) — angka pertumbuhan dari basis itu menyesatkan.")
+                         "smelter) - angka pertumbuhan dari basis itu menyesatkan.")
 
     # Running rate needs a team FY forecast; absent -> say so rather than imply a rate.
     fh = payload.get("financial_highlights") or {}
@@ -409,7 +409,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     fwd = [y for y in years if y.upper().endswith("F")]
     if fwd and rev_bn is not None:
         parts.append(f"Running rate: {_n(rev_bn, 1)} bn vs estimasi {fwd[0]} "
-                     f"({', '.join(fwd)}) — lihat tabel forecast.")
+                     f"({', '.join(fwd)}) - lihat tabel forecast.")
     else:
         parts.append("Running-rate terhadap estimasi FY tidak dapat dihitung: tidak ada angka "
                      "forward terverifikasi untuk emiten ini (LOUD policy, tanpa estimasi "
@@ -435,7 +435,7 @@ def _qtag(date: Any) -> str:
 def build(payload: dict, assum: Optional[dict] = None) -> dict:
     """Fill ``payload["cover"]["slide1"]`` (idempotent, never raises).
 
-    Reads only local artifacts — no network here (see scripts/build_cover_market.py for the
+    Reads only local artifacts - no network here (see scripts/build_cover_market.py for the
     yfinance harvest that feeds the price-vs-IHSG series and the FX rate).
     """
     ticker = str((payload.get("meta") or {}).get("ticker") or "").upper()
@@ -459,13 +459,13 @@ def build(payload: dict, assum: Optional[dict] = None) -> dict:
     }
     if chart is None:
         slide1["notes"].append(
-            "jci_chart: deret 24 bulan tidak tersedia — jalankan "
+            "jci_chart: deret 24 bulan tidak tersedia - jalankan "
             f"`.venv/bin/python scripts/build_cover_market.py {ticker or '<TICKER>'}` "
             "(exhibit 1 dihilangkan, bukan diganti deret sintetik)"
         )
     if fx is None:
         slide1["notes"].append(
-            "fx: USD/IDR belum di-harvest — jalankan "
+            "fx: USD/IDR belum di-harvest - jalankan "
             "`.venv/bin/python scripts/build_cover_market.py <TICKER> --refresh-fx` "
             "(kolom US$ ditampilkan n/a)"
         )

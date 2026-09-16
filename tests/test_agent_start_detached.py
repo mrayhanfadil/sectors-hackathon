@@ -1,6 +1,6 @@
 """Verify /api/agent/start is fire-and-forget: returns quickly, runs in background.
 
-BILLS CREDITS WHEN RUN — see pytestmark below. Default: skipped.
+BILLS CREDITS WHEN RUN - see pytestmark below. Default: skipped.
 """
 import os
 import time
@@ -11,7 +11,7 @@ API = os.getenv("AGENT_LIVE_BE_API", "http://localhost:8777")
 
 pytestmark = pytest.mark.skipif(
     os.getenv("AGENT_LIVE_BE") != "1",
-    reason="Live-BE integration test — POSTs to the running BE, which holds the real "
+    reason="Live-BE integration test - POSTs to the running BE, which holds the real "
     "Sectors key, so EVERY spawned run bills credits (15 Sep 2026: two "
     "fake-ticker fixtures burned ~71 credits). Set AGENT_LIVE_BE=1 to run it "
     "deliberately against a scratch BE with SECTORS_API_KEY scrubbed.",

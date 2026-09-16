@@ -4,8 +4,8 @@ Verifies:
 1. Parity: for a ticker with assumptions (AMMN), GET /api/report/AMMN/payload returns a payload
    whose top-level key set equals render_html_for_ticker("AMMN", None)[2] keys (frozen 45 sections).
 2. Honesty: for a ticker without assumptions (BBCA), the endpoint returns 422 and the body
-   carries the missing list — no fabricated fallback payload.
-3. JSON: the response parses cleanly with json.loads — no unserializable objects (e.g. DataFrame, datetime).
+   carries the missing list - no fabricated fallback payload.
+3. JSON: the response parses cleanly with json.loads - no unserializable objects (e.g. DataFrame, datetime).
 4. Section filter: ?section=cover filters payload and sections envelope cleanly.
 5. Template override: ?template=infra passes template override to builder.
 6. Availability flags: sections envelope accurately reflects data availability.

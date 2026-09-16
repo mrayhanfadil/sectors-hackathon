@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-r"""scripts/harness_post_agy.py — Post-AGY dispatch recovery harness.
+r"""scripts/harness_post_agy.py - Post-AGY dispatch recovery harness.
 
 Validates any post-AGY change against public API, behavioral, test,
 naming, and font invariants in under 10 seconds.

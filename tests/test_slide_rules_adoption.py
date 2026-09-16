@@ -1,8 +1,8 @@
 """Adoption guards for the slide rules (docs/rules/house-report-format.md §7-§9).
 
 The exhibit rules are renderer-owned, so they cannot be broken from the agent side. The slide
-rules constrain CONTENT — the cover structure, the paragraph mandates, the Key Financials
-contract and the one-page copy budget — and content is exactly what drifts silently. These
+rules constrain CONTENT - the cover structure, the paragraph mandates, the Key Financials
+contract and the one-page copy budget - and content is exactly what drifts silently. These
 guards assert that the rule doc, the agent instructions, the shared validator and the Critic
 gate all say the same thing, and that each violation class is actually caught.
 """
@@ -53,7 +53,7 @@ def test_agent_instructions_carry_the_slide_rules() -> None:
 
 
 def test_shared_validator_is_imported_by_the_gate_and_the_renderer() -> None:
-    """One implementation, three callers — otherwise the gate and the render disagree."""
+    """One implementation, three callers - otherwise the gate and the render disagree."""
     critic = (REPO_ROOT / "agents" / "critic.py").read_text(encoding="utf-8")
     renderer = (REPO_ROOT / "server" / "report" / "slide2.py").read_text(encoding="utf-8")
     assert "audit_house_rules" in critic
@@ -191,7 +191,7 @@ def test_critic_gate_rejects_a_cover_that_breaks_the_slide_rules() -> None:
 # --------------------------------------------------------------------- the real artifact
 @pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
 def test_live_cover_payload_passes_the_slide_rules() -> None:
-    """The shipped cover must pass the same audit the gate runs — this is the regression line
+    """The shipped cover must pass the same audit the gate runs - this is the regression line
     for the one-pager layout and for the forecast derivation notes."""
     from server.report.house_rules import audit_house_rules
     from server.routers.pdf import _build_live_payload
@@ -209,7 +209,7 @@ def test_live_cover_payload_passes_the_slide_rules() -> None:
 def test_render_gate_reports_structural_violations_on_the_payload(monkeypatch) -> None:
     """A missing mandated section is reported on the payload (and REJECTed by the Critic gate),
     not thrown: a sparse ticker legitimately renders an honest "n/a" cover, so the severity
-    split matters — a style/content defect must be visible, not fatal."""
+    split matters - a style/content defect must be visible, not fatal."""
     import server.report.house_rules as house_rules
     import server.routers.pdf as pdf_router
 
@@ -433,7 +433,7 @@ def test_slide2_reports_both_directions_of_insider_activity() -> None:
 @pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
 def test_slide2_uses_the_wider_sectors_evidence() -> None:
     """Page 2 reads the subsector report, the IDX filings, corporate actions, the monthly ownership
-    composition and the free-float screener — not only the four headline catalysts."""
+    composition and the free-float screener - not only the four headline catalysts."""
     from server.routers.pdf import _build_live_payload
 
     payload = _build_live_payload("AMMN", None)
@@ -637,7 +637,7 @@ def test_performance_numbers_tie_out_with_the_key_financials_exhibit() -> None:
         if isinstance(cell, (int, float)):
             return float(cell)
         text = str(cell).strip().strip("()").replace("%", "")
-        if text in ("", "—", "n/a"):
+        if text in ("", "-", "n/a"):
             return None
         if "," in text:
             text = text.replace(".", "").replace(",", ".")
@@ -746,7 +746,7 @@ def test_slide4_spec_carries_the_binding_rule_text() -> None:
     for marker in (
         "## 0. Binding rule text",
         "Metode dipilih manual oleh analis",
-        "Opsi A — DCF (FCFF-based)",
+        "Opsi A - DCF (FCFF-based)",
         "Blok 1 - Explicit forecast period",
         "Tax on EBIT (dihitung EBIT x (1-effective tax rate)",
         "Gordon Growth vs Exit Multiple), tampilkan berdampingan",
@@ -755,8 +755,8 @@ def test_slide4_spec_carries_the_binding_rule_text() -> None:
         "Exhibit 10. Sensitivity Analysis",
         "di-highlight beda warna",
         "wajib di-flag eksplisit sebagai unresolved assumption",
-        "Opsi B — DDM",
-        "Opsi C — RNAV",
+        "Opsi B - DDM",
+        "Opsi C - RNAV",
         "INDOGB 10Y untuk Rf IDR",
         "finite reserve life",
         "server/report/engines/",
@@ -775,7 +775,7 @@ def test_slide4_agent_contract_is_in_the_prompt() -> None:
         .split()
     )
     for marker in (
-        "Page 4 — Valuasi Intrinsik",
+        "Page 4 - Valuasi Intrinsik",
         "the ANALYST picks it",
         "State on the page which option you chose and why the other two do not apply",
         "tax on EBIT at the EFFECTIVE rate",
@@ -868,7 +868,7 @@ def test_gate_catches_each_slide4_violation_class() -> None:
                           ("Weight of Debt", "24%", "debt"), ("WACC", "13.77%", "calc")],
             "sensitivity": {"fair_value": pd.DataFrame([[1.0] * 5] * 5), "wacc_axis": [0] * 5,
                             "g_axis": [0] * 5, "base": (2, 2)},
-            "notes": ["UNRESOLVED ASSUMPTION — the two terminals differ", "Reserve finite: perpetual growth not defensible"],
+            "notes": ["UNRESOLVED ASSUMPTION - the two terminals differ", "Reserve finite: perpetual growth not defensible"],
         }
 
     assert audit_valuation_page(clean_page()) == []
@@ -972,7 +972,7 @@ def test_ddm_branch_refuses_instead_of_inventing_a_dividend() -> None:
 # ------------------------------------------------- deck slide 4, Opsi C (RNAV) branch
 def _synthetic_property_assumptions(assum: dict) -> dict:
     """A deliberately synthetic property issuer: NAV per aset, ownership, and a balance sheet at the
-    scale of that issuer — never a real issuer's figures dressed up as a landbank story."""
+    scale of that issuer - never a real issuer's figures dressed up as a landbank story."""
     import copy
 
     prop = copy.deepcopy(assum)
@@ -1050,7 +1050,7 @@ def test_rnav_gate_demands_a_sourced_nav_and_a_justified_discount() -> None:
     page = build_valuation_page(payload, assum)
     assert audit_valuation_page(page, payload) == []
 
-    # project rule: an unsourced NAV, or one taken from outside Sectors, is refused at the builder —
+    # project rule: an unsourced NAV, or one taken from outside Sectors, is refused at the builder -
     # the page never reaches the renderer, so there is nothing for the gate to flag.
     for bad_source in (None, "appraisal KJPP, Jun 2026"):
         refused = build_valuation_page(payload, {**assum, "assets": [

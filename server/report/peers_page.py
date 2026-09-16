@@ -1,7 +1,7 @@
-"""Slide 5 page payload — peer table (Exhibit 11) + own-history bands (12-13) + implied prices.
+"""Slide 5 page payload - peer table (Exhibit 11) + own-history bands (12-13) + implied prices.
 
 Reads the cached artifacts only: no network, no Sectors client, so a PDF render is offline and
-deterministic. The two halves are kept as separate objects on purpose — the page prints a hard break
+deterministic. The two halves are kept as separate objects on purpose - the page prints a hard break
 between them and the gate forbids merging their conclusions into one story.
 """
 from __future__ import annotations
@@ -27,8 +27,8 @@ METHODOLOGY = (
 )
 
 DISCLAIMER = (
-    "Implied price di bagian ini adalah cross-check mean-reversion berbasis multiple historis — "
-    "bukan Target Price resmi di Slide 4 — dan dihitung dengan asumsi driver fundamental (EPS, BVPS, "
+    "Implied price di bagian ini adalah cross-check mean-reversion berbasis multiple historis - "
+    "bukan Target Price resmi di Slide 4 - dan dihitung dengan asumsi driver fundamental (EPS, BVPS, "
     "EBITDA, Revenue) tetap konstan di level TTM saat ini, hanya multiple yang direversi ke rata-rata / "
     "median historisnya. Sifatnya snapshot posisi relatif terhadap sejarah harga sendiri, bukan proyeksi "
     "earnings atau target harga."
@@ -64,7 +64,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
     bands = _load(os.path.join(CACHE_ROOT, tk, "bands_1y.json"))
     if not peers or not bands or not bands.get("available"):
         return {"available": False, "ticker": tk,
-                "reason": ("data peer/historis belum tersedia di cache — jalankan "
+                "reason": ("data peer/historis belum tersedia di cache - jalankan "
                            "python -m server.report.peers_data " + tk)}
 
     covered = next((r for r in peers["rows"] if r["is_covered"]), None)
@@ -94,24 +94,24 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
 
     parts_a_narr = []
     parts_a_narr.append(
-        f"{tk} diperdagangkan pada P/E {_fmt(covered['pe_ttm'])}× dan P/BV {_fmt(covered['pb_mrq'])}× — "
+        f"{tk} diperdagangkan pada P/E {_fmt(covered['pe_ttm'])}× dan P/BV {_fmt(covered['pb_mrq'])}× - "
         f"vs median peer {_fmt(stats['pe_ttm']['median'])}× / {_fmt(stats['pb_mrq']['median'])}× "
         f"({_nf.dec(gaps['pe_ttm'], digits=0, signed=True)}% / {_nf.dec(gaps['pb_mrq'], digits=0, signed=True)}%) dan average "
         f"{_fmt(stats['pe_ttm']['average'])}× / {_fmt(stats['pb_mrq']['average'])}×."
-        if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. — earnings TTM negatif.")
+        if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. - earnings TTM negatif.")
     if covered.get("ev_ebitda_ttm") and stats["ev_ebitda_ttm"]["median"]:
         parts_a_narr.append(
             f"Pada multiple berbasis kas, EV/EBITDA {_fmt(covered['ev_ebitda_ttm'])}× vs median "
             f"{_fmt(stats['ev_ebitda_ttm']['median'])}× ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
             f"{_nf.dec(covered['roe_ttm']*100, digits=1)}% vs median {_nf.dec(stats['roe_ttm']['median']*100, digits=1)}% "
-            f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) — jadi premium P/E bukan semata efek basis earnings.")
+            f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) - jadi premium P/E bukan semata efek basis earnings.")
     if peers.get("pe_excluded"):
         parts_a_narr.append(
             f"P/E {', '.join(peers['pe_excluded'])} dinyatakan n.m. (earnings negatif/near-zero) dan "
             f"tidak diikutkan dalam median/average; n pada baris statistik menunjukkan jumlah peer yang valid.")
     part_a = {
         "exhibit": 11,
-        "title": f"Peer Valuation Table — {tk} vs comparables ({peers['as_of']})",
+        "title": f"Peer Valuation Table - {tk} vs comparables ({peers['as_of']})",
         "columns": ["Ticker", "Perusahaan", "P/E (x)", "P/BV (x)", "EV/EBITDA (x)", "ROE (%)", "Market Cap"],
         "rows": table_rows,
         "median": {"symbol": "MEDIAN", "pe": stats["pe_ttm"]["median"], "pbv": stats["pb_mrq"]["median"],
@@ -123,7 +123,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
         "counts": {k: stats[k]["n"] for k in stats},
         "basis": peers["basis"],
         "as_of": peers["as_of"],
-        "criteria": ("Peer set: emiten Basic Materials — Logam & Mineral dengan rentang market cap "
+        "criteria": ("Peer set: emiten Basic Materials - Logam & Mineral dengan rentang market cap "
                      "sebanding (Rp 0,9 tn – Rp 127 tn) dan cakupan laporan kuartalan lengkap di Sectors; "
                      "harga as of " + peers["as_of"] + "."),
         "narrative": parts_a_narr,
@@ -140,18 +140,18 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
             continue
         series = [{"date": x["date"], "value": x[key]} for x in bands["sessions"] if x[key] is not None]
         implied = bands["implied_price"].get(key)
-        narr = (f"Sekarang {_nf.dec(s['current'], digits=2)}× — persentil {_nf.dec(s['percentile'], digits=0)} dari {s['n']} sesi "
+        narr = (f"Sekarang {_nf.dec(s['current'], digits=2)}× - persentil {_nf.dec(s['percentile'], digits=0)} dari {s['n']} sesi "
                 f"(mean {_nf.dec(s['mean'], digits=2)}×, median {_nf.dec(s['median'], digits=2)}×).")
         if implied:
             if implied.get("is_range"):
                 narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
-                         f"{_fmt_rp(implied['to_median'])} — selisih material, disajikan sebagai rentang "
+                         f"{_fmt_rp(implied['to_median'])} - selisih material, disajikan sebagai rentang "
                          f"{_fmt_rp(implied['low'])}–{_fmt_rp(implied['high'])}.")
             else:
                 narr += (f" Implied: mean {_fmt_rp(implied['to_mean'])}, median "
-                         f"{_fmt_rp(implied['to_median'])} — kedua metode konvergen.")
+                         f"{_fmt_rp(implied['to_median'])} - kedua metode konvergen.")
         # The distribution band the tool shades (P10-P90) is not in the payload's summary, so it is derived from
-        # the same sessions the chart plots — nothing is authored.
+        # the same sessions the chart plots - nothing is authored.
         _vals = sorted(x["value"] for x in series if isinstance(x.get("value"), (int, float)))
 
         def _pctile(pct: float):
@@ -177,14 +177,14 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
     total = bands["window"]["sessions"]
     part_b = {
         "exhibits": [12, 13],
-        "title": f"Relative Valuation — own history, 1-year window ({bands['window']['from']} – "
+        "title": f"Relative Valuation - own history, 1-year window ({bands['window']['from']} – "
                  f"{bands['window']['to']})",
         "methodology": METHODOLOGY,
         "bands": band_blocks,
         "implied": implied_rows,
         "driver": bands["driver"],
         "driver_note": (f"Driver fundamental TTM per {bands['driver']['as_of']}; {frozen} dari {total} sesi "
-                        f"memakai driver yang sama karena kuartal terbaru Sectors belum melewati tanggal itu — "
+                        f"memakai driver yang sama karena kuartal terbaru Sectors belum melewati tanggal itu - "
                         f"dinyatakan eksplisit, bukan disamarkan sebagai TTM segar."),
         "last_close": bands["last_close"],
         "disclaimer": DISCLAIMER,
@@ -194,7 +194,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
 
     return {"available": True, "ticker": tk, "as_of": peers["as_of"], "part_a": part_a, "part_b": part_b,
             "sections": {"a": "Peer Valuation (cross-sectional)",
-                         "b": "Relative Valuation — Own History (time-series)"}}
+                         "b": "Relative Valuation - Own History (time-series)"}}
 
 
 def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# scripts/lint_run.sh — Local runner for 5 lint & quality gates.
+# scripts/lint_run.sh - Local runner for 5 lint & quality gates.
 # Run order: lint -> format -> tests -> harness. Stop on first fail.
 # Output is a single PASS/FAIL.
 

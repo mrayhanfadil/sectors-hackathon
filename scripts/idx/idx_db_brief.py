@@ -1,4 +1,4 @@
-"""IDX Morning Brief data layer — Sectors-backed (rewritten Lane E, legacy removed).
+"""IDX Morning Brief data layer - Sectors-backed (rewritten Lane E, legacy removed).
 
 Was: Postgres `stockdata:15437` reader. Now: Sectors v2 universe feed
 (`transaction/close/{date}`) mapped to the same polars schema so downstream
@@ -17,7 +17,7 @@ async def get_latest_idx_data() -> pl.DataFrame:
     """Universe snapshot for the latest trading day via Sectors.
 
     Returns polars DataFrame [kode, close, prev, vol, val, sector, pct_change, turnover].
-    Raises SectorsNotConfigured when keyless — callers must fail loud.
+    Raises SectorsNotConfigured when keyless - callers must fail loud.
     """
     from server.sectors import universe_close
 

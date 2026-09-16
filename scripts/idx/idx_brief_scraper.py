@@ -1,4 +1,4 @@
-"""IDX brief scraper — Sectors-backed edition (rewritten Lane E, legacy removed).
+"""IDX brief scraper - Sectors-backed edition (rewritten Lane E, legacy removed).
 
 Was: Yahoo global index/commodity quotes. Now: Sectors v2 universe feed
 (top turnover + sector breadth) for the IDX section. Keyless -> honest

@@ -1,5 +1,5 @@
 """
-Adversarial Red Team Agent — agents/adversarial.py
+Adversarial Red Team Agent - agents/adversarial.py
 Lane T09 (plan.md §3, §11).
 
 Internal duel pre-PDF + User challenge post-PDF.

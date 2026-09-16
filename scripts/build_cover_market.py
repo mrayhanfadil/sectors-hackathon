@@ -2,7 +2,7 @@
 
 Sectors caps its daily endpoint at 90 days, so the cover's 1-2 year relative chart and the
 USD/IDR leg of the dual-currency rows have to come from yfinance. The server must not import
-yfinance (tests/test_prod_fixture_isolation.py::test_no_yfinance_imports_under_server — the
+yfinance (tests/test_prod_fixture_isolation.py::test_no_yfinance_imports_under_server - the
 production render path stays offline and deterministic), so this script does the network work
 and the renderer reads the artifact it writes.
 
@@ -97,7 +97,7 @@ def main() -> int:
         else:
             rc = 1
     else:
-        print(f"fx: cache kept ({json.loads(FX_PATH.read_text())['rate']}) — use --refresh-fx")
+        print(f"fx: cache kept ({json.loads(FX_PATH.read_text())['rate']}) - use --refresh-fx")
 
     series = fetch_vs_index(a.ticker, a.months)
     if series:

@@ -79,7 +79,7 @@ class SentimentResponse(BaseModel):
     top_narratives: list[str] = []
     timeline: list[dict] = []
     items: list[SentimentItem] = []
-    disclaimer: str = "sentiment != advice — retail narrative tracker only"
+    disclaimer: str = "sentiment != advice - retail narrative tracker only"
     cached: bool = False
 
 
