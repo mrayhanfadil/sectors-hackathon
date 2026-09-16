@@ -115,7 +115,19 @@ def clean_text(text: str) -> str:
     text = normalize_dashes(text)
     if text.strip() in PLACEHOLDERS:
         return text
+    # If the cell is purely numeric (with optional leading minus/plus sign), skip the
+    # dash-stripping rules below - they were designed for narrative prose ("- EBITDA
+    # tumbuh 12%") but ate the minus sign in numeric cells ("-7.635,0" -> "7.635,0").
+    # The match accepts: optional sign, then digits / dot / comma / parens / percent / spaces.
+    is_numeric_cell = bool(re.match(r"^\s*[+\-−–—]?[\d.,()%\s]+$", text)) and bool(
+        re.search(r"\d", text)
+    )
     for pattern, replacement in RULES:
+        if is_numeric_cell and pattern.pattern in (
+            r"^\s*[-\u2013\u2014\u2015]\s*",
+            r"\s*[-\u2013\u2014\u2015]\s*(?=$|\()",
+        ):
+            continue
         text = pattern.sub(replacement, text)
     return text if text.strip() else text
 

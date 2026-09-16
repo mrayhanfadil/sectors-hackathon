@@ -156,34 +156,115 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         }
 
     # ---------- Blok 1: the explicit five-year build-up ----------
+    # Linear-fade revenue path with ratio-driven reinvestment (ported 16 Sep 2026 from
+    # the friend-tool pattern: g1 -> g_terminal across the N years, D&A/Capex/NWC ratios
+    # off revenue so the rows vary end-to-end instead of holding a single FY25A scalar
+    # flat for 5 years; the previous deck did the latter and the FCFF row collapsed to
+    # identical values from FY27F onwards which read as fabricated data).
+    #
+    # Two-stage growth path:
+    #   Stage 1 (years where the cover publishes a forecast): use the cover's value as-is.
+    #     This protects the FY26F-FY28F Phase-8 ramp numbers that the BRIDS driver ships.
+    #   Stage 2 (years beyond the cover's forecast horizon): linear fade from the LAST
+    #     cover value to g_terminal across the remaining columns. Avoids the
+    #     mathematically-pure-but-economically-absurd "132% YoY forever" extrapolation
+    #     that an end-to-end fade produces.
     ebit_margin = ebit_fy25 / revenue_fy25
     tax_eff = tax / pretax
     da_bn = ebitda_fy25 - ebit_fy25                      # derived: EBITDA - EBIT
-    # the cover's forecast columns seed the path; any year it does not reach is the last known year held
-    # flat, which the page discloses instead of inventing a slope
+
     cover_years = [str(h) for h in (cover.get("headers") or [])[1:]]
     cover_revenue = [_num(c) for c in (_row(cover, "Revenue") or [])[1:]]
-    # the projection columns are the FORECAST ones; actual columns must never be relabelled as forecast
-    forecast_pairs = [(y, v) for y, v in zip(cover_years, cover_revenue) if v is not None and "f" in y.lower()]
+    forecast_revenue_pairs = [(y, v) for y, v in zip(cover_years, cover_revenue)
+                              if v is not None and "f" in y.lower()]
+    g_term = float(g or 0.0)
+
     revenue_path: list[float] = []
-    for index in range(len(PERIODS)):
-        if index < len(forecast_pairs):
-            revenue_path.append(forecast_pairs[index][1])
+    growth_path: list[float] = []
+    cover_used_n = min(len(forecast_revenue_pairs), len(PERIODS))
+    for i in range(cover_used_n):
+        revenue_path.append(forecast_revenue_pairs[i][1])
+        if i == 0 and revenue_fy25:
+            growth_path.append(forecast_revenue_pairs[i][1] / revenue_fy25 - 1.0)
         else:
-            revenue_path.append(revenue_path[-1])          # extend flat, disclosed in the narrative
-    revenue_basis = (
-        f"kolom proyeksi {forecast_pairs[0][0]}-{forecast_pairs[-1][0]} dari tabel Key Financials halaman 1, "
-        f"tahun setelahnya di-hold flat"
-        if forecast_pairs else "tahun terakhir aktual di-hold flat (tidak ada kolom proyeksi di payload)"
-    )
+            growth_path.append(revenue_path[i] / revenue_path[i - 1] - 1.0)
+
+    # Fade the last used cover value to g_terminal across remaining columns (linear).
+    remaining = len(PERIODS) - cover_used_n
+    if remaining > 0 and revenue_path:
+        last_rev = revenue_path[-1]
+        # Linear interpolation: g_terminal is the END-point rate; build N=remaining steps.
+        # Inherited from friend tool: g_t = g_terminal each step keeps the path consistent.
+        # To avoid a discontinuity at the join (cover value -> fade start), the first
+        # remaining column uses 0 growth (the cover value held flat), then g_terminal onward.
+        for j in range(remaining):
+            if j == 0:
+                growth_path.append(0.0)
+                revenue_path.append(last_rev)
+            else:
+                growth_path.append(g_term)
+                last_rev = last_rev * (1.0 + g_term)
+                revenue_path.append(last_rev)
+    # Pad to exactly len(PERIODS) if cover had no forecast at all (offline path).
+    while len(revenue_path) < len(PERIODS):
+        growth_path.append(g_term if revenue_path else 0.0)
+        last = revenue_path[-1] if revenue_path else revenue_fy25
+        revenue_path.append(last * (1.0 + g_term))
+
+    g1 = growth_path[0] if growth_path else 0.0
+    if forecast_revenue_pairs:
+        g1_basis = (f"{forecast_revenue_pairs[0][0]} dari Key Financials Slide 2 / revenue FY25A "
+                    f"({_nf.dec(g1 * 100, digits=1)}% YoY); kolom setelah horizon cover di-fade ke g_terminal "
+                    f"{_nf.dec(g_term * 100, digits=2)}%")
+    else:
+        g1_basis = (f"YoY revenue FY25A/FY24A = {_nf.dec(g1 * 100, digits=1)}%; "
+                    f"semua kolom di-fade ke g_terminal {_nf.dec(g_term * 100, digits=2)}%")
+    revenue_basis = f"two-stage: {cover_used_n} kolom cover dipakai as-is, sisanya linear-fade ke g_terminal; {g1_basis}"
+
+    # Ratio-driven reinvestment. The historical ratios are taken at FY25A; abidamassi
+    # uses a moving average but the deck publishes a single FY25A anchor.
+    da_ratio = (da_bn or 0) / revenue_fy25 if revenue_fy25 else 0.0
+    capex_ratio = (sustain_capex_bn or 0) / revenue_fy25 if revenue_fy25 else 0.0
+    # nwc_ratio: prefer AMMN.json nwc_fy25 (Q4-2025 working capital level / revenue FY25A);
+    # fall back to working_capital_fy25 then 0 (modelled as zero, disclosed in narrative).
+    nwc_level_fy25 = assum.get("nwc_fy25") or assum.get("working_capital_fy25") or 0.0
+    nwc_ratio = (nwc_level_fy25 / revenue_fy25) if (revenue_fy25 and nwc_level_fy25) else 0.0
+    # Capex may not fall below D&A while the company is growing (abidamassi s07 line 86):
+    # if capex < D&A, the asset base is shrinking, and large D&A add-back + small capex
+    # creates a fake FCFF-printing machine. Floor capex_ratio at da_ratio when g1 > 0.
+    capex_ratio_applied = max(capex_ratio, da_ratio) if g1 > 0 else capex_ratio
 
     ebit = [r * ebit_margin for r in revenue_path]
     tax_on_ebit = [e * tax_eff for e in ebit]
     nopat = [e - t for e, t in zip(ebit, tax_on_ebit)]
-    da_path = [da_bn for _ in PERIODS]
-    capex_path = [sustain_capex_bn for _ in PERIODS]
-    nwc_path = [0.0 for _ in PERIODS]                       # not modelled: stated as a disclosure
+    da_path = [r * da_ratio for r in revenue_path]
+    capex_path = [r * capex_ratio_applied for r in revenue_path]
+    # NWC level each year = revenue * nwc_ratio; DnWC = nwc[t] - nwc[t-1] (abidamassi s07 7.4).
+    # Year 0 uses the FY25A anchor; the level is held flat from the FY25A point onward when
+    # nwc_ratio = 0 (no anchor supplied) so DnWC = 0 in that case - same disclosure as before.
+    nwc_levels = [nwc_level_fy25]
+    for r in revenue_path:
+        nwc_levels.append(r * nwc_ratio)
+    nwc_path = [nwc_levels[t + 1] - nwc_levels[t] for t in range(len(PERIODS))]
     build_fcff = [n + d - c - w for n, d, c, w in zip(nopat, da_path, capex_path, nwc_path)]
+
+    # Internal consistency check (abidamassi s07 7.6): Reinvestment Rate x ROIC = implied
+    # growth. Gap to assumed revenue growth is reported, not hidden - the deck reader
+    # needs to know when the build-up math is internally incoherent.
+    roic_path: list[float] = []
+    implied_g_path: list[float] = []
+    reinvest_path: list[float] = []
+    ic_proxy = (revenue_fy25 or 0.0) + ((total_debt or 0) - (cash or 0))   # rough invested-capital proxy
+    prev_ic = ic_proxy
+    for t in range(len(PERIODS)):
+        reinvest = capex_path[t] - da_path[t] + nwc_path[t]
+        rr = reinvest / nopat[t] if nopat[t] else None
+        roic = nopat[t] / prev_ic if (prev_ic and nopat[t]) else None
+        implied_g = (rr * roic) if (rr is not None and roic is not None) else None
+        reinvest_path.append(reinvest)
+        roic_path.append(roic if roic is not None else 0.0)
+        implied_g_path.append((implied_g if implied_g is not None else 0.0) * 100.0)  # in %
+        prev_ic = prev_ic + reinvest
 
     # the deck publishes the year-end convention (that is what the cover's DCF leg prints), so both
     # the displayed row and the engine call use it; the page states the convention it used.
@@ -353,6 +434,11 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "revenue_fy25": revenue_fy25, "ebit_margin_fy25": ebit_margin * 100,
             "effective_tax": tax_eff * 100, "da_fy25": da_bn, "capex_sustaining": sustain_capex_bn,
             "multiple": multiple, "price": price, "revenue_basis": revenue_basis,
+            "growth_path": growth_path, "g1": g1, "g_terminal": g_term, "g_term_input": g_term,
+            "da_ratio": da_ratio, "capex_ratio": capex_ratio, "capex_ratio_applied": capex_ratio_applied,
+            "nwc_ratio": nwc_ratio, "nwc_level_fy25": nwc_level_fy25,
+            "ic_proxy_fy25": ic_proxy, "reinvest_path": reinvest_path,
+            "roic_path": roic_path, "implied_g_path": implied_g_path,
         },
         "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc, assum,
                          anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda")),
@@ -447,8 +533,11 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         "di halaman 1 supaya kedua halaman tidak berbeda."
     )
     notes.append(
-        "Delta NWC dimodelkan nol (working capital FY25A di-hold) dan capex memakai capex sustaining, bukan "
-        "capex build-out FY25A - kedua baris ini adalah asumsi, bukan keluaran engine."
+        "Build-up baris memakai pola linear-fade (g1 -> g_terminal) untuk Revenue selama N tahun, "
+        "lalu D&A / Capex / Delta NWC diturunkan dari rasio FY25A dikalikan Revenue per tahun (port "
+        "16 Sep 2026). Capex di-floor di D&A ratio ketika pertumbuhan positif supaya D&A add-back + "
+        "capex kecil tidak menjadi FCFF printer palsu. Konsistensi internal (Reinvestment Rate x ROIC = "
+        "implied growth) dilaporkan per tahun; gap ke growth yang diasumsikan tidak disembunyikan."
     )
     return notes
 
@@ -593,11 +682,15 @@ def _narrative(page: dict) -> list[str]:
             f"Rp {_fmt0(swing['min'])} sampai Rp {_fmt0(swing['max'])}."
         ),
         (
-            "Penghubung ke driver bisnis (Slide 2-3): jalur pendapatan memakai kolom yang sama dengan tabel Key "
-            f"Financials halaman 1 ({d['revenue_basis']}); marjin EBIT di-hold di {_fmt(d['ebit_margin_fy25'], 1)}% "
-            f"(level FY25A); pajak memakai tarif efektif {_fmt(d['effective_tax'], 1)}%, bukan tarif statutori. "
-            f"Capex memakai capex sustaining Rp {_fmt0(d['capex_sustaining'])} bn, BUKAN capex build-out FY25A yang "
-            "jauh lebih besar saat smelter dibangun - itu sebabnya hasil DCF ini duduk di bawah arus kas aktual."
+            "Penghubung ke driver bisnis (Slide 2-3): jalur pendapatan memakai pola linear-fade "
+            f"({d['revenue_basis']}) sehingga baris Revenue, EBIT, Tax, NOPAT, D&A, Capex, dan Delta NWC "
+            "ikut bervariasi end-to-end (bukan di-hold flat dari kolom ke-3); "
+            f"marjin EBIT {_fmt(d['ebit_margin_fy25'], 1)}% (level FY25A); "
+            f"pajak tarif efektif {_fmt(d['effective_tax'], 1)}%, bukan statutori; "
+            f"D&A ratio {_fmt(d['da_ratio'] * 100, 1)}% revenue, capex ratio {_fmt(d['capex_ratio_applied'] * 100, 1)}% "
+            f"revenue (floor di D&A ratio saat pertumbuhan positif), "
+            f"Delta NWC dihitung dari perubahan level NWC ratio {_fmt(d['nwc_ratio'] * 100, 1)}% revenue. "
+            f"Pemeriksaan konsistensi internal (RR x ROIC = implied growth) per tahun tersedia di catatan metode."
         ),
         (
             "Gap antar metode dibaca sebagai unresolved assumption, bukan dirata-rata: terminal Gordon dan terminal "

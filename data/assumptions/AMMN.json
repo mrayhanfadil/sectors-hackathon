@@ -57,6 +57,8 @@
     "as_of": "2026-03-31 (latest Sectors quarter)"
   },
   "fcf_basis": "Normalised mid-cycle FCFF, FLAT across FY2026F-FY2030F (no fabricated growth curve): fcf = TTM EBITDA x (1 - tax) - annualised post-build capex = 24979 bn x 0.78 - 6395 bn = 13089 bn/yr. TTM EBITDA is used (not the 3Y average) because FY2024-25 EBITDA is distorted by the smelter construction/ramp (FY2025 EBITDA 16.4 tn vs TTM 25.0 tn). Steady-state capex is the 2026Q1 run-rate annualised - 1,598.6 bn in the quarter, the lowest of the eight quarters on file (5.3-5.8 tn/qtr through 2025, 7.3-8.0 tn/qtr in H2-2024) and consistent with the smelter build closing out (project acceptance certificate signed 2026-07-18). Proxy is conservative: it omits the D&A tax shield and working-capital release. Modeler lane may override with a consensus-based path.",
+  "nwc_fy25": 17835.0,
+  "nwc_fy25_basis": "Q4-2025 working capital level = total_current_asset 52,761 - cash_and_short_term_investments 11,328 - current_liabilities 23,597 = 17,835 bn (Sectors quarterly freeze 2025-12-31). Ratio to revenue FY25A = 0.577 (used as nwc_ratio in the build-up). High ratio reflects mining-Co receivables + concentrate inventory build ahead of Phase-8.",
   "fcf_components_idr_bn": {
     "ebitda_ttm": 24978.8,
     "tax": 0.22,
