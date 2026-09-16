@@ -56,7 +56,14 @@ def _missing_key_dict(ticker: str, fetched_at: str) -> dict[str, Any] | None:
     Checked FIRST so every tool honors the keyless contract regardless of
     other params: no key -> {data: [], source: 'sectors_missing_key'},
     never fabricated, never raised.
+
+    Also honors SECTORS_CACHE_ONLY=1 (Fadil, Sep 16 2026): even with a key
+    set, refuse upstream and force the agent to use the SQLite cache
+    (`server/storage.SectorsCache` - 93-day TTL) or fail loud. Returns the
+    same {data: [], source: 'sectors_cache_only'} shape so callers treat
+    it like a missing-key result.
     """
+    import os as _os
     from server.config import get_settings
 
     if not get_settings().sectors_api_key.strip():
@@ -65,6 +72,16 @@ def _missing_key_dict(ticker: str, fetched_at: str) -> dict[str, Any] | None:
             "source": "sectors_missing_key",
             "fetched_at": fetched_at,
             "data": [],
+        }
+    if _os.getenv("SECTORS_CACHE_ONLY", "").strip().lower() in ("1", "true", "yes"):
+        return {
+            "ticker": ticker,
+            "source": "sectors_cache_only",
+            "fetched_at": fetched_at,
+            "data": [],
+            "note": "SECTORS_CACHE_ONLY=1 set - cache miss means upstream "
+                    "would burn a credit. Warm the cache first or set "
+                    "SECTORS_CACHE_ONLY=0.",
         }
     return None
 

@@ -146,6 +146,142 @@ def _save_cache(ticker: str, payload: Dict[str, Any]) -> None:
     p = _cache_path(ticker)
     payload["_cached_at"] = _now_iso()
     p.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+    _mirror_to_sectors_cache(ticker, payload)
+
+
+def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
+    """Best-effort write of the rendered payload into the SQLite sectors_cache
+    so subsequent ADK tool calls (sectors_quarterly, sectors_company_report,
+    sectors_daily, sectors_corporate_actions, sectors_foreign_flow,
+    sectors_filings, sectors_segments) hit the cache instead of upstream.
+
+    The mirror is opportunistic: it writes the rows it can derive from the
+    payload, never raises on failure, and never blocks the collector. Cache
+    misses (e.g. freeze carries no prices) are simply skipped.
+
+    Each row gets the same TTL the upstream _get() uses (93 days = the
+    `_ttl_for()` default in server/storage.py), so the mirror stays warm
+    past the 4h file TTL until 93 days from now.
+
+    Two sources feed the mirror:
+      (a) the rendered payload (overview + dividends from freeze; prices +
+          quarterly from a live Sectors pull).
+      (b) the raw freeze files in output/cache/ammn_fill/* - direct reads
+          of the multisection report, daily, quarterly, corporate-actions,
+          broker_top, foreign_flow, and segments JSONs. The freeze files
+          are richer than the rendered payload, so the mirror catches more
+          endpoints this way (without paying for any Sectors call).
+    """
+    try:
+        from server.storage import SectorsCache  # late-bound import
+    except Exception:
+        return
+
+    t = _ticker_norm(ticker)
+    try:
+        cache = SectorsCache()
+    except Exception:
+        return
+
+    ttl_s = 93 * 24 * 3600  # storage default; matches upstream _get()
+
+    # (b) Mirror from freeze files first - richest source, no upstream cost.
+    # The AMMN-FILLD lane (kanban t_2c5f420e) writes:
+    #   company_report_<TICKER>_multisection.json, daily_<TICKER>_90d.json,
+    #   quarterly_<TICKER>_8.json, corporate_actions_<TICKER>.json,
+    #   foreign_flow_<TICKER>_90d.json, broker_top_<TICKER>_30d.json,
+    #   segments_<TICKER>_<YYYY>.json.
+    freeze_dir = REPO_ROOT / "output" / "cache" / "ammn_fill"
+    freeze_map: dict[str, tuple[str, dict]] = {
+        f"/daily/{t}/": (
+            f"daily_{t}_90d.json",
+            {"start": "freeze", "end": "freeze"},
+        ),
+        f"/financials/quarterly/{t}/": (
+            f"quarterly_{t}_8.json",
+            {"n_quarters": 8},
+        ),
+        f"/company/corporate-actions/{t}/": (
+            f"corporate_actions_{t}.json",
+            {},
+        ),
+        f"/foreign-flow/{t}/": (
+            f"foreign_flow_{t}_90d.json",
+            {"start": "freeze", "end": "freeze"},
+        ),
+        f"/broker-summary/{t}/top/": (
+            f"broker_top_{t}_30d.json",
+            {"start": "freeze", "end": "freeze", "n_brokers": 20},
+        ),
+        f"/company/report/{t}/": (
+            f"company_report_{t}_multisection.json",
+            {"sections": "overview,financials,dividend,peers,ownership,management,valuation,future"},
+        ),
+    }
+    for endpoint, (fname, params) in freeze_map.items():
+        p = freeze_dir / fname
+        if not p.exists():
+            alt = freeze_dir / f"company_report_{t}.json"  # older filename
+            if endpoint == f"/company/report/{t}/" and alt.exists():
+                p = alt
+            else:
+                continue
+        try:
+            body = json.loads(p.read_text(encoding="utf-8"))
+            cache.set(endpoint, params, body, ttl_s)
+        except Exception:
+            pass
+
+    # segments_<TICKER>_<YYYY>.json may exist for 1-2 years; mirror each.
+    for seg in freeze_dir.glob(f"segments_{t}_*.json"):
+        try:
+            year = seg.stem.rsplit("_", 1)[-1]
+            body = json.loads(seg.read_text(encoding="utf-8"))
+            cache.set(f"/company/get-segments/{t}/",
+                      {"financial_year": year}, body, ttl_s)
+        except Exception:
+            pass
+
+    # (a) Also mirror anything the rendered payload carries - this covers
+    # the live-Sectors path (when freeze absent) AND the dividend table
+    # pulled from the corporate-actions freeze above.
+    prices = payload.get("prices") or []
+    if prices and isinstance(prices, list):
+        body = {"data": [{"date": p.get("date"), "close": p.get("close"),
+                          "volume": p.get("volume")}
+                         for p in prices if isinstance(p, dict)]}
+        try:
+            cache.set(f"/daily/{t}/", {"start": "freeze", "end": "freeze"}, body, ttl_s)
+        except Exception:
+            pass
+
+    fin = payload.get("financials")
+    if isinstance(fin, dict):
+        q = fin.get("quarterly") if isinstance(fin, dict) else None
+        if q:
+            try:
+                cache.set(f"/financials/quarterly/{t}/", {"n_quarters": 8},
+                          {"data": q}, ttl_s)
+            except Exception:
+                pass
+
+    info = payload.get("company") or payload.get("info")
+    if info and isinstance(info, dict) and info != {"symbol": t}:
+        try:
+            cache.set(f"/company/report/{t}/", {"sections": "overview"},
+                      {"overview": info}, ttl_s)
+        except Exception:
+            pass
+
+    divs = payload.get("dividends")
+    if divs:
+        try:
+            items = [{"ex_date": k, "amount_per_share": v}
+                     for k, v in divs.items() if isinstance(k, str)]
+            cache.set(f"/company/corporate-actions/{t}/", {},
+                      {"dividend": items}, ttl_s)
+        except Exception:
+            pass
 
 
 # ── IDX local ──────────────────────────────────────────────────────────────

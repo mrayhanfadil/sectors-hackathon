@@ -155,11 +155,22 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
             )
             return cached_payload
 
+    # 3. SECTORS_CACHE_ONLY=1 - cache-or-nothing (Fadil, Sep 16 2026).
+    #    The agent must NEVER call upstream when this is on; cache miss +
+    #    window-substitute miss + SECTORS_CACHE_ONLY -> raise loud.
+    #    Same shape as SECTORS_OFFLINE so caller code can treat them alike.
     if not get_settings().sectors_api_key:
         # Cache miss + no key - let the caller raise SectorsNotConfigured.
         raise SectorsNotConfigured(
             "SECTORS_API_KEY missing - onboard at sectors.app/api, "
             "save key to .env (mode 600). No fallback wired on purpose."
+        )
+    if os.getenv("SECTORS_CACHE_ONLY", "").strip().lower() in ("1", "true", "yes"):
+        raise SectorsError(
+            599,
+            "sectors_cache_only: SECTORS_CACHE_ONLY=1 set, cache miss for "
+            f"{path} - no upstream call made. Set SECTORS_CACHE_ONLY=0 or "
+            "warm the cache first."
         )
 
     with httpx.Client(
