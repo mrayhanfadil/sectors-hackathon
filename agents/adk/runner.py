@@ -128,7 +128,14 @@ async def run_report(
             if _apath.exists():
                 _spot = _json.loads(_apath.read_text(encoding="utf-8")).get("last_price")
             from .post_audit_inject import apply_audit_to_state
+            _before_gate = state.get("writer_output")
             state = apply_audit_to_state(state, price=_spot)
+            _after = state.get("writer_output") != _before_gate
+            _audit = state.get("__audit__") or {}
+            logger.info(
+                "post_audit_inject %s: state_changed=%s audit=%s injected_flags=%d",
+                ticker, _after, _audit.get("verdict"), _audit.get("injected_flags", 0),
+            )
         except Exception as _exc:  # noqa: BLE001 - inject must never break the run
             logger.warning("post_audit_inject raised during %s: %s", ticker, _exc)
         missing = [

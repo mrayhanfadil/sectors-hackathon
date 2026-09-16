@@ -461,6 +461,34 @@ async def _execute_run_to_sqlite(t: str, p: str, session_id: str) -> None:
         except Exception:
             final_state = None
 
+        # POST-AUDIT INJECTION (16 Sep 2026): the writer ran before the
+        # adversarial_loop, so it cannot know what the red team conceded.
+        # The dissent-audit is deterministic and reads the rounds; we wire
+        # its required_flags into writer_output.gate_flags AFTER the run
+        # and, if the anchor was contested, surface the bear/mid/bull
+        # ladder under non_anchored_fvs_disclosed. Mechanical, no LLM
+        # in the loop. Mirrors agents/adk/runner.py so /api/agent/start
+        # ships the same gate_flags as the blocking /api/agent/run path.
+        if final_state is not None:
+            try:
+                from pathlib import Path as _Path
+                import json as _json
+                _spot = None
+                _apath = _Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t.upper()}.json"
+                if _apath.exists():
+                    _spot = _json.loads(_apath.read_text(encoding="utf-8")).get("last_price")
+                from agents.adk.post_audit_inject import apply_audit_to_state
+                _before = final_state.get("writer_output")
+                final_state = apply_audit_to_state(final_state, price=_spot)
+                _after = final_state.get("writer_output") != _before
+                _audit = final_state.get("__audit__") or {}
+                log.info(
+                    "post_audit_inject %s: state_changed=%s audit=%s injected_flags=%d",
+                    t, _after, _audit.get("verdict"), _audit.get("injected_flags", 0),
+                )
+            except Exception as _exc:  # noqa: BLE001
+                log.warning("post_audit_inject raised during %s: %s", t, _exc)
+
         await lifecycle.on_complete(final_state=final_state)
         log.info("run_to_sqlite completed run_id=%s ticker=%s events=%d", session_id, t, seq)
     except Exception as e:
