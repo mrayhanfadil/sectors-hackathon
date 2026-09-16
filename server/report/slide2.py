@@ -161,12 +161,17 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         return (price / epss[i]) if (price and epss[i]) else None
 
     def pbv(i):
-        # Per-year BVPS when the resolver published one (drivers.bvps_path); historically the deck
-        # divided price by a single Q1-2026 equity scalar and the row collapsed to one number. The
-        # forecast resolver refuses the file without a bvps_path - see forecast_path._validate().
+        # Per-year BVPS from drivers.bvps_path (5 values: 2024A, 2025A, 2026F,
+        # 2027F, 2028F). The forecast resolver requires bvps_path - see
+        # forecast_path._validate(). The legacy implementation divided price by a
+        # single Q1-2026 equity scalar for the historical columns; that was an
+        # approximation. The driver now ships audited year-end equity for the
+        # historical columns (FY2024, FY2025) so PBV varies end-to-end.
+        # The validator normalises bvps_path into `rp_per_share` regardless of
+        # how many columns the driver ships, so read that key here.
         bvps_arr = (path.get("drivers") or {}).get("bvps_path", {}).get("rp_per_share") if path_used else None
-        if isinstance(bvps_arr, list) and len(bvps_arr) == 3 and i >= 2:
-            v = bvps_arr[i - 2]
+        if isinstance(bvps_arr, list) and 0 <= i < len(bvps_arr):
+            v = bvps_arr[i]
             return (price / v) if (price and v) else None
         bvps = (equity * 1e9 / shares) if (equity and shares) else None
         return (price / bvps) if (price and bvps) else None
@@ -217,9 +222,9 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     bvps_used = bool(path_used and (path.get("drivers") or {}).get("bvps_path"))
     note2 = (
         f"Multiple pada harga Rp {_num(price, 0)}: PER = harga/EPS; PBV = harga/BVPS"
-        + (f" (BVPS per tahun dari drivers.bvps_path: Rp {_num((path['drivers']['bvps_path']['rp_per_share'][0] or 0), 0)}, "
-           f"Rp {_num((path['drivers']['bvps_path']['rp_per_share'][1] or 0), 0)}, "
-           f"Rp {_num((path['drivers']['bvps_path']['rp_per_share'][2] or 0), 0)})"
+        + (f" (BVPS per tahun dari drivers.bvps_path: "
+           + ", ".join(f"Rp {_num(v or 0, 0)}" for v in (path['drivers']['bvps_path']['rp_per_share'] or [])[:5])
+           + ")"
            if bvps_used else
            f" (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan)")
         + "; EV/EBITDA = "

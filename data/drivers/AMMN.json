@@ -108,13 +108,53 @@
     },
     "bvps_path": {
       "path": [
+        1169.3,
+        1253.4,
         1501.6,
         1838.9,
         2298.5
       ],
+      "path_unit": "Rp per share",
+      "column_map": {
+        "2024A": "index 0 = 1.169,3",
+        "2025A": "index 1 = 1.253,4",
+        "2026F": "index 2 = 1.501,6",
+        "2027F": "index 3 = 1.838,9",
+        "2028F": "index 4 = 2.298,5"
+      },
       "source": "Q1-2026 attributable equity Rp 93.687 tn + retained earnings (payout = 0.0 since 2023-07-07 listing, Sectors dividend + corporate-actions both null); net-profit path from drivers.net_profit above; shares = Sectors overview.shares_outstanding 72,518,217,656 (FY2025 buyback applied to all years)",
       "note": "BVPS[t] = (equity Q1-2026 + cumulative net profit FY26F..FY28F) / 72.518 bn shares. Opening anchor = Q1-2026 'Jumlah Ekuitas yang Dapat Diatribusikan kepada Pemilik Entitas Induk' from audited interim FS (data/assumptions/AMMN.json gate_inputs.shareholders_equity, Rp 93,687,393,398,000). Path published here so PBV(t) = price/BVPS(t) varies per column.",
-      "path_unit": "Rp per share"
+      "2024A": {
+        "value": 1169.3,
+        "bvps_formula": "FY2024 year-end equity attributable to parent / 72.518 bn shares",
+        "equity_idr": 84798398800000,
+        "equity_source": "Sectors Q4-2024 freeze (output/cache/ammn_fill/quarterly_AMMN_8.json, date=2024-12-31, total_equity=Rp 84,798,398,800,000). Parent equity = total minus NCI; NCI 1.704% means parent = 98.296% of total.",
+        "pbv_at_4860": 4.16,
+        "kind": "public"
+      },
+      "2025A": {
+        "value": 1253.4,
+        "bvps_formula": "FY2025 year-end equity attributable to parent / 72.518 bn shares",
+        "equity_idr": 90897588743520,
+        "equity_source": "Sectors Q4-2025 freeze (output/cache/ammn_fill/quarterly_AMMN_8.json, date=2025-12-31, total_equity=Rp 90,897,588,743,520). Same parent/total split as 2024A.",
+        "pbv_at_4860": 3.88,
+        "kind": "public"
+      },
+      "2026F": {
+        "value": 1501.6,
+        "bvps_formula": "(equity Q1-2026 parent Rp 93.687 tn + FY26F net profit Rp 15.208 tn) / 72.518 bn shares",
+        "kind": "team_estimate"
+      },
+      "2027F": {
+        "value": 1838.9,
+        "bvps_formula": "(equity Q1-2026 parent + cumulative net profit FY26F..FY27F) / 72.518 bn shares",
+        "kind": "team_estimate"
+      },
+      "2028F": {
+        "value": 2298.5,
+        "bvps_formula": "(equity Q1-2026 parent + cumulative net profit FY26F..FY28F) / 72.518 bn shares",
+        "kind": "team_estimate"
+      }
     }
   },
   "cross_check": {

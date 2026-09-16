@@ -34,8 +34,11 @@ from server.report import numfmt as _nf
 PATH_DIR = pathlib.Path(__file__).resolve().parents[2] / "data" / "drivers"
 
 SPINE_KEYS = ("revenue", "ebitda", "net_profit")
-#: bvps_path carries per-year BVPS in `path_unit == "Rp per share"`; the slide writes PBV(t) = price / path[t].
-#: Without it the slide can only divide by a single equity scalar and PBV collapses to one number across the row.
+#: bvps_path carries per-column BVPS (Rp/share) spanning BOTH historical and forecast
+#: columns. The validator checks unit + non-empty, NOT length vs years (the slide
+#: ships 5 columns - 2 historical + 3 forecast - and bvps_path covers all of them).
+#: The slide writes PBV(t) = price / path[t]. Without it the renderer can only
+#: divide by a single equity scalar and PBV collapses to one number across the row.
 OPTIONAL_KEYS = ("dna", "capex", "interest_expense", "interest_income", "minority", "gross_debt",
                  "other_income", "inventory", "receivables", "payables", "fcf", "working_capital",
                  "bvps_path")
@@ -84,7 +87,13 @@ def _validate(doc: dict, ticker: str) -> tuple[list[str], dict]:
                 problems.append(f"driver file is missing the required `{key}` path")
             continue
         path = block.get("path")
-        if not isinstance(path, list) or len(path) != len(years):
+        if key == "bvps_path":
+            # bvps_path spans every column on the slide (historical + forecast),
+            # not just the forecast years - skip the per-year length check.
+            if not isinstance(path, list) or len(path) < 1:
+                problems.append("`bvps_path` path is empty or not a list")
+                continue
+        elif not isinstance(path, list) or len(path) != len(years):
             problems.append(f"`{key}` path has {len(path) if isinstance(path, list) else 'no'} values "
                             f"against {len(years)} years")
             continue
