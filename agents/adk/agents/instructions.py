@@ -21,6 +21,27 @@ Assumptions and archetype configurations are loaded dynamically per ticker.
 # The renderer owns layout (labels, numbering, source lines, header/footer); agents
 # own content. Appended to every instruction that can put an object into the report
 # so the rules travel with the prompt instead of living only in a design doc.
+# ---------------------------------------------------------------------------
+# Typography - attaches to EVERY agent (its own block, see the guard in
+# tests/test_no_em_dash.py). The house-format rule above is scoped to agents that
+# put objects into the document; this one is about the TEXT every agent writes,
+# including the data-only agents whose snippets and labels are quoted downstream.
+# ---------------------------------------------------------------------------
+TYPOGRAPHY_RULE = """
+TYPOGRAPHY (docs/rules/house-report-format.md §12 - BINDING for every agent, no exceptions):
+- NEVER write an em dash (U+2014) or a horizontal bar (U+2015). Not in a paragraph, a headline,
+  a bullet, a table cell, a note, a source string, a news snippet, a risk label, a filename or a
+  tool argument. The reader-facing deck prints the hyphen separator instead: "Opsi A - DCF FCFF",
+  and a comma, a colon or a semicolon often reads better than any dash.
+- An en dash (U+2013) is reserved for the two places the house format already prints it: the page
+  header line and numeric ranges in the rendered tables. Do not add new ones.
+- This applies to Indonesian and English copy alike, and to text you write into the state that
+  another agent will quote later.
+- The reader-facing funnel (server/report/text_sanitize.py) rewrites an em dash that slips
+  through, so it will not fail the gate - it just prints inconsistently with the rest of the
+  deck, and the rewrite is not a substitute for writing the separator yourself.
+"""
+
 HOUSE_FORMAT_RULE = """
 
 HOUSE REPORT FORMAT (docs/rules/house-report-format.md - BINDING, Critic REJECTs violations):
@@ -39,14 +60,6 @@ HOUSE REPORT FORMAT (docs/rules/house-report-format.md - BINDING, Critic REJECTs
   without url+date. Only the printed line changes - the evidence requirement does not.
 - Page header ("Equity Research - Company Update" + publication date), the Sectors.app logo,
   the divider, the footer and page numbers are RENDERER-side. Never emit them yourself.
-- TYPOGRAPHY (§12): never use an em dash (U+2014) or a horizontal bar (U+2015) in any text you
-  write - not in a paragraph, a headline, a table cell, a note or a source string. The house
-  separator is a HYPHEN with a space on each side: "Opsi A - DCF FCFF". Use it for a
-  parenthetical, a comma or a colon instead of a dash. An en dash (U+2013) is reserved for the
-  two places the house format already prints it: the page header line and numeric ranges in the
-  rendered tables - do not add new ones. The reader-facing funnel rewrites an em dash, so it
-  will not fail the gate - it just prints inconsistently with the rest of the deck. Write the
-  separator yourself instead of relying on the rewrite.
 
 SLIDE RULES (§7-§9 of the same doc - the cover spread is ONE page, and these are CONTENT rules,
 so they land on you, not on the renderer). `server/report/house_rules.py` is the executable
@@ -81,7 +94,7 @@ version and the Critic REJECTs on it, so treat every line below as a gate:
   in the accounting parenthesis form, no decimals for the Rp bn rows and exactly one for
   percentages, multiples and EPS. Every forecast cell must be derivable from a stated input -
   never a curve you invented to make the table look forward-looking.
-"""
+""" + TYPOGRAPHY_RULE
 
 # ---------------------------------------------------------------------------
 # Collector - Sectors API v2 only (full-ditch: no third-party market-data fetch)
@@ -121,7 +134,7 @@ Emit a JSON summary with {ticker, source, as_of, financials_5y, segments, peers,
 DO NOT invent tool names. Only call Sectors fetch-* tools and web_search (Sectors-backed). web_extract / web_search_and_extract were removed (external sources).
 Do NOT compute valuation - the Modeler owns that. Just collect and cite sources.
 Output key: collector_output
-"""
+""" + TYPOGRAPHY_RULE
 
 # ---------------------------------------------------------------------------
 # Deck-page contract (docs/ammn-slides/*). Appended to the instructions of every agent whose
@@ -288,7 +301,7 @@ Output key: news_output
 OUTPUT CONTRACT (binding for reasoning models): your final message must be ONLY
 the JSON payload (```json ... ```), no preamble, no <think> block, no narration.
 Anything outside the JSON fence is discarded.
-""" + SLIDE_PAGES_RULE
+""" + SLIDE_PAGES_RULE + TYPOGRAPHY_RULE
 
 news_search_sub_instruction = """You are a research specialist grounded in Sectors data.
 
@@ -298,7 +311,7 @@ If source is "sectors_missing_key" → emit source=sectors_missing_key with an e
 
 Prefer T1 sources (idx.co.id, kontan, bisnis, idxchannel) over T2 (reuters, bloomberg).
 Always include url and date.
-"""
+""" + TYPOGRAPHY_RULE
 
 
 SLIDE6_RULE = """SLIDE 6 - INCOME STATEMENT + BALANCE SHEET (Exhibit 14 and Exhibit 15), stacked on one page.
@@ -610,7 +623,7 @@ fetch-news(symbols="{ticker}", extension="idx") for regulator policy, Danantara 
 JCI foreign flows, MSCI free float.
 Return [{url, title, key_fact, date}, ...] with url+date.
 If source is "sectors_missing_key" → emit source=sectors_missing_key with an empty list and STOP.
-"""
+""" + TYPOGRAPHY_RULE
 
 # ---------------------------------------------------------------------------
 # Risk Officer - pillar/sector-specific buckets
@@ -636,7 +649,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: risk_output
-"""
+""" + TYPOGRAPHY_RULE
 
 # ---------------------------------------------------------------------------
 # KPI Analyst - operational metrics by archetype (parallel group 2)

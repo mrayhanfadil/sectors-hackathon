@@ -105,20 +105,84 @@ def test_exemptions_are_real_files_with_reasons() -> None:
         assert len(reason) > 15, f"exemption for {rel} needs a reason a reviewer can weigh"
 
 
-def test_agent_instructions_state_the_typography_rule() -> None:
-    """The writers of run-time prose are the agents, so the rule has to be in their prompt."""
+def test_every_agent_is_told_the_typography_rule() -> None:
+    """Three layers, because "the rule exists" is not "the agent received it".
+
+    1. the constants: every non-retired `*_instruction` in the module carries the marker;
+    2. the composition: the runtime graph is BUILT and each agent's instruction is read as the
+       framework will send it - a provider that drops the block, or a new agent added without it,
+       fails here rather than in a shipped deck;
+    3. the legacy builder in agents/collector.py, which assembles its own prompt.
+    """
+    import os
+
     from agents.adk.agents import instructions
 
-    rule = instructions.HOUSE_FORMAT_RULE
-    assert "U+2014" in rule, (
-        "HOUSE_FORMAT_RULE does not tell the agents to avoid an em dash; the LLM emits them by "
-        "default, so the prompt is the only place that stops it at the source"
+    # 1. constants (composition-aware: exec the module, then test the resulting strings)
+    ns: dict = {}
+    exec(  # noqa: S102 - the module under test, no side effects at import
+        compile(open(instructions.__file__, encoding="utf-8").read(), instructions.__file__, "exec"),
+        ns,
     )
-    assert "-" in rule, "the rule must name the replacement separator, not only the ban"
+    missing = []
+    for name, value in ns.items():
+        if not name.endswith("_instruction") or not isinstance(value, str) or not value.strip():
+            continue
+        if "RETIRED" in value[:200]:
+            continue
+        if "U+2014" not in value:
+            missing.append(name)
+    assert not missing, (
+        "these agent instructions do not carry the typography rule (§12): "
+        f"{missing}. Attach `+ TYPOGRAPHY_RULE` (agents/adk/agents/instructions.py) to each; the "
+        "block is deliberately separate from HOUSE_FORMAT_RULE because the data-only agents must "
+        "not receive the exhibit/label rules while still being told the typography rule."
+    )
+
+    # 2. the runtime graph
+    os.environ.setdefault("GOOGLE_API_KEY", "structure-only")
+    os.environ.setdefault("DEEPSEEK_API_KEY", "structure-only")
+    from agents.adk.app import build_graph
+
+    root = build_graph(ticker="AMMN")
+    carried: dict[str, str] = {}
+
+    def walk(agent) -> None:
+        instruction = str(getattr(agent, "instruction", "") or "")
+        if instruction:
+            carried[str(getattr(agent, "name", "?"))] = instruction
+        for sub in getattr(agent, "sub_agents", []) or []:
+            walk(sub)
+
+    walk(root)
+
+    expected = {"collector", "news_harvester", "modeler", "industry", "analyst", "risk", "kpi",
+                "writer", "visualizer", "sotp", "adversarial", "critic"}
+    assert expected <= set(carried), (
+        "the ADK graph no longer builds every agent this rule is verified against: "
+        f"missing {sorted(expected - set(carried))}"
+    )
+    without = sorted(name for name, text in carried.items() if "U+2014" not in text)
+    assert not without, (
+        "these agents are built WITHOUT the typography rule, so the model can write an em dash "
+        f"into their output: {without}"
+    )
+
+    # 3. the legacy collector builder assembles its own prompt
+    from agents.collector import _typography_rule
+
+    assert "U+2014" in _typography_rule()
+
+
+def test_house_format_rule_still_carries_the_typography_rule() -> None:
+    """The content agents get it via HOUSE_FORMAT_RULE; the block must stay attached there."""
+    from agents.adk.agents import instructions
+
+    assert "U+2014" in instructions.HOUSE_FORMAT_RULE
     src = (REPO_ROOT / "agents" / "adk" / "agents" / "instructions.py").read_text(encoding="utf-8")
-    assert src.count("+ HOUSE_FORMAT_RULE") >= 8, (
-        "the typography rule rides on HOUSE_FORMAT_RULE, so the number of prompts carrying it "
-        "cannot drop"
+    assert re.search(r'HOUSE_FORMAT_RULE = """(?:.|\n)*?"""\s*\+\s*TYPOGRAPHY_RULE', src), (
+        "HOUSE_FORMAT_RULE no longer composes TYPOGRAPHY_RULE, so the content agents would only "
+        "carry the typography text by accident"
     )
 
 

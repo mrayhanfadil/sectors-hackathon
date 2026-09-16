@@ -315,10 +315,17 @@ So the rule is enforced at three layers, and all three run:
 | Funnel (run time) | `server/report/text_sanitize.py` (`normalize_dashes`, applied by `clean_text`/`clean`) | rewrites every printable string of the payload. Both served surfaces pass through it - the PDF (`server/routers/pdf.py`) and the front end (`server/routers/endpoints.py`, `/api/report/{ticker}`) - so the page and the web page cannot disagree about the same report. An em dash surrounded by spaces becomes `" - "`; one inside a token (a range) becomes `"-"`; a lone one becomes the `-` placeholder |
 | Page (artifact) | `scripts/verify_house_format.py` (`rule 12`) | reads the PHYSICAL pages of the shipped PDF; any occurrence is a FAIL, because a hit there means a string bypassed the funnel |
 
-Agents are told the rule where they read the others (`agents/adk/agents/instructions.py`,
-`HOUSE_FORMAT_RULE`), so run-time prose stops producing the mark instead of relying on the
-rewrite: a rewritten string prints in house style, but it is a rewrite of a sentence nobody
-wrote in house style.
+Every agent is told the rule, in a block of its own. `TYPOGRAPHY_RULE` in
+`agents/adk/agents/instructions.py` attaches to ALL of them - including the data-only agents
+(`collector`, `news_harvester`, `risk`) that deliberately do NOT receive `HOUSE_FORMAT_RULE`,
+because their snippets, source strings and labels are quoted into the document downstream and the
+typography rule is about the TEXT, not about exhibit labels. `HOUSE_FORMAT_RULE` composes the same
+block, so the content agents carry it once, not twice. The legacy builder in `agents/collector.py`
+imports it as well, and the guard BUILDS the real ADK graph
+(`tests/test_no_em_dash.py::test_every_agent_is_told_the_typography_rule`) and fails if any agent
+comes out without it - so an agent added later cannot ship silently. Run-time prose therefore stops
+producing the mark instead of relying on the rewrite: a rewritten string prints in house style, but
+it is a rewrite of a sentence nobody wrote in house style.
 
 The em dash is not normalised anywhere else on purpose - `templates/macros.html` and the
 `house_format` constants keep the en dash they are specified with, and the guards in

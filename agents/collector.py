@@ -376,6 +376,24 @@ def collector_as_tool():
     return _fallback_tool
 
 
+def _typography_rule() -> str:
+    """The §12 typography block, so this legacy builder's agent is told the rule too.
+
+    Imported defensively: this path has to keep building when the ADK package is absent. The rule
+    lives in one place (agents/adk/agents/instructions.py) for every agent in the pipeline.
+    """
+    try:
+        from agents.adk.agents.instructions import TYPOGRAPHY_RULE
+
+        return TYPOGRAPHY_RULE
+    except Exception:  # pragma: no cover - only when google-adk is missing
+        return (
+            "\nTYPOGRAPHY: never write an em dash (U+2014) or a horizontal bar (U+2015) in any "
+            "text, not even in a source string; the house separator is a hyphen with a space on "
+            'each side ("Opsi A - DCF FCFF").'
+        )
+
+
 def build_collector_agent(model=None):
     """
     Build an ADK LlmAgent for the Collector (for orchestrator ParallelAgent).
@@ -394,7 +412,7 @@ def build_collector_agent(model=None):
                 "no synthetic fallback - gaps stay missing with "
                 "sectors_missing_key. Always disclose source per exhibit. "
                 "Cache 4h. Never hallucinate prices - call the tool."
-            ),
+            ) + _typography_rule(),
             tools=[tool] if tool is not None else [],
         )
         return agent
