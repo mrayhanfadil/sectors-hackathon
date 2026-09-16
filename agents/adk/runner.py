@@ -114,6 +114,23 @@ async def run_report(
             app_name=app_name, user_id=user_id, session_id=session_id
         )
         state = dict(session.state) if session and session.state else {}
+        # POST-AUDIT INJECTION (16 Sep 2026): the writer ran before the
+        # adversarial_loop, so it could not know what the red team conceded.
+        # The dissent-audit is deterministic and reads the rounds; we wire its
+        # required_flags into writer_output.gate_flags AFTER the run and, if
+        # the anchor was contested, surface the bear/mid/bull ladder under
+        # non_anchored_fvs_disclosed. Mechanical, no LLM in the loop.
+        try:
+            from pathlib import Path as _Path
+            import json as _json
+            _spot = None
+            _apath = _Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{ticker.upper()}.json"
+            if _apath.exists():
+                _spot = _json.loads(_apath.read_text(encoding="utf-8")).get("last_price")
+            from .post_audit_inject import apply_audit_to_state
+            state = apply_audit_to_state(state, price=_spot)
+        except Exception as _exc:  # noqa: BLE001 - inject must never break the run
+            logger.warning("post_audit_inject raised during %s: %s", ticker, _exc)
         missing = [
             k
             for k in (

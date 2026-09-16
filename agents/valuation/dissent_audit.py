@@ -141,24 +141,29 @@ FORWARD_WORDS = (
 def ladder_from_text(valuation_output: Any) -> list[Rung]:
     """Rungs the modeler actually computed, read from its own JSON blocks.
 
-    Shapes seen in a live run (15 Sep 2026):
+    Shapes seen in live runs (15 / 16 Sep 2026):
 
         "base_15x": {"ev_ebitda": 15.0, "fair_value_per_share": 5667.31, ...}
         "fair_value_per_share": 147.54                     <- headline / DCF scalar
         "cross_check_mean": {"multiple": 28.42, "fair_value_per_share": 5872.75, ...}
+        "primary_fv": {"...fair_value_per_share_idr": 5667.31, ...}
+        "secondary_fv": {"...fair_value_per_share_idr": 838.45, ...}
+        "sensitivity_primary": {"low_13x": {"...fair_value_per_share_idr": 4733.43}}
 
-    Only figures present in the text become rungs; a missing rung stays missing so
-    the audit can say "ladder unavailable" instead of re-pricing off a guess.
+    Only figures present in the text become rungs; a missing rung stays
+    missing so the audit can say "ladder unavailable" instead of re-pricing
+    off a guess.
     """
     text = valuation_output if isinstance(valuation_output, str) else json.dumps(valuation_output or {})
     rungs: list[Rung] = []
     seen: set[float] = set()
 
-    nested = re.compile(
+    # Shape A: {label: { ... "fair_value_per_share": v }} (Sep 15 flat shape)
+    nested_a = re.compile(
         r'"(?P<label>[a-z0-9_]+)"\s*:\s*\{(?P<body>[^{}]{0,400}?)"fair_value_per_share"\s*:\s*(?P<fv>-?[\d.]+)',
         re.IGNORECASE,
     )
-    for m in nested.finditer(text):
+    for m in nested_a.finditer(text):
         try:
             fv = float(m.group("fv"))
         except ValueError:
@@ -169,6 +174,57 @@ def ladder_from_text(valuation_output: Any) -> list[Rung]:
         body = " ".join(m.group("body").split())
         rungs.append(Rung(label=m.group("label"), basis=body[:200], fair_value=fv))
 
+    # Shape B1 (Sep 16 outer named block): "label": {"method": "...", "multiple_x": X, ..., "fair_value_per_share_idr": V}
+    # Method body may contain one or more nested object blocks (e.g. bridge, sensitivity).
+    # We allow up to 2 levels of nested braces: `(?:[^{}]|\{...|\{...\{...\})` for unlimited depth.
+    # Easier: do a depth-aware substring search with a small custom counter instead of a single regex.
+    def _depth_scan(label_regex: str, target_key: str, max_label_dist: int = 30) -> list[tuple[str, float, str]]:
+        """For each occurrence of ``label: {`` return the first ``target_key: <num>``
+        that lives at the SAME brace depth inside the value block. Distance check
+        uses ``max_label_dist`` chars to skip unrelated same-named labels."""
+        out: list[tuple[str, float, str]] = []
+        for m in re.finditer(label_regex, text):
+            label = m.group("name")
+            start = m.end()
+            depth = 1
+            i = start
+            buf: list[str] = []
+            body_chars = 0
+            while i < len(text) and depth > 0 and body_chars < 4000:
+                c = text[i]
+                if c == "{":
+                    depth += 1
+                    buf.append(c)
+                elif c == "}":
+                    depth -= 1
+                    if depth == 0:
+                        break
+                    buf.append(c)
+                else:
+                    buf.append(c)
+                body_chars += 1
+                i += 1
+            body_text = "".join(buf)
+            km = re.search(rf'"{target_key}"\s*:\s*(?P<v>-?[\d.]+)', body_text)
+            if km:
+                out.append((label, float(km.group("v")), body_text[:300]))
+            else:
+                out.append((label, float("nan"), body_text[:300]))
+        return [t for t in out if not (t[1] != t[1])]  # drop nan
+
+    # Run depth-scan for `_idr` keys (Sep 16 producer).
+    # Skip the "valuation_output" pseudo-key: that captures the whole top-level
+    # state field which has every fairness inside it, and would always match
+    # the primary anchor (double-counting).
+    for label, fv, body in _depth_scan(r'"(?P<name>[a-z0-9_]+)"\s*:\s*\{', "fair_value_per_share_idr"):
+        if label in {"valuation_output", "debate_output", "writer_output", "state"}:
+            continue
+        if fv in seen:
+            continue
+        seen.add(fv)
+        rungs.append(Rung(label=label, basis=body, fair_value=fv))
+
+    # Shape C: standalone "fair_value_per_share": v (Sep 15 legacy scalar)
     for m in re.finditer(r'"fair_value_per_share"\s*:\s*(?P<fv>-?[\d.]+)', text):
         try:
             fv = float(m.group("fv"))
@@ -178,6 +234,11 @@ def ladder_from_text(valuation_output: Any) -> list[Rung]:
             continue
         seen.add(fv)
         rungs.append(Rung(label="headline", basis="headline fair_value_per_share", fair_value=fv))
+    # (Removed Shape D standalone: depth_scan covers every block label faithfully,
+    # including leaves like {"fair_value_per_share_idr": V}. A standalone regex
+    # would catch all six such leaves under six different labels and lose the
+    # parent context needed for the contested-token check.)
+
     return rungs
 
 
@@ -218,12 +279,33 @@ def audit(state: dict[str, Any], price: float, ladder: list[Rung] | None = None)
 
     declared = state.get("gate_flags")
     if declared is None and isinstance(state.get("writer_output"), str):
+        # Legacy path: gate_flags at the top of the writer text.
         m = re.search(r"gate_flags\s*\"?\s*:\s*(\[[^\]]*\])", state["writer_output"])
         if m:
             try:
                 declared = json.loads(m.group(1))
             except json.JSONDecodeError:
                 declared = None
+    if declared is None and isinstance(state.get("writer_output"), dict):
+        # 16 Sep 2026+: writer_output is a structured dict (LlmAgent output
+        # lands in session.state under the output_key). gate_flags lives inside it.
+        declared = state["writer_output"].get("gate_flags")
+    if declared is None and isinstance(state.get("writer_output"), str):
+        # 16 Sep 2026+: writer_output is a fenced JSON blob. Parse it, then
+        # pull gate_flags from the inner dict. Done after the regex try so we
+        # only fall back to full-JSON parse when the regex missed (typical when
+        # gate_flags is non-empty and contains commas/spaces).
+        stripped = state["writer_output"].strip()
+        if stripped.startswith("```json"):
+            stripped = stripped.split("\n", 1)[1].rsplit("\n```", 1)[0]
+        try:
+            parsed = json.loads(stripped)
+        except json.JSONDecodeError:
+            parsed = None
+        if isinstance(parsed, dict):
+            inner_wo = parsed.get("writer_output", parsed)
+            if isinstance(inner_wo, dict):
+                declared = inner_wo.get("gate_flags")
     declared = declared or []
     result.missing_flags = [f for f in result.required_flags if f not in declared]
     if conceded and not declared:

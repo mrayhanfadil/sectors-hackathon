@@ -160,4 +160,73 @@ def test_rung_and_audit_shapes_are_serialisable():
     res = audit({"debate_output": {}, "writer_output": "{}"}, price=100.0)
     dumped = json.dumps(res.to_dict())
     assert '"verdict"' in dumped
+
+
+def test_sep16_shape_ladder_parses_with_idr_suffix():
+    """The Sep 16 modeler emits the per-share value as `fair_value_per_share_idr`,
+    not `fair_value_per_share`. The audit must extract those rungs so a concede's
+    audience sees the full ladder instead of 'ladder unavailable'."""
+    valuation = json.dumps({
+        "primary_fv": {
+            "method": "EV/EBITDA FY26F forward",
+            "multiple_x": 15.0,
+            "fair_value_per_share_idr": 5667.31,
+        },
+        "mid_cycle_cross_check": {
+            "method": "EV/EBITDA on 3Y mean EBITDA",
+            "multiple_x": 28.42,
+            "fair_value_per_share_idr": 5872.75,
+        },
+        "sensitivity_primary": {
+            "low_13x": {"fair_value_per_share_idr": 4733.43},
+            "high_17x": {"fair_value_per_share_idr": 6601.18},
+        },
+    })
+    rungs = ladder_from_text(valuation)
+    values = {round(r.fair_value, 2) for r in rungs}
+    assert {5667.31, 5872.75, 4733.43, 6601.18}.issubset(values), values
+    labels = {r.label for r in rungs}
+    # At minimum the named labels come through
+    assert "primary_fv" in labels and "mid_cycle_cross_check" in labels
+
+
+def test_sep16_conceded_run_is_rejected_with_anchor_contested():
+    """Full pipeline check using the Sep 16 producer shape - the headline
+    regression: a single binding projection that the red team conceded."""
+    state = {
+        "debate_output": json.dumps({
+            "debate": [{
+                "round": 1,
+                "claim": "the 15.0x EV/EBITDA anchor on FY26F EBITDA is unanchored - it's a forward projection",
+                "defense": {"mode": "concede"},
+                "verdict": "CHALLENGE ACCEPTED: corrected framing recommended",
+            }]
+        }),
+        "writer_output": json.dumps({
+            "rating": "BUY",
+            "target_price": 5667.31,
+            "gate_flags": [],
+        }),
+        "valuation_output": json.dumps({
+            "primary_fv": {
+                "method": "EV/EBITDA FY26F forward",
+                "multiple_x": 15.0,
+                "fair_value_per_share_idr": 5667.31,
+            },
+            "mid_cycle_cross_check": {
+                "method": "EV/EBITDA on 3Y mean EBITDA",
+                "multiple_x": 28.42,
+                "fair_value_per_share_idr": 5872.75,
+            },
+            "sensitivity_primary": {
+                "low_13x": {"fair_value_per_share_idr": 4733.43, "multiple_x": 13.0},
+                "high_17x": {"fair_value_per_share_idr": 6601.18, "multiple_x": 17.0},
+            },
+        }),
+    }
+    res = audit(state, price=4860)
+    assert res.verdict == "REJECT"
+    assert res.anchor_contested is True
+    assert res.rating_override_required == "Review Required"
+    assert any("directional" in r for r in res.reasons)
     assert Rung(label="x", basis="y", fair_value=1.0).fair_value == 1.0
