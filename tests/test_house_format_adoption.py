@@ -455,7 +455,10 @@ def test_every_template_flushes_a_pending_source_line_on_every_page(tpl_file: st
     namespace to pagefoot() and end with one. A page missing its footer silently drops
     the source line of its last exhibit."""
     src = (REPO_ROOT / "templates" / f"{tpl_file}.html").read_text(encoding="utf-8")
-    pages = src.count('class="page"')
+    # Match `class="page"` exactly OR a class list that starts with "page"
+    # (e.g. `class="page audit-page"` for a dedicated page that still
+    # satisfies the pagefoot invariant).
+    pages = len(re.findall(r'class="page(?:"|\s)', src))
     foots = len(re.findall(r"\{\{ m\.pagefoot\(", src))
     with_ns = len(re.findall(r"\{\{ m\.pagefoot\(\d+, ns\) \}\}", src))
     assert pages == foots, f"{tpl_file}: {pages} pages but {foots} pagefoot calls"

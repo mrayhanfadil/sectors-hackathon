@@ -294,44 +294,6 @@
   {% endif %}
   {{ m.exhibit_source(ns) }}
 
-  {# ---- Audit disclosure (16 Sep 2026): the dissent-aware fields the
-     post-audit injector writes into writer_output land here so the reader
-     sees the same flags the publish gate saw. Gated on audit_disclosure
-     being present so a missing agent run keeps the page clean. The
-     ladder block is the bear/mid/bull from the audit - only renders
-     when the anchor itself was contested (a defend-mode debate leaves
-     ladder empty). #}
-  {% if cover.audit_disclosure and cover.audit_disclosure.present %}
-  <div class="audit-disclosure" style="margin-top:6pt; padding:4pt 6pt; border:1px solid #DCEBF7; border-radius:3pt;">
-    <p class="small" style="margin:0 0 3pt 0;"><b>Catatan audit (run {{ cover.audit_disclosure.run_id }}):</b>
-      verdict=<b>{{ cover.audit_disclosure.verdict }}</b>,
-      anchor contested={{ cover.audit_disclosure.anchor_contested }}.</p>
-    {% if cover.audit_disclosure.gate_flags %}
-    <ul class="small stmt-note-cols" style="margin:0; padding-left:14pt;">
-      {% for flag in cover.audit_disclosure.gate_flags %}<li>{{ flag }}</li>{% endfor %}
-    </ul>
-    {% endif %}
-    {% if cover.audit_disclosure.disclosure %}
-    <p class="small" style="margin:3pt 0 0 0;">{{ cover.audit_disclosure.disclosure }}</p>
-    {% endif %}
-    {% if cover.audit_disclosure.ladder %}
-    <table class="fin-table" style="margin-top:3pt;">
-      <thead><tr><th>Bear / Mid / Bull</th><th class="num">Fair Value (Rp)</th><th class="num">vs TP</th><th>Basis</th></tr></thead>
-      <tbody>
-      {% for rung in cover.audit_disclosure.ladder %}
-        <tr class="{{ 'bold hl' if rung.contested else '' }}">
-          <td>{{ rung.label }}</td>
-          <td class="num">{{ rung.fair_value | idn(0) }}</td>
-          <td class="num">{{ rung.delta_from_tp_pct }}%</td>
-          <td>{{ rung.basis }}</td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
-    {% endif %}
-  </div>
-  {% endif %}
-
   {# ---- Exhibit 9: WACC components, each parameter with its source ---- #}
   {{ m.exhibit_auto(ns, "WACC Components", "Sumber per komponen tercantum di kolom ketiga") }}
   {{ m.table(["Parameter", "Nilai", "Sumber"], valuation_page.wacc_rows) }}
@@ -462,6 +424,88 @@
   {{ m.pagefoot(5, ns) }}
 </div>
 
+{# ================= PAGE 6 - AUDIT DISCLOSURE ================= #}
+{# (16 Sep 2026): dedicated page so the reader sees the dissent + bear/mid/
+bull ladder the publish gate saw, instead of a footnote. Always rendered
+so the pagefoot invariant (house rule §1: every page ends with a footer)
+holds even when no agent run exists yet. The pagefoot is non-conditional
+on the wrapping audit-page div; the body content adapts to
+cover.audit_disclosure.present so a missing run keeps the deck clean. #}
+<div class="page audit-page">
+  {{ m.running() }}
+  {{ m.section("Catatan Audit", ns) }}
+  {% if cover.audit_disclosure and cover.audit_disclosure.present %}
+
+  <div class="audit-banner">
+    <p class="audit-verdict">
+      Verdict: <b>{{ cover.audit_disclosure.verdict }}</b>
+      · Anchor contested: <b>{{ cover.audit_disclosure.anchor_contested }}</b>
+      · Run: <code>{{ cover.audit_disclosure.run_id }}</code>
+    </p>
+  </div>
+
+  {% if cover.audit_disclosure.gate_flags %}
+  <h3 style="margin-top:10pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Bendera Gate</h3>
+  <ul class="stmt-note-cols audit-flags" style="margin:0 0 8pt 0; padding-left:14pt;">
+    {% for flag in cover.audit_disclosure.gate_flags %}
+      <li class="{{ 'contested' if 'DISSENT' in flag or 'RANGE_DISCLOSURE' in flag else '' }}">{{ flag }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if cover.audit_disclosure.disclosure %}
+  <h3 style="margin-top:6pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Justifikasi Anchor</h3>
+  <p class="audit-disclosure-prose" style="margin:0 0 8pt 0;">{{ cover.audit_disclosure.disclosure }}</p>
+  {% endif %}
+
+  {% if cover.audit_disclosure.ladder %}
+  <h3 style="margin-top:6pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Tangga Valuasi (Audit)</h3>
+  <table class="fin-table audit-ladder" style="width:100%;">
+    <thead>
+      <tr>
+        <th>Bear / Mid / Bull</th>
+        <th class="num">Fair Value (Rp)</th>
+        <th class="num">vs TP</th>
+        <th>Basis</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for rung in cover.audit_disclosure.ladder %}
+        <tr class="{{ 'hl contested' if rung.contested else '' }}">
+          <td><b>{{ rung.label }}</b></td>
+          <td class="num">{{ rung.fair_value | idn(0) }}</td>
+          <td class="num">{{ rung.delta_from_tp_pct | dec(2) }}%</td>
+          <td class="basis">{{ rung.basis }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <p class="small muted" style="margin:4pt 0;">
+    <i>Anchor tidak disengketakan.</i> Bendera DISSENT (jika ada) di atas
+    mencerminkan perdebatan internal yang berakhir dengan mempertahankan
+    anchor - tangga bear/mid/bull tidak dipublikasikan.
+  </p>
+  {% endif %}
+
+  <p class="small muted" style="margin-top:10pt;">
+    Catatan audit mengikuti standar <code>house-report-format.md</code> §audit;
+    halaman ini dirender otomatis dari
+    <code>agents/adk/post_audit_inject.py</code> lewat
+    <code>payload["cover"]["audit_disclosure"]</code>. Audit tetap menjadi
+    otoritas final - lihat <code>audit_disclosure.verdict</code> di atas.
+  </p>
+  {% else %}
+  <p class="small muted">
+    <i>Belum ada run agen untuk emiten ini.</i> Halaman ini akan terisi
+    otomatis setelah pipeline ADK menyelesaikan satu run - lihat
+    <code>payload["cover"]["audit_disclosure"]</code>.
+  </p>
+  {% endif %}
+
+  {{ m.pagefoot(6, ns) }}
+</div>
+
 {# ================= SLIDE 5 - PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
 {% include "_slide5_peers.html" %}
 
@@ -492,6 +536,49 @@
   .slide5 .peer-table tr.peer-self td { background: #eef6ff; box-shadow: inset 3px 0 0 #0B1F3A; }
   .slide5 .peer-table tr.peer-stat td { font-weight: 700; background: #f8fafc; border-top: 1.4pt solid #0f172a; }
   .slide5 .peer-table tr.peer-average td { border-top: 0; border-bottom: 1.4pt solid #0f172a; }
+  .audit-page .audit-banner {
+    background: #F5F9FC;
+    border-left: 3pt solid #0B1F3A;
+    padding: 6pt 10pt;
+    margin: 4pt 0 8pt 0;
+  }
+  .audit-page .audit-verdict { font-size: 9pt; margin: 0; color: #0B1F3A; }
+  .audit-page .audit-verdict code {
+    background: #fff;
+    border: 1px solid #DCEBF7;
+    padding: 1pt 3pt;
+    border-radius: 2pt;
+    font-size: 8pt;
+  }
+  .audit-page .audit-flags li {
+    font-size: 8.5pt;
+    line-height: 1.35;
+    color: #2A3D54;
+  }
+  .audit-page .audit-flags li.contested {
+    color: #7A1F2E;
+    font-weight: 600;
+  }
+  .audit-page .audit-disclosure-prose {
+    font-size: 9pt;
+    font-style: italic;
+    color: #2A3D54;
+    border-left: 2pt solid #DCEBF7;
+    padding-left: 6pt;
+  }
+  .audit-page table.audit-ladder th {
+    background: #E8F1F8;
+    color: #0B1F3A;
+    font-size: 8.5pt;
+  }
+  .audit-page table.audit-ladder tr.contested td {
+    background: #FDF6F7;
+    border-left: 2pt solid #C24E5E;
+  }
+  .audit-page table.audit-ladder td.basis {
+    font-size: 8pt;
+    color: #4A5C73;
+  }
   .slide5 .method-band { display: flex; align-items: baseline; gap: 8pt; margin: 2pt 0 6pt; }
   .slide5 .method-tag { font-size: 7.5pt; letter-spacing: .09em; font-weight: 700; color: #12395b; }
   .slide5 .method-desc { font-size: 8pt; color: #64748b; }
