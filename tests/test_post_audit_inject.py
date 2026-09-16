@@ -295,3 +295,88 @@ def test_compute_non_anchored_fvs_delta_pct():
         anchor_value=5667,
     )
     assert out[0]["delta_from_tp_pct"] == pytest.approx(-32.39, abs=0.5)
+
+
+# === _wait_for_session_state ===========================================
+# Closes the ADK SessionService flush race. When the audit fires before
+# debate_output lands in session.state, verdict comes back as PASS even
+# though the rounds exist - and the post-hoc /tmp/reinject_run.py patch
+# has to repair it. This helper polls up to ~0.4s for debate_output to
+# settle so the inject call sees the real shape.
+
+import asyncio
+from server.routers.agent import _wait_for_session_state
+
+
+class _FakeSessionService:
+    """Stub session_service.get_session that returns the configured states in order."""
+
+    def __init__(self, states: list[dict]) -> None:
+        self._states = list(states)
+        self._i = 0
+        self.calls = 0
+
+    async def get_session(self, *, app_name, user_id, session_id):
+        self.calls += 1
+        i = min(self._i, len(self._states) - 1)
+        self._i += 1
+        snap = self._states[i]
+
+        class S:
+            state = snap
+        return S()
+
+
+def test_wait_for_session_state_returns_immediately_when_debate_present():
+    svc = _FakeSessionService([{"debate_output": {"debate": [{"round": 1}]}}])
+    state, attempts = asyncio.run(_wait_for_session_state(svc, "AMMN", "x"))
+    assert state is not None
+    assert state["debate_output"]["debate"][0]["round"] == 1
+    assert attempts == 1
+    assert svc.calls == 1
+
+
+def test_wait_for_session_state_waits_for_rounds_not_just_debate_output():
+    # debate_output present but debate list empty (writer just landed the
+    # outer dict). Helper must keep polling until rounds appear.
+    svc = _FakeSessionService([
+        {"debate_output": {"debate": []}},
+        {"debate_output": {"debate": [], "status": "settling"}},
+        {"debate_output": {"debate": [{"round": 3}]}},
+    ])
+    state, attempts = asyncio.run(_wait_for_session_state(svc, "AMMN", "x"))
+    assert state is not None
+    assert state["debate_output"]["debate"][0]["round"] == 3
+    assert attempts == 3
+    assert svc.calls == 3
+
+
+def test_wait_for_session_state_polls_until_debate_appears():
+    # First two reads: no debate_output. Third read: debate present.
+    svc = _FakeSessionService([
+        {"writer_output": "..."},
+        {"writer_output": "...", "debate_output": None},
+        {"writer_output": "...", "debate_output": {"debate": [{"round": 2}]}},
+    ])
+    state, attempts = asyncio.run(_wait_for_session_state(svc, "AMMN", "x"))
+    assert state is not None
+    assert state["debate_output"]["debate"][0]["round"] == 2
+    assert attempts == 3
+    assert svc.calls == 3
+
+
+def test_wait_for_session_state_times_out_gracefully():
+    svc = _FakeSessionService([{"writer_output": "x"}] * 20)
+    state, attempts = asyncio.run(_wait_for_session_state(svc, "AMMN", "x"))
+    # attempts_used is clamped to the configured cap (12 default)
+    assert attempts == 12
+    assert state == {"writer_output": "x"}
+
+
+def test_wait_for_session_state_handles_get_session_failure():
+    class _Boom:
+        async def get_session(self, **_kw):
+            raise RuntimeError("store down")
+    state, attempts = asyncio.run(_wait_for_session_state(_Boom(), "AMMN", "x"))
+    assert state is None
+    assert attempts == 12

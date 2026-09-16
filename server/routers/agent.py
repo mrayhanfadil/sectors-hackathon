@@ -405,6 +405,107 @@ async def agent_run(req: AgentRunRequest):
 
 
 # === Detached executor (background task, SSE-free) ===
+
+async def _wait_for_session_state(
+    session_service,
+    ticker: str,
+    session_id: str,
+    *,
+    attempts: int = 12,
+    base_delay_s: float = 0.1,
+) -> tuple[dict | None, int]:
+    """Read session.state, polling until ``debate_output`` has settled.
+
+    The ADK runner exits its async loop the instant ``runner.run_async``
+    drains, but the in-memory ``SessionService`` can lag the last
+    ``output_key`` write by a few ms. If the injector grabs ``state``
+    before ``debate_output["debate"]`` is populated, the audit returns
+    ``verdict=PASS, required_flags=[]`` even when debate rounds exist -
+    then the post-hoc ``/tmp/reinject_run.py`` patch has to repair it.
+
+    "Settled" means: debate_output is a dict whose ``debate`` key is a
+    non-empty list. We poll ``parse_rounds`` (the same parser the audit
+    uses) for up to ~3.5s (12 attempts, exponential backoff) waiting
+    for rounds to appear. If they never show up, the state we have is
+    returned and the audit will correctly return PASS - which is the
+    honest answer when no debate rounds exist.
+    """
+    from agents.valuation.dissent_audit import parse_rounds as _parse
+    last_state: dict | None = None
+    for attempt in range(attempts):
+        try:
+            session = await session_service.get_session(
+                app_name="sectors-equity-report", user_id="user", session_id=session_id
+            )
+            st = dict(session.state) if session and session.state else None
+        except Exception:
+            st = None
+        last_state = st
+        if st is not None:
+            try:
+                rounds = _parse(st)
+            except Exception:
+                rounds = []
+            if rounds:
+                return st, attempt + 1
+        await asyncio.sleep(base_delay_s * (1.5 ** attempt))
+    return last_state, attempts
+
+
+def _inject_post_audit(t: str, final_state: dict | None) -> dict | None:
+    """Run the deterministic dissent-audit injector against ``final_state``.
+
+    Mechanical, no LLM. Mirrors the block in agents/adk/runner.run_report
+    so every entry point (``/api/agent/start`` background, ``/api/agent/stream``
+    SSE, ``/api/agent/run`` blocking) ships the same ``gate_flags`` shape.
+    Returns the (possibly-mutated) state or the original ``None``.
+    """
+    if final_state is None:
+        return final_state
+    try:
+        from pathlib import Path as _Path
+        import json as _json
+        _spot = None
+        _apath = _Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t.upper()}.json"
+        if _apath.exists():
+            _spot = _json.loads(_apath.read_text(encoding="utf-8")).get("last_price")
+        from agents.adk.post_audit_inject import apply_audit_to_state
+        # Diagnostic: log parsed-rounds count + debate_output shape to
+        # disambiguate race vs audit-bug vs shape mismatch.
+        try:
+            from agents.valuation.dissent_audit import parse_rounds as _pr
+            _parsed = len(_pr(final_state))
+            _deb = final_state.get("debate_output")
+            _deb_type = type(_deb).__name__ if _deb is not None else "None"
+            if isinstance(_deb, dict):
+                _deb_keys = sorted(_deb.keys())
+                _deb_has_debate = "debate" in _deb
+                _deb_len = len(_deb.get("debate") or []) if _deb_has_debate else "?"
+            elif isinstance(_deb, str):
+                _deb_keys = f"len={len(_deb)} first60={_deb[:60]!r}"
+                _deb_len = "?"
+            else:
+                _deb_keys = _deb_len = "n/a"
+        except Exception as _exc:
+            log.warning("post_audit_inject shape diag failed for %s: %s", t, _exc)
+            _parsed = -1
+            _deb_type = _deb_keys = _deb_len = _deb_has_debate = "?"
+        _before = final_state.get("writer_output")
+        final_state = apply_audit_to_state(final_state, price=_spot)
+        _after = final_state.get("writer_output") != _before
+        _audit = final_state.get("__audit__") or {}
+        log.info(
+            "post_audit_inject %s: parsed_rounds=%d state_changed=%s audit=%s "
+            "injected_flags=%d deb_type=%s deb_keys=%s deb_len=%s",
+            t, _parsed, _after, _audit.get("verdict"),
+            _audit.get("injected_flags", 0),
+            _deb_type, _deb_keys, _deb_len,
+        )
+    except Exception as _exc:  # noqa: BLE001 - inject must never break the run
+        log.warning("post_audit_inject raised during %s: %s", t, _exc)
+    return final_state
+
+
 async def _execute_run_to_sqlite(t: str, p: str, session_id: str) -> None:
     """Run ADK graph and persist every event to SQLite. No SSE - client-independent.
 
@@ -455,41 +556,33 @@ async def _execute_run_to_sqlite(t: str, p: str, session_id: str) -> None:
             await lifecycle.on_error(exc=exc, error_msg=str(exc)[:2000])
             return
 
-        try:
-            session = await session_service.get_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
-            final_state = dict(session.state) if session and session.state else None
-        except Exception:
-            final_state = None
-
         # POST-AUDIT INJECTION (16 Sep 2026): the writer ran before the
         # adversarial_loop, so it cannot know what the red team conceded.
         # The dissent-audit is deterministic and reads the rounds; we wire
         # its required_flags into writer_output.gate_flags AFTER the run
         # and, if the anchor was contested, surface the bear/mid/bull
         # ladder under non_anchored_fvs_disclosed. Mechanical, no LLM
-        # in the loop. Mirrors agents/adk/runner.py so /api/agent/start
-        # ships the same gate_flags as the blocking /api/agent/run path.
-        if final_state is not None:
-            try:
-                from pathlib import Path as _Path
-                import json as _json
-                _spot = None
-                _apath = _Path(__file__).resolve().parents[2] / "data" / "assumptions" / f"{t.upper()}.json"
-                if _apath.exists():
-                    _spot = _json.loads(_apath.read_text(encoding="utf-8")).get("last_price")
-                from agents.adk.post_audit_inject import apply_audit_to_state
-                _before = final_state.get("writer_output")
-                final_state = apply_audit_to_state(final_state, price=_spot)
-                _after = final_state.get("writer_output") != _before
-                _audit = final_state.get("__audit__") or {}
-                log.info(
-                    "post_audit_inject %s: state_changed=%s audit=%s injected_flags=%d",
-                    t, _after, _audit.get("verdict"), _audit.get("injected_flags", 0),
-                )
-            except Exception as _exc:  # noqa: BLE001
-                log.warning("post_audit_inject raised during %s: %s", t, _exc)
-
+        # in the loop. Two ordering notes that the live injector relies
+        # on (16 Sep 2026 E2E bug):
+        #   1. session.state['debate_output'] is the adversarial agent's
+        #      raw narrative text - not parsed JSON. The StreamLifecycle
+        #      backfill (on_complete) rewrites it as {debate:[rounds], ...}
+        #      by lifting the last accepted submit_debate payload. We must
+        #      run the injector AFTER on_complete to read the parsed shape.
+        #   2. lifecycle.accumulated_state is what gets persisted in
+        #      finish_run, so injecting into it propagates to the DB.
+        final_state, _ = await _wait_for_session_state(session_service, t, session_id)
         await lifecycle.on_complete(final_state=final_state)
+        final_state = dict(lifecycle.accumulated_state)
+        final_state = _inject_post_audit(t, final_state)
+
+        # Repersist the injected state so the PDF gate reads it from DB.
+        try:
+            from server.storage import AgentRunStore
+            AgentRunStore().update_state(session_id, final_state)
+        except Exception as _exc:  # noqa: BLE001 - persist is best-effort
+            log.warning("post_audit persist failed for %s: %s", t, _exc)
+
         log.info("run_to_sqlite completed run_id=%s ticker=%s events=%d", session_id, t, seq)
     except Exception as e:
         log.exception("run_to_sqlite failed for %s", t)
@@ -665,14 +758,20 @@ async def agent_stream(
                 yield f"data: {json.dumps({'seq': 9999, 'event_type': 'error', 'ticker': t, 'error': str(exc)[:2000]})}\n\n"
                 return
 
-            # final state from session service if available
-            try:
-                session = await session_service.get_session(app_name="sectors-equity-report", user_id="user", session_id=session_id)
-                final_state = dict(session.state) if session and session.state else None
-            except Exception:
-                final_state = None
-
+            # POST-AUDIT INJECTION (16 Sep 2026): see _inject_post_audit /
+            # _wait_for_session_state for the rationale. Same path as
+            # run_to_sqlite so SSE consumers see the gate_flags surface.
+            # Order matters: on_complete backfills debate_output from the
+            # event trail; we inject AFTER so we read the parsed shape.
+            final_state, _ = await _wait_for_session_state(session_service, t, session_id)
             await lifecycle.on_complete(final_state=final_state)
+            final_state = dict(lifecycle.accumulated_state)
+            final_state = _inject_post_audit(t, final_state)
+            try:
+                from server.storage import AgentRunStore
+                AgentRunStore().update_state(session_id, final_state)
+            except Exception as _exc:  # noqa: BLE001
+                log.warning("post_audit persist failed for %s: %s", t, _exc)
             state = lifecycle.accumulated_state
 
             # summarize state keys + small preview
