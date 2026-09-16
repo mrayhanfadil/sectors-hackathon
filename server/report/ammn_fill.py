@@ -953,7 +953,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         cod = float(assum["cod"])
         taxr = float(assum.get("tax", 0.22))
         we, wd = float(assum["we"]), float(assum["wd"])
-        coe = float(assum.get("cost_of_equity") or (rf + beta * erp))
+        # CoE MUST be recomputed from Rf + Beta x ERP every time. Reading it
+        # from the file is dangerous: a stale value computed against an old
+        # ERP drifts from the locked ERP. cost_of_equity in the assumptions
+        # file is ignored if present.
+        coe = rf + beta * erp
         wacc = float(assum.get("wacc") or wacc_val)
         kd_at = cod * (1 - taxr)
         pc = lambda v: f"{_nf.dec(v * 100, digits=2)}%".replace(".", ",")

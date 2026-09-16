@@ -353,7 +353,11 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     shares, mid_eb = raw.get("shares"), raw.get("mid_eb")
     net_debt, multiple = raw.get("net_debt"), raw.get("multiple")
     sens = raw.get("sens") or {}
-    g = assum.get("g")
+    # Terminal growth is a ticker-agnostic team constant (3.5% as of Sep 2026);
+    # locked via the helper so the same value reaches valuation_page too.
+    from server.report.valuation_constants import lock_g, lock_erp
+    g = lock_g(assum)
+    lock_erp(assum)
     # WACC lives on the DCF method's assumptions in the render payload (and on the
     # assumptions file itself); read both rather than printing "n/a" next to a real method.
     wacc = None

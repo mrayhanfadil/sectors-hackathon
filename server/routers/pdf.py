@@ -216,6 +216,12 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         return base
 
     assum = _assumptions_for_inner(t)
+    # Lock ticker-agnostic team constants (g=3.5%, ERP=4%) onto assum before
+    # any valuation path runs. apply_ammn_fill reads assum["g"] directly, so
+    # locking here (at the request boundary) keeps every downstream consumer
+    # on the same value regardless of what's in data/assumptions/<T>.json.
+    from server.report.valuation_constants import apply_locks
+    apply_locks(assum)
     _missing = [k for k in _required if assum.get(k) is None]
     if assum.get("source") == "no_assumptions_file" or _missing:
         raise HTTPException(
@@ -231,6 +237,12 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         )
     w = calc_wacc(assum["rf"], assum["beta"], assum["erp"], assum["cod"], we=assum.get("we", 0.608), wd=assum.get("wd", 0.392))
     wacc_val = w["wacc"]
+    # Stamp the freshly-computed WACC onto assum so downstream consumers
+    # (valuation_page, slide2, apply_ammn_fill) all read the same value
+    # computed from the LOCKED ERP. Without this, anyone reading
+    # assum["wacc"] would see the stale file value (13.77% for AMMN, computed
+    # from the OLD ERP 6.69%) and produce a different FV than the cover leg.
+    assum["wacc"] = wacc_val
     raw_fcf = assum.get("fcf")
     assert raw_fcf is not None  # guaranteed by required-key 422 above
     fcf_list = [float(x) * 1e9 for x in raw_fcf]

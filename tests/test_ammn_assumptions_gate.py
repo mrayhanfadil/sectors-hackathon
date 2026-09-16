@@ -66,7 +66,11 @@ def test_ammn_every_gate_field_carries_provenance(ammn: dict):
         assert entry.get("outlet"), f"provenance['{key}'] must name the outlet"
         assert entry.get("url"), f"provenance['{key}'] must carry a url"
         assert entry.get("as_of"), f"provenance['{key}'] must carry an as-of date"
-        assert entry.get("kind") in {"sectors_live", "derived_sectors", "public", "derived_public"}, (
+        # Allowed kinds (Sep 2026): live-Sectors, derived-from-Sectors, third-party
+        # public data, derived-from-public, OR a team-locked constant (Fadil's
+        # g=3.5% / ERP=4% on 16 Sep 2026 are constants, not data - the renderer
+        # stamps them at the request boundary via valuation_constants.lock_*).
+        assert entry.get("kind") in {"sectors_live", "derived_sectors", "public", "derived_public", "team_locked"}, (
             f"provenance['{key}'] must declare its kind"
         )
 

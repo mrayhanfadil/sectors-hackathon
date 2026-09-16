@@ -16,9 +16,11 @@
   "no_sectors_hit": false,
   "rf": 0.071,
   "beta": 1.4071,
-  "erp": 0.0669,
+  "erp": 0.04,
   "cod": 0.0649,
-  "g": 0.025,
+  "g": 0.035,
+  "wacc": 0.10894,
+  "_note_erp_g_locked": "Fadil locked g=3.5% and ERP=4% as ticker-agnostic team constants on 16 Sep 2026. The numbers in data/assumptions/<T>.json are now overridden at the request boundary by server.report.valuation_constants.apply_locks; the values below match what the renderer uses. Update both together if the constants ever change.",
   "payout": 0.0,
   "fcf": [
     13088.9,
@@ -45,9 +47,8 @@
     "FY2024": 23039898157000.0,
     "FY2025": 16410467232120.0
   },
-  "cost_of_equity": 0.1651,
-  "wacc": 0.1377,
-  "wacc_note": "WACC = we*CoE + wd*cod*(1-tax) = 76.08%*16.51% + 23.92%*6.49%*0.78 = 13.77% (computed with server/engines wacc()); spot gearing from Sectors 2026-03-31 debt and 2026-09-11 market cap, per the WACC-SENSITIVITY-DISCLOSURE rule (no modeler-selected weight).",
+  "wacc": 0.10894,
+  "wacc_note": "WACC = we*CoE + wd*cod*(1-tax) = 76.08%*12.73% + 23.92%*6.49%*0.78 = 10.89% (computed with server/engines wacc() from the LOCKED ERP=4% on 16 Sep 2026); spot gearing from Sectors 2026-03-31 debt and 2026-09-11 market cap, per the WACC-SENSITIVITY-DISCLOSURE rule (no modeler-selected weight). cost_of_equity key removed - now recomputed every render from rf + beta x erp (see server/report/ammn_fill.py + valuation_page.py).",
   "net_debt_semantics": "`net_debt` is the value the live engines subtract while ALSO adding `cash` back: server/engines dcf() -> equity = PV(FCFF) + cash - net_debt and ev_ebitda() -> equity = EV - net_debt + cash (mirrors scripts/dcf_engine.py:541 equity = EV + cash - debt). It is therefore the GROSS debt leg of the bridge (Sectors 2026-03-31 total_debt). The economically net figure is exposed separately as `net_debt_after_cash` (= total_debt - cash). Feeding net_debt_after_cash here would double-count cash.",
   "bridge": {
     "formula": "equity = PV(FCFF) + cash - net_debt",
@@ -181,11 +182,11 @@
       "note": "10Y IDR government bond yield (INDOGB). Raised to 7.10% (from the 6.96% carried by the retired pre-purge file) to reflect the 2026 yield level: TradingEconomics prints 7.17% on 2026-09-07."
     },
     "erp": {
-      "value": 0.0669,
-      "kind": "public",
-      "outlet": "Aswath Damodaran, Country Default Spreads and Risk Premiums (NYU Stern), Indonesia row",
+      "value": 0.04,
+      "kind": "team_locked",
+      "outlet": "Fadil locked ERP=4.00% as ticker-agnostic team constant on 2026-09-16. Originally tracked Aswath Damodaran (NYU Stern) Indonesia row at 6.69% (Baa2, spread 1.62%, CRP 2.46%, tax 22%); the team's preference is a tighter premium that sits between historical Indonesia ERP (~6-7%) and a tight modern market premium (~3-4%) so the deck does not drift when one issuer uses a different ERP than another. The renderer overrides this value at the request boundary (server.report.valuation_constants.lock_erp) so any ticker the team adds later ships with the same 4.00%.",
       "url": "https://pages.stern.nyu.edu/~adamodar/New_Home_Page/datafile/ctryprem.html",
-      "as_of": "page updated 2026-01-05; accessed 2026-09-12",
+      "as_of": "page updated 2026-01-05; original Damodaran figure 6.69% accessed 2026-09-12; team-locked to 4.00% on 2026-09-16",
       "note": "Indonesia: Moody's Baa2, adjusted default spread 1.62%, country risk premium 2.46%, total ERP 6.69%, corporate tax 22%."
     },
     "beta": {
@@ -221,11 +222,11 @@
       "note": "wd = 1 - we = 23.92% (mirror of the we entry above)."
     },
     "g": {
-      "value": 0.025,
-      "kind": "public",
-      "outlet": "Bank Indonesia - 2026-2027 inflation target 2.5%+/-1% (PMK No. 31/2024)",
+      "value": 0.035,
+      "kind": "team_locked",
+      "outlet": "Fadil locked g=3.50% as ticker-agnostic team constant on 2026-09-16. Originally tracked Bank Indonesia 2026-2027 inflation target 2.5%+/-1% (PMK No. 31/2024); the team's preference is a conservative nominal g that sits between BI inflation (2.5%) and a typical long-run nominal GDP (5-6%) so the deck does not drift when one issuer uses a different g than another. The renderer overrides this value at the request boundary (server.report.valuation_constants.lock_g) so any ticker the team adds later ships with the same 3.50%.",
       "url": "https://www.bi.go.id/en/fungsi-utama/moneter/inflasi/default.aspx",
-      "as_of": "target set 2024-05-16 for 2025-2027; accessed 2026-09-12",
+      "as_of": "BI target set 2024-05-16 for 2025-2027; original 2.5% accessed 2026-09-12; team-locked to 3.50% on 2026-09-16",
       "note": "Long-run nominal growth proxy only (target midpoint). NOT a reserve-life claim - see terminal_note."
     },
     "fcf": {

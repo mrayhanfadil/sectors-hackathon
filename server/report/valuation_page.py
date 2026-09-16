@@ -134,7 +134,12 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     fcff_doc_bn = ((assum.get("fcf_components_idr_bn") or {}).get("fcf_normalised"))
     sustain_capex_bn = ((assum.get("fcf_components_idr_bn") or {}).get("capex_sustaining_annualised"))
     wacc = assum.get("wacc")
-    g = assum.get("g")
+    # Terminal growth is a ticker-agnostic team constant (3.5% as of Sep 2026).
+    # Locking here so the same value is reflected in the page header, the gate
+    # inputs, and the rendered assumption view (all read assum["g"] downstream).
+    from server.report.valuation_constants import lock_g, lock_erp
+    g = lock_g(assum)
+    lock_erp(assum)
     multiple = assum.get("ev_multiple")
     shares_bn = (assum.get("shares_out") or 0) / 1e9
     price = assum.get("last_price")
@@ -339,7 +344,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         ("Risk-free rate (Rf)", f"{_nf.dec(assum.get('rf', 0) * 100, digits=2)}%", "INDOGB 10Y (assumptions.rf)"),
         ("Beta (relevered, sektor)", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Regresi harian vs IHSG, disesuaikan sektor"),
         ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", "Damodaran (country risk adj.)"),
-        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec(assum.get('cost_of_equity', 0) * 100, digits=2)}%", "Hitung: rf + beta x erp"),
+        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec((assum.get('rf', 0) + assum.get('beta', 0) * assum.get('erp', 0)) * 100, digits=2)}%", "Hitung: rf + beta x erp"),
         ("Cost of Debt pre-tax", f"{_nf.dec(assum.get('cod', 0) * 100, digits=2)}%", "Beban bunga / rata-rata pinjaman (laporan keuangan)"),
         ("Effective tax rate", f"{_nf.dec(assum.get('tax', 0) * 100, digits=2)}%", "Pajak efektif FY25A = beban pajak / laba sebelum pajak"),
         ("Cost of Debt after-tax", f"{_nf.dec(assum.get('cod', 0) * (1 - assum.get('tax', 0)) * 100, digits=2)}%", "Hitung: Kd x (1 - t)"),

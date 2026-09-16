@@ -40,7 +40,11 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
 
     payout = assum.get("payout")
     ke = assum.get("cost_of_equity") or assum.get("coe_used")
-    g = assum.get("g")
+    # Terminal growth is a ticker-agnostic team constant (3.5% as of Sep 2026);
+    # locked via the helper so the same value reaches valuation_page too.
+    from server.report.valuation_constants import lock_g, lock_erp
+    g = lock_g(assum)
+    lock_erp(assum)
     shares_bn = (assum.get("shares_out") or 0) / 1e9
     price = assum.get("last_price")
 

@@ -55,16 +55,20 @@ def test_sensitivity_matrix_is_25_live_dcf_cells():
     ddd = d["dcf_deep_dive"]
     sens = ddd["sensitivity"]
     assert sens["headers"][0] == "WACC \\ g"
-    assert sens["headers"][1:] == ["2,00%", "2,25%", "2,50% (Base)", "2,75%", "3,00%"]
+    # g-axis centred on the LOCKED team g=3.5% (16 Sep 2026) - 5 rows
+    # at +/-50bps around the base.
+    assert sens["headers"][1:] == ["3,00%", "3,25%", "3,50% (Base)", "3,75%", "4,00%"]
     assert len(sens["rows"]) == 5 and all(len(r) == 6 for r in sens["rows"])
-    assert sens["rows"][2][0] == "13,77% (Base)"
+    # WACC row label uses the freshly-computed WACC = 10.90% (from LOCKED ERP=4%).
+    assert sens["rows"][2][0] == "10,90% (Base)"
 
     c = d["cDcf"]["sensitivity"]
     assert c["stats"]["n_valid"] == 25 and c["stats"]["n_cells"] == 25
     assert len(c["fair_value"]) == 5 and all(len(r) == 5 for r in c["fair_value"])
     # axes centred on the WACC/g actually applied by the live engine
-    assert c["wacc_axis"][2] == pytest.approx(0.13774, abs=1e-5)
-    assert c["g_axis"] == [0.02, 0.0225, 0.025, 0.0275, 0.03]
+    # (recomputed every render from the LOCKED ERP, NOT from any file value).
+    assert c["wacc_axis"][2] == pytest.approx(0.10895, abs=1e-5)
+    assert c["g_axis"] == [0.03, 0.0325, 0.035, 0.0375, 0.04]
 
     fcf = [float(x) * 1e9 for x in a["fcf"]]
     for i, w in enumerate(c["wacc_axis"]):
@@ -135,7 +139,7 @@ def test_ev_bridge_carries_real_debt_and_cash():
     br = d["dcf_deep_dive"]["bridge"]
     assert len(br["rows"]) == 4
     joined = " ".join(str(c) for r in br["rows"] for c in r)
-    assert "107.602" in joined            # EV (Rp bn) = PV FCFF + PV TV
+    assert "157.734" in joined            # EV (Rp bn) = PV FCFF + PV TV  (16 Sep 2026: WACC 10.90%, g 3.50% -> PV FCFF 48.503 + PV TV 109.231 = 157.734)
     assert "+13.846" in joined            # real cash, Q1-2026
     assert "−110.786" in joined           # real gross debt, Q1-2026
     assert "Bebas Utang" not in joined
@@ -151,8 +155,8 @@ def test_ev_bridge_carries_real_debt_and_cash():
         c["equity_value"] / float(a["shares_out"]), abs=0.05)
     # Exhibit-8 card keys mirror the bridge in Rp bn (no dashes)
     g = d["valuation"]["dcf_grid"]
-    assert g["pv_explicit"] == "45.180" and g["pv_tv"] == "62.421"
-    assert g["ev"] == "107.602" and g["net_cash"] == "−96.940"
+    assert g["pv_explicit"] == "48.503" and g["pv_tv"] == "109.231"
+    assert g["ev"] == "157.734" and g["net_cash"] == "−96.940"
 
 
 @needs_fill
@@ -165,10 +169,13 @@ def test_wacc_build_and_fcff_table_are_live():
     assert len(wb["rows"]) == 9
     rows = {r[0]: r[1] for r in wb["rows"]}
     assert rows["Risk-Free Rate (Rf)"] == "7,10%"
-    assert rows["Equity Risk Premium (ERP)"] == "6,69%"
+    # ERP locked at 4.00% (16 Sep 2026 team constant).
+    assert rows["Equity Risk Premium (ERP)"] == "4,00%"
     assert "1,407" in rows["Beta relevered (sektor Metals & Mining)"]
-    assert rows["WACC Final Diterapkan"] == "13,77%"
-    assert d["cDcf"]["wacc_table"][-1] == {"label": "WACC Final Diterapkan", "value": "13,77%"}
+    # WACC recomputed every render from the LOCKED ERP, so the row label
+    # follows 0.7608 x (Rf + 1.4071 x 4.00%) + 0.2392 x 6.49% x (1-0.22) = 10.90%.
+    assert rows["WACC Final Diterapkan"] == "10,90%"
+    assert d["cDcf"]["wacc_table"][-1] == {"label": "WACC Final Diterapkan", "value": "10,90%"}
     assert len(d["cDcf"]["wacc_table"]) == 9
 
     m = [x for x in d["valuation"]["methods"] if x["method"] == "DCF"][0]
