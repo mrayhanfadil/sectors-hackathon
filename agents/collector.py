@@ -179,11 +179,37 @@ def _try_idx(ticker: str) -> Optional[Dict[str, Any]]:
 
 # ── Sectors v2 (single gateway, legacy removed) ────────────────────────────
 
+# Credit guard (12 Sep 2026): pin the window anchor once per process. Two
+# `collect(ticker)` calls in the same ADK run used to drift the daily/foreign
+# window by 1 day each, generating 9 distinct cache_keys for the same data and
+# burning 9 credits when 1 would have done. The dated anchor is set on first
+# call and reused for the lifetime of this Python process (matches the
+# server/storage.SectorsCache TTL of years). Override via SECTORS_DAILY_END.
+from datetime import datetime as _dt, timedelta as _td, timezone as _tz
+_WINDOW_ANCHOR: dict[str, str | None] = {"end": None, "start": None}
+
+
+def _pinned_window() -> tuple[str, str]:
+    """Return (start, end) ISO dates; pin for the process so cache_key stays stable."""
+    if _WINDOW_ANCHOR["end"] is None:
+        end = os.getenv("SECTORS_DAILY_END", "").strip() or _dt.now(_tz.utc).date().isoformat()
+        start_dt = _dt.fromisoformat(end).date() - _td(days=90)
+        start = start_dt.isoformat()
+        _WINDOW_ANCHOR["end"] = end
+        _WINDOW_ANCHOR["start"] = start
+    # type narrowing: the only way to leave the None branch is to populate both keys
+    return _WINDOW_ANCHOR["start"], _WINDOW_ANCHOR["end"]  # type: ignore[return-value]
+
+
 def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
     """Sectors v2: overview + quarterly + daily prices + corporate actions.
 
     Keyless or mis-shaped -> None (honest; caller raises sectors_missing_key,
     never invents). Never a silent legacy vendor fallback.
+
+    Window is pinned via _pinned_window() so re-renders and adjacent calls in
+    the same process share the same cache_key. Without the pin a 9-render burst
+    burns 9 credits instead of 1.
     """
     t = _ticker_norm(ticker)
     try:
@@ -200,8 +226,7 @@ def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
     try:
         rep = _rep(t, "overview,financials,dividend") or {}
         fin = _quart(t, 8) or {}
-        end = datetime.now(timezone.utc).date().isoformat()
-        start = (datetime.now(timezone.utc).date() - timedelta(days=90)).isoformat()
+        start, end = _pinned_window()
         bars = _daily(t, start, end) or {}
         acts = _acts(t) or {}
     except Exception as e:

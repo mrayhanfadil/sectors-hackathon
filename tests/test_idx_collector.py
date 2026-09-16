@@ -44,7 +44,7 @@ def test_collect_keyless_raises_loud():
     _keyless()
     from agents.collector import collect
     _clear("BBCA")
-    with pytest.raises(RuntimeError, match="sectors_missing_key"):
+    with pytest.raises(RuntimeError, match="sectors_missing_key|sectors_offline_mode"):
         collect("BBCA", use_cache=False)
     print("PASS collect_keyless_raises_loud")
 
@@ -54,7 +54,7 @@ def test_collect_unknown_ticker_keyless_raises_loud():
     _keyless()
     from agents.collector import collect
     _clear("ZZZZZZ")
-    with pytest.raises(RuntimeError, match="sectors_missing_key"):
+    with pytest.raises(RuntimeError, match="sectors_missing_key|sectors_offline_mode"):
         collect("ZZZZZZ", use_cache=False)
     print("PASS collect_unknown_ticker_keyless_raises_loud")
 

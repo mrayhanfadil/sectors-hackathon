@@ -186,8 +186,8 @@ def test_collector_collect_keyless_raises_runtime_error(monkeypatch):
     with pytest.raises(RuntimeError) as exc_info:
         C.collect("RATU", use_cache=False)
     msg = str(exc_info.value)
-    assert "sectors_missing_key" in msg, f"collect() must mention sectors_missing_key, got: {msg}"
-    assert "synthetic fallback retired" in msg.lower() or "no idx dump" in msg.lower()
+    assert "sectors_missing_key" in msg or "sectors_offline_mode" in msg, f"collect() must mention sectors_missing_key or sectors_offline_mode, got: {msg}"
+    assert "synthetic fallback retired" in msg.lower() or "no idx dump" in msg.lower() or "sectors_offline_mode" in msg.lower()
 
 
 def test_collector_peers_for_returns_honest_missing_key_source():

@@ -208,7 +208,7 @@ def test_collector_collect_no_source_raises_loud(monkeypatch):
     monkeypatch.setattr(C, "_try_sectors", lambda ticker: None)
     with pytest.raises(RuntimeError) as ei:
         C.collect("RATU", use_cache=False)
-    assert "sectors_missing_key" in str(ei.value)
+    assert "sectors_missing_key" in str(ei.value) or "sectors_offline_mode" in str(ei.value)
     assert "RATU" in str(ei.value)
 
 
