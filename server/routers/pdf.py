@@ -403,6 +403,18 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
                                 anchor_leg=fv_anchor.get("leg"))
             except Exception:
                 pass
+    # AUDIT-DISCLOSURE (16 Sep 2026): surface the dissent-aware fields the
+    # post-audit injector writes (agents/adk/post_audit_inject.py) onto the
+    # deck so the reader sees the same flags the publish gate saw. Ticker-
+    # agnostic - runs for every ticker that has a completed run. The helper
+    # stamps payload["cover"]["audit_disclosure"] = {present, gate_flags,
+    # ladder, disclosure, verdict, anchor_contested, run_id}. Never raises;
+    # a missing run keeps the honest-empty defaults.
+    try:
+        from server.report.audit_disclosure import apply_audit_disclosure
+        apply_audit_disclosure(payload, t)
+    except Exception:
+        pass
     # Slide-1 contract (rating status, price box, secondary stats, analyst, theme title,
     # 24M price-vs-IHSG series, quarterly performance paragraph). Runs for every ticker,
     # after the AMMN fill so it reads the filled cover. A leg with no source renders as an

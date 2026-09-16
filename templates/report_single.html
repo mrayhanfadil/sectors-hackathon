@@ -294,6 +294,44 @@
   {% endif %}
   {{ m.exhibit_source(ns) }}
 
+  {# ---- Audit disclosure (16 Sep 2026): the dissent-aware fields the
+     post-audit injector writes into writer_output land here so the reader
+     sees the same flags the publish gate saw. Gated on audit_disclosure
+     being present so a missing agent run keeps the page clean. The
+     ladder block is the bear/mid/bull from the audit - only renders
+     when the anchor itself was contested (a defend-mode debate leaves
+     ladder empty). #}
+  {% if cover.audit_disclosure and cover.audit_disclosure.present %}
+  <div class="audit-disclosure" style="margin-top:6pt; padding:4pt 6pt; border:1px solid #DCEBF7; border-radius:3pt;">
+    <p class="small" style="margin:0 0 3pt 0;"><b>Catatan audit (run {{ cover.audit_disclosure.run_id }}):</b>
+      verdict=<b>{{ cover.audit_disclosure.verdict }}</b>,
+      anchor contested={{ cover.audit_disclosure.anchor_contested }}.</p>
+    {% if cover.audit_disclosure.gate_flags %}
+    <ul class="small stmt-note-cols" style="margin:0; padding-left:14pt;">
+      {% for flag in cover.audit_disclosure.gate_flags %}<li>{{ flag }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% if cover.audit_disclosure.disclosure %}
+    <p class="small" style="margin:3pt 0 0 0;">{{ cover.audit_disclosure.disclosure }}</p>
+    {% endif %}
+    {% if cover.audit_disclosure.ladder %}
+    <table class="fin-table" style="margin-top:3pt;">
+      <thead><tr><th>Bear / Mid / Bull</th><th class="num">Fair Value (Rp)</th><th class="num">vs TP</th><th>Basis</th></tr></thead>
+      <tbody>
+      {% for rung in cover.audit_disclosure.ladder %}
+        <tr class="{{ 'bold hl' if rung.contested else '' }}">
+          <td>{{ rung.label }}</td>
+          <td class="num">{{ rung.fair_value | idn(0) }}</td>
+          <td class="num">{{ rung.delta_from_tp_pct }}%</td>
+          <td>{{ rung.basis }}</td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {# ---- Exhibit 9: WACC components, each parameter with its source ---- #}
   {{ m.exhibit_auto(ns, "WACC Components", "Sumber per komponen tercantum di kolom ketiga") }}
   {{ m.table(["Parameter", "Nilai", "Sumber"], valuation_page.wacc_rows) }}

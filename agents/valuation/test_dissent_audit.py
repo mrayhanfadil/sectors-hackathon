@@ -190,6 +190,28 @@ def test_sep16_shape_ladder_parses_with_idr_suffix():
     assert "primary_fv" in labels and "mid_cycle_cross_check" in labels
 
 
+def test_sep16_flat_fv_per_share_keys_parse_as_rungs():
+    """The Sep 16 producer emits flat keys at the top of the block:
+    ``low_13x_fv_per_share`` / ``headline_15x_fv_per_share`` /
+    ``high_17x_fv_per_share``. The audit must extract these so the
+    Tangga valuasi row in the deck (server/report/ladder.py) lights up.
+    Without Shape E, the deck prints 'Tangga valuasi belum tersedia'
+    even though the run has 3 published rungs - which Fadil flagged on
+    16 Sep 2026 E2E."""
+    valuation = json.dumps({
+        "low_13x_fv_per_share": 4733.43,
+        "headline_15x_fv_per_share": 5667.31,
+        "high_17x_fv_per_share": 6601.18,
+        "current_price_idr_per_share": 4860.00,
+    })
+    rungs = ladder_from_text(valuation)
+    values = {round(r.fair_value, 2) for r in rungs}
+    assert {4733.43, 5667.31, 6601.18}.issubset(values), values
+    labels = {r.label for r in rungs}
+    assert {"low_13x_fv_per_share", "headline_15x_fv_per_share",
+            "high_17x_fv_per_share"}.issubset(labels), labels
+
+
 def test_sep16_conceded_run_is_rejected_with_anchor_contested():
     """Full pipeline check using the Sep 16 producer shape - the headline
     regression: a single binding projection that the red team conceded."""

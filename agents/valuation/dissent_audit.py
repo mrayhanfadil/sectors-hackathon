@@ -239,6 +239,26 @@ def ladder_from_text(valuation_output: Any) -> list[Rung]:
     # would catch all six such leaves under six different labels and lose the
     # parent context needed for the contested-token check.)
 
+    # Shape E (Sep 16 flat producer): "low_13x_fv_per_share": 4733.43,
+    # "headline_15x_fv_per_share": 5667.31, "high_17x_fv_per_share": 6601.18 -
+    # flat keys at the top of the block, no nested object. Carry the label as
+    # both label and basis so the audit/cover can show it. Dedupe against rungs
+    # already pulled by Shape A/B.
+    for m in re.finditer(
+        r'"(?P<label>(?P<kind>low|high|mid|base|headline|cross_check)[_a-z0-9]*?'
+        r'(?:13x|14x|15x|16x|17x|18x|midcycle_minus_1sigma|midcycle_mean)?'
+        r'_fv_per_share)"\s*:\s*(?P<fv>-?[\d.]+)',
+        text, re.IGNORECASE,
+    ):
+        try:
+            fv = float(m.group("fv"))
+        except ValueError:
+            continue
+        if fv in seen:
+            continue
+        seen.add(fv)
+        rungs.append(Rung(label=m.group("label"), basis=m.group("label"), fair_value=fv))
+
     return rungs
 
 
