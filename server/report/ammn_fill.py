@@ -639,11 +639,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "stat": f"{f1(ttm_netd_ebitda)}×", "stat_label": "Net debt / EBITDA TTM",
          "source": "Sectors quarterly 8Q (TTM ke 2026-03-31)"},
         {"headline": "De-rating multiple 2026 + arus asing membaik",
-         "detail": (f"EV/EBITDA 2026 17,99× vs 34,31× (2025) / 29,19× (2024) / 32,19× (2023) - de-rate "
+         "detail": (f"EV/EBITDA (TTM print 2026) 17,99× vs 34,31× (2025) / 29,19× (2024) / 32,19× (2023) - de-rate "
                     f"adalah argumen; kontra: PE 38,23× vs rerata peer sektor 10,07×. Asing 90d −Rp 0,37 tn "
                     f"tapi +Rp 0,24 tn dalam 30d terakhir; cluster-buy direksi Jul-2026 12.961.700 sh "
                     f"@ rata-rata Rp 3.548."),
-         "stat": "17,99×", "stat_label": "EV/EBITDA 2026",
+         "stat": "17,99×", "stat_label": "EV/EBITDA (TTM print 2026)",
          "source": "Sectors valuation.historical_valuation + foreign-flow 90d + broker-top 30d + filings Jul-2026"},
     ]
     filled.append("thesis[4 pillars]")
@@ -723,8 +723,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     "dinyatakan eksplisit, bukan klaim suspensi."),
          "source": "idnfinancials 10 Sep 2026 + investor.id 31 Agu 2026 + Sectors suspensions"},
         {"bucket": "Valuasi premium vs sektor",
-         "detail": ("EV/EBITDA 2026 17,99× (dari 34,31× di 2025); PE 38,23× vs rerata peer sektor 10,07×; "
-                    "forward PE + proyeksi analis numerik null (GAP G5) - hanya direksional (29 beli/1 tahan)."),
+         "detail": ("EV/EBITDA (TTM print 2026) 17,99× (dari 34,31× di 2025); PE 38,23× vs rerata peer sektor 10,07×; "
+                    "forward PE + proyeksi analis numerik hanya direksional (29 beli/1 tahan)."),
+         "stat": "17,99×", "stat_label": "EV/EBITDA (TTM print 2026)",
          "source": "Sectors valuation.historical_valuation + future.analyst_rating_breakdown"},
     ]
     payload["risks_note"] = ("Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); "

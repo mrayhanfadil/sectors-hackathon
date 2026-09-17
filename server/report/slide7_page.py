@@ -214,7 +214,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
                    " - masih dalam ballpark yang wajar.")
             )
             notes.append(
-                "Catatan Capex: Capital Expenditure di exhibit ini (Rp 8.332 bn pada 2026F) mencerminkan belanja modal kas riil / sustaining capex proyeksi, berbeda dari total reinvestment capex pada build-up DCF Exhibit 8 (Rp 14.840 bn) yang menyerap rasio reinvestment penuh terhadap pendapatan."
+                "Catatan Capex: Capital Expenditure di exhibit ini (Rp 8.332 bn pada 2026F) mencerminkan belanja modal kas riil / sustaining capex proyeksi, berbeda dari total reinvestment capex pada build-up DCF Exhibit 8 (Rp 13.850,2 bn pada FY2026F) yang menyerap rasio reinvestment penuh terhadap pendapatan."
             )
     except Exception:
         pass

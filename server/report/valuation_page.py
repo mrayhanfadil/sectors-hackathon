@@ -660,7 +660,7 @@ def _view(page: dict) -> dict:
         ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
     ]
     page["notes"] = list(page.get("notes") or []) + [
-        "Catatan Capex: Capital Expenditure di Exhibit 8 (Rp 14.840 bn pada FY2026F) mencerminkan total reinvestment capex (rasio historis capex/revenue yang difloor pada rasio D&A) untuk keperluan build-up FCFF DCF, berbeda dengan sustaining capex / belanja modal di Cash Flow Statement (Exhibit 17: Rp 8.332 bn pada 2026F)."
+        "Catatan Capex: Capital Expenditure di Exhibit 8 (Rp 13.850,2 bn pada FY2026F) mencerminkan total reinvestment capex (rasio historis capex/revenue yang difloor pada rasio D&A) untuk keperluan build-up FCFF DCF, berbeda dengan sustaining capex / belanja modal di Cash Flow Statement (Exhibit 17: Rp 8.332 bn pada 2026F)."
     ]
     page["narrative"] = _narrative(page)
     return page

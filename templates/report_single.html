@@ -449,12 +449,20 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
   </div>
 
   {% if cover.audit_disclosure.gate_flags %}
+  {% set visible_flags = [] %}
+  {% for flag in cover.audit_disclosure.gate_flags %}
+    {% if cover.audit_disclosure.verdict != 'PASS' or 'DISSENT' not in flag %}
+      {% set _ = visible_flags.append(flag) %}
+    {% endif %}
+  {% endfor %}
+  {% if visible_flags %}
   <h3 style="margin-top:10pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Bendera Gate</h3>
   <ul class="stmt-note-cols audit-flags" style="margin:0 0 8pt 0; padding-left:14pt;">
-    {% for flag in cover.audit_disclosure.gate_flags %}
+    {% for flag in visible_flags %}
       <li class="{{ 'contested' if 'DISSENT' in flag or 'RANGE_DISCLOSURE' in flag else '' }}">{{ flag }}</li>
     {% endfor %}
   </ul>
+  {% endif %}
   {% endif %}
 
   {% if cover.audit_disclosure.disclosure %}
@@ -486,9 +494,14 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
   </table>
   {% else %}
   <p class="small muted" style="margin:4pt 0;">
-    <i>Anchor tidak disengketakan.</i> Bendera DISSENT (jika ada) di atas
+    <i>Anchor tidak disengketakan.</i>
+    {% if cover.audit_disclosure.verdict == 'PASS' %}
+    Semua kriteria evaluasi gate terpenuhi (PASS) - tangga bear/mid/bull tidak dipublikasikan.
+    {% else %}
+    Bendera DISSENT (jika ada) di atas
     mencerminkan perdebatan internal yang berakhir dengan mempertahankan
     anchor - tangga bear/mid/bull tidak dipublikasikan.
+    {% endif %}
   </p>
   {% endif %}
 
