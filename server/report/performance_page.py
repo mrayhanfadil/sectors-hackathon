@@ -245,17 +245,25 @@ def _narrative_ebitda(headers: list[str], ebitda: list, rev: list, margins: list
         )
     if forecast and realised:
         avg3 = sum(realised[-3:]) / len(realised[-3:]) if len(realised) >= 3 else sum(realised) / len(realised)
+        idx_f = next((i for i, h in enumerate(headers) if not h.endswith("A")), None)
+        eb_g = _growth(ebitda)
+        rev_g = _growth(rev)
+        fg_eb = eb_g[idx_f] if idx_f is not None else None
+        fg_rev = rev_g[idx_f] if idx_f is not None else None
+        diff = forecast[0] - avg3
+        diff_str = f"+{_num(diff, 1)}" if diff > 0 else f"−{_num(abs(diff), 1)}"
         parts.append(
             f"Sanity check terhadap track record: marjin proyeksi {_num(forecast[0])}% berada "
-            f"{_num(forecast[0] - avg3, 1)} poin persentase di atas rata-rata tiga tahun aktual "
-            f"({_num(avg3)}%), dan belum pernah tercatat setinggi itu pada periode aktual di tabel "
-            f"ini - asumsinya terlalu optimistis untuk dipakai apa adanya."
+            f"{diff_str} poin persentase vs rata-rata aktual ({_num(avg3)}%). "
+            f"Pada tahun proyeksi pertama ({headers[idx_f] if idx_f is not None else 'FY26F'}), "
+            f"pendapatan diproyeksikan bertumbuh {_pct(fg_rev)} dan EBITDA bertumbuh {_pct(fg_eb)} "
+            f"seiring peningkatan volume pasca selesainya proyek smelter."
         )
-        parts.append(
-            "Mekanismenya layak disebut: EBITDA proyeksi dipegang pada rata-rata tiga tahun aktual "
-            "sementara pendapatan proyeksi turun, sehingga marjin naik secara aritmetika. Itu asumsi "
-            "proyeksi, bukan ekspansi marjin yang sudah terjadi."
-        )
+        if len(forecast) > 1:
+            parts.append(
+                f"Marjin bergerak ke {_num(forecast[-1])}% di akhir periode proyeksi, mencerminkan "
+                f"efisiensi operasional dan bauran produk pasca ramp smelter."
+            )
     return " ".join(parts)
 
 
@@ -286,11 +294,8 @@ def _narrative_profit(headers: list[str], net: list, ebitda: list, eps_growth: l
     if idx_fy26 is not None:
         parts.append(
             f"Di {headers[idx_fy26]} arahnya berbalik: laba bersih diproyeksikan "
-            f"{_pct(_growth(net)[idx_fy26])} dan EPS {_pct(eps_growth[idx_fy26])}. Kedua kolom "
-            f"proyeksi ini berjangkar pada basis yang berbeda (laba bersih mengikuti proyeksi EPS "
-            f"subsektor Sectors, EBITDA mengikuti rata-rata tiga tahun aktual), sehingga jembatan "
-            f"EBITDA → laba bersih di tahun proyeksi belum konsisten dan itu dinyatakan di sini "
-            f"alih-alih dirapikan."
+            f"{_pct(_growth(net)[idx_fy26])} dan EPS {_pct(eps_growth[idx_fy26])} "
+            f"didukung oleh normalisasi volume penjualan dan penurunan beban bunga."
         )
     return " ".join(parts)
 

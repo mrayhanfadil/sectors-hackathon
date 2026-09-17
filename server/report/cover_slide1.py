@@ -39,6 +39,7 @@ RATING_TITLE = {
     "BUY": "Buy", "SELL": "Sell", "HOLD": "Hold",
     "TRADING BUY": "Trading Buy", "TRADING SELL": "Trading Sell",
     "REVIEW REQUIRED": "Review Required",
+    "REVIEW-REQUIRED": "Review-Required",
 }
 
 

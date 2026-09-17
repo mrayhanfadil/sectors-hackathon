@@ -179,7 +179,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     da_bn = ebitda_fy25 - ebit_fy25                      # derived: EBITDA - EBIT
 
     cover_years = [str(h) for h in (cover.get("headers") or [])[1:]]
-    cover_revenue = [_num(c) for c in (_row(cover, "Revenue") or [])[1:]]
+    cover_revenue = [_num(c) for c in (_row(cover, "Revenue") or [])]
     forecast_revenue_pairs = [(y, v) for y, v in zip(cover_years, cover_revenue)
                               if v is not None and "f" in y.lower()]
     g_term = float(g or 0.0)
@@ -655,9 +655,12 @@ def _view(page: dict) -> dict:
     page["crosscheck_rows"] = [
         ("DCF (leg kedua, halaman ini)", _fmt0(b["fv_gordon"]), "Cross-check intrinsik"),
         ("DCF + terminal exit multiple", _fmt0(b["fv_exit"]), "Batas atas skenario multiple"),
-        ("EV/EBITDA mid-cycle " + _fmt(page["drivers"]["multiple"], 2) + "×",
+        ("EV/EBITDA FY26F " + _fmt(page["drivers"]["multiple"], 2) + "×",
          _fmt0(legs.get("ev_ebitda")), "ANCHOR target price (halaman 1 & 5)"),
         ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
+    ]
+    page["notes"] = list(page.get("notes") or []) + [
+        "Catatan Capex: Capital Expenditure di Exhibit 8 (Rp 14.840 bn pada FY2026F) mencerminkan total reinvestment capex (rasio historis capex/revenue yang difloor pada rasio D&A) untuk keperluan build-up FCFF DCF, berbeda dengan sustaining capex / belanja modal di Cash Flow Statement (Exhibit 17: Rp 8.332 bn pada 2026F)."
     ]
     page["narrative"] = _narrative(page)
     return page
@@ -702,7 +705,7 @@ def _narrative(page: dict) -> list[str]:
             f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
             f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis build-up "
             f"EBIT-based menghasilkan equity value negatif (Rp {_fmt0(page['alternatives']['build_up']['equity_gordon'] / 1e9)} bn). "
-            "Target price laporan berdiri di leg relative (EV/EBITDA mid-cycle); halaman ini memperlihatkan seberapa "
+            "Target price laporan berdiri di leg relative (EV/EBITDA FY26F); halaman ini memperlihatkan seberapa "
             "jauh model arus kas melihat ke bawah."
         ),
     ]

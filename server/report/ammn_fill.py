@@ -408,8 +408,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     rbox["key_takeaways"] = [
         f"Tembaga+emas 100% pendapatan FY2024 (emas 55,0% menyalip tembaga 45,0%) - Sectors get-segments FY2024.",
         f"EBITDA TTM {_idn(ttm_eb_tn, 2)} tn, marjin EBITDA Q1-2026 {_idn(q0_emgn, 1)}%; net-debt/EBITDA TTM {_idn(ttm_netd_ebitda, 1)}× - Sectors quarterly 8Q.",
-        f"EV/EBITDA 2026 17,99× (dari 34,31× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) - "
-        + (f"anchor EV/EBITDA mid-cycle, DCF sebagai pembanding." if (anchor_leg or "") == "ev_ebitda"
+        f"EV/EBITDA 2026 (TTM print) 17,99× (dari 34,31× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) - "
+        + (f"anchor EV/EBITDA FY26F, DCF sebagai pembanding." if (anchor_leg or "") == "ev_ebitda"
            else f"anchor {str(anchor_basis or 'DCF').replace('gate_primary: ', '')}."),
     ]
     cover["summary"] = (
@@ -423,11 +423,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         f"{f2(float(q0.get('cash_only') or 0) / 1e12)} tn; net-debt/EBITDA TTM {f1(ttm_netd_ebitda)}×, "
         f"EBITDA/bunga TTM {f1(ttm_ebitda_int)}×. "
         f"Harga 90d +28,57% vs IHSG +4,58% (rel +23,99 pp, 62 sesi 15 Jun–11 Sep 2026); "
-        f"EV/EBITDA 2026 17,99× vs 34,31× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
+        f"EV/EBITDA 2026 (TTM print) 17,99× vs 34,31× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
         f"vs rerata peer sektor 10,07×. Konsensus analis directionally positif (29 beli / 1 tahan, "
         f"30 analis, 2 Sep 2026 - tanpa angka forward). "
         f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
-        f"(DCF/EV-blend, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
+        f"(EV/EBITDA FY26F, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
         f"Profil gate: domain mining, filing 6 thn (gate_inputs AMMN.json)."
     )
     filled.append("cover.summary+key_takeaways")

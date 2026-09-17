@@ -101,7 +101,7 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
         if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. - earnings TTM negatif.")
     if covered.get("ev_ebitda_ttm") and stats["ev_ebitda_ttm"]["median"]:
         parts_a_narr.append(
-            f"Pada multiple berbasis kas, EV/EBITDA {_fmt(covered['ev_ebitda_ttm'])}× vs median "
+            f"Pada multiple berbasis kas, EV/EBITDA LTM {_fmt(covered['ev_ebitda_ttm'])}× vs median "
             f"{_fmt(stats['ev_ebitda_ttm']['median'])}× ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
             f"{_nf.dec(covered['roe_ttm']*100, digits=1)}% vs median {_nf.dec(stats['roe_ttm']['median']*100, digits=1)}% "
             f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) - jadi premium P/E bukan semata efek basis earnings.")

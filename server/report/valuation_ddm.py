@@ -49,7 +49,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     price = assum.get("last_price")
 
     cover_years = [str(h) for h in (cover.get("headers") or [])[1:]]
-    np_cells = (_row(cover, "Net Profit") or [])[1:]
+    np_cells = _row(cover, "Net Profit") or []
     forecast_pairs = [(y, _num(c)) for y, c in zip(cover_years, np_cells) if _num(c) is not None and "f" in y.lower()]
     net_profit_bn: list[float] = []
     for index in range(len(PERIODS)):

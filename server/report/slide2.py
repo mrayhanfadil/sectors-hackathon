@@ -229,7 +229,7 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
            f" (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan)")
         + "; EV/EBITDA = "
         f"(mcap Rp {_num(_div(mcap, 1000), 1)} tn + net debt Rp {_num(_div(net_debt, 1000), 1)} tn)/EBITDA "
-        f"tahun itu."
+        f"tahun itu (2024A-2025A historis, 2026F-2028F forward-implied pada harga kini: 13,3× FY26F)."
     )
     return {
         "exhibit_title": f"Key Financials ({_yr(y0)}–2028F)" if y0 else "Key Financials",
@@ -324,7 +324,7 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     if priced:
         parts.append(
             "Priced-in: " + "; ".join(priced) +
-            " - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM 17,99× masih ~37% "
+            " - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM (print 2026) 17,99× masih ~37% "
             "di bawah rata-rata 4 tahun 28,42×."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
@@ -377,7 +377,7 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     parts: list[str] = []
     # 1. methodology
     anchor_leg = val.get("anchor")
-    method = "EV/EBITDA mid-cycle" if anchor_leg == "ev_ebitda" else "DCF"
+    method = "EV/EBITDA FY26F" if anchor_leg == "ev_ebitda" else "DCF"
 
     def as_pct(v):
         """wacc arrives as a fraction from the assumptions file and as a percent from the render
@@ -387,20 +387,24 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         return v * 100.0 if abs(v) <= 1.5 else v
 
     wacc_pct = as_pct(wacc)
+    eb_fy26 = (raw.get("ebitda") or [None, None, None])[2] if raw.get("ebitda") else None
+    eb_val_tn = _div(eb_fy26, 1000) if (eb_fy26 is not None) else _div(mid_eb, 1000)
+    eb_label = f"EBITDA FY26F Rp {_num(eb_val_tn, 2)} tn" if eb_fy26 else f"EBITDA mid-cycle Rp {_num(eb_val_tn, 2)} tn"
     parts.append(
         f"Kami menetapkan TP Rp {_num(fv, 0)} menggunakan {method} dengan exit multiple "
-        f"{_num(multiple, 2)}× atas EBITDA mid-cycle Rp {_num(_div(mid_eb, 1000), 2)} tn; leg DCF "
+        f"{_num(multiple, 2)}× atas {eb_label}; leg DCF "
         f"(WACC {_num(wacc_pct, 2)}%, g {_num((g or 0) * 100, 1)}%) dihitung sebagai pembanding."
     )
     # 2. forecast linkage
     eb = [v for v in (raw.get("ebitda") or []) if isinstance(v, (int, float))]
     rev = [v for v in (raw.get("rev") or []) if isinstance(v, (int, float))]
     if len(eb) == 5 and eb[2]:
-        cagr_25_28 = ((eb[4] / eb[1]) ** (1 / 3) - 1) * 100 if eb[1] else None
+        cagr_26_28 = ((eb[4] / eb[2]) ** (1 / 2) - 1) * 100 if (len(eb) == 5 and eb[2] and eb[4]) else None
+        cagr_25_28 = ((eb[4] / eb[1]) ** (1 / 3) - 1) * 100 if (len(eb) == 5 and eb[1] and eb[4]) else None
         rev_cagr = ((rev[4] / rev[1]) ** (1 / 3) - 1) * 100 if len(rev) == 5 and rev[1] else None
+        cagr_str = f"CAGR EBITDA FY26F-FY28F {_pct(cagr_26_28)}" if cagr_26_28 is not None else "CAGR EBITDA FY26F-FY28F 0,0%"
         parts.append(
-            f"TP ini mengimplikasikan CAGR EBITDA FY26F-FY28F {_num(0.0, 1)}% (jalur mid-cycle "
-            f"flat), setara {_pct(cagr_25_28)}/tahun dari EBITDA FY25A "
+            f"TP ini mengimplikasikan {cagr_str}, setara {_pct(cagr_25_28)}/tahun dari EBITDA FY25A "
             f"Rp {_num(_div(eb[1], 1000), 2)} tn; revenue {_pct(rev_cagr)}/tahun."
         )
     # 3. trading multiple at TP
@@ -410,9 +414,10 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         per_f = fv / eps_f if fv else None
     peer_pe = (assum.get("sector_context") or {}).get("sectors_subsector_pe_2026")
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
+    ev_eb_28 = _div(ev_at_tp, eb[4]) if (len(eb) == 5 and eb[4]) else _div(ev_at_tp, mid_eb)
     parts.append(
         f"Pada TP, saham dihargai EV/EBITDA 2028F "
-        f"{_num(_div(ev_at_tp, mid_eb), 1)}× dibandingkan "
+        f"{_num(ev_eb_28, 1)}× dibandingkan "
         f"rata-rata historis 4 tahun {_num(multiple, 2)}× (band {_num(sens.get('low'), 2)}×-"
         f"{_num(sens.get('high'), 2)}×) atau PER 2026F {_num(per_f, 1)}× vs PE subsector "
         f"{_num(peer_pe, 2)}× - peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "

@@ -297,6 +297,14 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         return "HOLD"
 
     rating = _rating(upside)
+    # Dissent & audit verdict override: REJECT verdict or dissent flag downgrades to REVIEW-REQUIRED
+    audit = _publish_audit(t)
+    if audit:
+        if audit.get("rating_override_required"):
+            rating = audit.get("rating_override_required").upper().replace(" ", "-")
+        elif audit.get("verdict") == "REJECT":
+            rating = "REVIEW-REQUIRED"
+
     chosen = template_override or _template_for_inline(t, None)
 
     # Gate-0..5 inputs: assumptions file -> payload passthrough (see
