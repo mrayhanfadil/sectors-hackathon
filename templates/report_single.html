@@ -493,16 +493,19 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
     </tbody>
   </table>
   {% else %}
+  {% if cover.audit_disclosure.verdict == 'PASS' %}
   <p class="small muted" style="margin:4pt 0;">
     <i>Anchor tidak disengketakan.</i>
-    {% if cover.audit_disclosure.verdict == 'PASS' %}
     Semua kriteria evaluasi gate terpenuhi (PASS) - tangga bear/mid/bull tidak dipublikasikan.
-    {% else %}
+  </p>
+  {% else %}
+  <p class="small muted" style="margin:4pt 0;">
+    <b>Anchor disengketakan.</b>
     Bendera DISSENT (jika ada) di atas
     mencerminkan perdebatan internal yang berakhir dengan mempertahankan
     anchor - tangga bear/mid/bull tidak dipublikasikan.
-    {% endif %}
   </p>
+  {% endif %}
   {% endif %}
 
   <p class="small muted" style="margin-top:10pt;">
