@@ -133,11 +133,35 @@ def extract_audit_disclosure(ticker: str) -> dict:
             out["gate_flags"] = [g for g in gf if isinstance(g, str)]
         lad = wo.get("non_anchored_fvs_disclosed")
         if isinstance(lad, list):
-            out["ladder"] = [
-                r for r in lad
-                if isinstance(r, dict)
-                and {"label", "basis", "fair_value"}.issubset(r.keys())
-            ]
+            # Sep 17 2026: the post_audit_inject.py normally populates
+            # `delta_from_tp_pct` and `contested` on each row, but a manual
+            # mutation (e.g. forcing anchor_contested for verification) may
+            # have skipped the injector. Compute the derived fields here so
+            # the template can render even when the injector did not run.
+            target_price = wo.get("target_price")
+            ladder_rows = []
+            for r in lad:
+                if not (
+                    isinstance(r, dict)
+                    and {"label", "basis", "fair_value"}.issubset(r.keys())
+                ):
+                    continue
+                fv = r.get("fair_value")
+                row = dict(r)
+                if (
+                    "delta_from_tp_pct" not in row
+                    and isinstance(target_price, (int, float))
+                    and target_price
+                    and isinstance(fv, (int, float))
+                ):
+                    row["delta_from_tp_pct"] = round(
+                        (float(fv) - float(target_price)) / float(target_price) * 100.0,
+                        2,
+                    )
+                if "contested" not in row:
+                    row["contested"] = bool(out.get("anchor_contested"))
+                ladder_rows.append(row)
+            out["ladder"] = ladder_rows
         aj = wo.get("anchor_justification")
         if isinstance(aj, str):
             out["disclosure"] = aj

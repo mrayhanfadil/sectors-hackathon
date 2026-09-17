@@ -95,6 +95,26 @@ def test_parse_writer_output_non_string_non_dict_returns_none():
 
 
 @pytest.fixture
+def tmp_agent_db_factory(monkeypatch):
+    """Point AgentRunStore at a temp DB and return the db_path. Tests
+    using this fixture are responsible for seeding their own data.
+    """
+    from server import storage as storage_mod
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".db", delete=False)
+    tmp.close()
+    db_path = str(Path(tmp.name))
+    original_cls = storage_mod.AgentRunStore
+    monkeypatch.setattr(
+        storage_mod,
+        "AgentRunStore",
+        lambda *a, **kw: original_cls(db_path=db_path),
+    )
+    yield db_path
+    Path(db_path).unlink(missing_ok=True)
+
+
+@pytest.fixture
 def tmp_agent_db(monkeypatch):
     """Point AgentRunStore at a temp DB and seed one completed run."""
     from server import storage as storage_mod
@@ -156,7 +176,9 @@ def tmp_agent_db(monkeypatch):
     # attribute) and infinite-recurses.
     original_cls = storage_mod.AgentRunStore
     monkeypatch.setattr(
-        storage_mod, "AgentRunStore", lambda: original_cls(db_path=db_path)
+        storage_mod,
+        "AgentRunStore",
+        lambda *a, **kw: original_cls(db_path=db_path),
     )
     yield db_path
     Path(db_path).unlink(missing_ok=True)
@@ -175,6 +197,76 @@ def test_extract_returns_full_block(tmp_agent_db):
     assert block["ladder"][0]["fair_value"] == 4733
     assert block["ladder"][1]["contested"] is True
     assert "conceded FY26F EBITDA" in (block["disclosure"] or "")
+
+
+def test_extract_computes_delta_from_tp_pct_when_missing(
+    tmp_agent_db_factory,
+):
+    """Sep 17 2026: when a manual mutation (or a producer that bypassed the
+    post_audit_inject.py) puts rows in non_anchored_fvs_disclosed without
+    a `delta_from_tp_pct` field, extract_audit_disclosure computes it from
+    the writer_output.target_price so the Tangga Valuasi table still
+    renders the vs TP column. This keeps the deck defensive against
+    out-of-band verification states.
+    """
+    from server import storage as storage_mod
+
+    db_path = tmp_agent_db_factory
+    state = {
+        "writer_output": "```json\n" + json.dumps({
+            "writer_output": {
+                "title": "AMMN - manual verify",
+                "target_price": 5667.31,
+                "rating": "BUY",
+                "gate_flags": ["DISSENT (Round 1): ..."],
+                "non_anchored_fvs_disclosed": [
+                    {
+                        "label": "low_13x",
+                        "basis": "TTM EBITDA x 13x",
+                        "fair_value": 4733.43,
+                    },
+                    {
+                        "label": "high_17x",
+                        "basis": "FY26F EBITDA x 17x",
+                        "fair_value": 6601.18,
+                    },
+                ],
+                "anchor_justification": "manual verify",
+            },
+        }) + "\n```",
+        "__audit__": {
+            "verdict": "REJECT",
+            "anchor_contested": True,
+            "required_flags": ["DISSENT (Round 1): ..."],
+            "injected_flags": 1,
+            "missing_before": 0,
+        },
+    }
+    store = storage_mod.AgentRunStore(db_path=db_path)
+    store.start_run(
+        run_id="run-test-verify",
+        ticker="AMMN",
+        prompt="",
+        provider="test",
+        model="test",
+    )
+    store.finish_run(
+        run_id="run-test-verify",
+        status="completed",
+        last_text="ok",
+        state=state,
+        error=None,
+        reason=None,
+    )
+    block = extract_audit_disclosure("AMMN")
+    assert len(block["ladder"]) == 2
+    rows_by_label = {r["label"]: r for r in block["ladder"]}
+    # delta_from_tp_pct was missing; computed from target_price (5667.31):
+    # 4733.43 -> -16.48%, 6601.18 -> +16.48%
+    assert rows_by_label["low_13x"]["delta_from_tp_pct"] == -16.48
+    assert rows_by_label["high_17x"]["delta_from_tp_pct"] == 16.48
+    # contested defaulted from anchor_contested
+    assert rows_by_label["low_13x"]["contested"] is True
 
 
 def test_extract_returns_honest_empty_for_unknown_ticker(tmp_agent_db):
