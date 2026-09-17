@@ -115,6 +115,79 @@ def test_ladder_is_empty_when_the_modeler_computed_nothing():
     assert ladder_from_text("no numbers here") == []
 
 
+def test_ladder_shape_f_reads_nested_sensitivity_legs():
+    """Sep 17 producer: parent block holds {low,base,high} leaves, each with
+    value_per_share_idr. Field order inside the leaf is arbitrary."""
+    text = json.dumps({
+        "sensitivity_leg_primary_multiple": {
+            "rule_basis": "PRIMARY-MULTIPLE PROVENANCE (Sep 6 audit)",
+            "low":  {"multiple_x": 13.0, "value_per_share_idr": 4733.43, "delta_vs_4860": -0.026},
+            "base": {"multiple_x": 15.0, "value_per_share_idr": 5667.31, "delta_vs_4860": 0.166},
+            "high": {"multiple_x": 17.0, "value_per_share_idr": 6601.18, "delta_vs_4860": 0.358},
+        },
+    })
+    rungs = ladder_from_text(text)
+    assert len(rungs) == 3, f"expected 3 rungs, got {len(rungs)}: {rungs}"
+    by_leg = {r.label.rsplit("_", 1)[-1]: r for r in rungs}
+    assert by_leg["low"].fair_value == 4733.43
+    assert by_leg["base"].fair_value == 5667.31
+    assert by_leg["high"].fair_value == 6601.18
+    # basis carries the multiple
+    assert "13x" in by_leg["low"].basis
+    assert "15x" in by_leg["base"].basis
+    assert "17x" in by_leg["high"].basis
+
+
+def test_ladder_shape_f_handles_alternate_field_order():
+    """Producer might emit value_per_share_idr first or last. Shape F must
+    accept any order."""
+    text = json.dumps({
+        "sensitivity_leg_primary_multiple": {
+            "low":  {"value_per_share_idr": 100.0, "multiple_x": 10.0},
+            "base": {"value_per_share_idr": 200.0},
+        },
+    })
+    rungs = ladder_from_text(text)
+    assert len(rungs) == 2
+    fvs = sorted(r.fair_value for r in rungs)
+    assert fvs == [100.0, 200.0]
+
+
+def test_ladder_shape_f_ignores_parents_without_nested_legs():
+    """A parent block without any {low,base,high} children should not produce
+    spurious rungs."""
+    text = json.dumps({
+        "primary_fv": {"fair_value_per_share_idr": 5667.31},  # not nested
+        "assumptions": {"wacc": 0.108},  # not ladder-shaped
+    })
+    rungs = ladder_from_text(text)
+    # Only Shape B can pick up primary_fv; assumptions has no per-share key.
+    labels = [r.label for r in rungs]
+    assert "assumptions_low" not in labels
+
+
+def test_ladder_shape_f_coexists_with_shape_e_flat_keys():
+    """A producer that emits BOTH nested AND flat keys should yield the union
+    without double-counting the same FV."""
+    text = json.dumps({
+        "sensitivity_leg_primary_multiple": {
+            "low":  {"multiple_x": 13.0, "value_per_share_idr": 4733.43},
+            "base": {"multiple_x": 15.0, "value_per_share_idr": 5667.31},
+            "high": {"multiple_x": 17.0, "value_per_share_idr": 6601.18},
+        },
+        "low_13x_fv_per_share": 4733.43,
+        "headline_15x_fv_per_share": 5667.31,
+        "high_17x_fv_per_share": 6601.18,
+    })
+    rungs = ladder_from_text(text)
+    fvs = sorted(r.fair_value for r in rungs)
+    # 3 nested rungs; flat keys are dedupe-equal to the nested ones.
+    assert 4733.43 in fvs
+    assert 5667.31 in fvs
+    assert 6601.18 in fvs
+    assert len([f for f in fvs if f == 4733.43]) == 1, f"duped: {fvs}"
+
+
 # --- states that must NOT be rejected ---------------------------------------
 
 

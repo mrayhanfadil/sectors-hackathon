@@ -259,6 +259,89 @@ def ladder_from_text(valuation_output: Any) -> list[Rung]:
         seen.add(fv)
         rungs.append(Rung(label=m.group("label"), basis=m.group("label"), fair_value=fv))
 
+    # Shape F (Sep 17 nested ladder): "sensitivity_leg_primary_multiple": {
+    #   "low":  {"multiple_x": 13.0, "value_per_share_idr": 4733.43},
+    #   "base": {"multiple_x": 15.0, "value_per_share_idr": 5667.31},
+    #   "high": {"multiple_x": 17.0, "value_per_share_idr": 6601.18}
+    # }
+    # Depth-2 scan: for each parent block, find child objects that contain a
+    # value_per_share_idr/fair_value_per_share_idr key. Field order inside the
+    # child is arbitrary, so parse the leaf object via a depth-aware substring
+    # scan + json.loads.
+    _DEPTH2_PARENT = re.compile(r'"(?P<parent>[a-z0-9_]+)"\s*:\s*\{', re.IGNORECASE)
+    _DEPTH2_LEG_NAMES = (
+        "low", "base", "high", "mid",
+        "midcycle_mean", "midcycle_minus_1sigma", "midcycle_plus_1sigma",
+    )
+    _DEPTH2_LEG = re.compile(
+        rf'"({"|".join(_DEPTH2_LEG_NAMES)})"\s*:\s*\{{', re.IGNORECASE,
+    )
+    for pm in _DEPTH2_PARENT.finditer(text):
+        parent = pm.group("parent")
+        if parent in {"valuation_output", "debate_output", "writer_output", "state", "assumptions"}:
+            continue
+        # Extract parent body (depth-aware).
+        i, depth, body_chars, buf = pm.end(), 1, 0, []
+        while i < len(text) and depth > 0 and body_chars < 4000:
+            c = text[i]
+            if c == "{":
+                depth += 1
+                buf.append(c)
+            elif c == "}":
+                depth -= 1
+                if depth == 0:
+                    break
+                buf.append(c)
+            else:
+                buf.append(c)
+            body_chars += 1
+            i += 1
+        body = "".join(buf)
+        # For each leg name inside the parent, extract its leaf object.
+        for lm in _DEPTH2_LEG.finditer(body):
+            leg = lm.group(1)
+            j, d2, k2, leaf = lm.end(), 1, 0, ["{"]
+            while j < len(body) and d2 > 0 and k2 < 2000:
+                cc = body[j]
+                if cc == "{":
+                    d2 += 1
+                    leaf.append(cc)
+                elif cc == "}":
+                    d2 -= 1
+                    if d2 == 0:
+                        break
+                    leaf.append(cc)
+                else:
+                    leaf.append(cc)
+                k2 += 1
+                j += 1
+            leaf.append("}")
+            leaf_text = "".join(leaf)
+            try:
+                leaf_obj = json.loads(leaf_text)
+            except Exception:
+                continue
+            if not isinstance(leaf_obj, dict):
+                continue
+            fv = leaf_obj.get("value_per_share_idr")
+            if fv is None:
+                fv = leaf_obj.get("fair_value_per_share_idr")
+            if not isinstance(fv, (int, float)):
+                continue
+            fv = float(fv)
+            if fv in seen:
+                continue
+            seen.add(fv)
+            mx = leaf_obj.get("multiple_x")
+            basis = f"{parent}.{leg}"
+            if isinstance(mx, (int, float)):
+                basis += f" @ {float(mx):g}x"
+            rungs.append(Rung(
+                label=f"{parent}_{leg}",
+                basis=basis,
+                fair_value=fv,
+            ))
+
     return rungs
 
 

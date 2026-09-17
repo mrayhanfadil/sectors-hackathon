@@ -37,6 +37,10 @@ logger = logging.getLogger(__name__)
 
 DEFAULT_APP_NAME = "sectors-equity-report"
 
+# Install defensive tool-call JSON parser before any ADK LiteLlm call (Sep 17
+# 2026). The patch is a no-op if google.adk.models.lite_llm is unavailable.
+import agents.adk.tool_call_safety  # noqa: F401  (side-effect: installs patch)
+
 
 async def run_report(
     ticker: str = "BBCA",
