@@ -323,10 +323,30 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     if m:
         dec = lambda t: re.sub(r"(\d)\.(\d)", r"\1,\2", t)
         priced.append(f"90 hari {dec(m.group(1))} vs IHSG {dec(m.group(2))} (rel {dec(m.group(3))})")
+    # === dynamic EV/EBITDA (Sep 17 2026) ===
+    # Same fix as ammn_fill.py: read from canonical block + assumptions embedded
+    # in payload (slide2 doesn't receive assum directly, but the canonical block
+    # carries mcap and the cover block carries the canonical EV inputs).
+    canon = payload.get("canonical_metrics") or {}
+    canon_mcap_bn = canon.get("market_cap_rpbn", {}).get("value") if isinstance(canon.get("market_cap_rpbn"), dict) else canon.get("market_cap_rpbn")
+    # slide2 doesn't see assum; use cover-derived values when assum is absent
+    cover = payload.get("cover") or {}
+    # net_debt_after_cash lives in the cover meta (server/routers/pdf.py wires it);
+    # fallback to a hard proxy if missing.
+    canon_nd = (cover.get("meta") or {}).get("net_debt_after_cash") or 0.0
+    ttm_ebitda = (cover.get("meta") or {}).get("ebitda_ttm") or 0.0
+    if canon_mcap_bn is not None and canon_nd and ttm_ebitda:
+        # canon_mcap_bn is rp_bn (trillion rupiah), canon_nd is full rupiah.
+        # EV in full rupiah = canon_mcap_bn * 1e9 + canon_nd. Ratio = EV / EBITDA.
+        canon_ev_rupiah = canon_mcap_bn * 1e9 + canon_nd
+        ttm_ev_eb = canon_ev_rupiah / ttm_ebitda
+    else:
+        ttm_ev_eb = None
     if priced:
+        ev_eb_str = f"{ttm_ev_eb:.2f}".replace(".", ",") if ttm_ev_eb else "n/a"
         parts.append(
             "Priced-in: " + "; ".join(priced) +
-            " - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM (print 2026) 17,99× masih ~37% "
+            f" - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM (print 2026) {ev_eb_str}× masih ~37% "
             "di bawah rata-rata 4 tahun 28,42×."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}

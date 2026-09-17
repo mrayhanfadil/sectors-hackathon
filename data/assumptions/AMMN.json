@@ -47,7 +47,6 @@
     "FY2024": 23039898157000.0,
     "FY2025": 16410467232120.0
   },
-  "wacc": 0.10894,
   "wacc_note": "WACC = we*CoE + wd*cod*(1-tax) = 76.08%*12.73% + 23.92%*6.49%*0.78 = 10.89% (computed with server/engines wacc() from the LOCKED ERP=4% on 16 Sep 2026); spot gearing from Sectors 2026-03-31 debt and 2026-09-11 market cap, per the WACC-SENSITIVITY-DISCLOSURE rule (no modeler-selected weight). cost_of_equity key removed - now recomputed every render from rf + beta x erp (see server/report/ammn_fill.py + valuation_page.py).",
   "net_debt_semantics": "`net_debt` is the value the live engines subtract while ALSO adding `cash` back: server/engines dcf() -> equity = PV(FCFF) + cash - net_debt and ev_ebitda() -> equity = EV - net_debt + cash (mirrors scripts/dcf_engine.py:541 equity = EV + cash - debt). It is therefore the GROSS debt leg of the bridge (Sectors 2026-03-31 total_debt). The economically net figure is exposed separately as `net_debt_after_cash` (= total_debt - cash). Feeding net_debt_after_cash here would double-count cash.",
   "bridge": {
@@ -81,7 +80,7 @@
     "base": 28.42,
     "high": 30.42
   },
-  "ev_multiple_latest_print": 17.99,
+  "ev_multiple_latest_print": 18.38,
   "ev_multiple_peer_prints_available": false,
   "gate_primary": "EV/EBITDA FY26F forward (REL)",
   "gate_secondary": "DCF (comparison-only; finite-reserve discipline) - pada jalur FCF yang dikutip",
@@ -252,7 +251,7 @@
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
     },
     "theme_title": {
-      "value": "Multiple 2026 di 17,99× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
+      "value": "Multiple 2026 di 18,38× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
       "kind": "derived_editorial",
       "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
       "url": "internal://data/assumptions/AMMN.json",
@@ -336,7 +335,7 @@
       "outlet": "AMMN Q1 2026 audited interim financial statements - Consolidated Statements of Financial Position, 'Jumlah Ekuitas yang Dapat Diatribusikan kepada Pemilik Entitas Induk' line (Equity attributable to owners of the parent entity)",
       "url": "https://www.amman.co.id/financial-statement",
       "as_of": "2026-03-31 (Q1 2026, latest available; the AMMN PDF carries comparative 2025-12-31 too)",
-      "note": "Q1 2026 USD 5,486,174 thousand \u00d7 BI mid-rate 31 March 2026 = Rp 17,077/USD (Kurs Transaksi BI per Kontan 31/3/2026) = Rp 93,687,393,398,000 IDR (Rp 93.687 tn). FX choice: same source as the file's own USD\u2192IDR conversions on cash and total_debt (file cash 13.846 tn / PDF cash_only $814.571M \u2248 16,998; this equity figure uses 17,077 as a clean published spot). Equity attributable to parent excludes NCI of USD 95,086 thousand."
+      "note": "Q1 2026 USD 5,486,174 thousand × BI mid-rate 31 March 2026 = Rp 17,077/USD (Kurs Transaksi BI per Kontan 31/3/2026) = Rp 93,687,393,398,000 IDR (Rp 93.687 tn). FX choice: same source as the file's own USD→IDR conversions on cash and total_debt (file cash 13.846 tn / PDF cash_only $814.571M ≈ 16,998; this equity figure uses 17,077 as a clean published spot). Equity attributable to parent excludes NCI of USD 95,086 thousand."
     },
     "nci_pct": {
       "value": 1.704,
@@ -373,7 +372,7 @@
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
   },
-  "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
+  "theme_title": "Multiple 2026 di 18,38× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
   "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,

@@ -401,6 +401,41 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
 
     ttm_eb_tn = ttm.get("ebitda", 0) / 1e12
     ttm_rev_tn = ttm.get("revenue", 0) / 1e12
+    # === dynamic EV/EBITDA (Sep 17 2026) ===
+    # Bug from editorial review: cover hardcoded "17,99×" while peer table
+    # computed 18,38× from the canonical block (362.24 tn mcap). The cover
+    # value was stale from the pre-fix mcap (352.4 tn) and never matched the
+    # peer table. Fix: compute EV/EBITDA from the SAME canonical block the
+    # peer table reads, plus the TTM EBITDA just summed above.
+    # Historical years (FY23/FY24/FY25) used frozen literals too; here they
+    # are computed at today's EV (canonical mcap + canonical net_debt) over
+    # the year-end EBITDA so the comparison set is internally consistent.
+    canon = payload.get("canonical_metrics") or {}
+    canon_mcap = canon.get("market_cap_rpbn", {}).get("value") if isinstance(canon.get("market_cap_rpbn"), dict) else canon.get("market_cap_rpbn")
+    if canon_mcap is None:
+        # Fallback: assumption file last_price * shares / 1e9 to get rp_bn
+        canon_mcap = ((assum.get("last_price") or 0) * (assum.get("shares_out") or 0)) / 1e9
+    canon_net_debt = assum.get("net_debt_after_cash")
+    if canon_net_debt is None:
+        canon_net_debt = float(q0.get("total_debt") or 0) - float(q0.get("cash_only") or 0)
+    # canon_mcap is rp_bn (trillion rupiah), canon_net_debt is full rupiah.
+    # EV in full rupiah = canon_mcap * 1e9 + canon_net_debt. EV in tn = /1e12.
+    canon_ev_rupiah = (canon_mcap or 0) * 1e9 + canon_net_debt
+    canon_ev_tn = canon_ev_rupiah / 1e12
+    ttm_ev_eb = canon_ev_rupiah / ttm["ebitda"] if (ttm.get("ebitda") and canon_ev_rupiah) else None
+    midc = (assum.get("ebitda_midcycle_constituents") or {})
+    hist_mults = {
+        yr: round(canon_ev_rupiah / midc[yr], 2) if midc.get(yr) else None
+        for yr in ("FY2023", "FY2024", "FY2025")
+    }
+    # Surface EV/EBITDA inputs into cover.meta so other renderers (slide2
+    # build_katalis) can read the same canonical basis instead of carrying
+    # their own literals (the editorial-review Bug 4 root cause).
+    cover_meta = cover.setdefault("meta", {})
+    cover_meta["net_debt_after_cash"] = canon_net_debt
+    cover_meta["ebitda_ttm"] = ttm.get("ebitda", 0)
+    cover_meta["market_cap_rpbn"] = canon_mcap
+    cover_meta["ev_ebitda_ttm_x"] = ttm_ev_eb
     rbox = cover.setdefault("rating_box", {})
     # Cover copy is reader-facing Indonesian, so numbers use id-ID separators (24,98 tn /
     # +20,84%) to match the sidebar tables. English separators here made the same figure read
@@ -408,7 +443,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     rbox["key_takeaways"] = [
         f"Tembaga+emas 100% pendapatan FY2024 (emas 55,0% menyalip tembaga 45,0%) - Sectors get-segments FY2024.",
         f"EBITDA TTM {_idn(ttm_eb_tn, 2)} tn, marjin EBITDA Q1-2026 {_idn(q0_emgn, 1)}%; net-debt/EBITDA TTM {_idn(ttm_netd_ebitda, 1)}× - Sectors quarterly 8Q.",
-        f"EV/EBITDA 2026 (TTM print) 17,99× (dari 34,31× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) - "
+        f"EV/EBITDA 2026 (TTM print) {_idn(ttm_ev_eb, 2)}× (dari {_idn(hist_mults.get('FY2025'), 2)}× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) - "
         + (f"anchor EV/EBITDA FY26F, DCF sebagai pembanding." if (anchor_leg or "") == "ev_ebitda"
            else f"anchor {str(anchor_basis or 'DCF').replace('gate_primary: ', '')}."),
     ]
@@ -423,7 +458,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         f"{f2(float(q0.get('cash_only') or 0) / 1e12)} tn; net-debt/EBITDA TTM {f1(ttm_netd_ebitda)}×, "
         f"EBITDA/bunga TTM {f1(ttm_ebitda_int)}×. "
         f"Harga 90d +28,57% vs IHSG +4,58% (rel +23,99 pp, 62 sesi 15 Jun–11 Sep 2026); "
-        f"EV/EBITDA 2026 (TTM print) 17,99× vs 34,31× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
+        f"EV/EBITDA 2026 (TTM print) {_idn(ttm_ev_eb, 2)}× vs {_idn(hist_mults.get('FY2025'), 2)}× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
         f"vs rerata peer sektor 10,07× (agregat konsensus rating broker tidak dipublikasikan). "
         f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
         f"(EV/EBITDA FY26F, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
@@ -638,11 +673,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "stat": f"{f1(ttm_netd_ebitda)}×", "stat_label": "Net debt / EBITDA TTM",
          "source": "Sectors quarterly 8Q (TTM ke 2026-03-31)"},
         {"headline": "De-rating multiple 2026 + arus asing membaik",
-         "detail": (f"EV/EBITDA (TTM print 2026) 17,99× vs 34,31× (2025) / 29,19× (2024) / 32,19× (2023) - de-rate "
+         "detail": (f"EV/EBITDA (TTM print 2026) {_idn(ttm_ev_eb, 2)}× vs {_idn(hist_mults.get('FY2025'), 2)}× (2025) / {_idn(hist_mults.get('FY2024'), 2)}× (2024) / {_idn(hist_mults.get('FY2023'), 2)}× (2023) - de-rate "
                     f"adalah argumen; kontra: PE 38,23× vs rerata peer sektor 10,07×. Asing 90d −Rp 0,37 tn "
                     f"tapi +Rp 0,24 tn dalam 30d terakhir; cluster-buy direksi Jul-2026 12.961.700 sh "
                     f"@ rata-rata Rp 3.548."),
-         "stat": "17,99×", "stat_label": "EV/EBITDA (TTM print 2026)",
+         "stat": f"{_idn(ttm_ev_eb, 2)}×", "stat_label": "EV/EBITDA (TTM print 2026)",
          "source": "Sectors valuation.historical_valuation + foreign-flow 90d + broker-top 30d + filings Jul-2026"},
     ]
     filled.append("thesis[4 pillars]")
@@ -722,9 +757,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     "dinyatakan eksplisit, bukan klaim suspensi."),
          "source": "idnfinancials 10 Sep 2026 + investor.id 31 Agu 2026 + Sectors suspensions"},
         {"bucket": "Valuasi premium vs sektor",
-         "detail": ("EV/EBITDA (TTM print 2026) 17,99× (dari 34,31× di 2025); PE 38,23× vs rerata peer sektor 10,07×; "
+         "detail": (f"EV/EBITDA (TTM print 2026) {_idn(ttm_ev_eb, 2)}× (dari {_idn(hist_mults.get('FY2025'), 2)}× di 2025); PE 38,23× vs rerata peer sektor 10,07×; "
                     "forward PE + proyeksi analis numerik tidak dipublikasikan di feed."),
-         "stat": "17,99×", "stat_label": "EV/EBITDA (TTM print 2026)",
+         "stat": f"{_idn(ttm_ev_eb, 2)}×", "stat_label": "EV/EBITDA (TTM print 2026)",
          "source": "Sectors valuation.historical_valuation"},
     ]
     payload["risks_note"] = ("Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); "
