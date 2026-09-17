@@ -500,7 +500,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
                      f"{_nf.dec(own.get('normalised_mean', 0), digits=2)}× normalised) DITOLAK sebagai anchor: EV bertahan "
                      f"Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple itu menghukum level yang sudah "
                      f"pulih (memberi Rp 13.559/saham, 2,8× harga).")
-        notes.append("Basis multiple (leg gate-primary): " + str(_basis) + extra + " " +
+        notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
                      str(assum.get("ebitda_leg_level_note") or ""))
     # A reader who meets Rp 148 and Rp 5.667 on the same page has to be told why they differ and which one the
     # target price uses. Fires on the gap, not on a ticker: it stays silent when the two bases agree.
@@ -508,7 +508,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         _gap = max(float(anchor_fv), primary["fv_gordon"]) / min(float(anchor_fv), primary["fv_gordon"])
         if _gap > 1.5:
             notes.append(
-                f"Basis target price - DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
+                f"BASIS TARGET PRICE: DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
                 f"{_rp(primary['fv_gordon'])} sementara anchor EV/EBITDA {_fmt(multiple, 2)}× "
                 f"(basis gate-primary) memberi Rp "
                 f"{_rp(float(anchor_fv))}: selisih {_nf.dec(_gap, digits=1)}×. Keduanya tidak dirata-rata; "

@@ -238,7 +238,7 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
         out.append(f'<line x1="4" y1="{d(y10)}" x2="{width - 4}" y2="{d(y10)}" stroke="{ICE}" stroke-width="0.7"/>')
     # references: average pinned right, median pinned left
     for val, colour, dash, txt, anchor_x, anchor, dy in (
-            (block["mean"], SELL, "5 3", f"rata-rata {_nf.dec(block['mean'], digits=1)}×", width - 6, "end", -4),
+            (block["mean"], SELL, "5 3", f"rata-rata {_nf.dec(block['mean'], digits=1)}×", width - 6, "end", 11),
             (block["median"], BUY, "2 3", f"median {_nf.dec(block['median'], digits=1)}×", 6, "start", -4)):
         if not isinstance(val, (int, float)):
             continue
@@ -255,6 +255,9 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
     out.append(f'<circle cx="{d(cx)}" cy="{d(cy)}" r="3.4" fill="{NAVY}" stroke="#ffffff" stroke-width="1.2"/>')
     out.append(f'<text x="{width - 6}" y="{d(cy - 6)}" font-size="8.5" font-weight="700" fill="{NAVY}" '
                f'text-anchor="end">{_nf.dec(cur["value"], digits=1)}× · p{_nf.dec(block["percentile"], digits=0)}</text>')
+    # Secondary current-value label below the point so it cannot collide with the mean label
+    out.append(f'<text x="{width - 6}" y="{d(cy + 12)}" font-size="7.5" fill="{MUTED}" '
+               f'text-anchor="end">sekarang</text>')
     out.append(f'<line x1="4" y1="{height - 12}" x2="{width - 4}" y2="{height - 12}" stroke="{RULE}" stroke-width="0.7"/>')
     out.append(f'<text x="6" y="{height - 3}" font-size="8" fill="{MUTED}">{pts[0]["date"]}</text>')
     out.append(f'<text x="{width - 6}" y="{height - 3}" font-size="8" fill="{MUTED}" text-anchor="end">'
