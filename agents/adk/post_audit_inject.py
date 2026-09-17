@@ -86,6 +86,52 @@ def _serialize_writer_output(inner: dict) -> str:
     return "\n```json\n" + json.dumps(inner, indent=2, ensure_ascii=False) + "\n```\n"
 
 
+_SANITIZE_RULES: list[tuple[re.Pattern[str], str]] = [
+    # 1. null followed by (GAP G\d+) / GAP G\d+
+    (re.compile(r"\bnull\s*\(\s*GAP\s*G\d+\s*\)\s*(?:-\s*)?", re.I), ""),
+    (re.compile(r",\s*GAP\s*G\d+\b", re.I), ""),
+    (re.compile(r"\bGAP\s*G\d+\)?\s*(?:-\s*)?", re.I), ""),
+    (re.compile(r"\(\s*GAP\s*G\d+\s*\)", re.I), ""),
+    # 2. .bvps_path | .fcf_basis | .ev_ebitda_path
+    (re.compile(r"\.(?:bvps_path|fcf_basis|ev_ebitda_path)\b", re.I), ""),
+    (re.compile(r"\b(?:bvps_path|fcf_basis|ev_ebitda_path)\b", re.I), ""),
+    # 3. (LOUD policy[^)]*)
+    (re.compile(r"\s*\(\s*LOUD policy[^)]*\)", re.I), ""),
+    (re.compile(r"\bLOUD policy\b[^,.;)]*", re.I), ""),
+    # 4. payload tidak[^.]*\.
+    (re.compile(r":?\s*payload\s+tidak\s+[^.]*\.", re.I), ""),
+    # 5. Sectors /[a-z]+ total_count \d+
+    (re.compile(r"\s*\(?\s*Sectors\s+/[a-z_]+\s+total_count\s+\d+\s*\)?", re.I), ""),
+    # 6. interest_expense | operating_expense
+    (re.compile(r"\b(?:interest_expense|operating_expense)\b", re.I), ""),
+    # 7. duplicate (Q1-2025...) (Q1-2025...)
+    (re.compile(r"(\(Q1-202[0-9][^)]*\))\s*\1", re.I), r"\1"),
+]
+
+
+def sanitize_copy(text: str) -> str:
+    """Post-processing function that strips backend leaks from copy (Issue 9)."""
+    if not isinstance(text, str) or not text.strip():
+        return text
+    res = text
+    for pat, rep in _SANITIZE_RULES:
+        res = pat.sub(rep, res)
+    # Dedup any duplicate parenthesized phrases
+    res = re.sub(r"(\([^\)]+\))\s*\1", r"\1", res)
+    return re.sub(r"\s{2,}", " ", res).strip()
+
+
+def sanitize_writer_output(data: Any) -> Any:
+    """Recursively sanitize strings inside writer_output data."""
+    if isinstance(data, str):
+        return sanitize_copy(data)
+    if isinstance(data, dict):
+        return {k: sanitize_writer_output(v) for k, v in data.items()}
+    if isinstance(data, list):
+        return [sanitize_writer_output(v) for v in data]
+    return data
+
+
 def _normalize_flags(declared: Any) -> list[str]:
     """Coerce declared gate_flags into a list[str]. Models emit lists, lists of
     dicts, JSON strings, or null. We only keep strings."""
@@ -260,6 +306,9 @@ def apply_audit_to_state(state: dict[str, Any], price: float | None = None) -> d
             if rng_flag not in inner["gate_flags"]:
                 inner["gate_flags"] = [*inner["gate_flags"], rng_flag]
 
+    # Sanitize backend leaks from copy before serialization
+    inner = sanitize_writer_output(inner)
+
     # Re-serialize
     state["writer_output"] = _serialize_writer_output(inner)
 
@@ -276,4 +325,10 @@ def apply_audit_to_state(state: dict[str, Any], price: float | None = None) -> d
     return state
 
 
-__all__ = ["apply_audit_to_state", "_parse_writer_output", "_serialize_writer_output"]
+__all__ = [
+    "apply_audit_to_state",
+    "_parse_writer_output",
+    "_serialize_writer_output",
+    "sanitize_copy",
+    "sanitize_writer_output",
+]

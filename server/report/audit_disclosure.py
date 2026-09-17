@@ -79,6 +79,68 @@ def _parse_writer_output(raw: Any) -> dict | None:
     return parsed if isinstance(parsed, dict) else None
 
 
+def _clean_ladder_label(row: dict) -> str:
+    """Format ladder labels to clean human-readable text.
+
+    Replaces dict-key leak patterns like `sensitivity_13x_to_17x_band.low` or
+    `low_13x_fv_per_share` with clean Indonesian labels like `Kasus Bear (13x_to_17x)`.
+    """
+    role = row.get("role")
+    if role and isinstance(role, str) and not ("_" in role or "." in role):
+        return role
+
+    label = str(row.get("label") or "").strip()
+
+    # Check for sensitivity_X_band.{low,base,high}
+    m_band = re.match(
+        r"^sensitivity_(?P<x>.+?)_band\.(?P<tier>low|base|high)$",
+        label,
+        re.IGNORECASE,
+    )
+    if m_band:
+        x_val = m_band.group("x")
+        tier = m_band.group("tier").lower()
+        tier_map = {
+            "low": "Kasus Bear",
+            "base": "Kasus Dasar",
+            "high": "Kasus Bull",
+        }
+        return f"{tier_map[tier]} ({x_val})"
+
+    basis = str(row.get("basis") or "")
+    leg = str(row.get("leg") or "")
+    combined = f"{label} {basis} {leg}".lower()
+
+    # Determine case / role
+    case_name = ""
+    if any(k in combined for k in ("low", "bear", "downside", "minus", "pesimis")):
+        case_name = "Kasus Bear"
+    elif any(k in combined for k in ("high", "bull", "upside", "plus", "optimis")):
+        case_name = "Kasus Bull"
+    elif any(k in combined for k in ("base", "mid", "headline", "mean", "median", "dasar")):
+        case_name = "Kasus Dasar"
+
+    # Find multiple if present (e.g. 13x, 15x, 17x)
+    m = re.search(r"\b(\d+(?:\.\d+)?x)\b", f"{basis} {label}", re.I)
+    mult_str = f" ({m.group(1).lower()})" if m else ""
+
+    if case_name:
+        return f"{case_name}{mult_str}"
+
+    if "_" in label or "." in label:
+        return label.replace("_", " ").replace(".", " ").title()
+    return label
+
+
+def _clean_ladder_basis(basis: str) -> str:
+    """Clean sensitivity basis strings by stripping internal dict keys."""
+    if not basis:
+        return ""
+    b = re.sub(r"\bsensitivity_[a-z0-9_.]+\s*@\s*", "Sensitivitas ", basis, flags=re.I)
+    b = re.sub(r"\b[a-z0-9_]+\.[a-z0-9_]+\s*@\s*", "Sensitivitas ", b, flags=re.I)
+    return b.strip()
+
+
 def extract_audit_disclosure(ticker: str) -> dict:
     """Pull dissent-aware fields from the latest completed run for ``ticker``.
 
@@ -130,7 +192,14 @@ def extract_audit_disclosure(ticker: str) -> dict:
     if isinstance(wo, dict):
         gf = wo.get("gate_flags")
         if isinstance(gf, list):
-            out["gate_flags"] = [g for g in gf if isinstance(g, str)]
+            cleaned_flags = []
+            for g in gf:
+                if isinstance(g, str):
+                    # Normalize English decimal numbers in dissent flags e.g. '22.13' -> '22,13'
+                    # unless it's a version/code identifier
+                    cg = re.sub(r'(?<=\d)\.(?=\d)', ',', g)
+                    cleaned_flags.append(cg)
+            out["gate_flags"] = cleaned_flags
         lad = wo.get("non_anchored_fvs_disclosed")
         if isinstance(lad, list):
             # Sep 17 2026: the post_audit_inject.py normally populates
@@ -148,6 +217,9 @@ def extract_audit_disclosure(ticker: str) -> dict:
                     continue
                 fv = r.get("fair_value")
                 row = dict(r)
+                row["label"] = _clean_ladder_label(row)
+                if "basis" in row:
+                    row["basis"] = _clean_ladder_basis(str(row["basis"]))
                 if (
                     "delta_from_tp_pct" not in row
                     and isinstance(target_price, (int, float))

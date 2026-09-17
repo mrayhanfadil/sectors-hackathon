@@ -193,7 +193,7 @@ def test_extract_returns_full_block(tmp_agent_db):
     assert len(block["gate_flags"]) == 2
     assert "DISSENT (Round 1)" in block["gate_flags"][0]
     assert len(block["ladder"]) == 2
-    assert block["ladder"][0]["label"] == "low_13x"
+    assert block["ladder"][0]["label"] == "Kasus Bear (13x)"
     assert block["ladder"][0]["fair_value"] == 4733
     assert block["ladder"][1]["contested"] is True
     assert "conceded FY26F EBITDA" in (block["disclosure"] or "")
@@ -263,10 +263,10 @@ def test_extract_computes_delta_from_tp_pct_when_missing(
     rows_by_label = {r["label"]: r for r in block["ladder"]}
     # delta_from_tp_pct was missing; computed from target_price (5667.31):
     # 4733.43 -> -16.48%, 6601.18 -> +16.48%
-    assert rows_by_label["low_13x"]["delta_from_tp_pct"] == -16.48
-    assert rows_by_label["high_17x"]["delta_from_tp_pct"] == 16.48
+    assert rows_by_label["Kasus Bear (13x)"]["delta_from_tp_pct"] == -16.48
+    assert rows_by_label["Kasus Bull (17x)"]["delta_from_tp_pct"] == 16.48
     # contested defaulted from anchor_contested
-    assert rows_by_label["low_13x"]["contested"] is True
+    assert rows_by_label["Kasus Bear (13x)"]["contested"] is True
 
 
 def test_extract_returns_honest_empty_for_unknown_ticker(tmp_agent_db):
@@ -324,3 +324,84 @@ def test_apply_handles_db_failure_without_raising(monkeypatch):
     assert block["present"] is False
     assert block["gate_flags"] == []
     assert block["ladder"] == []
+
+
+def test_clean_ladder_label_sensitivity_band():
+    """Verify that sensitivity_X_band.{low,base,high} patterns are replaced with Indonesian case labels."""
+    from server.report.audit_disclosure import _clean_ladder_label
+
+    assert _clean_ladder_label({"label": "sensitivity_13x_to_17x_band.low"}) == "Kasus Bear (13x_to_17x)"
+    assert _clean_ladder_label({"label": "sensitivity_13x_to_17x_band.base"}) == "Kasus Dasar (13x_to_17x)"
+    assert _clean_ladder_label({"label": "sensitivity_13x_to_17x_band.high"}) == "Kasus Bull (13x_to_17x)"
+    assert _clean_ladder_label({"label": "sensitivity_pe_band.low"}) == "Kasus Bear (pe)"
+    assert _clean_ladder_label({"label": "sensitivity_pe_band.base"}) == "Kasus Dasar (pe)"
+    assert _clean_ladder_label({"label": "sensitivity_pe_band.high"}) == "Kasus Bull (pe)"
+    assert _clean_ladder_label({"label": "sensitivity_ev_ebitda_band.low"}) == "Kasus Bear (ev_ebitda)"
+    assert _clean_ladder_label({"label": "sensitivity_ev_ebitda_band.high"}) == "Kasus Bull (ev_ebitda)"
+
+
+def test_extract_handles_sensitivity_band_labels(tmp_agent_db_factory):
+    """End-to-end test verifying extract_audit_disclosure converts sensitivity_X_band labels in DB."""
+    from server import storage as storage_mod
+
+    db_path = tmp_agent_db_factory
+    state = {
+        "writer_output": "```json\n" + json.dumps({
+            "writer_output": {
+                "title": "AMMN - sensitivity band test",
+                "target_price": 5667.31,
+                "rating": "BUY",
+                "gate_flags": ["DISSENT (Round 1): ..."],
+                "non_anchored_fvs_disclosed": [
+                    {
+                        "label": "sensitivity_13x_to_17x_band.low",
+                        "basis": "EV/EBITDA 13x",
+                        "fair_value": 4733.43,
+                    },
+                    {
+                        "label": "sensitivity_13x_to_17x_band.base",
+                        "basis": "EV/EBITDA 15x",
+                        "fair_value": 5667.31,
+                    },
+                    {
+                        "label": "sensitivity_13x_to_17x_band.high",
+                        "basis": "EV/EBITDA 17x",
+                        "fair_value": 6601.18,
+                    },
+                ],
+                "anchor_justification": "sensitivity band test",
+            },
+        }) + "\n```",
+        "__audit__": {
+            "verdict": "REJECT",
+            "anchor_contested": True,
+            "required_flags": ["DISSENT (Round 1): ..."],
+            "injected_flags": 1,
+            "missing_before": 0,
+        },
+    }
+    store = storage_mod.AgentRunStore(db_path=db_path)
+    store.start_run(
+        run_id="run-test-sens-band",
+        ticker="AMMN",
+        prompt="",
+        provider="test",
+        model="test",
+    )
+    store.finish_run(
+        run_id="run-test-sens-band",
+        status="completed",
+        last_text="ok",
+        state=state,
+        error=None,
+        reason=None,
+    )
+    block = extract_audit_disclosure("AMMN")
+    assert len(block["ladder"]) == 3
+    labels = [r["label"] for r in block["ladder"]]
+    assert labels == [
+        "Kasus Bear (13x_to_17x)",
+        "Kasus Dasar (13x_to_17x)",
+        "Kasus Bull (13x_to_17x)",
+    ]
+

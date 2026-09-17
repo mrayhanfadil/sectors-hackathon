@@ -218,7 +218,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
     g1 = growth_path[0] if growth_path else 0.0
     if forecast_revenue_pairs:
-        g1_basis = (f"{forecast_revenue_pairs[0][0]} dari Key Financials Slide 2 / revenue FY25A "
+        g1_basis = (f"{forecast_revenue_pairs[0][0]} dari Key Financials Halaman 2 / revenue FY25A "
                     f"({_nf.dec(g1 * 100, digits=1)}% YoY); kolom setelah horizon cover di-fade ke g_terminal "
                     f"{_nf.dec(g_term * 100, digits=2)}%")
     else:
@@ -500,7 +500,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
                      f"{_nf.dec(own.get('normalised_mean', 0), digits=2)}× normalised) DITOLAK sebagai anchor: EV bertahan "
                      f"Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple itu menghukum level yang sudah "
                      f"pulih (memberi Rp 13.559/saham, 2,8× harga).")
-        notes.append("BASIS MULTIPLE (leg gate-primary): " + str(_basis) + extra + " " +
+        notes.append("Basis multiple (leg gate-primary): " + str(_basis) + extra + " " +
                      str(assum.get("ebitda_leg_level_note") or ""))
     # A reader who meets Rp 148 and Rp 5.667 on the same page has to be told why they differ and which one the
     # target price uses. Fires on the gap, not on a ticker: it stays silent when the two bases agree.
@@ -508,7 +508,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         _gap = max(float(anchor_fv), primary["fv_gordon"]) / min(float(anchor_fv), primary["fv_gordon"])
         if _gap > 1.5:
             notes.append(
-                f"BASIS TARGET PRICE - DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
+                f"Basis target price - DCF FCFF di halaman ini (terminal Gordon) memberi Rp "
                 f"{_rp(primary['fv_gordon'])} sementara anchor EV/EBITDA {_fmt(multiple, 2)}× "
                 f"(basis gate-primary) memberi Rp "
                 f"{_rp(float(anchor_fv))}: selisih {_nf.dec(_gap, digits=1)}×. Keduanya tidak dirata-rata; "
@@ -517,7 +517,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
-            f"UNRESOLVED ASSUMPTION - terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
+            f"Unresolved assumption - terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
             f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}× memberi Rp {_rp(primary['fv_exit'])}: selisih "
             f"{_nf.dec(ratio, digits=1)}× pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
         )
@@ -687,7 +687,7 @@ def _narrative(page: dict) -> list[str]:
             f"Rp {_fmt0(swing['min'])} sampai Rp {_fmt0(swing['max'])}."
         ),
         (
-            "Penghubung ke driver bisnis (Slide 2-3): jalur pendapatan memakai pola linear-fade "
+            "Penghubung ke driver bisnis (Halaman 2-3): jalur pendapatan memakai pola linear-fade "
             f"({d['revenue_basis']}) sehingga baris Revenue, EBIT, Tax, NOPAT, D&A, Capex, dan Delta NWC "
             "ikut bervariasi end-to-end (bukan di-hold flat dari kolom ke-3); "
             f"marjin EBIT {_fmt(d['ebit_margin_fy25'], 1)}% (level FY25A); "

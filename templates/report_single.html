@@ -375,16 +375,20 @@
         <p class="sens-h">Sebaran metode (Rp/saham)</p>
         {% set price_now = cover.rating_box.price | float %}
         {% set meth_max = (valuation_page.legs.ev_ebitda if valuation_page.legs.ev_ebitda > price_now else price_now) * 1.18 %}
-        <div class="meth-bars">
-          {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("TP gate-primary", valuation_page.legs.ev_ebitda, "b3")] %}
-          <div class="meth-col">
-            <div class="meth-val">{{ mval | idn(0) }}</div>
-            <div class="meth-bar {{ mcls }}" style="height: {{ (mval / meth_max * 100) | round(1) }}%;"></div>
-            <div class="meth-lbl">{{ mlabel }}</div>
-          </div>
-          {% endfor %}
-          <div class="meth-ref" style="bottom: {{ (price_now / meth_max * 100) | round(1) }}%;">
-            <span>Harga pasar {{ price_now | idn(0) }}</span>
+        <div class="meth-chart-wrap">
+          <div class="meth-bars">
+            {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("TP gate-primary", valuation_page.legs.ev_ebitda, "b3")] %}
+            <div class="meth-col">
+              <div class="meth-val">{{ mval | idn(0) }}</div>
+              <div class="meth-track">
+                <div class="meth-bar {{ mcls }}" style="height: {{ (mval / meth_max * 100) | round(1) }}%;"></div>
+              </div>
+              <div class="meth-lbl">{{ mlabel }}</div>
+            </div>
+            {% endfor %}
+            <div class="meth-ref" style="bottom: {{ (price_now / meth_max * 48) | round(1) }}pt;">
+              <span>Harga pasar {{ price_now | idn(0) }}</span>
+            </div>
           </div>
         </div>
         <p class="sens-cap">Gap Gordon vs exit multiple {{ (br.fv_exit / br.fv_gordon) | idn(1) }}× pada basis FCFF yang sama -

@@ -242,22 +242,24 @@
               margin-top: 1.2pt; }
   .heat-key .k { width: 11pt; height: 6pt; border-radius: 1pt; display: inline-block; }
 
-  /* Method comparison, the way the tools draw it: bars in navy / ice / ice-pale with the values outside, and a
-     dashed market-price reference line across them. */
+  /* Method comparison: bars in navy / ice / ice-pale with beginAtZero scale and market-price reference line */
+  .meth-chart-wrap { position: relative; margin: 2pt 0; }
   .meth-bars { position: relative; display: grid; grid-template-columns: repeat(3, 1fr); gap: 7pt;
-               height: 40pt; align-items: end; margin: 1.5pt 0 1pt; }
-  .meth-col { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+               align-items: end; }
+  .meth-col { display: flex; flex-direction: column; align-items: center; }
   .meth-val { font-size: 6.9pt; font-weight: 700; color: var(--ab-navy); text-align: center;
-              margin-bottom: .8pt; font-variant-numeric: tabular-nums; }
-  .meth-bar { border: .6pt solid var(--ab-navy-soft); border-radius: 1.5pt; }
+              margin-bottom: 2pt; font-variant-numeric: tabular-nums; }
+  .meth-track { width: 100%; height: 48pt; display: flex; align-items: flex-end; justify-content: center;
+                border-bottom: 0.8pt solid var(--ab-rule); }
+  .meth-bar { width: 70%; min-width: 14pt; border: .6pt solid var(--ab-navy-soft); border-radius: 1.5pt 1.5pt 0 0; }
   .meth-bar.b1 { background: var(--ab-navy); }
   .meth-bar.b2 { background: var(--ab-ice); }
   .meth-bar.b3 { background: var(--ab-ice-pale); }
-  .meth-lbl { font-size: 6.1pt; color: var(--ab-ink-muted); text-align: center; margin-top: 1.4pt;
-              letter-spacing: .02em; }
-  .meth-ref { position: absolute; left: 0; right: 0; border-top: 1pt dashed var(--ab-sell); }
+  .meth-lbl { font-size: 6.1pt; color: var(--ab-ink-muted); text-align: center; margin-top: 2.5pt;
+              letter-spacing: .02em; min-height: 14pt; }
+  .meth-ref { position: absolute; left: 0; right: 0; border-top: 1pt dashed var(--ab-sell); pointer-events: none; }
   .meth-ref span { position: absolute; left: 0; top: -6pt; background: #fff; padding: 0 2.5pt;
-                   font-size: 6pt; font-weight: 700; color: var(--ab-sell); }
+                   font-size: 5.8pt; font-weight: 700; color: var(--ab-sell); }
 
   /* Status chips, as the tools render them: rounded pill, tinted ground, small caps label. */
   .ab-chip { display: inline-block; padding: .5pt 5pt; border-radius: 100px; font-size: 6.3pt; font-weight: 700;

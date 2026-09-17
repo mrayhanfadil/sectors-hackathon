@@ -28,7 +28,7 @@ METHODOLOGY = (
 
 DISCLAIMER = (
     "Implied price di bagian ini adalah cross-check mean-reversion berbasis multiple historis - "
-    "bukan Target Price resmi di Slide 4 - dan dihitung dengan asumsi driver fundamental (EPS, BVPS, "
+    "bukan Target Price resmi di Halaman 4 - dan dihitung dengan asumsi driver fundamental (EPS, BVPS, "
     "EBITDA, Revenue) tetap konstan di level TTM saat ini, hanya multiple yang direversi ke rata-rata / "
     "median historisnya. Sifatnya snapshot posisi relatif terhadap sejarah harga sendiri, bukan proyeksi "
     "earnings atau target harga."

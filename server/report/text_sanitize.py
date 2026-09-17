@@ -93,6 +93,26 @@ RULES: list[tuple[re.Pattern[str], str]] = [
     (re.compile(r"future\.analyst_rating_breakdown", re.I), "konsensus analis"),
     (re.compile(r"company_report\(([A-Z]{2,6})\s*,\s*'?([a-z_]+)'?\)", re.I), r"data \2 (\1)"),
     (re.compile(r"published_pe_ttm\s*//\s*pb_mrq", re.I), "P/E TTM dan P/BV MRQ"),
+    # Backend leak patterns (Issue 9)
+    # 1. null followed by (GAP G\d+) / GAP G\d+
+    (re.compile(r"\bnull\s*\(\s*GAP\s*G\d+\s*\)\s*(?:-\s*)?", re.I), ""),
+    (re.compile(r",\s*GAP\s*G\d+\b", re.I), ""),
+    (re.compile(r"\bGAP\s*G\d+\)?\s*(?:-\s*)?", re.I), ""),
+    (re.compile(r"\(\s*GAP\s*G\d+\s*\)", re.I), ""),
+    # 2. .bvps_path | .fcf_basis | .ev_ebitda_path
+    (re.compile(r"\.(?:bvps_path|fcf_basis|ev_ebitda_path)\b", re.I), ""),
+    (re.compile(r"\b(?:bvps_path|fcf_basis|ev_ebitda_path)\b", re.I), ""),
+    # 3. (LOUD policy[^)]*)
+    (re.compile(r"\s*\(\s*LOUD policy[^)]*\)", re.I), ""),
+    (re.compile(r"\bLOUD policy\b[^,.;)]*", re.I), ""),
+    # 4. payload tidak[^.]*\.
+    (re.compile(r":?\s*payload\s+tidak\s+[^.]*\.", re.I), ""),
+    # 5. Sectors /[a-z]+ total_count \d+
+    (re.compile(r"\s*\(?\s*Sectors\s+/[a-z_]+\s+total_count\s+\d+\s*\)?", re.I), ""),
+    # 6. interest_expense | operating_expense
+    (re.compile(r"\b(?:interest_expense|operating_expense)\b", re.I), ""),
+    # 7. duplicate (Q1-2025...) (Q1-2025...)
+    (re.compile(r"(\(Q1-202[0-9][^)]*\))\s*\1", re.I), r"\1"),
     # anything still repo-shaped, and the separator a removal leaves behind
     (re.compile(r"\b(?:server/report|server|src|tests|scripts|data)/[\w./-]+"), ""),
     (re.compile(r"^\s*[-\u2013\u2014\u2015]\s*"), ""),

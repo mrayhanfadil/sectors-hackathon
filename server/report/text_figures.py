@@ -59,5 +59,6 @@ def hero_stat(headline, detail="", want_label=False):
             label = " ".join(words[:2]).strip(" ,:;.")
         if len(label) > 22:
             label = " ".join(label.split()[-2:])
-        return value, label.upper()
+        clean_label = (label[0].upper() + label[1:].lower()) if label else ""
+        return value, clean_label
     return ("", "") if want_label else ""

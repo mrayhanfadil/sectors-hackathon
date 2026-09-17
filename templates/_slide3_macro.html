@@ -70,12 +70,18 @@
         {% set bv = bars[loop.index0] %}
         {% set bh = ((bv / bmax) * ch) if (bv is not none and bmax) else 0 %}
         {% set bar_top = pad_t + ch - bh %}
-        {# clear of the bar label when the marker lands inside its own bar #}
-        {% set lbl_y = [(ly + 8) if ly > bar_top - 7 else (ly - 4.5), pad_t + 6.5] | max %}
-        {% set lbl_y = [lbl_y, pad_t + ch - 1.5] | min %}
+        {% set close_to_bar = (ly - bar_top)|abs < 14 %}
+        {% if close_to_bar and ly <= bar_top %}
+          {% set lbl_y = [ly - 6, pad_t - 1] | max %}
+        {% elif close_to_bar and ly > bar_top %}
+          {% set lbl_y = [ly + 9, pad_t + ch - 2] | min %}
+        {% else %}
+          {% set lbl_y = [(ly - 5) if ly > pad_t + 8 else (ly + 8), pad_t + 6.5] | max %}
+          {% set lbl_y = [lbl_y, pad_t + ch - 1.5] | min %}
+        {% endif %}
         {% set txt = line_fmt[loop.index0] %}
         <rect x="{{ lx - (txt | length * 1.65) - 1.6 }}" y="{{ lbl_y - 5.4 }}" width="{{ txt | length * 3.3 + 3.2 }}"
-              height="7.6" rx="1.4" fill="#ffffff" opacity="0.92"/>
+              height="7.6" rx="1.4" fill="#ffffff" opacity="0.94"/>
         <text x="{{ lx }}" y="{{ lbl_y }}" font-size="6" fill="#B08D57" text-anchor="middle" font-weight="600">{{ txt }}</text>
       {% endif %}
     {% endfor %}
@@ -99,7 +105,16 @@
       {% set v = bars[loop.index0] %}
       {% if v is not none and bars_fmt[loop.index0] %}
         {% set bh = (v / bmax) * ch if bmax else 0 %}
-        <text x="{{ lx }}" y="{{ pad_t + ch - bh - 3 }}" font-size="6" fill="#0B1F3A" text-anchor="middle">{{ bars_fmt[loop.index0] }}</text>
+        {% set bar_top = pad_t + ch - bh %}
+        {% set lv = line[loop.index0] if (line and line|length > loop.index0) else none %}
+        {% set ly = (pad_t + ch - ((lv - l_lo) / lspan) * ch) if lv is not none else 999 %}
+        {% set close_to_line = (ly - bar_top)|abs < 14 and ly <= bar_top %}
+        {% if close_to_line and bh > 14 %}
+          {# Move bar label inside the bar to completely avoid collision with line label above #}
+          <text x="{{ lx }}" y="{{ bar_top + 8 }}" font-size="6" fill="{{ '#ffffff' if loop.index <= actual_n else '#0B1F3A' }}" font-weight="700" text-anchor="middle">{{ bars_fmt[loop.index0] }}</text>
+        {% else %}
+          <text x="{{ lx }}" y="{{ bar_top - 3 }}" font-size="6" fill="#0B1F3A" text-anchor="middle">{{ bars_fmt[loop.index0] }}</text>
+        {% endif %}
       {% endif %}
     {% endfor %}
     <text x="{{ pad_l }}" y="{{ h - 1 }}" font-size="5.6" fill="#63748A">{{ bar_unit }} (bar) · {{ line_unit }} (line)</text>

@@ -361,10 +361,10 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
          f"= Gross Profit - EBIT supaya barisnya menyambung. Selisih terhadap operating_expense yang dilaporkan "
          f"Sectors ({gap_txt}) berarti item itu di luar definisi EBIT mereka; dinyatakan supaya nilainya tidak "
          f"terbaca sebagai temuan baru."),
-        (f"Implikasi margin: untuk mencapai EBITDA spine Rp {_nf.idn(ebitda_f[0], digits=0)} bn, rantai biaya memakai opex "
+        (f"Implikasi margin: untuk mencapai EBITDA acuan utama Rp {_nf.idn(ebitda_f[0], digits=0)} bn, rantai biaya memakai opex "
          f"FY2025A (Rp {_nf.idn(opex_25_abs, digits=0)} bn) dan COGS sebagai baris penyeimbang - gross margin proyeksi "
          f"{_nf.pcfrac(implied_gm, 1)} vs aktual FY2025A {_nf.pcfrac(actual_gm, 1)}. Perbaikan margin itu milik asumsi mid-cycle "
-         f"deck, bukan temuan baru; dinyatakan supaya tidak terbaca sebagai proyeksi analis independen."),
+         f"deck utama, bukan temuan baru; dinyatakan supaya tidak terbaca sebagai proyeksi analis independen."),
         "Interest Income tidak dipublikasikan Sectors untuk AMMN, jadi barisnya kosong dengan keterangan - "
         "bukan nol, bukan angka karangan.",
     ]
@@ -382,7 +382,7 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         "forecast_source_display": _display_attr((driver_path or {}).get("attribution")),
         "sources": ["Sectors API: company/report financials.historical_financials (annual, IDR)",
                     "data/assumptions/AMMN.json (tax, cost of debt, capex, payout)",
-                    "cover.slide2.key_financials - the mid-cycle forecast spine this page must tie to"],
+                    "cover.slide2.key_financials - mid-cycle forecast acuan utama yang harus di-tie-out"],
         "bank_variant_note": ("Varian bank (pola BBTN Exhibit 7-8: Interest Income/Expense, Net Interest Income, "
                               "Non-Interest Income, PPOP, Provisions; Gross Loans, Net Loans, Govt Bonds, "
                               "Customer Deposits, Shareholders' Funds) diaktifkan lewat flag `variant`, "
