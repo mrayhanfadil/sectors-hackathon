@@ -701,7 +701,7 @@ def _narrative(page: dict) -> list[str]:
             f"Pemeriksaan konsistensi internal (RR x ROIC = implied growth) per tahun tersedia di catatan metode."
         ),
         (
-            "Gap antar metode dibaca sebagai unresolved assumption, bukan dirata-rata: terminal Gordon dan terminal "
+            "Gap antar metode dibaca sebagai unresolved assumption (UNRESOLVED), bukan dirata-rata: terminal Gordon dan terminal "
             f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
             f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis build-up "
             f"EBIT-based menghasilkan equity value negatif (Rp {_fmt0(page['alternatives']['build_up']['equity_gordon'] / 1e9)} bn). "
