@@ -298,7 +298,17 @@
   {{ m.exhibit_auto(ns, "WACC Components", "Sumber per komponen tercantum di kolom ketiga") }}
   {{ m.table(["Parameter", "Nilai", "Sumber"], valuation_page.wacc_rows) }}
   {{ m.exhibit_source(ns) }}
+  {% else %}
+  <p class="small muted">Halaman valuasi tidak dapat disusun: {{ valuation_page.missing|join(", ") if valuation_page and valuation_page.missing else "assumptions emiten belum memuat parameter valuasi" }}.</p>
+  {% endif %}
+  {{ m.pagefoot(5, ns) }}
+</div>
 
+{# ================= PAGE 6 - VALUATION SENSITIVITY & CROSS-CHECK ================= #}
+<div class="page">
+  {{ m.running() }}
+  {{ m.section("Valuasi - Analisa Sensitivitas & Skenario", ns) }}
+  {% if valuation_page and valuation_page.available %}
   {# ---- Exhibit 10: the sensitivity grid, base case called out ---- #}
   {{ m.exhibit_auto(ns, "Sensitivity Analysis - WACC x Terminal Growth", "Engine: " ~ valuation_page.sources[2]) }}
   <table class="fin-table sens">
@@ -332,11 +342,9 @@
   {{ m.exhibit_source(ns) }}
 
   {# ---- the integrated narrative the rules ask for, read as components ---- #}
-  {# Every figure below is read from valuation_page: the block cannot drift from the model, and the prose still
-     carries the reasoning. Only the presentation changed. #}
   {% set br = valuation_page.bridge %}
   {% set sens = valuation_page.sensitivity %}
-  <div class="card-tint" style="margin-top:7pt;">
+  <div class="card-tint" style="margin-top:5pt;">
     <p class="sens-title">Analisa sensitivitas dan keterkaitan asumsi</p>
 
     <div class="sens-strip">
@@ -425,16 +433,10 @@
   {% else %}
   <p class="small muted">Halaman valuasi tidak dapat disusun: {{ valuation_page.missing|join(", ") if valuation_page and valuation_page.missing else "assumptions emiten belum memuat parameter valuasi" }}.</p>
   {% endif %}
-  {{ m.pagefoot(5, ns) }}
+  {{ m.pagefoot(6, ns) }}
 </div>
 
-{# ================= PAGE 6 - AUDIT DISCLOSURE ================= #}
-{# (16 Sep 2026): dedicated page so the reader sees the dissent + bear/mid/
-bull ladder the publish gate saw, instead of a footnote. Always rendered
-so the pagefoot invariant (house rule §1: every page ends with a footer)
-holds even when no agent run exists yet. The pagefoot is non-conditional
-on the wrapping audit-page div; the body content adapts to
-cover.audit_disclosure.present so a missing run keeps the deck clean. #}
+{# ================= PAGE 7 - AUDIT DISCLOSURE ================= #}
 <div class="page audit-page">
   {{ m.running() }}
   {{ m.section("Catatan Audit", ns) }}
@@ -444,7 +446,6 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
     <p class="audit-verdict">
       Verdict: <b>{{ cover.audit_disclosure.verdict }}</b>
       · Anchor contested: <b>{{ cover.audit_disclosure.anchor_contested }}</b>
-      · Run: <code>{{ cover.audit_disclosure.run_id }}</code>
     </p>
   </div>
 
@@ -456,8 +457,8 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
     {% endif %}
   {% endfor %}
   {% if visible_flags %}
-  <h3 style="margin-top:10pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Bendera Gate</h3>
-  <ul class="stmt-note-cols audit-flags" style="margin:0 0 8pt 0; padding-left:14pt;">
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Bendera Gate</h3>
+  <ul class="stmt-note-cols audit-flags" style="margin:0 0 6pt 0; padding-left:14pt;">
     {% for flag in visible_flags %}
       <li class="{{ 'contested' if 'DISSENT' in flag or 'RANGE_DISCLOSURE' in flag else '' }}">{{ flag }}</li>
     {% endfor %}
@@ -466,12 +467,12 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
   {% endif %}
 
   {% if cover.audit_disclosure.disclosure %}
-  <h3 style="margin-top:6pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Justifikasi Anchor</h3>
-  <p class="audit-disclosure-prose" style="margin:0 0 8pt 0;">{{ cover.audit_disclosure.disclosure }}</p>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Justifikasi Anchor</h3>
+  <p class="audit-disclosure-prose" style="margin:0 0 6pt 0;">{{ cover.audit_disclosure.disclosure }}</p>
   {% endif %}
 
   {% if cover.audit_disclosure.ladder %}
-  <h3 style="margin-top:6pt; margin-bottom:4pt; font-size:11pt; color:#0B1F3A;">Tangga Valuasi (Audit)</h3>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Tangga Valuasi (Audit)</h3>
   <table class="fin-table audit-ladder" style="width:100%;">
     <thead>
       <tr>
@@ -508,21 +509,44 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
   {% endif %}
   {% endif %}
 
-  <p class="small muted" style="margin-top:10pt;">
-    Catatan audit mengikuti standar <code>house-report-format.md</code> §audit;
-    halaman ini dirender otomatis lewat
-    <code>payload["cover"]["audit_disclosure"]</code>. Audit tetap menjadi
-    otoritas final - lihat <code>audit_disclosure.verdict</code> di atas.
+  {% if audit and audit.inconsistency_report %}
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
+  <table class="fin-table" style="width:100%;">
+    <thead>
+      <tr>
+        <th>Metrik</th>
+        <th>Lokasi / Exhibit</th>
+        <th>Nilai Tertera</th>
+        <th>Nilai Kanonikal</th>
+        <th>Selisih (%)</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for inc in audit.inconsistency_report %}
+      <tr class="hl contested">
+        <td><b>{{ inc.metric }}</b></td>
+        <td>{{ inc.page }}</td>
+        <td>{{ inc.rendered }}</td>
+        <td>{{ inc.canonical }}</td>
+        <td class="num">{{ inc.gap_pct }}%</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% endif %}
+
+  <p class="small muted" style="margin-top:8pt;">
+    Catatan audit deterministik: verifikasi independen atas konsistensi metrik dan integritas data
+    sebelum publikasi laporan. Audit tetap menjadi otoritas final.
   </p>
   {% else %}
   <p class="small muted">
     <i>Belum ada run agen untuk emiten ini.</i> Halaman ini akan terisi
-    otomatis setelah pipeline ADK menyelesaikan satu run - lihat
-    <code>payload["cover"]["audit_disclosure"]</code>.
+    otomatis setelah pipeline ADK menyelesaikan satu run.
   </p>
   {% endif %}
 
-  {{ m.pagefoot(6, ns) }}
+  {{ m.pagefoot(7, ns) }}
 </div>
 
 {# ================= SLIDE 5 - PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
@@ -546,7 +570,7 @@ cover.audit_disclosure.present so a missing run keeps the deck clean. #}
   {{ m.section("Disklaimer", ns) }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(10, ns) }}
+  {{ m.pagefoot(11, ns) }}
 </div>
 
 

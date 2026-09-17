@@ -424,8 +424,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         f"EBITDA/bunga TTM {f1(ttm_ebitda_int)}×. "
         f"Harga 90d +28,57% vs IHSG +4,58% (rel +23,99 pp, 62 sesi 15 Jun–11 Sep 2026); "
         f"EV/EBITDA 2026 (TTM print) 17,99× vs 34,31× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
-        f"vs rerata peer sektor 10,07×. Konsensus analis directionally positif (29 beli / 1 tahan, "
-        f"30 analis, 2 Sep 2026 - tanpa angka forward). "
+        f"vs rerata peer sektor 10,07× (agregat konsensus rating broker tidak dipublikasikan). "
         f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
         f"(EV/EBITDA FY26F, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
         f"Profil gate: domain mining, filing 6 thn (gate_inputs AMMN.json)."
@@ -724,9 +723,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "source": "idnfinancials 10 Sep 2026 + investor.id 31 Agu 2026 + Sectors suspensions"},
         {"bucket": "Valuasi premium vs sektor",
          "detail": ("EV/EBITDA (TTM print 2026) 17,99× (dari 34,31× di 2025); PE 38,23× vs rerata peer sektor 10,07×; "
-                    "forward PE + proyeksi analis numerik hanya direksional (29 beli/1 tahan)."),
+                    "forward PE + proyeksi analis numerik tidak dipublikasikan di feed."),
          "stat": "17,99×", "stat_label": "EV/EBITDA (TTM print 2026)",
-         "source": "Sectors valuation.historical_valuation + future.analyst_rating_breakdown"},
+         "source": "Sectors valuation.historical_valuation"},
     ]
     payload["risks_note"] = ("Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); "
                              "suspensi nihil ber-evidence.")

@@ -58,7 +58,7 @@ def _fmt_rp(v: Optional[float]) -> str:
     return f"Rp {_nf.idn(v, digits=0)}" if isinstance(v, (int, float)) else "n/a"
 
 
-def build_peers_page(ticker: str = "AMMN") -> dict:
+def build_peers_page(ticker: str = "AMMN", payload: Optional[dict] = None) -> dict:
     tk = ticker.upper()
     peers = _load(os.path.join(CACHE_ROOT, tk, "peer_table.json"))
     bands = _load(os.path.join(CACHE_ROOT, tk, "bands_1y.json"))
@@ -71,6 +71,14 @@ def build_peers_page(ticker: str = "AMMN") -> dict:
     if covered is None:
         return {"available": False, "ticker": tk,
                 "reason": "peer table carries no row for the covered issuer"}
+
+    if payload and payload.get("canonical_metrics"):
+        canon = payload["canonical_metrics"]
+        if canon.get("market_cap"):
+            covered["market_cap"] = canon["market_cap"]
+        if canon.get("ev_ebitda_ttm"):
+            covered["ev_ebitda_ttm"] = canon["ev_ebitda_ttm"]
+
     stats = peers["stats"]
 
     # ---- Part A: table -----------------------------------------------------

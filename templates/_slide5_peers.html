@@ -32,9 +32,15 @@
         <td>{{ r.name }}</td>
         <td class="num">{{ "n.m." if r.pe_nm else (r.pe|dec(2)) }}</td>
         <td class="num">{{ r.pbv|dec(2) if r.pbv else "-" }}</td>
-        <td class="num">{{ "n.m." if r.ev_ebitda_nm else (r.ev_ebitda|dec(2)) }}</td>
+        <td class="num">
+          {{ "n.m." if r.ev_ebitda_nm else (r.ev_ebitda|dec(2)) }}
+          {% if r.is_covered and audit and audit.inconsistency_report %}{{ inconsistency_badge('ev_ebitda_ttm', 'peers_page_exhibit11', audit.inconsistency_report) | safe }}{% endif %}
+        </td>
         <td class="num">{{ (r.roe * 100)|dec(1) if r.roe else "-" }}</td>
-        <td class="num">{{ ((r.market_cap / 1e12) | dec(2)) ~ " tn" if r.market_cap else "-" }}</td>
+        <td class="num">
+          {{ ((r.market_cap / 1e12) | dec(2)) ~ " tn" if r.market_cap else "-" }}
+          {% if r.is_covered and audit and audit.inconsistency_report %}{{ inconsistency_badge('market_cap', 'peers_page_exhibit11', audit.inconsistency_report) | safe }}{% endif %}
+        </td>
       </tr>
       {% endfor %}
     </tbody>
@@ -59,7 +65,7 @@
   </table>
   <p class="small muted">{{ A.criteria }} Basis: {{ A.basis }}. Baris ber-shading = emiten yang dicover.</p>
   <p class="peer-narr">{{ A.narrative_text }}</p>
-  {{ m.pagefoot(6, ns) }}
+  {{ m.pagefoot(8, ns) }}
 </div>
 </div>
 
@@ -104,7 +110,7 @@
   </table>
   <p class="small muted">Harga terakhir {{ B.last_close }} · {{ B.driver_note }}</p>
   <p class="disclaim-inline"><b>Catatan:</b> {{ B.disclaimer }}</p>
-  {{ m.pagefoot(7, ns) }}
+  {{ m.pagefoot(9, ns) }}
 </div>
 </div>
 {% endif %}

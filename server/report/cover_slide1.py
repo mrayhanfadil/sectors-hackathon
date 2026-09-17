@@ -236,20 +236,31 @@ def _stats_block(payload: dict, assum: dict, fx: Optional[dict]) -> dict:
         rows.append(["No. of Shares (mn)", _n(shares / 1e6, 1)])
         sources["shares_mn"] = "Sectors ownership (shares outstanding)"
 
-    mcap = assum.get("market_cap")
-    if not mcap:
-        daily = _read(AMMN_ART_DIR / "daily_AMMN_90d.json") or {}
-        drows = daily.get("data") or []
-        mcap = (drows[-1].get("market_cap") if drows else None)
+    canon = payload.get("canonical_metrics") or {}
+    # Canonical block uses key market_cap_rpbn (already in rpbn units).
+    # Sep 17 2026 (gate architecture): read the canonical rpbn value, fall
+    # back to assumptions/daily only if the gate did not run.
+    canon_mcap_rpbn = canon.get("market_cap_rpbn", {}).get("value")
+    if canon_mcap_rpbn:
+        mcap = float(canon_mcap_rpbn) * 1e9
+        rpbn = float(canon_mcap_rpbn)
+        sources["mkt_cap"] = "canonical metric gate (Sep 17 2026): equity x pb_mrq"
+    else:
+        mcap = assum.get("market_cap")
+        if not mcap:
+            daily = _read(AMMN_ART_DIR / "daily_AMMN_90d.json") or {}
+            drows = daily.get("data") or []
+            mcap = (drows[-1].get("market_cap") if drows else None)
+        rpbn = float(mcap) / 1e9 if mcap else None
+        if mcap:
+            sources["mkt_cap"] = "Sectors daily close x shares outstanding"
     if mcap:
-        rpbn = float(mcap) / 1e9
         if fx and fx.get("rate"):
             rows.append(["Mkt Cap (Rpbn/US$mn)",
                          f"{_n(rpbn, 1)} / {_n(float(mcap) / fx['rate'] / 1e6, 1)}"])
             sources["mkt_cap_usd"] = f"USD/IDR {_n(fx['rate'], 0)} · {fx['source']} {fx['date']}"
         else:
             rows.append(["Mkt Cap (Rpbn/US$mn)", f"{_n(rpbn, 1)} / n/a"])
-        sources["mkt_cap"] = "Sectors daily close x shares outstanding"
 
     daily = _read(AMMN_ART_DIR / "daily_AMMN_90d.json") or {}
     drows = [d for d in (daily.get("data") or []) if d.get("close") and d.get("volume")]

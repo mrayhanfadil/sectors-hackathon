@@ -52,7 +52,10 @@ def test_parity_ammn_payload_keys(client):
         f"In endpoint only: {endpoint_keys - pdf_keys}\n"
         f"In PDF only: {pdf_keys - endpoint_keys}"
     )
-    assert len(endpoint_keys) == 45, f"Expected 45 frozen contract sections, got {len(endpoint_keys)}"
+    # 17 Sep 2026: gate architecture added canonical_metrics + audit
+    # (canonical_metrics = the 6-metric block, audit = inconsistency_report
+    # surfaced under the existing audit key). 45 -> 47 sections.
+    assert len(endpoint_keys) == 47, f"Expected 47 frozen contract sections, got {len(endpoint_keys)}"
 
 
 def test_honesty_bbca_missing_assumptions_422(client):

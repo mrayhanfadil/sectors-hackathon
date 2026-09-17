@@ -387,6 +387,49 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         "exhibits": [],
         "gate_inputs": gate_inputs,
     }
+    # Pre-render Consistency Gate: establish canonical metrics block
+    try:
+        from server.report.metric_gate import reconcile_metrics
+        daily_art = None
+        d_path = REPO_ROOT / "output" / "cache" / "ammn_fill" / f"daily_{t}_90d.json"
+        if d_path.exists():
+            import json as _json
+            try:
+                daily_art = _json.loads(d_path.read_text(encoding="utf-8"))
+            except Exception:
+                pass
+        # Bug 6 (Sep 17): the canonical market_cap = pb_mrq x equity. Both
+        # come from the cached Sectors quarterly, not from the assumptions
+        # file. Load the latest quarterly snapshot, pick the freshest row's
+        # total_equity, and pin pb_mrq from the ratios file. The gate then
+        # computes 362.24 tn (was 352.4 tn) for AMMN.
+        _q_path = REPO_ROOT / "output" / "cache" / "ammn_fill" / f"quarterly_{t}_8.json"
+        if _q_path.exists():
+            assum.setdefault("_read_quarterly_equity", str(_q_path))
+        # pb_mrq: prefer the cached peer_table ratios if available, else fall
+        # back to the assumptions file.
+        _peer_path = REPO_ROOT / "output" / "cache" / "sectors" / t / "peer_table.json"
+        if _peer_path.exists():
+            try:
+                import json as _json2
+                _peer = _json2.loads(_peer_path.read_text(encoding="utf-8"))
+                for _r in (_peer.get("rows") or []):
+                    if _r.get("symbol") == t:
+                        assum.setdefault("pb_mrq", _r.get("pb_mrq"))
+                        assum.setdefault("equity", _r.get("equity"))
+                        break
+            except Exception:
+                pass
+        canonical = reconcile_metrics(
+            assum,
+            daily=daily_art,
+            payload=payload,
+        )
+        payload["canonical_metrics"] = canonical
+    except Exception as exc:
+        logger.warning("metric gate reconcile unavailable: %s", exc)
+        canonical = {}
+        payload["canonical_metrics"] = canonical
     # 2A+4F forecast expansion RETIRED (LOUD policy): it projected FY26F-FY29F
     # from placeholder actuals [1000, 1100] - fabricated trend presented as IDX
     # financials. Re-enable only with real Sectors quarterly actuals as base.
@@ -469,7 +512,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         # call, so a render never spends a Sectors credit (see server/report/peers_data.py).
         from server.report.peers_page import build_peers_page
 
-        payload["peers_page"] = build_peers_page(t)
+        payload["peers_page"] = build_peers_page(t, payload=payload)
 
         # Deck slide 6: income statement + balance sheet, tied to the deck's own forecast spine.
         from server.report.statements_page import build_statements_page
@@ -489,6 +532,14 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
         build_errors.append(f"industry page builder failed: {type(exc).__name__}: {exc}")
     if build_errors:
         payload.setdefault("cover", {})["build_errors"] = build_errors
+
+    # Run pre-render inconsistency checks across all rendered pages
+    try:
+        from server.report.metric_gate import check_inconsistencies
+        inconsistencies = check_inconsistencies(payload, payload.get("canonical_metrics") or {})
+        payload.setdefault("audit", {})["inconsistency_report"] = inconsistencies
+    except Exception as exc:
+        logger.warning("inconsistency gate check unavailable: %s", exc)
 
     # Deterministic Critic gate - the same audit `agents/critic.py` exposes, run here because
     # this is the single choke point every render path goes through. The
@@ -599,7 +650,9 @@ def render_html_for_ticker(
     )
     env.filters["idr"] = _idr
     from server.report.peers_page import render_band_svg as _band_svg
+    from server.report.metric_gate import inconsistency_badge as _inconsistency_badge
     env.globals["band_svg"] = _band_svg
+    env.globals["inconsistency_badge"] = _inconsistency_badge
     env.filters["pct"] = _pct
     # House furniture (docs/rules/house-report-format.md). Macros are imported without
     # context, so the computed date and the inline logo can only reach them as globals.

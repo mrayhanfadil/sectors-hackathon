@@ -31,7 +31,12 @@ def test_rebuild_from_cache_spends_no_credits():
 
     table = build_peer_table("AMMN")
     bands = build_bands("AMMN")
-    assert table["credit_log"] == "billed calls: 0 | cache hits: 11"
+    # 17 Sep 2026: a new daily_1y cache was added, raising the count from
+    # 11 to 12. The architectural intent (zero billed calls, all hits) is
+    # what we pin, not the exact count.
+    assert table["credit_log"].startswith("billed calls: 0 | cache hits:")
+    cache_hits = int(table["credit_log"].split("cache hits: ")[1])
+    assert cache_hits >= 11, f"expected >=11 cache hits, got {cache_hits}"
     assert bands["credit_log"].startswith("billed calls: 0")
     assert table["rows"] and bands["sessions"]
 
@@ -220,8 +225,14 @@ def test_template_renders_slide_5_and_drops_the_old_peer_table():
 
 
 def test_pdf_router_builds_the_page_from_cache_not_the_network():
+    """The pdf router wires build_peers_page, not build_peers_table, and the
+    function takes a payload kwarg (Sep 2026: payload-aware build to support
+    canonical_metrics threading). Pin both invariants."""
     src = (ROOT / "server" / "routers" / "pdf.py").read_text()
-    assert 'payload["peers_page"] = build_peers_page(t)' in src
+    assert "peers_page\"] = build_peers_page(" in src, (
+        "router must wire peers_page via build_peers_page(); got: "
+        + [line.strip() for line in src.splitlines() if "peers_page" in line and "=" in line][:3].__repr__()
+    )
     assert 'env.globals["band_svg"]' in src
     builder = (ROOT / "server" / "report" / "peers_page.py").read_text()
     for banned in ("requests", "httpx", "urlopen", "sectors."):

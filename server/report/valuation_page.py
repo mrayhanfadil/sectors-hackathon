@@ -599,8 +599,11 @@ def _view(page: dict) -> dict:
         ("Implied exit multiple dari TV Gordon", _fmt(b["implied_exit_multiple"], 2) + "×",
          _fmt(page["drivers"]["multiple"], 2) + "×"),
     ]
+    pv_fcff_series = [v for v in build.get("PV of FCFF", []) if isinstance(v, (int, float))]
+    sum_pv_fcff = sum(pv_fcff_series) if pv_fcff_series else (b["pv_explicit"] / 1e9)
+    page["sum_pv_fcff"] = sum_pv_fcff
     page["block3_rows"] = [
-        ("Sum PV of FCFF (periode eksplisit)", _fmt(b["pv_explicit"] / 1e9), "-"),
+        ("Sum PV of FCFF (periode eksplisit)", _fmt(sum_pv_fcff), "-"),
         ("(+) PV of Terminal Value (Gordon)", _fmt(b["pv_tv_gordon"] / 1e9), "-"),
         ("Enterprise Value", _fmt(b["ev_gordon"] / 1e9), "-"),
         ("(-) Net Debt (Total Debt - Cash)", _fmt(b["net_debt"] / 1e9), "-"),

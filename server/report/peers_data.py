@@ -206,7 +206,28 @@ def build_peer_table(ticker: str = "AMMN", refresh: bool = False) -> dict:
         equity = _num(last, "total_equity", "stockholders_equity")
         nd = net_debt(last)
         pe, pb = pub.get("pe_ttm"), pub.get("pb_mrq")
-        cap = (pb * equity) if (pb and equity) else None
+        if sym == ticker.upper():
+            # For covered issuer, canonical market cap = equity x pb_mrq.
+            # Bug 6 (17 Sep): cached daily_history rows carry a stale
+            # `market_cap` from the Q4-2025 freeze (352.4 tn). The fresh
+            # PBV x equity snapshot is 362.24 tn. Before this fix, every
+            # section that read market_cap directly (cover, Exhibit 12, EV/EBITDA)
+            # picked the snapshot its caller already had; the same metric
+            # shipped on the page with two different values. The canonical
+            # source is PBV x equity, computed from the most recent Sectors
+            # quarterly (which has both fields, both fresh). Use that, and
+            # fall back to daily close x shares only if PBV is missing.
+            cap = (pb * equity) if (pb and equity) else None
+            if cap is None:
+                d_hist = daily_history(ticker, AS_OF, refresh, log)
+                if d_hist and d_hist[-1].get("close"):
+                    shares = (
+                        d_hist[-1].get("shares_outstanding")
+                        or d_hist[-1].get("market_cap", 0) / d_hist[-1]["close"]
+                    )
+                    cap = float(d_hist[-1]["close"]) * float(shares) if shares else None
+        else:
+            cap = (pb * equity) if (pb and equity) else None
         ev = (cap + nd) if (cap and nd is not None) else None
         rows_out.append({
             "symbol": sym,

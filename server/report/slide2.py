@@ -154,7 +154,9 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
     eb_g = [g(ebis, i) for i in range(5)]
     eps_g = [g(epss, i) for i in range(5)]
 
-    mcap = (price * shares / 1e9) if (price and shares) else None
+    canon = payload.get("canonical_metrics") or {}
+    canon_mcap_bn = canon.get("market_cap_rpbn", {}).get("value") if isinstance(canon.get("market_cap_rpbn"), dict) else canon.get("market_cap_rpbn")
+    mcap = canon_mcap_bn if canon_mcap_bn is not None else ((price * shares / 1e9) if (price and shares) else None)
     ev = (mcap + net_debt) if mcap is not None else None
 
     def per(i):
