@@ -334,9 +334,24 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "flags": flags.messages,
         }
 
-    primary = run_bridge([fcff_doc_bn for _ in PERIODS], "FCFF normalised (steady-state, dokumentasi asumsi)")
+    # Path A (Sep 17 2026, follow-on from f2ad450 + 4eec45f): unify the bridge
+    # to the build-up FCFF path (NOPAT + D&A - capex - dNWC), not the flat
+    # `fcf_doc_bn` steady-state. The build-up is derived from revenue x margin
+    # so it respects the year-over-year ramp (FY2026F capex peak = negative
+    # FCF year 1); the flat path treated all five years as identical, which
+    # was both a methodology conflict with the deck's growth narrative AND the
+    # root cause of the bridge / Blok 1 desync (Blok 1 showed 36.622 from the
+    # build-up series, while Blok 3 + bridge showed 48.503 from the flat series).
+    # The flat path is kept as the alternative for cross-check + audit disclosure.
+    # NOTE: `sensitivity_alts["build_up"]` key is preserved (callers in
+    # valuation_page.py:458 + house_rules.py depend on it) but its content is
+    # now the FLAT path; the build-up values are moved to the primary bridge.
+    primary = run_bridge(build_fcff, "Build-up EBIT-based (Revenue x margin FY25A)")
     sensitivity_alts = {
-        "build_up": run_bridge(build_fcff, "Build-up EBIT-based (Revenue x margin FY25A)"),
+        # Renamed from "build_up" -> "fcf_doc_steady" to reflect new content
+        # (now the FLAT path, since the build-up path moved to primary).
+        "fcf_doc_steady": run_bridge([fcff_doc_bn for _ in PERIODS],
+                                     "FCFF normalised (steady-state, dokumentasi asumsi)"),
     }
 
     # ---------- Exhibit 9: WACC components, each with its source ----------
@@ -445,7 +460,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "ic_proxy_fy25": ic_proxy, "reinvest_path": reinvest_path,
             "roic_path": roic_path, "implied_g_path": implied_g_path,
         },
-        "notes": _notes(primary, sensitivity_alts["build_up"], multiple, total_debt - cash, g, wacc, assum,
+        "notes": _notes(primary, sensitivity_alts["fcf_doc_steady"], multiple, total_debt - cash, g, wacc, assum,
                          anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda")),
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
         "block2_headers": None,
@@ -706,8 +721,8 @@ def _narrative(page: dict) -> list[str]:
         (
             "Gap antar metode dibaca sebagai unresolved assumption (UNRESOLVED), bukan dirata-rata: terminal Gordon dan terminal "
             f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
-            f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis build-up "
-            f"EBIT-based menghasilkan equity value negatif (Rp {_fmt0(page['alternatives']['build_up']['equity_gordon'] / 1e9)} bn). "
+            f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis FCFF normalised "
+            f"(alternatif, FLAT 13088.9 bn/thn) menghasilkan equity value Rp {_fmt0(page['alternatives']['fcf_doc_steady']['equity_gordon'] / 1e9)} bn. "
             "Target price laporan berdiri di leg relative (EV/EBITDA FY26F); halaman ini memperlihatkan seberapa "
             "jauh model arus kas melihat ke bawah."
         ),

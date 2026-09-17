@@ -56,14 +56,32 @@
     "net_debt_after_cash": 96939936180000.0,
     "as_of": "2026-03-31 (latest Sectors quarter)"
   },
-  "fcf_basis": "Normalised mid-cycle FCFF, FLAT across FY2026F-FY2030F (no fabricated growth curve): fcf = TTM EBITDA x (1 - tax) - annualised post-build capex = 24979 bn x 0.78 - 6395 bn = 13089 bn/yr. TTM EBITDA is used (not the 3Y average) because FY2024-25 EBITDA is distorted by the smelter construction/ramp (FY2025 EBITDA 16.4 tn vs TTM 25.0 tn). Steady-state capex is the 2026Q1 run-rate annualised - 1,598.6 bn in the quarter, the lowest of the eight quarters on file (5.3-5.8 tn/qtr through 2025, 7.3-8.0 tn/qtr in H2-2024) and consistent with the smelter build closing out (project acceptance certificate signed 2026-07-18). Proxy is conservative: it omits the D&A tax shield and working-capital release. Modeler lane may override with a consensus-based path.",
+  "fcf_basis": "Build-up FCFF series computed in valuation_page.py (Path A, Sep 17 2026): NOPAT (Revenue × EBIT margin FY25A × (1-tax)) + D&A - Capex - ΔNWC. Stored at fcf_buildup_series (top-level) + fcf_components_idr_bn.fcf_buildup. The legacy fcf_normalised scalar + flat fcf[] array are KEPT for backward compat with the cover calc_dcf path (which uses assum['fcf'] flat list); the alternative bridge still reads fcf_normalised scalar as the steady-state cross-check.",
   "nwc_fy25": 17835.0,
   "nwc_fy25_basis": "Q4-2025 working capital level = total_current_asset 52,761 - cash_and_short_term_investments 11,328 - current_liabilities 23,597 = 17,835 bn (Sectors quarterly freeze 2025-12-31). Ratio to revenue FY25A = 0.577 (used as nwc_ratio in the build-up). High ratio reflects mining-Co receivables + concentrate inventory build ahead of Phase-8.",
   "fcf_components_idr_bn": {
     "ebitda_ttm": 24978.8,
     "tax": 0.22,
     "capex_sustaining_annualised": 6394.5,
-    "fcf_normalised": 13088.9
+    "fcf_normalised": 13088.9,
+    "revenue_fy26f_to_fy30f_bn": [
+      66937.0,
+      71722.0,
+      81442.0,
+      81442.0,
+      84292.5
+    ],
+    "ebit_margin_fy25": 0.3972,
+    "da_ratio": 0.1338,
+    "capex_ratio_applied": 0.207,
+    "nwc_ratio": 0.0628,
+    "fcf_buildup": [
+      -5935.7,
+      13159.8,
+      12469.4,
+      18078.9,
+      17066.6
+    ]
   },
   "dcf_role": "Comparison-only, NOT the anchor: a perpetual Gordon terminal is not defensible for a depleting reserve and AMMN's gross debt (Rp 110.8 tn) against a mid-cycle FCFF path makes the DCF leg punitive by construction. Gate-primary for this name is the mid-cycle EV/EBITDA leg (FINITE-RESERVE DISCIPLINE, instructions.py:221).",
   "terminal_note": "g = 2.5% is the long-run NOMINAL growth proxy (Bank Indonesia 2026-2027 inflation target midpoint 2.5%+/-1%, PMK No. 31/2024) - it is not a claim about perpetual mine reserves.",
@@ -391,5 +409,12 @@
     "why": "EV bertahan Rp 506-672 tn sepanjang siklus sementara EBITDA naik-turun 2×: market menghargai asset base, bukan laba trailing. Menerapkan multiple ini ke level yang sudah pulih memberi Rp 13.362-20.564/saham (2,7-4,2× harga). Rekonstruksi diverifikasi exact (gap 0,00×) di server/valuation/normalised_multiple.py; diuji di tests/test_normalised_multiple.py."
   },
   "mid_cycle_ebitda_note": "Mid-cycle historis = rata-rata 3Y EBITDA Sectors (FY2023 15.738, FY2024 23.040, FY2025 16.410 -> 18.396 tn) tetap dihitung sebagai cross-check, TIDAK dipakai sebagai basis TP sejak 12 Sep 2026: level TP memakai EBITDA FY26F dari jalur proyeksi (lihat ebitda_leg_level_note).",
-  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) - basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86× dan gate harus dievaluasi ulang - itu keputusan owner, bukan perubahan diam-diam."
+  "gate_inputs_basis_note": "net_debt_to_ebitda 5,27 dideklarasikan pada EBITDA mid-cycle HISTORIS (Rp 18,40 tn) - basis konservatif untuk gate leverage, bukan angka yang dihitung ulang. Level harga (TP) memakai EBITDA FY26F forward. Kalau gate hendak dihitung pada basis forward, angkanya 2,86× dan gate harus dievaluasi ulang - itu keputusan owner, bukan perubahan diam-diam.",
+  "fcf_buildup_series": [
+    -5935.7,
+    13159.8,
+    12469.4,
+    18078.9,
+    17066.6
+  ]
 }

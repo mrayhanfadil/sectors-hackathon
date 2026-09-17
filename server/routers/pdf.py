@@ -243,7 +243,15 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     # assum["wacc"] would see the stale file value (13.77% for AMMN, computed
     # from the OLD ERP 6.69%) and produce a different FV than the cover leg.
     assum["wacc"] = wacc_val
-    raw_fcf = assum.get("fcf")
+    # Path A (Sep 17 2026): prefer build-up FCFF when present so the cover
+    # DCF leg uses the same series the slide-4 bridge + Blok 1/3 use. Falls
+    # back to the legacy flat fcf[] list when no build-up series exists, so
+    # tickers other than AMMN keep working.
+    buildup = assum.get("fcf_buildup_series")
+    if isinstance(buildup, list) and len(buildup) == 5:
+        raw_fcf = buildup
+    else:
+        raw_fcf = assum.get("fcf")
     assert raw_fcf is not None  # guaranteed by required-key 422 above
     fcf_list = [float(x) * 1e9 for x in raw_fcf]
     try:
