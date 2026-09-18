@@ -215,8 +215,11 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
             "FY27F-FY28F ditahan flat."
         )
     else:
+        # LOUD flat-level label (peer #6): the exhibit title is pinned by
+        # test_slide2_forecast.py, so the "not a growth curve" disclosure rides
+        # the note lead where the reader lands first, not the title.
         note = (
-            f"Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan - revenue & EPS FY26F = FY25A x "
+            f"LEVEL NORMALISED - kolom F BUKAN kurva pertumbuhan: revenue & EPS FY26F = FY25A x "
             f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector "
             f"Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; FY27F-FY28F ditahan flat "
             f"mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi."

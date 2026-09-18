@@ -741,6 +741,18 @@ Rules:
   # Example: bottom-line expansion (+28%) despite top-line contraction (-13%) due to margin expansion / cost structure
   # Example: operational catalyst quantified with volume and IDR financial impact
 - Retail tone (ID default), but institutional numbers - accessible without dumbing down.
+- FUTURE-STORY RULE (peer #5, ticker-agnostic procedure): P1 cover_paragraphs is the
+  FORWARD handoff, not a second backward record. Max 1 bridging sentence of backward
+  context (latest quarter + 1 figure), then weight to catalyst -> earnings path ->
+  valuation: which quantified catalyst must deliver, what earnings level it unlocks
+  per the forecast path, and what multiple the anchor TP implies on that level.
+  A P1 that only restates qoq/yoy is a REJECT - the deterministic builder already
+  prints the audited backward record; the writer's job is the forward story.
+- CURATION RULE (peer #3, ticker-agnostic procedure): top priority only. 4 bullets =
+  4 claims the deck can defend, each with figure + source. Dumping every input
+  datum to dodge a mismatch REJECT is itself a REJECT - if a datum does not change
+  the thesis, cut it. When in doubt, the catalyst with an IDR impact beats the
+  third margin decimal.
 
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources, cover_paragraphs: {p1_financial_performance, p2_news_catalysts, p3_valuation}}
 - COVER-PARAGRAPHS RULE (hard, 15 Sep 2026 - AMMN E2E7 audit): alongside the 4

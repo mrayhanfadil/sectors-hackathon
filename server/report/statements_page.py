@@ -339,7 +339,8 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {_nf.idn(rev_f[0], digits=0)} bn, EBITDA "
         f"Rp {_nf.idn(ebitda_f[0], digits=0)} bn, laba bersih Rp {_nf.idn(net_f[0], digits=0)} bn - "
         f"basis kolom F: {(spine or {}).get('forecast_basis') or 'lihat catatan Key Financials'}"
-        f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}, "
+        f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}"
+        f"{' - LEVEL NORMALISED: kolom FY26F-FY28F BUKAN kurva pertumbuhan, FY27F-FY28F ditahan flat' if (spine or {}).get('forecast_basis') == 'midcycle-normalised' else ''}, "
         f"dan angka ini identik dengan "
         f"yang dipakai halaman valuasi.",
         f"Driver proyeksi: D&A Rp {_nf.idn(dna_25, digits=0)} bn (FY2025A: EBITDA - EBIT), beban bunga Rp {_nf.idn(gross_debt, digits=0)} bn "

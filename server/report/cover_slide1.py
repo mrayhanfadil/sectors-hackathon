@@ -403,7 +403,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     capex, prev_capex = cur.get("capital_expenditure"), (prev or {}).get("capital_expenditure")
     if isinstance(capex, (int, float)) and isinstance(prev_capex, (int, float)) and prev_capex:
         parts.append(f"Belanja modal {_rp_bn(capex / 1e9)} "
-                     f"({_pct(_chg(capex, prev_capex))} qoq) - ramp smelter mereda.")
+                     f"({_pct(_chg(capex, prev_capex))} qoq).")
 
     if yoy_base is not None:
         ok, why = _sane_base(yoy_base, rows)
@@ -415,6 +415,18 @@ def _financial_para(payload: dict, ticker: str) -> dict:
             parts.append(f"Pembanding yoy tidak dipakai: {why} (Q1-2025 adalah kuartal ramp "
                          "smelter) - angka pertumbuhan dari basis itu menyesatkan.")
 
+    # Forward bridge (peer #5 future-story): max 1 sentence pointing at what must
+    # deliver next, read from the payload catalyst ledger - never invented. The
+    # backward clauses above stay (they are the audited record); this sentence is
+    # the handoff to the thesis, not a second backward paragraph.
+    cats = payload.get("catalysts") or []
+    if cats and isinstance(cats[0], dict) and cats[0].get("name"):
+        first = cats[0]
+        parts.append(f"Ke depan: {first.get('name')} - efek: {first.get('effect') or 'lihat halaman katalis'} "
+                     f"(sumber: {first.get('source') or 'payload'}).")
+    else:
+        parts.append("Katalis ke depan belum terverifikasi di payload - tidak ada jembatan forward yang "
+                     "bisa dinyatakan tanpa angka (LOUD policy).")
     # Running rate needs a team FY forecast; absent -> say so rather than imply a rate.
     fh = payload.get("financial_highlights") or {}
     years = [str(y) for y in (fh.get("years") or [])]
