@@ -55,7 +55,7 @@ function BandPanel({ block }: { block: BandBlock }) {
 
   if (pts.length < 2) {
     return (
-      <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+      <div className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-5 text-center text-xs text-[#666666] dark:border-[#262930] dark:bg-[#333333] dark:text-[#666666]">
         Data historis {block.label} tidak mencukupi (&lt; 2 titik).
       </div>
     )
@@ -70,13 +70,13 @@ function BandPanel({ block }: { block: BandBlock }) {
   const data = pts.map((p) => ({ name: p.date, value: p.value }))
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+    <div className="flex flex-col justify-between rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]">
       <div>
-        <div className="mb-2 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-1.5 dark:border-[#2A2822]">
-          <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="mb-2 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-1.5 dark:border-[#262930]">
+          <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Rentang historis {block.label} (1 tahun)
           </span>
-          <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">n = {block.n ?? pts.length} sesi</span>
+          <span className="text-[11px] text-[#666666] dark:text-[#666666]">n = {block.n ?? pts.length} sesi</span>
         </div>
 
         <ResponsiveContainer width="100%" height={170}>
@@ -106,13 +106,13 @@ function BandPanel({ block }: { block: BandBlock }) {
             )}
           </ComposedChart>
         </ResponsiveContainer>
-        <p className="mt-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        <p className="mt-1 text-[11px] text-[#666666] dark:text-[#666666]">
           Terkini {typeof cur?.value === "number" ? `${formatIdn(cur.value, 1)}× · p${formatIdn(block.percentile, 0)}` : "-"} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "-"}×-{p90 !== null ? formatIdn(p90, 0) : "-"}×
         </p>
       </div>
 
       {block.narrative && (
-        <p className="mt-2 text-xs leading-relaxed text-[#6B6659] border-t border-[#E7E3DA]/60 pt-2 dark:border-[#2A2822] dark:text-[#A8A296]">
+        <p className="mt-2 text-xs leading-relaxed text-[#666666] border-t border-[#D9D9D9]/60 pt-2 dark:border-[#262930] dark:text-[#666666]">
           {block.narrative}
         </p>
       )}
@@ -170,7 +170,7 @@ function ImpliedPriceBars({
           </Bar>
         </ComposedChart>
       </ResponsiveContainer>
-      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#666666] dark:text-[#666666]">
         {data.map((d, i) => (
           <span key={i}>
             {d.name}: {d.delta}
@@ -219,16 +219,16 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           ))}
         </div>
       ) : (
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 text-center text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           Panel rentang historis belum tersedia.
         </div>
       )}
 
       {/* Implied Price Section */}
       {impliedRows.length > 0 && (
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
-          <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-            <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
+          <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+            <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Penilaian harga implisit (Implied price)
             </span>
             {price !== null && (
@@ -241,24 +241,24 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           {/* Grouped Bar Chart */}
           <div className="mb-4">
             <ImpliedPriceBars rows={impliedRows} price={price} headline={anchor} />
-            <p className="mt-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 text-xs text-[#666666] dark:text-[#666666]">
               Batang = harga implisit bila kelipatan kembali ke rata-rata (teal) atau median (teal muda) 1 tahun; garis putus-putus merah = harga pasar. Tanda * menandai kelipatan yang menjadi basis anchor target price.
             </p>
           </div>
 
           {/* Implied Price Table */}
-          <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+          <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
             <table className="w-full text-xs">
               <thead>
-                <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                  <th className="px-3 py-2 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Kelipatan</th>
+                <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#333333] dark:text-[#666666]">
+                  <th className="px-3 py-2 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">Kelipatan</th>
                   <th className="px-3 py-2 text-right font-semibold">Kembali ke rata-rata (Rp)</th>
                   <th className="px-3 py-2 text-right font-semibold">Kembali ke median (Rp)</th>
                   <th className="px-3 py-2 text-right font-semibold">Rentang</th>
                   <th className="px-3 py-2 text-right font-semibold">Selisih</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+              <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                 {impliedRows.map((r, rIdx) => {
                   const rangeText = r.is_range && typeof r.low === "number" && typeof r.high === "number"
                     ? `Rp ${formatIdn(r.low, 0)} – ${formatIdn(r.high, 0)}`
@@ -268,22 +268,22 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
                     <tr
                       key={r.key ?? rIdx}
                       className={`${
-                        rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                        rIdx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#333333]/30" : "bg-white dark:bg-[#090a0c]"
                       }`}
                     >
-                      <td className="px-3 py-2 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      <td className="px-3 py-2 font-semibold text-[#333333] dark:text-[#f1f5f9]">
                         {r.label}
                       </td>
-                      <td className="px-3 py-2 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                      <td className="px-3 py-2 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                         {typeof r.to_mean === "number" ? formatIdn(r.to_mean, 0) : "-"}
                       </td>
-                      <td className="px-3 py-2 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                      <td className="px-3 py-2 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                         {typeof r.to_median === "number" ? formatIdn(r.to_median, 0) : "-"}
                       </td>
-                      <td className="px-3 py-2 text-right font-mono tabular-nums text-[#6B6659] dark:text-[#A8A296]">
+                      <td className="px-3 py-2 text-right font-mono tabular-nums text-[#666666] dark:text-[#666666]">
                         {rangeText}
                       </td>
-                      <td className="px-3 py-2 text-right font-semibold font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
+                      <td className="px-3 py-2 text-right font-semibold font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
                         {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-"}
                       </td>
                     </tr>
@@ -296,13 +296,13 @@ export function PeersCharts({ payload }: { payload: ReportPayload }) {
           {/* Footnotes & Disclaimers */}
           <div className="mt-3.5 space-y-1.5 text-xs">
             {partB.driver_note && (
-              <p className="text-[#6B6659] dark:text-[#A8A296]">
+              <p className="text-[#666666] dark:text-[#666666]">
                 {partB.last_close !== undefined ? `Harga terakhir: ${partB.last_close} · ` : ""}
                 {partB.driver_note}
               </p>
             )}
             {partB.disclaimer && (
-              <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+              <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-xs text-[#333333] dark:border-[#262930] dark:bg-[#333333] dark:text-[#f1f5f9]">
                 <span className="font-semibold">Catatan: </span>
                 {partB.disclaimer}
               </div>

@@ -38,23 +38,23 @@ export function FunctionResponseCard({ fr }: FunctionResponseProps) {
   }
 
   return (
-    <div className="rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7] dark:bg-[#14130F] text-xs">
+    <div className="rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9] dark:bg-[#1e2229] text-xs">
       <button
         type="button"
         onClick={() => setIsOpen((prev) => !prev)}
-        className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-[#F5F2EB] dark:hover:bg-[#1B1A16] rounded-lg focus:outline-none cursor-pointer"
+        className="flex w-full items-center justify-between px-3 py-1.5 text-left hover:bg-[#B4C7FF] dark:hover:bg-[#090a0c] rounded-lg focus:outline-none cursor-pointer"
       >
         <div className="flex items-center gap-2 min-w-0">
           {isOpen ? (
-            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#6B6659] dark:text-[#A8A296]" />
+            <ChevronDown className="h-3.5 w-3.5 shrink-0 text-[#666666] dark:text-[#666666]" />
           ) : (
-            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#6B6659] dark:text-[#A8A296]" />
+            <ChevronRight className="h-3.5 w-3.5 shrink-0 text-[#666666] dark:text-[#666666]" />
           )}
           <CornerDownLeft className="h-3.5 w-3.5 shrink-0 text-emerald-600 dark:text-emerald-400" />
-          <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3] truncate">
+          <span className="font-medium text-[#333333] dark:text-[#f1f5f9] truncate">
             {fr.name} - hasil
           </span>
-          <span className="text-[#6B6659] dark:text-[#A8A296] text-[11px] shrink-0">
+          <span className="text-[#666666] dark:text-[#666666] text-[11px] shrink-0">
             · {byteText}
           </span>
         </div>
@@ -66,15 +66,15 @@ export function FunctionResponseCard({ fr }: FunctionResponseProps) {
       </button>
 
       {isOpen && (
-        <div className="border-t border-[#E7E3DA] dark:border-[#2A2822] p-3 space-y-1.5 bg-white dark:bg-[#1B1A16]">
-          <div className="flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        <div className="border-t border-[#D9D9D9] dark:border-[#262930] p-3 space-y-1.5 bg-white dark:bg-[#090a0c]">
+          <div className="flex items-center justify-between text-[11px] text-[#666666] dark:text-[#666666]">
             <span>
               {isTruncated ? `Hasil kembalian (dipotong, total ${byteText})` : `Hasil lengkap (${byteText})`}
             </span>
             <button
               type="button"
               onClick={handleCopy}
-              className="flex items-center gap-1 rounded border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7] dark:bg-[#14130F] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] px-2 py-0.5 text-[#1C1B17] dark:text-[#EDEAE3] text-[10px] transition-colors"
+              className="flex items-center gap-1 rounded border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9] dark:bg-[#1e2229] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] px-2 py-0.5 text-[#333333] dark:text-[#f1f5f9] text-[10px] transition-colors"
             >
               {copied ? (
                 <>
@@ -89,7 +89,7 @@ export function FunctionResponseCard({ fr }: FunctionResponseProps) {
               )}
             </button>
           </div>
-          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words text-[11px] font-mono leading-relaxed p-2.5 rounded-md bg-[#FBFAF7] dark:bg-[#14130F] border border-[#E7E3DA] dark:border-[#2A2822] text-[#1C1B17] dark:text-[#EDEAE3]">
+          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words text-[11px] font-mono leading-relaxed p-2.5 rounded-md bg-[#f1f5f9] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] text-[#333333] dark:text-[#f1f5f9]">
             {displayedResp}
           </pre>
         </div>

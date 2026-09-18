@@ -108,7 +108,7 @@ function renderPeerStatCell(
 
 function PendingCard({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-[#E7E3DA] bg-white p-6 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+    <div className="rounded-xl border border-[#D9D9D9] bg-white p-6 text-center text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
       {label} belum tersedia di payload.
     </div>
   )
@@ -132,11 +132,11 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
       {/* SECTION 4: VALUATION SPREAD (DCF)                                         */}
       {/* ========================================================================= */}
       <section id="valuation-spread" className="scroll-mt-28 space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Nilai wajar dan sensitivitas DCF
           </h2>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Model DCF FCFF
           </span>
         </div>
@@ -144,7 +144,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
         {hasValuation ? (
           <div className="space-y-4">
             {valPage.subtitle && (
-              <p className="text-sm text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+              <p className="text-sm text-[#666666] leading-relaxed dark:text-[#666666]">
                 {valPage.subtitle}
               </p>
             )}
@@ -153,13 +153,13 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
             {payload && <DcfSpreadCharts payload={payload} />}
 
             {/* Three Block Tables */}
-            <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-              <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+            <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+              <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                 <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     {valPage.exhibit8_title || "Proyeksi FCFF, nilai terminal dan jembatan ekuitas"}
                   </CardTitle>
-                  <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                  <span className="text-xs text-[#666666] dark:text-[#666666]">
                     {valPage.sources?.[2] || valPage.sources?.[0] || "Model FCFF deterministik"}
                   </span>
                 </div>
@@ -168,26 +168,26 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                 {/* Blok 1: Periode Proyeksi Eksplisit */}
                 {valPage.block1_rows && valPage.block1_rows.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Periode proyeksi eksplisit (Rp bn)
                     </div>
-                    <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                       <table className="w-full text-xs">
                         <thead>
-                          <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                          <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-right text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                             {(
                               valPage.block1_headers || [
                                 "Pos arus kas",
                                 ...(valPage.periods || []),
                               ]
                             ).map((h, idx) => (
-                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
+                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#333333] dark:text-[#f1f5f9]" : ""}`}>
                                 {h}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                        <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                           {valPage.block1_rows.map(([label, series], rIdx) => {
                             const isBold =
                               label === "FCFF (build-up)" ||
@@ -197,8 +197,8 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                               <tr
                                 key={rIdx}
                                 className={`${
-                                  rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
-                                } ${isBold ? "font-semibold text-[#1C1B17] dark:text-[#EDEAE3]" : "text-[#1C1B17] dark:text-[#EDEAE3]/90"}`}
+                                  rIdx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
+                                } ${isBold ? "font-semibold text-[#333333] dark:text-[#f1f5f9]" : "text-[#333333] dark:text-[#f1f5f9]/90"}`}
                               >
                                 <td className="py-2 px-3 text-left font-sans">{label}</td>
                                 {Array.isArray(series) ? (
@@ -222,13 +222,13 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                 {/* Blok 2: Terminal Value */}
                 {valPage.block2_rows && valPage.block2_rows.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Nilai terminal (Terminal value)
                     </div>
-                    <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                       <table className="w-full text-xs">
                         <thead>
-                          <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                          <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-right text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                             {(
                               valPage.block2_headers || [
                                 "Komponen",
@@ -236,21 +236,21 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 `Exit Multiple ${valPage.drivers?.multiple != null ? valPage.drivers.multiple.toFixed(1) : ""}×`,
                               ]
                             ).map((h, idx) => (
-                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
+                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#333333] dark:text-[#f1f5f9]" : ""}`}>
                                 {h}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                        <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                           {valPage.block2_rows.map(([label, a, b], rIdx) => {
                             const isBold = label.includes("PV of Terminal") || label.includes("Terminal Value");
                             return (
                               <tr
                                 key={rIdx}
                                 className={`${
-                                  rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
-                                } ${isBold ? "font-semibold text-[#1C1B17] dark:text-[#EDEAE3]" : "text-[#1C1B17] dark:text-[#EDEAE3]/90"}`}
+                                  rIdx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
+                                } ${isBold ? "font-semibold text-[#333333] dark:text-[#f1f5f9]" : "text-[#333333] dark:text-[#f1f5f9]/90"}`}
                               >
                                 <td className="py-2 px-3 text-left font-sans">{label}</td>
                                 <td className="py-2 px-3 text-right font-mono tabular-nums">{a != null ? String(a) : "-"}</td>
@@ -267,13 +267,13 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                 {/* Blok 3: Bridge ke Equity Value */}
                 {valPage.block3_rows && valPage.block3_rows.length > 0 && (
                   <div className="space-y-1.5">
-                    <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Jembatan ke nilai ekuitas (Equity value)
                     </div>
-                    <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                    <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                       <table className="w-full text-xs">
                         <thead>
-                          <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                          <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-right text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                             {(
                               valPage.block3_headers || [
                                 "Komponen jembatan",
@@ -281,13 +281,13 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 "Per saham (Rp)",
                               ]
                             ).map((h, idx) => (
-                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
+                              <th key={idx} className={`py-2.5 px-3 font-semibold ${idx === 0 ? "text-left text-[#333333] dark:text-[#f1f5f9]" : ""}`}>
                                 {h}
                               </th>
                             ))}
                           </tr>
                         </thead>
-                        <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                        <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                           {valPage.block3_rows.map(([label, a, b], rIdx) => {
                             const isFv = label.includes("Fair Value");
                             const isBold = isFv || label.includes("Enterprise Value") || label.includes("Equity Value");
@@ -296,10 +296,10 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 key={rIdx}
                                 className={`${
                                   isFv
-                                    ? "bg-[#0E6E63]/10 font-semibold text-[#0E6E63] dark:bg-[#4FD1B5]/15 dark:text-[#4FD1B5]"
+                                    ? "bg-[#0928B1]/10 font-semibold text-[#0928B1] dark:bg-[#7596FF]/15 dark:text-[#7596FF]"
                                     : isBold
-                                    ? "font-semibold text-[#1C1B17] dark:text-[#EDEAE3]"
-                                    : "text-[#1C1B17] dark:text-[#EDEAE3]/90"
+                                    ? "font-semibold text-[#333333] dark:text-[#f1f5f9]"
+                                    : "text-[#333333] dark:text-[#f1f5f9]/90"
                                 }`}
                               >
                                 <td className="py-2 px-3 text-left font-sans">{label}</td>
@@ -318,40 +318,40 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
 
             {/* WACC Components */}
             {valPage.wacc_rows && valPage.wacc_rows.length > 0 && (
-              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+              <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+                <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Komponen WACC
                     </CardTitle>
-                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                    <span className="text-xs text-[#666666] dark:text-[#666666]">
                       Sumber per komponen
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="p-5 space-y-2">
-                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                  <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                          <th className="py-2.5 px-3 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Parameter</th>
+                        <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                          <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">Parameter</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Nilai</th>
                           <th className="py-2.5 px-3 text-left font-semibold">Sumber data</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {valPage.wacc_rows.map((row, idx) => (
                           <tr
                             key={idx}
                             className={`${
-                              idx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                              idx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
                             }`}
                           >
-                            <td className="py-2 px-3 text-left font-medium text-[#1C1B17] dark:text-[#EDEAE3]">{row[0]}</td>
-                            <td className="py-2 px-3 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 text-left font-medium text-[#333333] dark:text-[#f1f5f9]">{row[0]}</td>
+                            <td className="py-2 px-3 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {row[1]}
                             </td>
-                            <td className="py-2 px-3 text-left text-xs text-[#6B6659] dark:text-[#A8A296]">{row[2]}</td>
+                            <td className="py-2 px-3 text-left text-xs text-[#666666] dark:text-[#666666]">{row[2]}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -363,23 +363,23 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
 
             {/* Sensitivity Analysis Matrix */}
             {sens && sens.columns && sens.rows && (
-              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+              <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+                <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Matriks sensitivitas - WACC × Pertumbuhan terminal
                     </CardTitle>
-                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                    <span className="text-xs text-[#666666] dark:text-[#666666]">
                       Kasus dasar (WACC {sens.base_wacc} · g {sens.base_g})
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="p-5 space-y-3">
-                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                  <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                          <th className="py-2.5 px-3 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">WACC \ g</th>
+                        <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                          <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">WACC \ g</th>
                           {sens.columns.map((col, idx) => (
                             <th key={idx} className="py-2.5 px-3 text-right font-semibold">
                               {col}
@@ -387,10 +387,10 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                           ))}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {sens.rows.map((r, rIdx) => (
                           <tr key={rIdx}>
-                            <td className="py-2 px-3 font-semibold text-[#1C1B17] bg-[#FBFAF7]/70 dark:bg-[#14130F]/50 dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 font-semibold text-[#333333] bg-[#f1f5f9]/70 dark:bg-[#1e2229]/50 dark:text-[#f1f5f9]">
                               {r.label}
                             </td>
                             {r.cells.map((c, cIdx) => (
@@ -398,8 +398,8 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 key={cIdx}
                                 className={`py-2 px-3 text-right font-mono tabular-nums ${
                                   c.base
-                                    ? "font-bold text-[#0E6E63] bg-[#0E6E63]/10 ring-1 ring-inset ring-[#0E6E63] dark:bg-[#4FD1B5]/20 dark:text-[#4FD1B5]"
-                                    : "text-[#1C1B17] dark:text-[#EDEAE3]/90"
+                                    ? "font-bold text-[#0928B1] bg-[#0928B1]/10 ring-1 ring-inset ring-[#0928B1] dark:bg-[#7596FF]/20 dark:text-[#7596FF]"
+                                    : "text-[#333333] dark:text-[#f1f5f9]/90"
                                 }`}
                               >
                                 {c.value != null ? String(c.value) : "-"}
@@ -412,7 +412,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   </div>
 
                   {sens.swing && (
-                    <p className="text-xs text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+                    <p className="text-xs text-[#666666] leading-relaxed dark:text-[#666666]">
                       Dasar Rp {fmtIDR(sens.base_fv)} (WACC {sens.base_wacc} · g {sens.base_g}). Rentang nilai: Rp{" "}
                       {fmtIDR(sens.swing.min)} – Rp {fmtIDR(sens.swing.max)}.
                     </p>
@@ -423,40 +423,40 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
 
             {/* Metode Pembanding */}
             {valPage.crosscheck_rows && valPage.crosscheck_rows.length > 0 && (
-              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+              <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+                <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                   <div className="flex items-center justify-between">
-                    <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                    <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Metode pembanding nilai wajar
                     </CardTitle>
-                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                    <span className="text-xs text-[#666666] dark:text-[#666666]">
                       Uji silang kelipatan valuasi
                     </span>
                   </div>
                 </CardHeader>
                 <CardContent className="p-5 space-y-2">
-                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                  <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                          <th className="py-2.5 px-3 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Metode</th>
+                        <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                          <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">Metode</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Nilai wajar (Rp)</th>
                           <th className="py-2.5 px-3 text-left font-semibold">Peran</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {valPage.crosscheck_rows.map((row, idx) => (
                           <tr
                             key={idx}
                             className={`${
-                              idx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                              idx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
                             }`}
                           >
-                            <td className="py-2 px-3 font-medium text-[#1C1B17] dark:text-[#EDEAE3]">{row[0]}</td>
-                            <td className="py-2 px-3 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 font-medium text-[#333333] dark:text-[#f1f5f9]">{row[0]}</td>
+                            <td className="py-2 px-3 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {typeof row[1] === "number" ? `Rp ${fmtIDR(row[1])}` : String(row[1])}
                             </td>
-                            <td className="py-2 px-3 text-xs text-[#6B6659] dark:text-[#A8A296]">{row[2]}</td>
+                            <td className="py-2 px-3 text-xs text-[#666666] dark:text-[#666666]">{row[2]}</td>
                           </tr>
                         ))}
                       </tbody>
@@ -475,32 +475,32 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
       {/* SECTION 5: PEERS 5A - CROSS-SECTIONAL VALUATION                           */}
       {/* ========================================================================= */}
       <section id="peers-5a" className="scroll-mt-28 space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Valuasi komparasi peer (Cross-sectional)
           </h2>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Komparasi satu tanggal
           </span>
         </div>
 
         {partA && partA.rows && partA.rows.length > 0 ? (
-          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+          <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+            <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                   {partA.title || "Valuasi komparasi peer"}
                 </CardTitle>
-                <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <span className="text-xs text-[#666666] dark:text-[#666666]">
                   {partA.sources?.[0] || "Sectors API"}
                 </span>
               </div>
-              <CardDescription className="text-xs text-[#6B6659] mt-1 dark:text-[#A8A296]">
+              <CardDescription className="text-xs text-[#666666] mt-1 dark:text-[#666666]">
                 Membandingkan posisi kelipatan emiten dengan kelompok sejenis pada tanggal harga acuan.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
-              <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+              <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                 {(() => {
                   const columns =
                     partA.columns && partA.columns.length > 0
@@ -510,19 +510,19 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                   return (
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                        <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                           {columns.map((col, idx) => {
                             const type = getPeerColumnType(col, idx)
                             const isLeft = type === "symbol" || type === "name"
                             return (
-                              <th key={idx} className={`py-2.5 px-3 font-semibold ${isLeft ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : "text-right"}`}>
+                              <th key={idx} className={`py-2.5 px-3 font-semibold ${isLeft ? "text-left text-[#333333] dark:text-[#f1f5f9]" : "text-right"}`}>
                                 {col}
                               </th>
                             )
                           })}
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {partA.rows.map((r, idx) => {
                           const isCovered = Boolean(r.is_covered)
                           return (
@@ -530,10 +530,10 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                               key={idx}
                               className={`${
                                 isCovered
-                                  ? "bg-[#0E6E63]/10 font-semibold text-[#0E6E63] dark:bg-[#4FD1B5]/15 dark:text-[#4FD1B5]"
+                                  ? "bg-[#0928B1]/10 font-semibold text-[#0928B1] dark:bg-[#7596FF]/15 dark:text-[#7596FF]"
                                   : idx % 2 === 1
-                                  ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30"
-                                  : "bg-white dark:bg-[#1B1A16]"
+                                  ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30"
+                                  : "bg-white dark:bg-[#090a0c]"
                               }`}
                             >
                               {columns.map((col, cIdx) => {
@@ -554,7 +554,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                       </tbody>
                       <tfoot>
                         {partA.median && (
-                          <tr className="border-t-2 border-[#E7E3DA] bg-[#FBFAF7] font-semibold text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                          <tr className="border-t-2 border-[#D9D9D9] bg-[#f1f5f9] font-semibold text-[#333333] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9]">
                             {columns.map((col, cIdx) => {
                               const type = getPeerColumnType(col, cIdx)
                               const isLeft = type === "symbol" || type === "name"
@@ -572,7 +572,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                           </tr>
                         )}
                         {partA.average && (
-                          <tr className="border-t border-[#E7E3DA] bg-[#FBFAF7] font-semibold text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                          <tr className="border-t border-[#D9D9D9] bg-[#f1f5f9] font-semibold text-[#333333] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9]">
                             {columns.map((col, cIdx) => {
                               const type = getPeerColumnType(col, cIdx)
                               const isLeft = type === "symbol" || type === "name"
@@ -596,19 +596,19 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
               </div>
 
               {(partA.criteria || partA.basis) && (
-                <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <div className="text-xs text-[#666666] dark:text-[#666666]">
                   {partA.criteria ? `${partA.criteria} ` : ""}
                   {partA.basis ? `Basis: ${partA.basis}. ` : ""}
                   Baris berarsir menandai emiten yang dianalisis.
                 </div>
               )}
               {partA.narrative_text && (
-                <p className="text-sm leading-relaxed text-[#1C1B17] dark:text-[#EDEAE3]/90">
+                <p className="text-sm leading-relaxed text-[#333333] dark:text-[#f1f5f9]/90">
                   {partA.narrative_text}
                 </p>
               )}
               {!partA.narrative_text && partA.narrative && partA.narrative.length > 0 && (
-                <div className="space-y-2 text-sm leading-relaxed text-[#1C1B17] dark:text-[#EDEAE3]/90">
+                <div className="space-y-2 text-sm leading-relaxed text-[#333333] dark:text-[#f1f5f9]/90">
                   {partA.narrative.map((p, idx) => (
                     <p key={idx}>{p}</p>
                   ))}
@@ -625,11 +625,11 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
       {/* SECTION 6: OWN HISTORY 5B - RELATIVE VALUATION                            */}
       {/* ========================================================================= */}
       <section id="peers-5b" className="scroll-mt-28 space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Valuasi relatif historis (Own history)
           </h2>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Rentang kelipatan waktu
           </span>
         </div>
@@ -637,7 +637,7 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
         {partB ? (
           <div className="space-y-4">
             {partB.methodology && (
-              <p className="text-sm text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+              <p className="text-sm text-[#666666] leading-relaxed dark:text-[#666666]">
                 {partB.methodology}
               </p>
             )}
@@ -647,45 +647,45 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
 
             {/* Implied Price Judgement Table */}
             {partB.implied && partB.implied.length > 0 && (
-              <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-                <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
-                  <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+              <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+                <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
+                  <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     Penilaian harga implisit (Implied price)
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="p-5 space-y-3">
-                  <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+                  <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                     <table className="w-full text-xs">
                       <thead>
-                        <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                          <th className="py-2.5 px-3 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Kelipatan</th>
+                        <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                          <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">Kelipatan</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Kembali ke rata-rata (Rp)</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Kembali ke median (Rp)</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Rentang</th>
                           <th className="py-2.5 px-3 text-right font-semibold">Selisih</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {partB.implied.map((r, idx) => (
                           <tr
                             key={idx}
                             className={`${
-                              idx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                              idx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
                             }`}
                           >
-                            <td className="py-2 px-3 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{r.label}</td>
-                            <td className="py-2 px-3 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 font-semibold text-[#333333] dark:text-[#f1f5f9]">{r.label}</td>
+                            <td className="py-2 px-3 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               Rp {fmtIDR(r.to_mean)}
                             </td>
-                            <td className="py-2 px-3 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               Rp {fmtIDR(r.to_median)}
                             </td>
-                            <td className="py-2 px-3 text-right font-mono tabular-nums text-[#6B6659] dark:text-[#A8A296]">
+                            <td className="py-2 px-3 text-right font-mono tabular-nums text-[#666666] dark:text-[#666666]">
                               {r.is_range && r.low != null && r.high != null
                                 ? `Rp ${fmtIDR(r.low)} – ${fmtIDR(r.high)}`
                                 : "konvergen"}
                             </td>
-                            <td className="py-2 px-3 text-right font-semibold font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]">
+                            <td className="py-2 px-3 text-right font-semibold font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
                               {r.delta_pct != null ? `${r.delta_pct.toFixed(0)}%` : "-"}
                             </td>
                           </tr>
@@ -694,13 +694,13 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                     </table>
                   </div>
 
-                  <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="text-xs text-[#666666] dark:text-[#666666]">
                     Harga acuan terakhir: {partB.last_close != null ? `Rp ${fmtIDR(partB.last_close)}` : "-"} ·{" "}
                     {partB.driver_note}
                   </div>
 
                   {partB.disclaimer && (
-                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-xs text-[#333333] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9]">
                       <strong>Catatan:</strong> {partB.disclaimer}
                     </div>
                   )}

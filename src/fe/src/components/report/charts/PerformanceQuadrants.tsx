@@ -91,7 +91,7 @@ function QuadrantComboChart({
 
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+      <div className="mb-1 flex items-center justify-between text-[11px] text-[#666666] dark:text-[#666666]">
         <span className="font-semibold">{barUnit}</span>
         <span className="font-semibold">{lineUnit}</span>
       </div>
@@ -126,7 +126,7 @@ function QuadrantComboChart({
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+      <p className="mt-1 text-[11px] text-[#666666] dark:text-[#666666]">
         Solid = Aktual · Transparan = Proyeksi
       </p>
     </div>
@@ -272,11 +272,11 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
         {quadrants.map((q, idx) => (
           <div
             key={idx}
-            className="flex flex-col rounded-xl border border-[#E7E3DA] bg-white p-4 shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]"
+            className="flex flex-col rounded-xl border border-[#D9D9D9] bg-white p-4 shadow-none dark:border-[#262930] dark:bg-[#090a0c]"
           >
-            <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-              <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{q.title}</span>
-              {q.window && <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">{q.window}</span>}
+            <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{q.title}</span>
+              {q.window && <span className="text-[11px] text-[#666666] dark:text-[#666666]">{q.window}</span>}
             </div>
 
             <div className="my-auto">
@@ -294,7 +294,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
             </div>
 
             {q.narrative && (
-              <p className="mt-3 rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+              <p className="mt-3 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#333333] dark:text-[#666666]">
                 {q.narrative}
               </p>
             )}

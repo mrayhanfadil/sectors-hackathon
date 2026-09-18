@@ -71,19 +71,19 @@ export const ProgressHeader = memo(function ProgressHeader({
   })
 
   return (
-    <div className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 space-y-4 font-sans shadow-none">
+    <div className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 sm:p-6 space-y-4 font-sans shadow-none">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="space-y-1.5 max-w-3xl">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Orkestrator alur kerja mesin
           </h2>
-          <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+          <p className="text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
             Alur kerja multi-agen untuk analisis laporan keuangan emiten IDX.
           </p>
 
           {health && (
             <div className="flex flex-wrap items-center gap-2 pt-1 text-xs">
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                 <span
                   className={`h-1.5 w-1.5 rounded-full ${
                     health.ok ? "bg-emerald-500" : "bg-amber-500"
@@ -93,7 +93,7 @@ export const ProgressHeader = memo(function ProgressHeader({
               </span>
               <button
                 type="button"
-                className="text-xs text-[#0E6E63] dark:text-[#4FD1B5] hover:underline"
+                className="text-xs text-[#0928B1] dark:text-[#7596FF] hover:underline"
                 onClick={onRefreshHealth}
               >
                 Segarkan status
@@ -126,12 +126,12 @@ export const ProgressHeader = memo(function ProgressHeader({
         knownAgents={knownAgents}
       />
 
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-[#D9D9D9]/60 dark:border-[#262930]/60">
         <div className="flex flex-wrap items-center gap-2">
           <select
             value={ticker}
             onChange={(e) => onTickerChange(normalizeTicker(e.target.value))}
-            className="h-8 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] px-2.5 text-xs font-medium text-[#1C1B17] dark:text-[#EDEAE3]"
+            className="h-8 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] px-2.5 text-xs font-medium text-[#333333] dark:text-[#f1f5f9]"
           >
             {SUPPORTED_TICKERS.map((t) => (
               <option key={t} value={t}>
@@ -144,7 +144,7 @@ export const ProgressHeader = memo(function ProgressHeader({
             type="button"
             onClick={() => onRun("stream")}
             disabled={running}
-            className="h-8 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0c5c53] px-3 py-1.5 text-xs font-medium transition-colors"
+            className="h-8 rounded-lg bg-[#0928B1] text-white hover:bg-[#0c5c53] px-3 py-1.5 text-xs font-medium transition-colors"
           >
             {running ? "Sedang berjalan…" : "Jalankan analisis"}
           </button>
@@ -153,7 +153,7 @@ export const ProgressHeader = memo(function ProgressHeader({
             type="button"
             onClick={onClear}
             disabled={running}
-            className="h-8 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#6B6659] dark:text-[#A8A296] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] px-3 py-1.5 text-xs transition-colors"
+            className="h-8 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] text-[#666666] dark:text-[#666666] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] px-3 py-1.5 text-xs transition-colors"
           >
             Bersihkan
           </button>

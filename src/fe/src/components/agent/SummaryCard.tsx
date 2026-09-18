@@ -128,37 +128,37 @@ export const SummaryCard = memo(function SummaryCard({
     ? "bg-[#B4232A]/10 text-[#B4232A] border-[#B4232A]/30 dark:bg-[#B4232A]/20 dark:text-[#f87171]"
     : isHold
     ? "bg-[#A16207]/10 text-[#A16207] border-[#A16207]/30 dark:bg-[#A16207]/20 dark:text-[#facc15]"
-    : "bg-[#F5F2EB] text-[#6B6659] border-[#E7E3DA] dark:bg-[#23211C] dark:text-[#A8A296] dark:border-[#2A2822]"
+    : "bg-[#B4C7FF] text-[#666666] border-[#D9D9D9] dark:bg-[#1e2229] dark:text-[#666666] dark:border-[#262930]"
 
   return (
     <div
       className={cn(
-        "rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 space-y-4 font-sans shadow-none",
+        "rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 sm:p-6 space-y-4 font-sans shadow-none",
         className
       )}
     >
       {/* Header Row */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D9D9D9]/60 dark:border-[#262930]/60">
         <div className="space-y-1">
           <div className="flex items-center gap-2">
-            <h2 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+            <h2 className="font-serif text-lg font-medium text-[#333333] dark:text-[#f1f5f9]">
               Ringkasan hasil riset {t}
             </h2>
           </div>
-          <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <p className="text-xs text-[#666666] dark:text-[#666666]">
             Sintesis multi-agen berdasarkan laporan keuangan resmi IDX dan model valuasi deterministik.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <div className="flex flex-col items-end">
-            <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Rekomendasi</span>
+            <span className="text-[11px] text-[#666666] dark:text-[#666666]">Rekomendasi</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <span className={cn("inline-flex items-center rounded-md border px-2.5 py-0.5 text-xs font-semibold", ratingBadgeClass)}>
                 {data.rating}
               </span>
               {data.targetPrice && (
-                <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                   {data.targetPrice}
                 </span>
               )}
@@ -173,7 +173,7 @@ export const SummaryCard = memo(function SummaryCard({
           <Link
             to="/report/$ticker"
             params={{ ticker: t }}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0c5c53] px-3.5 py-1.5 text-xs font-medium transition-colors"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#0928B1] text-white hover:bg-[#0c5c53] px-3.5 py-1.5 text-xs font-medium transition-colors"
           >
             <FileText className="h-3.5 w-3.5" />
             <span>Lihat laporan lengkap</span>
@@ -184,11 +184,11 @@ export const SummaryCard = memo(function SummaryCard({
 
       {/* Highlights Grid */}
       <div className="grid gap-3 sm:grid-cols-3 text-xs">
-        <div className="flex items-start gap-3 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/60 dark:bg-[#14130F]/40 p-3">
+        <div className="flex items-start gap-3 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9]/60 dark:bg-[#1e2229]/40 p-3">
           <Database className="mt-0.5 h-4 w-4 shrink-0 text-sky-600 dark:text-sky-400" />
           <div className="space-y-0.5">
-            <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Pengumpulan data</span>
-            <p className="text-[#6B6659] dark:text-[#A8A296] leading-relaxed">
+            <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Pengumpulan data</span>
+            <p className="text-[#666666] dark:text-[#666666] leading-relaxed">
               {data.sourcesCount > 0
                 ? `Menggabungkan ${data.sourcesCount} sumber data laporan IDX dan berita terkini.`
                 : "Data neraca keuangan IDX dan keterbukaan informasi telah diproses."}
@@ -196,11 +196,11 @@ export const SummaryCard = memo(function SummaryCard({
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/60 dark:bg-[#14130F]/40 p-3">
+        <div className="flex items-start gap-3 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9]/60 dark:bg-[#1e2229]/40 p-3">
           <Calculator className="mt-0.5 h-4 w-4 shrink-0 text-emerald-600 dark:text-emerald-400" />
           <div className="space-y-0.5">
-            <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Valuasi nilai wajar</span>
-            <p className="text-[#6B6659] dark:text-[#A8A296] leading-relaxed">
+            <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Valuasi nilai wajar</span>
+            <p className="text-[#666666] dark:text-[#666666] leading-relaxed">
               {data.targetPrice
                 ? `Perhitungan nilai wajar gabungan berada di ${data.targetPrice}.`
                 : "Model matematika DCF dan rasio kelipatan telah dihitung."}
@@ -208,11 +208,11 @@ export const SummaryCard = memo(function SummaryCard({
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/60 dark:bg-[#14130F]/40 p-3">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+        <div className="flex items-start gap-3 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9]/60 dark:bg-[#1e2229]/40 p-3">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
           <div className="space-y-0.5">
-            <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Uji silang &amp; penelaahan</span>
-            <p className="text-[#6B6659] dark:text-[#A8A296] leading-relaxed">
+            <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Uji silang &amp; penelaahan</span>
+            <p className="text-[#666666] dark:text-[#666666] leading-relaxed">
               {data.reviewerCount > 0
                 ? `Ditinjau oleh ${data.reviewerCount} agen reviewer dan penguji kritis.`
                 : "Uji kritis argumen dan verifikasi data selesai dilakukan."}
@@ -223,11 +223,11 @@ export const SummaryCard = memo(function SummaryCard({
 
       {/* Writer bullets if available */}
       {data.keyTakeaways.length > 0 && (
-        <div className="rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/60 dark:bg-[#14130F]/40 p-3.5 space-y-2 text-xs">
-          <div className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9]/60 dark:bg-[#1e2229]/40 p-3.5 space-y-2 text-xs">
+          <div className="font-medium text-[#333333] dark:text-[#f1f5f9]">
             Poin-poin kesimpulan riset:
           </div>
-          <ul className="list-disc pl-4 space-y-1 text-[#6B6659] dark:text-[#A8A296] leading-relaxed">
+          <ul className="list-disc pl-4 space-y-1 text-[#666666] dark:text-[#666666] leading-relaxed">
             {data.keyTakeaways.map((b, i) => (
               <li key={i}>{b}</li>
             ))}
@@ -236,7 +236,7 @@ export const SummaryCard = memo(function SummaryCard({
       )}
 
       {/* Footer Info */}
-      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#E7E3DA]/60 dark:border-[#2A2822]/60 text-xs text-[#6B6659] dark:text-[#A8A296]">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-[#D9D9D9]/60 dark:border-[#262930]/60 text-xs text-[#666666] dark:text-[#666666]">
         <div className="flex flex-wrap items-center gap-3">
           <span className="flex items-center gap-1">
             <Clock className="h-3 w-3" />
@@ -248,7 +248,7 @@ export const SummaryCard = memo(function SummaryCard({
           </span>
         </div>
 
-        <p className="text-[11px] italic text-[#6B6659]/80 dark:text-[#A8A296]/80">
+        <p className="text-[11px] italic text-[#666666]/80 dark:text-[#666666]/80">
           Otomatisasi kalkulasi riset untuk referensi analitis. Bukan ajakan beli atau jual efek.
         </p>
       </div>

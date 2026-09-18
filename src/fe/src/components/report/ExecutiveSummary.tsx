@@ -37,7 +37,7 @@ function formatHighlightCell(c: unknown): string {
 
 function PendingCard({ label }: { label: string }) {
   return (
-    <div className="rounded-xl border border-[#E7E3DA] bg-white p-6 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+    <div className="rounded-xl border border-[#D9D9D9] bg-white p-6 text-center text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
       {label} belum tersedia di payload.
     </div>
   )
@@ -56,7 +56,7 @@ function SvgPriceVsJci({
 }) {
   if (!labels.length || (!price.length && !relPct.length)) {
     return (
-      <div className="flex h-36 items-center justify-center rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+      <div className="flex h-36 items-center justify-center rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
         Grafik harga vs IHSG belum tersedia di payload
       </div>
     )
@@ -114,7 +114,7 @@ function SvgPriceVsJci({
     <div className="space-y-1">
       <svg
         viewBox={`0 0 ${W} ${H}`}
-        className="w-full h-auto rounded-lg border border-[#E7E3DA] bg-white text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]"
+        className="w-full h-auto rounded-lg border border-[#D9D9D9] bg-white text-xs dark:border-[#262930] dark:bg-[#090a0c]"
         role="img"
         aria-label={`Harga ${tickerLabel} vs IHSG`}
       >
@@ -130,7 +130,7 @@ function SvgPriceVsJci({
                 y1={y}
                 x2={W - padR}
                 y2={y}
-                stroke="#E7E3DA"
+                stroke="#D9D9D9"
                 strokeWidth={0.7}
                 strokeDasharray="3 3"
               />
@@ -139,7 +139,7 @@ function SvgPriceVsJci({
                 y={y + 3}
                 fontSize={8}
                 fontFamily="monospace"
-                fill="#6B6659"
+                fill="#666666"
                 textAnchor="end"
               >
                 {Math.round(pVal)}
@@ -149,7 +149,7 @@ function SvgPriceVsJci({
                 y={y + 3}
                 fontSize={8}
                 fontFamily="monospace"
-                fill="#6B6659"
+                fill="#666666"
                 textAnchor="start"
               >
                 {rVal > 0 ? `+${Math.round(rVal)}` : Math.round(rVal)}%
@@ -165,7 +165,7 @@ function SvgPriceVsJci({
             y1={yZero}
             x2={W - padR}
             y2={yZero}
-            stroke="#A8A296"
+            stroke="#666666"
             strokeWidth={1}
             strokeDasharray="2 2"
           />
@@ -181,7 +181,7 @@ function SvgPriceVsJci({
             <polyline
               points={ptsP}
               fill="none"
-              stroke="#0E6E63"
+              stroke="#0928B1"
               strokeWidth={2}
               strokeLinejoin="round"
               strokeLinecap="round"
@@ -193,7 +193,7 @@ function SvgPriceVsJci({
           <polyline
             points={ptsR}
             fill="none"
-            stroke="#A8A296"
+            stroke="#666666"
             strokeWidth={1.5}
             strokeLinejoin="round"
             strokeLinecap="round"
@@ -245,7 +245,7 @@ function SvgPriceVsJci({
                 y={H - 6}
                 fontSize={8}
                 fontFamily="monospace"
-                fill="#6B6659"
+                fill="#666666"
                 textAnchor="middle"
               >
                 {lbl}
@@ -257,12 +257,12 @@ function SvgPriceVsJci({
 
         {/* Legend */}
         <g fontSize={8} fontFamily="sans-serif">
-          <line x1={padL} y1={padT - 12} x2={padL + 12} y2={padT - 12} stroke="#0E6E63" strokeWidth={2} />
-          <text x={padL + 16} y={padT - 9} fill="#1C1B17" fontWeight="bold">
+          <line x1={padL} y1={padT - 12} x2={padL + 12} y2={padT - 12} stroke="#0928B1" strokeWidth={2} />
+          <text x={padL + 16} y={padT - 9} fill="#333333" fontWeight="bold">
             Harga (Rp, kiri)
           </text>
-          <line x1={padL + 110} y1={padT - 12} x2={padL + 122} y2={padT - 12} stroke="#A8A296" strokeWidth={1.5} />
-          <text x={padL + 126} y={padT - 9} fill="#6B6659">
+          <line x1={padL + 110} y1={padT - 12} x2={padL + 122} y2={padT - 12} stroke="#666666" strokeWidth={1.5} />
+          <text x={padL + 126} y={padT - 9} fill="#666666">
             Relatif vs IHSG (%, kanan)
           </text>
         </g>
@@ -312,11 +312,11 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
       {/* SECTION 1: COVER & RATING                                                 */}
       {/* ========================================================================= */}
       <section id="cover-rating" className="scroll-mt-28 space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Ringkasan dan peringkat {tk}
           </h2>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Ikhtisar emiten
           </span>
         </div>
@@ -326,28 +326,28 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
             {/* Left Column */}
             <div className="space-y-4">
               {/* Rating & Stats Card */}
-              <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 space-y-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+              <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 space-y-4 dark:border-[#262930] dark:bg-[#090a0c]">
                 {/* Rating Display */}
                 <div>
                   <div className="flex items-center justify-between">
-                    <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">Rekomendasi</span>
+                    <span className="text-xs text-[#666666] dark:text-[#666666]">Rekomendasi</span>
                     <RecommendationBadge rating={action} size="md" />
                   </div>
-                  <div className="text-xs text-[#6B6659] mt-1.5 dark:text-[#A8A296]">
+                  <div className="text-xs text-[#666666] mt-1.5 dark:text-[#666666]">
                     {actionStatus}
                     {prevAction && <span className="ml-1">(Sebelumnya: {prevAction})</span>}
                   </div>
                 </div>
 
                 {/* Price Box Table */}
-                <div className="border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822]">
+                <div className="border-t border-[#D9D9D9] pt-3 dark:border-[#262930]">
                   <table className="w-full text-xs">
-                    <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                    <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                       {priceBoxRows.length > 0 ? (
                         priceBoxRows.map((row, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">{row[0]}</td>
-                            <td className="py-1.5 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">{row[0]}</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {row[1]}
                             </td>
                           </tr>
@@ -355,27 +355,27 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       ) : (
                         <>
                           <tr>
-                            <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">Harga pasar</td>
-                            <td className="py-1.5 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Harga pasar</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {price != null ? `Rp ${fmtIDR(price)}` : "-"}
                             </td>
                           </tr>
                           <tr>
-                            <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">Nilai wajar (TP)</td>
-                            <td className="py-1.5 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Nilai wajar (TP)</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {tp != null ? `Rp ${fmtIDR(tp)}` : "-"}
                             </td>
                           </tr>
                           {prevTp != null && (
                             <tr>
-                              <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">TP sebelumnya</td>
-                              <td className="py-1.5 text-right text-[#6B6659] font-mono tabular-nums dark:text-[#A8A296]">
+                              <td className="py-1.5 text-[#666666] dark:text-[#666666]">TP sebelumnya</td>
+                              <td className="py-1.5 text-right text-[#666666] font-mono tabular-nums dark:text-[#666666]">
                                 Rp {fmtIDR(prevTp)}
                               </td>
                             </tr>
                           )}
                           <tr>
-                            <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">Potensi return</td>
+                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Potensi return</td>
                             <td className="py-1.5 text-right font-semibold text-[#157F3D] font-mono tabular-nums dark:text-[#34D399]">
                               {upsidePct != null ? `${upsidePct > 0 ? "+" : ""}${upsidePct.toFixed(1)}%` : "-"}
                             </td>
@@ -388,13 +388,13 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
                 {/* Secondary Stats Table */}
                 {statsRows.length > 0 && (
-                  <div className="border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822]">
+                  <div className="border-t border-[#D9D9D9] pt-3 dark:border-[#262930]">
                     <table className="w-full text-xs">
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {statsRows.map((row, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#6B6659] dark:text-[#A8A296]">{row[0]}</td>
-                            <td className="py-1.5 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">{row[0]}</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {row[1]}
                             </td>
                           </tr>
@@ -406,18 +406,18 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
                 {/* Major Shareholders Table */}
                 {shareholders.length > 0 && (
-                  <div className="border-t border-[#E7E3DA] pt-3 space-y-2 dark:border-[#2A2822]">
-                    <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <div className="border-t border-[#D9D9D9] pt-3 space-y-2 dark:border-[#262930]">
+                    <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                       Pemegang saham utama (%)
                     </div>
                     <table className="w-full text-xs">
-                      <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                      <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                         {shareholders.map((h, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#1C1B17] truncate max-w-[140px] dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-[#333333] truncate max-w-[140px] dark:text-[#f1f5f9]">
                               {h.name}
                             </td>
-                            <td className="py-1.5 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                               {h.pct_str || `${h.pct}%`}
                             </td>
                           </tr>
@@ -430,7 +430,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
               {/* Relative to JCI Chart */}
               <div className="space-y-2">
-                <div className="flex items-center justify-between text-xs font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+                <div className="flex items-center justify-between text-xs font-medium text-[#333333] dark:text-[#f1f5f9]">
                   <span>Harga {tk} relatif terhadap IHSG</span>
                 </div>
                 <SvgPriceVsJci
@@ -439,21 +439,21 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                   relPct={jciRel}
                   tickerLabel={tk}
                 />
-                <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                <div className="text-[11px] text-[#666666] dark:text-[#666666]">
                   Sumber: {jciSource}
                 </div>
               </div>
 
               {/* Analyst Attribution */}
               {s1?.analyst && (
-                <div className="rounded-xl border border-[#E7E3DA] bg-white p-3.5 text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
-                  <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                <div className="rounded-xl border border-[#D9D9D9] bg-white p-3.5 text-xs dark:border-[#262930] dark:bg-[#090a0c]">
+                  <div className="text-[11px] text-[#666666] dark:text-[#666666]">
                     Analis penyusun
                   </div>
-                  <div className="font-semibold text-[#1C1B17] mt-0.5 dark:text-[#EDEAE3]">
+                  <div className="font-semibold text-[#333333] mt-0.5 dark:text-[#f1f5f9]">
                     {s1.analyst.name}
                   </div>
-                  <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">{s1.analyst.title}</div>
+                  <div className="text-[11px] text-[#666666] dark:text-[#666666]">{s1.analyst.title}</div>
                 </div>
               )}
             </div>
@@ -462,11 +462,11 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
             <div className="space-y-5">
               {/* Title & Theme */}
               <div>
-                <h1 className="font-serif text-2xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
-                  {companyName} <span className="text-[#6B6659] font-normal dark:text-[#A8A296]">({tk})</span>
+                <h1 className="font-serif text-2xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
+                  {companyName} <span className="text-[#666666] font-normal dark:text-[#666666]">({tk})</span>
                 </h1>
                 {s1?.theme_title && (
-                  <p className="text-sm italic text-[#6B6659] mt-1 dark:text-[#A8A296]">
+                  <p className="text-sm italic text-[#666666] mt-1 dark:text-[#666666]">
                     {s1.theme_title}
                   </p>
                 )}
@@ -474,11 +474,11 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
               {/* Highlights Box */}
               {highlights.length > 0 && (
-                <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]/60">
-                  <div className="text-xs font-semibold text-[#0E6E63] mb-3 dark:text-[#4FD1B5]">
+                <div className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-5 dark:border-[#262930] dark:bg-[#090a0c]/60">
+                  <div className="text-xs font-semibold text-[#0928B1] mb-3 dark:text-[#7596FF]">
                     Poin-poin utama:
                   </div>
-                  <ul className="space-y-2 pl-4 list-disc text-sm text-[#1C1B17] dark:text-[#EDEAE3] leading-relaxed">
+                  <ul className="space-y-2 pl-4 list-disc text-sm text-[#333333] dark:text-[#f1f5f9] leading-relaxed">
                     {highlights.map((h, i) => (
                       <li key={i}>{h}</li>
                     ))}
@@ -489,10 +489,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
               {/* Narrative paragraphs */}
               {s1?.financial_para && (
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <h3 className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     {s1.financial_para.heading}
                   </h3>
-                  <p className="text-sm leading-relaxed text-[#1C1B17] text-justify dark:text-[#EDEAE3]/90">
+                  <p className="text-sm leading-relaxed text-[#333333] text-justify dark:text-[#f1f5f9]/90">
                     {s1.financial_para.body}
                   </p>
                 </div>
@@ -500,10 +500,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
               {s2?.katalis && (
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <h3 className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     {s2.katalis.heading}
                   </h3>
-                  <p className="text-sm leading-relaxed text-[#1C1B17] text-justify dark:text-[#EDEAE3]/90">
+                  <p className="text-sm leading-relaxed text-[#333333] text-justify dark:text-[#f1f5f9]/90">
                     {s2.katalis.body}
                   </p>
                 </div>
@@ -511,17 +511,17 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
               {s2?.valuasi && (
                 <div className="space-y-1.5">
-                  <h3 className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <h3 className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     {s2.valuasi.heading}
                   </h3>
-                  <p className="text-sm leading-relaxed text-[#1C1B17] text-justify dark:text-[#EDEAE3]/90">
+                  <p className="text-sm leading-relaxed text-[#333333] text-justify dark:text-[#f1f5f9]/90">
                     {s2.valuasi.body}
                   </p>
                 </div>
               )}
 
               {cover.summary && !s1?.financial_para && (
-                <div className="text-sm leading-relaxed text-[#1C1B17] text-justify dark:text-[#EDEAE3]/90">
+                <div className="text-sm leading-relaxed text-[#333333] text-justify dark:text-[#f1f5f9]/90">
                   {cover.summary}
                 </div>
               )}
@@ -536,40 +536,40 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
       {/* SECTION 2: KEY FINANCIALS & 6-YEAR HIGHLIGHTS                             */}
       {/* ========================================================================= */}
       <section id="key-financials" className="scroll-mt-28 space-y-4">
-        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-          <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+          <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
             Ringkasan keuangan dan proyeksi
           </h2>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Proyeksi 3 tahun
           </span>
         </div>
 
         {kf && kf.headers && kf.rows ? (
-          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+          <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+            <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                   {("exhibit_title" in kf ? kf.exhibit_title : "") || ("title" in kf ? kf.title : "") || "Ringkasan metrik keuangan (2024A–2028F)"}
                 </CardTitle>
-                <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <span className="text-xs text-[#666666] dark:text-[#666666]">
                   {kf.source || "Sumber: Laporan keuangan emiten"}
                 </span>
               </div>
             </CardHeader>
             <CardContent className="p-5 space-y-3">
-              <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+              <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                    <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-right text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                       {kf.headers.map((h, i) => (
-                        <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#1C1B17] dark:text-[#EDEAE3]" : ""}`}>
+                        <th key={i} className={`py-2.5 px-3 font-semibold ${i === 0 ? "text-left text-[#333333] dark:text-[#f1f5f9]" : ""}`}>
                           {h}
                         </th>
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                  <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                     {kf.rows.map((row, rIdx) => {
                       const isBold =
                         String(row[0]).includes("Revenue") ||
@@ -579,8 +579,8 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                         <tr
                           key={rIdx}
                           className={`${
-                            rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
-                          } ${isBold ? "font-semibold text-[#1C1B17] dark:text-[#EDEAE3]" : "text-[#1C1B17] dark:text-[#EDEAE3]/90"}`}
+                            rIdx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
+                          } ${isBold ? "font-semibold text-[#333333] dark:text-[#f1f5f9]" : "text-[#333333] dark:text-[#f1f5f9]/90"}`}
                         >
                           {row.map((cell, cIdx) => (
                             <td
@@ -598,7 +598,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
               </div>
 
               {"notes" in kf && Array.isArray(kf.notes) && kf.notes.length > 0 && (
-                <div className="space-y-1 text-xs text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+                <div className="space-y-1 text-xs text-[#666666] leading-relaxed dark:text-[#666666]">
                   {(kf.notes as string[]).map((nt: string, idx: number) => (
                     <p key={idx}>{nt}</p>
                   ))}
@@ -612,23 +612,23 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
         {/* 6-Year Financial Highlights */}
         {highlights6y && highlights6y.years && highlights6y.rows && (
-          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+          <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+            <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                   Sorotan keuangan ({highlights6y.years.length} tahun)
                 </CardTitle>
-                <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <span className="text-xs text-[#666666] dark:text-[#666666]">
                   Sumber: {highlights6y.source || "Laporan keuangan IDX"}
                 </span>
               </div>
             </CardHeader>
             <CardContent className="p-5 space-y-2">
-              <div className="overflow-x-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+              <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
                 <table className="w-full text-xs">
                   <thead>
-                    <tr className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-right text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-                      <th className="py-2.5 px-3 text-left font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Pos keuangan</th>
+                    <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-right text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                      <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">Pos keuangan</th>
                       {highlights6y.years.map((y, i) => (
                         <th key={i} className="py-2.5 px-3 text-right font-semibold">
                           {y}
@@ -636,18 +636,18 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       ))}
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+                  <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
                     {highlights6y.rows.map((r, rIdx) => (
                       <tr
                         key={rIdx}
                         className={`${
-                          rIdx % 2 === 1 ? "bg-[#FBFAF7]/50 dark:bg-[#14130F]/30" : "bg-white dark:bg-[#1B1A16]"
+                          rIdx % 2 === 1 ? "bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30" : "bg-white dark:bg-[#090a0c]"
                         }`}
                       >
                         {r.map((c, cIdx) => (
                           <td
                             key={cIdx}
-                            className={`py-2 px-3 ${cIdx === 0 ? "text-left font-medium text-[#1C1B17] dark:text-[#EDEAE3]" : "text-right font-mono tabular-nums text-[#1C1B17] dark:text-[#EDEAE3]/90"}`}
+                            className={`py-2 px-3 ${cIdx === 0 ? "text-left font-medium text-[#333333] dark:text-[#f1f5f9]" : "text-right font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]/90"}`}
                           >
                             {cIdx === 0 ? (c != null ? String(c) : "-") : formatHighlightCell(c)}
                           </td>
@@ -666,14 +666,14 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
         {/* Kondisi Industri, Katalis & Sentimen */}
         {industryPage && industryPage.paragraphs && industryPage.paragraphs.length > 0 && (
-          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+          <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+            <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                   {industryPage.title || "Kondisi industri, katalis dan sentimen"}
                 </CardTitle>
                 {industryPage.sources && (
-                  <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                  <span className="text-xs text-[#666666] dark:text-[#666666]">
                     {industryPage.sources.join("; ")}
                   </span>
                 )}
@@ -682,10 +682,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
             <CardContent className="p-5 space-y-4">
               {industryPage.paragraphs.map((p, idx) => (
                 <div key={idx} className="space-y-1.5">
-                  <h4 className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                  <h4 className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                     {p.heading}
                   </h4>
-                  <p className="text-sm leading-relaxed text-[#1C1B17] text-justify dark:text-[#EDEAE3]/90">
+                  <p className="text-sm leading-relaxed text-[#333333] text-justify dark:text-[#f1f5f9]/90">
                     {p.body}
                   </p>
                 </div>
@@ -696,9 +696,9 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
 
         {/* Tesis Investasi - 4 Pilar */}
         {thesis.length > 0 && (
-          <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
-              <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+            <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
+              <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                 Tesis investasi - 4 pilar utama
               </CardTitle>
             </CardHeader>
@@ -707,26 +707,26 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                 {thesis.map((t, idx) => (
                   <div
                     key={idx}
-                    className="grid grid-cols-[28px_1fr_auto] gap-3 items-start border-t border-[#E7E3DA] pt-3 first:border-0 first:pt-0 dark:border-[#2A2822]"
+                    className="grid grid-cols-[28px_1fr_auto] gap-3 items-start border-t border-[#D9D9D9] pt-3 first:border-0 first:pt-0 dark:border-[#262930]"
                   >
-                    <span className="font-serif text-base font-semibold text-[#0E6E63] dark:text-[#4FD1B5]">
+                    <span className="font-serif text-base font-semibold text-[#0928B1] dark:text-[#7596FF]">
                       {idx + 1}.
                     </span>
                     <div className="space-y-1">
-                      <h4 className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      <h4 className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                         {t.headline}
                       </h4>
-                      <p className="text-xs text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+                      <p className="text-xs text-[#666666] leading-relaxed dark:text-[#666666]">
                         {t.detail}
                       </p>
                     </div>
                     {t.stat && (
                       <div className="text-right pl-3 shrink-0">
-                        <div className="text-xs font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                        <div className="text-xs font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                           {t.stat}
                         </div>
                         {t.stat_label && (
-                          <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                          <div className="text-[11px] text-[#666666] dark:text-[#666666]">
                             {t.stat_label}
                           </div>
                         )}

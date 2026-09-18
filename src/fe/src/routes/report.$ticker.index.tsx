@@ -89,16 +89,16 @@ function ReportPage() {
   if (isLoading) {
     return (
       <div className="mx-auto max-w-[1100px] px-4 py-8 space-y-6">
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-6 text-center text-sm text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-6 text-center text-sm text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           Menyiapkan laporan analisis lengkap {tk}…
         </div>
-        <div className="h-16 animate-pulse rounded-xl border border-[#E7E3DA] bg-[#F4F1EA]/60 dark:border-[#2A2822] dark:bg-[#1B1A16]" />
+        <div className="h-16 animate-pulse rounded-xl border border-[#D9D9D9] bg-[#B4C7FF]/60 dark:border-[#262930] dark:bg-[#090a0c]" />
         <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
           <div className="space-y-6">
-            <div className="h-56 animate-pulse rounded-xl border border-[#E7E3DA] bg-[#F4F1EA]/60 dark:border-[#2A2822] dark:bg-[#1B1A16]" />
-            <div className="h-72 animate-pulse rounded-xl border border-[#E7E3DA] bg-[#F4F1EA]/60 dark:border-[#2A2822] dark:bg-[#1B1A16]" />
+            <div className="h-56 animate-pulse rounded-xl border border-[#D9D9D9] bg-[#B4C7FF]/60 dark:border-[#262930] dark:bg-[#090a0c]" />
+            <div className="h-72 animate-pulse rounded-xl border border-[#D9D9D9] bg-[#B4C7FF]/60 dark:border-[#262930] dark:bg-[#090a0c]" />
           </div>
-          <div className="h-96 animate-pulse rounded-xl border border-[#E7E3DA] bg-[#F4F1EA]/60 dark:border-[#2A2822] dark:bg-[#1B1A16]" />
+          <div className="h-96 animate-pulse rounded-xl border border-[#D9D9D9] bg-[#B4C7FF]/60 dark:border-[#262930] dark:bg-[#090a0c]" />
         </div>
       </div>
     )
@@ -115,14 +115,14 @@ function ReportPage() {
               <h3 className="text-sm font-semibold text-[#B4232A] dark:text-[#F87171]">
                 Laporan {tk} tidak dapat dimuat
               </h3>
-              <p className="text-xs text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+              <p className="text-xs text-[#666666] leading-relaxed dark:text-[#666666]">
                 Terjadi kesalahan saat memuat data laporan dari server backend. Pastikan koneksi dan server aktif.
               </p>
               <Button
                 onClick={() => refetch()}
                 size="sm"
                 variant="outline"
-                className="h-8 gap-1.5 border-[#F8C8CB] bg-white text-xs font-medium text-[#B4232A] hover:bg-[#FDF2F2] dark:border-[#B4232A]/40 dark:bg-[#1B1A16] dark:text-[#F87171] cursor-pointer"
+                className="h-8 gap-1.5 border-[#F8C8CB] bg-white text-xs font-medium text-[#B4232A] hover:bg-[#FDF2F2] dark:border-[#B4232A]/40 dark:bg-[#090a0c] dark:text-[#F87171] cursor-pointer"
               >
                 <RefreshCw className="h-3.5 w-3.5" />
                 <span>Coba lagi</span>
@@ -157,33 +157,33 @@ function ReportPage() {
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_320px]">
             {/* Honest Uncovered State */}
             <div className="space-y-6">
-              <Card className="rounded-xl border border-[#E7E3DA] bg-white p-6 space-y-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+              <Card className="rounded-xl border border-[#D9D9D9] bg-white p-6 space-y-4 dark:border-[#262930] dark:bg-[#090a0c]">
                 <div className="flex items-start gap-3.5">
-                  <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+                  <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
                   <div className="space-y-3 flex-1">
                     <div>
-                      <span className="inline-block rounded-md bg-[#F4F1EA] px-2.5 py-0.5 text-xs font-semibold text-[#1C1B17] dark:bg-[#2A2822] dark:text-[#EDEAE3]">
+                      <span className="inline-block rounded-md bg-[#B4C7FF] px-2.5 py-0.5 text-xs font-semibold text-[#333333] dark:bg-[#262930] dark:text-[#f1f5f9]">
                         Belum Tersedia
                       </span>
-                      <h3 className="font-serif text-lg font-medium text-[#1C1B17] mt-2 dark:text-[#EDEAE3]">
+                      <h3 className="font-serif text-lg font-medium text-[#333333] mt-2 dark:text-[#f1f5f9]">
                         Asumsi valuasi belum tersedia untuk {tk}
                       </h3>
                     </div>
 
-                    <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+                    <p className="text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
                       {data.summary}
                     </p>
 
                     {data.missing && data.missing.length > 0 && (
-                      <div className="space-y-2 border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822]">
-                        <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+                      <div className="space-y-2 border-t border-[#D9D9D9] pt-3 dark:border-[#262930]">
+                        <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                           Daftar parameter yang Belum Terverifikasi ({data.missing.length}):
                         </div>
                         <div className="flex flex-wrap gap-1.5">
                           {data.missing.map((param) => (
                             <span
                               key={param}
-                              className="rounded-md border border-[#E7E3DA] bg-[#FBFAF7] px-2 py-0.5 text-xs text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]"
+                              className="rounded-md border border-[#D9D9D9] bg-[#f1f5f9] px-2 py-0.5 text-xs text-[#333333] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9]"
                             >
                               {param}
                             </span>
@@ -192,7 +192,7 @@ function ReportPage() {
                       </div>
                     )}
 
-                    <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3.5 text-xs text-[#6B6659] leading-relaxed dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3.5 text-xs text-[#666666] leading-relaxed dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                       <strong>Kebijakan integritas data:</strong> Seluruh output model riset wajib bersumber
                       dari data terverifikasi. Sistem menolak membuat angka tiruan ketika asumsi dasar emiten belum tersedia.
                     </div>
@@ -202,7 +202,7 @@ function ReportPage() {
                         onClick={() => refetch()}
                         size="sm"
                         variant="outline"
-                        className="h-8 gap-1.5 rounded-lg border-[#E7E3DA] bg-white text-xs font-medium text-[#1C1B17] hover:bg-[#F4F1EA] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3] cursor-pointer"
+                        className="h-8 gap-1.5 rounded-lg border-[#D9D9D9] bg-white text-xs font-medium text-[#333333] hover:bg-[#B4C7FF] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9] cursor-pointer"
                       >
                         <RefreshCw className="h-3.5 w-3.5" />
                         <span>Muat ulang data</span>
@@ -243,11 +243,11 @@ function ReportPage() {
               <h3 className="text-sm font-semibold text-[#A16207] dark:text-[#FBBF24]">
                 Mode offline - server backend belum tersedia untuk {tk}
               </h3>
-              <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">{data.summary}</p>
+              <p className="text-xs leading-relaxed text-[#666666] dark:text-[#666666]">{data.summary}</p>
               <Button
                 onClick={() => window.location.reload()}
                 size="sm"
-                className="h-8 rounded-lg bg-[#0E6E63] text-xs font-medium text-white hover:bg-[#0B5B52] dark:bg-[#4FD1B5] dark:text-[#14130F] cursor-pointer"
+                className="h-8 rounded-lg bg-[#0928B1] text-xs font-medium text-white hover:bg-[#0047AB] dark:bg-[#7596FF] dark:text-[#333333] cursor-pointer"
               >
                 <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
                 <span>Muat ulang</span>
@@ -291,10 +291,10 @@ function ReportPage() {
 
       <div className="mx-auto max-w-[1100px] px-4 space-y-6">
         {/* Analyst Notice Box */}
-        <div className="flex items-start gap-3 rounded-xl border border-[#E7E3DA] bg-white p-4 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
-          <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+        <div className="flex items-start gap-3 rounded-xl border border-[#D9D9D9] bg-white p-4 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
           <div>
-            <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Standar riset institusional: </span>
+            <span className="font-semibold text-[#333333] dark:text-[#f1f5f9]">Standar riset institusional: </span>
             <span>
               Seluruh angka berasal dari data berlisensi dan dihitung deterministik. Istilah pasar dipertahankan dalam
               bentuk aslinya: BUY/HOLD/SELL, DCF, WACC, EV/EBITDA, PER, PBV.
@@ -311,17 +311,17 @@ function ReportPage() {
 
             {/* 3. Performance: The Four Quadrants */}
             <section id="performance-quadrants" className="space-y-4 scroll-mt-28">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
-                <h2 className="font-serif text-xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
+                <h2 className="font-serif text-xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
                   {payload.performance_page?.title || "Visualisasi kinerja keuangan dan proyeksi"}
                 </h2>
-                <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <span className="text-xs text-[#666666] dark:text-[#666666]">
                   4 Kuadran kinerja
                 </span>
               </div>
 
               {payload.performance_page?.subtitle && (
-                <p className="text-sm text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+                <p className="text-sm text-[#666666] leading-relaxed dark:text-[#666666]">
                   {payload.performance_page.subtitle}
                 </p>
               )}
@@ -330,7 +330,7 @@ function ReportPage() {
               <PerformanceQuadrants payload={payload} />
 
               {payload.performance_page?.sources && payload.performance_page.sources.length > 0 && (
-                <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <p className="text-xs text-[#666666] dark:text-[#666666]">
                   Basis data: {payload.performance_page.sources.join("; ")}
                 </p>
               )}

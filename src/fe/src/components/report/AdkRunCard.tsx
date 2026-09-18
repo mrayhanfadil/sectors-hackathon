@@ -88,14 +88,14 @@ function renderStatusBadge(status: string) {
       )
     case "running":
       return (
-        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#0E6E63]/30 bg-[#0E6E63]/10 px-2 py-0.5 text-xs font-medium text-[#0E6E63] animate-pulse dark:border-[#4FD1B5]/30 dark:bg-[#4FD1B5]/20 dark:text-[#4FD1B5]">
-          <span className="h-1.5 w-1.5 rounded-full bg-[#0E6E63]" />
+        <span className="inline-flex items-center gap-1.5 rounded-md border border-[#0928B1]/30 bg-[#0928B1]/10 px-2 py-0.5 text-xs font-medium text-[#0928B1] animate-pulse dark:border-[#7596FF]/30 dark:bg-[#7596FF]/20 dark:text-[#7596FF]">
+          <span className="h-1.5 w-1.5 rounded-full bg-[#0928B1]" />
           Sedang diproses
         </span>
       )
     default:
       return (
-        <span className="inline-flex items-center rounded-md border border-[#E7E3DA] bg-[#FBFAF7] px-2 py-0.5 text-xs font-medium text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
+        <span className="inline-flex items-center rounded-md border border-[#D9D9D9] bg-[#f1f5f9] px-2 py-0.5 text-xs font-medium text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           {status}
         </span>
       )
@@ -108,21 +108,21 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
 
   if (!hasRun || !log) {
     return (
-      <Card className="rounded-xl border border-[#E7E3DA] bg-white shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]">
-        <CardHeader className="border-b border-[#E7E3DA] p-4 pb-3 dark:border-[#2A2822]">
+      <Card className="rounded-xl border border-[#D9D9D9] bg-white shadow-none dark:border-[#262930] dark:bg-[#090a0c]">
+        <CardHeader className="border-b border-[#D9D9D9] p-4 pb-3 dark:border-[#262930]">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <Bot className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
-              <CardTitle className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+              <Bot className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF]" />
+              <CardTitle className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                 Proses analisis {tk}
               </CardTitle>
             </div>
-            <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Siaga</span>
+            <span className="text-[11px] text-[#666666] dark:text-[#666666]">Siaga</span>
           </div>
         </CardHeader>
         <CardContent className="space-y-3 p-4">
-          <div className="flex items-center gap-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
-            <Inbox className="h-4 w-4 text-[#A8A296]" />
+          <div className="flex items-center gap-2 text-xs text-[#666666] dark:text-[#666666]">
+            <Inbox className="h-4 w-4 text-[#666666]" />
             <span>Belum ada rekam jejak eksekusi untuk {tk}.</span>
           </div>
           <div>
@@ -130,7 +130,7 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
               <Button
                 size="sm"
                 variant="outline"
-                className="h-8 rounded-lg border-[#E7E3DA] bg-white text-xs font-medium text-[#1C1B17] hover:bg-[#F4F1EA] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3] dark:hover:bg-[#25231E] cursor-pointer"
+                className="h-8 rounded-lg border-[#D9D9D9] bg-white text-xs font-medium text-[#333333] hover:bg-[#B4C7FF] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9] dark:hover:bg-[#1e2229] cursor-pointer"
               >
                 <span>Jalankan analisis</span>
               </Button>
@@ -149,17 +149,17 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
     : "-"
 
   return (
-    <Card className="rounded-xl border border-[#E7E3DA] bg-white shadow-none dark:border-[#2A2822] dark:bg-[#1B1A16]">
-      <CardHeader className="border-b border-[#E7E3DA] p-4 pb-3 dark:border-[#2A2822]">
+    <Card className="rounded-xl border border-[#D9D9D9] bg-white shadow-none dark:border-[#262930] dark:bg-[#090a0c]">
+      <CardHeader className="border-b border-[#D9D9D9] p-4 pb-3 dark:border-[#262930]">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex items-center gap-2">
-            <Activity className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
-            <CardTitle className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <Activity className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF]" />
+            <CardTitle className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Proses analisis {tk}
             </CardTitle>
           </div>
           <Link to="/agent" search={{ ticker: tk } as any}>
-            <span className="text-xs font-medium text-[#0E6E63] hover:underline dark:text-[#4FD1B5]">
+            <span className="text-xs font-medium text-[#0928B1] hover:underline dark:text-[#7596FF]">
               Lihat rincian
             </span>
           </Link>
@@ -170,70 +170,70 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
         {/* Row 1: Status & Metadata */}
         <div className="flex flex-wrap items-center justify-between gap-1.5">
           <div>{renderStatusBadge(log.status)}</div>
-          <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+          <div className="text-[11px] text-[#666666] dark:text-[#666666]">
             {formatRelativeTime(log.started_at)}
           </div>
         </div>
 
         {/* Row 2: Metrics */}
         <div className="grid grid-cols-2 gap-2 text-xs">
-          <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 dark:border-[#2A2822] dark:bg-[#14130F]">
-            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Model</div>
-            <div className="truncate font-medium text-[#1C1B17] mt-0.5 dark:text-[#EDEAE3]">
+          <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 dark:border-[#262930] dark:bg-[#1e2229]">
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Model</div>
+            <div className="truncate font-medium text-[#333333] mt-0.5 dark:text-[#f1f5f9]">
               {log.provider}/{log.model}
             </div>
           </div>
-          <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-2.5 dark:border-[#2A2822] dark:bg-[#14130F]">
-            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Durasi / Kejadian</div>
-            <div className="font-medium text-[#1C1B17] mt-0.5 dark:text-[#EDEAE3]">
+          <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 dark:border-[#262930] dark:bg-[#1e2229]">
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Durasi / Kejadian</div>
+            <div className="font-medium text-[#333333] mt-0.5 dark:text-[#f1f5f9]">
               <span className="font-mono tabular-nums">{formatDuration(log.duration_s)}</span> · <span className="font-mono tabular-nums">{log.n_events}</span> ev
             </div>
           </div>
         </div>
 
         {/* Row 3: Last activity */}
-        <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 text-xs leading-relaxed dark:border-[#2A2822] dark:bg-[#14130F]">
-          <div className="font-semibold text-[#1C1B17] text-[11px] dark:text-[#EDEAE3]">
+        <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-xs leading-relaxed dark:border-[#262930] dark:bg-[#1e2229]">
+          <div className="font-semibold text-[#333333] text-[11px] dark:text-[#f1f5f9]">
             Aktivitas mesin terakhir:
           </div>
-          <p className="mt-1 text-[#6B6659] dark:text-[#A8A296]">
+          <p className="mt-1 text-[#666666] dark:text-[#666666]">
             {lastTextPreview}
           </p>
         </div>
 
         {/* Expandable Riwayat Eksekusi */}
         {history && history.length > 0 && (
-          <div className="border-t border-[#E7E3DA] pt-3 dark:border-[#2A2822]">
+          <div className="border-t border-[#D9D9D9] pt-3 dark:border-[#262930]">
             <button
               type="button"
               onClick={() => setHistoryOpen((prev) => !prev)}
-              className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold text-[#1C1B17] hover:text-[#0E6E63] cursor-pointer dark:text-[#EDEAE3] dark:hover:text-[#4FD1B5]"
+              className="flex w-full items-center justify-between py-1 text-left text-xs font-semibold text-[#333333] hover:text-[#0928B1] cursor-pointer dark:text-[#f1f5f9] dark:hover:text-[#7596FF]"
             >
               <div className="flex items-center gap-1.5">
-                <History className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+                <History className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
                 <span>Riwayat eksekusi ({Math.min(history.length, 5)})</span>
               </div>
               {historyOpen ? (
-                <ChevronUp className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+                <ChevronUp className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
               ) : (
-                <ChevronDown className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+                <ChevronDown className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
               )}
             </button>
 
             {historyOpen && (
-              <div className="mt-2 space-y-1.5 rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3 dark:border-[#2A2822] dark:bg-[#14130F]">
+              <div className="mt-2 space-y-1.5 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 dark:border-[#262930] dark:bg-[#1e2229]">
                 {history.slice(0, 5).map((h) => (
                   <div
                     key={h.run_id}
-                    className="flex flex-wrap items-center justify-between gap-1 border-b border-[#E7E3DA]/60 py-1.5 text-xs last:border-0 dark:border-[#2A2822]/60"
+                    className="flex flex-wrap items-center justify-between gap-1 border-b border-[#D9D9D9]/60 py-1.5 text-xs last:border-0 dark:border-[#262930]/60"
                   >
                     <div className="flex items-center gap-1.5">
                       {renderStatusBadge(h.status)}
-                      <span className="text-[#6B6659] dark:text-[#A8A296]">
+                      <span className="text-[#666666] dark:text-[#666666]">
                         {formatRelativeTime(h.started_at)}
                       </span>
                     </div>
-                    <div className="text-[#6B6659] dark:text-[#A8A296]">
+                    <div className="text-[#666666] dark:text-[#666666]">
                       <span className="font-mono tabular-nums">{h.n_events}</span> ev · <span className="font-mono tabular-nums">{formatDuration(h.duration_s)}</span>
                     </div>
                   </div>

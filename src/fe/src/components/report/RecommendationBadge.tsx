@@ -33,7 +33,7 @@ export function RecommendationBadge({
     ? "border-[#F8C8CB] bg-[#FDF2F2] text-[#B4232A] dark:border-[#B4232A]/40 dark:bg-[#B4232A]/20 dark:text-[#F87171]"
     : isHold
     ? "border-[#F6E3B8] bg-[#FEF9EE] text-[#A16207] dark:border-[#A16207]/40 dark:bg-[#A16207]/20 dark:text-[#FBBF24]"
-    : "border-[#E7E3DA] bg-[#F4F1EA] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]"
+    : "border-[#D9D9D9] bg-[#B4C7FF] text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]"
 
   const upsideColor = isBuy
     ? "text-[#157F3D] dark:text-[#34D399]"
@@ -72,7 +72,7 @@ export function RecommendationBadge({
 
       {showTarget && targetPrice != null && (
         <span
-          className={`inline-flex items-center rounded-md border border-[#E7E3DA] bg-[#FBFAF7] font-sans font-medium text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3] ${sizeClasses[size]}`}
+          className={`inline-flex items-center rounded-md border border-[#D9D9D9] bg-[#f1f5f9] font-sans font-medium text-[#333333] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9] ${sizeClasses[size]}`}
         >
           <span>Nilai wajar Rp <span className="font-mono tabular-nums">{fmtIDR(targetPrice)}</span></span>
           {formattedUpside && (

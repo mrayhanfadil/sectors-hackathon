@@ -57,15 +57,15 @@ function RootComponent() {
   const closeMenu = () => setMenuOpen(false)
 
   return (
-    <div className="min-h-screen bg-[#FBFAF7] text-[#1C1B17] dark:bg-[#14130F] dark:text-[#EDEAE3] font-sans antialiased">
+    <div className="min-h-screen bg-[#f1f5f9] text-[#333333] dark:bg-[#1e2229] dark:text-[#f1f5f9] font-sans antialiased">
       {/* Header */}
-      <header className="sticky top-0 z-40 border-b border-[#E7E3DA] bg-[#FBFAF7]/95 backdrop-blur-sm dark:border-[#2A2822] dark:bg-[#14130F]/95">
+      <header className="sticky top-0 z-40 border-b border-[#D9D9D9] bg-[#f1f5f9]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#1e2229]/95">
         <div className="mx-auto flex max-w-[1100px] h-14 items-center justify-between px-4 sm:px-6">
           {/* Left: Brand & Desktop Nav */}
           <div className="flex items-center gap-8">
             <Link
               to="/"
-              className="text-xl font-normal tracking-tight text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]"
+              className="text-xl font-normal tracking-tight text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]"
               onClick={closeMenu}
             >
               Sektoral.id
@@ -77,8 +77,8 @@ function RootComponent() {
                 to="/"
                 className={`transition-colors ${
                   isLaporanActive
-                    ? "text-[#0E6E63] dark:text-[#4FD1B5] font-semibold"
-                    : "text-[#6B6659] hover:text-[#1C1B17] dark:text-[#A8A296] dark:hover:text-[#EDEAE3]"
+                    ? "text-[#0928B1] dark:text-[#7596FF] font-semibold"
+                    : "text-[#666666] hover:text-[#333333] dark:text-[#666666] dark:hover:text-[#f1f5f9]"
                 }`}
               >
                 Laporan
@@ -88,8 +88,8 @@ function RootComponent() {
                 to="/agent"
                 className={`transition-colors ${
                   isAgentActive
-                    ? "text-[#0E6E63] dark:text-[#4FD1B5] font-semibold"
-                    : "text-[#6B6659] hover:text-[#1C1B17] dark:text-[#A8A296] dark:hover:text-[#EDEAE3]"
+                    ? "text-[#0928B1] dark:text-[#7596FF] font-semibold"
+                    : "text-[#666666] hover:text-[#333333] dark:text-[#666666] dark:hover:text-[#f1f5f9]"
                 }`}
               >
                 Mesin
@@ -99,8 +99,8 @@ function RootComponent() {
                 to={`/report/${activeTicker}/challenge` as any}
                 className={`transition-colors ${
                   isDebateActive
-                    ? "text-[#0E6E63] dark:text-[#4FD1B5] font-semibold"
-                    : "text-[#6B6659] hover:text-[#1C1B17] dark:text-[#A8A296] dark:hover:text-[#EDEAE3]"
+                    ? "text-[#0928B1] dark:text-[#7596FF] font-semibold"
+                    : "text-[#666666] hover:text-[#333333] dark:text-[#666666] dark:hover:text-[#f1f5f9]"
                 }`}
               >
                 Uji silang
@@ -113,7 +113,7 @@ function RootComponent() {
             <button
               type="button"
               onClick={toggleTheme}
-              className="rounded-lg border border-[#E7E3DA] bg-white p-2 text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#F3EFE6] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#23211B] transition-colors cursor-pointer"
+              className="rounded-lg border border-[#D9D9D9] bg-white p-2 text-[#666666] hover:text-[#333333] hover:bg-[#F3EFE6] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#23211B] transition-colors cursor-pointer"
               aria-label={theme === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}
               title={theme === "dark" ? "Ganti ke mode terang" : "Ganti ke mode gelap"}
             >
@@ -123,7 +123,7 @@ function RootComponent() {
             {/* Mobile Hamburger */}
             <button
               type="button"
-              className="rounded-lg border border-[#E7E3DA] bg-white p-2 text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#F3EFE6] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#23211B] md:hidden transition-colors cursor-pointer"
+              className="rounded-lg border border-[#D9D9D9] bg-white p-2 text-[#666666] hover:text-[#333333] hover:bg-[#F3EFE6] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#23211B] md:hidden transition-colors cursor-pointer"
               onClick={() => setMenuOpen((v) => !v)}
               aria-label={menuOpen ? "Tutup menu" : "Buka menu"}
             >
@@ -134,14 +134,14 @@ function RootComponent() {
 
         {/* Mobile Dropdown Menu */}
         {menuOpen && (
-          <div className="border-t border-[#E7E3DA] bg-[#FBFAF7] px-4 py-4 md:hidden dark:border-[#2A2822] dark:bg-[#14130F] space-y-2">
+          <div className="border-t border-[#D9D9D9] bg-[#f1f5f9] px-4 py-4 md:hidden dark:border-[#262930] dark:bg-[#1e2229] space-y-2">
             <Link
               to="/"
               onClick={closeMenu}
               className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                 isLaporanActive
-                  ? "bg-[#E7E3DA]/40 text-[#0E6E63] font-semibold dark:bg-[#2A2822]/60 dark:text-[#4FD1B5]"
-                  : "text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#E7E3DA]/20 dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#2A2822]/30"
+                  ? "bg-[#D9D9D9]/40 text-[#0928B1] font-semibold dark:bg-[#262930]/60 dark:text-[#7596FF]"
+                  : "text-[#666666] hover:text-[#333333] hover:bg-[#D9D9D9]/20 dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#262930]/30"
               }`}
             >
               Laporan
@@ -152,8 +152,8 @@ function RootComponent() {
               onClick={closeMenu}
               className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                 isAgentActive
-                  ? "bg-[#E7E3DA]/40 text-[#0E6E63] font-semibold dark:bg-[#2A2822]/60 dark:text-[#4FD1B5]"
-                  : "text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#E7E3DA]/20 dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#2A2822]/30"
+                  ? "bg-[#D9D9D9]/40 text-[#0928B1] font-semibold dark:bg-[#262930]/60 dark:text-[#7596FF]"
+                  : "text-[#666666] hover:text-[#333333] hover:bg-[#D9D9D9]/20 dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#262930]/30"
               }`}
             >
               Mesin
@@ -163,8 +163,8 @@ function RootComponent() {
               onClick={closeMenu}
               className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
                 isDebateActive
-                  ? "bg-[#E7E3DA]/40 text-[#0E6E63] font-semibold dark:bg-[#2A2822]/60 dark:text-[#4FD1B5]"
-                  : "text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#E7E3DA]/20 dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#2A2822]/30"
+                  ? "bg-[#D9D9D9]/40 text-[#0928B1] font-semibold dark:bg-[#262930]/60 dark:text-[#7596FF]"
+                  : "text-[#666666] hover:text-[#333333] hover:bg-[#D9D9D9]/20 dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#262930]/30"
               }`}
             >
               Uji silang
@@ -179,18 +179,18 @@ function RootComponent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#E7E3DA] bg-[#FBFAF7] py-8 text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+      <footer className="border-t border-[#D9D9D9] bg-[#f1f5f9] py-8 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
         <div className="mx-auto max-w-[1100px] space-y-4 px-4 sm:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#E7E3DA] pb-4 dark:border-[#2A2822]">
-            <div className="font-['Newsreader',serif] text-base text-[#1C1B17] dark:text-[#EDEAE3]">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#D9D9D9] pb-4 dark:border-[#262930]">
+            <div className="font-['Newsreader',serif] text-base text-[#333333] dark:text-[#f1f5f9]">
               Sektoral.id
             </div>
-            <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <div className="text-xs text-[#666666] dark:text-[#666666]">
               Riset fundamental &amp; analisis multi-agen saham Indonesia
             </div>
           </div>
 
-          <div className="space-y-2 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+          <div className="space-y-2 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
             <p>
               Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis emiten. Kalkulasi nilai wajar dan WACC menggunakan data laporan keuangan terverifikasi dari data historis IDX.
             </p>
