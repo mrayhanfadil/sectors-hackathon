@@ -98,8 +98,16 @@
 {%- endmacro %}
 
 {# ------------------------------------------------------------------ styles #}
-{% macro styles(palette) -%}
+{% macro styles(palette, fonts_dir="") -%}
 <style>
+  /* House fonts (peer #9): files live in assets/fonts/, served via file:// so both
+     Playwright set_content and WeasyPrint base_url resolve them. Fallbacks stay
+     for environments where the files are absent. */
+  {% if fonts_dir %}
+  @font-face { font-family: "Source Serif 4"; src: url("{{ fonts_dir }}/SourceSerif4-VF.ttf"); font-weight: 100 900; }
+  @font-face { font-family: "Inter"; src: url("{{ fonts_dir }}/Inter-VF.ttf"); font-weight: 100 900; }
+  @font-face { font-family: "JetBrains Mono"; src: url("{{ fonts_dir }}/JetBrainsMono-VF.ttf"); font-weight: 100 900; }
+  {% endif %}
   :root {
     --ink: #1A2733; --muted: #63748A; --line: #D6E2EE; --paper: #ffffff;
     --brand: {{ palette.brand }}; --brand-dark: {{ palette.brand_dark }};
@@ -114,7 +122,9 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: "Helvetica Neue", Arial, sans-serif; color: var(--ink); font-size: 9.5pt; line-height: 1.45; }
+  body { font-family: "Source Serif 4", Georgia, serif; color: var(--ink); font-size: 10pt; line-height: 1.5; }
+  h1, h2, h3, .para-h, .rhdr-title, .rhdr-issuer { font-family: "Inter", Arial, sans-serif; }
+  .num, td.num, .fin-table td:not(.stmt-label) { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
   .page { page-break-after: always; position: relative; padding: 50pt 40pt 64pt; }
 {% if HOUSE.native_furniture %}
   /* Furniture is drawn by Chromium on every physical page via header/footer templates
@@ -477,7 +487,7 @@
     {% for s in segments %}
       <g>
         <rect x="{{ (loop.index0 * (W // (segments|length))) }}" y="{{ H + 6 }}" width="10" height="10" rx="2" fill="{{ palette[loop.index0 % palette|length] }}" rx="2" />
-        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
+        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Inter, Arial, sans-serif" fill="#63748A">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
       </g>
     {% endfor %}
   </svg>
@@ -518,12 +528,12 @@
     {# labels #}
     {% for lbl in labels or [] %}
       {% if loop.index0 % 2 == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Inter, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
     <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#63748A">{{ vmax|dec(1) }}</text>
     <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 8 }}" font-size="6.5" fill="#63748A">{{ vmin|dec(1) }}</text>
-    <g font-size="6.5" font-family="Helvetica Neue, Arial, sans-serif">
+    <g font-size="6.5" font-family="Inter, Arial, sans-serif">
       <rect x="{{ pad_l }}" y="1" width="8" height="8" fill="#0B1F3A" rx="1"/><text x="{{ pad_l + 12 }}" y="8" fill="#1A2733">{{ ticker_label }}</text>
       <rect x="{{ pad_l + 70 }}" y="1" width="8" height="8" fill="#A9C9E8" rx="1"/><text x="{{ pad_l + 82 }}" y="8" fill="#1A2733">IHSG</text>
       <text x="{{ pad_l + 130 }}" y="8" fill="#63748A">Rp (indeks 100 = awal periode)</text>
@@ -591,7 +601,7 @@
       <line x1="{{ pad_l }}" y1="{{ y_last }}" x2="{{ W - pad_r }}" y2="{{ y_last }}" stroke="#C0392B" stroke-width="{{ sw_g * 2 }}" stroke-dasharray="4 2.5"/>
       {% set ref_txt = "Terakhir " ~ (last_p | idn(0)) %}
       <rect x="{{ pad_l + 2 }}" y="{{ y_last - 9.6 }}" width="{{ ref_txt | length * 3.7 + 4 }}" height="9.6" rx="1.4" fill="#ffffff" opacity="0.92"/>
-      <text x="{{ pad_l + 4.5 }}" y="{{ y_last - 2.4 }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" font-weight="700" fill="#C0392B">{{ ref_txt }}</text>
+      <text x="{{ pad_l + 4.5 }}" y="{{ y_last - 2.4 }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#C0392B">{{ ref_txt }}</text>
     {% endif %}
     <polygon points="{{ pad_l }},{{ pad_t + chart_h }} {{ ns.pts_p | trim }} {{ W - pad_r }},{{ pad_t + chart_h }}" fill="rgba(11,31,58,0.06)"/>
     <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#0B1F3A" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
@@ -600,23 +610,23 @@
       {% set y = pad_t + (i * chart_h / 3) %}
       {% set pv = pmax - (i * (pmax - pmin) / 3) %}
       {% set rv = rmax - (i * (rmax - rmin) / 3) %}
-      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#0B1F3A" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
-      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A">{{ "%+0.0f"|format(rv) }}%</text>
+      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#0B1F3A" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
+      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#63748A">{{ "%+0.0f"|format(rv) }}%</text>
     {% endfor %}
     {% for lbl in labels or [] %}
       {% if loop.index0 % lbl_every == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Helvetica Neue, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
     {% if narrow %}
-    <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
+    <g font-size="{{ lfs }}" font-family="Inter, Arial, sans-serif">
       <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
       <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#1A2733">Harga (Rp, kiri)</text>
       <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
       <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#1A2733">Relatif vs IHSG (%, kanan)</text>
     </g>
     {% else %}
-    <g font-size="{{ lfs }}" font-family="Helvetica Neue, Arial, sans-serif">
+    <g font-size="{{ lfs }}" font-family="Inter, Arial, sans-serif">
       <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
       <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#1A2733">Harga (Rp, kiri)</text>
       <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
@@ -635,8 +645,8 @@
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="WACC Breakdown">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
     <rect x="0" y="0" width="{{ W }}" height="26" rx="4" fill="#0B1F3A"/>
-    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
-    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
+    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
+    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
     {% for r in rows %}
       {% set y = 26 + loop.index0 * row_h %}
       {% set lbl = r.label if r.label is defined else (r[0] if r is sequence else r) %}
@@ -648,8 +658,8 @@
         <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#F4F8FC"/>
       {% endif %}
       <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D6E2EE" stroke-width="0.5"/>
-      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0B1F3A">{{ lbl }}</text>
-      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val|auto }}</text>
+      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0B1F3A">{{ lbl }}</text>
+      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val|auto }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -665,16 +675,16 @@
   {% set cell_h = chart_h / n_rows %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Sensitivitas WACC x Terminal Growth">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Sensitivitas WACC x Terminal Growth</text>
+    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Sensitivitas WACC x Terminal Growth</text>
     {% if price and price > 0 %}
-    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Poppins, Arial, sans-serif" fill="#63748A">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
+    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Inter, Arial, sans-serif" fill="#63748A">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
     {% endif %}
     <!-- Axis title -->
-    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#63748A" text-anchor="end">WACC \ g</text>
+    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#63748A" text-anchor="end">WACC \ g</text>
     <!-- Column headers (g) -->
     {% for g in g_axis or [] %}
       {% set x_center = pad_l + loop.index0 * cell_w + cell_w / 2 %}
-      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
+      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
     {% endfor %}
     <!-- Rows (WACC) & Cells -->
     {% for w in wacc_axis or [] %}
@@ -682,7 +692,7 @@
       {% set y_top = pad_t + row_idx * cell_h %}
       {% set y_center = y_top + cell_h / 2 %}
       <!-- Y label -->
-      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
+      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
       {% set row_vals = matrix[row_idx] if (matrix and matrix|length > row_idx) else [] %}
       {% for val in row_vals %}
         {% set col_idx = loop.index0 %}
@@ -705,9 +715,9 @@
           {% set bg = "#0B1F3A" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% endif %}
         <rect x="{{ x_left + 1 }}" y="{{ y_top + 1 }}" width="{{ cell_w - 2 }}" height="{{ cell_h - 2 }}" rx="3" fill="{{ bg }}" stroke="#D6E2EE" stroke-width="0.5"/>
-        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
+        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
         {% if up is not none %}
-        <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
+        <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
         {% endif %}
       {% endfor %}
     {% endfor %}
@@ -731,21 +741,21 @@
   {% if vmax <= 0 %}{% set vmax = 1 %}{% endif %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Skenario Bear / Base / Bull vs Harga Pasar">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Skenario Bear / Base / Bull vs Harga Pasar</text>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Skenario Bear / Base / Bull vs Harga Pasar</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
       <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
-      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Poppins, Arial, sans-serif"
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Inter, Arial, sans-serif"
             fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
-    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Poppins, Arial, sans-serif"
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Inter, Arial, sans-serif"
           fill="#63748A" text-anchor="end">Rp/saham</text>
     <!-- Market Price line -->
     {% if px > 0 %}
       {% set y_px = pad_t + chart_h - (px / vmax * chart_h) %}
       <line x1="{{ pad_l }}" y1="{{ y_px }}" x2="{{ W - pad_r }}" y2="{{ y_px }}" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="{{ pad_l + 6 }}" y="{{ y_px - 4 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#C0392B">Harga Pasar: Rp {{ px|idr if px is defined else px }}</text>
+      <text x="{{ pad_l + 6 }}" y="{{ y_px - 4 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#C0392B">Harga Pasar: Rp {{ px|idr if px is defined else px }}</text>
     {% endif %}
     <!-- 3 Bars -->
     {% set items = [
@@ -761,8 +771,8 @@
       {% set bh = (val / vmax * chart_h) if vmax > 0 else 0 %}
       {% set by = pad_t + chart_h - bh %}
       <rect x="{{ bx }}" y="{{ by }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ item.fill }}" stroke="{{ item.stroke }}" stroke-width="1"/>
-      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
-      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ item.name }}</text>
+      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
+      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ item.name }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -901,15 +911,15 @@
   {% set vmax = (peak * 1.22) if peak > 0 else 1 %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Bridge: PV FCFF -> Equity Value (IDR bn)">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
       <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
-      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Poppins, Arial, sans-serif"
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Inter, Arial, sans-serif"
             fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
-    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Poppins, Arial, sans-serif"
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Inter, Arial, sans-serif"
           fill="#63748A" text-anchor="end">Rp bn</text>
     {% set bars = [
       {"l1": "PV", "l2": "Explicit", "bot": 0, "top": pv_exp, "val": pv_exp, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
@@ -936,10 +946,10 @@
       <line x1="{{ bx }}" y1="{{ y_bot }}" x2="{{ bx + bar_w }}" y2="{{ y_bot }}" stroke="#D6E2EE" stroke-width="1.6"/>
       {% endif %}
       {% set vabs = b.val | abs %}
-      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
-      <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
+      <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
       {% if b.l2 %}
-      <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Poppins, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
+      <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
       {% endif %}
     {% endfor %}
   </svg>
@@ -949,7 +959,7 @@
 {% macro chartjs() -%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
-  Chart.defaults.font.family = "Helvetica Neue, Arial, sans-serif";
+  Chart.defaults.font.family = "Inter, Arial, sans-serif";
   Chart.defaults.locale = "id-ID";      // tick labels group thousands the way the tables do
   Chart.defaults.font.size = 8;
   Chart.defaults.animation = false;          // PDF: no waiting for easing
@@ -962,7 +972,7 @@
               ink: "#1A2733", muted: "#63748A", sell: "#C0392B", hold: "#B08D57"};
   Chart.defaults.color = AB.ink;
   Chart.defaults.borderColor = AB.rule;
-  Chart.defaults.font.family = "Poppins, Helvetica Neue, Arial, sans-serif";
+  Chart.defaults.font.family = "Inter, Arial, sans-serif";
   Chart.defaults.font.size = 7;
   Chart.defaults.scale.grid.color = AB.rule;      // hairline rules, as the tools draw them
   Chart.defaults.scale.grid.drawTicks = false;
@@ -976,7 +986,7 @@
       const ds = chart.data.datasets || [];
       const many = ds.length > 1;
       chart.ctx.save();
-      chart.ctx.font = "700 6.4px Poppins, Helvetica Neue, Arial, sans-serif";
+      chart.ctx.font = "700 6.4px Inter, Arial, sans-serif";
       chart.ctx.textAlign = "center";
       chart.ctx.textBaseline = "bottom";
       ds.forEach((d, di) => {
@@ -1013,7 +1023,7 @@
       chart.ctx.stroke();
       chart.ctx.setLineDash([]);
       if (r.label) {
-        chart.ctx.font = "700 6.4px Poppins, Helvetica Neue, Arial, sans-serif";
+        chart.ctx.font = "700 6.4px Inter, Arial, sans-serif";
         const w = chart.ctx.measureText(r.label).width;
         chart.ctx.fillStyle = "#ffffff";
         chart.ctx.fillRect(a.left + 1, y - 8.5, w + 4, 8);
