@@ -31,14 +31,14 @@ export const AgentRail = memo(function AgentRail({
 }: AgentRailProps) {
   return (
     <div className={cn("w-full space-y-2 font-sans", className)}>
-      <div className="flex items-center justify-between text-xs text-[#6B6659] dark:text-[#A8A296] px-1">
-        <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3] flex items-center gap-1.5">
-          <Cpu className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5]" />
+      <div className="flex items-center justify-between text-xs text-[#666666] dark:text-[#666666] px-1">
+        <span className="font-medium text-[#333333] dark:text-[#f1f5f9] flex items-center gap-1.5">
+          <Cpu className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF]" />
           <span>Status seluruh agen</span>
         </span>
         <div className="flex items-center gap-3 text-[11px]">
           <span className="flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-[#6B6659] dark:bg-[#A8A296]" />
+            <span className="h-1.5 w-1.5 rounded-full bg-[#666666] dark:bg-[#666666]" />
             <span>Menunggu</span>
           </span>
           <span className="flex items-center gap-1">
@@ -52,7 +52,7 @@ export const AgentRail = memo(function AgentRail({
         </div>
       </div>
 
-      <div className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-3">
+      <div className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-3">
         <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-0.5">
           {knownAgents.map((agent, index) => {
             const status = agentStatuses[agent.key] || "idle"
@@ -68,12 +68,12 @@ export const AgentRail = memo(function AgentRail({
                   className={cn(
                     "flex flex-col items-start gap-0.5 rounded-lg border p-2 text-left transition-all cursor-pointer text-xs",
                     isSelected
-                      ? "border-[#0E6E63] dark:border-[#4FD1B5] bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 text-[#0E6E63] dark:text-[#4FD1B5]"
+                      ? "border-[#0928B1] dark:border-[#7596FF] bg-[#0928B1]/10 dark:bg-[#7596FF]/15 text-[#0928B1] dark:text-[#7596FF]"
                       : status === "running"
                       ? "border-amber-200 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300"
                       : status === "finished"
-                      ? "border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#1C1B17] dark:text-[#EDEAE3] hover:border-[#0E6E63]/40"
-                      : "border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7] dark:bg-[#14130F] text-[#6B6659] dark:text-[#A8A296]"
+                      ? "border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] text-[#333333] dark:text-[#f1f5f9] hover:border-[#0928B1]/40"
+                      : "border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9] dark:bg-[#1e2229] text-[#666666] dark:text-[#666666]"
                   )}
                   title={`${agent.label} (${agent.phase}) - ${STATUS_LABELS[status]}`}
                 >
@@ -86,7 +86,7 @@ export const AgentRail = memo(function AgentRail({
                       ) : status === "error" ? (
                         <AlertCircle className="h-3 w-3 text-rose-600 dark:text-rose-400 shrink-0" />
                       ) : (
-                        <span className="h-1.5 w-1.5 rounded-full bg-[#6B6659] dark:bg-[#A8A296] shrink-0" />
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#666666] dark:bg-[#666666] shrink-0" />
                       )}
                       <span className="font-medium truncate">
                         {agent.label}
@@ -94,13 +94,13 @@ export const AgentRail = memo(function AgentRail({
                     </div>
                   </div>
 
-                  <div className="text-[10px] text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="text-[10px] text-[#666666] dark:text-[#666666]">
                     <span>{agent.phase}</span>
                   </div>
                 </button>
 
                 {showDivider && index < knownAgents.length - 1 && (
-                  <ChevronRight className="h-3.5 w-3.5 text-[#6B6659]/50 dark:text-[#A8A296]/50 shrink-0" />
+                  <ChevronRight className="h-3.5 w-3.5 text-[#666666]/50 dark:text-[#666666]/50 shrink-0" />
                 )}
               </div>
             )

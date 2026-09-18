@@ -106,15 +106,15 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
   }, [validItems, filterQuery])
 
   return (
-    <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 font-sans text-[#1C1B17] dark:text-[#EDEAE3]">
+    <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 font-sans text-[#333333] dark:text-[#f1f5f9]">
       {/* Header section */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
           <div>
-            <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+            <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
               Pilih emiten
             </h1>
-            <p className="mt-1.5 text-sm text-[#6B6659] dark:text-[#A8A296] leading-relaxed max-w-2xl">
+            <p className="mt-1.5 text-sm text-[#666666] dark:text-[#666666] leading-relaxed max-w-2xl">
               Daftar saham yang telah diproses oleh mesin analisis multi-agen. Pilih emiten untuk melihat alur kerja, status valuasi, dan ringkasan hasil riset.
             </p>
           </div>
@@ -123,10 +123,10 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
             type="button"
             onClick={loadData}
             disabled={loading}
-            className="inline-flex items-center gap-2 self-start sm:self-auto rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] px-3 py-1.5 text-xs text-[#6B6659] dark:text-[#A8A296] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] hover:text-[#1C1B17] dark:hover:text-[#EDEAE3] transition-colors disabled:opacity-50"
+            className="inline-flex items-center gap-2 self-start sm:self-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] px-3 py-1.5 text-xs text-[#666666] dark:text-[#666666] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] hover:text-[#333333] dark:hover:text-[#f1f5f9] transition-colors disabled:opacity-50"
             title="Muat ulang daftar emiten"
           >
-            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-[#0E6E63] dark:text-[#4FD1B5]" : ""}`} />
+            <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin text-[#0928B1] dark:text-[#7596FF]" : ""}`} />
             <span>Segarkan data</span>
           </button>
         </div>
@@ -134,13 +134,13 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
         {/* Filter Input */}
         <div className="pt-2">
           <div className="relative max-w-md">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#6B6659] dark:text-[#A8A296]" />
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-[#666666] dark:text-[#666666]" />
             <input
               type="text"
               value={filterQuery}
               onChange={(e) => setFilterQuery(e.target.value)}
               placeholder="Cari kode saham…"
-              className="w-full rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] pl-10 pr-4 py-2 text-sm text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none focus:border-[#0E6E63] dark:focus:border-[#4FD1B5] transition-colors"
+              className="w-full rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] pl-10 pr-4 py-2 text-sm text-[#333333] dark:text-[#f1f5f9] placeholder:text-[#666666]/70 dark:placeholder:text-[#666666]/70 focus:outline-none focus:border-[#0928B1] dark:focus:border-[#7596FF] transition-colors"
             />
           </div>
         </div>
@@ -148,12 +148,12 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
 
       {/* Content states */}
       {loading && !summary ? (
-        <div className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-12 text-center space-y-3">
-          <Loader2 className="h-6 w-6 animate-spin text-[#0E6E63] dark:text-[#4FD1B5] mx-auto" />
-          <p className="text-sm font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-12 text-center space-y-3">
+          <Loader2 className="h-6 w-6 animate-spin text-[#0928B1] dark:text-[#7596FF] mx-auto" />
+          <p className="text-sm font-medium text-[#333333] dark:text-[#f1f5f9]">
             Memuat daftar proses mesin…
           </p>
-          <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <p className="text-xs text-[#666666] dark:text-[#666666]">
             Mengambil status terbaru dari server analisis
           </p>
         </div>
@@ -165,7 +165,7 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
               <h3 className="text-sm font-semibold text-[#B4232A]">
                 Terjadi kesalahan saat memuat data
               </h3>
-              <p className="text-xs text-[#6B6659] dark:text-[#A8A296] break-all">
+              <p className="text-xs text-[#666666] dark:text-[#666666] break-all">
                 {error}
               </p>
             </div>
@@ -173,18 +173,18 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
           <button
             type="button"
             onClick={loadData}
-            className="inline-flex items-center gap-2 rounded-lg bg-[#0E6E63] text-white px-3.5 py-1.5 text-xs font-medium hover:bg-[#0c5c53] transition-colors"
+            className="inline-flex items-center gap-2 rounded-lg bg-[#0928B1] text-white px-3.5 py-1.5 text-xs font-medium hover:bg-[#0c5c53] transition-colors"
           >
             <RefreshCw className="h-3.5 w-3.5" />
             <span>Coba lagi</span>
           </button>
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-12 text-center space-y-2">
-          <h3 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-12 text-center space-y-2">
+          <h3 className="font-serif text-lg font-medium text-[#333333] dark:text-[#f1f5f9]">
             {filterQuery ? "Tidak ada emiten yang sesuai" : "Belum ada pipeline yang dijalankan"}
           </h3>
-          <p className="text-xs text-[#6B6659] dark:text-[#A8A296] max-w-md mx-auto">
+          <p className="text-xs text-[#666666] dark:text-[#666666] max-w-md mx-auto">
             {filterQuery
               ? `Tidak ditemukan emiten yang cocok dengan kata kunci "${filterQuery}". Coba gunakan kode saham lain.`
               : "Belum ada emiten yang selesai atau sedang diproses oleh mesin analisis."}
@@ -192,7 +192,7 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
         </div>
       ) : (
         <div className="space-y-3">
-          <div className="flex items-center justify-between text-xs text-[#6B6659] dark:text-[#A8A296] px-1">
+          <div className="flex items-center justify-between text-xs text-[#666666] dark:text-[#666666] px-1">
             <span>Menampilkan {filteredItems.length} emiten</span>
           </div>
 
@@ -203,19 +203,19 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
               return (
                 <div
                   key={item.ticker}
-                  className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 flex flex-col justify-between gap-4 hover:border-[#0E6E63]/40 dark:hover:border-[#4FD1B5]/40 transition-colors"
+                  className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 flex flex-col justify-between gap-4 hover:border-[#0928B1]/40 dark:hover:border-[#7596FF]/40 transition-colors"
                 >
                   <div className="space-y-3">
                     {/* Top Row: Ticker & Readiness Badge */}
                     <div className="flex items-start justify-between gap-2">
                       <div>
                         <div className="flex items-center gap-2">
-                          <span className="font-serif text-xl font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+                          <span className="font-serif text-xl font-medium text-[#333333] dark:text-[#f1f5f9]">
                             {item.ticker}
                           </span>
                         </div>
                         {item.companyName && (
-                          <p className="mt-0.5 text-xs text-[#6B6659] dark:text-[#A8A296] line-clamp-1">
+                          <p className="mt-0.5 text-xs text-[#666666] dark:text-[#666666] line-clamp-1">
                             {item.companyName}
                           </p>
                         )}
@@ -225,8 +225,8 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
                       <span
                         className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[11px] font-medium border ${
                           item.reportReady
-                            ? "bg-[#0E6E63]/10 text-[#0E6E63] border-[#0E6E63]/25 dark:bg-[#4FD1B5]/15 dark:text-[#4FD1B5] dark:border-[#4FD1B5]/30"
-                            : "bg-[#F5F2EB] text-[#6B6659] border-[#E7E3DA] dark:bg-[#23211C] dark:text-[#A8A296] dark:border-[#2A2822]"
+                            ? "bg-[#0928B1]/10 text-[#0928B1] border-[#0928B1]/25 dark:bg-[#7596FF]/15 dark:text-[#7596FF] dark:border-[#7596FF]/30"
+                            : "bg-[#B4C7FF] text-[#666666] border-[#D9D9D9] dark:bg-[#1e2229] dark:text-[#666666] dark:border-[#262930]"
                         }`}
                       >
                         {item.reportReady ? "Laporan siap" : "Laporan belum tersedia"}
@@ -250,18 +250,18 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
                         </span>
                       )}
 
-                      <span className="text-[#6B6659] dark:text-[#A8A296]">
+                      <span className="text-[#666666] dark:text-[#666666]">
                         {item.totalRuns} kali analisis
                       </span>
                     </div>
                   </div>
 
                   {/* Primary Action Button */}
-                  <div className="pt-2 border-t border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+                  <div className="pt-2 border-t border-[#D9D9D9]/60 dark:border-[#262930]/60">
                     <Link
                       to="/agent"
                       search={{ ticker: item.ticker }}
-                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0c5c53] dark:hover:bg-[#0E6E63]/90 px-4 py-2 text-sm font-medium transition-colors"
+                      className="w-full inline-flex items-center justify-center gap-2 rounded-lg bg-[#0928B1] text-white hover:bg-[#0c5c53] dark:hover:bg-[#0928B1]/90 px-4 py-2 text-sm font-medium transition-colors"
                     >
                       <span>Buka pipeline</span>
                       <ArrowRight className="h-4 w-4" />

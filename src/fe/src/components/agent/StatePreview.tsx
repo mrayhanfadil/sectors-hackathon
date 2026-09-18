@@ -44,18 +44,18 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
 
   return (
     <div
-      className={`rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 font-sans space-y-3.5 shadow-none ${className}`}
+      className={`rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 font-sans space-y-3.5 shadow-none ${className}`}
     >
-      <div className="flex items-center justify-between pb-3 border-b border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+      <div className="flex items-center justify-between pb-3 border-b border-[#D9D9D9]/60 dark:border-[#262930]/60">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F5F2EB] dark:bg-[#23211C] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822] shrink-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#B4C7FF] dark:bg-[#1e2229] text-[#0928B1] dark:text-[#7596FF] border border-[#D9D9D9] dark:border-[#262930] shrink-0">
             <Database className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-medium text-[#1C1B17] dark:text-[#EDEAE3] truncate">
+            <h3 className="font-serif text-base font-medium text-[#333333] dark:text-[#f1f5f9] truncate">
               Isi memori alur kerja
             </h3>
-            <p className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+            <p className="text-[11px] text-[#666666] dark:text-[#666666]">
               {items.length} kunci data tersimpan
             </p>
           </div>
@@ -65,28 +65,28 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
       {/* Filter / Search Bar */}
       {items.length > 0 && (
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
           <input
             type="text"
             value={searchKey}
             onChange={(e) => setSearchKey(e.target.value)}
             placeholder="Cari kunci data (mis. valuation, dcf)..."
-            className="w-full rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] pl-9 pr-3 py-1.5 text-xs text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none focus:border-[#0E6E63] dark:focus:border-[#4FD1B5]"
+            className="w-full rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] pl-9 pr-3 py-1.5 text-xs text-[#333333] dark:text-[#f1f5f9] placeholder:text-[#666666]/70 dark:placeholder:text-[#666666]/70 focus:outline-none focus:border-[#0928B1] dark:focus:border-[#7596FF]"
           />
         </div>
       )}
 
       <div>
-        <div className="max-h-[360px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+        <div className="max-h-[360px] overflow-y-auto divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
           {items.length === 0 ? (
             <div className="py-8 px-4 text-center space-y-1">
-              <p className="text-xs font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Belum ada memori aktif</p>
-              <p className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+              <p className="text-xs font-medium text-[#333333] dark:text-[#f1f5f9]">Belum ada memori aktif</p>
+              <p className="text-[11px] text-[#666666] dark:text-[#666666]">
                 Kunci data akan tersimpan saat tahapan analisis berjalan.
               </p>
             </div>
           ) : filteredItems.length === 0 ? (
-            <div className="py-8 text-center text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <div className="py-8 text-center text-xs text-[#666666] dark:text-[#666666]">
               Tidak ada kunci yang cocok dengan &quot;{searchKey}&quot;
             </div>
           ) : (
@@ -95,7 +95,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
               return (
                 <div
                   key={item.key}
-                  className="py-2.5 hover:bg-[#FBFAF7] dark:hover:bg-[#14130F] transition-colors text-xs rounded-lg px-2"
+                  className="py-2.5 hover:bg-[#f1f5f9] dark:hover:bg-[#333333] transition-colors text-xs rounded-lg px-2"
                 >
                   <button
                     type="button"
@@ -105,28 +105,28 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                     <div className="flex items-start justify-between gap-2">
                       <div className="flex items-center gap-1.5 min-w-0">
                         {isExpanded ? (
-                          <ChevronDown className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296] shrink-0" />
+                          <ChevronDown className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666] shrink-0" />
                         ) : (
-                          <ChevronRight className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296] shrink-0" />
+                          <ChevronRight className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666] shrink-0" />
                         )}
-                        <span className="text-xs font-medium text-[#0E6E63] dark:text-[#4FD1B5] break-all">
+                        <span className="text-xs font-medium text-[#0928B1] dark:text-[#7596FF] break-all">
                           {item.key}
                         </span>
                       </div>
                       <div className="shrink-0 text-[10px]">
                         {item.hasValue ? (
-                          <span className="text-[#6B6659] dark:text-[#A8A296] bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-1.5 py-0.5 rounded">
+                          <span className="text-[#666666] dark:text-[#666666] bg-[#B4C7FF] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] px-1.5 py-0.5 rounded">
                             {item.typeTag}
                           </span>
                         ) : (
-                          <span className="text-[#6B6659] dark:text-[#A8A296] italic">dirujuk</span>
+                          <span className="text-[#666666] dark:text-[#666666] italic">dirujuk</span>
                         )}
                       </div>
                     </div>
 
                     {!isExpanded && item.hasValue && (
                       <div className="mt-1 pl-5">
-                        <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296] line-clamp-1 break-words">
+                        <div className="text-[11px] text-[#666666] dark:text-[#666666] line-clamp-1 break-words">
                           {item.previewSnippet}
                         </div>
                       </div>
@@ -136,14 +136,14 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                   {isExpanded && (
                     <div className="mt-2 pl-5 space-y-1.5">
                       {!item.hasValue ? (
-                        <div className="rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7] dark:bg-[#14130F] px-2.5 py-1.5 text-[11px] text-[#6B6659] dark:text-[#A8A296] italic">
+                        <div className="rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9] dark:bg-[#1e2229] px-2.5 py-1.5 text-[11px] text-[#666666] dark:text-[#666666] italic">
                           Kunci dirujuk di daftar perubahan tanpa nilai langsung.
                         </div>
                       ) : (
                         <div className="space-y-1.5">
-                          <div className="flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                          <div className="flex items-center justify-between text-[11px] text-[#666666] dark:text-[#666666]">
                             <span>
-                              Diperbarui oleh: <strong className="text-[#1C1B17] dark:text-[#EDEAE3]">{item.author || "agen"}</strong> (Langkah {item.lastUpdatedSeq})
+                              Diperbarui oleh: <strong className="text-[#333333] dark:text-[#f1f5f9]">{item.author || "agen"}</strong> (Langkah {item.lastUpdatedSeq})
                             </span>
                             <div className="flex items-center gap-2">
                               <span>
@@ -152,7 +152,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                               <button
                                 type="button"
                                 onClick={() => handleCopy(item.key, item.fullFormatted)}
-                                className="flex items-center gap-1 rounded border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] px-2 py-0.5 text-[#1C1B17] dark:text-[#EDEAE3] text-[10px] transition-colors"
+                                className="flex items-center gap-1 rounded border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] px-2 py-0.5 text-[#333333] dark:text-[#f1f5f9] text-[10px] transition-colors"
                               >
                                 {copiedKey === item.key ? (
                                   <>
@@ -168,7 +168,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
                               </button>
                             </div>
                           </div>
-                          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#FBFAF7] dark:bg-[#14130F] p-2.5 font-mono text-[11px] leading-relaxed text-[#1C1B17] dark:text-[#EDEAE3] border border-[#E7E3DA] dark:border-[#2A2822]">
+                          <pre className="max-h-60 overflow-auto whitespace-pre-wrap break-words rounded-lg bg-[#f1f5f9] dark:bg-[#1e2229] p-2.5 font-mono text-[11px] leading-relaxed text-[#333333] dark:text-[#f1f5f9] border border-[#D9D9D9] dark:border-[#262930]">
                             {item.fullFormatted}
                           </pre>
                         </div>
@@ -181,7 +181,7 @@ export function StatePreview({ events, className = "" }: StatePreviewProps) {
           )}
         </div>
 
-        <div className="pt-3 mt-2 border-t border-[#E7E3DA]/60 dark:border-[#2A2822]/60 text-[11px] text-[#6B6659] dark:text-[#A8A296] flex items-center justify-between">
+        <div className="pt-3 mt-2 border-t border-[#D9D9D9]/60 dark:border-[#262930]/60 text-[11px] text-[#666666] dark:text-[#666666] flex items-center justify-between">
           <span>{summaryText}</span>
           <span>Penyimpanan data analisis</span>
         </div>

@@ -62,19 +62,19 @@ export function ChallengeHistoryList({
       )
     }
     return (
-      <span className="rounded-md border border-[#E7E3DA] bg-[#FBFAF7] px-2.5 py-1 text-xs font-medium text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3]">
+      <span className="rounded-md border border-[#D9D9D9] bg-[#f1f5f9] px-2.5 py-1 text-xs font-medium text-[#333333] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9]">
         {verdict}
       </span>
     )
   }
 
   return (
-    <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-      <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+    <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+      <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
-            <History className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0" />
-            <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <History className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF] shrink-0" />
+            <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Catatan uji silang tesis ({log.length})
             </CardTitle>
           </div>
@@ -82,7 +82,7 @@ export function ChallengeHistoryList({
             <button
               type="button"
               onClick={onClear}
-              className="inline-flex items-center gap-1 text-xs text-[#6B6659] hover:text-[#B4232A] transition-colors cursor-pointer dark:text-[#A8A296] dark:hover:text-[#F87171]"
+              className="inline-flex items-center gap-1 text-xs text-[#666666] hover:text-[#B4232A] transition-colors cursor-pointer dark:text-[#666666] dark:hover:text-[#F87171]"
             >
               <Trash2 className="h-3.5 w-3.5" />
               <span>Bersihkan riwayat</span>
@@ -93,12 +93,12 @@ export function ChallengeHistoryList({
 
       <CardContent className="p-5">
         {log.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-[#E7E3DA] bg-[#FBFAF7] p-8 text-center text-xs dark:border-[#2A2822] dark:bg-[#14130F]">
-            <MessageSquareQuote className="mx-auto h-8 w-8 text-[#A8A296] mb-2" />
-            <p className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <div className="rounded-xl border border-dashed border-[#D9D9D9] bg-[#f1f5f9] p-8 text-center text-xs dark:border-[#262930] dark:bg-[#1e2229]">
+            <MessageSquareQuote className="mx-auto h-8 w-8 text-[#666666] mb-2" />
+            <p className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Belum ada riwayat uji silang untuk {tk}
             </p>
-            <p className="mt-1 text-xs text-[#6B6659] max-w-sm mx-auto dark:text-[#A8A296]">
+            <p className="mt-1 text-xs text-[#666666] max-w-sm mx-auto dark:text-[#666666]">
               Gunakan formulir di sebelah kiri untuk menguji asumsi WACC, margin operasi, atau proyeksi pertumbuhan emiten.
             </p>
           </div>
@@ -107,15 +107,15 @@ export function ChallengeHistoryList({
             {log.map((entry, index) => (
               <div
                 key={index}
-                className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-4 sm:p-5 transition-colors dark:border-[#2A2822] dark:bg-[#14130F]"
+                className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-4 sm:p-5 transition-colors dark:border-[#262930] dark:bg-[#1e2229]"
               >
                 {/* Proposal & Putusan */}
-                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between border-b border-[#E7E3DA] pb-3 dark:border-[#2A2822]">
+                <div className="flex flex-col gap-2.5 sm:flex-row sm:items-start sm:justify-between border-b border-[#D9D9D9] pb-3 dark:border-[#262930]">
                   <div className="space-y-1 min-w-0 pr-2">
-                    <span className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                    <span className="text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                       Tantangan #{log.length - index}
                     </span>
-                    <h4 className="text-sm font-semibold text-[#1C1B17] leading-snug dark:text-[#EDEAE3]">
+                    <h4 className="text-sm font-semibold text-[#333333] leading-snug dark:text-[#f1f5f9]">
                       &ldquo;{entry.q}&rdquo;
                     </h4>
                   </div>
@@ -125,11 +125,11 @@ export function ChallengeHistoryList({
                 {/* Evidence & Argumen */}
                 {entry.evidence && (
                   <div className="mt-3.5 space-y-1.5">
-                    <div className="text-xs font-semibold text-[#6B6659] flex items-center gap-1.5 dark:text-[#A8A296]">
-                      <ShieldAlert className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5]" />
+                    <div className="text-xs font-semibold text-[#666666] flex items-center gap-1.5 dark:text-[#666666]">
+                      <ShieldAlert className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF]" />
                       <span>Argumen dan bukti pemeriksaan</span>
                     </div>
-                    <div className="rounded-lg border border-[#E7E3DA] bg-white p-3.5 text-xs leading-relaxed text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#EDEAE3]">
+                    <div className="rounded-lg border border-[#D9D9D9] bg-white p-3.5 text-xs leading-relaxed text-[#333333] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9]">
                       {entry.evidence}
                     </div>
                   </div>
@@ -144,10 +144,10 @@ export function ChallengeHistoryList({
                 )}
 
                 {/* Exhibit Reference & Metadata */}
-                <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#E7E3DA] text-[11px] text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296]">
+                <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 pt-2.5 border-t border-[#D9D9D9] text-[11px] text-[#666666] dark:border-[#262930] dark:text-[#666666]">
                   {entry.exhibit_ref ? (
                     <div className="flex items-center gap-1">
-                      <FileSearch className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+                      <FileSearch className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
                       <span>Referensi bukti: {entry.exhibit_ref}</span>
                     </div>
                   ) : (
@@ -155,7 +155,7 @@ export function ChallengeHistoryList({
                   )}
 
                   {entry.debate_id && (
-                    <span className="text-[#6B6659] dark:text-[#A8A296]">
+                    <span className="text-[#666666] dark:text-[#666666]">
                       ID Uji: {entry.debate_id}
                     </span>
                   )}

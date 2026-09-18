@@ -114,14 +114,14 @@ export const RetailStory = memo(function RetailStory({
   const finishedCount = steps.filter((s) => s.status === "finished").length
 
   return (
-    <div className={cn("rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] shadow-none overflow-hidden font-sans", className)}>
-      <div className="border-b border-[#E7E3DA] dark:border-[#2A2822] px-5 py-4">
+    <div className={cn("rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] shadow-none overflow-hidden font-sans", className)}>
+      <div className="border-b border-[#D9D9D9] dark:border-[#262930] px-5 py-4">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div>
-            <h2 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+            <h2 className="font-serif text-lg font-medium text-[#333333] dark:text-[#f1f5f9]">
               Alur analisis {t}
             </h2>
-            <p className="mt-0.5 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-0.5 text-xs text-[#666666] dark:text-[#666666]">
               {done
                 ? "Selesai. Hasil utama terangkum di kartu ringkasan di atas."
                 : running
@@ -129,13 +129,13 @@ export const RetailStory = memo(function RetailStory({
                 : "Tekan tombol jalankan untuk memulai analisis."}
             </p>
           </div>
-          <span className="rounded-full border border-[#E7E3DA] dark:border-[#2A2822] bg-[#F5F2EB] dark:bg-[#23211C] px-3 py-1 text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="rounded-full border border-[#D9D9D9] dark:border-[#262930] bg-[#B4C7FF] dark:bg-[#1e2229] px-3 py-1 text-xs text-[#666666] dark:text-[#666666]">
             {finishedCount} dari 5 tahap selesai
           </span>
         </div>
       </div>
 
-      <ol className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+      <ol className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
         {steps.map(({ stage, status, line }, idx) => {
           return (
             <li key={stage.id} className="flex gap-3 px-5 py-4">
@@ -145,7 +145,7 @@ export const RetailStory = memo(function RetailStory({
                     "flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-xs",
                     status === "finished" && "border-emerald-200 dark:border-emerald-800 bg-emerald-50 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300",
                     status === "running" && "border-amber-200 dark:border-amber-800 bg-amber-50 dark:bg-amber-950/60 text-amber-800 dark:text-amber-300",
-                    status === "idle" && "border-[#E7E3DA] dark:border-[#2A2822] bg-[#F5F2EB] dark:bg-[#23211C] text-[#6B6659] dark:text-[#A8A296]",
+                    status === "idle" && "border-[#D9D9D9] dark:border-[#262930] bg-[#B4C7FF] dark:bg-[#1e2229] text-[#666666] dark:text-[#666666]",
                   )}
                 >
                   {status === "finished" ? (
@@ -156,19 +156,19 @@ export const RetailStory = memo(function RetailStory({
                     <span>{stage.stageNumber}</span>
                   )}
                 </div>
-                {idx < steps.length - 1 && <div className="mt-1 w-px flex-1 bg-[#E7E3DA] dark:bg-[#2A2822]" />}
+                {idx < steps.length - 1 && <div className="mt-1 w-px flex-1 bg-[#D9D9D9] dark:bg-[#262930]" />}
               </div>
               <div className="min-w-0 flex-1 pb-1">
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                  <span className="text-sm font-medium text-[#1C1B17] dark:text-[#EDEAE3]">{stage.title}</span>
+                  <span className="text-sm font-medium text-[#333333] dark:text-[#f1f5f9]">{stage.title}</span>
                   {status === "running" && (
                     <span className="rounded-full bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 text-[10px] text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60">
                       Sedang diproses
                     </span>
                   )}
                 </div>
-                <p className="mt-0.5 text-xs text-[#6B6659] dark:text-[#A8A296]">{RETAIL_SUBTITLE[stage.id] || stage.description}</p>
-                <p className="mt-1.5 text-xs text-[#1C1B17] dark:text-[#EDEAE3] leading-relaxed">{line}</p>
+                <p className="mt-0.5 text-xs text-[#666666] dark:text-[#666666]">{RETAIL_SUBTITLE[stage.id] || stage.description}</p>
+                <p className="mt-1.5 text-xs text-[#333333] dark:text-[#f1f5f9] leading-relaxed">{line}</p>
               </div>
             </li>
           )

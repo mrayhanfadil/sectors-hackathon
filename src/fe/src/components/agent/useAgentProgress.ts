@@ -16,7 +16,7 @@ export const AGENT_META_MAP: Record<string, { label: string; phase: string; colo
   news_harvester: { label: "Pencari berita", phase: "Ambil data", color: "bg-amber-50 text-amber-800 border-amber-200" },
   news_search_sub: { label: "Pencari berita (sub)", phase: "Cari data", color: "bg-amber-50 text-amber-700 border-amber-200" },
   modeler: { label: "Ahli valuasi", phase: "Hitung nilai", color: "bg-emerald-50 text-emerald-800 border-emerald-300 font-medium" },
-  analyst: { label: "Analis fundamental", phase: "Riset", color: "bg-[#F5F2EB] text-[#1C1B17] border-[#E7E3DA]" },
+  analyst: { label: "Analis fundamental", phase: "Riset", color: "bg-[#B4C7FF] text-[#333333] border-[#D9D9D9]" },
   industry: { label: "Analis industri", phase: "Riset", color: "bg-teal-50 text-teal-800 border-teal-200" },
   industry_search_sub: { label: "Riset industri (sub)", phase: "Cari riset", color: "bg-teal-50 text-teal-700 border-teal-200" },
   risk: { label: "Analis risiko", phase: "Riset", color: "bg-rose-50 text-rose-800 border-rose-200" },
@@ -25,7 +25,7 @@ export const AGENT_META_MAP: Record<string, { label: string; phase: string; colo
   visualizer: { label: "Visualisasi data", phase: "Grafik", color: "bg-pink-50 text-pink-800 border-pink-200" },
   sotp: { label: "Valuasi SOTP", phase: "Gabung nilai", color: "bg-orange-50 text-orange-800 border-orange-200" },
   adversarial: { label: "Penguji kritis", phase: "Uji silang", color: "bg-red-50 text-red-800 border-red-200" },
-  critic: { label: "Peninjau mutu", phase: "Periksa akhir", color: "bg-[#0E6E63]/10 text-[#0E6E63] border-[#0E6E63]/25" },
+  critic: { label: "Peninjau mutu", phase: "Periksa akhir", color: "bg-[#0928B1]/10 text-[#0928B1] border-[#0928B1]/25" },
 }
 
 export const KNOWN_AGENTS: AgentMeta[] = Object.entries(AGENT_META_MAP).map(([key, meta]) => ({

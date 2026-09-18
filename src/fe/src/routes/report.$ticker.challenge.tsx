@@ -152,13 +152,13 @@ function ChallengePage() {
       <div className="space-y-6 pb-16">
         <ReportHeader ticker={tk} activeTab="challenge" />
         <div className="mx-auto max-w-[1100px] px-4">
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-12 text-center text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-12 text-center text-xs dark:border-[#262930] dark:bg-[#090a0c]">
             <div className="flex flex-col items-center justify-center space-y-3">
-              <Loader2 className="h-6 w-6 animate-spin text-[#0E6E63] dark:text-[#4FD1B5]" />
-              <p className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+              <Loader2 className="h-6 w-6 animate-spin text-[#0928B1] dark:text-[#7596FF]" />
+              <p className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
                 Menyiapkan modul uji silang tesis dan debat untuk {tk}…
               </p>
-              <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+              <p className="text-xs text-[#666666] dark:text-[#666666]">
                 Menginisialisasi agen evaluasi independen dan matriks bukti audit.
               </p>
             </div>
@@ -184,13 +184,13 @@ function ChallengePage() {
               <AlertTriangle className="h-5 w-5 text-[#A16207] shrink-0 dark:text-[#FBBF24]" />
               <div className="space-y-2">
                 <div className="text-sm font-semibold">Mode offline - server backend belum aktif</div>
-                <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+                <p className="text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
                   {reportData.summary}
                 </p>
                 <Button
                   size="sm"
                   onClick={() => window.location.reload()}
-                  className="mt-2 h-8 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0B5B52] text-xs font-medium dark:bg-[#4FD1B5] dark:text-[#14130F] cursor-pointer"
+                  className="mt-2 h-8 rounded-lg bg-[#0928B1] text-white hover:bg-[#0047AB] text-xs font-medium dark:bg-[#7596FF] dark:text-[#333333] cursor-pointer"
                 >
                   <RefreshCw className="mr-1.5 h-3.5 w-3.5" />
                   <span>Muat ulang</span>
@@ -220,10 +220,10 @@ function ChallengePage() {
 
       <div className="mx-auto max-w-[1100px] px-4 space-y-6">
         {/* Analyst Notice Banner */}
-        <div className="flex items-start gap-3 rounded-xl border border-[#E7E3DA] bg-white p-4 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
-          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+        <div className="flex items-start gap-3 rounded-xl border border-[#D9D9D9] bg-white p-4 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
+          <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
           <div>
-            <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Protokol uji silang independen: </span>
+            <span className="font-semibold text-[#333333] dark:text-[#f1f5f9]">Protokol uji silang independen: </span>
             <span>
               Uji ketahanan asumsi valuasi emiten (WACC, pertumbuhan terminal, margin operasi, capex). Agen penilai independen akan menguji kritik Anda terhadap data keuangan audited IDX dan memberikan putusan Dipertahankan, Disesuaikan, atau Premis ditolak.
             </span>
@@ -265,8 +265,8 @@ function ChallengePage() {
         ) : null}
 
         {/* Shared Footer Disclaimer */}
-        <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 text-xs text-[#6B6659] space-y-2 dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
-          <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-5 text-xs text-[#666666] space-y-2 dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
+          <div className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Kepatuhan dan transparansi data
           </div>
           <p className="leading-relaxed">

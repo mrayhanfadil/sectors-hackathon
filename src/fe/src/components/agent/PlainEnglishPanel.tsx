@@ -56,11 +56,11 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
     (event.state_delta_keys && event.state_delta_keys.length > 0)
 
   return (
-    <div className="group border-b border-[#E7E3DA]/70 dark:border-[#2A2822]/70 py-3 transition-colors hover:bg-[#FBFAF7]/60 dark:hover:bg-[#14130F]/40 text-xs">
+    <div className="group border-b border-[#D9D9D9]/70 dark:border-[#262930]/70 py-3 transition-colors hover:bg-[#f1f5f9]/60 dark:hover:bg-[#333333]/40 text-xs">
       <div className="flex flex-wrap items-center justify-between gap-2">
         {/* Step sequence & agent tag */}
         <div className="flex flex-wrap items-center gap-2">
-          <span className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-[11px] font-medium text-[#666666] dark:text-[#666666]">
             Langkah {event.seq}
           </span>
 
@@ -77,9 +77,9 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
         </div>
 
         {/* Timestamp */}
-        <div className="flex items-center gap-2 text-right text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        <div className="flex items-center gap-2 text-right text-[11px] text-[#666666] dark:text-[#666666]">
           {latencyMs !== null && latencyMs > 0 && (
-            <span className="text-[#0E6E63] dark:text-[#4FD1B5]">
+            <span className="text-[#0928B1] dark:text-[#7596FF]">
               +{latencyMs} ms
             </span>
           )}
@@ -89,13 +89,13 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
 
       {/* Main Action Line */}
       <div className="mt-1.5 space-y-1">
-        <p className="text-xs font-medium leading-relaxed text-[#1C1B17] dark:text-[#EDEAE3]">
+        <p className="text-xs font-medium leading-relaxed text-[#333333] dark:text-[#f1f5f9]">
           {actionText}
         </p>
 
         {/* Text preview if available */}
         {event.text && event.text.trim().length > 0 && (
-          <div className="rounded-lg bg-[#FBFAF7] dark:bg-[#14130F] border border-[#E7E3DA] dark:border-[#2A2822] p-2.5 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+          <div className="rounded-lg bg-[#f1f5f9] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] p-2.5 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
             <div className="whitespace-pre-wrap break-words">
               {event.text.length > 400
                 ? `${event.text.slice(0, 400)}…`
@@ -111,7 +111,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
           <button
             type="button"
             onClick={() => setExpanded(!expanded)}
-            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296] hover:text-[#0E6E63] dark:hover:text-[#4FD1B5] transition-colors focus:outline-none"
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-[#666666] dark:text-[#666666] hover:text-[#0928B1] dark:hover:text-[#7596FF] transition-colors focus:outline-none"
           >
             <Code2 className="h-3 w-3" />
             <span>{expanded ? "Sembunyikan rincian parameter" : "Lihat rincian kalkulasi"}</span>
@@ -123,11 +123,11 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
           </button>
 
           {expanded && (
-            <div className="mt-2 space-y-2 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-[#FBFAF7]/80 dark:bg-[#14130F]/80 p-3 text-[#1C1B17] dark:text-[#EDEAE3]">
+            <div className="mt-2 space-y-2 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-[#f1f5f9]/80 dark:bg-[#1e2229]/80 p-3 text-[#333333] dark:text-[#f1f5f9]">
               {/* Function Calls */}
               {event.function_calls && event.function_calls.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                     Parameter kalkulasi:
                   </div>
                   {event.function_calls.map((fc, i) => (
@@ -139,7 +139,7 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               {/* Function Responses */}
               {event.function_responses && event.function_responses.length > 0 && (
                 <div className="space-y-1">
-                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                     Hasil kalkulasi:
                   </div>
                   {event.function_responses.map((fr, i) => (
@@ -151,14 +151,14 @@ function EventRow({ event, prevEvent, ticker }: EventRowProps) {
               {/* State Delta Keys */}
               {event.state_delta_keys && event.state_delta_keys.length > 0 && (
                 <div className="pt-1">
-                  <div className="text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                     Kunci memori diperbarui:
                   </div>
                   <div className="mt-1 flex flex-wrap gap-1">
                     {event.state_delta_keys.map((k) => (
                       <span
                         key={k}
-                        className="rounded bg-white dark:bg-[#1B1A16] px-1.5 py-0.5 text-[10px] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822]"
+                        className="rounded bg-white dark:bg-[#090a0c] px-1.5 py-0.5 text-[10px] text-[#0928B1] dark:text-[#7596FF] border border-[#D9D9D9] dark:border-[#262930]"
                       >
                         {k}
                       </span>
@@ -235,18 +235,18 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
   }
 
   return (
-    <div className={cn("rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 font-sans shadow-none space-y-4", className)}>
+    <div className={cn("rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 sm:p-6 font-sans shadow-none space-y-4", className)}>
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#D9D9D9]/60 dark:border-[#262930]/60">
         <div className="flex items-center gap-3">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#F5F2EB] dark:bg-[#23211C] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-[#B4C7FF] dark:bg-[#1e2229] text-[#0928B1] dark:text-[#7596FF] border border-[#D9D9D9] dark:border-[#262930]">
             <Activity className="h-4 w-4" />
           </div>
           <div>
-            <h2 className="font-serif text-lg font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+            <h2 className="font-serif text-lg font-medium text-[#333333] dark:text-[#f1f5f9]">
               Catatan langkah alur kerja
             </h2>
-            <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <p className="text-xs text-[#666666] dark:text-[#666666]">
               Jejak kronologis langkah kerja agen yang mudah dibaca.
             </p>
           </div>
@@ -260,7 +260,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
             </span>
           )}
 
-          <span className="rounded-full bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-2.5 py-0.5 text-xs font-medium text-[#6B6659] dark:text-[#A8A296]">
+          <span className="rounded-full bg-[#B4C7FF] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] px-2.5 py-0.5 text-xs font-medium text-[#666666] dark:text-[#666666]">
             {filteredEvents.length} dari {events.length} langkah
           </span>
 
@@ -270,8 +270,8 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
             className={cn(
               "inline-flex items-center gap-1 rounded-md px-2 py-1 text-xs border transition-colors",
               autoScroll
-                ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 border-[#0E6E63]/25 dark:border-[#4FD1B5]/30 text-[#0E6E63] dark:text-[#4FD1B5]"
-                : "bg-white dark:bg-[#1B1A16] border-[#E7E3DA] dark:border-[#2A2822] text-[#6B6659] dark:text-[#A8A296]"
+                ? "bg-[#0928B1]/10 dark:bg-[#7596FF]/15 border-[#0928B1]/25 dark:border-[#7596FF]/30 text-[#0928B1] dark:text-[#7596FF]"
+                : "bg-white dark:bg-[#090a0c] border-[#D9D9D9] dark:border-[#262930] text-[#666666] dark:text-[#666666]"
             )}
             title="Otomatis gulir ke bawah saat ada langkah baru"
           >
@@ -283,7 +283,7 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
             <button
               type="button"
               onClick={handleCopyTraceJson}
-              className="inline-flex items-center gap-1 rounded-md border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] px-2 py-1 text-xs text-[#6B6659] dark:text-[#A8A296] transition-colors"
+              className="inline-flex items-center gap-1 rounded-md border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] px-2 py-1 text-xs text-[#666666] dark:text-[#666666] transition-colors"
               title="Salin data jejak analisis lengkap"
             >
               {copiedTrace ? (
@@ -306,13 +306,13 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
       <div className="space-y-2">
         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
             <input
               type="text"
               value={searchText}
               onChange={(e) => setSearchText(e.target.value)}
               placeholder="Cari catatan langkah..."
-              className="w-full rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] pl-9 pr-3 py-1.5 text-xs text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none focus:border-[#0E6E63] dark:focus:border-[#4FD1B5]"
+              className="w-full rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] pl-9 pr-3 py-1.5 text-xs text-[#333333] dark:text-[#f1f5f9] placeholder:text-[#666666]/70 dark:placeholder:text-[#666666]/70 focus:outline-none focus:border-[#0928B1] dark:focus:border-[#7596FF]"
             />
           </div>
 
@@ -333,8 +333,8 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
                 className={cn(
                   "px-2.5 py-1 rounded-md text-xs transition-colors border",
                   filterType === cat.id
-                    ? "bg-[#0E6E63] text-white border-[#0E6E63] font-medium"
-                    : "bg-white dark:bg-[#1B1A16] text-[#6B6659] dark:text-[#A8A296] border-[#E7E3DA] dark:border-[#2A2822] hover:text-[#1C1B17] dark:hover:text-[#EDEAE3]"
+                    ? "bg-[#0928B1] text-white border-[#0928B1] font-medium"
+                    : "bg-white dark:bg-[#090a0c] text-[#666666] dark:text-[#666666] border-[#D9D9D9] dark:border-[#262930] hover:text-[#333333] dark:hover:text-[#f1f5f9]"
                 )}
               >
                 {cat.label}
@@ -344,12 +344,12 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
         </div>
 
         {selectedAuthor !== "all" && (
-          <div className="flex items-center gap-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <div className="flex items-center gap-2 text-xs text-[#666666] dark:text-[#666666]">
             <span>Filter agen: <strong>{getFriendlyAgent(selectedAuthor).title}</strong></span>
             <button
               type="button"
               onClick={() => onFilterAuthor?.("all")}
-              className="text-[#0E6E63] dark:text-[#4FD1B5] underline text-xs"
+              className="text-[#0928B1] dark:text-[#7596FF] underline text-xs"
             >
               Tampilkan semua
             </button>
@@ -360,15 +360,15 @@ export const PlainEnglishPanel = memo(function PlainEnglishPanel({
       {/* Events List */}
       <div
         ref={listRef}
-        className="max-h-[500px] min-h-[240px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60 pr-1"
+        className="max-h-[500px] min-h-[240px] overflow-y-auto divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60 pr-1"
       >
         {filteredEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-center space-y-2">
-            <Activity className="h-6 w-6 text-[#6B6659] dark:text-[#A8A296]" />
-            <h3 className="font-serif text-base font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+            <Activity className="h-6 w-6 text-[#666666] dark:text-[#666666]" />
+            <h3 className="font-serif text-base font-medium text-[#333333] dark:text-[#f1f5f9]">
               {events.length === 0 ? "Belum ada catatan langkah" : "Tidak ada langkah yang sesuai"}
             </h3>
-            <p className="text-xs text-[#6B6659] dark:text-[#A8A296] max-w-sm">
+            <p className="text-xs text-[#666666] dark:text-[#666666] max-w-sm">
               {events.length === 0
                 ? `Jalankan analisis untuk ${ticker || "emiten terpilih"} untuk melihat proses alur kerja multi-agen.`
                 : "Coba ubah kata kunci pencarian atau hapus filter kategori."}

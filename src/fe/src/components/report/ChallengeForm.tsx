@@ -83,11 +83,11 @@ export function ChallengeForm({
   }
 
   return (
-    <Card className="rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
-      <CardHeader className="border-b border-[#E7E3DA] p-5 pb-3 dark:border-[#2A2822]">
+    <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
+      <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
         <div className="flex items-center gap-2">
-          <Swords className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0" />
-          <CardTitle className="text-sm font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <Swords className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF] shrink-0" />
+          <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Proposal uji silang tesis {tk}
           </CardTitle>
         </div>
@@ -95,20 +95,20 @@ export function ChallengeForm({
 
       <CardContent className="p-5 space-y-4">
         {/* Protocol Notice Banner */}
-        <div className="rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] p-3.5 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
-          <div className="flex items-center gap-1.5 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
-            <ShieldCheck className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0" />
+        <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3.5 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+          <div className="flex items-center gap-1.5 font-semibold text-[#333333] dark:text-[#f1f5f9]">
+            <ShieldCheck className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF] shrink-0" />
             <span>Protokol arbitrase independen</span>
           </div>
-          <p className="mt-1 text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <p className="mt-1 text-xs text-[#666666] dark:text-[#666666]">
             Agen evaluasi menguji kritik Anda secara objektif terhadap data keuangan audited IDX. Jika kritik terbukti valid secara empiris, model akan melakukan penyesuaian (Disesuaikan). Jika asumsi awal terbukti konsisten, kritik akan dijawab dengan pembuktian (Dipertahankan).
           </p>
         </div>
 
         {/* Suggestion Chips */}
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
-            <Sparkles className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5]" />
+          <div className="flex items-center gap-1.5 text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
+            <Sparkles className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF]" />
             <span>Contoh topik kritik tesis:</span>
           </div>
           <div className="flex flex-col gap-2">
@@ -118,7 +118,7 @@ export function ChallengeForm({
                 type="button"
                 onClick={() => handleSelectSuggestion(sug)}
                 disabled={loading}
-                className="text-left rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] px-3.5 py-2.5 text-xs text-[#1C1B17] hover:border-[#0E6E63] hover:bg-white transition-colors disabled:opacity-50 cursor-pointer dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3] dark:hover:border-[#4FD1B5] dark:hover:bg-[#1B1A16]"
+                className="text-left rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] px-3.5 py-2.5 text-xs text-[#333333] hover:border-[#0928B1] hover:bg-white transition-colors disabled:opacity-50 cursor-pointer dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9] dark:hover:border-[#7596FF] dark:hover:bg-[#090a0c]"
               >
                 <span>{sug}</span>
               </button>
@@ -129,7 +129,7 @@ export function ChallengeForm({
         {/* Form Input */}
         <form onSubmit={handleSubmit} className="space-y-3 pt-1">
           <div className="space-y-1.5">
-            <label className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <label className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Kritik atau pertanyaan analisis
             </label>
             <textarea
@@ -141,7 +141,7 @@ export function ChallengeForm({
               }}
               placeholder={`Contoh: WACC 8,4% terlalu rendah dibanding profil risiko emiten migas, bagaimana sensitivitas nilai wajar jika dinaikkan ke 10%?`}
               disabled={loading}
-              className="w-full rounded-lg border border-[#E7E3DA] bg-white p-3 text-xs leading-relaxed text-[#1C1B17] outline-none focus:border-[#0E6E63] focus:ring-1 focus:ring-[#0E6E63] disabled:opacity-50 resize-none dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3] dark:focus:border-[#4FD1B5]"
+              className="w-full rounded-lg border border-[#D9D9D9] bg-white p-3 text-xs leading-relaxed text-[#333333] outline-none focus:border-[#0928B1] focus:ring-1 focus:ring-[#0928B1] disabled:opacity-50 resize-none dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9] dark:focus:border-[#7596FF]"
             />
           </div>
 
@@ -165,7 +165,7 @@ export function ChallengeForm({
           <Button
             type="submit"
             disabled={loading || !question.trim()}
-            className="w-full h-10 gap-2 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0B5B52] text-xs font-medium cursor-pointer dark:bg-[#4FD1B5] dark:text-[#14130F] dark:hover:bg-[#3EBAA0] disabled:opacity-50"
+            className="w-full h-10 gap-2 rounded-lg bg-[#0928B1] text-white hover:bg-[#0047AB] text-xs font-medium cursor-pointer dark:bg-[#7596FF] dark:text-[#333333] dark:hover:bg-[#3EBAA0] disabled:opacity-50"
           >
             {loading ? (
               <>

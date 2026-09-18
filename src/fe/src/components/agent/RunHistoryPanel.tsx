@@ -106,7 +106,7 @@ function renderStatusBadge(status: string, isActive?: boolean) {
       )
     default:
       return (
-        <span className="inline-flex items-center gap-1 rounded-full bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-2 py-0.5 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        <span className="inline-flex items-center gap-1 rounded-full bg-[#B4C7FF] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] px-2 py-0.5 text-[11px] text-[#666666] dark:text-[#666666]">
           <span>{status}</span>
         </span>
       )
@@ -180,19 +180,19 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
 
   return (
     <div
-      className={`rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 font-sans space-y-3.5 shadow-none ${className}`}
+      className={`rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 font-sans space-y-3.5 shadow-none ${className}`}
     >
       {/* Header Bar */}
-      <div className="flex items-center justify-between gap-2 pb-3 border-b border-[#E7E3DA]/60 dark:border-[#2A2822]/60">
+      <div className="flex items-center justify-between gap-2 pb-3 border-b border-[#D9D9D9]/60 dark:border-[#262930]/60">
         <div className="flex items-center gap-2.5 min-w-0">
-          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#F5F2EB] dark:bg-[#23211C] text-[#0E6E63] dark:text-[#4FD1B5] border border-[#E7E3DA] dark:border-[#2A2822] shrink-0">
+          <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-[#B4C7FF] dark:bg-[#1e2229] text-[#0928B1] dark:text-[#7596FF] border border-[#D9D9D9] dark:border-[#262930] shrink-0">
             <History className="h-4 w-4" />
           </div>
           <div>
-            <h3 className="font-serif text-base font-medium text-[#1C1B17] dark:text-[#EDEAE3] truncate">
+            <h3 className="font-serif text-base font-medium text-[#333333] dark:text-[#f1f5f9] truncate">
               Riwayat proses
             </h3>
-            <p className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+            <p className="text-[11px] text-[#666666] dark:text-[#666666]">
               {runs.length} catatan tersimpan
             </p>
           </div>
@@ -202,43 +202,43 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
           type="button"
           onClick={() => fetchRuns(false)}
           disabled={isFetching}
-          className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#6B6659] dark:text-[#A8A296] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] shrink-0 transition-colors"
+          className="h-7 w-7 inline-flex items-center justify-center rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] text-[#666666] dark:text-[#666666] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] shrink-0 transition-colors"
           title="Segarkan riwayat proses"
         >
           <RefreshCw
-            className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-[#0E6E63] dark:text-[#4FD1B5]" : ""}`}
+            className={`h-3.5 w-3.5 ${isFetching ? "animate-spin text-[#0928B1] dark:text-[#7596FF]" : ""}`}
           />
         </button>
       </div>
 
       {/* Quick Search */}
       <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296]" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-[#666666] dark:text-[#666666]" />
         <input
           type="text"
           value={filterText}
           onChange={(e) => setFilterText(e.target.value)}
           placeholder="Saring riwayat (mis. BBCA)..."
-          className="w-full rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] pl-9 pr-3 py-1.5 text-xs text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none focus:border-[#0E6E63] dark:focus:border-[#4FD1B5]"
+          className="w-full rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] pl-9 pr-3 py-1.5 text-xs text-[#333333] dark:text-[#f1f5f9] placeholder:text-[#666666]/70 dark:placeholder:text-[#666666]/70 focus:outline-none focus:border-[#0928B1] dark:focus:border-[#7596FF]"
         />
       </div>
 
       {/* Body List */}
       <div>
         {loading ? (
-          <div className="flex items-center justify-center py-8 text-xs text-[#6B6659] dark:text-[#A8A296]">
-            <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin text-[#0E6E63] dark:text-[#4FD1B5]" />
+          <div className="flex items-center justify-center py-8 text-xs text-[#666666] dark:text-[#666666]">
+            <RefreshCw className="mr-2 h-3.5 w-3.5 animate-spin text-[#0928B1] dark:text-[#7596FF]" />
             <span>Memuat riwayat proses…</span>
           </div>
         ) : filteredRuns.length === 0 ? (
           <div className="py-8 px-3 text-center text-xs space-y-1">
-            <p className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Belum ada riwayat proses</p>
-            <p className="text-[#6B6659] dark:text-[#A8A296] text-[11px]">
+            <p className="font-medium text-[#333333] dark:text-[#f1f5f9]">Belum ada riwayat proses</p>
+            <p className="text-[#666666] dark:text-[#666666] text-[11px]">
               {filterText ? "Tidak ada proses yang cocok dengan kata kunci." : "Jalankan analisis untuk menyimpan riwayat."}
             </p>
           </div>
         ) : (
-          <div className="max-h-[360px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
+          <div className="max-h-[360px] overflow-y-auto divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
             {filteredRuns.map((run) => {
               const isSelected = selectedRunId === run.run_id
               const isCurrentTicker =
@@ -251,24 +251,24 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                   onClick={() => onSelectRun(run.run_id)}
                   className={`w-full text-left p-3 transition-colors cursor-pointer block rounded-lg my-0.5 focus:outline-none ${
                     isSelected
-                      ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 border border-[#0E6E63]/30 dark:border-[#4FD1B5]/30 text-[#1C1B17] dark:text-[#EDEAE3]"
-                      : "hover:bg-[#FBFAF7] dark:hover:bg-[#14130F] text-[#1C1B17] dark:text-[#EDEAE3]"
+                      ? "bg-[#0928B1]/10 dark:bg-[#7596FF]/15 border border-[#0928B1]/30 dark:border-[#7596FF]/30 text-[#333333] dark:text-[#f1f5f9]"
+                      : "hover:bg-[#f1f5f9] dark:hover:bg-[#333333] text-[#333333] dark:text-[#f1f5f9]"
                   }`}
                 >
                   {/* Line 1: Ticker & Status */}
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-1.5 min-w-0">
-                      <span className="font-serif font-medium text-sm text-[#1C1B17] dark:text-[#EDEAE3]">
+                      <span className="font-serif font-medium text-sm text-[#333333] dark:text-[#f1f5f9]">
                         {run.ticker}
                       </span>
                       {isCurrentTicker && (
                         <span
-                          className="h-1.5 w-1.5 rounded-full bg-[#0E6E63] dark:bg-[#4FD1B5] shrink-0"
+                          className="h-1.5 w-1.5 rounded-full bg-[#0928B1] dark:bg-[#7596FF] shrink-0"
                           title="Emiten yang sedang dibuka"
                         />
                       )}
                       {isSelected && (
-                        <Check className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0 ml-0.5" />
+                        <Check className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF] shrink-0 ml-0.5" />
                       )}
                     </div>
                     <div className="shrink-0">
@@ -277,13 +277,13 @@ export const RunHistoryPanel = memo(function RunHistoryPanel({
                   </div>
 
                   {/* Line 2: Events & Started time */}
-                  <div className="flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296] mt-1">
+                  <div className="flex items-center justify-between text-[11px] text-[#666666] dark:text-[#666666] mt-1">
                     <span>{run.n_events} langkah</span>
                     <span>{formatRelativeTime(run.started_at)}</span>
                   </div>
 
                   {/* Line 3: ID & Duration */}
-                  <div className="flex items-center justify-between text-[11px] text-[#6B6659]/80 dark:text-[#A8A296]/80 mt-0.5">
+                  <div className="flex items-center justify-between text-[11px] text-[#666666]/80 dark:text-[#666666]/80 mt-0.5">
                     <span>ID: {truncateRunId(run.run_id)}</span>
                     <span>
                       {formatRunDuration(

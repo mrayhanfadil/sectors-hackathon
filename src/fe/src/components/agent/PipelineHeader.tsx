@@ -49,7 +49,7 @@ export const PipelineHeader = memo(function PipelineHeader({
         <Link
           to="/agent"
           search={{}}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#6B6659] dark:text-[#A8A296] hover:text-[#0E6E63] dark:hover:text-[#4FD1B5] transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-medium text-[#666666] dark:text-[#666666] hover:text-[#0928B1] dark:hover:text-[#7596FF] transition-colors"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
           <span>Kembali ke daftar emiten</span>
@@ -57,20 +57,20 @@ export const PipelineHeader = memo(function PipelineHeader({
       </div>
 
       {/* Main header card */}
-      <div className="rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] p-5 sm:p-6 space-y-4">
+      <div className="rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] p-5 sm:p-6 space-y-4">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="space-y-1">
             <div className="flex flex-wrap items-baseline gap-2.5">
-              <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#1C1B17] dark:text-[#EDEAE3]">
+              <h1 className="font-serif text-2xl sm:text-3xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
                 {t}
               </h1>
               {companyName && (
-                <span className="text-sm font-normal text-[#6B6659] dark:text-[#A8A296]">
+                <span className="text-sm font-normal text-[#666666] dark:text-[#666666]">
                   {companyName}
                 </span>
               )}
             </div>
-            <p className="text-xs text-[#6B6659] dark:text-[#A8A296] leading-relaxed max-w-xl">
+            <p className="text-xs text-[#666666] dark:text-[#666666] leading-relaxed max-w-xl">
               Alur kerja mesin otomatis: ekstraksi laporan keuangan resmi IDX, kalkulasi nilai wajar (DCF/DDM/PE), dan penelaahan kritis multi-agen.
             </p>
           </div>
@@ -90,7 +90,7 @@ export const PipelineHeader = memo(function PipelineHeader({
               <button
                 type="button"
                 onClick={onRun}
-                className="inline-flex items-center gap-1.5 rounded-lg bg-[#0E6E63] text-white hover:bg-[#0c5c53] px-4 py-2 text-sm font-medium transition-colors"
+                className="inline-flex items-center gap-1.5 rounded-lg bg-[#0928B1] text-white hover:bg-[#0c5c53] px-4 py-2 text-sm font-medium transition-colors"
               >
                 <Play className="h-3.5 w-3.5 fill-current" />
                 <span>{done ? "Jalankan ulang" : "Jalankan analisis"}</span>
@@ -100,18 +100,18 @@ export const PipelineHeader = memo(function PipelineHeader({
             <Link
               to="/report/$ticker"
               params={{ ticker: t }}
-              className="inline-flex items-center gap-1.5 rounded-lg border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] px-4 py-2 text-sm font-medium text-[#1C1B17] dark:text-[#EDEAE3] hover:bg-[#F5F2EB] dark:hover:bg-[#23211C] transition-colors"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] px-4 py-2 text-sm font-medium text-[#333333] dark:text-[#f1f5f9] hover:bg-[#B4C7FF] dark:hover:bg-[#1e2229] transition-colors"
             >
-              <FileText className="h-4 w-4 text-[#0E6E63] dark:text-[#4FD1B5]" />
+              <FileText className="h-4 w-4 text-[#0928B1] dark:text-[#7596FF]" />
               <span>Buka laporan</span>
             </Link>
           </div>
         </div>
 
         {/* Status Line */}
-        <div className="pt-3 border-t border-[#E7E3DA]/60 dark:border-[#2A2822]/60 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div className="pt-3 border-t border-[#D9D9D9]/60 dark:border-[#262930]/60 flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex flex-wrap items-center gap-2.5">
-            <span className="text-[#6B6659] dark:text-[#A8A296] font-medium">Status mesin:</span>
+            <span className="text-[#666666] dark:text-[#666666] font-medium">Status mesin:</span>
             {running ? (
               <span className="inline-flex items-center gap-1.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-800 dark:text-amber-300 border border-amber-200 dark:border-amber-800/60 px-3 py-1 text-xs font-medium">
                 <span className="relative flex h-2 w-2">
@@ -147,8 +147,8 @@ export const PipelineHeader = memo(function PipelineHeader({
                 <span>Terjadi kendala</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#F5F2EB] dark:bg-[#23211C] text-[#6B6659] dark:text-[#A8A296] border border-[#E7E3DA] dark:border-[#2A2822] px-3 py-1 text-xs font-medium">
-                <span className="h-1.5 w-1.5 rounded-full bg-[#6B6659] dark:bg-[#A8A296]" />
+              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#B4C7FF] dark:bg-[#1e2229] text-[#666666] dark:text-[#666666] border border-[#D9D9D9] dark:border-[#262930] px-3 py-1 text-xs font-medium">
+                <span className="h-1.5 w-1.5 rounded-full bg-[#666666] dark:bg-[#666666]" />
                 <span>Mesin siaga</span>
               </span>
             )}

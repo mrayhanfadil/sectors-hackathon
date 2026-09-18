@@ -68,7 +68,7 @@ function parseUpside(upside: string | null | undefined): {
 function RatingBadge({ rating }: { rating: string | null | undefined }) {
   if (!rating || rating === "Review Required") {
     return (
-      <span className="inline-flex items-center rounded-md border border-[#E7E3DA] bg-[#E7E3DA]/40 px-2.5 py-0.5 text-xs font-medium text-[#6B6659] dark:border-[#2A2822] dark:bg-[#2A2822]/60 dark:text-[#A8A296]">
+      <span className="inline-flex items-center rounded-md border border-[#D9D9D9] bg-[#D9D9D9]/40 px-2.5 py-0.5 text-xs font-medium text-[#666666] dark:border-[#262930] dark:bg-[#262930]/60 dark:text-[#666666]">
         MENUNGGU
       </span>
     )
@@ -137,23 +137,23 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
       : "Data snapshot"
 
   return (
-    <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-5 shadow-xs transition-all hover:border-[#0E6E63]/40 dark:border-[#2A2822] dark:bg-[#1B1A16] dark:hover:border-[#4FD1B5]/40">
+    <div className="flex flex-col justify-between rounded-xl border border-[#D9D9D9] bg-white p-5 shadow-xs transition-all hover:border-[#0928B1]/40 dark:border-[#262930] dark:bg-[#090a0c] dark:hover:border-[#7596FF]/40">
       <div className="space-y-4">
         {/* 1. Header Strip */}
-        <div className="flex items-start justify-between gap-3 border-b border-[#E7E3DA] pb-3 dark:border-[#2A2822]">
+        <div className="flex items-start justify-between gap-3 border-b border-[#D9D9D9] pb-3 dark:border-[#262930]">
           <div>
             <div className="flex items-center gap-2">
               <Link
                 to={`/report/${ticker}` as any}
-                className="text-base font-bold text-[#1C1B17] hover:text-[#0E6E63] dark:text-[#EDEAE3] dark:hover:text-[#4FD1B5] transition-colors"
+                className="text-base font-bold text-[#333333] hover:text-[#0928B1] dark:text-[#f1f5f9] dark:hover:text-[#7596FF] transition-colors"
               >
                 {ticker}
               </Link>
-              <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+              <span className="text-xs text-[#666666] dark:text-[#666666]">
                 · {archetype}
               </span>
             </div>
-            <div className="flex items-center gap-2 mt-0.5 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <div className="flex items-center gap-2 mt-0.5 text-xs text-[#666666] dark:text-[#666666]">
               <span className="truncate">{companyName}</span>
               <span>·</span>
               <span className="shrink-0">{pipelineLine}</span>
@@ -162,7 +162,7 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
 
           <div className="shrink-0">
             {isLoading ? (
-              <Loader2 className="h-4 w-4 animate-spin text-[#6B6659] dark:text-[#A8A296]" />
+              <Loader2 className="h-4 w-4 animate-spin text-[#666666] dark:text-[#666666]" />
             ) : (
               <RatingBadge rating={rating} />
             )}
@@ -170,32 +170,32 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
         </div>
 
         {/* 2. Key Valuation Metrics Grid */}
-        <div className="grid grid-cols-3 gap-2 rounded-lg bg-[#FBFAF7] p-3 text-xs dark:bg-[#14130F] border border-[#E7E3DA] dark:border-[#2A2822]">
+        <div className="grid grid-cols-3 gap-2 rounded-lg bg-[#f1f5f9] p-3 text-xs dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930]">
           <div>
-            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Harga pasar</div>
-            <div className="tnum mt-1 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Harga pasar</div>
+            <div className="tnum mt-1 font-semibold text-[#333333] dark:text-[#f1f5f9]">
               {isLoading ? "..." : formatIDR(price)}
             </div>
           </div>
 
           <div>
-            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Nilai wajar</div>
-            <div className="tnum mt-1 font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Nilai wajar</div>
+            <div className="tnum mt-1 font-semibold text-[#333333] dark:text-[#f1f5f9]">
               {isLoading ? "..." : formatIDR(target)}
             </div>
           </div>
 
           <div>
-            <div className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Potensi</div>
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Potensi</div>
             <div
               className={`tnum mt-1 font-semibold ${
                 upsideInfo.isPending
-                  ? "text-[#6B6659] dark:text-[#A8A296]"
+                  ? "text-[#666666] dark:text-[#666666]"
                   : upsideInfo.isPositive
                   ? "text-[#157F3D] dark:text-[#4ADE80]"
                   : upsideInfo.isNegative
                   ? "text-[#B4232A] dark:text-[#F87171]"
-                  : "text-[#1C1B17] dark:text-[#EDEAE3]"
+                  : "text-[#333333] dark:text-[#f1f5f9]"
               }`}
             >
               {isLoading
@@ -208,30 +208,30 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
         </div>
 
         {/* 3. Valuation Details */}
-        <div className="space-y-1.5 text-xs text-[#6B6659] dark:text-[#A8A296]">
+        <div className="space-y-1.5 text-xs text-[#666666] dark:text-[#666666]">
           <div className="flex items-center justify-between">
             <span>Metode:</span>
-            <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">{method}</span>
+            <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">{method}</span>
           </div>
           <div className="flex items-center justify-between">
             <span>Cost of capital (WACC):</span>
-            <span className="tnum font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+            <span className="tnum font-medium text-[#333333] dark:text-[#f1f5f9]">
               {wacc ? wacc : "MENUNGGU"}
             </span>
           </div>
         </div>
 
         {/* 4. Takeaway / Summary snippet */}
-        <div className="rounded-lg bg-[#FBFAF7] p-3 text-xs leading-relaxed text-[#6B6659] dark:bg-[#14130F] dark:text-[#A8A296] border border-[#E7E3DA] dark:border-[#2A2822]">
+        <div className="rounded-lg bg-[#f1f5f9] p-3 text-xs leading-relaxed text-[#666666] dark:bg-[#1e2229] dark:text-[#666666] border border-[#D9D9D9] dark:border-[#262930]">
           <p className="line-clamp-2">{summarySnippet}</p>
         </div>
       </div>
 
       {/* 5. Action Links */}
-      <div className="mt-4 pt-3 border-t border-[#E7E3DA] dark:border-[#2A2822] flex items-center justify-between gap-2">
+      <div className="mt-4 pt-3 border-t border-[#D9D9D9] dark:border-[#262930] flex items-center justify-between gap-2">
         <Link
           to={`/report/${ticker}` as any}
-          className="inline-flex items-center gap-1.5 rounded-lg bg-[#0E6E63] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#0C5A52] dark:bg-[#0E6E63] dark:hover:bg-[#128275] transition-colors"
+          className="inline-flex items-center gap-1.5 rounded-lg bg-[#0928B1] px-3.5 py-1.5 text-xs font-medium text-white hover:bg-[#0C5A52] dark:bg-[#0928B1] dark:hover:bg-[#128275] transition-colors"
         >
           <span>Buka laporan</span>
           <ArrowUpRight className="h-3.5 w-3.5" />
@@ -241,13 +241,13 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
           <Link
             to="/agent"
             search={{ ticker } as any}
-            className="rounded-lg border border-[#E7E3DA] bg-white px-2.5 py-1.5 text-xs text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#FBFAF7] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#23211B] transition-colors"
+            className="rounded-lg border border-[#D9D9D9] bg-white px-2.5 py-1.5 text-xs text-[#666666] hover:text-[#333333] hover:bg-[#f1f5f9] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#23211B] transition-colors"
           >
             Mesin
           </Link>
           <Link
             to={`/report/${ticker}/challenge` as any}
-            className="rounded-lg border border-[#E7E3DA] bg-white px-2.5 py-1.5 text-xs text-[#6B6659] hover:text-[#1C1B17] hover:bg-[#FBFAF7] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296] dark:hover:text-[#EDEAE3] dark:hover:bg-[#23211B] transition-colors"
+            className="rounded-lg border border-[#D9D9D9] bg-white px-2.5 py-1.5 text-xs text-[#666666] hover:text-[#333333] hover:bg-[#f1f5f9] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#23211B] transition-colors"
           >
             Uji silang
           </Link>
@@ -271,32 +271,32 @@ function CompanyTableRow({ ticker }: { ticker: string }) {
   const upsideInfo = parseUpside(upsideRaw)
 
   return (
-    <tr className="hover:bg-[#FBFAF7] dark:hover:bg-[#23211B] transition-colors">
+    <tr className="hover:bg-[#f1f5f9] dark:hover:bg-[#23211B] transition-colors">
       <td className="py-3 px-4">
         <Link to={`/report/${ticker}` as any} className="flex items-center gap-2 group">
-          <span className="font-bold text-[#1C1B17] dark:text-[#EDEAE3] group-hover:text-[#0E6E63] dark:group-hover:text-[#4FD1B5] transition-colors">
+          <span className="font-bold text-[#333333] dark:text-[#f1f5f9] group-hover:text-[#0928B1] dark:group-hover:text-[#7596FF] transition-colors">
             {ticker}
           </span>
-          <span className="text-[#6B6659] dark:text-[#A8A296] truncate max-w-[180px] sm:max-w-none">
+          <span className="text-[#666666] dark:text-[#666666] truncate max-w-[180px] sm:max-w-none">
             {report?.name || `${ticker} Tbk`}
           </span>
         </Link>
       </td>
-      <td className="py-3 px-4 text-right tnum font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+      <td className="py-3 px-4 text-right tnum font-medium text-[#333333] dark:text-[#f1f5f9]">
         {reportQuery.isLoading ? "..." : formatIDR(price)}
       </td>
-      <td className="py-3 px-4 text-right tnum font-medium text-[#1C1B17] dark:text-[#EDEAE3]">
+      <td className="py-3 px-4 text-right tnum font-medium text-[#333333] dark:text-[#f1f5f9]">
         {reportQuery.isLoading ? "..." : formatIDR(target)}
       </td>
       <td
         className={`py-3 px-4 text-right tnum font-semibold ${
           upsideInfo.isPending
-            ? "text-[#6B6659] dark:text-[#A8A296]"
+            ? "text-[#666666] dark:text-[#666666]"
             : upsideInfo.isPositive
             ? "text-[#157F3D] dark:text-[#4ADE80]"
             : upsideInfo.isNegative
             ? "text-[#B4232A] dark:text-[#F87171]"
-            : "text-[#1C1B17] dark:text-[#EDEAE3]"
+            : "text-[#333333] dark:text-[#f1f5f9]"
         }`}
       >
         {reportQuery.isLoading
@@ -311,7 +311,7 @@ function CompanyTableRow({ ticker }: { ticker: string }) {
       <td className="py-3 px-4 text-right">
         <Link
           to={`/report/${ticker}` as any}
-          className="inline-flex items-center gap-1 text-xs font-medium text-[#0E6E63] hover:underline dark:text-[#4FD1B5]"
+          className="inline-flex items-center gap-1 text-xs font-medium text-[#0928B1] hover:underline dark:text-[#7596FF]"
         >
           <span>Laporan</span>
           <ChevronRight className="h-3.5 w-3.5" />
@@ -346,24 +346,24 @@ function MarketMonitorHub() {
   return (
     <div className="space-y-8">
       {/* 1. Market Monitor Header & Overview */}
-      <div className="rounded-xl border border-[#E7E3DA] bg-white p-6 shadow-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
+      <div className="rounded-xl border border-[#D9D9D9] bg-white p-6 shadow-xs dark:border-[#262930] dark:bg-[#090a0c]">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="space-y-2">
-            <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]">
+            <h1 className="text-2xl sm:text-3xl font-normal tracking-tight text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]">
               {runsQuery.isLoading
                 ? "Menyiapkan daftar emiten…"
                 : shownCount > 0
                   ? `Ringkasan pasar · ${shownCount} emiten siap dibaca`
                   : "Ringkasan pasar"}
             </h1>
-            <p className="text-xs sm:text-sm leading-relaxed text-[#6B6659] dark:text-[#A8A296] max-w-2xl">
+            <p className="text-xs sm:text-sm leading-relaxed text-[#666666] dark:text-[#666666] max-w-2xl">
               Hanya emiten yang analisisnya telah selesai atau sedang diproses dan laporannya siap dibuka yang ditampilkan di sini.
             </p>
           </div>
 
           <div className="flex flex-wrap items-center gap-2 text-xs">
-            <div className="inline-flex items-center gap-2 rounded-lg border border-[#E7E3DA] bg-[#FBFAF7] px-3 py-1.5 font-medium text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
-              <span className="h-2 w-2 rounded-full bg-[#0E6E63] dark:bg-[#4FD1B5]" />
+            <div className="inline-flex items-center gap-2 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] px-3 py-1.5 font-medium text-[#333333] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#f1f5f9]">
+              <span className="h-2 w-2 rounded-full bg-[#0928B1] dark:bg-[#7596FF]" />
               <span>
                 {runningCount} sedang diproses · {completedCount} siap
               </span>
@@ -372,12 +372,12 @@ function MarketMonitorHub() {
         </div>
 
         {/* Data Provenance & Servicing Notice */}
-        <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between border-t border-[#E7E3DA] pt-4 text-xs text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296] gap-2">
+        <div className="mt-5 flex flex-col sm:flex-row sm:items-center justify-between border-t border-[#D9D9D9] pt-4 text-xs text-[#666666] dark:border-[#262930] dark:text-[#666666] gap-2">
           <div className="flex items-center gap-2">
-            <Database className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0" />
+            <Database className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF] shrink-0" />
             <span>Sumber data: snapshot laporan keuangan terverifikasi IDX · Model DCF &amp; WACC</span>
           </div>
-          <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <div className="text-xs text-[#666666] dark:text-[#666666]">
             {runsQuery.isLoading
               ? "Memuat status pipeline…"
               : runsQuery.isError
@@ -391,10 +391,10 @@ function MarketMonitorHub() {
       <section aria-label="Emiten yang siap dibaca" className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h2 className="text-xl font-normal text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]">
+            <h2 className="text-xl font-normal text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]">
               Laporan emiten
             </h2>
-            <p className="text-xs text-[#6B6659] dark:text-[#A8A296] mt-0.5">
+            <p className="text-xs text-[#666666] dark:text-[#666666] mt-0.5">
               Pilih emiten untuk melihat laporan valuasi DCF dan analisis mendalam.
             </p>
           </div>
@@ -402,7 +402,7 @@ function MarketMonitorHub() {
 
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {runsQuery.isLoading ? (
-            <div className="rounded-xl border border-dashed border-[#E7E3DA] p-6 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296] sm:col-span-2 lg:col-span-3">
+            <div className="rounded-xl border border-dashed border-[#D9D9D9] p-6 text-center text-xs text-[#666666] dark:border-[#262930] dark:text-[#666666] sm:col-span-2 lg:col-span-3">
               Memuat status pipeline…
             </div>
           ) : runsQuery.isError ? (
@@ -410,7 +410,7 @@ function MarketMonitorHub() {
               Status pipeline tidak terbaca dari /api/agent/runs/summary. Daftar dibiarkan kosong daripada menampilkan emiten yang belum tentu punya laporan.
             </div>
           ) : shown.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-[#E7E3DA] p-6 text-center text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296] sm:col-span-2 lg:col-span-3">
+            <div className="rounded-xl border border-dashed border-[#D9D9D9] p-6 text-center text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:text-[#666666] sm:col-span-2 lg:col-span-3">
               {listedCount > 0 && !readyKnown
                 ? "Backend belum mengirim status ketersediaan laporan (report_ready). Restart BE ke versi terbaru - daftar sengaja dibiarkan kosong daripada menampilkan laporan yang belum tentu bisa dibuka."
                 : listedCount === 0
@@ -422,12 +422,12 @@ function MarketMonitorHub() {
           )}
 
           {/* Multi-Agent Helper Card */}
-          <div className="flex flex-col justify-between rounded-xl border border-dashed border-[#E7E3DA] bg-[#FBFAF7] p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]/50">
+          <div className="flex flex-col justify-between rounded-xl border border-dashed border-[#D9D9D9] bg-[#f1f5f9] p-5 dark:border-[#262930] dark:bg-[#090a0c]/50">
             <div className="space-y-2">
-              <h3 className="text-base font-normal text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]">
+              <h3 className="text-base font-normal text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]">
                 Penalaran multi-agen
               </h3>
-              <p className="text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+              <p className="text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
                 Jalankan atau pantau mesin AI yang mengaudit laporan keuangan, memvalidasi model valuasi DCF, dan mendeteksi risiko secara mandiri.
               </p>
             </div>
@@ -435,13 +435,13 @@ function MarketMonitorHub() {
               <Link
                 to="/agent"
                 search={{ ticker: jumpTicker } as any}
-                className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#1C1B17] py-2 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-[#EDEAE3] dark:text-[#1C1B17] dark:hover:bg-white"
+                className="mt-4 inline-flex items-center justify-center gap-2 rounded-lg bg-[#333333] py-2 px-4 text-xs font-medium text-white transition-colors hover:bg-neutral-800 dark:bg-[#f1f5f9] dark:text-[#333333] dark:hover:bg-white"
               >
                 <span>Buka ruang mesin</span>
                 <ChevronRight className="h-3.5 w-3.5" />
               </Link>
             ) : (
-              <div className="mt-4 rounded-lg border border-dashed border-[#E7E3DA] px-4 py-2 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:text-[#A8A296]">
+              <div className="mt-4 rounded-lg border border-dashed border-[#D9D9D9] px-4 py-2 text-center text-xs text-[#666666] dark:border-[#262930] dark:text-[#666666]">
                 Belum ada emiten untuk dibuka
               </div>
             )}
@@ -453,17 +453,17 @@ function MarketMonitorHub() {
       {shown.length > 0 && (
         <section aria-label="Tabel perbandingan nilai wajar" className="space-y-4">
           <div>
-            <h2 className="text-xl font-normal text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]">
+            <h2 className="text-xl font-normal text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]">
               Perbandingan nilai wajar
             </h2>
-            <p className="text-xs text-[#6B6659] dark:text-[#A8A296] mt-0.5">
+            <p className="text-xs text-[#666666] dark:text-[#666666] mt-0.5">
               Ikhtisar harga pasar dan estimasi nilai wajar dari emiten yang telah selesai dianalisis.
             </p>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-[#E7E3DA] bg-white dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="overflow-x-auto rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
             <table className="w-full text-left text-xs border-collapse">
-              <thead className="border-b border-[#E7E3DA] bg-[#FBFAF7] text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+              <thead className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
                 <tr>
                   <th className="py-3 px-4 font-semibold">Emiten</th>
                   <th className="py-3 px-4 font-semibold text-right">Harga pasar</th>
@@ -473,7 +473,7 @@ function MarketMonitorHub() {
                   <th className="py-3 px-4 font-semibold text-right">Aksi</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#E7E3DA] dark:divide-[#2A2822]">
+              <tbody className="divide-y divide-[#D9D9D9] dark:divide-[#262930]">
                 {shown.map((t) => (
                   <CompanyTableRow key={String(t.ticker)} ticker={String(t.ticker)} />
                 ))}
@@ -486,20 +486,20 @@ function MarketMonitorHub() {
       {/* 4. Educational Reference & Valuation Methodology Guide */}
       <section id="cara-baca" className="scroll-mt-20 space-y-4">
         <div>
-          <h2 className="text-xl font-normal text-[#1C1B17] dark:text-[#EDEAE3] font-['Newsreader',serif]">
+          <h2 className="text-xl font-normal text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]">
             Cara membaca analisis
           </h2>
-          <p className="text-xs text-[#6B6659] dark:text-[#A8A296] mt-0.5">
+          <p className="text-xs text-[#666666] dark:text-[#666666] mt-0.5">
             Panduan memahami istilah valuasi fundamental dan metodologi Discounted Cash Flow.
           </p>
         </div>
 
         {/* Intro Box */}
-        <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-4 text-xs leading-relaxed text-[#6B6659] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#A8A296]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-4 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
           <div className="flex items-start gap-2.5">
-            <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+            <HelpCircle className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
             <div>
-              <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">Panduan istilah: </span>
+              <span className="font-semibold text-[#333333] dark:text-[#f1f5f9]">Panduan istilah: </span>
               <span>
                 Penjelasan di bawah disusun untuk memudahkan pembaca memahami istilah analisis fundamental. Angka pada kartu emiten dihitung secara deterministik dari laporan keuangan terverifikasi (jika belum tersedia, ditandai MENUNGGU).
               </span>
@@ -509,32 +509,32 @@ function MarketMonitorHub() {
 
         {/* 3 Terminology Explainer Cards */}
         <div className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#157F3D] dark:text-[#4ADE80]">
               <span className="h-2 w-2 rounded-full bg-[#157F3D] dark:bg-[#4ADE80]" />
               <span>BUY (Undervalued)</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
               Harga pasar saat ini berada di bawah estimasi nilai wajar fundamental (Fair Value) berdasarkan proyeksi arus kas. Menandakan tersedianya ruang keamanan (margin of safety) yang memadai.
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#A16207] dark:text-[#FBBF24]">
               <span className="h-2 w-2 rounded-full bg-[#A16207] dark:bg-[#FBBF24]" />
               <span>HOLD (Fair Value)</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
               Harga pasar telah merefleksikan nilai intrinsik perusahaan secara wajar. Pertahankan kepemilikan aset atau tunggu konfirmasi katalis baru sebelum menambah posisi.
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
             <div className="flex items-center gap-2 text-xs font-semibold text-[#B4232A] dark:text-[#F87171]">
               <span className="h-2 w-2 rounded-full bg-[#B4232A] dark:bg-[#F87171]" />
               <span>SELL (Overvalued)</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
               Harga pasar dinilai telah melampaui valuasi fundamental konservatif. Risiko koreksi harga lebih besar daripada potensi apresiasi jangka pendek.
             </p>
           </div>
@@ -542,20 +542,20 @@ function MarketMonitorHub() {
 
         {/* Detailed Mechanics (Upside & Fair Value) */}
         <div className="grid gap-4 sm:grid-cols-2">
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 text-xs dark:border-[#262930] dark:bg-[#090a0c]">
+            <div className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Bagaimana potensi naik (upside) dihitung?
             </div>
-            <p className="mt-2 leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
-              Upside dihitung dari persentase selisih antara nilai wajar (Fair Value) hasil model DCF dan harga pasar terakhir: <code className="bg-[#FBFAF7] dark:bg-[#14130F] px-1.5 py-0.5 rounded border border-[#E7E3DA] dark:border-[#2A2822] text-[#1C1B17] dark:text-[#EDEAE3]">((Nilai Wajar - Harga) / Harga) * 100%</code>.
+            <p className="mt-2 leading-relaxed text-[#666666] dark:text-[#666666]">
+              Upside dihitung dari persentase selisih antara nilai wajar (Fair Value) hasil model DCF dan harga pasar terakhir: <code className="bg-[#f1f5f9] dark:bg-[#1e2229] px-1.5 py-0.5 rounded border border-[#D9D9D9] dark:border-[#262930] text-[#333333] dark:text-[#f1f5f9]">((Nilai Wajar - Harga) / Harga) * 100%</code>.
             </p>
           </div>
 
-          <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
-            <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 text-xs dark:border-[#262930] dark:bg-[#090a0c]">
+            <div className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
               Apa itu Discounted Cash Flow (DCF)?
             </div>
-            <p className="mt-2 leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 leading-relaxed text-[#666666] dark:text-[#666666]">
               Metode valuasi intrinsik yang memproyeksikan arus kas bebas (Free Cash Flow to Firm) masa depan dan mendiskontokannya ke nilai sekarang menggunakan WACC (Weighted Average Cost of Capital).
             </p>
           </div>
@@ -563,13 +563,13 @@ function MarketMonitorHub() {
       </section>
 
       {/* 5. Compliance & Attestation Notice */}
-      <div className="flex items-start gap-3 rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-5 text-xs dark:border-[#2A2822] dark:bg-[#1B1A16]">
-        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#0E6E63] dark:text-[#4FD1B5]" />
+      <div className="flex items-start gap-3 rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-5 text-xs dark:border-[#262930] dark:bg-[#090a0c]">
+        <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
         <div className="space-y-1">
-          <div className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <div className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Pemberitahuan kepatuhan riset
           </div>
-          <p className="leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+          <p className="leading-relaxed text-[#666666] dark:text-[#666666]">
             Seluruh analisis riset pada platform ini diproduksi secara deterministik dari laporan keuangan audited IDX. Sektoral.id tidak menyajikan angka sintetis atau rekayasa data. Informasi ini disajikan untuk tujuan riset kompetisi dan edukasi pasar, bukan merupakan rekomendasi transaksi efek dari penasihat investasi berlisensi.
           </p>
         </div>

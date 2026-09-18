@@ -84,7 +84,7 @@ function HistoryComboChart({
 
   return (
     <div>
-      <div className="mb-1 flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+      <div className="mb-1 flex items-center justify-between text-[11px] text-[#666666] dark:text-[#666666]">
         <span className="font-semibold">{barUnit}</span>
         <span className="font-semibold">{lineUnit}</span>
       </div>
@@ -119,7 +119,7 @@ function HistoryComboChart({
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+      <p className="mt-1 text-[11px] text-[#666666] dark:text-[#666666]">
         Batang: Realisasi historis · Garis: {lineUnit}
       </p>
     </div>
@@ -373,16 +373,16 @@ export function HistoryCharts({ payload }: { payload?: ReportPayload | null }) {
 
   return (
     <div className="space-y-4 font-sans">
-      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#E7E3DA] pb-2 dark:border-[#2A2822]">
+      <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-[#D9D9D9] pb-2 dark:border-[#262930]">
         <div>
-          <h3 className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+          <h3 className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Historis kinerja keuangan (6 tahun aktual)
           </h3>
-          <p className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <p className="text-xs text-[#666666] dark:text-[#666666]">
             Tren realisasi pendapatan, EBITDA, dan laba bersih per tahun (FY20A–FY25A)
           </p>
         </div>
-        <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+        <span className="text-xs text-[#666666] dark:text-[#666666]">
           Sumber: {sourceFootnote}
         </span>
       </div>
@@ -391,11 +391,11 @@ export function HistoryCharts({ payload }: { payload?: ReportPayload | null }) {
         {panels.map((panel, idx) => (
           <div
             key={idx}
-            className="flex flex-col rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]"
+            className="flex flex-col rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]"
           >
-            <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-              <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{panel.title}</span>
-              {panel.window && <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">{panel.window}</span>}
+            <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{panel.title}</span>
+              {panel.window && <span className="text-[11px] text-[#666666] dark:text-[#666666]">{panel.window}</span>}
             </div>
 
             <div className="my-auto">

@@ -160,46 +160,46 @@ export function RunCommandPalette({
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center p-4 pt-16 sm:pt-24 bg-black/50 animate-in fade-in duration-150">
       <div
-        className="w-full max-w-2xl rounded-xl border border-[#E7E3DA] dark:border-[#2A2822] bg-white dark:bg-[#1B1A16] text-[#1C1B17] dark:text-[#EDEAE3] shadow-lg overflow-hidden flex flex-col font-sans"
+        className="w-full max-w-2xl rounded-xl border border-[#D9D9D9] dark:border-[#262930] bg-white dark:bg-[#090a0c] text-[#333333] dark:text-[#f1f5f9] shadow-lg overflow-hidden flex flex-col font-sans"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center justify-between px-4 py-3 bg-[#FBFAF7] dark:bg-[#14130F] border-b border-[#E7E3DA] dark:border-[#2A2822] text-xs">
-          <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Cari cepat emiten dan proses</span>
+        <div className="flex items-center justify-between px-4 py-3 bg-[#f1f5f9] dark:bg-[#1e2229] border-b border-[#D9D9D9] dark:border-[#262930] text-xs">
+          <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Cari cepat emiten dan proses</span>
           <button
             type="button"
             onClick={onClose}
-            className="text-[#6B6659] dark:text-[#A8A296] hover:text-[#1C1B17] dark:hover:text-[#EDEAE3]"
+            className="text-[#666666] dark:text-[#666666] hover:text-[#333333] dark:hover:text-[#f1f5f9]"
           >
             <X className="h-4 w-4" />
           </button>
         </div>
 
-        <div className="relative flex items-center px-4 py-3 border-b border-[#E7E3DA] dark:border-[#2A2822]">
-          <Search className="h-4 w-4 text-[#6B6659] dark:text-[#A8A296] shrink-0 mr-2.5" />
+        <div className="relative flex items-center px-4 py-3 border-b border-[#D9D9D9] dark:border-[#262930]">
+          <Search className="h-4 w-4 text-[#666666] dark:text-[#666666] shrink-0 mr-2.5" />
           <input
             ref={inputRef}
             type="text"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Ketik kode saham atau status..."
-            className="w-full bg-transparent text-sm text-[#1C1B17] dark:text-[#EDEAE3] placeholder:text-[#6B6659]/70 dark:placeholder:text-[#A8A296]/70 focus:outline-none"
+            className="w-full bg-transparent text-sm text-[#333333] dark:text-[#f1f5f9] placeholder:text-[#666666]/70 dark:placeholder:text-[#666666]/70 focus:outline-none"
             spellCheck={false}
           />
         </div>
 
         <div
           ref={listRef}
-          className="max-h-[360px] overflow-y-auto divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60 p-2 space-y-1 text-xs"
+          className="max-h-[360px] overflow-y-auto divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60 p-2 space-y-1 text-xs"
         >
           {items.length === 0 ? (
-            <div className="py-10 text-center text-[#6B6659] dark:text-[#A8A296] text-xs">
+            <div className="py-10 text-center text-[#666666] dark:text-[#666666] text-xs">
               Tidak ditemukan hasil untuk &quot;{query}&quot;
             </div>
           ) : (
             <>
               {filteredTickers.length > 0 && (
                 <div className="p-1">
-                  <div className="px-2 py-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="px-2 py-1 text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                     Daftar emiten ({filteredTickers.length})
                   </div>
                   <div className="space-y-0.5">
@@ -218,8 +218,8 @@ export function RunCommandPalette({
                           onClick={() => handleSelect(items[itemIndex])}
                           className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 text-[#0E6E63] dark:text-[#4FD1B5]"
-                              : "text-[#1C1B17] dark:text-[#EDEAE3] hover:bg-[#FBFAF7] dark:hover:bg-[#14130F]"
+                              ? "bg-[#0928B1]/10 dark:bg-[#7596FF]/15 text-[#0928B1] dark:text-[#7596FF]"
+                              : "text-[#333333] dark:text-[#f1f5f9] hover:bg-[#f1f5f9] dark:hover:bg-[#333333]"
                           }`}
                         >
                           <div className="flex items-center gap-2.5 min-w-0">
@@ -227,18 +227,18 @@ export function RunCommandPalette({
                               {t}
                             </span>
                             {meta?.nama && (
-                              <span className="text-[#6B6659] dark:text-[#A8A296] text-xs truncate">
+                              <span className="text-[#666666] dark:text-[#666666] text-xs truncate">
                                 {meta.nama}
                               </span>
                             )}
                             {isCurrent && (
-                              <span className="text-[10px] text-[#6B6659] dark:text-[#A8A296] bg-[#F5F2EB] dark:bg-[#23211C] border border-[#E7E3DA] dark:border-[#2A2822] px-1.5 py-0.5 rounded">
+                              <span className="text-[10px] text-[#666666] dark:text-[#666666] bg-[#B4C7FF] dark:bg-[#1e2229] border border-[#D9D9D9] dark:border-[#262930] px-1.5 py-0.5 rounded">
                                 Sedang aktif
                               </span>
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0 text-xs text-[#6B6659] dark:text-[#A8A296]">
+                          <div className="flex items-center gap-2 shrink-0 text-xs text-[#666666] dark:text-[#666666]">
                             <CornerDownLeft className="h-3 w-3 inline" />
                             <span>Pilih</span>
                           </div>
@@ -251,7 +251,7 @@ export function RunCommandPalette({
 
               {filteredRuns.length > 0 && (
                 <div className="p-1">
-                  <div className="px-2 py-1 text-[11px] font-medium text-[#6B6659] dark:text-[#A8A296]">
+                  <div className="px-2 py-1 text-[11px] font-medium text-[#666666] dark:text-[#666666]">
                     Riwayat proses ({filteredRuns.length})
                   </div>
                   <div className="space-y-0.5">
@@ -269,24 +269,24 @@ export function RunCommandPalette({
                           onClick={() => handleSelect(items[itemIndex])}
                           className={`flex items-center justify-between px-3 py-2 rounded-lg cursor-pointer transition-colors ${
                             isSelected
-                              ? "bg-[#0E6E63]/10 dark:bg-[#4FD1B5]/15 text-[#0E6E63] dark:text-[#4FD1B5]"
-                              : "text-[#1C1B17] dark:text-[#EDEAE3] hover:bg-[#FBFAF7] dark:hover:bg-[#14130F]"
+                              ? "bg-[#0928B1]/10 dark:bg-[#7596FF]/15 text-[#0928B1] dark:text-[#7596FF]"
+                              : "text-[#333333] dark:text-[#f1f5f9] hover:bg-[#f1f5f9] dark:hover:bg-[#333333]"
                           }`}
                         >
                           <div className="flex items-center gap-2 min-w-0">
-                            <History className="h-3.5 w-3.5 text-[#6B6659] dark:text-[#A8A296] shrink-0" />
+                            <History className="h-3.5 w-3.5 text-[#666666] dark:text-[#666666] shrink-0" />
                             <span className="font-serif font-medium">
                               {r.ticker}
                             </span>
-                            <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                            <span className="text-[11px] text-[#666666] dark:text-[#666666]">
                               {truncateId(r.run_id)}
                             </span>
                             {isRunActive && (
-                              <Check className="h-3.5 w-3.5 text-[#0E6E63] dark:text-[#4FD1B5] shrink-0 ml-0.5" />
+                              <Check className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF] shrink-0 ml-0.5" />
                             )}
                           </div>
 
-                          <div className="flex items-center gap-2 shrink-0 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+                          <div className="flex items-center gap-2 shrink-0 text-[11px] text-[#666666] dark:text-[#666666]">
                             <span>{formatRelativeTime(r.started_at)}</span>
                           </div>
                         </div>

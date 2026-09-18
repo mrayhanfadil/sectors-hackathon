@@ -480,7 +480,7 @@ function AgentPage() {
   // Step 1: When no ticker is selected in search params
   if (!selectedTicker) {
     return (
-      <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#14130F]">
+      <div className="min-h-screen bg-[#f1f5f9] dark:bg-[#1e2229]">
         <TickerPicker
           onSelectTicker={(t) => {
             navigate({ to: "/agent", search: { ticker: t } })
@@ -492,7 +492,7 @@ function AgentPage() {
 
   // Step 2: Pipeline view for the chosen ticker
   return (
-    <div className="min-h-screen bg-[#FBFAF7] dark:bg-[#14130F] font-sans text-[#1C1B17] dark:text-[#EDEAE3]">
+    <div className="min-h-screen bg-[#f1f5f9] dark:bg-[#1e2229] font-sans text-[#333333] dark:text-[#f1f5f9]">
       <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8">
         {/* Step 2 Header & Status Control */}
         <PipelineHeader

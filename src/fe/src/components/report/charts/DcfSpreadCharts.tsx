@@ -75,13 +75,13 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
       case "h-neg1":
         return "bg-[#FEF9EE] text-[#A16207] dark:bg-[#A16207]/20 dark:text-[#FBBF24]"
       case "h-mid":
-        return "bg-[#FBFAF7] text-[#1C1B17] dark:bg-[#14130F] dark:text-[#EDEAE3]"
+        return "bg-[#f1f5f9] text-[#333333] dark:bg-[#333333] dark:text-[#f1f5f9]"
       case "h-pos1":
         return "bg-[#EBF6EE] text-[#157F3D] dark:bg-[#157F3D]/20 dark:text-[#34D399]"
       case "h-pos2":
-        return "bg-[#0E6E63] text-white dark:bg-[#4FD1B5] dark:text-[#14130F]"
+        return "bg-[#0928B1] text-white dark:bg-[#7596FF] dark:text-[#333333]"
       default:
-        return "bg-white text-[#1C1B17] dark:bg-[#1B1A16] dark:text-[#EDEAE3]"
+        return "bg-white text-[#333333] dark:bg-[#090a0c] dark:text-[#f1f5f9]"
     }
   }
 
@@ -102,36 +102,36 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
     <div className="space-y-5 font-sans">
       {/* Summary KPI Chips Strip */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
-          <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">PV terminal / EV</div>
-          <div className="mt-1 text-lg font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]">
+          <div className="text-xs text-[#666666] dark:text-[#666666]">PV terminal / EV</div>
+          <div className="mt-1 text-lg font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
             {tvShare !== null ? `${(tvShare * 100).toFixed(1)}%` : "-"}
           </div>
-          <div className="text-[11px] text-[#6B6659] mt-0.5 dark:text-[#A8A296]">
+          <div className="text-[11px] text-[#666666] mt-0.5 dark:text-[#666666]">
             Nilai wajar bertumpu di luar periode eksplisit
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
-          <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">Net debt / EV</div>
-          <div className="mt-1 text-lg font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]">
+          <div className="text-xs text-[#666666] dark:text-[#666666]">Net debt / EV</div>
+          <div className="mt-1 text-lg font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
             {netDebt !== null && evGordon !== null && evGordon > 0
               ? `${((netDebt / evGordon) * 100).toFixed(1)}%`
               : "-"}
           </div>
-          <div className="text-[11px] text-[#6B6659] mt-0.5 dark:text-[#A8A296]">
+          <div className="text-[11px] text-[#666666] mt-0.5 dark:text-[#666666]">
             Sisa ekuitas pemegang saham {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "-"}
           </div>
         </div>
 
-        <div className="rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
-          <div className="text-xs text-[#6B6659] dark:text-[#A8A296]">Rentang grid WACC × g</div>
-          <div className="mt-1 text-lg font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]">
+          <div className="text-xs text-[#666666] dark:text-[#666666]">Rentang grid WACC × g</div>
+          <div className="mt-1 text-lg font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
             {swing.min !== undefined && swing.max !== undefined
               ? `Rp ${formatIdn(swing.min, 0)} – ${formatIdn(swing.max, 0)}`
               : "-"}
           </div>
-          <div className="text-[11px] text-[#6B6659] mt-0.5 dark:text-[#A8A296]">
+          <div className="text-[11px] text-[#666666] mt-0.5 dark:text-[#666666]">
             Kasus dasar {baseFv !== null ? `Rp ${formatIdn(baseFv, 0)}` : "-"} (WACC {baseWacc} · g {baseG})
           </div>
         </div>
@@ -140,48 +140,48 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
       {/* Grid: Bridge Waterfall Table + Method Comparison Spread */}
       <div className="grid grid-cols-1 gap-5 lg:grid-cols-2">
         {/* EV -> Equity Bridge */}
-        <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+        <div className="flex flex-col justify-between rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
           <div>
-            <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-              <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                 Enterprise Value → Ekuitas (Basis Gordon)
               </span>
-              <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">{vp.bridge_basis ?? "Basis Asumsi"}</span>
+              <span className="text-[11px] text-[#666666] dark:text-[#666666]">{vp.bridge_basis ?? "Basis Asumsi"}</span>
             </div>
 
             {/* Visual Stacked Bar Segment */}
             {evGordon !== null && netDebt !== null && equityGordon !== null && evGordon > 0 && (
               <div className="my-3 space-y-1.5">
-                <div className="flex h-3.5 w-full overflow-hidden rounded-md border border-[#E7E3DA] dark:border-[#2A2822]">
+                <div className="flex h-3.5 w-full overflow-hidden rounded-md border border-[#D9D9D9] dark:border-[#262930]">
                   <div
                     style={{ width: `${Math.max(0, Math.min(100, (equityGordon / evGordon) * 100))}%` }}
-                    className="bg-[#0E6E63]"
+                    className="bg-[#0928B1]"
                     title={`Equity Value: ${((equityGordon / evGordon) * 100).toFixed(1)}%`}
                   />
                   <div
                     style={{ width: `${Math.max(0, Math.min(100, (netDebt / evGordon) * 100))}%` }}
-                    className="bg-[#E7E3DA] dark:bg-[#2A2822]"
+                    className="bg-[#D9D9D9] dark:bg-[#262930]"
                     title={`Net Debt: ${((netDebt / evGordon) * 100).toFixed(1)}%`}
                   />
                 </div>
-                <div className="flex justify-between text-xs text-[#6B6659] dark:text-[#A8A296]">
+                <div className="flex justify-between text-xs text-[#666666] dark:text-[#666666]">
                   <span className="flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-xs bg-[#0E6E63]" /> Ekuitas ({((equityGordon / evGordon) * 100).toFixed(1)}%)
+                    <span className="inline-block h-2 w-2 rounded-xs bg-[#0928B1]" /> Ekuitas ({((equityGordon / evGordon) * 100).toFixed(1)}%)
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <span className="inline-block h-2 w-2 rounded-xs bg-[#E7E3DA] dark:bg-[#2A2822]" /> Net debt ({((netDebt / evGordon) * 100).toFixed(1)}%)
+                    <span className="inline-block h-2 w-2 rounded-xs bg-[#D9D9D9] dark:bg-[#262930]" /> Net debt ({((netDebt / evGordon) * 100).toFixed(1)}%)
                   </span>
                 </div>
               </div>
             )}
 
             {/* Footing Table */}
-            <div className="mt-4 overflow-hidden rounded-lg border border-[#E7E3DA] dark:border-[#2A2822]">
+            <div className="mt-4 overflow-hidden rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
               <table className="w-full text-xs">
-                <tbody className="divide-y divide-[#E7E3DA]/60 dark:divide-[#2A2822]/60">
-                  <tr className="bg-[#FBFAF7]/50 dark:bg-[#14130F]/30">
-                    <td className="px-3.5 py-2 text-[#1C1B17] dark:text-[#EDEAE3]">Enterprise Value</td>
-                    <td className="px-3.5 py-2 text-right font-medium text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
+                <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
+                  <tr className="bg-[#f1f5f9]/50 dark:bg-[#333333]/30">
+                    <td className="px-3.5 py-2 text-[#333333] dark:text-[#f1f5f9]">Enterprise Value</td>
+                    <td className="px-3.5 py-2 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
                       {evGordon !== null ? `Rp ${formatIdn(evGordon / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
@@ -191,9 +191,9 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                       {netDebt !== null ? `Rp ${formatIdn(netDebt / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
-                  <tr className="bg-[#FBFAF7] font-semibold dark:bg-[#14130F]">
-                    <td className="px-3.5 py-2.5 text-[#1C1B17] dark:text-[#EDEAE3]">Equity Value</td>
-                    <td className="px-3.5 py-2.5 text-right text-[#0E6E63] font-mono tabular-nums dark:text-[#4FD1B5]">
+                  <tr className="bg-[#f1f5f9] font-semibold dark:bg-[#333333]">
+                    <td className="px-3.5 py-2.5 text-[#333333] dark:text-[#f1f5f9]">Equity Value</td>
+                    <td className="px-3.5 py-2.5 text-right text-[#0928B1] font-mono tabular-nums dark:text-[#7596FF]">
                       {equityGordon !== null ? `Rp ${formatIdn(equityGordon / 1e12, 2)} tn` : "-"}
                     </td>
                   </tr>
@@ -202,16 +202,16 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
             </div>
           </div>
 
-          <p className="mt-3 text-[11px] text-[#6B6659] leading-normal dark:text-[#A8A296]">
+          <p className="mt-3 text-[11px] text-[#666666] leading-normal dark:text-[#666666]">
             Net debt diperlakukan sebagai faktor pengurang langsung. Nilai dicetak sebagai besaran positif dengan tanda (−) agar kalkulasi footing tepat.
           </p>
         </div>
 
         {/* Sebaran Metode Valuasi */}
-        <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
+        <div className="flex flex-col justify-between rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
           <div>
-            <div className="mb-3 flex items-center justify-between border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-              <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+            <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
                 Sebaran metode (Rp / saham)
               </span>
               {price !== null && (
@@ -250,14 +250,14 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                 </ResponsiveContainer>
               </div>
             ) : (
-              <div className="py-8 text-center text-xs text-[#6B6659] dark:text-[#A8A296]">
+              <div className="py-8 text-center text-xs text-[#666666] dark:text-[#666666]">
                 Data komparasi metode belum tersedia.
               </div>
             )}
           </div>
 
           {fvGordon && fvExit && (
-            <p className="mt-3 text-xs leading-relaxed text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-3 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
               Selisih Gordon vs Exit Multiple {formatIdn(fvExit / fvGordon, 1)}× pada basis FCFF yang sama - dibaca sebagai komparasi skenario, bukan dirata-rata.
             </p>
           )}
@@ -265,12 +265,12 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
       </div>
 
       {/* Sensitivity Heatmap Matrix (WACC x g) */}
-      <div className="rounded-xl border border-[#E7E3DA] bg-white p-5 dark:border-[#2A2822] dark:bg-[#1B1A16]">
-        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#E7E3DA]/60 pb-2 dark:border-[#2A2822]">
-          <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+      <div className="rounded-xl border border-[#D9D9D9] bg-white p-5 dark:border-[#262930] dark:bg-[#090a0c]">
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-2 border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
+          <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Analisa sensitivitas - WACC × Pertumbuhan terminal (g)
           </span>
-          <span className="text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <span className="text-xs text-[#666666] dark:text-[#666666]">
             Kasus dasar: WACC {baseWacc} · g {baseG}
           </span>
         </div>
@@ -280,13 +280,13 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
             <table className="w-full border-collapse text-xs">
               <thead>
                 <tr>
-                  <th className="border border-[#E7E3DA] bg-[#FBFAF7] px-3 py-2 text-left font-semibold text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]">
+                  <th className="border border-[#D9D9D9] bg-[#f1f5f9] px-3 py-2 text-left font-semibold text-[#333333] dark:border-[#262930] dark:bg-[#333333] dark:text-[#f1f5f9]">
                     WACC \ g
                   </th>
                   {sensCols.map((col, cIdx) => (
                     <th
                       key={cIdx}
-                      className="border border-[#E7E3DA] bg-[#FBFAF7] px-3 py-2 text-right font-semibold text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F] dark:text-[#EDEAE3]"
+                      className="border border-[#D9D9D9] bg-[#f1f5f9] px-3 py-2 text-right font-semibold text-[#333333] dark:border-[#262930] dark:bg-[#333333] dark:text-[#f1f5f9]"
                     >
                       {col}
                     </th>
@@ -296,7 +296,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
               <tbody>
                 {sensRows.map((r, rIdx) => (
                   <tr key={rIdx}>
-                    <td className="border border-[#E7E3DA] bg-[#FBFAF7]/70 px-3 py-2 font-semibold text-[#1C1B17] dark:border-[#2A2822] dark:bg-[#14130F]/50 dark:text-[#EDEAE3]">
+                    <td className="border border-[#D9D9D9] bg-[#f1f5f9]/70 px-3 py-2 font-semibold text-[#333333] dark:border-[#262930] dark:bg-[#333333]/50 dark:text-[#f1f5f9]">
                       {r.label}
                     </td>
                     {r.cells.map((cell, cIdx) => {
@@ -304,9 +304,9 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                       return (
                         <td
                           key={cIdx}
-                          className={`border border-[#E7E3DA] px-3 py-2 text-right font-mono tabular-nums dark:border-[#2A2822] ${getBandStyle(
+                          className={`border border-[#D9D9D9] px-3 py-2 text-right font-mono tabular-nums dark:border-[#262930] ${getBandStyle(
                             cell.band
-                          )} ${isBase ? "ring-2 ring-inset ring-[#0E6E63] font-bold dark:ring-[#4FD1B5]" : ""}`}
+                          )} ${isBase ? "ring-2 ring-inset ring-[#0928B1] font-bold dark:ring-[#7596FF]" : ""}`}
                           title={`WACC ${r.label} x g ${sensCols[cIdx] ?? ""}: ${cell.value}${isBase ? " (Kasus Dasar)" : ""}`}
                         >
                           {cell.value}
@@ -319,30 +319,30 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
             </table>
 
             {/* Heatmap Legend */}
-            <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs text-[#6B6659] dark:text-[#A8A296]">
-              <span className="font-medium text-[#1C1B17] dark:text-[#EDEAE3]">Keterangan sel:</span>
+            <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs text-[#666666] dark:text-[#666666]">
+              <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Keterangan sel:</span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FDF2F2] border border-[#F8C8CB]" /> Rendah
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FBFAF7] border border-[#E7E3DA]" /> Netral
+                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#f1f5f9] border border-[#D9D9D9]" /> Netral
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-3 w-3.5 rounded-xs bg-[#EBF6EE] border border-[#BCE2C9]" /> Tinggi
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs border-2 border-[#0E6E63]" /> Kasus dasar
+                <span className="inline-block h-3 w-3.5 rounded-xs border-2 border-[#0928B1]" /> Kasus dasar
               </span>
             </div>
 
-            <p className="mt-2 text-xs text-[#6B6659] dark:text-[#A8A296]">
+            <p className="mt-2 text-xs text-[#666666] dark:text-[#666666]">
               Kasus dasar (WACC {baseWacc} · g {baseG}) dibingkai; isi sel = nilai wajar per saham (Rp). Rentang grid: Rp{" "}
               {swing.min !== undefined ? formatIdn(swing.min, 0) : "-"} – Rp{" "}
               {swing.max !== undefined ? formatIdn(swing.max, 0) : "-"}.
             </p>
           </div>
         ) : (
-          <div className="py-6 text-center text-xs text-[#6B6659] dark:text-[#A8A296]">
+          <div className="py-6 text-center text-xs text-[#666666] dark:text-[#666666]">
             Matriks sensitivitas belum tersedia.
           </div>
         )}
@@ -350,20 +350,20 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
 
       {/* Disclosure Notes */}
       {notes.length > 0 && (
-        <div className="rounded-xl border border-[#E7E3DA] bg-[#FBFAF7] p-4 space-y-2 dark:border-[#2A2822] dark:bg-[#14130F]">
-          <div className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
+        <div className="rounded-xl border border-[#D9D9D9] bg-[#f1f5f9] p-4 space-y-2 dark:border-[#262930] dark:bg-[#333333]">
+          <div className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
             Catatan keterbatasan asumsi
           </div>
-          <div className="divide-y divide-[#E7E3DA]/60 text-xs dark:divide-[#2A2822]/60">
+          <div className="divide-y divide-[#D9D9D9]/60 text-xs dark:divide-[#262930]/60">
             {notes.map((note, nIdx) => {
               const [head, ...rest] = note.includes(" - ") ? note.split(" - ") : [null, note]
               const body = head ? rest.join(" - ") : note
 
               return (
-                <div key={nIdx} className="py-2 first:pt-1 last:pb-0 text-[#6B6659] leading-relaxed dark:text-[#A8A296]">
+                <div key={nIdx} className="py-2 first:pt-1 last:pb-0 text-[#666666] leading-relaxed dark:text-[#666666]">
                   {head ? (
                     <>
-                      <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{head}</span> - {body}
+                      <span className="font-semibold text-[#333333] dark:text-[#f1f5f9]">{head}</span> - {body}
                     </>
                   ) : (
                     body
