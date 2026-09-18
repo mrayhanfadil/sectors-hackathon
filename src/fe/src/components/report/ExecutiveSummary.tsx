@@ -176,7 +176,7 @@ function SvgPriceVsJci({
           <>
             <polygon
               points={`${padL},${padT + chartH} ${ptsP} ${padL + (n - 1) * step},${padT + chartH}`}
-              fill="rgba(14,110,99,0.06)"
+              fill="rgba(9,40,177,0.06)"
             />
             <polyline
               points={ptsP}
