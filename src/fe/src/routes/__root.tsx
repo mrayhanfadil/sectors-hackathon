@@ -65,10 +65,12 @@ function RootComponent() {
           <div className="flex items-center gap-8">
             <Link
               to="/"
-              className="text-xl font-normal tracking-tight text-[#333333] dark:text-[#f1f5f9] font-['Newsreader',serif]"
+              className="flex items-center"
               onClick={closeMenu}
+              aria-label="Sectoral - beranda"
             >
-              Sektoral.id
+              <img src="/sectoral-logo.svg" alt="Sectoral" className="h-6 w-auto dark:hidden" />
+              <img src="/sectoral-logo-dark.svg" alt="Sectoral" className="hidden h-6 w-auto dark:block" />
             </Link>
 
             {/* Desktop Navigation */}
@@ -182,8 +184,9 @@ function RootComponent() {
       <footer className="border-t border-[#D9D9D9] bg-[#f1f5f9] py-8 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
         <div className="mx-auto max-w-[1100px] space-y-4 px-4 sm:px-6">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#D9D9D9] pb-4 dark:border-[#262930]">
-            <div className="font-['Newsreader',serif] text-base text-[#333333] dark:text-[#f1f5f9]">
-              Sektoral.id
+            <div className="flex items-center">
+              <img src="/sectoral-logo.svg" alt="Sectoral" className="h-5 w-auto dark:hidden" />
+              <img src="/sectoral-logo-dark.svg" alt="Sectoral" className="hidden h-5 w-auto dark:block" />
             </div>
             <div className="text-xs text-[#666666] dark:text-[#666666]">
               Riset fundamental &amp; analisis multi-agen saham Indonesia
