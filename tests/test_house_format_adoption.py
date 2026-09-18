@@ -276,7 +276,7 @@ def test_agents_that_do_not_produce_exhibits_are_not_given_the_rule() -> None:
 HOUSE_HEADER = "Equity Research \u2013 Company Update"
 HOUSE_FOOTER_LEFT = "sectors.app"
 HOUSE_FOOTER_RIGHT = "See important disclosure at the back of this report"
-HOUSE_DIVIDER = "#067647"
+HOUSE_DIVIDER = "#0928B1"
 
 
 _TEMPLATE_CONSTANT_KEYS = {

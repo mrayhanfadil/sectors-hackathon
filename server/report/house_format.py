@@ -25,9 +25,20 @@ HEADER_TITLE = "Equity Research \u2013 Company Update"  # en dash, per the rule
 FOOTER_LEFT = "sectors.app"
 FOOTER_RIGHT = "See important disclosure at the back of this report"
 SOURCE_LINE = "Company, Team Estimates"
-DIVIDER_COLOR = "#067647"
+# Sectoral Design System (friend-supplied, Sep 2026): the house divider is the
+# Sectoral primary, not the old green.
+DIVIDER_COLOR = "#0928B1"
 
-LOGO_PATH = PROJECT_ROOT / "assets" / "brand" / "sectors-icon.svg"
+# --- Sectoral Design System tokens (authoritative order/units) ----------------
+# Chart series assign in array order (series 1 -> index 0, ...).
+SECTORAL_PRIMARY = "#0928B1"
+SECTORAL_CHART_PALETTE = ["#0928B1", "#B4C7FF", "#3ED628", "#1DCD9F", "#0047AB", "#7596FF"]
+SECTORAL_GRID = "#D9D9D9"
+SECTORAL_TABLE_EVEN = "#B4C7FF"
+SECTORAL_FONT = "Roboto"
+
+LOGO_PATH = PROJECT_ROOT / "assets" / "brand" / "sectoral-logo.svg"
+LOGO_FALLBACK_PATH = PROJECT_ROOT / "assets" / "brand" / "sectors-icon.svg"
 
 _MONTHS = {
     "jan": 1, "januari": 1, "january": 1,
@@ -105,6 +116,9 @@ def logo_data_uri() -> str:
     with no error. Inlining removes that failure mode.
     """
     if not LOGO_PATH.exists():
+        if LOGO_FALLBACK_PATH.exists():
+            b64 = base64.b64encode(LOGO_FALLBACK_PATH.read_bytes()).decode("ascii")
+            return f"data:image/svg+xml;base64,{b64}"
         return ""
     b64 = base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
     return f"data:image/svg+xml;base64,{b64}"

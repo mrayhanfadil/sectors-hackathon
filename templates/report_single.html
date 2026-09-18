@@ -4,7 +4,7 @@
 {% import "macros.html" as m %}
 {% import "_slide3_macro.html" as s3 %}
 {% set ns = namespace(ex=0, pending=false, sec=0) %}
-{% set palette = {"brand": "#0B1F3A", "brand_dark": "#14304F", "accent": "#E4EEF7"} %}
+{% set palette = {"brand": "#0928B1", "brand_dark": "#0047AB", "accent": "#B4C7FF"} %}
 <html lang="id">
 <head>
 <meta charset="utf-8">
@@ -338,7 +338,7 @@
     <span class="k" style="background: rgba(192,57,43,.34); margin-left:3pt;"></span> −50%…−10%
     <span class="k" style="background: #F2E9DC; margin-left:3pt;"></span> ±10%
     <span class="k" style="background: #DCEBF7; margin-left:3pt;"></span> +10%…+50%
-    <span class="k" style="background: #0B1F3A; margin-left:3pt;"></span> &gt; +50%
+    <span class="k" style="background: #0928B1; margin-left:3pt;"></span> &gt; +50%
     <span style="margin-left:4pt;">warna sel = posisi vs base case (Rp {{ valuation_page.sensitivity.base_fv | idn(0) }}); grid ini sendiri duduk jauh di bawah harga pasar {{ cover.rating_box.price | idn(0) }}</span>
   </div>
   <p class="muted" style="font-size:6.6pt; margin-top:2pt;">
@@ -464,7 +464,7 @@
     {% endif %}
   {% endfor %}
   {% if visible_flags %}
-  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Bendera Gate</h3>
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Bendera Gate</h3>
   <ul class="stmt-note-cols audit-flags" style="margin:0 0 6pt 0; padding-left:14pt;">
     {% for flag in visible_flags %}
       <li class="{{ 'contested' if 'DISSENT' in flag or 'RANGE_DISCLOSURE' in flag else '' }}">{{ flag }}</li>
@@ -474,12 +474,12 @@
   {% endif %}
 
   {% if cover.audit_disclosure.disclosure %}
-  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Justifikasi Anchor</h3>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Justifikasi Anchor</h3>
   <p class="audit-disclosure-prose" style="margin:0 0 6pt 0;">{{ cover.audit_disclosure.disclosure }}</p>
   {% endif %}
 
   {% if cover.audit_disclosure.ladder %}
-  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Tangga Valuasi (Audit)</h3>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Tangga Valuasi (Audit)</h3>
   <table class="fin-table audit-ladder" style="width:100%;">
     <thead>
       <tr>
@@ -517,7 +517,7 @@
   {% endif %}
 
   {% if audit and audit.inconsistency_report %}
-  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0B1F3A;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
   <table class="fin-table" style="width:100%;">
     <thead>
       <tr>
@@ -583,16 +583,16 @@
 
 <style>
   .slide5 .peer-table td.tk { font-weight: 600; }
-  .slide5 .peer-table tr.peer-self td { background: #eef6ff; box-shadow: inset 3px 0 0 #0B1F3A; }
+  .slide5 .peer-table tr.peer-self td { background: #eef6ff; box-shadow: inset 3px 0 0 #0928B1; }
   .slide5 .peer-table tr.peer-stat td { font-weight: 700; background: #f8fafc; border-top: 1.4pt solid #0f172a; }
   .slide5 .peer-table tr.peer-average td { border-top: 0; border-bottom: 1.4pt solid #0f172a; }
   .audit-page .audit-banner {
     background: #F5F9FC;
-    border-left: 3pt solid #0B1F3A;
+    border-left: 3pt solid #0928B1;
     padding: 6pt 10pt;
     margin: 4pt 0 8pt 0;
   }
-  .audit-page .audit-verdict { font-size: 9pt; margin: 0; color: #0B1F3A; }
+  .audit-page .audit-verdict { font-size: 9pt; margin: 0; color: #0928B1; }
   .audit-page .audit-verdict code {
     background: #fff;
     border: 1px solid #DCEBF7;
@@ -618,7 +618,7 @@
   }
   .audit-page table.audit-ladder th {
     background: #E8F1F8;
-    color: #0B1F3A;
+    color: #0928B1;
     font-size: 8.5pt;
   }
   .audit-page table.audit-ladder tr.contested td {
@@ -641,16 +641,16 @@
   .slide5 .method-note { font-size: 7.4pt; margin: 1pt 0 4pt; }
   .slide5 table.fin-table { font-size: 7.6pt; }
   .slide5 table.fin-table th, .slide5 table.fin-table td { padding-top: 1.6pt; padding-bottom: 1.6pt; }
-  .slide5 .disclaim-inline { font-size: 7.4pt; background: #F4F8FC; border-left: 2pt solid #0B1F3A;
+  .slide5 .disclaim-inline { font-size: 7.4pt; background: #F4F8FC; border-left: 2pt solid #0928B1;
     padding: 5pt 7pt; color: #3f2b12; }
 </style>
 
 <style>
-  .slide6 .stmt-table thead th { background: #14304F; color: #fff; font-weight: 600; }
+  .slide6 .stmt-table thead th { background: #0047AB; color: #fff; font-weight: 600; }
   .slide6 .stmt-table td.stmt-label { text-align: left; }
   .slide6 .stmt-table tr.stmt-subtotal td { font-weight: 700; border-top: 1px solid #0f172a; }
-  .slide6 .stmt-table tr.stmt-highlight td { font-weight: 700; background: #E4EEF7;
-    box-shadow: inset 3px 0 0 #0B1F3A; }
+  .slide6 .stmt-table tr.stmt-highlight td { font-weight: 700; background: #B4C7FF;
+    box-shadow: inset 3px 0 0 #0928B1; }
   .slide6 .stmt-table tr.stmt-section td { font-weight: 700; letter-spacing: .06em; background: #f1f5f9;
     text-transform: uppercase; font-size: 7.5pt; }
   .slide6 .stmt-table tr.stmt-na td { color: #64748b; font-style: italic; }
@@ -676,7 +676,7 @@
   .slide7 .stmt-memo td { border-top: 1px solid #0f172a; font-style: italic; background: #f8fafc; }
   .slide7 table.fin-table { font-size: 6.7pt; }
   .slide7 table.fin-table th, .slide7 table.fin-table td { padding: 0.6pt 3pt; }
-  .slide7 .stmt-table thead th { background: #14304F; color: #fff; font-weight: 600; }
+  .slide7 .stmt-table thead th { background: #0047AB; color: #fff; font-weight: 600; }
 </style>
 {{ m.chartjs() }}
 <script>

@@ -1,6 +1,27 @@
 import React from "react"
+import {
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+  LabelList,
+} from "recharts"
 import type { ReportPayload } from "@/lib/reportPayload"
-import { TOKENS, PendingBlock, formatIdn } from "./tokens"
+import { PendingBlock, formatIdn } from "./tokens"
+import {
+  seriesColor,
+  SECTORAL_GRID,
+  SECTORAL_ZERO_BASELINE,
+  SECTORAL_TICK,
+  SECTORAL_TOOLTIP_STYLE,
+  SECTORAL_LEGEND_STYLE,
+} from "./sectoralSeries"
 
 interface SensitivityCell {
   value: string | number
@@ -66,16 +87,16 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
 
   // Method spread bars calculations
   const methods = [
-    { label: `DCF · Gordon g ${baseG}`, val: fvGordon, bg: "bg-[#0E6E63]", border: "border-[#0E6E63]" },
-    { label: "DCF · exit multiple", val: fvExit, bg: "bg-[#4FD1B5]", border: "border-[#0E6E63]" },
-    { label: "Kelipatan EV/EBITDA", val: typeof legs.ev_ebitda === "number" ? legs.ev_ebitda : null, bg: "bg-[#E7E3DA]", border: "border-[#A8A296]" },
-  ].filter((m) => m.val !== null && m.val > 0)
+    { label: `DCF · Gordon g ${baseG}`, val: fvGordon },
+    { label: "DCF · exit multiple", val: fvExit },
+    { label: "Kelipatan EV/EBITDA", val: typeof legs.ev_ebitda === "number" ? legs.ev_ebitda : null },
+  ].filter((m) => m.val !== null && (m.val as number) > 0) as { label: string; val: number }[]
 
-  const maxMethodVal = Math.max(
-    ...methods.map((m) => m.val as number),
-    price ?? 0,
-    1
-  ) * 1.15
+  const methodData = methods.map((m) => ({
+    name: m.label,
+    value: m.val,
+    valueLabel: formatIdn(m.val, 0),
+  }))
 
   return (
     <div className="space-y-5 font-sans">
@@ -200,41 +221,33 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
               )}
             </div>
 
-            {/* Custom Bar Chart for Methods */}
+            {/* Sectoral recharts method comparison */}
             {methods.length > 0 ? (
-              <div className="relative mt-4 h-36 w-full border-b border-[#E7E3DA] dark:border-[#2A2822]">
-                {/* Reference Market Price Dashed Line */}
-                {price !== null && price > 0 && (
-                  <div
-                    className="absolute left-0 right-0 border-t border-dashed border-[#B4232A] z-10"
-                    style={{ bottom: `${Math.min(95, (price / maxMethodVal) * 100)}%` }}
-                  >
-                    <span className="absolute -top-4 left-1 bg-white px-1 text-[10px] font-medium text-[#B4232A] dark:bg-[#1B1A16] dark:text-[#F87171]">
-                      Harga pasar {formatIdn(price, 0)}
-                    </span>
-                  </div>
-                )}
-
-                {/* Bars */}
-                <div className="flex h-full items-end justify-around gap-3 px-2">
-                  {methods.map((m, idx) => {
-                    const heightPct = Math.max(8, ((m.val as number) / maxMethodVal) * 100)
-                    return (
-                      <div key={idx} className="flex flex-1 flex-col items-center justify-end h-full">
-                        <span className="mb-1 text-xs font-semibold text-[#1C1B17] font-mono tabular-nums dark:text-[#EDEAE3]">
-                          {formatIdn(m.val, 0)}
-                        </span>
-                        <div
-                          style={{ height: `${heightPct}%` }}
-                          className={`w-full max-w-[56px] rounded-t-md ${m.bg}`}
-                        />
-                        <span className="mt-2 text-center text-xs text-[#6B6659] dark:text-[#A8A296] line-clamp-1">
-                          {m.label}
-                        </span>
-                      </div>
-                    )
-                  })}
-                </div>
+              <div className="mt-4">
+                <ResponsiveContainer width="100%" height={180}>
+                  <BarChart data={methodData} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
+                    <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} interval={0} height={44} />
+                    <YAxis tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={48} />
+                    <Tooltip
+                      cursor={{ fill: "rgba(0,0,0,0.04)" }}
+                      contentStyle={SECTORAL_TOOLTIP_STYLE}
+                      formatter={(value: unknown) => [typeof value === "number" ? formatIdn(value, 0) : "-", "Rp / saham"]}
+                      labelFormatter={(label: unknown) => String(label)}
+                    />
+                    <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
+                    <ReferenceLine y={0} stroke={SECTORAL_ZERO_BASELINE} />
+                    {price !== null && price > 0 && (
+                      <ReferenceLine y={price} stroke={seriesColor(4)} strokeDasharray="5 3" label={{ value: `Harga pasar ${formatIdn(price, 0)}`, fontSize: 11, fill: seriesColor(4), position: "insideTopLeft" }} />
+                    )}
+                    <Bar dataKey="value" name="Nilai wajar (Rp / saham)" maxBarSize={56} radius={[4, 4, 0, 0]}>
+                      {methodData.map((_, idx) => (
+                        <Cell key={`cell-${idx}`} fill={seriesColor(idx)} />
+                      ))}
+                      <LabelList dataKey="valueLabel" position="top" fill={seriesColor(0)} fontSize={11} />
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
               </div>
             ) : (
               <div className="py-8 text-center text-xs text-[#6B6659] dark:text-[#A8A296]">

@@ -1,6 +1,29 @@
 import React from "react"
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Line,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+  ReferenceArea,
+  ReferenceDot,
+  LabelList,
+} from "recharts"
 import type { ReportPayload } from "@/lib/reportPayload"
-import { TOKENS, PendingBlock, formatIdn, formatPct } from "./tokens"
+import { PendingBlock, formatIdn, formatPct } from "./tokens"
+import {
+  seriesColor,
+  SECTORAL_GRID,
+  SECTORAL_ZERO_BASELINE,
+  SECTORAL_TICK,
+  SECTORAL_TOOLTIP_STYLE,
+  SECTORAL_LEGEND_STYLE,
+} from "./sectoralSeries"
 
 interface BandBlock {
   key: string
@@ -28,8 +51,6 @@ interface ImpliedRow {
 }
 
 function BandPanel({ block }: { block: BandBlock }) {
-  const W = 430
-  const H = 170
   const pts = Array.isArray(block.series) ? block.series : []
 
   if (pts.length < 2) {
@@ -40,32 +61,13 @@ function BandPanel({ block }: { block: BandBlock }) {
     )
   }
 
-  const vals = pts.map((p) => p.value).filter((v): v is number => typeof v === "number" && Number.isFinite(v))
   const p10 = typeof block.p10 === "number" ? block.p10 : null
   const p90 = typeof block.p90 === "number" ? block.p90 : null
   const mean = typeof block.mean === "number" ? block.mean : null
   const median = typeof block.median === "number" ? block.median : null
-
-  const refs = [mean, median, p10, p90].filter((v): v is number => typeof v === "number" && Number.isFinite(v))
-  const allPoints = [...vals, ...refs]
-  const minVal = allPoints.length > 0 ? Math.min(...allPoints) : 0
-  const maxVal = allPoints.length > 0 ? Math.max(...allPoints) : 1
-  const pad = (maxVal - minVal) * 0.1 || 1.0
-  const lo = minVal - pad
-  const hi = maxVal + pad
-  const span = hi - lo > 0 ? hi - lo : 1
-
-  const n = pts.length
-  const x = (i: number) => 4 + ((W - 14) * i) / Math.max(1, n - 1)
-  const y = (v: number) => H - 22 - ((H - 40) * (v - lo)) / span
-
   const cur = pts[pts.length - 1]
-  const curVal = cur.value
-  const curX = x(n - 1)
-  const curY = y(curVal)
 
-  const y10 = p10 !== null ? y(p10) : null
-  const y90 = p90 !== null ? y(p90) : null
+  const data = pts.map((p) => ({ name: p.date, value: p.value }))
 
   return (
     <div className="flex flex-col justify-between rounded-xl border border-[#E7E3DA] bg-white p-4 dark:border-[#2A2822] dark:bg-[#1B1A16]">
@@ -74,113 +76,39 @@ function BandPanel({ block }: { block: BandBlock }) {
           <span className="text-xs font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">
             Rentang historis {block.label} (1 tahun)
           </span>
-          <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">n = {block.n ?? n} sesi</span>
+          <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">n = {block.n ?? pts.length} sesi</span>
         </div>
 
-        <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto block select-none" role="img">
-          <rect x="0" y="0" width={W} height={H} rx="4" fill="#ffffff" />
-
-          {/* Shaded P10-P90 Distribution Band */}
-          {y10 !== null && y90 !== null && (
-            <g>
-              <rect
-                x="4"
-                y={y90}
-                width={W - 8}
-                height={Math.max(y10 - y90, 0.5)}
-                fill="rgba(14,110,99,0.08)"
-              />
-              <line x1="4" y1={y90} x2={W - 4} y2={y90} stroke="#0E6E63" strokeOpacity={0.25} strokeWidth="0.7" />
-              <line x1="4" y1={y10} x2={W - 4} y2={y10} stroke="#0E6E63" strokeOpacity={0.25} strokeWidth="0.7" />
-            </g>
-          )}
-
-          {/* Average Reference Line */}
-          {mean !== null && (
-            <g>
-              <line
-                x1="4"
-                y1={y(mean)}
-                x2={W - 4}
-                y2={y(mean)}
-                stroke={TOKENS.sell}
-                strokeWidth="1"
-                strokeDasharray="5 3"
-              />
-              <text
-                x={W - 6}
-                y={y(mean) - 4}
-                fontSize="8"
-                fontWeight="bold"
-                fill={TOKENS.sell}
-                textAnchor="end"
-                fontFamily="sans-serif"
-              >
-                Rata-rata {formatIdn(mean, 1)}×
-              </text>
-            </g>
-          )}
-
-          {/* Median Reference Line */}
-          {median !== null && (
-            <g>
-              <line
-                x1="4"
-                y1={y(median)}
-                x2={W - 4}
-                y2={y(median)}
-                stroke={TOKENS.buy}
-                strokeWidth="1"
-                strokeDasharray="2 3"
-              />
-              <text
-                x="6"
-                y={y(median) - 4}
-                fontSize="8"
-                fontWeight="bold"
-                fill={TOKENS.buy}
-                textAnchor="start"
-                fontFamily="sans-serif"
-              >
-                Median {formatIdn(median, 1)}×
-              </text>
-            </g>
-          )}
-
-          {/* Series Polyline */}
-          <polyline
-            points={pts.map((p, i) => `${x(i).toFixed(1)},${y(p.value).toFixed(1)}`).join(" ")}
-            fill="none"
-            stroke={TOKENS.teal}
-            strokeWidth="1.8"
-            strokeLinejoin="round"
-            strokeLinecap="round"
-          />
-
-          {/* Current Value Marker */}
-          <circle cx={curX} cy={curY} r="3.4" fill={TOKENS.teal} stroke="#ffffff" strokeWidth="1.2" />
-          <text
-            x={W - 6}
-            y={curY - 6}
-            fontSize="8.5"
-            fontWeight="bold"
-            fill={TOKENS.teal}
-            textAnchor="end"
-            fontFamily="monospace"
-            className="tabular-nums"
-          >
-            {formatIdn(curVal, 1)}× · p{formatIdn(block.percentile, 0)}
-          </text>
-
-          {/* Date Axis Base Line */}
-          <line x1="4" y1={H - 12} x2={W - 4} y2={H - 12} stroke={TOKENS.rule} strokeWidth="0.7" />
-          <text x="6" y={H - 3} fontSize="8" fill={TOKENS.muted}>
-            {pts[0].date}
-          </text>
-          <text x={W - 6} y={H - 3} fontSize="8" fill={TOKENS.muted} textAnchor="end">
-            {cur.date} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "-"}×-{p90 !== null ? formatIdn(p90, 0) : "-"}×
-          </text>
-        </svg>
+        <ResponsiveContainer width="100%" height={170}>
+          <ComposedChart data={data} margin={{ top: 12, right: 8, left: 0, bottom: 0 }}>
+            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
+            <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} interval="preserveStartEnd" minTickGap={60} />
+            <YAxis tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 1)} width={44} domain={["auto", "auto"]} />
+            <Tooltip
+              contentStyle={SECTORAL_TOOLTIP_STYLE}
+              formatter={(value: unknown) => [typeof value === "number" ? `${formatIdn(value, 1)}×` : "-", block.label]}
+              labelFormatter={(label: unknown) => String(label)}
+            />
+            <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
+            <ReferenceLine y={0} stroke={SECTORAL_ZERO_BASELINE} />
+            {p10 !== null && p90 !== null && (
+              <ReferenceArea y1={p10} y2={p90} fill={seriesColor(0)} fillOpacity={0.08} stroke={seriesColor(0)} strokeOpacity={0.25} />
+            )}
+            {mean !== null && (
+              <ReferenceLine y={mean} stroke={seriesColor(4)} strokeDasharray="5 3" label={{ value: `Rata-rata ${formatIdn(mean, 1)}×`, fontSize: 11, fill: seriesColor(4), position: "insideTopRight" }} />
+            )}
+            {median !== null && (
+              <ReferenceLine y={median} stroke={seriesColor(2)} strokeDasharray="2 3" label={{ value: `Median ${formatIdn(median, 1)}×`, fontSize: 11, fill: seriesColor(2), position: "insideTopLeft" }} />
+            )}
+            <Line type="monotone" dataKey="value" name={block.label} stroke={seriesColor(0)} strokeWidth={2} dot={false} activeDot={{ r: 4 }} connectNulls />
+            {cur && typeof cur.value === "number" && (
+              <ReferenceDot x={cur.date} y={cur.value} r={4} fill={seriesColor(0)} stroke="#ffffff" />
+            )}
+          </ComposedChart>
+        </ResponsiveContainer>
+        <p className="mt-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+          Terkini {typeof cur?.value === "number" ? `${formatIdn(cur.value, 1)}× · p${formatIdn(block.percentile, 0)}` : "-"} · P10-P90 {p10 !== null ? formatIdn(p10, 0) : "-"}×-{p90 !== null ? formatIdn(p90, 0) : "-"}×
+        </p>
       </div>
 
       {block.narrative && (
@@ -201,187 +129,55 @@ function ImpliedPriceBars({
   price: number | null
   headline?: string
 }) {
-  const W = 660
-  const H = 210
-  const padL = 54
-  const padR = 20
-  const padT = 32
-  const padB = 46
-  const chartW = W - padL - padR
-  const chartH = H - padT - padB
-
-  const vals: number[] = []
-  rows.forEach((r) => {
-    if (typeof r.to_mean === "number") vals.push(r.to_mean)
-    if (typeof r.to_median === "number") vals.push(r.to_median)
-  })
-  if (price !== null && price > 0) vals.push(price)
-
-  const top = vals.length > 0 ? Math.max(...vals) * 1.22 : 1
   const n = rows.length
   if (n === 0) return null
 
-  const gw = chartW / n
-  const bw = Math.round(gw * 0.28)
+  const data = rows.map((r) => ({
+    name: r.label + (headline && (r.key === headline || r.label.toLowerCase().includes(headline.toLowerCase())) ? " *" : ""),
+    mean: typeof r.to_mean === "number" ? r.to_mean : null,
+    median: typeof r.to_median === "number" ? r.to_median : null,
+    meanLabel: typeof r.to_mean === "number" ? formatIdn(r.to_mean, 0) : "",
+    medianLabel: typeof r.to_median === "number" ? formatIdn(r.to_median, 0) : "",
+    delta: typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-",
+  }))
 
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto block select-none" role="img" aria-label="Implied price per multiple">
-      <rect x="0" y="0" width={W} height={H} rx="6" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
-
-      {/* Gridlines & Left Scale */}
-      {[1.0, 0.5, 0.0].map((frac, idx) => {
-        const gy = padT + chartH - chartH * frac
-        const val = top * frac
-        return (
-          <g key={`impl-grid-${idx}`}>
-            <line x1={padL} y1={gy} x2={W - padR} y2={gy} stroke={TOKENS.rule} strokeWidth="0.7" />
-            <text
-              x={padL - 6}
-              y={gy + 3}
-              fontSize="8"
-              fill={TOKENS.muted}
-              textAnchor="end"
-              fontFamily="monospace"
-              className="tabular-nums"
-            >
-              {formatIdn(val, 0)}
-            </text>
-          </g>
-        )
-      })}
-      <text x={padL - 6} y={padT - 12} fontSize="7.5" fontWeight="bold" fill={TOKENS.muted} textAnchor="end">
-        Rp/saham
-      </text>
-
-      {/* Dashed Red Market Price Line */}
-      {price !== null && price > 0 && (
-        <line
-          x1={padL}
-          y1={padT + chartH - chartH * (price / top)}
-          x2={W - padR}
-          y2={padT + chartH - chartH * (price / top)}
-          stroke={TOKENS.sell}
-          strokeWidth="1.5"
-          strokeDasharray="5 3"
-        />
-      )}
-
-      {/* Legend */}
-      <rect x={padL} y="8" width="8" height="8" rx="2" fill={TOKENS.teal} />
-      <text x={padL + 12} y="15.5" fontSize="8" fill={TOKENS.muted}>
-        Reversion ke rata-rata 1Y
-      </text>
-      <rect x={padL + 130} y="8" width="8" height="8" rx="2" fill={TOKENS.tealLight} />
-      <text x={padL + 142} y="15.5" fontSize="8" fill={TOKENS.muted}>
-        Reversion ke median 1Y
-      </text>
-      {price !== null && price > 0 && (
-        <g>
-          <line
-            x1={padL + 258}
-            y1="12"
-            x2={padL + 280}
-            y2="12"
-            stroke={TOKENS.sell}
-            strokeWidth="1.4"
-            strokeDasharray="4 3"
+    <div>
+      <ResponsiveContainer width="100%" height={210}>
+        <ComposedChart data={data} margin={{ top: 20, right: 16, left: 0, bottom: 0 }} aria-label="Implied price per multiple">
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
+          <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} interval={0} angle={0} height={44} />
+          <YAxis tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={48} />
+          <Tooltip
+            cursor={{ fill: "rgba(0,0,0,0.04)" }}
+            contentStyle={SECTORAL_TOOLTIP_STYLE}
+            formatter={(value: unknown, name: unknown) => [
+              typeof value === "number" ? formatIdn(value, 0) : "-",
+              String(name) === "mean" ? "Kembali ke rata-rata (Rp)" : "Kembali ke median (Rp)",
+            ]}
+            labelFormatter={(label: unknown) => String(label)}
           />
-          <text x={padL + 286} y="15.5" fontSize="8" fill={TOKENS.sell} fontWeight="bold" fontFamily="monospace">
-            Harga pasar {formatIdn(price, 0)}
-          </text>
-        </g>
-      )}
-
-      {/* Grouped Bars per multiple */}
-      {rows.map((r, i) => {
-        const cx = padL + gw * i + gw / 2
-        const isAnchor = Boolean(headline && (r.key === headline || r.label.toLowerCase().includes(headline.toLowerCase())))
-
-        return (
-          <g key={`grp-${i}`}>
-            {/* to_mean bar */}
-            {typeof r.to_mean === "number" && (
-              <g>
-                <rect
-                  x={cx - bw - 1}
-                  y={padT + chartH - chartH * (r.to_mean / top)}
-                  width={bw}
-                  height={chartH * (r.to_mean / top)}
-                  fill={TOKENS.teal}
-                  rx="2"
-                />
-                <text
-                  x={cx - bw / 2 - 1}
-                  y={padT + chartH - chartH * (r.to_mean / top) - 3}
-                  fontSize="7.5"
-                  fontWeight="bold"
-                  fill={TOKENS.teal}
-                  textAnchor="middle"
-                  fontFamily="monospace"
-                  className="tabular-nums"
-                >
-                  {formatIdn(r.to_mean, 0)}
-                </text>
-              </g>
-            )}
-
-            {/* to_median bar */}
-            {typeof r.to_median === "number" && (
-              <g>
-                <rect
-                  x={cx + 1}
-                  y={padT + chartH - chartH * (r.to_median / top)}
-                  width={bw}
-                  height={chartH * (r.to_median / top)}
-                  fill={TOKENS.tealLight}
-                  rx="2"
-                />
-                <text
-                  x={cx + bw / 2 + 1}
-                  y={padT + chartH - chartH * (r.to_median / top) - 3}
-                  fontSize="7.5"
-                  fontWeight="bold"
-                  fill={TOKENS.muted}
-                  textAnchor="middle"
-                  fontFamily="monospace"
-                  className="tabular-nums"
-                >
-                  {formatIdn(r.to_median, 0)}
-                </text>
-              </g>
-            )}
-
-            {/* Multiple Label */}
-            <text
-              x={cx}
-              y={H - 30}
-              fontSize="8.5"
-              fontWeight="bold"
-              fill={TOKENS.navy}
-              textAnchor="middle"
-            >
-              {r.label}
-              {isAnchor ? " *" : ""}
-            </text>
-
-            {/* Delta % */}
-            <text
-              x={cx}
-              y={H - 18}
-              fontSize="7.5"
-              fill={TOKENS.muted}
-              textAnchor="middle"
-              fontFamily="monospace"
-              className="tabular-nums"
-            >
-              {typeof r.delta_pct === "number" ? formatPct(r.delta_pct, 0) : "-"}
-            </text>
-          </g>
-        )
-      })}
-
-      <line x1={padL} y1={padT + chartH} x2={W - padR} y2={padT + chartH} stroke={TOKENS.rule} strokeWidth="0.9" />
-    </svg>
+          <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
+          <ReferenceLine y={0} stroke={SECTORAL_ZERO_BASELINE} />
+          {price !== null && price > 0 && (
+            <ReferenceLine y={price} stroke={seriesColor(4)} strokeDasharray="5 3" label={{ value: `Harga pasar ${formatIdn(price, 0)}`, fontSize: 11, fill: seriesColor(4), position: "insideTopLeft" }} />
+          )}
+          <Bar dataKey="mean" name="Reversion ke rata-rata 1Y" fill={seriesColor(0)} maxBarSize={40} radius={[2, 2, 0, 0]}>
+            <LabelList dataKey="meanLabel" position="top" fill={seriesColor(0)} fontSize={11} />
+          </Bar>
+          <Bar dataKey="median" name="Reversion ke median 1Y" fill={seriesColor(1)} maxBarSize={40} radius={[2, 2, 0, 0]}>
+            <LabelList dataKey="medianLabel" position="top" fill="#666" fontSize={11} />
+          </Bar>
+        </ComposedChart>
+      </ResponsiveContainer>
+      <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        {data.map((d, i) => (
+          <span key={i}>
+            {d.name}: {d.delta}
+          </span>
+        ))}
+      </div>
+    </div>
   )
 }
 

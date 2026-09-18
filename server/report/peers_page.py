@@ -11,7 +11,19 @@ import os
 from typing import Any, Optional
 
 from markupsafe import Markup
+from server.report import house_format as _house_format
 from server.report import numfmt as _nf
+
+# Sectoral Design System wiring (defensive getattr: works before and after the
+# AGY house_format lane lands its SECTORAL_* constants).
+_SECTORAL_PRIMARY = getattr(_house_format, "SECTORAL_PRIMARY", "#0928B1")
+_SECTORAL_EVEN = getattr(_house_format, "SECTORAL_TABLE_EVEN", "#B4C7FF")
+_SECTORAL_GRID = getattr(_house_format, "SECTORAL_GRID", "#D9D9D9")
+
+
+def _hex_rgb(h: str) -> tuple:
+    h = h.lstrip("#")
+    return (int(h[0:2], 16), int(h[2:4], 16), int(h[4:6], 16))
 
 CACHE_ROOT = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
                           "output", "cache", "sectors")
@@ -213,7 +225,8 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
     and today's value as a marker with a label. Same colour meanings as the deck's tables and heatmap: navy is the
     subject, ice is its historical distribution, and the reference lines borrow the buy/sell tokens.
     """
-    NAVY, ICE, RULE, MUTED, BUY, SELL = "#0B1F3A", "#A9C9E8", "#D6E2EE", "#63748A", "#1E8F5F", "#C0392B"
+    NAVY, ICE, RULE, MUTED = _SECTORAL_PRIMARY, _SECTORAL_EVEN, _SECTORAL_GRID, "#666666"
+    BUY, SELL = "#1E8F5F", "#C0392B"
     pts = block["series"]
     if len(pts) < 5:
         return ""
@@ -240,8 +253,9 @@ def render_band_svg(block: dict, width: int = 430, height: int = 170) -> str:
     # the distribution band, exactly the tool's shading
     if isinstance(p10, (int, float)) and isinstance(p90, (int, float)):
         y10, y90 = y(p10), y(p90)
+        _br, _bg, _bb = _hex_rgb(_SECTORAL_EVEN)
         out.append(f'<rect x="4" y="{d(y90)}" width="{width - 8}" height="{d(max(y10 - y90, 0.5))}" '
-                   f'fill="rgba(169,201,232,0.30)"/>')
+                   f'fill="rgba({_br},{_bg},{_bb},0.30)"/>')
         out.append(f'<line x1="4" y1="{d(y90)}" x2="{width - 4}" y2="{d(y90)}" stroke="{ICE}" stroke-width="0.7"/>')
         out.append(f'<line x1="4" y1="{d(y10)}" x2="{width - 4}" y2="{d(y10)}" stroke="{ICE}" stroke-width="0.7"/>')
     # references: average pinned right, median pinned left

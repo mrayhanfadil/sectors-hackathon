@@ -1,6 +1,28 @@
 import React from "react"
+import {
+  ResponsiveContainer,
+  ComposedChart,
+  Bar,
+  Line,
+  Cell,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+  LabelList,
+} from "recharts"
 import type { ReportPayload } from "@/lib/reportPayload"
-import { TOKENS, PendingBlock, formatIdn, formatPct, parseIdnNumber } from "./tokens"
+import { PendingBlock, formatIdn, formatPct, parseIdnNumber } from "./tokens"
+import {
+  seriesColor,
+  SECTORAL_GRID,
+  SECTORAL_ZERO_BASELINE,
+  SECTORAL_TICK,
+  SECTORAL_TOOLTIP_STYLE,
+  SECTORAL_LEGEND_STYLE,
+} from "./sectoralSeries"
 
 interface QuadrantData {
   title: string
@@ -18,9 +40,11 @@ interface QuadrantData {
 }
 
 /**
- * Inline SVG combo chart rendering bars and a line on a secondary axis.
+ * Sectoral recharts combo chart rendering bars and a line on a secondary axis.
+ * Actual periods render solid series color; projection periods render faded.
+ * Data/logic unchanged from the previous SVG implementation.
  */
-function SvgComboChart({
+function QuadrantComboChart({
   labels,
   bars,
   line,
@@ -29,6 +53,7 @@ function SvgComboChart({
   lineFmt,
   barUnit,
   lineUnit,
+  title,
 }: {
   labels: string[]
   bars: (number | null)[]
@@ -38,236 +63,73 @@ function SvgComboChart({
   lineFmt?: string[]
   barUnit: string
   lineUnit: string
+  title: string
 }) {
-  const W = 360
-  const H = 190
-  const padL = 44
-  const padR = 44
-  const padT = 24
-  const padB = 30
-  const chartW = W - padL - padR
-  const chartH = H - padT - padB
-
   const n = labels.length
   if (n === 0) return null
 
-  // Bars scale
-  const validBars = bars.filter((v): v is number => v !== null && Number.isFinite(v))
-  const bmax = validBars.length > 0 ? Math.max(...validBars) : 1
+  const pointLabel = (i: number, lv: number | null): string => {
+    const fmt = lineFmt?.[i]
+    if (fmt && fmt.trim() !== "" && fmt.trim() !== "-") return fmt
+    if (lv === null || lv === undefined || !Number.isFinite(lv)) return ""
+    return formatPct(lv, 1)
+  }
 
-  // Line scale
-  const validLine = line.filter((v): v is number => v !== null && Number.isFinite(v))
-  const lmin = validLine.length > 0 ? Math.min(...validLine) : 0
-  const lmax = validLine.length > 0 ? Math.max(...validLine) : 1
-  const lLo = Math.min(lmin, 0)
-  const lHi = Math.max(lmax, 0)
-  const lSpan = lHi - lLo > 0 ? lHi - lLo : 1
-
-  const step = chartW / n
-  const bw = step * 0.52
-
-  // Line points
-  const linePoints: { x: number; y: number; val: number; fmt?: string; barTop: number }[] = []
-  labels.forEach((_, i) => {
-    const lv = line[i]
-    const bv = bars[i]
-    const bh = bv !== null && bv !== undefined ? (bv / bmax) * chartH : 0
-    const barTop = padT + chartH - bh
-    if (lv !== null && lv !== undefined && Number.isFinite(lv)) {
-      const lx = padL + i * step + step / 2
-      const ly = padT + chartH - ((lv - lLo) / lSpan) * chartH
-      linePoints.push({ x: lx, y: ly, val: lv, fmt: lineFmt?.[i], barTop })
+  const data = labels.map((label, i) => {
+    const bv = bars[i] ?? null
+    return {
+      name: label,
+      bar: bv,
+      barOpacity: i < actualN ? 1 : 0.4,
+      barLabel: bv !== null && bv !== undefined ? (barFmt?.[i] ?? formatIdn(bv, Math.abs(bv) >= 100 ? 0 : 1)) : "",
+      line: line[i] ?? null,
+      lineLabel: pointLabel(i, line[i] ?? null),
     }
   })
 
-  // Zero line for secondary axis
-  const zeroY = lLo < 0 ? padT + chartH - ((0 - lLo) / lSpan) * chartH : null
+  const hasNegativeLine = line.some((v) => v !== null && v !== undefined && v < 0)
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      className="w-full h-auto block select-none"
-      role="img"
-      aria-label={`Grafik kinerja ${labels.join(", ")}`}
-    >
-      <rect x="0" y="0" width={W} height={H} rx="6" fill="#ffffff" stroke={TOKENS.rule} strokeWidth="0.75" />
-
-      {/* Gridlines & Left axis */}
-      {[0, 0.5, 1].map((frac, idx) => {
-        const gy = padT + chartH - frac * chartH
-        const val = bmax * frac
-        return (
-          <g key={`grid-${idx}`}>
-            <line x1={padL} y1={gy} x2={W - padR} y2={gy} stroke={TOKENS.rule} strokeWidth="0.6" strokeDasharray="3 3" />
-            <text
-              x={padL - 4}
-              y={gy + 3}
-              fontSize="7"
-              fill={TOKENS.muted}
-              textAnchor="end"
-              fontFamily="monospace"
-              className="tabular-nums"
-            >
-              {formatIdn(val, val >= 100 ? 0 : 1)}
-            </text>
-          </g>
-        )
-      })}
-
-      {/* Zero line */}
-      {zeroY !== null && zeroY >= padT && zeroY <= padT + chartH && (
-        <line
-          x1={padL}
-          y1={zeroY}
-          x2={W - padR}
-          y2={zeroY}
-          stroke={TOKENS.muted}
-          strokeWidth="0.8"
-          strokeDasharray="2 2"
-        />
-      )}
-
-      {/* Right axis ticks */}
-      {[0, 0.5, 1].map((frac, idx) => {
-        const ly = padT + chartH - frac * chartH
-        const val = lLo + frac * lSpan
-        return (
-          <text
-            key={`rtick-${idx}`}
-            x={W - padR + 4}
-            y={ly + 3}
-            fontSize="7"
-            fill={TOKENS.muted}
-            textAnchor="start"
-            fontFamily="monospace"
-            className="tabular-nums"
-          >
-            {formatIdn(val, 0)}%
-          </text>
-        )
-      })}
-
-      {/* Units */}
-      <text x={padL} y={padT - 8} fontSize="7" fontWeight="bold" fill={TOKENS.muted} textAnchor="start">
-        {barUnit}
-      </text>
-      <text x={W - padR} y={padT - 8} fontSize="7" fontWeight="bold" fill={TOKENS.muted} textAnchor="end">
-        {lineUnit}
-      </text>
-
-      {/* Bars */}
-      {labels.map((_, i) => {
-        const v = bars[i]
-        if (v === null || v === undefined) return null
-        const bh = (v / bmax) * chartH
-        const bx = padL + i * step + (step - bw) / 2
-        const by = padT + chartH - bh
-        const isActual = i < actualN
-
-        return (
-          <g key={`bar-${i}`}>
-            <rect
-              x={bx}
-              y={by}
-              width={bw}
-              height={Math.max(bh, 0.5)}
-              rx="2"
-              fill={TOKENS.teal}
-              opacity={isActual ? 1 : 0.4}
-            />
-            {/* Bar top label */}
-            <text
-              x={bx + bw / 2}
-              y={by - 3}
-              fontSize="7"
-              fontWeight="bold"
-              fill={TOKENS.teal}
-              textAnchor="middle"
-              fontFamily="monospace"
-              className="tabular-nums"
-            >
-              {barFmt?.[i] ?? formatIdn(v, v >= 100 ? 0 : 1)}
-            </text>
-          </g>
-        )
-      })}
-
-      {/* Secondary Line */}
-      {linePoints.length > 1 && (
-        <polyline
-          fill="none"
-          stroke={TOKENS.buy}
-          strokeWidth="1.8"
-          strokeLinejoin="round"
-          strokeLinecap="round"
-          points={linePoints.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ")}
-        />
-      )}
-
-      {/* Line Points & Labels */}
-      {linePoints.map((p, idx) => {
-        const text = p.fmt && p.fmt.trim() !== "" ? p.fmt : formatPct(p.val, 1)
-        const isAboveBar = p.y < p.barTop - 10
-        const lblY = isAboveBar ? p.y - 5 : Math.min(p.y + 11, padT + chartH - 2)
-
-        return (
-          <g key={`pt-${idx}`}>
-            <circle cx={p.x} cy={p.y} r="2.8" fill={TOKENS.buy} stroke="#ffffff" strokeWidth="1" />
-            {text && text !== "-" && (
-              <g>
-                <rect
-                  x={p.x - text.length * 2.2 - 2}
-                  y={lblY - 6.5}
-                  width={text.length * 4.4 + 4}
-                  height="8"
-                  rx="2"
-                  fill="#ffffff"
-                  fillOpacity="0.92"
-                  stroke={TOKENS.rule}
-                  strokeWidth="0.5"
-                />
-                <text
-                  x={p.x}
-                  y={lblY}
-                  fontSize="6.5"
-                  fontWeight="bold"
-                  fill={TOKENS.buy}
-                  textAnchor="middle"
-                  fontFamily="monospace"
-                  className="tabular-nums"
-                >
-                  {text}
-                </text>
-              </g>
-            )}
-          </g>
-        )
-      })}
-
-      {/* X Axis Labels */}
-      {labels.map((lab, i) => {
-        const lx = padL + i * step + step / 2
-        return (
-          <text
-            key={`xlab-${i}`}
-            x={lx}
-            y={H - 12}
-            fontSize="7.5"
-            fill={TOKENS.muted}
-            textAnchor="middle"
-            fontFamily="monospace"
-            fontWeight="bold"
-          >
-            {lab}
-          </text>
-        )
-      })}
-
-      {/* Legend */}
-      <text x={padL} y={H - 3} fontSize="6.5" fill={TOKENS.muted}>
+    <div>
+      <div className="mb-1 flex items-center justify-between text-[11px] text-[#6B6659] dark:text-[#A8A296]">
+        <span className="font-semibold">{barUnit}</span>
+        <span className="font-semibold">{lineUnit}</span>
+      </div>
+      <ResponsiveContainer width="100%" height={190}>
+        <ComposedChart data={data} margin={{ top: 20, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik kinerja ${labels.join(", ")}`}>
+          <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
+          <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} />
+          <YAxis yAxisId="bar" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, Math.abs(v) >= 100 ? 0 : 1)} width={44} />
+          <YAxis yAxisId="line" orientation="right" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={40} />
+          <Tooltip
+            contentStyle={SECTORAL_TOOLTIP_STYLE}
+            formatter={(value: unknown, name: unknown) => {
+              const label = String(name)
+              if (label === "line") {
+                return [typeof value === "number" ? formatPct(value, 1) : "-", lineUnit]
+              }
+              return [typeof value === "number" ? formatIdn(value, 1) : "-", barUnit]
+            }}
+            labelFormatter={(label: unknown) => String(label)}
+          />
+          <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
+          <ReferenceLine yAxisId="bar" y={0} stroke={SECTORAL_ZERO_BASELINE} />
+          {hasNegativeLine && <ReferenceLine yAxisId="line" y={0} stroke={SECTORAL_ZERO_BASELINE} />}
+          <Bar yAxisId="bar" dataKey="bar" name={`${title} (${barUnit})`} fill={seriesColor(0)} maxBarSize={32} radius={[2, 2, 0, 0]}>
+            {data.map((entry, i) => (
+              <Cell key={`cell-${i}`} fill={seriesColor(0)} fillOpacity={entry.barOpacity} />
+            ))}
+            <LabelList dataKey="barLabel" position="top" fill={seriesColor(0)} fontSize={11} />
+          </Bar>
+          <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={seriesColor(1)} strokeWidth={2} dot={{ r: 4, fill: seriesColor(1) }} activeDot={{ r: 6 }} connectNulls>
+            <LabelList dataKey="lineLabel" position="top" fill={seriesColor(1)} fontSize={11} />
+          </Line>
+        </ComposedChart>
+      </ResponsiveContainer>
+      <p className="mt-1 text-[11px] text-[#6B6659] dark:text-[#A8A296]">
         Solid = Aktual · Transparan = Proyeksi
-      </text>
-    </svg>
+      </p>
+    </div>
   )
 }
 
@@ -418,7 +280,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
             </div>
 
             <div className="my-auto">
-              <SvgComboChart
+              <QuadrantComboChart
                 labels={q.labels}
                 bars={q.bars}
                 line={q.line}
@@ -427,6 +289,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
                 lineFmt={q.lineFmt}
                 barUnit={q.barUnit}
                 lineUnit={q.lineUnit}
+                title={q.title}
               />
             </div>
 

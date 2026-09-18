@@ -127,9 +127,12 @@ export function ReportHeader({
       <div className="border-b border-[#E7E3DA] bg-white/60 px-4 py-2 text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16]/60 dark:text-[#A8A296]">
         <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
+            <Link to="/" className="inline-flex items-center mr-1 hover:opacity-85 transition-opacity" title="Sectoral">
+              <img src="/sectoral-logo.svg" alt="Sectoral" className="h-4 w-auto" />
+            </Link>
             <Link
               to="/"
-              className="inline-flex items-center gap-1 font-medium text-[#0E6E63] hover:underline dark:text-[#4FD1B5]"
+              className="inline-flex items-center gap-1 font-medium text-[#0928B1] hover:underline dark:text-[#7596FF]"
             >
               Beranda
             </Link>

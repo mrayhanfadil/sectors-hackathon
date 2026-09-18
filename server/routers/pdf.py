@@ -671,7 +671,7 @@ def render_html_for_ticker(
     tpl_file = TEMPLATE_FILES.get(template_name, "report_single.html")
     tpl = env.get_template(tpl_file)
     fonts_dir = "file://" + str(REPO_ROOT / "assets" / "fonts")
-    html = tpl.render(**data, template_reason=reason, fonts_dir=fonts_dir, palette={"brand": "#0B1F3A", "brand_dark": "#14304F", "accent": "#E4EEF7"})
+    html = tpl.render(**data, template_reason=reason, fonts_dir=fonts_dir, palette={"brand": "#0928B1", "brand_dark": "#0047AB", "accent": "#B4C7FF"})
     return template_name, html, data
 
 

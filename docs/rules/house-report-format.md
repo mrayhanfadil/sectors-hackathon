@@ -11,7 +11,7 @@ cover builders), `server/report/text_sanitize.py` (the reader-facing funnel: §1
 `templates/DATA_CONTRACT.md` (data),
 `agents/adk/agents/instructions.py` (agent output), `agents/critic.py` (gate).
 Guards: `tests/test_house_format_adoption.py`, `tests/test_slide2_forecast.py`,
-`tests/test_no_em_dash.py`, `scripts/verify_house_format.py` (artifact level).
+`tests/test_no_em_dash.py`, `tests/test_design_system_sectoral.py`, `scripts/verify_house_format.py` (artifact level).
 
 The fixed strings live once in `server/report/house_format.py` and as template defaults in
 `templates/macros.html`, and the tests assert the two agree - retyping them in either place is
@@ -79,7 +79,7 @@ Prose that refers to an exhibit cites it live (`#exhibit-figure(...) <ex-abcd>` 
 | Top-left | `Equity Research – Company Update` |
 | Under it | Publication date, format `DD Mon YYYY` (e.g. `11 Sep 2026`) - amended 13 Sep 2026 from the long `Day, DD Month YYYY` form, which read as noise on every page; `format_house_date(raw, short=False)` still renders the long form where a date is stated in prose |
 | Top-right | Sectors.app logo - same size and position on every page |
-| Below the block | Horizontal divider, `#067647` |
+| Below the block | Horizontal divider, `#0928B1` (Sectoral primary - amended Sep 2026 from `#067647`) |
 
 ## 4. Page footer (every page)
 
@@ -330,4 +330,25 @@ it is a rewrite of a sentence nobody wrote in house style.
 The em dash is not normalised anywhere else on purpose - `templates/macros.html` and the
 `house_format` constants keep the en dash they are specified with, and the guards in
 `tests/test_no_em_dash.py` assert that normalisation leaves it alone.
+
+## 13. Design System - Sectoral tokens (friend-supplied, Sep 2026)
+
+The full Sectoral design system text is `docs/design-system-friend.md` (ignore the
+base64 image blobs - the values below are the normative tokens). Roboto only: no
+other family ships in the report surfaces.
+
+| Token | Value | Where it is wired |
+|---|---|---|
+| Primary | `#0928B1` | header divider (`DIVIDER_COLOR`), table header band, chart series 1 |
+| Background | `#FFFFFF` | page background |
+| Text | `#333333` | body text |
+| Grid / lines | `#D9D9D9`, `#E0E0E0` | chart gridlines |
+| Table header | `#0928B1` bg, white text | `templates/macros.html` table CSS |
+| Table even row | `#B4C7FF` | `templates/macros.html` table CSS |
+| Chart series (in order) | `#0928B1`, `#B4C7FF`, `#3ED628`, `#1DCD9F`, `#0047AB`, `#7596FF` | FE chart tokens / `sectoralSeries`, `house_format.SECTORAL_CHART_PALETTE` |
+| Type | Roboto (H1 Bold 24, H2 Medium 20, H3 Medium 16, Body Regular 14, Caption 12) | `src/fe/index.html`, `templates/macros.html` |
+| Logo | Sectoral mark (E-bars `#0928B1` / `#1DCD9F` / `#3ED628` + `CTORAL`) | `assets/brand/sectoral*.svg`, `src/fe/public/sectoral*.svg` |
+
+Guarded by `tests/test_design_system_sectoral.py` (source wiring) and the sectoral
+checks in `scripts/verify_house_format.py` (printed PDF: Roboto used, primary present).
 

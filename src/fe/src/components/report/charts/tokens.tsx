@@ -1,14 +1,25 @@
 import React from "react"
 
 export const TOKENS = {
-  navy: "#1C1B17",
-  teal: "#0E6E63",
-  tealLight: "#4FD1B5",
-  ice: "#CBD5E1",
-  icePale: "#F4F1EA",
-  rule: "#E7E3DA",
-  muted: "#6B6659",
-  buy: "#157F3D",
+  // Sectoral Design System Tokens
+  primary: "#0928B1",
+  periwinkle: "#B4C7FF",
+  green: "#3ED628",
+  teal: "#1DCD9F",
+  cobalt: "#0047AB",
+  softBlue: "#7596FF",
+  ink: "#333333",
+  grid: "#D9D9D9",
+  caption: "#666666",
+
+  // Legacy compatibility mappings for existing chart components
+  navy: "#0928B1",
+  tealLight: "#B4C7FF",
+  ice: "#D9D9D9",
+  icePale: "#FFFFFF",
+  rule: "#D9D9D9",
+  muted: "#666666",
+  buy: "#3ED628",
   sell: "#B4232A",
   hold: "#A16207",
 } as const
@@ -19,8 +30,8 @@ export const TOKENS = {
  */
 export function PendingBlock({ label, message }: { label: string; message?: string }) {
   return (
-    <div className="rounded-xl border border-[#E7E3DA] bg-white px-4 py-8 text-center text-xs text-[#6B6659] dark:border-[#2A2822] dark:bg-[#1B1A16] dark:text-[#A8A296]">
-      <span className="font-semibold text-[#1C1B17] dark:text-[#EDEAE3]">{label}</span>{" "}
+    <div className="rounded-xl border border-[#D9D9D9] bg-white px-4 py-8 text-center text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9]">
+      <span className="font-semibold text-[#0928B1] dark:text-[#7596FF]">{label}</span>{" "}
       {message ?? "belum tersedia di payload."}
     </div>
   )

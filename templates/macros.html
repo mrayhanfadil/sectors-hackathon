@@ -105,26 +105,28 @@
      for environments where the files are absent. */
   {% if fonts_dir %}
   @font-face { font-family: "Source Serif 4"; src: url("{{ fonts_dir }}/SourceSerif4-VF.ttf"); font-weight: 100 900; }
-  @font-face { font-family: "Inter"; src: url("{{ fonts_dir }}/Inter-VF.ttf"); font-weight: 100 900; }
   @font-face { font-family: "JetBrains Mono"; src: url("{{ fonts_dir }}/JetBrainsMono-VF.ttf"); font-weight: 100 900; }
   {% endif %}
   :root {
-    --ink: #1A2733; --muted: #63748A; --line: #D6E2EE; --paper: #ffffff;
+    --ink: #333333; --muted: #666666; --line: #D9D9D9; --paper: #ffffff;
     --brand: {{ palette.brand }}; --brand-dark: {{ palette.brand_dark }};
-    --accent: {{ palette.accent }}; --pos: #067647; --neg: #b42318; --band: #F4F8FC;
-    /* Abida tool language: the same token set the relativepeers / ddm_tool valuation apps use, so the deck's
-       charts, tables and chips read as one family with them. */
-    --ab-navy: #0B1F3A; --ab-navy-mid: #14304F; --ab-navy-soft: #2C4A6B;
-    --ab-ice: #A9C9E8; --ab-ice-pale: #E4EEF7; --ab-ice-faint: #F4F8FC;
-    --ab-rule: #D6E2EE; --ab-ink: #1A2733; --ab-ink-muted: #63748A;
+    --accent: {{ palette.accent }}; --pos: #1E8F5F; --neg: #b42318; --band: #F4F8FC;
+    /* Sectoral Design System (friend-supplied, Sep 2026): Sectoral primary blue
+       anchors the deck. The --ab-* names predate Sectoral and are kept as aliases
+       so every call site keeps working; values now resolve to Sectoral tokens. */
+    --ab-navy: #0928B1; --ab-navy-mid: #0047AB; --ab-navy-soft: #7596FF;
+    --ab-ice: #B4C7FF; --ab-ice-pale: #B4C7FF; --ab-ice-faint: #B4C7FF;
+    --ab-rule: #D9D9D9; --ab-ink: #333333; --ab-ink-muted: #666666;
     --ab-buy: #1E8F5F; --ab-sell: #C0392B; --ab-hold: #B08D57; --ab-warn: #D98B2B;
+    --sectoral-chart-3: #3ED628; --sectoral-chart-4: #1DCD9F;
+    --sectoral-chart-5: #0047AB; --sectoral-chart-6: #7596FF;
 
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: "Source Serif 4", Georgia, serif; color: var(--ink); font-size: 10pt; line-height: 1.5; }
-  h1, h2, h3, .para-h, .rhdr-title, .rhdr-issuer { font-family: "Inter", Arial, sans-serif; }
-  .num, td.num, .fin-table td:not(.stmt-label) { font-family: "JetBrains Mono", monospace; font-variant-numeric: tabular-nums; }
+  body { font-family: "Roboto", Arial, sans-serif; color: var(--ink); font-size: 10pt; line-height: 1.5; }
+  h1, h2, h3, .para-h, .rhdr-title, .rhdr-issuer { font-family: "Roboto", Arial, sans-serif; }
+  .num, td.num, .fin-table td:not(.stmt-label) { font-family: "Roboto", Arial, sans-serif; font-variant-numeric: tabular-nums; }
   .page { page-break-after: always; position: relative; padding: 50pt 40pt 64pt; }
 {% if HOUSE.native_furniture %}
   /* Furniture is drawn by Chromium on every physical page via header/footer templates
@@ -153,7 +155,7 @@
   .rhdr-status { font-size: 7.6pt; font-weight: 700; color: var(--ink); margin-bottom: 1pt; }
   .rhdr-date { font-size: 7pt; color: var(--muted); margin-top: 1pt; }
   .rhdr-logo { height: 12pt; margin-bottom: 2.5pt; }
-  .rhdr-rule { border-bottom: 1.2pt solid {{ HOUSE.divider_color | default("#067647") }};
+  .rhdr-rule { border-bottom: 1.2pt solid {{ HOUSE.divider_color | default("#0928B1") }};
                margin-bottom: 14pt; }
   .rftr { position: absolute; bottom: 18pt; left: 40pt; right: 40pt; display: flex;
           justify-content: space-between; font-size: 6.5pt; color: var(--muted);
@@ -282,8 +284,8 @@
              color: var(--ab-ink-muted); }
 
   .exhibit-head { margin: 10pt 0 3pt; }
-  .exhibit-id { font-size: 7.5pt; font-weight: 700; color: var(--ink); }
-  .exhibit-name { font-size: 8.5pt; font-weight: 600; }
+  .exhibit-id { font-size: 7.5pt; font-weight: 700; color: #0928B1; }
+  .exhibit-name { font-size: 8.5pt; font-weight: 600; color: #333333; }
   /* Constant source line, below the object (house-report-format.md §1). */
   .exhibit-src { font-size: 6.6pt; color: var(--muted); font-style: italic; margin: 1pt 0 3pt; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
@@ -474,7 +476,7 @@
 {# ------------------------------------------------------------------ SVG fallbacks for PDF (WeasyPrint has no JS) -- shown only in print #}
 {% macro svg_segment_mix(segments) -%}
   {# the tools' series order, so a segment keeps the same colour family across the deck #}
-  {% set palette = ["#0B1F3A","#A9C9E8","#2C4A6B","#B08D57","#1E8F5F","#C0392B"] %}
+  {% set palette = ["#0928B1","#B4C7FF","#3ED628","#1DCD9F","#0047AB","#7596FF"] %}
   {% set W = 680 %}{% set H = 22 %}
   {% set ns = namespace(x=0) %}
   <svg width="{{ W }}" height="{{ H + 22 }}" viewBox="0 0 {{ W }} {{ H + 22 }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Segment mix">
@@ -487,7 +489,7 @@
     {% for s in segments %}
       <g>
         <rect x="{{ (loop.index0 * (W // (segments|length))) }}" y="{{ H + 6 }}" width="10" height="10" rx="2" fill="{{ palette[loop.index0 % palette|length] }}" rx="2" />
-        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Inter, Arial, sans-serif" fill="#63748A">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
+        <text x="{{ (loop.index0 * (W // (segments|length))) + 14 }}" y="{{ H + 14 }}" font-size="7" font-family="Roboto, Arial, sans-serif" fill="#666666">{{ s.name }} {{ s.share_pct if s.share_pct is not none else s.pct }}%</text>
       </g>
     {% endfor %}
   </svg>
@@ -506,11 +508,11 @@
   {% set n = labels|length if labels else (series_ticker|length) %}
   {% set step = chart_w / ((n - 1) if n > 1 else 1) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga vs IHSG">
-    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.5" rx="2"/>
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.5" rx="2"/>
     {# grid #}
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D9D9D9" stroke-width="0.5" stroke-dasharray="3 3"/>
     {% endfor %}
     {# helper to build polyline points #}
     {% set ns = namespace(pts_t="", pts_i="") %}
@@ -523,20 +525,20 @@
       {% set ns.pts_i = ns.pts_i + ("%0.1f,%0.1f " % (x, y)) %}
     {% endfor %}
     <polygon points="{{ pad_l }},{{ pad_t + chart_h }} {{ ns.pts_t | trim }} {{ pad_l + (n - 1) * step if n > 1 else pad_l }},{{ pad_t + chart_h }}" fill="rgba(11,31,58,0.06)"/>
-    <polyline points="{{ ns.pts_t | trim }}" fill="none" stroke="#0B1F3A" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="{{ ns.pts_i | trim }}" fill="none" stroke="#A9C9E8" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_t | trim }}" fill="none" stroke="#0928B1" stroke-width="1.7" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_i | trim }}" fill="none" stroke="#B4C7FF" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"/>
     {# labels #}
     {% for lbl in labels or [] %}
       {% if loop.index0 % 2 == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Inter, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - 2 }}" font-size="6.5" font-family="Roboto, Arial, sans-serif" fill="#666666" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
-    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#63748A">{{ vmax|dec(1) }}</text>
-    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 8 }}" font-size="6.5" fill="#63748A">{{ vmin|dec(1) }}</text>
-    <g font-size="6.5" font-family="Inter, Arial, sans-serif">
-      <rect x="{{ pad_l }}" y="1" width="8" height="8" fill="#0B1F3A" rx="1"/><text x="{{ pad_l + 12 }}" y="8" fill="#1A2733">{{ ticker_label }}</text>
-      <rect x="{{ pad_l + 70 }}" y="1" width="8" height="8" fill="#A9C9E8" rx="1"/><text x="{{ pad_l + 82 }}" y="8" fill="#1A2733">IHSG</text>
-      <text x="{{ pad_l + 130 }}" y="8" fill="#63748A">Rp (indeks 100 = awal periode)</text>
+    <text x="{{ pad_l }}" y="{{ pad_t - 2 }}" font-size="6.5" fill="#666666">{{ vmax|dec(1) }}</text>
+    <text x="{{ pad_l }}" y="{{ pad_t + chart_h + 8 }}" font-size="6.5" fill="#666666">{{ vmin|dec(1) }}</text>
+    <g font-size="6.5" font-family="Roboto, Arial, sans-serif">
+      <rect x="{{ pad_l }}" y="1" width="8" height="8" fill="#0928B1" rx="1"/><text x="{{ pad_l + 12 }}" y="8" fill="#333333">{{ ticker_label }}</text>
+      <rect x="{{ pad_l + 70 }}" y="1" width="8" height="8" fill="#B4C7FF" rx="1"/><text x="{{ pad_l + 82 }}" y="8" fill="#333333">IHSG</text>
+      <text x="{{ pad_l + 130 }}" y="8" fill="#666666">Rp (indeks 100 = awal periode)</text>
     </g>
   </svg>
 {%- endmacro %}
@@ -585,14 +587,14 @@
   {% endfor %}
   {% set y0 = pad_t + chart_h - ((0 - rmin) / (rmax - rmin) * chart_h) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Harga {{ ticker_label }} vs IHSG">
-    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D6E2EE" stroke-width="{{ sw_g }}" rx="2"/>
+    <rect x="{{ pad_l }}" y="{{ pad_t }}" width="{{ chart_w }}" height="{{ chart_h }}" fill="#ffffff" stroke="#D9D9D9" stroke-width="{{ sw_g }}" rx="2"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="{{ sw_g }}" stroke-dasharray="{{ '4 4' if narrow else '3 3' }}"/>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D9D9D9" stroke-width="{{ sw_g }}" stroke-dasharray="{{ '4 4' if narrow else '3 3' }}"/>
     {% endfor %}
     {#- zero line for the relative axis: above it the stock beat the index -#}
     {% if y0 >= pad_t and y0 <= pad_t + chart_h %}
-      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#63748A" stroke-width="{{ sw_g * 2 }}"/>
+      <line x1="{{ pad_l }}" y1="{{ y0 }}" x2="{{ W - pad_r }}" y2="{{ y0 }}" stroke="#666666" stroke-width="{{ sw_g * 2 }}"/>
     {% endif %}
     {#- the tools mark a reference level with a dashed line; here it is the last close, read from the series -#}
     {% if price %}
@@ -601,36 +603,36 @@
       <line x1="{{ pad_l }}" y1="{{ y_last }}" x2="{{ W - pad_r }}" y2="{{ y_last }}" stroke="#C0392B" stroke-width="{{ sw_g * 2 }}" stroke-dasharray="4 2.5"/>
       {% set ref_txt = "Terakhir " ~ (last_p | idn(0)) %}
       <rect x="{{ pad_l + 2 }}" y="{{ y_last - 9.6 }}" width="{{ ref_txt | length * 3.7 + 4 }}" height="9.6" rx="1.4" fill="#ffffff" opacity="0.92"/>
-      <text x="{{ pad_l + 4.5 }}" y="{{ y_last - 2.4 }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#C0392B">{{ ref_txt }}</text>
+      <text x="{{ pad_l + 4.5 }}" y="{{ y_last - 2.4 }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#C0392B">{{ ref_txt }}</text>
     {% endif %}
     <polygon points="{{ pad_l }},{{ pad_t + chart_h }} {{ ns.pts_p | trim }} {{ W - pad_r }},{{ pad_t + chart_h }}" fill="rgba(11,31,58,0.06)"/>
-    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#0B1F3A" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
-    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#A9C9E8" stroke-width="{{ sw_r }}" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_p | trim }}" fill="none" stroke="#0928B1" stroke-width="{{ sw_p }}" stroke-linejoin="round" stroke-linecap="round"/>
+    <polyline points="{{ ns.pts_r | trim }}" fill="none" stroke="#B4C7FF" stroke-width="{{ sw_r }}" stroke-linejoin="round" stroke-linecap="round"/>
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
       {% set pv = pmax - (i * (pmax - pmin) / 3) %}
       {% set rv = rmax - (i * (rmax - rmin) / 3) %}
-      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#0B1F3A" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
-      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#63748A">{{ "%+0.0f"|format(rv) }}%</text>
+      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#0928B1" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
+      <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#666666">{{ "%+0.0f"|format(rv) }}%</text>
     {% endfor %}
     {% for lbl in labels or [] %}
       {% if loop.index0 % lbl_every == 0 %}
-        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Inter, Arial, sans-serif" fill="#63748A" text-anchor="middle">{{ lbl }}</text>
+        <text x="{{ pad_l + loop.index0 * step }}" y="{{ H - (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#666666" text-anchor="middle">{{ lbl }}</text>
       {% endif %}
     {% endfor %}
     {% if narrow %}
-    <g font-size="{{ lfs }}" font-family="Inter, Arial, sans-serif">
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#1A2733">Harga (Rp, kiri)</text>
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#1A2733">Relatif vs IHSG (%, kanan)</text>
+    <g font-size="{{ lfs }}" font-family="Roboto, Arial, sans-serif">
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#0928B1" stroke-width="{{ sw_p }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#333333">Harga (Rp, kiri)</text>
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#B4C7FF" stroke-width="{{ sw_r }}"/>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#333333">Relatif vs IHSG (%, kanan)</text>
     </g>
     {% else %}
-    <g font-size="{{ lfs }}" font-family="Inter, Arial, sans-serif">
-      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#0B1F3A" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#1A2733">Harga (Rp, kiri)</text>
-      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#A9C9E8" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#1A2733">Relatif vs IHSG (%, kanan)</text>
+    <g font-size="{{ lfs }}" font-family="Roboto, Arial, sans-serif">
+      <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#0928B1" stroke-width="{{ sw_p }}"/>
+      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Harga (Rp, kiri)</text>
+      <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#B4C7FF" stroke-width="{{ sw_r }}"/>
+      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Relatif vs IHSG (%, kanan)</text>
     </g>
     {% endif %}
   </svg>
@@ -643,23 +645,23 @@
   {% set n_rows = rows|length if rows else 0 %}
   {% set H = 26 + (n_rows * row_h) %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="WACC Breakdown">
-    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <rect x="0" y="0" width="{{ W }}" height="26" rx="4" fill="#0B1F3A"/>
-    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
-    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
+    <rect x="0" y="0" width="{{ W }}" height="26" rx="4" fill="#0928B1"/>
+    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
+    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
     {% for r in rows %}
       {% set y = 26 + loop.index0 * row_h %}
       {% set lbl = r.label if r.label is defined else (r[0] if r is sequence else r) %}
       {% set val = r.value if r.value is defined else (r[1] if r is sequence else '') %}
       {% set is_last = loop.last %}
       {% if is_last %}
-        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#E4EEF7"/>
+        <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#B4C7FF"/>
       {% elif loop.index0 % 2 == 1 %}
         <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#F4F8FC"/>
       {% endif %}
-      <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D6E2EE" stroke-width="0.5"/>
-      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0B1F3A">{{ lbl }}</text>
-      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0B1F3A" text-anchor="end">{{ val|auto }}</text>
+      <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D9D9D9" stroke-width="0.5"/>
+      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0928B1">{{ lbl }}</text>
+      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0928B1" text-anchor="end">{{ val|auto }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -674,17 +676,17 @@
   {% set cell_w = chart_w / n_cols %}
   {% set cell_h = chart_h / n_rows %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Sensitivitas WACC x Terminal Growth">
-    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Sensitivitas WACC x Terminal Growth</text>
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Sensitivitas WACC x Terminal Growth</text>
     {% if price and price > 0 %}
-    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Inter, Arial, sans-serif" fill="#63748A">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
+    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Roboto, Arial, sans-serif" fill="#666666">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
     {% endif %}
     <!-- Axis title -->
-    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#63748A" text-anchor="end">WACC \ g</text>
+    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#666666" text-anchor="end">WACC \ g</text>
     <!-- Column headers (g) -->
     {% for g in g_axis or [] %}
       {% set x_center = pad_l + loop.index0 * cell_w + cell_w / 2 %}
-      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
+      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
     {% endfor %}
     <!-- Rows (WACC) & Cells -->
     {% for w in wacc_axis or [] %}
@@ -692,7 +694,7 @@
       {% set y_top = pad_t + row_idx * cell_h %}
       {% set y_center = y_top + cell_h / 2 %}
       <!-- Y label -->
-      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
+      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
       {% set row_vals = matrix[row_idx] if (matrix and matrix|length > row_idx) else [] %}
       {% for val in row_vals %}
         {% set col_idx = loop.index0 %}
@@ -700,24 +702,24 @@
         {% set x_center = x_left + cell_w / 2 %}
         {% set up = ((val - price) / price * 100) if (price and price > 0 and val is not none and val is number) else none %}
         {% if val is none %}
-          {% set bg = "#F4F8FC" %}{% set fg = "#63748A" %}{% set txt = "N/A" %}
+          {% set bg = "#F4F8FC" %}{% set fg = "#666666" %}{% set txt = "N/A" %}
         {% elif up is none %}
-          {% set bg = "#F2E9DC" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#F2E9DC" %}{% set fg = "#0928B1" %}{% set txt = val|idr if val is defined else val %}
         {% elif up < -10 %}
           {% set bg = "#C0392B" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% elif up < 0 %}
           {% set bg = "#E8B4AE" %}{% set fg = "#5C1F18" %}{% set txt = val|idr if val is defined else val %}
         {% elif up <= 10 %}
-          {% set bg = "#F2E9DC" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#F2E9DC" %}{% set fg = "#0928B1" %}{% set txt = val|idr if val is defined else val %}
         {% elif up <= 25 %}
-          {% set bg = "#DCEBF7" %}{% set fg = "#0B1F3A" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#DCEBF7" %}{% set fg = "#0928B1" %}{% set txt = val|idr if val is defined else val %}
         {% else %}
-          {% set bg = "#0B1F3A" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
+          {% set bg = "#0928B1" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% endif %}
-        <rect x="{{ x_left + 1 }}" y="{{ y_top + 1 }}" width="{{ cell_w - 2 }}" height="{{ cell_h - 2 }}" rx="3" fill="{{ bg }}" stroke="#D6E2EE" stroke-width="0.5"/>
-        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
+        <rect x="{{ x_left + 1 }}" y="{{ y_top + 1 }}" width="{{ cell_w - 2 }}" height="{{ cell_h - 2 }}" rx="3" fill="{{ bg }}" stroke="#D9D9D9" stroke-width="0.5"/>
+        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
         {% if up is not none %}
-        <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
+        <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
         {% endif %}
       {% endfor %}
     {% endfor %}
@@ -740,28 +742,28 @@
   {% set vmax = (all_v | max) * 1.25 if all_v else 1 %}
   {% if vmax <= 0 %}{% set vmax = 1 %}{% endif %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Skenario Bear / Base / Bull vs Harga Pasar">
-    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Skenario Bear / Base / Bull vs Harga Pasar</text>
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Skenario Bear / Base / Bull vs Harga Pasar</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
-      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Inter, Arial, sans-serif"
-            fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D9D9D9" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Roboto, Arial, sans-serif"
+            fill="#666666" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
-    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Inter, Arial, sans-serif"
-          fill="#63748A" text-anchor="end">Rp/saham</text>
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Roboto, Arial, sans-serif"
+          fill="#666666" text-anchor="end">Rp/saham</text>
     <!-- Market Price line -->
     {% if px > 0 %}
       {% set y_px = pad_t + chart_h - (px / vmax * chart_h) %}
       <line x1="{{ pad_l }}" y1="{{ y_px }}" x2="{{ W - pad_r }}" y2="{{ y_px }}" stroke="#C0392B" stroke-width="1.5" stroke-dasharray="4 3"/>
-      <text x="{{ pad_l + 6 }}" y="{{ y_px - 4 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#C0392B">Harga Pasar: Rp {{ px|idr if px is defined else px }}</text>
+      <text x="{{ pad_l + 6 }}" y="{{ y_px - 4 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#C0392B">Harga Pasar: Rp {{ px|idr if px is defined else px }}</text>
     {% endif %}
     <!-- 3 Bars -->
     {% set items = [
-      {"name": "BEAR", "val": bear_v, "rat": bear.rating if bear.rating is defined else "", "fill": "#E4EEF7", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"},
-      {"name": "BASE", "val": base_v, "rat": base.rating if base.rating is defined else "", "fill": "#0B1F3A", "stroke": "#0B1F3A", "text_fg": "#0B1F3A"},
-      {"name": "BULL", "val": bull_v, "rat": bull.rating if bull.rating is defined else "", "fill": "#A9C9E8", "stroke": "#2C4A6B", "text_fg": "#0B1F3A"}
+      {"name": "BEAR", "val": bear_v, "rat": bear.rating if bear.rating is defined else "", "fill": "#B4C7FF", "stroke": "#0047AB", "text_fg": "#0928B1"},
+      {"name": "BASE", "val": base_v, "rat": base.rating if base.rating is defined else "", "fill": "#0928B1", "stroke": "#0928B1", "text_fg": "#0928B1"},
+      {"name": "BULL", "val": bull_v, "rat": bull.rating if bull.rating is defined else "", "fill": "#B4C7FF", "stroke": "#0047AB", "text_fg": "#0928B1"}
     ] %}
     {% set bar_w = 90 %}
     {% for item in items %}
@@ -771,8 +773,8 @@
       {% set bh = (val / vmax * chart_h) if vmax > 0 else 0 %}
       {% set by = pad_t + chart_h - bh %}
       <rect x="{{ bx }}" y="{{ by }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ item.fill }}" stroke="{{ item.stroke }}" stroke-width="1"/>
-      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
-      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ item.name }}</text>
+      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
+      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ item.name }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -783,8 +785,8 @@
   {% set W = 660 %}{% set H = 206 %}
   {% set pad_l = 54 %}{% set pad_r = 16 %}{% set pad_t = 30 %}{% set pad_b = 46 %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
-  {% set NAVY = "#0B1F3A" %}{% set ICE = "#A9C9E8" %}{% set ICE_SOFT = "#2C4A6B" %}
-  {% set RULE = "#D6E2EE" %}{% set MUTED = "#63748A" %}{% set SELL = "#C0392B" %}
+  {% set NAVY = "#0928B1" %}{% set ICE = "#B4C7FF" %}{% set ICE_SOFT = "#0047AB" %}
+  {% set RULE = "#D9D9D9" %}{% set MUTED = "#666666" %}{% set SELL = "#C0392B" %}
   {% set vals = [] %}
   {% for r in rows %}{% if r.to_mean is not none %}{% set _ = vals.append(r.to_mean) %}{% endif %}
     {% if r.to_median is not none %}{% set _ = vals.append(r.to_median) %}{% endif %}{% endfor %}
@@ -852,7 +854,7 @@
   {% set W = 680 %}{% set H = 190 %}
   {% set pad_l = 52 %}{% set pad_r = 14 %}{% set pad_t = 26 %}{% set pad_b = 34 %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
-  {% set NAVY = "#0B1F3A" %}{% set RULE = "#D6E2EE" %}{% set MUTED = "#63748A" %}{% set OUT = "#B45309" %}
+  {% set NAVY = "#0928B1" %}{% set RULE = "#D9D9D9" %}{% set MUTED = "#666666" %}{% set OUT = "#B45309" %}
   {% set amax = (values_bn | map('abs') | max) if values_bn else 1 %}
   {% set top = amax * 1.15 if amax else 1 %}
   {% set zero_y = pad_t + chart_h / 2 %}
@@ -910,25 +912,25 @@
   {% set peak = [ev + cash, ev, eq, pv_exp + pv_term] | max %}
   {% set vmax = (peak * 1.22) if peak > 0 else 1 %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Bridge: PV FCFF -> Equity Value (IDR bn)">
-    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D6E2EE" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
+    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
-      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D6E2EE" stroke-width="0.5" stroke-dasharray="3 3"/>
-      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Inter, Arial, sans-serif"
-            fill="#63748A" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
+      <line x1="{{ pad_l }}" y1="{{ y }}" x2="{{ W - pad_r }}" y2="{{ y }}" stroke="#D9D9D9" stroke-width="0.5" stroke-dasharray="3 3"/>
+      <text x="{{ pad_l - 5 }}" y="{{ y + 2.4 }}" font-size="6.5" font-family="Roboto, Arial, sans-serif"
+            fill="#666666" text-anchor="end">{{ (vmax * (3 - i) / 3) | idn(0) }}</text>
     {% endfor %}
-    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Inter, Arial, sans-serif"
-          fill="#63748A" text-anchor="end">Rp bn</text>
+    <text x="{{ pad_l - 5 }}" y="{{ pad_t - 6 }}" font-size="6" font-family="Roboto, Arial, sans-serif"
+          fill="#666666" text-anchor="end">Rp bn</text>
     {% set bars = [
-      {"l1": "PV", "l2": "Explicit", "bot": 0, "top": pv_exp, "val": pv_exp, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
-      {"l1": "PV", "l2": "Terminal", "bot": pv_exp, "top": pv_exp + pv_term, "val": pv_term, "fill": "#A9C9E8", "stroke": "#2C4A6B", "sign": "+"},
-      {"l1": "EV", "l2": "Total", "bot": 0, "top": ev, "val": ev, "fill": "#0B1F3A", "stroke": "#0B1F3A", "sign": ""},
+      {"l1": "PV", "l2": "Explicit", "bot": 0, "top": pv_exp, "val": pv_exp, "fill": "#B4C7FF", "stroke": "#0047AB", "sign": "+"},
+      {"l1": "PV", "l2": "Terminal", "bot": pv_exp, "top": pv_exp + pv_term, "val": pv_term, "fill": "#B4C7FF", "stroke": "#0047AB", "sign": "+"},
+      {"l1": "EV", "l2": "Total", "bot": 0, "top": ev, "val": ev, "fill": "#0928B1", "stroke": "#0928B1", "sign": ""},
       {"l1": "Cash", "l2": "", "bot": ev, "top": ev + cash, "val": cash, "fill": "#1E8F5F", "stroke": "#1E8F5F", "sign": "+"},
       {"l1": "Total", "l2": "Debt", "bot": ev + cash - debt, "top": ev + cash, "val": -debt, "fill": "#C0392B", "stroke": "#C0392B", "sign": "-"},
       {"l1": "Minority", "l2": "Int.", "bot": ev + cash - debt - minority, "top": ev + cash - debt, "val": -minority, "fill": "#C0392B", "stroke": "#C0392B", "sign": "-"},
-      {"l1": "Equity", "l2": "Value", "bot": 0, "top": eq, "val": eq, "fill": "#0B1F3A", "stroke": "#0B1F3A", "sign": ""}
+      {"l1": "Equity", "l2": "Value", "bot": 0, "top": eq, "val": eq, "fill": "#0928B1", "stroke": "#0928B1", "sign": ""}
     ] %}
     {% set n_bars = 7 %}
     {% set bar_w = 48 %}
@@ -943,13 +945,13 @@
       <rect x="{{ bx }}" y="{{ y_top }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ b.fill }}" stroke="{{ b.stroke }}" stroke-width="1"/>
       {% else %}
       {#- a zero line item is drawn as a flat marker, not a red sliver that reads as a small charge -#}
-      <line x1="{{ bx }}" y1="{{ y_bot }}" x2="{{ bx + bar_w }}" y2="{{ y_bot }}" stroke="#D6E2EE" stroke-width="1.6"/>
+      <line x1="{{ bx }}" y1="{{ y_bot }}" x2="{{ bx + bar_w }}" y2="{{ y_bot }}" stroke="#D9D9D9" stroke-width="1.6"/>
       {% endif %}
       {% set vabs = b.val | abs %}
-      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="700" fill="#0B1F3A" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
-      <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l1 }}</text>
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
+      <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="#666666" text-anchor="middle">{{ b.l1 }}</text>
       {% if b.l2 %}
-      <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Inter, Arial, sans-serif" font-weight="600" fill="#63748A" text-anchor="middle">{{ b.l2 }}</text>
+      <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="#666666" text-anchor="middle">{{ b.l2 }}</text>
       {% endif %}
     {% endfor %}
   </svg>
@@ -959,25 +961,26 @@
 {% macro chartjs() -%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
 <script>
-  Chart.defaults.font.family = "Inter, Arial, sans-serif";
+  Chart.defaults.font.family = "Roboto, Arial, sans-serif";
   Chart.defaults.locale = "id-ID";      // tick labels group thousands the way the tables do
   Chart.defaults.font.size = 8;
   Chart.defaults.animation = false;          // PDF: no waiting for easing
   Chart.defaults.plugins.legend.labels.boxWidth = 8;
   Chart.defaults.plugins.tooltip.enabled = false;
-  // Same order the valuation tools use (navy, ice, ice-pale, then the rating colours), so a series reads the
-  // same way here and in the tools.
-  const PALETTE = ["#0B1F3A", "#A9C9E8", "#E4EEF7", "#B08D57", "#1E8F5F", "#C0392B"];
-  const AB = {navy: "#0B1F3A", ice: "#A9C9E8", icePale: "#E4EEF7", rule: "#D6E2EE",
-              ink: "#1A2733", muted: "#63748A", sell: "#C0392B", hold: "#B08D57"};
+  // Sectoral Design System series order (primary, periwinkle, vibrant green,
+  // teal, cobalt, soft blue), then the rating colours - so a series reads the
+  // same way here and in the FE.
+  const PALETTE = ["#0928B1", "#B4C7FF", "#3ED628", "#1DCD9F", "#0047AB", "#7596FF", "#B08D57", "#C0392B"];
+  const AB = {navy: "#0928B1", ice: "#B4C7FF", icePale: "#B4C7FF", rule: "#D9D9D9",
+              ink: "#333333", muted: "#666666", sell: "#C0392B", hold: "#B08D57"};
   Chart.defaults.color = AB.ink;
   Chart.defaults.borderColor = AB.rule;
-  Chart.defaults.font.family = "Inter, Arial, sans-serif";
+  Chart.defaults.font.family = "Roboto, Arial, sans-serif";
   Chart.defaults.font.size = 7;
-  Chart.defaults.scale.grid.color = AB.rule;      // hairline rules, as the tools draw them
+  Chart.defaults.scale.grid.color = "#E0E0E0";      // hairline rules per Sectoral
   Chart.defaults.scale.grid.drawTicks = false;
-  Chart.defaults.scale.border.color = AB.rule;
-  Chart.defaults.scale.ticks.color = AB.muted;
+  Chart.defaults.scale.border.color = "#D9D9D9";
+  Chart.defaults.scale.ticks.color = "#666666";
 
   // Values printed outside the bars, the way the tools label theirs.
   const abBarLabels = {
@@ -986,7 +989,7 @@
       const ds = chart.data.datasets || [];
       const many = ds.length > 1;
       chart.ctx.save();
-      chart.ctx.font = "700 6.4px Inter, Arial, sans-serif";
+      chart.ctx.font = "700 6.4px Roboto, Arial, sans-serif";
       chart.ctx.textAlign = "center";
       chart.ctx.textBaseline = "bottom";
       ds.forEach((d, di) => {
@@ -1023,7 +1026,7 @@
       chart.ctx.stroke();
       chart.ctx.setLineDash([]);
       if (r.label) {
-        chart.ctx.font = "700 6.4px Inter, Arial, sans-serif";
+        chart.ctx.font = "700 6.4px Roboto, Arial, sans-serif";
         const w = chart.ctx.measureText(r.label).width;
         chart.ctx.fillStyle = "#ffffff";
         chart.ctx.fillRect(a.left + 1, y - 8.5, w + 4, 8);
@@ -1046,7 +1049,7 @@
         d.tension = .25; d.borderWidth = d.borderWidth || 2; d.pointRadius = d.pointRadius || 0;
         // the tools fill softly under a line instead of leaving it floating
         if (d.fill === undefined && !d.hidden) {
-          const hex = (d.borderColor || "#0B1F3A");
+          const hex = (d.borderColor || "#0928B1");
           const m = /^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/i.exec(hex);
           if (m) d.backgroundColor = d.backgroundColor || "rgba(" +
             [m[1], m[2], m[3]].map(x => parseInt(x, 16)).join(",") + ",0.07)";
@@ -1055,7 +1058,7 @@
       });
     }
     if (cfg.type === "bar" && cfg.data && cfg.data.datasets) {
-      cfg.data.datasets.forEach(d => { d.borderWidth = d.borderWidth || 1; d.borderColor = d.borderColor || "#2C4A6B"; });
+      cfg.data.datasets.forEach(d => { d.borderWidth = d.borderWidth || 1; d.borderColor = d.borderColor || "#0047AB"; });
     }
     if (cfg.data && cfg.data.datasets) cfg.data.datasets.forEach((d, i) => {
       if (!d.backgroundColor && !d.borderColor) {

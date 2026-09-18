@@ -232,6 +232,54 @@ def check(pdf: Path) -> dict:
             "server/report/text_sanitize.py::clean before rendering"
         )
 
+    # Rule 13 Sectoral tokens (friend-supplied, Sep 2026 - docs/design-system-friend.md).
+    # The PDF is the only place Roboto-only and the printed primary can be observed:
+    # every embedded font must belong to the Roboto family (no Inter / Source Serif /
+    # Jakarta leaking from the old house furniture), and the Sectoral primary must be
+    # used in drawn vector content (header divider, table header band, charts).
+    fonts_seen: set[str] = set()
+    for page in doc:
+        try:
+            for f in page.get_fonts(full=True):
+                name = str(f[3]) if len(f) > 3 else ""
+                if name:
+                    fonts_seen.add(name)
+        except Exception:
+            pass
+    non_roboto = sorted({n for n in fonts_seen if "roboto" not in n.lower()})
+    # Warn, not fail: the report surfaces migrate to Roboto in other lanes, and the
+    # shipped-PDF gate (tests/test_house_format_adoption.py) must stay green while
+    # they land. The hard gate is tests/test_design_system_sectoral.py.
+    if fonts_seen and non_roboto:
+        warn.append(
+            "rule 13 non-Roboto fonts embedded: "
+            + ", ".join(non_roboto[:8])
+            + " - the Sectoral system uses Roboto only"
+        )
+    primary_used = False
+    try:
+        for page in doc:
+            for d in page.get_drawings():
+                for key in ("color", "fill"):
+                    col = (d.get(key) or ())
+                    if len(col) == 3 and all(
+                        abs(a - b) < 0.02
+                        for a, b in zip(col, (0x09 / 255, 0x28 / 255, 0xB1 / 255))
+                    ):
+                        primary_used = True
+                        break
+                if primary_used:
+                    break
+            if primary_used:
+                break
+    except Exception:
+        pass
+    if not primary_used:
+        warn.append(
+            "rule 13 Sectoral primary #0928B1 not found in drawn vector content - "
+            "expected in the header divider, table header band or chart series"
+        )
+
     return {
         "pdf": str(pdf),
         "pages": pages,

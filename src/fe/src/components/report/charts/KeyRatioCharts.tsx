@@ -1,6 +1,25 @@
 import React from "react"
+import {
+  ResponsiveContainer,
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+  ReferenceLine,
+} from "recharts"
 import type { KeyRatioPage } from "@/lib/reportTypes"
 import { formatIdn } from "./tokens"
+import {
+  seriesColor,
+  SECTORAL_GRID,
+  SECTORAL_ZERO_BASELINE,
+  SECTORAL_TICK,
+  SECTORAL_TOOLTIP_STYLE,
+  SECTORAL_LEGEND_STYLE,
+} from "./sectoralSeries"
 
 export interface KeyRatioChartsProps {
   keyRatio?: KeyRatioPage
@@ -13,6 +32,59 @@ function fmtRatioVal(v: number | null | undefined, unit: string = "%"): string {
     return `(${formatted})${unit}`
   }
   return `${formatted}${unit}`
+}
+
+interface TrendSeries {
+  key: string
+  label: string
+  values: (number | null)[]
+}
+
+/**
+ * Sectoral multiline trend chart. Series colors follow SECTORAL_SERIES order.
+ * Tables below remain the source of truth; this chart only visualizes them.
+ */
+function RatioTrendChart({ years, series, unit }: { years: string[]; series: TrendSeries[]; unit: string }) {
+  const data = years.map((year, i) => {
+    const row: Record<string, string | number | null> = { name: year }
+    for (const s of series) {
+      row[s.key] = s.values[i] ?? null
+    }
+    return row
+  })
+
+  return (
+    <ResponsiveContainer width="100%" height={180}>
+      <LineChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
+        <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} />
+        <YAxis tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={44} />
+        <Tooltip
+          contentStyle={SECTORAL_TOOLTIP_STYLE}
+          formatter={(value: unknown, name: unknown) => [
+            typeof value === "number" ? fmtRatioVal(value, unit) : "-",
+            String(name),
+          ]}
+          labelFormatter={(label: unknown) => String(label)}
+        />
+        <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
+        <ReferenceLine y={0} stroke={SECTORAL_ZERO_BASELINE} />
+        {series.map((s, idx) => (
+          <Line
+            key={s.key}
+            type="monotone"
+            dataKey={s.key}
+            name={s.label}
+            stroke={seriesColor(idx)}
+            strokeWidth={2}
+            dot={false}
+            activeDot={{ r: 4 }}
+            connectNulls
+          />
+        ))}
+      </LineChart>
+    </ResponsiveContainer>
+  )
 }
 
 export function KeyRatioCharts({ keyRatio }: KeyRatioChartsProps) {
@@ -69,6 +141,15 @@ export function KeyRatioCharts({ keyRatio }: KeyRatioChartsProps) {
             </span>
             <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">% pendapatan</span>
           </div>
+          <RatioTrendChart
+            years={years}
+            unit="%"
+            series={[
+              { key: "gm", label: "Gross margin", values: gm },
+              { key: "ebitdaM", label: "EBITDA margin", values: ebitdaM },
+              { key: "netM", label: "Net margin", values: netM },
+            ].filter((s) => s.values.length > 0)}
+          />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -127,6 +208,14 @@ export function KeyRatioCharts({ keyRatio }: KeyRatioChartsProps) {
             </span>
             <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Saldo rata-rata</span>
           </div>
+          <RatioTrendChart
+            years={years}
+            unit="%"
+            series={[
+              { key: "roae", label: "ROAE", values: roae },
+              { key: "roaa", label: "ROAA", values: roaa },
+            ].filter((s) => s.values.length > 0)}
+          />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -175,6 +264,14 @@ export function KeyRatioCharts({ keyRatio }: KeyRatioChartsProps) {
             </span>
             <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">Rasio (x)</span>
           </div>
+          <RatioTrendChart
+            years={years}
+            unit="x"
+            series={[
+              { key: "gearing", label: "Net gearing (x)", values: gearing },
+              { key: "coverage", label: "Interest coverage (x)", values: coverage },
+            ].filter((s) => s.values.length > 0)}
+          />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
@@ -223,6 +320,14 @@ export function KeyRatioCharts({ keyRatio }: KeyRatioChartsProps) {
             </span>
             <span className="text-[11px] text-[#6B6659] dark:text-[#A8A296]">% pertumbuhan</span>
           </div>
+          <RatioTrendChart
+            years={years}
+            unit="%"
+            series={[
+              { key: "salesG", label: "Pertumbuhan pendapatan", values: salesG },
+              { key: "netG", label: "Pertumbuhan laba bersih", values: netG },
+            ].filter((s) => s.values.length > 0)}
+          />
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
               <thead>
