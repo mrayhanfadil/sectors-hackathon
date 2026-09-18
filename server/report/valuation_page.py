@@ -461,7 +461,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
             "roic_path": roic_path, "implied_g_path": implied_g_path,
         },
         "notes": _notes(primary, sensitivity_alts["fcf_doc_steady"], multiple, total_debt - cash, g, wacc, assum,
-                         anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda")),
+                         anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda"),
+                         cover=cover),
         "convention": "year-end (discount factor = 1/(1+WACC)^t); engine default mid-year di-disclose di catatan",
         "block2_headers": None,
         "block3_headers": None,
@@ -501,9 +502,27 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
 
 def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float, wacc: float,
-           assum: dict | None = None, anchor_fv: float | None = None) -> list[str]:
+           assum: dict | None = None, anchor_fv: float | None = None,
+           cover: dict | None = None) -> list[str]:
     """The disclosures the rules require: finite reserve, the terminal gap, and what was not modelled."""
     notes: list[str] = []
+    # FX auto-convert disclosure (peer #11, ticker-agnostic): when the forecast
+    # spine rode a USD driver path, the rate + derivation print at the valuation
+    # end where the converted IDR lands. Silent when no FX rode along.
+    spine_fx = None
+    try:
+        spine_fx = (cover or {}).get("forecast_fx") or None
+    except Exception:
+        spine_fx = None
+    if isinstance(spine_fx, dict) and spine_fx.get("rate"):
+        # The full fx_basis is a repo-internal calibration trail (it may name the
+        # estimate source); the deck prints only the rate + as-of, never the trail.
+        notes.append(
+            f"KONVERSI VALUTA: jalur proyeksi berdenominasi {spine_fx.get('currency') or 'USD'} - "
+            f"angka valuasi akhir dalam IDR memakai kurs {_nf.dec(spine_fx.get('rate'), digits=2)} "
+            f"(Rp bn per US$ 1 jt, as of {spine_fx.get('as_of') or 'n/a'}). "
+            f"Detail derivasi kurs tercatat di file driver (audit trail repo)."
+        )
     # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
     # basis named - a target price whose basis is only in the payload is not disclosed to the reader.
     _basis = assum.get("ev_multiple_basis")

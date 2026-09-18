@@ -836,6 +836,52 @@
   </svg>
 {%- endmacro %}
 
+{% macro svg_foreign_flow(dates, values_bn, ticker_label) -%}
+{#- Daily net-foreign bars (Rp bn): inflow navy above zero, outflow muted-red below.
+    Weekly sampling keeps 62 sessions readable; geometry uses dot decimals. -#}
+  {% set W = 680 %}{% set H = 190 %}
+  {% set pad_l = 52 %}{% set pad_r = 14 %}{% set pad_t = 26 %}{% set pad_b = 34 %}
+  {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
+  {% set NAVY = "#0B1F3A" %}{% set RULE = "#D6E2EE" %}{% set MUTED = "#63748A" %}{% set OUT = "#B45309" %}
+  {% set amax = (values_bn | map('abs') | max) if values_bn else 1 %}
+  {% set top = amax * 1.15 if amax else 1 %}
+  {% set zero_y = pad_t + chart_h / 2 %}
+  {% set n = values_bn | length %}
+  {% set step = (chart_w / n) if n else chart_w %}
+  {% set bw = ([step * 0.62, 9] | min) | round(1) %}
+  <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg"
+       class="chart-svg" role="img" aria-label="Arus asing harian {{ ticker_label }} (Rp miliar)">
+    <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="{{ RULE }}" stroke-width="0.75"/>
+    {% for frac in [1.0, 0.5, -0.5, -1.0] %}
+    {% set gy = zero_y - (chart_h / 2 * frac) %}
+    <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(gy) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(gy) }}"
+          stroke="{{ RULE }}" stroke-width="0.7"/>
+    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="8" fill="{{ MUTED }}"
+          text-anchor="end">{{ (top * frac) | idn(1) }}</text>
+    {% endfor %}
+    <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(zero_y) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(zero_y) }}"
+          stroke="{{ MUTED }}" stroke-width="0.9"/>
+    <text x="{{ pad_l - 6 }}" y="{{ pad_t - 10 }}" font-size="7.5" font-weight="700" fill="{{ MUTED }}"
+          text-anchor="end">Rp md/hari</text>
+    {% for v in values_bn %}
+    {% if loop.index0 % 5 == 0 or loop.last %}
+      {% set cx = pad_l + step * loop.index0 + step / 2 %}
+      {% set bh = (chart_h / 2 * (v | abs / top)) if top else 0 %}
+      {% if v >= 0 %}
+      <rect x="{{ '%.1f'|format(cx - bw / 2) }}" y="{{ '%.1f'|format(zero_y - bh) }}" width="{{ bw }}"
+            height="{{ '%.1f'|format(bh) }}" fill="{{ NAVY }}"/>
+      {% else %}
+      <rect x="{{ '%.1f'|format(cx - bw / 2) }}" y="{{ '%.1f'|format(zero_y) }}" width="{{ bw }}"
+            height="{{ '%.1f'|format(bh) }}" fill="{{ OUT }}" opacity="0.75"/>
+      {% endif %}
+    {% endif %}
+    {% endfor %}
+    <text x="{{ pad_l }}" y="{{ H - 18 }}" font-size="7.5" fill="{{ MUTED }}">{{ dates[0] if dates else "" }}</text>
+    <text x="{{ W - pad_r }}" y="{{ H - 18 }}" font-size="7.5" fill="{{ MUTED }}" text-anchor="end">{{ dates[-1] if dates else "" }}</text>
+    <text x="{{ (W / 2) | round }}" y="{{ H - 6 }}" font-size="7.5" fill="{{ MUTED }}" text-anchor="middle">Arus asing harian {{ ticker_label }} (Sectors foreign-flow, Rp md)</text>
+  </svg>
+{%- endmacro %}
+
 {% macro svg_ev_equity_waterfall(valuation) -%}
   {% set W = 680 %}{% set H = 220 %}
   {% set pad_l = 40 %}{% set pad_r = 20 %}{% set pad_t = 45 %}{% set pad_b = 42 %}

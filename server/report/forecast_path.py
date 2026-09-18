@@ -246,6 +246,8 @@ def resolve_forecast_path(
                 "attribution": doc.get("attribution"), "as_of": doc.get("as_of"),
                 "independence_note": doc.get("independence_note"),
                 "fx_rp_bn_per_usd_mn": _num(doc.get("fx_rp_bn_per_usd_mn") or doc.get("fx_idr_per_usd")),
+                "fx_basis": doc.get("fx_basis"),
+                "currency": doc.get("currency"),
                 "notes": [n for n in [doc.get("independence_note")] if n],
                 "file": str(fp),
             })

@@ -248,6 +248,12 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         "forecast_attribution": _display_attr(path.get("attribution")),
         "forecast_as_of": path.get("as_of"),
         "forecast_label": path.get("basis_label"),
+        "forecast_fx": ({
+            "rate": path.get("fx_rp_bn_per_usd_mn"),
+            "fx_trail_ref": "file driver (audit trail repo)",
+            "currency": path.get("currency"),
+            "as_of": path.get("as_of"),
+        } if path.get("fx_rp_bn_per_usd_mn") else None),
         "forecast_problems": path.get("problems") or [],
         "raw": {"rev": revs, "ebitda": ebis, "ni": nis, "eps": epss, "price": price,
                 "mid_eb": mid_eb, "net_debt": net_debt, "mcap": mcap, "shares": shares,

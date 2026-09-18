@@ -496,6 +496,52 @@ def _chart_moves(chart: dict) -> Optional[list]:
 
 
 # --------------------------------------------------------------------------- page
+def _foreign_flow_series(payload: dict) -> dict:
+    """Daily net-foreign series for the FF bar chart, read from freeze files only.
+
+    Ticker-agnostic: resolves <TICKER> from payload meta and reads
+    ``foreign_flow_<T>_90d.json`` from ticker_fill/ then ammn_fill/ (legacy).
+    Zero Sectors cost - a file read, never an upstream call. Absent/stale file
+    -> available=False and the template prints the honest line, never a gap.
+    """
+    import json as _json
+    import pathlib as _pl
+    import time as _time
+    ticker = str((payload.get("meta") or {}).get("ticker") or "").upper()
+    repo = _pl.Path(__file__).resolve().parents[2]
+    cand_dirs = (repo / "output" / "cache" / "ticker_fill",
+                 repo / "output" / "cache" / "ammn_fill")
+    rows: list = []
+    src = ""
+    if ticker:
+        for d in cand_dirs:
+            p = d / f"foreign_flow_{ticker}_90d.json"
+            if p.exists():
+                try:
+                    if _time.time() - p.stat().st_mtime > 7 * 24 * 3600:
+                        src = f"freeze {p.name} kedaluwarsa (>7 hari)"
+                        break
+                    body = _json.loads(p.read_text(encoding="utf-8"))
+                    raw = body.get("data") or []
+                    for r in raw:
+                        try:
+                            rows.append({"date": str(r.get("date"))[:10],
+                                         "net_bn": round(float(r.get("net_foreign_inflow") or 0) / 1e9, 2)})
+                        except (TypeError, ValueError):
+                            continue
+                    rows.sort(key=lambda r: r["date"])
+                    rows = rows[-62:]
+                    src = f"Sectors foreign-flow 90d ({len(rows)} sesi)"
+                except Exception:
+                    rows = []
+                break
+    if not rows:
+        return {"available": False,
+                "source": src or "tidak ada freeze foreign-flow untuk emiten ini"}
+    return {"available": True, "dates": [r["date"] for r in rows],
+            "values_bn": [r["net_bn"] for r in rows], "source": src}
+
+
 def build_industry_page(payload: dict, assumptions: Optional[dict] = None) -> dict:
     """Assemble deck page 2 from the payload. Always returns three paragraphs, never raises."""
     assumptions = assumptions or {}
@@ -519,6 +565,7 @@ def build_industry_page(payload: dict, assumptions: Optional[dict] = None) -> di
         "title": f"Kondisi Industri, Katalis & Sentimen - {payload.get('meta', {}).get('ticker', '')}".strip(" -"),
         "paragraphs": paragraphs,
         "sources": sources,
+        "foreign_flow": _foreign_flow_series(payload),
         "notes": [
             "Halaman naratif: tidak ada objek wajib, dan tidak ada Exhibit yang ditambahkan, "
             "sehingga penomoran Exhibit dokumen tidak bergeser.",

@@ -162,6 +162,13 @@
     <p class="small" style="margin-top:2pt;">{{ p.body }}</p>
   </div>
   {% endfor %}
+  {% set ff = industry_page.foreign_flow or {} %}
+  {% if ff.available %}
+  {{ m.exhibit_auto(ns, "Arus Asing Harian (Rp md/hari)", ff.source) }}
+  {{ m.svg_foreign_flow(ff.dates, ff.values_bn, meta.ticker) }}
+  {% else %}
+  <p class="small muted">Grafik arus asing tidak tersedia: {{ ff.source }}. Sectors tidak menyediakan endpoint forex, sehingga tidak ada grafik USD/IDR yang bisa ditampilkan dari data berlisensi.</p>
+  {% endif %}
   <p class="muted" style="font-size:6.6pt; margin-top:5pt;">{{ industry_page.sources | join('; ') }}</p>
   {% else %}
   <p class="small muted">Halaman ini tidak dapat disusun: payload tidak membawa data katalis, sentimen, maupun konteks sektor yang terverifikasi.</p>
