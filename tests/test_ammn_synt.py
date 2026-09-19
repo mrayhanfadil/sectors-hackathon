@@ -77,10 +77,24 @@ def test_sensitivity_matrix_is_25_live_dcf_cells():
                             cash=float(a["cash"]),
                             net_debt=float(a["net_debt"]))["fv_per_share"], 2)
             assert c["fair_value"][i][j] == exp, (i, j, w, g)
-    # base cell == headline FV engine; the printed sensitivity row carries the same number
+    # base cell ties out with the NORMALISED (flat steady-state FCFF) DCF leg, not with the
+    # headline one. Both bases are legitimate and the deck publishes two different questions:
+    # the build-up path (FY26F capex peak = negative year 1) is what page 5 Blok 1-3 prints and
+    # what `valuation.methods[0]` reports, while this deep-dive block - its grid, its scenarios,
+    # its EV bridge - runs on `assum["fcf"]` (the flat normalised series). The payload now carries
+    # both under names (`valuation.legs.dcf` / `valuation.legs.dcf_normalised`) so a reader never
+    # meets two unlabelled "DCF" numbers; this pins each surface to its own basis.
     base_cell = c["fair_value"][2][2]
     assert base_cell == d["cDcf"]["valuation"]["fair_value_per_share"]
-    assert base_cell == pytest.approx(d["valuation"]["methods"][0]["fv"], abs=1.0)
+    assert base_cell == pytest.approx(d["valuation"]["legs"]["dcf_normalised"], abs=1.0), (
+        "the deep-dive grid must tie out with the payload's normalised DCF leg"
+    )
+    assert d["valuation"]["methods"][0]["fv"] == pytest.approx(d["valuation"]["legs"]["dcf"], abs=1.0), (
+        "the methods table's DCF row must report the primary (build-up) leg"
+    )
+    assert d["valuation"]["legs"]["dcf"] != d["valuation"]["legs"]["dcf_normalised"], (
+        "the two DCF bases must stay distinguishable in the payload, never silently equal"
+    )
     assert f"Rp {round(base_cell)}" in sens["rows"][2][3]
 
 

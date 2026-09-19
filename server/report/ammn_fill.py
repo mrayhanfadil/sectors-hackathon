@@ -1180,6 +1180,12 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     try:
         if _eng_dcf is None or _eng_ev is None or not wacc_rows:
             raise RuntimeError("engine or WACC rows unavailable")
+        # FLAT normalised series - the documented ALTERNATIVE basis, kept explicit.
+        # The deep-dive block (sensitivity grid, scenarios, EV bridge) publishes this basis and
+        # `tests/test_ammn_synt.py` pins it against scripts/dcf_engine; the PRIMARY DCF is the
+        # build-up path in `valuation_page` / `pdf.py`'s `fcf_buildup_series` leg. The two are
+        # different questions, and the deck's audit note discloses both - so do NOT "unify" this
+        # one onto the build-up series: that swap made cDcf disagree with its own pinned tables.
         fcf_bn = [float(x) for x in (assum.get("fcf") or [])]
         if not fcf_bn:
             raise RuntimeError("no harvested fcf series")

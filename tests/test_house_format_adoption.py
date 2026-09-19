@@ -530,15 +530,33 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
         assert heading in page2, f"deck page 2 lost {heading!r} on paper"
     assert "Ringkasan Investasi" in doc[2].get_text(), "the summary page is no longer page 3"
 
-    # Deck slide 3 (docs/ammn-slides/slide3-visual-spec.md) is a 2x2 grid on ONE physical page, and
-    # its four charts take exhibits 4-7 -- the numbering the owner's spec assumes.
+    # Deck slide 3 (docs/ammn-slides/slide3-visual-spec.md) is a 2x2 grid on ONE physical page.
+    #
+    # The exhibit NUMBERS are renderer-owned (house-report-format.md §2: the macro's counter
+    # runs unbroken in DOM order, and page 2's chart is an exhibit whenever the freeze carries
+    # foreign flow - docs/ammn-slides/slide2-industry-spec.md requires it to be). So this
+    # asserts the structural invariant instead of hardcoding 4-7: four consecutive exhibits on
+    # the grid page, and the next page opening exactly one number later. Hardcoded numbers here
+    # encoded the state where page 2's chart had been silently dropped by a file-age gate, and
+    # would read a restored chart as a broken grid. A split grid page, a lost quadrant or a
+    # numbering jump still fails.
     page4 = doc[3].get_text()
     for quadrant in ("Revenue & Revenue Growth", "EBITDA & EBITDA Margin",
                      "Net Profit & EPS Growth", "DER vs ROE"):
         assert quadrant in page4, f"slide 3 lost {quadrant!r} on paper"
-    for number in (4, 5, 6, 7):
-        assert f"Exhibit {number}." in page4, f"Exhibit {number} is not on the slide-3 page"
-    assert "Exhibit 8." in doc[4].get_text(), "the valuation page no longer opens at Exhibit 8"
+    grid_exhibits = [int(n) for n in re.findall(r"Exhibit (\d+)\.", str(page4))]
+    assert len(grid_exhibits) == 4, (
+        f"the slide-3 grid page must carry exactly four exhibits, got {grid_exhibits}"
+    )
+    assert grid_exhibits == list(range(grid_exhibits[0], grid_exhibits[0] + 4)), (
+        f"slide-3 exhibits must be consecutive, got {grid_exhibits}"
+    )
+    next_page_exhibits = [int(n) for n in re.findall(r"Exhibit (\d+)\.", str(doc[4].get_text()))]
+    assert next_page_exhibits, "the page after the slide-3 grid carries no exhibit"
+    assert next_page_exhibits[0] == grid_exhibits[-1] + 1, (
+        "exhibit numbering must run unbroken across the page break: grid ends at "
+        f"{grid_exhibits[-1]}, the next page opens at {next_page_exhibits[0]}"
+    )
 
     # Deck slide 4 (docs/ammn-slides/slide4-valuation-spec.md): the DCF page carries the three blocks
     # and the WACC components, and the sensitivity grid with its narrative lands on the following page.

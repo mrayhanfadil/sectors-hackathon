@@ -373,8 +373,16 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     # sensitivity_grid is fixed to its mid-year config default, and this deck publishes the year-end
     # convention (that is what the cover's DCF leg prints), so the loop is written here on purpose: the
     # base cell then has to equal the bridge above, which is a tie-out the gate checks.
+    #
+    # 19 Sep 2026: the grid used the FLAT `fcff_doc_bn` normalised series while the bridge above had
+    # already moved to the build-up path (see the Path A note on `primary`), so the centre cell read
+    # 838 against a base of 1.132 - the deck printed a "base case (Rp 1.132)" label over a grid whose
+    # own base cell was a different number, and tests/test_ammn_synt.py::test_sensitivity_matrix_is_25_live_dcf_cells
+    # caught it as `base_cell == valuation.methods[0].fv`. The grid now runs on the SAME series as the
+    # bridge (`build_fcff`), which is the tie-out this block always claimed. The flat normalised basis
+    # stays available as `sensitivity_alts["fcf_doc_steady"]` for the audit note.
     proj = pd.DataFrame(
-        {"FCFF": [fcff_doc_bn * scale for _ in PERIODS], "EBIT": [v * scale for v in ebit],
+        {"FCFF": [v * scale for v in build_fcff], "EBIT": [v * scale for v in ebit],
          "D&A": [v * scale for v in da_path]},
         index=range(1, len(PERIODS) + 1),
     )
@@ -386,11 +394,14 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     snapshot = {"cash": cash * scale, "total_debt": total_debt * scale, "minority": 0.0,
                 "ebitda": ebitda_fy25 * scale}
     data_stub = SimpleNamespace(shares_outstanding=shares_bn * scale, price=price)
+    # Last explicit build-up year drives the Gordon terminal FCFF (same input as the bridge leg).
+    build_fcff_last = float(build_fcff[-1])
     fv_rows: list[dict] = []
     for w in wacc_axis:
         row = {}
         for g_value in g_axis:
-            tv_cell = engine.terminal_value(fcff_doc_bn * scale, ebitda_fy25 * scale, w,
+            # Terminal FCFF = the last BUILD-UP year, same input the bridge's Gordon leg uses.
+            tv_cell = engine.terminal_value(build_fcff_last * scale, ebitda_fy25 * scale, w,
                                             terminal_g=g_value, flags=None)
             val_cell = engine.discount_and_value(proj, tv_cell, w, snapshot, data_stub, _Flags(),
                                                  mid_year=False) if tv_cell.get("valid") else {"valid": False}

@@ -167,7 +167,10 @@
   {% set ff = industry_page.foreign_flow or {} %}
   {% if ff.available %}
   {{ m.exhibit_auto(ns, "Arus Asing Harian (Rp md/hari)", ff.source) }}
-  {{ m.svg_foreign_flow(ff.dates, ff.values_bn, meta.ticker) }}
+  {# H=140 (not the 190 default): page 2 carries three rule-mandated paragraphs AND this
+     chart AND the data-source line. At 190pt the block overflowed the A4 box and the
+     source line landed alone on the next physical page (verify_house_format rule 1). #}
+  {{ m.svg_foreign_flow(ff.dates, ff.values_bn, meta.ticker, 140) }}
   {% else %}
   <p class="small muted">Grafik arus asing tidak tersedia: {{ ff.source }}. Sectors tidak menyediakan endpoint forex, sehingga tidak ada grafik USD/IDR yang bisa ditampilkan dari data berlisensi.</p>
   {% endif %}

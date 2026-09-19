@@ -852,10 +852,16 @@
   </svg>
 {%- endmacro %}
 
-{% macro svg_foreign_flow(dates, values_bn, ticker_label) -%}
+{% macro svg_foreign_flow(dates, values_bn, ticker_label, H=190) -%}
 {#- Daily net-foreign bars (Rp bn): inflow navy above zero, outflow muted-red below.
-    Weekly sampling keeps 62 sessions readable; geometry uses dot decimals. -#}
-  {% set W = 680 %}{% set H = 190 %}
+    Weekly sampling keeps 62 sessions readable; geometry uses dot decimals.
+    `H` is the SVG viewBox height in pt and is the page's only flexible gap: page 2
+    (industri/katalis/sentimen) must fit header + 3 rule-mandated paragraphs + this
+    chart + the data-source line + the footer inside one A4 box. At the 190pt default
+    the page overflowed and the source line orphaned onto the next physical page -
+    `scripts/verify_house_format.py` rule 1 caught it. Callers pass a smaller H when
+    their page is tight instead of dropping the source line. -#}
+  {% set W = 680 %}
   {% set pad_l = 52 %}{% set pad_r = 14 %}{% set pad_t = 26 %}{% set pad_b = 34 %}
   {% set chart_w = W - pad_l - pad_r %}{% set chart_h = H - pad_t - pad_b %}
   {% set NAVY = "#0928B1" %}{% set RULE = "#D9D9D9" %}{% set MUTED = "#666666" %}{% set OUT = "#B45309" %}

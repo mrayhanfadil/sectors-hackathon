@@ -257,6 +257,22 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
     try:
         dcf_res = calc_dcf(fcf_list, wacc_val, assum.get("g", 0.015), shares_out=assum.get("shares_out", 1e9), net_debt=assum.get("net_debt", 0), cash=assum.get("cash", 0))
         ev_res = ev_ebitda(assum.get("ebitda", 2000), assum.get("ev_multiple", 10), net_debt=assum.get("net_debt", 0), shares_out=assum.get("shares_out", 1e9), cash=assum.get("cash", 0))
+        # BOTH DCF bases ride in the payload (19 Sep 2026), because the deck publishes two and
+        # they answer different questions:
+        #   dcf_res            - BUILD-UP path (`fcf_buildup_series`): FY26F capex peak makes year
+        #                        1 negative. This is what page 5 Blok 1-3 prints and what the
+        #                        headline DCF leg reports.
+        #   dcf_normalised_res - flat steady-state FCFF alternative (`assum.fcf`), the basis the
+        #                        deep-dive block (cDcf / dcf_deep_dive) and the disclosed
+        #                        "normalised (alternatif, FLAT ...)" audit line carry.
+        # Until this key existed the alternative was reachable only by reading `cDcf`, so a
+        # comparison between the two surfaces looked like two unlabelled DCF numbers for the same
+        # company (tests/test_ammn_synt.py pinned that tie-out and caught the gap).
+        _flat_fcf = [float(x) * 1e9 for x in (assum.get("fcf") or [])]
+        dcf_normalised_res = calc_dcf(_flat_fcf, wacc_val, assum.get("g", 0.015),
+                                      shares_out=assum.get("shares_out", 1e9),
+                                      net_debt=assum.get("net_debt", 0),
+                                      cash=assum.get("cash", 0)) if _flat_fcf else None
         blended_res = None
         chosen = template_override or _template_for_inline(t, None)
         if chosen == "infra":
@@ -373,6 +389,7 @@ def _build_live_payload(ticker: str, template_override: Optional[str]) -> dict:
             "anchor_basis": fv_anchor["basis"],
             "legs": {
                 "dcf": (dcf_res.get("fv_per_share") if isinstance(dcf_res, dict) else None),
+                "dcf_normalised": (dcf_normalised_res or {}).get("fv_per_share"),
                 "ev_ebitda": (ev_res.get("fv_per_share") if isinstance(ev_res, dict) else None),
             },
             "methods": [

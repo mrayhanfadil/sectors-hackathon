@@ -131,31 +131,62 @@ def check(pdf: Path) -> dict:
         if n_src == 0 and exhibits:
             no_src.append(pno)
 
-        # Rule 3: the Sectors.app mark, same size and position on every page. Chromium
-        # paints an SVG logo as VECTOR PATHS (4 bars, ~32 path items) and a raster logo as
-        # an image XObject - so accept either, but require something SMALL in the
-        # top-right corner, otherwise the full-width
-        # header divider (height 0.8pt) counts as a logo. Detecting with get_images() alone
-        # reports a perfectly rendered vector logo as MISSING.
-        mark_band = pymupdf.Rect(page.rect.width * 0.6, 0, page.rect.width, height * 0.12)
+        # Rule 3: the Sectors.app mark, same size and position on every page.
+        #
+        # The mark is an inline SVG data URI, and Chromium splits it across two paint
+        # kinds: the LETTERS ("S" + "CTORAL" of the wordmark) become text runs, the
+        # three colour bars become filled vector parts. A detector that only inspects
+        # images/drawings therefore reports a perfectly rendered mark as MISSING -
+        # measured 19 Sep 2026: 13 of 14 physical pages failed while page 8 "passed"
+        # only because a 12.8pt chart gridline happened to cross the band. So accept
+        # the mark when the wordmark text OR a cluster of small filled parts is in the
+        # band, and inset the band from the page edge so a full-bleed rule cannot pass.
+        band = pymupdf.Rect(page.rect.width * 0.6, 0, page.rect.width - 1, page.rect.height * 0.12)
         has_mark = False
-        for im in page.get_images(full=True):
-            try:
-                r = pymupdf.Rect(page.get_image_bbox(im))
-            except Exception:
-                continue
-            if r.is_valid and r.intersects(mark_band):
-                has_mark = True
-                break
+
+        # (a) the wordmark, as painted text
+        try:
+            for w in page.get_text("words"):
+                wr = pymupdf.Rect(w[0], w[1], w[2], w[3])
+                if wr.intersects(band) and re.search(r"sector|ctoral", str(w[4]), re.I):
+                    has_mark = True
+                    break
+        except Exception:
+            pass
+
+        # (b) a raster logo (image XObject) in the band
         if not has_mark:
+            for im in page.get_images(full=True):
+                try:
+                    r = pymupdf.Rect(page.get_image_bbox(im))
+                except Exception:
+                    continue
+                if r.is_valid and r.intersects(band):
+                    has_mark = True
+                    break
+
+        # (c) the colour bars: >= 2 small filled parts clustered together. One stray
+        # rule/gridline is never enough, which is what kept the old check both
+        # over-strict (1.5pt bars rejected by a `height > 2` clause) and foolable.
+        if not has_mark:
+            parts: list = []
             try:
                 for d in page.get_drawings():
                     r = pymupdf.Rect(d["rect"])
-                    if r.intersects(mark_band) and r.width < page.rect.width * 0.4 and r.height > 2:
-                        has_mark = True
-                        break
+                    if not r.is_valid or not r.intersects(band):
+                        continue
+                    if r.width >= page.rect.width * 0.4:
+                        continue  # the full-width header divider
+                    parts.append(r)
             except Exception:
                 pass
+            for i, a in enumerate(parts):
+                for b in parts[i + 1:]:
+                    if abs(a.y0 - b.y0) < 30 and abs(a.x0 - b.x0) < 30:
+                        has_mark = True
+                        break
+                if has_mark:
+                    break
         if not has_mark:
             no_logo.append(pno)
 
