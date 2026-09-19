@@ -34,6 +34,10 @@ def _keyless_tmp_sectors_cache(tmp_path, monkeypatch):
 
     iso = SectorsCache(db_path=str(tmp_path / "sectors-iso.db"))
     monkeypatch.setattr(_S, "_cache", iso, raising=False)
+    # The collector mirrors into the SAME SQLite cache; without this pin a test run
+    # writes fixture rows (ZZZZ/YYYY) into the production data/agent_runs.db, where a
+    # later cache probe reads them as a warm cache for a ticker nobody pulled.
+    monkeypatch.setenv("SECTORS_CACHE_DB", str(tmp_path / "sectors-iso.db"))
     try:
         yield
     finally:

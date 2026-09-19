@@ -165,6 +165,23 @@ def _ticker_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
         return None
 
 
+def _sectors_cache():
+    """SectorsCache bound to SECTORS_CACHE_DB when set, else the app's DB.
+
+    The collector writes into the same SQLite cache the transport reads
+    (`_mirror_to_sectors_cache`) and reads from it for the freeze top-up. A test
+    suite must never write into the production DB - a 2026-09-19 run of the
+    collector tests left three `ZZZZ` rows (and a stale `ZZZZ` payload) in
+    `data/agent_runs.db`, which then made a cache probe report a warm cache for a
+    ticker no human ever pulled. The root conftest now pins SECTORS_CACHE_DB to a
+    tmp file; production leaves it unset and gets the real path.
+    """
+    from server.storage import SectorsCache  # late-bound to avoid an import cycle
+
+    db = os.getenv("SECTORS_CACHE_DB", "").strip()
+    return SectorsCache(db_path=db) if db else SectorsCache()
+
+
 def _cache_only_fill(ticker: str) -> Dict[str, Any]:
     """Disk-only fill for gaps a freeze does not carry (prices, quarterly rows).
 
@@ -180,9 +197,7 @@ def _cache_only_fill(ticker: str) -> Dict[str, Any]:
     """
     out: Dict[str, Any] = {}
     try:
-        from server.storage import SectorsCache
-
-        cache = SectorsCache()
+        cache = _sectors_cache()
     except Exception:
         return out
     try:
@@ -256,9 +271,9 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
     payload, never raises on failure, and never blocks the collector. Cache
     misses (e.g. freeze carries no prices) are simply skipped.
 
-    Each row gets the same TTL the upstream _get() uses (93 days = the
-    `_ttl_for()` default in server/storage.py), so the mirror stays warm
-    past the 4h file TTL until 93 days from now.
+    Each row gets the lifetime from `credit_policy.cache_ttl_seconds()` (forever by
+    default since 19 Sep 2026), so the mirror stays warm past the 4h file TTL
+    indefinitely - and never dies on a clock.
 
     Two sources feed the mirror:
       (a) the rendered payload (overview + dividends from freeze; prices +
@@ -276,7 +291,7 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
 
     t = _ticker_norm(ticker)
     try:
-        cache = SectorsCache()
+        cache = _sectors_cache()
     except Exception:
         return
 
