@@ -229,6 +229,57 @@ def audit_copy_budget(bodies: Iterable[Any]) -> list[str]:
     return []
 
 
+#: PLAIN-LANGUAGE RULE denylist: method-jargon tokens that must never reach a
+#: lay-reader surface (highlights, P1, thesis rail, risk details). The P3
+#: valuation paragraph keeps its gate-pinned markers and valuation/audit pages
+#: keep precise terms - those surfaces are never scanned, by design.
+PLAIN_JARGON = (
+    "CAGR", "deleveraging", "Deleveraging", "re-rating", "Re-rating",
+    "fresh ore", "Fresh ore", "anchor EV", "anchor ", "Anchor ",
+    "TTM print", "print 20", "capex", "Capex", "Upside", "upside",
+    "FCF", "qoq", "QoQ", "yoy ", "YoY ",
+)
+
+
+def audit_plain_language(payload: Optional[dict]) -> list[str]:
+    """Reader-facing copy stays plain Indonesian (PLAIN-LANGUAGE RULE).
+
+    Scans only lay surfaces: cover highlights, P1+P2 bodies, the P1 heading,
+    thesis headlines/details/labels, and risk details. A hit names the surface
+    and the token so the fix is mechanical (translate the wrapping, keep the
+    figure). The P3 valuation paragraph keeps its gate-pinned markers and is
+    never scanned; valuation/audit pages likewise.
+    """
+    fields: list[tuple[str, str]] = []
+    p = payload or {}
+    cover = p.get("cover") or {}
+    s1 = cover.get("slide1") or {}
+    for i, h in enumerate(s1.get("highlights") or [], 1):
+        fields.append((f"highlight {i}", _text(h)))
+    fp = s1.get("financial_para") or {}
+    fields.append(("P1 body", _text(fp.get("body"))))
+    fields.append(("P1 heading", _text(fp.get("heading"))))
+    fields.append(("P2 body", _text((cover.get("slide2") or {}).get("katalis", {}).get("body"))))
+    for i, t in enumerate(p.get("thesis") or [], 1):
+        if isinstance(t, dict):
+            fields.append((f"thesis {i} headline", _text(t.get("headline"))))
+            fields.append((f"thesis {i} detail", _text(t.get("detail"))))
+            fields.append((f"thesis {i} label", _text(t.get("stat_label"))))
+    for r in p.get("risks") or []:
+        if isinstance(r, dict):
+            fields.append((f"risk {str(r.get('bucket') or '?')}", _text(r.get("detail"))))
+    violations: list[str] = []
+    for surface, text in fields:
+        for token in PLAIN_JARGON:
+            if token and token in text:
+                violations.append(
+                    f"{surface} uses method jargon {token!r} - translate the wrapping "
+                    f"(PLAIN-LANGUAGE RULE), keep the figure"
+                )
+                break
+    return violations
+
+
 # ------------------------------------------------------------------ §9 Key Financials
 def audit_key_financials(kf: Optional[dict]) -> list[str]:
     out: list[str] = []
@@ -620,6 +671,7 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             (slide2.get("katalis") or {}).get("body", ""),
             (slide2.get("valuasi") or {}).get("body", ""),
         ])
+        violations += audit_plain_language(payload)
         violations += audit_key_financials(slide2.get("key_financials") or {})
     # Slide 2 of the deck is audited regardless of the cover spread: it is its own page.
     violations += audit_industry_page(payload.get("industry_page"), payload)

@@ -82,13 +82,14 @@ def _compliant_payload() -> dict:
                 "jci_chart": {"price": [1, 2, 3]},
                 "analyst": {"name": "RESEARCH", "title": "Equity Analyst"},
                 "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42×",
-                "highlights": ["Laba Rp 2,72 tn (-61,95% qoq)", "Tembaga US$ 14.708/ton",
+                "highlights": ["Laba Rp 2,72 tn (turun 61,95% dari kuartal sebelumnya)", "Tembaga US$ 14.708/ton",
                                "TP Rp 5.873 (+20,84%)"],
-                "financial_para": {"body": "Pendapatan Q1-2026 Rp 13,73 tn, -36,94% qoq."},
+                "financial_para": {"body": "Pendapatan Q1-2026 Rp 13,73 tn, turun 36,94% dari kuartal sebelumnya."},
             },
             "slide2": {
                 "katalis": {"body": (
-                    "Katalis terverifikasi: (1) smelter selesai; Dampak: capex turun 69,6% qoq. "
+                    "Katalis terverifikasi: (1) smelter selesai; Dampak: belanja modal turun 69,6% "
+                    "dari kuartal sebelumnya. "
                     "Dampak harga tembaga tidak dapat dikuantifikasi ke laba. "
                     "Priced-in: 24 bulan -33,40% relatif vs IHSG."
                 )},
@@ -1087,3 +1088,64 @@ def test_the_target_price_basis_is_reconciled_when_the_dcf_and_the_anchor_differ
 
     near = notes_for(3000.0, 3100.0)
     assert "BASIS TARGET PRICE" not in near, "the note fires even when the two bases agree"
+
+
+# ------------------------------------------------- PLAIN-LANGUAGE RULE (owner: lay readers)
+def _live_payload_for_plain():
+    from server.routers.pdf import _build_live_payload
+
+    return _build_live_payload("AMMN", None)
+
+
+def test_plain_language_gate_passes_on_the_live_payload():
+    from server.report.house_rules import audit_plain_language
+
+    assert audit_plain_language(_live_payload_for_plain()) == []
+
+
+def test_plain_language_gate_names_the_surface_and_token():
+    from server.report.house_rules import audit_plain_language
+
+    payload = _live_payload_for_plain()
+    payload["cover"]["slide1"]["highlights"][0] += " CAGR test"
+    violations = audit_plain_language(payload)
+    assert any("highlight 1" in v and "CAGR" in v for v in violations), violations
+
+
+def test_plain_language_rule_is_ticker_agnostic():
+    """A rule is a procedure, never one report's arithmetic: no company name,
+    no company figure inside the rule text."""
+    from agents.adk.agents import instructions as ins
+
+    text = ins.writer_instruction
+    start = text.index("PLAIN-LANGUAGE RULE")
+    end = text.index("Emit thesis.json")
+    block = text[start:end]
+    for forbidden in ("AMMN", "Amman", "Rp ", "12.961", "5.667", "27,7", "33,9"):
+        assert forbidden not in block, f"rule carries report arithmetic {forbidden!r}"
+
+
+def test_adk_narrative_agents_carry_the_plain_language_rule():
+    """Same shape as the page-2 runtime test: the instruction must reach the
+    agents that write, and stay away from the ones that calculate."""
+    import os
+
+    from agents.adk.app import build_graph
+
+    os.environ.setdefault("GOOGLE_API_KEY", "structure-only")
+    os.environ.setdefault("DEEPSEEK_API_KEY", "structure-only")
+    root = build_graph(ticker="AMMN")
+
+    carried: dict[str, str] = {}
+
+    def walk(agent) -> None:
+        carried[str(getattr(agent, "name", "?"))] = str(getattr(agent, "instruction", "") or "")
+        for sub in getattr(agent, "sub_agents", []) or []:
+            walk(sub)
+
+    walk(root)
+    for name in ("writer", "critic"):
+        assert name in carried, f"the ADK graph no longer builds a {name} agent"
+        assert "PLAIN-LANGUAGE RULE" in carried[name], f"{name} does not receive the plain-language rule"
+    for name in ("collector", "modeler"):
+        assert "PLAIN-LANGUAGE RULE" not in carried[name], f"{name} calculates, it should not carry narrative rules"

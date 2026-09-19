@@ -449,7 +449,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     fwd_mgn26 = fwd_mgn28 = fwd_cagr_eb = None
     fwd_fcf26 = fwd_fcf28 = fwd_cx26 = fwd_cx28 = fwd_db26 = fwd_db28 = None
     fwd_note_short = ""
-    fwd_basis_txt = "level normalised mid-cycle"
+    fwd_basis_txt = "rata-rata level normal"
     try:
         _drv_path = REPO_ROOT / "data" / "drivers" / "AMMN.json"
         if _drv_path.exists():
@@ -514,11 +514,12 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             f"lihat tabel Key Financials."
         )
         _fwd_b2 = (
-            f"Kas bebas dan deleveraging FY26F-28F tidak terverifikasi di file driver - "
+            f"Kas bebas dan pelunasan utang FY26F-28F tidak terverifikasi di file driver - "
             f"lihat Exhibit kas dan neraca."
         )
         _fwd_b3 = (
-            f"TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) anchor EV/EBITDA FY26F."
+            f"Target harga Rp {_idn(tp_int, 0)} ({rating}, potensi naik {_idn(upside, 2)}%): "
+            f"patokan atas laba 2026."
         )
     rbox["key_takeaways"] = [_fwd_b1, _fwd_b2, _fwd_b3]
     cover["summary"] = (
@@ -762,7 +763,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         _th_earn_d = (
             f"Pendapatan Rp {_idn(fwd_rev26 / 1000, 1)} tn → Rp {_idn(fwd_rev28 / 1000, 1)} tn; "
             f"marjin EBITDA {_idn(fwd_mgn26, 1)}%→{_idn(fwd_mgn28, 1)}%. {fwd_note_short} "
-            f"Basis: {fwd_basis_txt} (data/drivers/AMMN.json)."
+            f"Basis: {fwd_basis_txt}."
         )
         _th_earn_s, _th_earn_l = f"{_idn(fwd_cagr_eb, 1)}%", "Tumbuh laba FY26F-28F"
     else:
@@ -777,21 +778,21 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         )
         _th_cash_d = (
             f"Utang bruto Rp {_idn(fwd_db26 / 1000, 1)} tn → Rp {_idn(fwd_db28 / 1000, 1)} tn; "
-            f"capex normalisasi Rp {_idn(fwd_cx26 / 1000, 1)} tn → Rp {_idn(fwd_cx28 / 1000, 1)} tn "
-            f"(post-build). Beban bunga turun mengikuti jalur pelunasan, bukan kupon flat."
+            f"belanja modal normal Rp {_idn(fwd_cx26 / 1000, 1)} tn → Rp {_idn(fwd_cx28 / 1000, 1)} tn "
+            f"(smelter selesai). Beban bunga turun mengikuti pelunasan, bukan kupon tetap."
         )
-        _th_cash_s, _th_cash_l = f"Rp {_idn(fwd_fcf28 / 1000, 1)} tn", "FCF FY28F"
+        _th_cash_s, _th_cash_l = f"Rp {_idn(fwd_fcf28 / 1000, 1)} tn", "Kas bebas FY28F"
     else:
-        _th_cash_h = "Arus kas dan deleveraging FY26F-28F tidak terverifikasi"
-        _th_cash_d = ("FCF, utang, dan capex FY26F-28F tidak terverifikasi di file driver - lihat Exhibit kas "
-                      "dan neraca (LOUD policy).")
+        _th_cash_h = "Arus kas dan pelunasan utang FY26F-28F tidak terverifikasi"
+        _th_cash_d = ("Kas bebas, utang, dan belanja modal FY26F-28F tidak terverifikasi di file driver - "
+                      "lihat Exhibit kas dan neraca (LOUD policy).")
         _th_cash_s, _th_cash_l = "FY26F-28F", "Horizon proyeksi"
     if _c0:
         _th_cat_h = f"Katalis ke depan: {_c0.get('name')}" + (f" + {_c1.get('name')}" if _c1 else "")
         _th_cat_bits = []
         if _c0q.get("shares"):
             _th_cat_bits.append(
-                f"cluster-buy {_c0q.get('shares')} sh"
+                f"cluster-buy {_c0q.get('shares')} saham"
                 + (f" @ {_c0q.get('avg_price')}" if _c0q.get("avg_price") else "")
                 + (f" ({_c0q.get('by')})" if _c0q.get("by") else "")
                 + f" - {_c0.get('effect') or 'sinyal keyakinan insider'}"
@@ -896,18 +897,18 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "source": "Sectors segments FY2024 + bloombergtechnoz 9 Sep 2026"},
         {"bucket": "Leverage",
          "detail": (f"Rencana melunasi utang FY26F-28F (utang Rp {_idn(fwd_db26 / 1000, 1) if fwd_db26 else '-'} tn → "
-                    f"Rp {_idn(fwd_db28 / 1000, 1) if fwd_db28 else '-'} tn) bergantung pada FCF Rp "
+                    f"Rp {_idn(fwd_db28 / 1000, 1) if fwd_db28 else '-'} tn) bergantung pada kas bebas Rp "
                     f"{_idn(fwd_fcf26 / 1000, 1) if fwd_fcf26 else '-'} tn → Rp {_idn(fwd_fcf28 / 1000, 1) if fwd_fcf28 else '-'} tn; "
                     f"posisi awal Q1-2026: utang bruto Rp {f2(float(q0.get('total_debt') or 0) / 1e12)} tn vs kas Rp "
-                    f"{f2(float(q0.get('cash_only') or 0) / 1e12)} tn, net-debt/EBITDA TTM "
+                    f"{f2(float(q0.get('cash_only') or 0) / 1e12)} tn, net-debt/EBITDA 4 kuartal terakhir "
                     f"{f1(ttm_netd_ebitda)}×."),
          "source": "data/drivers/AMMN.json + Sectors quarterly 8Q + annual FY2025"},
-        {"bucket": "Arus kas bebas negatif (smelter build)",
-         "detail": (f"Jalur FCF FY26F-28F (Rp {_idn(fwd_fcf26 / 1000, 1) if fwd_fcf26 else '-'} tn → Rp "
+        {"bucket": "Arus kas bebas negatif (masa bangun smelter)",
+         "detail": (f"Jalur kas bebas FY26F-28F (Rp {_idn(fwd_fcf26 / 1000, 1) if fwd_fcf26 else '-'} tn → Rp "
                     f"{_idn(fwd_fcf28 / 1000, 1) if fwd_fcf28 else '-'} tn) bergantung pada akhir belanja smelter; "
-                    f"basis TTM −Rp {f2(abs(ttm.get('free_cash_flow', 0)) / 1e12)} tn (capex TTM Rp "
-                    f"{f2(ttm.get('capital_expenditure', 0) / 1e12)} tn), Q1-2026 sudah capex Rp 1,60 tn dan "
-                    f"FCF +Rp 1,69 tn."),
+                    f"basis 4 kuartal terakhir −Rp {f2(abs(ttm.get('free_cash_flow', 0)) / 1e12)} tn (belanja modal Rp "
+                    f"{f2(ttm.get('capital_expenditure', 0) / 1e12)} tn), Q1-2026 sudah belanja modal Rp 1,60 tn dan "
+                    f"kas bebas +Rp 1,69 tn."),
          "source": "data/drivers/AMMN.json + Sectors quarterly 8Q (TTM ke 2026-03-31)"},
         {"bucket": "Risiko aliran dana event indeks",
          "detail": ("Rebalancing VanEck GDX/GDXJ 12 Sep 2026 menekan saham emas (−1,02% AMMN 10 Sep 2026); "

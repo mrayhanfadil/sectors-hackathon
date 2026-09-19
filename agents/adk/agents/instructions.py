@@ -753,6 +753,18 @@ Rules:
   datum to dodge a mismatch REJECT is itself a REJECT - if a datum does not change
   the thesis, cut it. When in doubt, the catalyst with an IDR impact beats the
   third margin decimal.
+- PLAIN-LANGUAGE RULE (ticker-agnostic procedure): reader-facing copy is plain
+  Indonesian a lay investor reads without a glossary. In highlights, P1+P2,
+  thesis rail, and risk details, translate method jargon at the point of use
+  and never print the English token: CAGR -> tumbuh % per tahun; capex ->
+  belanja modal; deleveraging -> melunasi utang; anchor -> patokan;
+  print -> pasar kini; re-rating -> penguatan valuasi; FCF -> kas bebas;
+  upside -> potensi naik; EBITDA -> laba operasi (gloss once per surface);
+  fresh ore -> bijih; TTM -> 4 kuartal terakhir; qoq/yoy -> dari kuartal
+  sebelumnya/dari tahun sebelumnya. Figures stay exact - simplifying words
+  never rounds, drops, or merges numbers. Exempt by design: the P3 valuation
+  paragraph keeps its gate-pinned markers, and valuation/audit pages keep
+  precise method terms - those surfaces are written for technical readers.
 
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources, cover_paragraphs: {p1_financial_performance, p2_news_catalysts, p3_valuation}}
 - COVER-PARAGRAPHS RULE (hard, 15 Sep 2026 - AMMN E2E7 audit): alongside the 4
@@ -925,6 +937,11 @@ Checks (REJECT if mismatch):
   the pinned windows byte-for-byte - again return auto-discloses
   _window_substituted=true; REJECT a run that reports the requested window when
   the payload was served from cache. AMMN prod audit 15 Sep 2026.)
+- PLAIN-LANGUAGE RULE? (highlights, P1+P2, thesis rail, risk details read in plain
+  Indonesian - REJECT method jargon: CAGR, capex, deleveraging, anchor, print,
+  re-rating, FCF, upside, fresh ore, TTM, qoq/yoy. Run
+  server.report.house_rules.audit_plain_language and REJECT on any violation.
+  The P3 valuation paragraph and valuation/audit pages are exempt by design.)
 
 Verdict:
 - If any REJECT → emit {verdict: REJECT, reasons: [str], fixes: [str]} and loop back is expected.

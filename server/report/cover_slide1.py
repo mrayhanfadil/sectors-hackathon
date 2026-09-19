@@ -457,8 +457,15 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
                      "bisa dinyatakan (LOUD policy).")
 
+    # Heading stays a plain label (PLAIN-LANGUAGE RULE): no qoq/yoy tokens.
+    _chg_ni = _chg(ni, prev["earnings"]) if (prev and prev.get("earnings")) else None
+    if isinstance(_chg_ni, (int, float)):
+        _arah = "naik" if _chg_ni > 0 else "turun"
+        _chg_txt = f" ({_arah} {_n(abs(_chg_ni), 2)}% dari kuartal sebelumnya)"
+    else:
+        _chg_txt = ""
     heading = (f"{_qtag(cur.get('date'))}: laba {_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}"
-               + (f" ({_pct(_chg(ni, prev['earnings']))} qoq)" if prev and prev.get("earnings") else "")
+               + _chg_txt
                + (f", marjin kotor {_n(gp / rev * 100, 1)}%" if isinstance(gp, (int, float))
                   and isinstance(rev, (int, float)) and rev else ""))
     return {"heading": heading, "body": " ".join(parts), "source": src}

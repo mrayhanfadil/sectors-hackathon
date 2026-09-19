@@ -312,9 +312,9 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
         parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
 
     parts.append(
-        "Dampak: capex Q1-2026 turun 69,6% qoq (Rp 5,26 tn ke Rp 1,60 tn) dan arus kas bebas "
-        "berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal sustaining Rp 6,39 tn/tahun - "
-        "bukan upside baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
+        "Dampak: belanja modal Q1-2026 turun 69,6% dari kuartal sebelumnya (Rp 5,26 tn ke Rp 1,60 tn) "
+        "dan arus kas bebas berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal rutin Rp 6,39 tn/tahun - "
+        "bukan potensi naik baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
         "rekor tidak dapat dikuantifikasi ke laba (pipeline tanpa tonase/grade/C1, GAP G10) - "
         "yang tersedia hanya sensitivitas EBITDA di paragraf Valuasi."
     )
@@ -355,7 +355,7 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
         ev_eb_str = f"{ttm_ev_eb:.2f}".replace(".", ",") if ttm_ev_eb else "n/a"
         parts.append(
             "Priced-in: " + "; ".join(priced) +
-            f" - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA TTM (print 2026) {ev_eb_str}× masih ~37% "
+            f" - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA pasar kini {ev_eb_str}× masih ~37% "
             "di bawah rata-rata 4 tahun 28,42×."
         )
     return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
