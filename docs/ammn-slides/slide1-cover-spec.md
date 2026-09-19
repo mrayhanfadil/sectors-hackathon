@@ -118,7 +118,7 @@ Surfaces (all of them live on the cover spread) and their status:
 | 3 highlight bullets | `cover.rating_box.key_takeaways` | awam; each bullet still carries a number |
 | P1 heading + body | `server/report/cover_slide1.py::_financial_para` | awam; max 1 bridging quarter sentence |
 | P2 body | `cover.slide2.katalis.body` | awam wrapper; market facts keep their market terms |
-| P3 body | `cover.slide2.valuasi.body` | KEEPS its gate-pinned method markers; never scanned |
+| P3 body | `cover.slide2.valuasi.body` | **discan juga** (19 Sep 2026, owner: "bungkus juga, biar enak bacanya"), dengan `VALUASI_MANDATE_TOKENS` di-carve-out by name |
 | Thesis rail + risk details | `payload.thesis`, `payload.risks` | awam |
 
 Glossary (what the deck printed -> what it prints now):

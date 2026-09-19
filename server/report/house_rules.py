@@ -339,6 +339,8 @@ PLAIN_JARGON = (
     "Basis ", "mid-cycle", "Mid-cycle", "Cluster-buy", "cluster-buy",
     "insider", "Insider", "Rebalancing", "rebalancing", "run-rate", "Run-rate",
     "kualitatif", "Kualitatif", "multiple", "Multiple", "exit multiple",
+    # the mirror of "upside": the P3 rewrite dropped it, so the list must catch it coming back
+    "downside", "Downside",
 )
 
 #: Code-shaped tokens caught by pattern (the literal list cannot enumerate year/quarter tags).
@@ -347,14 +349,28 @@ PLAIN_JARGON_PATTERNS = (
     r"\bQ[1-4][- ]20\d\d\b",
 )
 
+#: Paragraph 3's own mandate requires four markers verbatim, two of which are ON the jargon
+#: list ("CAGR" and the FY tag). They are carved out by name before P3 is scanned - the
+#: mandate wins - and the carve-out is written down here so it cannot quietly grow.
+VALUASI_MANDATE_TOKENS = ("CAGR EBITDA FY26F-FY28F", "FY26F-FY28F", "CAGR")
+
+
+def _plain_scan_text(text: str, carve_outs: tuple[str, ...] = ()) -> str:
+    """The text as the jargon scan sees it: the mandated markers removed, nothing else."""
+    out = text
+    for token in carve_outs:
+        out = out.replace(token, " ")
+    return out
+
 
 def audit_plain_language(payload: Optional[dict]) -> list[str]:
     """Reader-facing copy stays plain Indonesian (PLAIN-LANGUAGE RULE).
 
     Scans only lay surfaces: the cover theme title, cover highlights, P1+P2 bodies, the P1
     heading, thesis headlines/details/labels, and risk details. A hit names the surface and the
-    token so the fix is mechanical (translate the wrapping, keep the figure). The P3 valuation
-    paragraph keeps its gate-pinned markers and is never scanned; valuation/audit pages likewise.
+    token so the fix is mechanical (translate the wrapping, keep the figure). P3 (valuation)
+    joined the set with its four mandated markers carved out by name (VALUASI_MANDATE_TOKENS);
+    valuation/audit pages stay out of scope.
 
     AWAM RULE (19 Sep 2026): the theme title joined the scanned set - it is the headline a lay
     reader meets first, and it carried exactly the tokens this rule exists to stop
@@ -371,6 +387,10 @@ def audit_plain_language(payload: Optional[dict]) -> list[str]:
     fields.append(("P1 body", _text(fp.get("body"))))
     fields.append(("P1 heading", _text(fp.get("heading"))))
     fields.append(("P2 body", _text((cover.get("slide2") or {}).get("katalis", {}).get("body"))))
+    # P3 joined the scanned set on the owner's call ("bungkus juga, biar enak bacanya"), with the
+    # four mandated markers carved out by name - see VALUASI_MANDATE_TOKENS.
+    fields.append(("P3 body", _plain_scan_text(
+        _text((cover.get("slide2") or {}).get("valuasi", {}).get("body")), VALUASI_MANDATE_TOKENS)))
     for i, t in enumerate(p.get("thesis") or [], 1):
         if isinstance(t, dict):
             fields.append((f"thesis {i} headline", _text(t.get("headline"))))

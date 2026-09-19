@@ -416,11 +416,12 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     wacc_pct = as_pct(wacc)
     eb_fy26 = (raw.get("ebitda") or [None, None, None])[2] if raw.get("ebitda") else None
     eb_val_tn = _div(eb_fy26, 1000) if (eb_fy26 is not None) else _div(mid_eb, 1000)
-    eb_label = f"EBITDA FY26F Rp {_num(eb_val_tn, 2)} tn" if eb_fy26 else f"EBITDA mid-cycle Rp {_num(eb_val_tn, 2)} tn"
+    eb_label = (f"Rp {_num(eb_val_tn, 2)} tn" if eb_fy26
+                else f"Rp {_num(eb_val_tn, 2)} tn (rata-rata siklus)")
     parts.append(
-        f"Kami menetapkan TP Rp {_num(fv, 0)} menggunakan {method} dengan exit multiple "
-        f"{_num(multiple, 2)}× atas {eb_label}; leg DCF "
-        f"(WACC {_num(wacc_pct, 2)}%, g {_num((g or 0) * 100, 1)}%) dihitung sebagai pembanding."
+        f"TP Rp {_num(fv, 0)} kami tetapkan menggunakan patokan EV/EBITDA 2026: laba operasi "
+        f"2026 {eb_label} dikali {_num(multiple, 2)} kali. DCF (WACC {_num(wacc_pct, 2)}%, "
+        f"tumbuh {_num((g or 0) * 100, 1)}%/tahun) sebagai pembanding."
     )
     # 2. forecast linkage
     eb = [v for v in (raw.get("ebitda") or []) if isinstance(v, (int, float))]
@@ -431,8 +432,8 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         rev_cagr = ((rev[4] / rev[1]) ** (1 / 3) - 1) * 100 if len(rev) == 5 and rev[1] else None
         cagr_str = f"CAGR EBITDA FY26F-FY28F {_pct(cagr_26_28)}" if cagr_26_28 is not None else "CAGR EBITDA FY26F-FY28F 0,0%"
         parts.append(
-            f"TP ini mengimplikasikan {cagr_str}, setara {_pct(cagr_25_28)}/tahun dari EBITDA FY25A "
-            f"Rp {_num(_div(eb[1], 1000), 2)} tn; revenue {_pct(rev_cagr)}/tahun."
+            f"Setara dengan {cagr_str}, yaitu {_pct(cagr_25_28)}/tahun dari laba operasi 2025 "
+            f"Rp {_num(_div(eb[1], 1000), 2)} tn; penjualan {_pct(rev_cagr)}/tahun."
         )
     # 3. trading multiple at TP
     per_f = None
@@ -443,12 +444,12 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
     ev_eb_28 = _div(ev_at_tp, eb[4]) if (len(eb) == 5 and eb[4]) else _div(ev_at_tp, mid_eb)
     parts.append(
-        f"Pada TP, saham dihargai EV/EBITDA 2028F "
-        f"{_num(ev_eb_28, 1)}× dibandingkan "
-        f"rata-rata historis 4 tahun {_num(multiple, 2)}× (band {_num(sens.get('low'), 2)}×-"
-        f"{_num(sens.get('high'), 2)}×) atau PER 2026F {_num(per_f, 1)}× vs PE subsector "
-        f"{_num(peer_pe, 2)}× - peer EV/EBITDA tidak tersedia, jadi TP bergantung pada "
-        f"re-rating EV/EBITDA, bukan PER."
+        f"Pada TP, saham dihargai EV/EBITDA 2028 {_num(ev_eb_28, 1)} kali dibandingkan "
+        f"rata-rata historis 4 tahun {_num(multiple, 2)} kali (skenario "
+        f"{_num(sens.get('low'), 2)}-{_num(sens.get('high'), 2)} kali) atau PER 2026 "
+        f"{_num(per_f, 1)} kali (harga dibagi laba), sementara industri sejenis "
+        f"(peer) {_num(peer_pe, 2)} kali - EV/EBITDA pembanding industri tidak tersedia, jadi "
+        f"TP bergantung pada kenaikan penilaian EV/EBITDA, bukan PER."
     )
     # 4. risks to the view
     down_eb = mid_eb * 0.9 if isinstance(mid_eb, (int, float)) else None
@@ -463,17 +464,17 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         # one concrete instance, not the whole insider-selling ledger
         first = re.split(r"\s+dan\s+", first)[0].strip()
         first = re.sub(r"([\d.]{7,})(?=\s*sh)", _shares_to_juta, first)
+        first = re.sub(r"\bsh\b", "lembar", first)
         if bucket:
-            bucket = {"Distribusi insider": "insider selling", "Insider distribution": "insider selling"}.get(
-                bucket, bucket)
+            bucket = {"Distribusi insider": "penjualan oleh orang dalam",
+                      "Insider distribution": "penjualan oleh orang dalam"}.get(bucket, bucket)
             risk_tail = f"; (c) {bucket}: {first}" if first else f"; (c) {bucket}"
     parts.append(
-        f"Risiko terhadap pandangan ini: (a) downside - tembaga atau emas turun 10% menekan "
-        f"EBITDA mid-cycle 10%, TP turun ke Rp {_num(fv_down, 0)} "
-        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) downside - "
-        f"multiple bertahan di print 2026 "
-        f"{_num(assum.get('ev_multiple_latest_print'), 2)}×, TP jatuh ke Rp "
-        f"{_num(fv_print, 0)}{risk_tail}."
+        f"Risiko terhadap pandangan ini: (a) harga turun - tembaga atau emas -10% menekan "
+        f"laba operasi siklus menengah 10%, TP turun ke Rp {_num(fv_down, 0)} "
+        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) harga saham "
+        f"bertahan di {_num(assum.get('ev_multiple_latest_print'), 2)} kali sekarang, TP jatuh "
+        f"ke Rp {_num(fv_print, 0)}{risk_tail}."
     )
     return {"heading": "Valuasi", "body": " ".join(parts)}
 
