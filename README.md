@@ -66,11 +66,18 @@ Project code will live under `experiment/<track-slug>/` once we commit code (see
 
 ### Institutional Typography & PDF Engine
 Research publication reports are rendered to PDF by a headless Chromium pass over the
-Jinja/HTML templates (`server/routers/pdf.py`), using formal corporate research typography
-tokens:
-- **Serif Body:** Source Serif 4 (`assets/fonts/SourceSerif4-VF.ttf`)
-- **Sans-Serif UI / Headings:** Inter (`assets/fonts/Inter-VF.ttf`)
+Jinja/HTML templates (`server/routers/pdf.py`), using the Sectoral design system's typography
+(`docs/design-system-friend.md`):
+- **Body:** Roboto - the only body face the design system allows, in every weight the deck asks
+  for (`assets/fonts/Roboto-*.ttf`, declared in `templates/macros.html`)
+- **Serif accents:** Source Serif 4 (`assets/fonts/SourceSerif4-VF.ttf`)
 - **Monospace / Numerics:** JetBrains Mono (`assets/fonts/JetBrainsMono-VF.ttf`)
+
+Font files are NOT committed (`.gitignore` excludes `assets/fonts/*.ttf` - binaries, fetched
+once). Run `python scripts/fetch_house_fonts.py` after cloning; without it the renderer silently
+falls back to whatever the base image ships, which is how the deck spent weeks set in Liberation
+Sans while the CSS asked for Roboto. `docker/api.Dockerfile` fails the build if the Roboto faces
+are not visible to fontconfig.
 
 See [`docs/valuation-framework.md`](docs/valuation-framework.md) for the valuation methodology, gate architecture, and full presentation standards.
 

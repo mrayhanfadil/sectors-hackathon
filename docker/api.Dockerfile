@@ -34,7 +34,8 @@ COPY assets/fonts/ /usr/share/fonts/truetype/house/
 RUN fc-cache -f >/dev/null \
     && fc-list | grep -ci "ibm plex\|source serif\|jetbrains" | sed 's/^/house fonts installed: /' \
     && fc-list | grep -ci "roboto" | sed 's/^/roboto faces installed: /' \
-    && test "$(fc-list | grep -ci 'roboto')" -ge 6
+    && test "$(fc-list | grep -ci 'roboto')" -ge 6 \
+    || { echo "FAIL: Roboto not visible to fontconfig. assets/fonts/*.ttf is gitignored - run 'python scripts/fetch_house_fonts.py' and rebuild."; exit 1; }
 
 # 3. The base image ships three browsers (~3.4 GB); the app launches chromium only (server/routers/pdf.py). Dropping
 #    firefox and webkit takes about a gigabyte off the image and costs nothing, because nothing can reach for them.
