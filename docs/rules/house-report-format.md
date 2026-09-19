@@ -352,3 +352,35 @@ other family ships in the report surfaces.
 Guarded by `tests/test_design_system_sectoral.py` (source wiring) and the sectoral
 checks in `scripts/verify_house_format.py` (printed PDF: Roboto used, primary present).
 
+
+## 14. Plain language (reader-facing surfaces)
+
+Rule (owner call, 19 Sep 2026): every surface a lay investor reads is written in plain
+Indonesian. Translate the METHOD, never the FIGURE - a number is exact or it is a
+fabrication, so plain wording never rounds, drops, merges or re-derives one.
+
+Surfaces: cover theme title, cover highlights, paragraph 1 (financial performance),
+paragraph 2 (news/sentiment/catalysts), paragraph 3 (valuation) except its four mandated
+markers, the thesis rail, risk details, the industry page prose, the KPI prose and the SOTP
+prose. Valuation/audit page TABLES keep precise method terms - they are read by analysts -
+but their sentences still obey the rule.
+
+Banned tokens and code-shaped year tags: `server/report/house_rules.py::PLAIN_JARGON` and
+`PLAIN_JARGON_PATTERNS` are the executable list. The agent instruction
+(`agents/adk/agents/instructions.py::PLAIN_LANGUAGE_RULE`) carries the same list and
+`tests/test_plain_language_instructions.py` fails if the two drift apart, so a token added
+to the gate must be added to the instruction in the same commit.
+
+Carve-out: paragraph 3's mandate requires `CAGR` and `CAGR EBITDA FY26F-FY28F` verbatim.
+Those are carved out BY NAME (`VALUASI_MANDATE_TOKENS`) and everything else in P3 is scanned;
+the carve-out cannot be used to smuggle jargon in beside them.
+
+Roster: the ADK agents that write or judge printed prose carry the rule - writer, critic,
+industry, kpi, analyst, risk, sotp. Agents that gather, compute or design (collector,
+modeler, news_harvester, the search sub-agents, visualizer, adversarial) do not: a narrative
+rule on a calculator dilutes the agents whose output reaches a reader. Both directions are
+pinned by tests, so a new agent either gets the rule or fails the build.
+
+Enforcement: `server/report/house_rules.py::audit_plain_language` runs inside
+`audit_house_rules` on the shipped payload (render path + Critic). A hit names the surface
+and the token and flips the verdict to REJECT - a blocked publication, not a style note.

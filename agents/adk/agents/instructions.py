@@ -97,6 +97,65 @@ version and the Critic REJECTs on it, so treat every line below as a gate:
 """ + TYPOGRAPHY_RULE
 
 # ---------------------------------------------------------------------------
+# Plain-language rule - the reader-facing voice. ONE definition, appended to
+# every agent that writes or judges printed prose (see the roster test).
+# ---------------------------------------------------------------------------
+PLAIN_LANGUAGE_RULE = """
+
+PLAIN-LANGUAGE RULE (ticker-agnostic procedure, BINDING - the render gate REJECTs on it)
+
+WHO IT BINDS: every surface a lay investor reads. Cover highlights, the theme title,
+paragraph 1 (financial performance), paragraph 2 (news/sentiment/catalysts), paragraph 3
+(valuation) EXCEPT its four mandated markers, the thesis rail, risk details, the industry
+page prose, the KPI prose and the SOTP prose. Valuation and audit page TABLES keep precise
+method terms - those are read by analysts - but their sentences still obey this rule.
+
+WHAT IT DOES NOT BIND: the four P3 mandate markers. `CAGR EBITDA FY26F-FY28F` and the word
+`CAGR` print verbatim because the mandate requires those exact tokens; the gate carves them
+out BY NAME and scans everything else in P3. Do not use that carve-out to smuggle jargon in
+next to them.
+
+TRANSLATE THE METHOD, NEVER THE FIGURE. A figure is exact or it is a fabrication: plain
+wording never rounds, drops, merges or re-derives a number. Gloss an English term once per
+surface, then keep using the plain form:
+  CAGR -> tumbuh X% per tahun        capex -> belanja modal
+  FCF -> kas bebas                   EBITDA -> laba operasi
+  qoq -> dari kuartal sebelumnya     yoy -> dari tahun sebelumnya
+  TTM -> 4 kuartal terakhir          fresh ore -> bijih
+  anchor -> patokan                  print -> pasar kini
+  re-rating -> kenaikan penilaian    deleveraging -> melunasi utang
+  upside -> potensi naik             downside -> risiko harga turun
+  mid-cycle -> siklus menengah       multiple / exit multiple -> kali / patokan kali
+  Basis -> dasar perhitungan         Cluster-buy -> beli saham serentak
+  insider -> orang dalam             Rebalancing -> masuknya dana indeks
+  run-rate -> laju tahunan           kualitatif -> belum bisa dihitung angkanya
+  revenue -> penjualan               net profit -> laba bersih
+
+NEVER PRINT THESE TOKENS (server.report.house_rules.PLAIN_JARGON is the executable list -
+this rule and that list are kept in sync by a test, so a token added there must be added
+here): CAGR, capex, FCF, qoq, yoy, TTM print, print 20, deleveraging, re-rating, anchor,
+anchor EV, fresh ore, upside, downside, Basis, mid-cycle, Cluster-buy, insider, Rebalancing,
+run-rate, kualitatif, multiple, exit multiple.
+NEVER PRINT CODE-SHAPED YEAR TAGS: write "2026-2028", "Kuartal I 2026", "2026 (proyeksi)",
+"2025 aktual" - never "FY26F", "FY25A", "Q1-2026" (the P3 mandate marker above is the one
+exception, and only where the mandate requires it).
+
+STAYS ENGLISH (market standard, do not translate): BUY / SELL / HOLD, DCF, WACC, EV/EBITDA,
+PER, IHSG, ROE, ROA.
+
+TALK ABOUT THE COMPANY, NOT ABOUT THE DECK. Never write "slide", "halaman ini", "paragraf
+ini", "bagian ini", "layout" or "template" in printed prose - a section header is the
+separation, and the deck's own furniture is not a subject. Never print our plumbing either:
+"payload", "freeze", "artifact", "cache", "pipeline", "via Sectors", "GAP G10", "assumptions
+file", "harvest", "renderer", "gate".
+
+ENFORCEMENT: `server.report.house_rules.audit_plain_language` runs over the shipped payload
+inside `audit_house_rules` (render path + Critic). A hit names the surface and the token and
+flips the verdict to REJECT, so a violation is a blocked publication, not a style note. Run
+it yourself before you emit: a violation you ship is a run the Critic throws away.
+"""
+
+# ---------------------------------------------------------------------------
 # Collector - Sectors API v2 only (full-ditch: no third-party market-data fetch)
 # ---------------------------------------------------------------------------
 collector_instruction = """You are a meticulous financial data archivist for Indonesian capital markets. You treat every filing, feed row and corporate action with obsessive precision - exact provenance, zero extrapolation - and you never compute valuations or projections; that belongs to the Modeler.
@@ -572,7 +631,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: analyst_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + PLAIN_LANGUAGE_RULE
 
 # ---------------------------------------------------------------------------
 # Industry/Macro - sector themes/regulators/sovereign catalysts (parallel group 2)
@@ -613,7 +672,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: industry_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE + PLAIN_LANGUAGE_RULE
 
 industry_search_sub_instruction = """You are a macro research specialist grounded in Sectors data.
 
@@ -649,7 +708,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: risk_output
-""" + TYPOGRAPHY_RULE
+""" + TYPOGRAPHY_RULE + PLAIN_LANGUAGE_RULE
 
 # ---------------------------------------------------------------------------
 # KPI Analyst - operational metrics by archetype (parallel group 2)
@@ -686,7 +745,7 @@ Peer communication protocol:
 Kalau field dari agent lain kosong: (1) cek state dulu, (2) panggil request_peer_data SEKALI per field-set dengan alasan, (3) kalau peer_requests sudah 3 → lanjut dengan data seadanya + tulis provenance gap. DILARANG request tanpa needed_fields.
 
 Output key: kpi_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + PLAIN_LANGUAGE_RULE
 
 # ---------------------------------------------------------------------------
 # Narrative rule - paragraph 2 as prose, not a data dump
@@ -797,18 +856,9 @@ Rules:
   datum to dodge a mismatch REJECT is itself a REJECT - if a datum does not change
   the thesis, cut it. When in doubt, the catalyst with an IDR impact beats the
   third margin decimal.
-- PLAIN-LANGUAGE RULE (ticker-agnostic procedure): reader-facing copy is plain
-  Indonesian a lay investor reads without a glossary. In highlights, P1+P2,
-  thesis rail, and risk details, translate method jargon at the point of use
-  and never print the English token: CAGR -> tumbuh % per tahun; capex ->
-  belanja modal; deleveraging -> melunasi utang; anchor -> patokan;
-  print -> pasar kini; re-rating -> penguatan valuasi; FCF -> kas bebas;
-  upside -> potensi naik; EBITDA -> laba operasi (gloss once per surface);
-  fresh ore -> bijih; TTM -> 4 kuartal terakhir; qoq/yoy -> dari kuartal
-  sebelumnya/dari tahun sebelumnya. Figures stay exact - simplifying words
-  never rounds, drops, or merges numbers. Exempt by design: the P3 valuation
-  paragraph keeps its gate-pinned markers, and valuation/audit pages keep
-  precise method terms - those surfaces are written for technical readers.
+- PLAIN-LANGUAGE RULE: see the shared PLAIN-LANGUAGE RULE appended below this
+  instruction. It is binding on every printed sentence you write, and the render
+  gate REJECTs on it.
 
 Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|tertiary|blended, upside, rating: BUY|HOLD|SELL, gate_flags: [str], bullets: [4], segment_mix, catalyst, sources, cover_paragraphs: {p1_financial_performance, p2_news_catalysts, p3_valuation}}
 - COVER-PARAGRAPHS RULE (hard, 15 Sep 2026 - AMMN E2E7 audit): alongside the 4
@@ -819,7 +869,7 @@ Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|ter
   Critic audits both shapes.
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE + KATALIS_NARRATIVE_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE + KATALIS_NARRATIVE_RULE + PLAIN_LANGUAGE_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer - charts
@@ -872,7 +922,7 @@ If segments <= 1 (single-pillar archetype), emit {skipped: true, reason: "single
 Emit sotp.json: {pillars: [{name, revenue_pct, ebitda, multiple, value}], holdco_discount, sotp_value, reconciled: bool}
 
 Output key: sotp_output
-""" + HOUSE_FORMAT_RULE
+""" + HOUSE_FORMAT_RULE + PLAIN_LANGUAGE_RULE
 
 # ---------------------------------------------------------------------------
 # Adversarial Red Team - 2 rounds max, LoopAgent(max=4)
@@ -981,11 +1031,11 @@ Checks (REJECT if mismatch):
   the pinned windows byte-for-byte - again return auto-discloses
   _window_substituted=true; REJECT a run that reports the requested window when
   the payload was served from cache. AMMN prod audit 15 Sep 2026.)
-- PLAIN-LANGUAGE RULE? (highlights, P1+P2, thesis rail, risk details read in plain
-  Indonesian - REJECT method jargon: CAGR, capex, deleveraging, anchor, print,
-  re-rating, FCF, upside, fresh ore, TTM, qoq/yoy. Run
-  server.report.house_rules.audit_plain_language and REJECT on any violation.
-  The P3 valuation paragraph and valuation/audit pages are exempt by design.)
+- PLAIN-LANGUAGE RULE? (highlights, theme title, P1+P2+P3-wrappers, thesis rail, risk
+  details, industry/KPI/SOTP prose read in plain Indonesian - REJECT method jargon. Run
+  server.report.house_rules.audit_plain_language and REJECT on any violation; the rule's
+  token list and that gate's list are kept in sync by a test. The four P3 mandate markers
+  (CAGR, the FY tag) are carved out BY NAME and everything else in P3 is still scanned.)
 
 Verdict:
 - If any REJECT → emit {verdict: REJECT, reasons: [str], fixes: [str]} and loop back is expected.
