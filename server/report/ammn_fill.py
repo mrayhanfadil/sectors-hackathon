@@ -440,12 +440,52 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     # Cover copy is reader-facing Indonesian, so numbers use id-ID separators (24,98 tn /
     # +20,84%) to match the sidebar tables. English separators here made the same figure read
     # two different ways on one page.
+    # === forward bridge (owner rule: equity report looks forward, not back) ===
+    # Bullet 3 carries the FY26F-28F path + CAGR + physical driver, read from the
+    # same driver file the Key Financials exhibit resolves (no hand-typed numbers).
+    # Falls back to a loud label when the file is absent/invalid - never silent.
+    fwd_rev26 = fwd_rev28 = fwd_eb26 = fwd_eb28 = None
+    fwd_mgn26 = fwd_mgn28 = fwd_cagr_eb = None
+    fwd_note_short = ""
+    fwd_basis_txt = "level normalised mid-cycle"
+    try:
+        _drv_path = REPO_ROOT / "data" / "drivers" / "AMMN.json"
+        if _drv_path.exists():
+            _drv = json.loads(_drv_path.read_text())
+            _fx = float(_drv.get("fx_rp_bn_per_usd_mn") or 1.0)
+            _dr = _drv.get("drivers") or {}
+            _rp = lambda k, i: ((_dr.get(k) or {}).get("path") or [None, None, None])[i] * _fx \
+                if isinstance(((_dr.get(k) or {}).get("path") or [None])[i], (int, float)) else None
+            fwd_rev26, fwd_rev28 = _rp("revenue", 0), _rp("revenue", 2)
+            fwd_eb26, fwd_eb28 = _rp("ebitda", 0), _rp("ebitda", 2)
+            if fwd_rev26 and fwd_eb26:
+                fwd_mgn26 = fwd_eb26 / fwd_rev26 * 100
+            if fwd_rev28 and fwd_eb28:
+                fwd_mgn28 = fwd_eb28 / fwd_rev28 * 100
+            if fwd_eb26 and fwd_eb28 and fwd_eb26 > 0 and fwd_eb28 > 0:
+                fwd_cagr_eb = ((fwd_eb28 / fwd_eb26) ** 0.5 - 1) * 100
+            _rn = str(((_dr.get("revenue") or {}).get("note")) or "")
+            # first physical driver clause only (Phase-8 ramp), not the whole note
+            fwd_note_short = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            if str(_drv.get("basis") or "") == "third-party-estimate":
+                fwd_basis_txt = "estimasi tim atas basis data berlisensi"
+    except Exception:
+        pass
+    if fwd_eb26 and fwd_eb28 and fwd_cagr_eb is not None:
+        _fwd_b3 = (
+            f"Ke depan FY26F-28F: EBITDA Rp {_idn(fwd_eb26 / 1000, 1)} tn → Rp {_idn(fwd_eb28 / 1000, 1)} tn "
+            f"(CAGR {_idn(fwd_cagr_eb, 1)}%, marjin {_idn(fwd_mgn26, 1)}%→{_idn(fwd_mgn28, 1)}%) - "
+            f"{fwd_note_short}; TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) anchor EV/EBITDA FY26F."
+        )
+    else:
+        _fwd_b3 = (
+            f"Ke depan FY26F-28F ({fwd_basis_txt}): jalur proyeksi tidak terverifikasi di file driver - "
+            f"lihat tabel Key Financials; TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) anchor EV/EBITDA FY26F."
+        )
     rbox["key_takeaways"] = [
         f"Tembaga+emas 100% pendapatan FY2024 (emas 55,0% menyalip tembaga 45,0%) - Sectors get-segments FY2024.",
         f"EBITDA TTM {_idn(ttm_eb_tn, 2)} tn, marjin EBITDA Q1-2026 {_idn(q0_emgn, 1)}%; net-debt/EBITDA TTM {_idn(ttm_netd_ebitda, 1)}× - Sectors quarterly 8Q.",
-        f"EV/EBITDA 2026 (TTM print) {_idn(ttm_ev_eb, 2)}× (dari {_idn(hist_mults.get('FY2025'), 2)}× di 2025); TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) - "
-        + (f"anchor EV/EBITDA FY26F, DCF sebagai pembanding." if (anchor_leg or "") == "ev_ebitda"
-           else f"anchor {str(anchor_basis or 'DCF').replace('gate_primary: ', '')}."),
+        _fwd_b3,
     ]
     cover["summary"] = (
         f"PT Amman Mineral Internasional Tbk. (AMMN) - penambang tembaga-emas Batu Hijau "
