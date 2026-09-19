@@ -91,10 +91,16 @@ forbids an `id` field - the number is the renderer's global figure counter
   The agent supplies a descriptive title + data; the renderer numbers sequentially.
 - The actual printed number depends on how many exhibits earlier slides emit. Slide 1's
   Key Financials table is the tie-out source of truth referred to here as "Exhibit 3" in
-  the template sequence (Slide 1 spec §4 skipped the EPS-consensus table, so under the
-  current build it renders as the SECOND exhibit, and slide 2's default build emits none -
-  meaning the first Slide 3 chart can legitimately render as Exhibit 3). This is expected,
-  not a bug: it is exactly why the counter is global.
+  the template sequence. Under the CURRENT build (measured on the shipped AMMN PDF,
+  19 Sep 2026) the counter runs: cover = Exhibits 1-2 (Slide 1 spec §4 skips the
+  EPS-consensus table), Slide 2's daily foreign-flow chart = Exhibit 3 (slide2 spec §
+  requires it to be a numbered exhibit WITH a source line whenever the series is
+  available), Key Financials = Exhibit 4, and therefore the four Slide 3 charts = 5-8.
+  Before Slide 2's chart was wired the same document numbered Key Financials 3 and the
+  grid 4-7, which is where the numbers written in §1 and §6 below come from - they are
+  template-sequence references, and they move whenever an earlier exhibit appears or
+  disappears. This is expected, not a bug: it is exactly why the counter is global, and
+  why nothing downstream may hardcode one of these numbers.
 - Prose cross-references must therefore be live references (`#exhibit-figure(...)` +
   `@ex-...`), never frozen text. A prose sentence saying "see Exhibit 7" is a REJECT.
 - The tie-out in §6 is defined by OBJECT IDENTITY (chart series → table row), never by
@@ -236,8 +242,9 @@ Forbidden: generic "cost efficiency improved" with no unit number.
 ## 6. Tie-out matrix vs the Key Financials table (Slide 1)
 
 "Key Financials" = the table referred to as Exhibit 3 in the template sequence (Slide 1
-spec §4; currently renders with the counter one lower because the EPS-consensus table is
-skipped). Match by object identity, not by exhibit number.
+spec §4). Under the current build it prints as Exhibit 4 (cover 1-2, Slide 2's flow chart
+3, Key Financials 4, Slide 3 charts 5-8) - the reference is to the template sequence, not
+to a frozen number. Match by object identity, never by exhibit number.
 
 | Slide 3 series | Key Financials row | Periods that must match | Tolerance |
 |---|---|---|---|

@@ -106,6 +106,20 @@
   {% if fonts_dir %}
   @font-face { font-family: "Source Serif 4"; src: url("{{ fonts_dir }}/SourceSerif4-VF.ttf"); font-weight: 100 900; }
   @font-face { font-family: "JetBrains Mono"; src: url("{{ fonts_dir }}/JetBrainsMono-VF.ttf"); font-weight: 100 900; }
+  /* Roboto: the Sectoral design system's only body face (docs/design-system-friend.md),
+     but the container ships no Roboto, so `font-family: "Roboto", Arial, sans-serif` used
+     to resolve to Liberation Sans (Arial metrics) on every page and the shipped PDF embedded
+     LiberationSans subsets - a silent substitution the house-format check flagged as a
+     warning for weeks. Declaring the repo's own files fixes it at the source, the same way
+     Source Serif 4 and JetBrains Mono are handled. Weight bands mirror the weights the deck
+     actually asks for (100/400/600/700/800): Light 100-300, Regular 400, Medium 500-600,
+     Bold 700-900, so no request lands on an OS fallback. */
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-Light.ttf"); font-weight: 100 300; font-style: normal; }
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-Regular.ttf"); font-weight: 400; font-style: normal; }
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-Italic.ttf"); font-weight: 400; font-style: italic; }
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-Medium.ttf"); font-weight: 500 600; font-style: normal; }
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-Bold.ttf"); font-weight: 700 900; font-style: normal; }
+  @font-face { font-family: "Roboto"; src: url("{{ fonts_dir }}/Roboto-BoldItalic.ttf"); font-weight: 700 900; font-style: italic; }
   {% endif %}
   :root {
     --ink: #333333; --muted: #666666; --line: #D9D9D9; --paper: #ffffff;

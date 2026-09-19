@@ -204,7 +204,7 @@ def install(env, report_data: dict | None = None, native_furniture: bool = False
 # The page-number span is Chromium's own substitution - `class="pageNumber"` is replaced
 # with the physical page index at render time, which is exactly the "real page counter,
 # not a per-page literal" the house rule asks for.
-FONT_STACK = "Helvetica Neue, Arial, sans-serif"
+FONT_STACK = "Roboto, 'Helvetica Neue', Arial, sans-serif"
 PAGE_SIDE_PAD = "40pt"
 
 # Space reserved OUTSIDE the content flow for the furniture. Header content is

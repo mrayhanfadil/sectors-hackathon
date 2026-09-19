@@ -268,7 +268,16 @@ def check(pdf: Path) -> dict:
     # every embedded font must belong to the Roboto family (no Inter / Source Serif /
     # Jakarta leaking from the old house furniture), and the Sectoral primary must be
     # used in drawn vector content (header divider, table header band, charts).
+    #
+    # Split by WHAT the font carries, not by its name alone. Roboto ships no arrow glyph
+    # (U+2192 is absent from both the 2017 statics and the Google Fonts v51 faces), so the
+    # deck's "A -> B" copy always falls back to the system sans for that ONE codepoint. That
+    # is a font-coverage fact, not a design-system violation, and reporting it as one buries
+    # the real signal (letters set in Arial-metric Liberation Sans, which is what this rule
+    # exists to catch). Fonts that carry letters or digits are reported as a violation; fonts
+    # used only for symbols Roboto lacks are reported as a coverage note naming the glyphs.
     fonts_seen: set[str] = set()
+    font_text: dict[str, list[str]] = {}
     for page in doc:
         try:
             for f in page.get_fonts(full=True):
@@ -277,15 +286,46 @@ def check(pdf: Path) -> dict:
                     fonts_seen.add(name)
         except Exception:
             pass
+        try:
+            td = page.get_text("dict")
+            blocks = td.get("blocks", []) if isinstance(td, dict) else []
+            for block in blocks:
+                for line in block.get("lines", []):
+                    for span in line.get("spans", []):
+                        font_text.setdefault(str(span.get("font", "")), []).append(str(span.get("text", "")))
+        except Exception:
+            pass
     non_roboto = sorted({n for n in fonts_seen if "roboto" not in n.lower()})
+    letters_in_other_faces: list[str] = []
+    symbol_only: dict[str, set[str]] = {}
+    for n in non_roboto:
+        # get_text() span names carry a subset prefix (FAAAAA+LiberationSans-Bold) that
+        # get_fonts() does not, so match by substring in either direction.
+        texts = [t for f, v in font_text.items() if f == n or n.endswith(f) or f.endswith(n) or n in f for t in v]
+        joined = "".join(texts)
+        if re.search(r"[0-9A-Za-z]", joined):
+            letters_in_other_faces.append(n)
+        else:
+            syms = {c for c in joined if not c.isspace()}
+            if syms:
+                symbol_only[n] = syms
+            elif not texts:
+                # No text spans observed for this font: a Type3/embedded subset used by drawn
+                # content (the SVG wordmark lands here) - not a typography violation.
+                symbol_only.setdefault(n, set())
     # Warn, not fail: the report surfaces migrate to Roboto in other lanes, and the
     # shipped-PDF gate (tests/test_house_format_adoption.py) must stay green while
     # they land. The hard gate is tests/test_design_system_sectoral.py.
-    if fonts_seen and non_roboto:
+    if fonts_seen and letters_in_other_faces:
         warn.append(
-            "rule 13 non-Roboto fonts embedded: "
-            + ", ".join(non_roboto[:8])
+            "rule 13 non-Roboto fonts carry text: "
+            + ", ".join(letters_in_other_faces[:8])
             + " - the Sectoral system uses Roboto only"
+        )
+    if symbol_only:
+        warn.append(
+            "rule 13 note symbol-only fallback (Roboto has no such glyph, not a violation): "
+            + ", ".join(f"{n} {' '.join(sorted(syms)) or '[drawn]'}"[:80] for n, syms in sorted(symbol_only.items())[:4])
         )
     primary_used = False
     try:

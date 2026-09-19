@@ -28,9 +28,13 @@ RUN --mount=type=cache,target=/root/.cache/pip,sharing=locked \
     if [ "$WITH_ADK" = "true" ]; then pip install -r /tmp/req-adk.txt; fi
 
 # 2. House typography. The deck is set in the fonts shipped in the repository; without them the PDF silently falls
-#    back to whatever the base image has and the pages no longer look like the deck.
+#    back to whatever the base image has and the pages no longer look like the deck. Roboto is the Sectoral body
+#    face, so a build that cannot see it must say so loudly rather than ship Liberation Sans under a Roboto stack.
 COPY assets/fonts/ /usr/share/fonts/truetype/house/
-RUN fc-cache -f >/dev/null && fc-list | grep -ci "ibm plex\|source serif\|jetbrains" | sed 's/^/house fonts installed: /'
+RUN fc-cache -f >/dev/null \
+    && fc-list | grep -ci "ibm plex\|source serif\|jetbrains" | sed 's/^/house fonts installed: /' \
+    && fc-list | grep -ci "roboto" | sed 's/^/roboto faces installed: /' \
+    && test "$(fc-list | grep -ci 'roboto')" -ge 6
 
 # 3. The base image ships three browsers (~3.4 GB); the app launches chromium only (server/routers/pdf.py). Dropping
 #    firefox and webkit takes about a gigabyte off the image and costs nothing, because nothing can reach for them.
