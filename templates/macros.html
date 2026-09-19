@@ -124,7 +124,7 @@
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-  body { font-family: "Roboto", Arial, sans-serif; color: var(--ink); font-size: 10pt; line-height: 1.5; }
+  body { font-family: "Roboto", Arial, sans-serif; color: var(--ink); font-size: 8pt; line-height: 1.15; }
   h1, h2, h3, .para-h, .rhdr-title, .rhdr-issuer { font-family: "Roboto", Arial, sans-serif; }
   .num, td.num, .fin-table td:not(.stmt-label) { font-family: "Roboto", Arial, sans-serif; font-variant-numeric: tabular-nums; }
   .page { page-break-after: always; position: relative; padding: 50pt 40pt 64pt; }
@@ -150,8 +150,8 @@
      a renderer that cannot (weasyprint, browser preview), where one div == one page. */
   .rhdr { display: flex; justify-content: space-between; align-items: flex-start;
           margin-bottom: 3pt; }
-  .rhdr-title { font-size: 8.5pt; font-weight: 700; color: var(--ink); }
-  .rhdr-issuer { font-size: 8.6pt; font-weight: 700; color: var(--ink); letter-spacing: -.1pt; }
+  .rhdr-title { font-size: 8pt; font-weight: 700; color: var(--ink); }
+  .rhdr-issuer { font-size: 8pt; font-weight: 700; color: var(--ink); letter-spacing: -.1pt; }
   .rhdr-status { font-size: 7.6pt; font-weight: 700; color: var(--ink); margin-bottom: 1pt; }
   .rhdr-date { font-size: 7pt; color: var(--muted); margin-top: 1pt; }
   .rhdr-logo { height: 12pt; margin-bottom: 2.5pt; }
@@ -161,8 +161,8 @@
           justify-content: space-between; font-size: 6.5pt; color: var(--muted);
           border-top: .5pt solid var(--line); padding-top: 4pt; }
 
-  h2 { font-size: 14pt; color: var(--brand-dark); }
-  h3 { font-size: 10.5pt; margin: 10pt 0 4pt; color: var(--ink); }
+  h2 { font-size: 9.5pt; color: var(--brand-dark); }
+  h3 { font-size: 9.5pt; margin: 10pt 0 4pt; color: var(--ink); }
   p { margin: 4pt 0; }
   /* Sensitivity components: the reviewer called the old block a wall of text - every value it narrated was
      already in the payload, so the page now shows them as a strip, a bridge and a method spread, and keeps the
@@ -171,13 +171,13 @@
   .sens-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4.5pt; margin-bottom: 3.5pt; }
   .sens-chip { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 2.4pt 4.5pt 2.8pt;
                background: var(--ab-ice-faint); }
-  .sens-chip .k { font-size: 6.2pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
+  .sens-chip .k { font-size: 6pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
                   color: var(--ab-ink-muted); }
   .sens-chip .v { font-size: 10pt; font-weight: 700; color: var(--ab-navy);
                   font-variant-numeric: tabular-nums; margin-top: .5pt; }
-  .sens-chip .n { font-size: 6.1pt; color: var(--muted); line-height: 1.24; margin-top: .5pt; }
+  .sens-chip .n { font-size: 6pt; color: var(--muted); line-height: 1.25; margin-top: .5pt; }
   .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
-  .sens-h { font-size: 6.6pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+  .sens-h { font-size: 7pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
             color: var(--ink); margin: 0 0 3pt; }
   .bridge-bar { display: flex; height: 6pt; border-radius: 1.5pt; overflow: hidden; margin-bottom: 2.5pt; }
   .bridge-bar .seg-eq { background: var(--brand); }
@@ -190,19 +190,19 @@
   .field .axis { position: absolute; top: 18pt; left: 0; right: 0; border-top: .5pt solid var(--line); }
   .field .mark { position: absolute; top: 15.5pt; width: 1.2pt; height: 9pt; background: var(--ink); }
   .field .mark.gate { background: var(--brand); width: 1.8pt; }
-  .field .lbl { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; font-size: 6.4pt;
+  .field .lbl { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; font-size: 6pt;
                 color: var(--muted); }
   .field .lbl.row-b { top: 7.6pt; }
   .field .lbl.end { transform: translateX(-100%); }
   .field .lbl.gate { color: var(--brand); font-weight: 700; }
-  .field .axis-end { position: absolute; top: 25pt; font-size: 6.2pt; color: var(--muted); }
+  .field .axis-end { position: absolute; top: 25pt; font-size: 6pt; color: var(--muted); }
   .field .axis-end.right { right: 0; }
-  .sens-cap { font-size: 6.4pt; color: var(--muted); line-height: 1.26; margin: 0; }
+  .sens-cap { font-size: 6pt; color: var(--muted); line-height: 1.25; margin: 0; }
   .sens-narr { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5pt 12pt; margin-top: 4pt; }
-  .sens-narr p { font-size: 6.7pt; line-height: 1.26; margin: 0 0 1.5pt; }
+  .sens-narr p { font-size: 7.5pt; line-height: 1.15; margin: 0 0 1.5pt; }
   .note-list { margin-top: 3pt; }
   .note { display: grid; grid-template-columns: 58pt 1fr; gap: 6pt; border-top: .5pt solid var(--ab-rule);
-          padding: 1.6pt 0; font-size: 6.6pt; line-height: 1.25; }
+          padding: 1.6pt 0; font-size: 6pt; line-height: 1.25; }
   .note-k { font-weight: 700; color: var(--ink); }
   .note-k-plain { color: var(--muted); font-weight: 400; }
   .note-b { color: var(--ink); }
@@ -220,9 +220,9 @@
   /* the accent sits ABOVE the header, not under it: a rule below crossed the title mid-word (reviewer) */
   .section-head::before { content: ""; position: absolute; top: 0; left: 0; width: 30pt;
                           border-top: 2pt solid var(--brand); }
-  .section-no { font-size: 10pt; font-weight: 700; color: var(--brand); letter-spacing: .06em;
+  .section-no { font-size: 9.5pt; font-weight: 700; color: var(--brand); letter-spacing: .06em;
                 font-variant-numeric: tabular-nums; }
-  .section-head h2 { font-size: 13.5pt; font-weight: 700; color: var(--ink); letter-spacing: -.25pt; }
+  .section-head h2 { font-size: 9.5pt; font-weight: 700; color: var(--ink); letter-spacing: -.25pt; }
 
   /* Tables follow the tools: navy header band in small letterspaced capitals, ice-faint zebra, hairline rules,
      tabular numerals right-aligned, rounded container. */
@@ -267,27 +267,27 @@
   .meth-bar.b1 { background: var(--ab-navy); }
   .meth-bar.b2 { background: var(--ab-ice); }
   .meth-bar.b3 { background: var(--ab-ice-pale); }
-  .meth-lbl { font-size: 6.1pt; color: var(--ab-ink-muted); text-align: center; margin-top: 2.5pt;
+  .meth-lbl { font-size: 6pt; color: var(--ab-ink-muted); text-align: center; margin-top: 2.5pt;
               letter-spacing: .02em; min-height: 14pt; }
   .meth-ref { position: absolute; left: 0; right: 0; border-top: 1pt dashed var(--ab-sell); pointer-events: none; }
   .meth-ref span { position: absolute; left: 0; top: -6pt; background: #fff; padding: 0 2.5pt;
-                   font-size: 5.8pt; font-weight: 700; color: var(--ab-sell); }
+                   font-size: 5.5pt; font-weight: 700; color: var(--ab-sell); }
 
   /* Status chips, as the tools render them: rounded pill, tinted ground, small caps label. */
-  .ab-chip { display: inline-block; padding: .5pt 5pt; border-radius: 100px; font-size: 6.3pt; font-weight: 700;
+  .ab-chip { display: inline-block; padding: .5pt 5pt; border-radius: 100px; font-size: 6pt; font-weight: 700;
              letter-spacing: .04em; text-transform: uppercase; }
   .ab-chip.c-navy { background: var(--ab-ice-pale); color: var(--ab-navy); }
   .ab-chip.c-buy { background: rgba(30,143,95,.12); color: var(--ab-buy); }
   .ab-chip.c-hold { background: rgba(176,141,87,.16); color: var(--ab-hold); }
   .ab-chip.c-sell { background: rgba(192,57,43,.12); color: var(--ab-sell); }
-  .eyebrow { font-size: 6.2pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
+  .eyebrow { font-size: 6pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
              color: var(--ab-ink-muted); }
 
   .exhibit-head { margin: 10pt 0 3pt; }
-  .exhibit-id { font-size: 7.5pt; font-weight: 700; color: #0928B1; }
-  .exhibit-name { font-size: 8.5pt; font-weight: 600; color: #333333; }
+  .exhibit-id { font-size: 8pt; font-weight: 700; color: #0928B1; }
+  .exhibit-name { font-size: 8pt; font-weight: 700; color: #333333; }
   /* Constant source line, below the object (house-report-format.md §1). */
-  .exhibit-src { font-size: 6.6pt; color: var(--muted); font-style: italic; margin: 1pt 0 3pt; }
+  .exhibit-src { font-size: 6pt; color: var(--muted); font-style: italic; margin: 1pt 0 3pt; }
   .chart-wrap { position: relative; page-break-inside: avoid; margin-bottom: 8pt; }
   .chart-svg { display: block; margin-bottom: 8pt; width: 100%; height: auto; }
   /* Chart.js canvas is shown in browser, hidden in print+PDF (Playwright page.pdf()
@@ -311,22 +311,22 @@
                         align-items: start; padding: 5.5pt 0; border-top: .75pt solid var(--line); }
   ol.thesis-rail > li:first-child { border-top: 0; padding-top: 2pt; }
   ol.thesis-rail > li:last-child { border-bottom: .75pt solid var(--line); }
-  ol.thesis-rail .thesis-no { font-size: 12.5pt; font-weight: 800; color: var(--brand);
+  ol.thesis-rail .thesis-no { font-size: 11pt; font-weight: 800; color: var(--brand);
                               line-height: 1.15; letter-spacing: -.03em; font-variant-numeric: tabular-nums; }
-  ol.thesis-rail .thesis-body h3 { font-size: 9.3pt; font-weight: 700; color: var(--ink);
+  ol.thesis-rail .thesis-body h3 { font-size: 10.5pt; font-weight: 700; color: var(--ink);
                                    margin: 0 0 1.5pt; letter-spacing: -.005em; }
-  ol.thesis-rail .thesis-body p { color: var(--muted); margin: 0; }
+  ol.thesis-rail .thesis-body p { color: var(--muted); margin: 0; font-size: 8pt; line-height: 1.15; }
   ol.thesis-rail .thesis-anchor { text-align: right; white-space: nowrap; padding-left: 10pt; }
-  ol.thesis-rail .thesis-anchor i { display: block; font-style: normal; font-size: 6.2pt; font-weight: 700;
+  ol.thesis-rail .thesis-anchor i { display: block; font-style: normal; font-size: 6pt; font-weight: 700;
                                     letter-spacing: .09em; color: var(--muted); margin-bottom: .5pt; }
   ol.thesis-rail .thesis-anchor { font-size: 10.5pt; font-weight: 700; color: var(--brand-dark);
                                   font-variant-numeric: tabular-nums; }
-  .kv { display: flex; justify-content: space-between; font-size: 8.2pt; padding: 2.2pt 0;
+  .kv { display: flex; justify-content: space-between; font-size: 8pt; padding: 2.2pt 0;
         border-bottom: .5pt dotted var(--line); }
   .kv-l { color: var(--muted); } .kv-v { font-weight: 600; font-variant-numeric: tabular-nums; }
 
   /* ---- slide 1 (cover): sidebar = rating + price box + secondary stats + analyst ---- */
-  .side-h { font-size: 6.8pt; font-weight: 800; letter-spacing: .1em; color: var(--muted);
+  .side-h { font-size: 7pt; font-weight: 800; letter-spacing: .1em; color: var(--muted);
             text-transform: uppercase; margin: 0 0 3pt; }
   .side-block { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt;
                 background: #fff; margin-bottom: 8pt; }
@@ -340,11 +340,11 @@
   .hl-box { background: var(--band); border-left: 2.5pt solid var(--brand); border-radius: 0 4pt 4pt 0;
             padding: 5pt 8pt 5pt 10pt; margin: 5pt 0 1pt; }
   .hl-box ul { margin: 0; padding-left: 11pt; }
-  .hl-box li { font-size: 8.2pt; font-weight: 700; margin: 2.6pt 0; line-height: 1.34; }
-  .rate-big { font-size: 25pt; font-weight: 800; line-height: 1; color: var(--brand-dark);
+  .hl-box li { font-size: 8pt; font-weight: 700; margin: 2.6pt 0; line-height: 1.15; }
+  .rate-big { font-size: 15pt; font-weight: 800; line-height: 1; color: var(--brand-dark);
               letter-spacing: .01em; }
-  .rate-status { font-style: italic; font-size: 8.8pt; color: var(--muted); margin-top: 2.5pt; }
-  .ptable { width: 100%; border-collapse: collapse; font-size: 7.8pt; }
+  .rate-status { font-style: italic; font-size: 8pt; color: var(--muted); margin-top: 2.5pt; }
+  .ptable { width: 100%; border-collapse: collapse; font-size: 7pt; }
   .ptable td { padding: 3.2pt 0; border-bottom: .5pt dotted var(--line); vertical-align: top; }
   .ptable tr:last-child td { border-bottom: none; }
   .ptable td.l { color: var(--muted); }
@@ -352,22 +352,26 @@
                  white-space: nowrap; }
   .analyst { border-top: 1.5pt solid var(--brand); padding-top: 5pt; margin-top: 2pt; }
   .analyst-name { font-weight: 800; font-size: 9pt; }
-  .analyst-title { font-size: 7.6pt; color: var(--muted); }
-  .co-name { font-size: 19pt; color: var(--brand-dark); line-height: 1.05; margin: 2pt 0 1pt;
+  .analyst-title { font-size: 7.5pt; color: var(--muted); }
+  .co-name { font-size: 15pt; color: var(--brand-dark); line-height: 1.05; margin: 2pt 0 1pt;
              font-weight: 800; }
-  .theme-title { font-style: italic; font-size: 10.5pt; color: var(--muted); margin-top: 2pt; }
+  .theme-title { font-style: italic; font-weight: 700; font-size: 10.5pt; color: var(--muted); margin-top: 2pt; }
   .hl-list { margin: 8pt 0 0; padding-left: 12pt; }
-  .hl-list li { font-size: 8.9pt; margin: 4pt 0; }
-  .para-h { font-weight: 800; font-size: 9.0pt; color: var(--brand-dark); margin: 4pt 0 1.5pt; }
-  .para-b { font-size: 7.9pt; line-height: 1.32; text-align: justify; }
+  .hl-list li { font-size: 8pt; margin: 4pt 0; line-height: 1.15; }
+  .para-h { font-weight: 800; font-size: 9.5pt; color: var(--brand-dark); margin: 4pt 0 1.5pt; }
+  .para-b { font-size: 8pt; line-height: 1.15; text-align: justify; }
+  /* Institutional body: dense two-column narrative (7.5-8pt, 1.15x). Applied to long
+     prose pages so context fits without extra pages; single column stays for cover. */
+  .body-cols { column-count: 2; column-gap: 14pt; font-size: 8pt; line-height: 1.15; text-align: justify; }
+  .body-cols p { margin: 0 0 3pt; break-inside: avoid; }
   /* A subheading must never end a page with its paragraph on the next one, and a paragraph
      must never be cut in half by a page break (cover spreads flow across pages when the copy
      is long - the benchmark fits everything on one page only because its copy is half ours). */
   .para-wrap { break-inside: avoid; }
 
   .rating-box { border: 1.5pt solid var(--brand); border-radius: 5pt; padding: 10pt; text-align: center; }
-  .rating-action { font-size: 20pt; font-weight: 800; color: var(--brand-dark); letter-spacing: .04em; }
-  .tp-big { font-size: 17pt; font-weight: 800; }
+  .rating-action { font-size: 15pt; font-weight: 800; color: var(--brand-dark); letter-spacing: .04em; }
+  .tp-big { font-size: 14pt; font-weight: 800; }
   .badge { display: inline-block; font-size: 7pt; font-weight: 700; letter-spacing: .06em;
            padding: 1.5pt 6pt; border-radius: 2pt; }
   .badge-ow  { background: #d1fadf; color: var(--pos); }
@@ -377,10 +381,10 @@
   .band-pos { color: var(--pos); font-weight: 700; } .band-neg { color: var(--neg); font-weight: 700; }
 
   .disclaimer-block { border: .75pt solid var(--line); background: var(--band); border-radius: 4pt;
-                      padding: 8pt; font-size: 7pt; color: var(--muted); }
-  .disc-title { font-weight: 800; letter-spacing: .1em; color: var(--ink); margin-bottom: 3pt; }
+                      padding: 6pt; font-size: 5.5pt; line-height: 1.3; color: var(--muted); }
+  .disc-title { font-weight: 800; font-size: 5.5pt; letter-spacing: .1em; color: var(--ink); margin-bottom: 3pt; }
 
-  .takeaways li { margin: 3pt 0; font-size: 8.6pt; }
+  .takeaways li { margin: 3pt 0; font-size: 8pt; line-height: 1.15; }
   /* a section header never takes a rule above it: the blue rule belongs under the title, and the last
      section of a page was picking up the rail's own top border instead (reviewer: sections 10 vs 11) */
   .risk-rail + .section-head, ol.risk-rail + .section-head { border-top: 0; }
@@ -391,15 +395,15 @@
                       padding: 6pt 0 6.5pt; border-top: .75pt solid var(--line); break-inside: avoid; }
   ol.risk-rail > li:first-child { border-top: 0; padding-top: 2pt; }
   ol.risk-rail > li:last-child { border-bottom: .75pt solid var(--line); }
-  ol.risk-rail .risk-no { font-size: 12.5pt; font-weight: 800; color: var(--neg); letter-spacing: -.4pt;
+  ol.risk-rail .risk-no { font-size: 11pt; font-weight: 800; color: var(--neg); letter-spacing: -.4pt;
                           font-variant-numeric: tabular-nums; line-height: 1; }
-  ol.risk-rail .risk-body h3 { font-size: 9.3pt; font-weight: 700; color: var(--ink); margin: 0 0 1.5pt; }
-  ol.risk-rail .risk-body p { color: var(--muted); margin: 0; font-size: 7.4pt; line-height: 1.38; }
+  ol.risk-rail .risk-body h3 { font-size: 9.5pt; font-weight: 700; color: var(--ink); margin: 0 0 1.5pt; }
+  ol.risk-rail .risk-body p { color: var(--muted); margin: 0; font-size: 8pt; line-height: 1.15; }
   ol.risk-rail .risk-anchor { text-align: right; white-space: nowrap; padding-left: 8pt;
-                              font-size: 10.5pt; font-weight: 700; color: var(--ink);
+                              font-size: 8pt; font-weight: 700; color: var(--ink);
                               font-variant-numeric: tabular-nums; min-width: 64pt; }
   /* the sub-label is a reserved line, so a row without one keeps the same vertical rhythm (reviewer: row 02) */
-  ol.risk-rail .risk-anchor i { display: block; font-style: normal; font-size: 5.6pt; font-weight: 600;
+  ol.risk-rail .risk-anchor i { display: block; font-style: normal; font-size: 5.5pt; font-weight: 600;
                                 color: var(--muted); letter-spacing: .35pt; margin-top: 1pt; min-height: 5.6pt; }
   ol.risk-rail .risk-body p { text-wrap: pretty; }   /* no single-token runt on the last line (row 03) */
 
@@ -407,9 +411,9 @@
   .s3-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt 10pt; margin-top: 3pt; }
   .s3-cell { break-inside: avoid; }
   .s3-cell .exhibit-head { margin-bottom: 1pt; }
-  .s3-narasi { font-size: 6.6pt; line-height: 1.33; color: #1f2937; margin: 3pt 0 0 0;
+  .s3-narasi { font-size: 7.5pt; line-height: 1.15; color: #1f2937; margin: 3pt 0 0 0;
                text-align: justify; }
-  .s3-cell .exhibit-src { font-size: 5.8pt; margin-top: 1pt; }
+  .s3-cell .exhibit-src { font-size: 6pt; margin-top: 1pt; }
 
   /* ---- deck slide 4: valuation tables ---- */
   .fin-table tr.bold td { font-weight: 700; }
@@ -647,8 +651,8 @@
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="WACC Breakdown">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
     <rect x="0" y="0" width="{{ W }}" height="26" rx="4" fill="#0928B1"/>
-    <text x="{{ pad_x }}" y="17" font-size="10" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
-    <text x="{{ W - pad_x }}" y="17" font-size="10" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
+    <text x="{{ pad_x }}" y="17" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff">Komponen</text>
+    <text x="{{ W - pad_x }}" y="17" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#ffffff" text-anchor="end">Nilai</text>
     {% for r in rows %}
       {% set y = 26 + loop.index0 * row_h %}
       {% set lbl = r.label if r.label is defined else (r[0] if r is sequence else r) %}
@@ -660,8 +664,8 @@
         <rect x="0" y="{{ y }}" width="{{ W }}" height="{{ row_h }}" fill="#F4F8FC"/>
       {% endif %}
       <line x1="0" y1="{{ y + row_h }}" x2="{{ W }}" y2="{{ y + row_h }}" stroke="#D9D9D9" stroke-width="0.5"/>
-      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0928B1">{{ lbl }}</text>
-      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0928B1" text-anchor="end">{{ val|auto }}</text>
+      <text x="{{ pad_x }}" y="{{ y + 11.5 }}" font-size="7" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '400' }}" fill="#0928B1">{{ lbl }}</text>
+      <text x="{{ W - pad_x }}" y="{{ y + 11.5 }}" font-size="7" font-family="Roboto, Arial, sans-serif" font-weight="{{ '700' if is_last else '500' }}" fill="#0928B1" text-anchor="end">{{ val|auto }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -677,16 +681,16 @@
   {% set cell_h = chart_h / n_rows %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Sensitivitas WACC x Terminal Growth">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="24" font-size="12" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Sensitivitas WACC x Terminal Growth</text>
+    <text x="{{ pad_l }}" y="24" font-size="8" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Sensitivitas WACC x Terminal Growth</text>
     {% if price and price > 0 %}
-    <text x="{{ pad_l }}" y="40" font-size="8.5" font-family="Roboto, Arial, sans-serif" fill="#666666">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
+    <text x="{{ pad_l }}" y="40" font-size="7.5" font-family="Roboto, Arial, sans-serif" fill="#666666">Harga Pasar Acuan: {{ currency }} {{ price|idr if price is defined else price }}</text>
     {% endif %}
     <!-- Axis title -->
-    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#666666" text-anchor="end">WACC \ g</text>
+    <text x="{{ pad_l - 10 }}" y="{{ pad_t - 10 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#666666" text-anchor="end">WACC \ g</text>
     <!-- Column headers (g) -->
     {% for g in g_axis or [] %}
       {% set x_center = pad_l + loop.index0 * cell_w + cell_w / 2 %}
-      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
+      <text x="{{ x_center }}" y="{{ pad_t - 10 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ "%.2f%%"|format(g * 100) if (g is number and g < 1) else ("%.2f%%"|format(g) if g is number else g) }}</text>
     {% endfor %}
     <!-- Rows (WACC) & Cells -->
     {% for w in wacc_axis or [] %}
@@ -694,7 +698,7 @@
       {% set y_top = pad_t + row_idx * cell_h %}
       {% set y_center = y_top + cell_h / 2 %}
       <!-- Y label -->
-      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
+      <text x="{{ pad_l - 10 }}" y="{{ y_center + 3 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="end">{{ "%.2f%%"|format(w * 100) if (w is number and w < 1) else ("%.2f%%"|format(w) if w is number else w) }}</text>
       {% set row_vals = matrix[row_idx] if (matrix and matrix|length > row_idx) else [] %}
       {% for val in row_vals %}
         {% set col_idx = loop.index0 %}
@@ -717,7 +721,7 @@
           {% set bg = "#0928B1" %}{% set fg = "#FFFFFF" %}{% set txt = val|idr if val is defined else val %}
         {% endif %}
         <rect x="{{ x_left + 1 }}" y="{{ y_top + 1 }}" width="{{ cell_w - 2 }}" height="{{ cell_h - 2 }}" rx="3" fill="{{ bg }}" stroke="#D9D9D9" stroke-width="0.5"/>
-        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="9.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
+        <text x="{{ x_center }}" y="{{ y_center - (2 if up is not none else -3) }}" font-size="7" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ fg }}" text-anchor="middle">{{ currency }} {{ txt }}</text>
         {% if up is not none %}
         <text x="{{ x_center }}" y="{{ y_center + 11 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="{{ fg }}" opacity="0.9" text-anchor="middle">{{ "%+.1f%%"|format(up) }}</text>
         {% endif %}
@@ -743,7 +747,7 @@
   {% if vmax <= 0 %}{% set vmax = 1 %}{% endif %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Skenario Bear / Base / Bull vs Harga Pasar">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Skenario Bear / Base / Bull vs Harga Pasar</text>
+    <text x="{{ pad_l }}" y="22" font-size="8" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Skenario Bear / Base / Bull vs Harga Pasar</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
@@ -773,8 +777,8 @@
       {% set bh = (val / vmax * chart_h) if vmax > 0 else 0 %}
       {% set by = pad_t + chart_h - bh %}
       <rect x="{{ bx }}" y="{{ by }}" width="{{ bar_w }}" height="{{ bh }}" rx="3" fill="{{ item.fill }}" stroke="{{ item.stroke }}" stroke-width="1"/>
-      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="8.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
-      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="9" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ item.name }}</text>
+      <text x="{{ cx }}" y="{{ by - 6 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="{{ item.text_fg }}" text-anchor="middle">Rp {{ val|idr if val is defined else val }}{% if item.rat %} - {{ item.rat }}{% endif %}</text>
+      <text x="{{ cx }}" y="{{ H - 16 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ item.name }}</text>
     {% endfor %}
   </svg>
 {%- endmacro %}
@@ -803,10 +807,10 @@
     {% set gy = pad_t + chart_h - (chart_h * frac) %}
     <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(gy) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(gy) }}"
           stroke="{{ RULE }}" stroke-width="0.7"/>
-    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="8" fill="{{ MUTED }}"
+    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="7" fill="{{ MUTED }}"
           text-anchor="end">{{ (top * frac) | idn(0) }}</text>
     {% endfor %}
-    <text x="{{ pad_l - 6 }}" y="{{ pad_t - 12 }}" font-size="7.5" font-weight="700" fill="{{ MUTED }}"
+    <text x="{{ pad_l - 6 }}" y="{{ pad_t - 12 }}" font-size="7" font-weight="700" fill="{{ MUTED }}"
           text-anchor="end">Rp/saham</text>
     <!-- the price line sits behind the bars: a dashed line running through a value label is unreadable. Its value
          is carried by the legend, which swatches the same dashed red line, so no in-plot label can collide. -->
@@ -817,12 +821,12 @@
     {% endif %}
     <!-- legend -->
     <rect x="{{ pad_l }}" y="8" width="8" height="8" rx="1.5" fill="{{ NAVY }}"/>
-    <text x="{{ pad_l + 12 }}" y="15.5" font-size="8" fill="{{ MUTED }}">reversion ke 1Y mean</text>
+    <text x="{{ pad_l + 12 }}" y="15.5" font-size="7.5" fill="{{ MUTED }}">reversion ke 1Y mean</text>
     <rect x="{{ pad_l + 122 }}" y="8" width="8" height="8" rx="1.5" fill="{{ ICE }}" stroke="{{ ICE_SOFT }}" stroke-width="0.8"/>
-    <text x="{{ pad_l + 134 }}" y="15.5" font-size="8" fill="{{ MUTED }}">reversion ke 1Y median</text>
+    <text x="{{ pad_l + 134 }}" y="15.5" font-size="7.5" fill="{{ MUTED }}">reversion ke 1Y median</text>
     {% if price %}
     <line x1="{{ pad_l + 246 }}" y1="12" x2="{{ pad_l + 268 }}" y2="12" stroke="{{ SELL }}" stroke-width="1.4" stroke-dasharray="4 3"/>
-    <text x="{{ pad_l + 274 }}" y="15.5" font-size="8" fill="{{ SELL }}" font-weight="700">harga pasar {{ price | idn(0) }}</text>
+    <text x="{{ pad_l + 274 }}" y="15.5" font-size="7.5" fill="{{ SELL }}" font-weight="700">harga pasar {{ price | idn(0) }}</text>
     {% endif %}
     {% for r in rows %}
     {% set cx = pad_l + gw * loop.index0 + gw / 2 %}
@@ -833,14 +837,14 @@
       <rect x="{{ '%.1f'|format(bx) }}" y="{{ '%.1f'|format(pad_t + chart_h - bh) }}" width="{{ bw }}"
             height="{{ '%.1f'|format(bh) }}" fill="{{ fill }}"
             {% if stroke_w %}stroke="{{ ICE_SOFT }}" stroke-width="{{ stroke_w }}"{% endif %}/>
-      <text x="{{ '%.1f'|format(bx + bw / 2) }}" y="{{ '%.1f'|format(pad_t + chart_h - bh - 3) }}" font-size="7.5"
+      <text x="{{ '%.1f'|format(bx + bw / 2) }}" y="{{ '%.1f'|format(pad_t + chart_h - bh - 3) }}" font-size="7"
             font-weight="700" fill="{{ NAVY if fill == NAVY else MUTED }}" text-anchor="middle"
             stroke="#ffffff" stroke-width="2.2" paint-order="stroke">{{ val | idn(0) }}</text>
     {% endif %}
     {% endfor %}
-    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 30 }}" font-size="8.5" font-weight="700" fill="{{ NAVY }}"
+    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 30 }}" font-size="7.5" font-weight="700" fill="{{ NAVY }}"
           text-anchor="middle">{{ r.label }}{{ " *" if headline and r.key == headline else "" }}</text>
-    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 18 }}" font-size="7.5" fill="{{ MUTED }}" text-anchor="middle">
+    <text x="{{ '%.1f'|format(cx) }}" y="{{ H - 18 }}" font-size="7" fill="{{ MUTED }}" text-anchor="middle">
       {{ ("%.0f%%"|format(r.delta_pct)) if r.delta_pct else "-" }}</text>
     {% endfor %}
     <line x1="{{ pad_l }}" y1="{{ pad_t + chart_h }}" x2="{{ W - pad_r }}" y2="{{ pad_t + chart_h }}"
@@ -868,7 +872,7 @@
     {% set gy = zero_y - (chart_h / 2 * frac) %}
     <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(gy) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(gy) }}"
           stroke="{{ RULE }}" stroke-width="0.7"/>
-    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="8" fill="{{ MUTED }}"
+    <text x="{{ pad_l - 6 }}" y="{{ '%.1f'|format(gy + 3) }}" font-size="7" fill="{{ MUTED }}"
           text-anchor="end">{{ (top * frac) | idn(1) }}</text>
     {% endfor %}
     <line x1="{{ pad_l }}" y1="{{ '%.1f'|format(zero_y) }}" x2="{{ W - pad_r }}" y2="{{ '%.1f'|format(zero_y) }}"
@@ -913,7 +917,7 @@
   {% set vmax = (peak * 1.22) if peak > 0 else 1 %}
   <svg width="{{ W }}" height="{{ H }}" viewBox="0 0 {{ W }} {{ H }}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Bridge: PV FCFF -> Equity Value (IDR bn)">
     <rect x="0" y="0" width="{{ W }}" height="{{ H }}" rx="4" fill="#ffffff" stroke="#D9D9D9" stroke-width="0.75"/>
-    <text x="{{ pad_l }}" y="22" font-size="11" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
+    <text x="{{ pad_l }}" y="22" font-size="8" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1">Bridge: PV FCFF -> Equity Value (IDR bn)</text>
     <!-- Background Grid, with the scale printed so a reader can size the bars without a caption -->
     {% for i in range(4) %}
       {% set y = pad_t + (i * chart_h / 3) %}
@@ -948,7 +952,7 @@
       <line x1="{{ bx }}" y1="{{ y_bot }}" x2="{{ bx + bar_w }}" y2="{{ y_bot }}" stroke="#D9D9D9" stroke-width="1.6"/>
       {% endif %}
       {% set vabs = b.val | abs %}
-      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
+      <text x="{{ cx }}" y="{{ y_top - 5 }}" font-size="7" font-family="Roboto, Arial, sans-serif" font-weight="700" fill="#0928B1" text-anchor="middle">{{ (b.sign or '') if vabs > 0 else '' }}{{ vabs|idn(0) }}</text>
       <text x="{{ cx }}" y="{{ H - 24 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="#666666" text-anchor="middle">{{ b.l1 }}</text>
       {% if b.l2 %}
       <text x="{{ cx }}" y="{{ H - 14 }}" font-size="7.5" font-family="Roboto, Arial, sans-serif" font-weight="600" fill="#666666" text-anchor="middle">{{ b.l2 }}</text>

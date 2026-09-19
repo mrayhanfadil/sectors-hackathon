@@ -15,10 +15,10 @@
   .idx-target { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10pt; margin: 10pt 0; }
   .scenario { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; text-align: center; }
   .scenario .s-name { font-size: 8pt; letter-spacing: .1em; font-weight: 800; }
-  .scenario .s-val { font-size: 19pt; font-weight: 800; margin-top: 2pt; }
+  .scenario .s-val { font-size: 15pt; font-weight: 800; margin-top: 2pt; }
   .scenario.base { border: 1.5pt solid var(--brand); background: var(--accent); }
   .pick-row { display: grid; grid-template-columns: 60pt 1fr 2fr; gap: 8pt; padding: 4pt 0;
-              border-bottom: .5pt solid var(--line); font-size: 8.4pt; }
+              border-bottom: .5pt solid var(--line); font-size: 8pt; line-height: 1.15; }
 </style>
 </head>
 <body>
@@ -27,7 +27,7 @@
 <div class="page">
   {{ m.running() }}
   <div class="small muted" style="letter-spacing:.12em;">STRATEGY OUTLOOK · MARKET LEVEL · TOP-DOWN</div>
-  <h1 style="font-size:24pt; color:var(--brand-dark); line-height:1.15; margin:6pt 0 2pt;">{{ strategy.title }}</h1>
+  <h1 style="font-size:15pt; color:var(--brand-dark); line-height:1.15; margin:6pt 0 2pt;">{{ strategy.title }}</h1>
   <p class="muted">{{ strategy.subtitle }}</p>
 
   {% if strategy.index_target %}

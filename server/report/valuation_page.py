@@ -741,7 +741,7 @@ def _narrative(page: dict) -> list[str]:
             "Gap antar metode dibaca sebagai unresolved assumption (UNRESOLVED), bukan dirata-rata: terminal Gordon dan terminal "
             f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
             f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis FCFF normalised "
-            f"(alternatif, FLAT 13088.9 bn/thn) menghasilkan equity value Rp {_fmt0(page['alternatives']['fcf_doc_steady']['equity_gordon'] / 1e9)} bn. "
+            f"(alternatif, FLAT {_fmt((page.get('blocks') or {}).get('documented_fcff', [None])[0], 1)} bn/thn) menghasilkan equity value Rp {_fmt0(page['alternatives']['fcf_doc_steady']['equity_gordon'] / 1e9)} bn. "
             "Target price laporan berdiri di leg relative (EV/EBITDA FY26F); halaman ini memperlihatkan seberapa "
             "jauh model arus kas melihat ke bawah."
         ),

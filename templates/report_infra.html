@@ -20,8 +20,8 @@
   <div class="grid-2" style="grid-template-columns: 2fr 1fr; margin-top: 8pt;">
     <div>
       <div class="small muted" style="letter-spacing:.12em;">{{ meta.report_type | upper }} · {{ meta.sector }}</div>
-      <h1 style="font-size:26pt; color:var(--brand-dark); line-height:1.1; margin:4pt 0 2pt;">{{ meta.company_name }}</h1>
-      <div style="font-size:13pt; font-weight:700; color:var(--muted);">{{ meta.ticker }} · IDX</div>
+      <h1 style="font-size:15pt; color:var(--brand-dark); line-height:1.1; margin:4pt 0 2pt;">{{ meta.company_name }}</h1>
+      <div style="font-size:14pt; font-weight:700; color:var(--muted);">{{ meta.ticker }} · IDX</div>
 
       {% if cover.rating_box and cover.rating_box.key_takeaways %}
       <div class="card-tint" style="margin-top:12pt;">
@@ -196,7 +196,7 @@
   {% set dcf_engine = cDcf if cDcf is defined and cDcf else (dcf if dcf is defined else none) %}
   {% if dcf_engine %}
   <section class="dcf-engine" style="margin-top:10pt;">
-    <h3 style="color:var(--brand-dark); font-size:11pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
+    <h3 style="color:var(--brand-dark); font-size:9.5pt; margin-bottom:2pt;">Analisa DCF (Friend-Style)</h3>
     <p class="small muted">DCF dihitung oleh engine valuasi internal - aritmetika deterministik, audit-friendly.</p>
 
     {% if dcf_engine.wacc_table %}

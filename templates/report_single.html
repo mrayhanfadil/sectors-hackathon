@@ -130,7 +130,7 @@
       <div style="margin-top:4pt;">
         {{ m.exhibit_auto(ns, s2.key_financials.exhibit_title, s2.key_financials.source) }}
         {{ m.table(s2.key_financials.headers, s2.key_financials.rows) }}
-        <div class="small muted" style="font-size:5.8pt; line-height:1.24; margin-top:1pt;">
+        <div class="small muted" style="font-size:6pt; line-height:1.24; margin-top:1pt;">
           {% for nt in s2.key_financials.notes %}{{ nt }}{% if not loop.last %}<br>{% endif %}{% endfor %}
         </div>
       </div>
@@ -156,12 +156,14 @@
   {{ m.section(industry_page.title if industry_page else "Kondisi Industri, Katalis & Sentimen", ns) }}
   {% if industry_page %}
   <p class="muted small">{{ industry_page.subtitle }}</p>
+  <div class="body-cols">
   {% for p in industry_page.paragraphs %}
-  <div style="margin:6pt 0;">
+  <div style="margin:0 0 3pt; break-inside:avoid;">
     <b>{{ p.heading }}</b>
-    <p class="small" style="margin-top:2pt;">{{ p.body }}</p>
+    <p style="margin-top:2pt;">{{ p.body }}</p>
   </div>
   {% endfor %}
+  </div>
   {% set ff = industry_page.foreign_flow or {} %}
   {% if ff.available %}
   {{ m.exhibit_auto(ns, "Arus Asing Harian (Rp md/hari)", ff.source) }}
@@ -169,7 +171,7 @@
   {% else %}
   <p class="small muted">Grafik arus asing tidak tersedia: {{ ff.source }}. Sectors tidak menyediakan endpoint forex, sehingga tidak ada grafik USD/IDR yang bisa ditampilkan dari data berlisensi.</p>
   {% endif %}
-  <p class="muted" style="font-size:6.6pt; margin-top:5pt;">{{ industry_page.sources | join('; ') }}</p>
+  <p class="muted" style="font-size:6pt; margin-top:5pt;">{{ industry_page.sources | join('; ') }}</p>
   {% else %}
   <p class="small muted">Halaman ini tidak dapat disusun: payload tidak membawa data katalis, sentimen, maupun konteks sektor yang terverifikasi.</p>
   {% endif %}
@@ -227,7 +229,7 @@
     </div>
     {% endfor %}
   </div>
-  <p class="muted" style="font-size:6.4pt; margin-top:4pt;">Basis data: {{ performance_page.sources | join('; ') }}</p>
+  <p class="muted" style="font-size:6pt; margin-top:4pt;">Basis data: {{ performance_page.sources | join('; ') }}</p>
   {% else %}
   <p class="small muted">Halaman ini tidak dapat disusun: payload tidak membawa tabel Key Financials (2024A-2028F) maupun rasio DER/ROE.</p>
   {% endif %}
@@ -341,7 +343,7 @@
     <span class="k" style="background: #0928B1; margin-left:3pt;"></span> &gt; +50%
     <span style="margin-left:4pt;">warna sel = posisi vs base case (Rp {{ valuation_page.sensitivity.base_fv | idn(0) }}); grid ini sendiri duduk jauh di bawah harga pasar {{ cover.rating_box.price | idn(0) }}</span>
   </div>
-  <p class="muted" style="font-size:6.6pt; margin-top:2pt;">
+  <p class="muted" style="font-size:6pt; margin-top:2pt;">
     Base case (WACC {{ valuation_page.sensitivity.base_wacc }} · g {{ valuation_page.sensitivity.base_g }})
     dibingkai; isi sel = Fair Value per saham (Rp). Rentang grid:
     Rp {{ valuation_page.sensitivity.swing.min | idn(0) }} – Rp {{ valuation_page.sensitivity.swing.max | idn(0) }}.
@@ -464,7 +466,7 @@
     {% endif %}
   {% endfor %}
   {% if visible_flags %}
-  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Bendera Gate</h3>
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Bendera Gate</h3>
   <ul class="stmt-note-cols audit-flags" style="margin:0 0 6pt 0; padding-left:14pt;">
     {% for flag in visible_flags %}
       <li class="{{ 'contested' if 'DISSENT' in flag or 'RANGE_DISCLOSURE' in flag else '' }}">{{ flag }}</li>
@@ -474,12 +476,12 @@
   {% endif %}
 
   {% if cover.audit_disclosure.disclosure %}
-  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Justifikasi Anchor</h3>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Justifikasi Anchor</h3>
   <p class="audit-disclosure-prose" style="margin:0 0 6pt 0;">{{ cover.audit_disclosure.disclosure }}</p>
   {% endif %}
 
   {% if cover.audit_disclosure.ladder %}
-  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Tangga Valuasi (Audit)</h3>
+  <h3 style="margin-top:6pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Tangga Valuasi (Audit)</h3>
   <table class="fin-table audit-ladder" style="width:100%;">
     <thead>
       <tr>
@@ -517,7 +519,7 @@
   {% endif %}
 
   {% if audit and audit.inconsistency_report %}
-  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:10.5pt; color:#0928B1;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
   <table class="fin-table" style="width:100%;">
     <thead>
       <tr>
@@ -601,7 +603,7 @@
     font-size: 8pt;
   }
   .audit-page .audit-flags li {
-    font-size: 8.5pt;
+    font-size: 8pt;
     line-height: 1.35;
     color: #2A3D54;
   }
@@ -610,7 +612,7 @@
     font-weight: 600;
   }
   .audit-page .audit-disclosure-prose {
-    font-size: 9pt;
+    font-size: 8pt;
     font-style: italic;
     color: #2A3D54;
     border-left: 2pt solid #DCEBF7;
@@ -619,7 +621,7 @@
   .audit-page table.audit-ladder th {
     background: #E8F1F8;
     color: #0928B1;
-    font-size: 8.5pt;
+    font-size: 8pt;
   }
   .audit-page table.audit-ladder tr.contested td {
     background: #FDF6F7;
@@ -637,11 +639,11 @@
   .slide5 .band-grid td.band-card { vertical-align: top; width: 50%; }
   .slide5 .band-card { flex: 1; }
   .slide5 .band-svg { width: 100%; height: auto; max-height: 132pt; }
-  .slide5 .band-narr, .slide5 .peer-narr { font-size: 7.4pt; color: #1e293b; }
-  .slide5 .method-note { font-size: 7.4pt; margin: 1pt 0 4pt; }
-  .slide5 table.fin-table { font-size: 7.6pt; }
+  .slide5 .band-narr, .slide5 .peer-narr { font-size: 7.5pt; color: #1e293b; }
+  .slide5 .method-note { font-size: 7.5pt; margin: 1pt 0 4pt; }
+  .slide5 table.fin-table { font-size: 7pt; }
   .slide5 table.fin-table th, .slide5 table.fin-table td { padding-top: 1.6pt; padding-bottom: 1.6pt; }
-  .slide5 .disclaim-inline { font-size: 7.4pt; background: #F4F8FC; border-left: 2pt solid #0928B1;
+  .slide5 .disclaim-inline { font-size: 6pt; background: #F4F8FC; border-left: 2pt solid #0928B1;
     padding: 5pt 7pt; color: #3f2b12; }
 </style>
 
@@ -656,17 +658,17 @@
   .slide6 .stmt-table tr.stmt-na td { color: #64748b; font-style: italic; }
   .slide6 .stmt-ded { color: #64748b; font-size: 7pt; }
   .slide6 .stmt-inline { color: #64748b; font-size: 6pt; font-style: italic; }
-  .slide6 .stmt-tie { margin-top: 3pt; padding: 3pt 6pt; font-size: 6.6pt; background: #f8fafc;
+  .slide6 .stmt-tie { margin-top: 3pt; padding: 3pt 6pt; font-size: 6pt; background: #f8fafc;
     border-left: 2.5pt solid #0f766e; }
   .slide6 .stmt-notes ul.stmt-note-cols { margin: 2pt 0 0 0; padding: 0; list-style: none;
     column-count: 2; column-gap: 14pt; }
-  .slide6 .stmt-notes li { font-size: 6.1pt; line-height: 1.28; margin-bottom: 2.5pt;
+  .slide6 .stmt-notes li { font-size: 6pt; line-height: 1.28; margin-bottom: 2.5pt;
     break-inside: avoid; }
   /* Footnote treatment (peer #10): limitations stay loud but sit visually below
      the exhibits - top rule + muted heading instead of a body-height block. */
   .stmt-footnote { margin-top: 6pt; padding-top: 4pt; border-top: 1px solid #cbd5e1; }
-  .stmt-footnote .para-h { font-size: 6.4pt; color: #64748b; margin-bottom: 2pt; }
-  .stmt-footnote li { font-size: 5.8pt; color: #475569; }
+  .stmt-footnote .para-h { font-size: 6pt; color: #64748b; margin-bottom: 2pt; }
+  .stmt-footnote li { font-size: 6pt; color: #475569; }
   .slide6 table.fin-table { font-size: 6.7pt; }
   .slide6 table.fin-table th, .slide6 table.fin-table td { padding: 0.6pt 3pt; }
 </style>
