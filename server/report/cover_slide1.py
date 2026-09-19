@@ -372,53 +372,21 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     ni_bn = ni / 1e9 if isinstance(ni, (int, float)) else None
     qtag = _qtag(cur.get("date"))
 
+    # FUTURE-STORY RULE (peer #5): P1 is the FORWARD handoff, not a second backward
+    # record. Max 1 bridging sentence of backward context (latest quarter + 1
+    # figure), then weight to catalyst -> earnings path -> valuation. The audited
+    # backward record lives in the exhibits and quadrant narratives; restating
+    # qoq/yoy here is a REJECT. Every forward figure is computed from an artifact
+    # that already exists (quarterly rows, catalyst ledger, driver file, rating
+    # box) - never invented.
     parts: list[str] = []
+    # 1. bridge: latest quarter + 1 figure, nothing more.
     if rev_bn is not None:
-        seg = f"Pendapatan {qtag} {_rp_bn(rev_bn)}"
-        if prev and isinstance(prev.get("revenue"), (int, float)) and prev["revenue"]:
-            seg += (f", {_pct(_chg(rev, prev['revenue']))} qoq dari "
-                    f"{_rp_bn(prev['revenue'] / 1e9)} ({_qtag(prev.get('date'))})")
-        parts.append(seg + ".")
-    if ni_bn is not None:
-        seg = f"Laba {_rp_bn(ni_bn)}"
-        if prev and isinstance(prev.get("earnings"), (int, float)) and prev["earnings"]:
-            seg += f" ({_pct(_chg(ni, prev['earnings']))} qoq)"
-        parts.append(seg + ".")
-
-    if isinstance(gp, (int, float)) and isinstance(rev, (int, float)) and rev:
-        gm = gp / rev * 100
-        seg = f"Marjin kotor {_n(gm, 1)}%"
-        if prev and isinstance(prev.get("gross_profit"), (int, float)) and prev.get("revenue"):
-            gm0 = prev["gross_profit"] / prev["revenue"] * 100
-            seg += f" ({_n(gm - gm0, 1)} pp dari {_n(gm0, 1)}%)"
-        parts.append(seg + ".")
-    if isinstance(eb, (int, float)) and isinstance(rev, (int, float)) and rev:
-        em = eb / rev * 100
-        seg = f"Marjin EBITDA {_n(em, 1)}%"
-        if prev and isinstance(prev.get("ebitda"), (int, float)) and prev.get("revenue"):
-            em0 = prev["ebitda"] / prev["revenue"] * 100
-            seg += f" ({_n(em - em0, 1)} pp dari {_n(em0, 1)}%)"
-        parts.append(seg + ".")
-
-    capex, prev_capex = cur.get("capital_expenditure"), (prev or {}).get("capital_expenditure")
-    if isinstance(capex, (int, float)) and isinstance(prev_capex, (int, float)) and prev_capex:
-        parts.append(f"Belanja modal {_rp_bn(capex / 1e9)} "
-                     f"({_pct(_chg(capex, prev_capex))} qoq).")
-
-    if yoy_base is not None:
-        ok, why = _sane_base(yoy_base, rows)
-        if ok:
-            parts.append(f"vs {_qtag(yoy_base.get('date'))} (yoy): pendapatan "
-                         f"{_pct(_chg(rev, yoy_base.get('revenue')))}, laba "
-                         f"{_pct(_chg(ni, yoy_base.get('earnings')))}.")
-        else:
-            parts.append(f"Pembanding yoy tidak dipakai: {why} (Q1-2025 adalah kuartal ramp "
-                         "smelter) - angka pertumbuhan dari basis itu menyesatkan.")
-
-    # Forward bridge (peer #5 future-story): max 1 sentence pointing at what must
-    # deliver next, read from the payload catalyst ledger - never invented. The
-    # backward clauses above stay (they are the audited record); this sentence is
-    # the handoff to the thesis, not a second backward paragraph.
+        parts.append(f"Basis {qtag}: pendapatan {_rp_bn(rev_bn)}.")
+    else:
+        parts.append("Data kuartalan tidak tersedia - tidak ada basis backward yang bisa "
+                     "dinyatakan (LOUD policy).")
+    # 2. catalyst: which quantified catalyst must deliver.
     cats = payload.get("catalysts") or []
     if cats and isinstance(cats[0], dict) and cats[0].get("name"):
         first = cats[0]
@@ -427,17 +395,58 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     else:
         parts.append("Katalis ke depan belum terverifikasi di payload - tidak ada jembatan forward yang "
                      "bisa dinyatakan tanpa angka (LOUD policy).")
-    # Running rate needs a team FY forecast; absent -> say so rather than imply a rate.
-    fh = payload.get("financial_highlights") or {}
-    years = [str(y) for y in (fh.get("years") or [])]
-    fwd = [y for y in years if y.upper().endswith("F")]
-    if fwd and rev_bn is not None:
-        parts.append(f"Running rate: {_n(rev_bn, 1)} bn vs estimasi {fwd[0]} "
-                     f"({', '.join(fwd)}) - lihat tabel forecast.")
+    # 3. earnings path: what level the forecast unlocks, from the same driver file
+    # the Key Financials exhibit resolves. Ticker-agnostic; loud when absent.
+    _tk = (str(ticker or "").upper()
+           or str((payload.get("meta") or {}).get("ticker") or "").upper())
+    _eb26 = _eb28 = _cagr = _m26 = _m28 = None
+    _drv_note = ""
+    _drv_basis = "level normalised mid-cycle"
+    try:
+        _dp = REPO_ROOT / "data" / "drivers" / f"{_tk}.json"
+        if _tk and _dp.exists():
+            _doc = json.loads(_dp.read_text(encoding="utf-8"))
+            _fx = float(_doc.get("fx_rp_bn_per_usd_mn") or 1.0)
+            _dr = _doc.get("drivers") or {}
+
+            def _rp(k: str, i: int) -> Optional[float]:
+                try:
+                    v = ((_dr.get(k) or {}).get("path") or [])[i]
+                    return float(v) * _fx if isinstance(v, (int, float)) else None
+                except Exception:
+                    return None
+
+            _rv26, _rv28 = _rp("revenue", 0), _rp("revenue", 2)
+            _eb26, _eb28 = _rp("ebitda", 0), _rp("ebitda", 2)
+            if _rv26 and _eb26:
+                _m26 = _eb26 / _rv26 * 100
+            if _rv28 and _eb28:
+                _m28 = _eb28 / _rv28 * 100
+            if _eb26 and _eb28 and _eb26 > 0 and _eb28 > 0:
+                _cagr = ((_eb28 / _eb26) ** 0.5 - 1) * 100
+            _rn = str(((_dr.get("revenue") or {}).get("note")) or "")
+            _drv_note = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            if str(_doc.get("basis") or "") == "third-party-estimate":
+                _drv_basis = "estimasi tim atas basis data berlisensi"
+    except Exception:
+        pass
+    if _eb26 and _eb28 and _cagr is not None:
+        parts.append(
+            f"Jalur FY26F-28F ({_drv_basis}): EBITDA Rp {_n(_eb26 / 1000, 1)} tn → "
+            f"Rp {_n(_eb28 / 1000, 1)} tn (CAGR {_n(_cagr, 1)}%, marjin {_n(_m26, 1)}%→{_n(_m28, 1)}%)"
+            + (f" - {_drv_note}." if _drv_note else ".")
+        )
     else:
-        parts.append("Running-rate terhadap estimasi FY tidak dapat dihitung: tidak ada angka "
-                     "forward terverifikasi untuk emiten ini (LOUD policy, tanpa estimasi "
-                     "karangan).")
+        parts.append("Jalur FY26F-28F tidak terverifikasi di file driver - lihat tabel Key Financials "
+                     "(LOUD policy, tanpa estimasi karangan).")
+    # 4. valuation: what multiple the anchor TP implies on that level.
+    _rbox = (payload.get("cover") or {}).get("rating_box") or {}
+    _tp, _up, _act = _rbox.get("tp"), _rbox.get("upside_pct"), _rbox.get("action")
+    if isinstance(_tp, (int, float)):
+        parts.append(f"TP Rp {_n(_tp, 0)} ({_act or 'n/a'}, {_pct(_up)}) berjangkar EV/EBITDA FY26F pada level itu.")
+    else:
+        parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
+                     "bisa dinyatakan (LOUD policy).")
 
     heading = (f"{_qtag(cur.get('date'))}: laba {_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}"
                + (f" ({_pct(_chg(ni, prev['earnings']))} qoq)" if prev and prev.get("earnings") else "")
