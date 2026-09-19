@@ -133,6 +133,9 @@ def test_server_html_has_no_placeholders():
     tpl, html, data = render_html_for_ticker("AMMN", None)
     assert tpl == "single"
     assert "lengkapi fixture" not in html
-    assert "Bauran emas menyalip tembaga" in html
+    # Owner rule (Sep 2026): the thesis rail faces FY26F-28F, not FY2024 actuals -
+    # the old "Bauran emas menyalip tembaga" pillar was retired for the forward
+    # earnings pillar. This pins the replacement, not the removed copy.
+    assert "EBITDA FY26F-28F" in html
     tp = data["cover"]["rating_box"]["tp"]
     assert (f"{tp:,.0f}".replace(",", ".") in html) or (str(tp) in html), tp
