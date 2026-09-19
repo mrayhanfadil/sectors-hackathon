@@ -22,13 +22,17 @@ from typing import Any
 import httpx
 
 from .config import get_settings
+from .credit_policy import cache_only_mode, cache_ttl_seconds, offline_mode
 
 log = logging.getLogger(__name__)
 
 
 # ── Per-endpoint TTL classification (seconds) ─────────────────────────────────
+# LEGACY TIER TABLE - only consulted when SECTORS_CACHE_TTL_DAYS=tiers.
+# Default policy since 19 Sep 2026 is FOREVER (see server/credit_policy.py):
+# Fadil's "make cache forever living" - stored rows are stamped with the
+# NEVER_EXPIRES_AT sentinel and can never be a miss.
 # Trade-off: longer = fewer re-fetches (fewer credits), shorter = fresher data.
-# Default tier mapping documented in server/storage.py SectorsCache docstring.
 
 _TTL_BY_PREFIX: list[tuple[str, int]] = [
     # TIER 1 - intra-day moves (6h)
@@ -108,13 +112,19 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
 
     Lookup chain:
       1. _cache.get(endpoint, params) - if hit and not expired, return cached payload.
+         Rows written through credit_policy.cache_ttl_seconds() never expire at all
+         (forever sentinel), so a re-render never bills just because time passed.
       2. WINDOW-DRIFT GUARD (when allow_window_substitute): an endpoint that
          already has ANY cached row never burns a fresh credit for a different
          date window - the freshest cached payload is served with
          ``_window_substituted`` + ``_requested_params`` + ``_cached_fetched_at``
          attached, so callers (and the Critic) see exactly which window they got.
-      3. _client() + GET path?params=params - populate cache with TTL _ttl_for(endpoint).
-      4. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
+      3. OPERATOR GATES - SECTORS_OFFLINE=1 / SECTORS_CACHE_ONLY=1 raise 599 here
+         (no upstream call). A gate must block billing, never a disk read: both
+         checks sit AFTER the cache + window-substitute lookups on purpose.
+      4. _client() + GET path?params=params - populate cache with TTL from
+         credit_policy.cache_ttl_seconds(endpoint) (forever by default).
+      5. On error, raise; do NOT cache errors (retry on transient 5xx / network blips).
     """
     cache_key = None  # avoid unused-name lints
     from .storage import SectorsCache  # late-bound import (avoids circular at module load)
@@ -155,17 +165,27 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
             )
             return cached_payload
 
-    # 3. SECTORS_CACHE_ONLY=1 - cache-or-nothing (Fadil, Sep 16 2026).
-    #    The agent must NEVER call upstream when this is on; cache miss +
-    #    window-substitute miss + SECTORS_CACHE_ONLY -> raise loud.
-    #    Same shape as SECTORS_OFFLINE so caller code can treat them alike.
+    # 3. Operator gates - refuse UPSTREAM, never a disk read (19 Sep 2026).
+    #    Both SECTORS_OFFLINE=1 and SECTORS_CACHE_ONLY=1 mean "do not spend a
+    #    credit". Before this lived here, SECTORS_OFFLINE was only checked inside
+    #    agents/collector.collect() - so it blocked cache hits through one caller
+    #    while leaving upstream open to every other path (routers, ADK tools).
+    #    The gate belongs at the transport layer: cache hit above wins, footer
+    #    (window-substitute) above wins, anything that would bill raises here.
     if not get_settings().sectors_api_key:
         # Cache miss + no key - let the caller raise SectorsNotConfigured.
         raise SectorsNotConfigured(
             "SECTORS_API_KEY missing - onboard at sectors.app/api, "
             "save key to .env (mode 600). No fallback wired on purpose."
         )
-    if os.getenv("SECTORS_CACHE_ONLY", "").strip().lower() in ("1", "true", "yes"):
+    if offline_mode():
+        raise SectorsError(
+            599,
+            "sectors_offline_mode: SECTORS_OFFLINE=1 set, cache miss for "
+            f"{path} - no upstream call made. Warm the cache / drop a freeze, "
+            "or run scripts/toggle_sectors_offline.sh unlock.",
+        )
+    if cache_only_mode():
         raise SectorsError(
             599,
             "sectors_cache_only: SECTORS_CACHE_ONLY=1 set, cache miss for "
@@ -197,8 +217,8 @@ def _get(path: str, params: dict[str, Any] | None = None, allow_window_substitut
         # payloads crash dict-assuming callers (agents/collector.py,
         # server/routers/endpoints.py) the moment paths actually go live.
         body = {"data": body}
-    cache.set(path, params, body, _ttl_for(path))
-    log.debug("sectors cache MISS %s (ttl=%ds)", path, _ttl_for(path))
+    cache.set(path, params, body, cache_ttl_seconds(path))
+    log.debug("sectors cache MISS %s (ttl=%ss)", path, cache_ttl_seconds(path))
     return body
 
 

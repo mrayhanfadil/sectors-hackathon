@@ -779,6 +779,15 @@ class AgentRunStore:
 # _TTL_BY_PREFIX).
 # ──────────────────────────────────────────────────────────────────────────────
 
+# ── Cache lifetime sentinel (19 Sep 2026) ────────────────────────────────────
+# Fadil: "make cache forever living". A row stamped with NEVER_EXPIRES_AT is a
+# permanent hit: `get()` never treats it as expired (so `SECTORS_STALE_OK=0`
+# can't miss it either) and `prune_expired()` can never delete it (the DELETE
+# only matches `expires_at <= now`). server/credit_policy.py derives every TTL
+# from this constant; nothing else may invent its own.
+NEVER_EXPIRES_AT = 4102444800.0  # 2100-01-01T00:00:00Z
+
+
 class SectorsCache:
     """SQLite-backed cache for Sectors v2 responses.
 
@@ -839,6 +848,11 @@ class SectorsCache:
         strict TTL expiry (fresh pull, burns 1 credit per endpoint).
         Absent rows still miss. Cached 404 markers are NOT unwrapped here -
         server/sectors._get() re-raises them as SectorsError.
+
+        FOREVER ROWS (19 Sep 2026): rows written through `credit_policy.
+        cache_ttl_seconds()` carry `NEVER_EXPIRES_AT`, so even
+        SECTORS_STALE_OK=0 cannot miss them - they are permanently warm, by
+        Fadil's "make cache forever living" rule.
         """
         import os as _os
 
@@ -893,11 +907,20 @@ class SectorsCache:
             return None
         return payload, {"fetched_at": row["fetched_at"], "expires_at": row["expires_at"]}
 
-    def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int) -> None:
-        """Persist payload with TTL (seconds)."""
+    def is_forever(self, expires_at: float) -> bool:
+        """True when a stored expiry is the forever sentinel (never a miss)."""
+        return float(expires_at) >= NEVER_EXPIRES_AT
+
+    def set(self, endpoint: str, params: dict | None, payload: Any, ttl_seconds: int | float | None) -> None:
+        """Persist payload with TTL (seconds). `None` = forever (NEVER_EXPIRES_AT).
+
+        `ttl_seconds=0` keeps its historical meaning (expires immediately) - some
+        tests and callers rely on it. Use `ttl_seconds=None` for forever.
+        """
         key = self._key(endpoint, params)
         now = time.time()
         body = json.dumps(payload, separators=(",", ":"), default=str)
+        expires_at = NEVER_EXPIRES_AT if ttl_seconds is None else min(now + float(ttl_seconds), NEVER_EXPIRES_AT)
         with self._lock:
             self.conn.execute(
                 """
@@ -908,7 +931,7 @@ class SectorsCache:
                     expires_at   = excluded.expires_at,
                     payload_json = excluded.payload_json
                 """,
-                (key, endpoint, now, now + ttl_seconds, body),
+                (key, endpoint, now, expires_at, body),
             )
             self.conn.commit()
 
@@ -926,10 +949,17 @@ class SectorsCache:
             return cur.rowcount
 
     def prune_expired(self) -> int:
-        """Drop rows past their expires_at. Call occasionally from cron / admin."""
+        """Drop rows past their expires_at. Call occasionally from cron / admin.
+
+        Forever rows (`expires_at >= NEVER_EXPIRES_AT`) are excluded by the WHERE
+        clause so no clock skew can ever drop a permanently-warm payload.
+        """
         now = time.time()
         with self._lock:
-            cur = self.conn.execute("DELETE FROM sectors_cache WHERE expires_at <= ?;", (now,))
+            cur = self.conn.execute(
+                "DELETE FROM sectors_cache WHERE expires_at <= ? AND expires_at < ?;",
+                (now, NEVER_EXPIRES_AT),
+            )
             self.conn.commit()
             return cur.rowcount
 
@@ -942,6 +972,10 @@ class SectorsCache:
                 "SELECT COUNT(*) AS n FROM sectors_cache WHERE expires_at <= ?;",
                 (now,),
             ).fetchone()["n"]
+            forever = self.conn.execute(
+                "SELECT COUNT(*) AS n FROM sectors_cache WHERE expires_at >= ?;",
+                (NEVER_EXPIRES_AT,),
+            ).fetchone()["n"]
             by_ep = self.conn.execute(
                 """
                 SELECT endpoint, COUNT(*) AS n, AVG(expires_at - fetched_at) AS avg_ttl
@@ -951,6 +985,7 @@ class SectorsCache:
         return {
             "n_entries": total,
             "n_expired": expired,
+            "n_forever": forever,
             "by_endpoint": [
                 {"endpoint": r["endpoint"], "n": r["n"], "avg_ttl_s": r["avg_ttl"]}
                 for r in by_ep

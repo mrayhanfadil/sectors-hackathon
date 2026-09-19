@@ -507,6 +507,7 @@ def _foreign_flow_series(payload: dict) -> dict:
     import json as _json
     import pathlib as _pl
     import time as _time
+    from server.credit_policy import freeze_max_age_seconds as _freeze_max_age_s
     ticker = str((payload.get("meta") or {}).get("ticker") or "").upper()
     repo = _pl.Path(__file__).resolve().parents[2]
     cand_dirs = (repo / "output" / "cache" / "ticker_fill",
@@ -518,8 +519,16 @@ def _foreign_flow_series(payload: dict) -> dict:
             p = d / f"foreign_flow_{ticker}_90d.json"
             if p.exists():
                 try:
-                    if _time.time() - p.stat().st_mtime > 7 * 24 * 3600:
-                        src = f"freeze {p.name} kedaluwarsa (>7 hari)"
+                    # FREEZE_TTL_DAYS gate (default: forever). The age is disclosed in
+                    # the source string either way, so a reader always sees how old the
+                    # series is - this gate is a degradation, never a silent gap.
+                    max_age_s = _freeze_max_age_s()
+                    age_days = (_time.time() - p.stat().st_mtime) / 86400.0
+                    if _time.time() - p.stat().st_mtime > max_age_s:
+                        # Whole days only - a decimal would print an English separator
+                        # and trip the house format gate (§7-§9: dot thousands, comma decimals).
+                        src = (f"freeze {p.name} kedaluwarsa "
+                               f"(>{max_age_s / 86400.0:.0f} hari)")
                         break
                     body = _json.loads(p.read_text(encoding="utf-8"))
                     raw = body.get("data") or []
@@ -531,7 +540,7 @@ def _foreign_flow_series(payload: dict) -> dict:
                             continue
                     rows.sort(key=lambda r: r["date"])
                     rows = rows[-62:]
-                    src = f"Sectors foreign-flow 90d ({len(rows)} sesi)"
+                    src = f"Sectors foreign-flow 90d ({len(rows)} sesi, freeze {age_days:.0f} hari)"
                 except Exception:
                     rows = []
                 break

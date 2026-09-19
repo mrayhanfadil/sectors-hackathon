@@ -23,6 +23,25 @@ from typing import Any, Dict, List, Optional
 
 logger = logging.getLogger(__name__)
 
+# Credit/lifetime policy (19 Sep 2026): the cache is forever-living by default and
+# an operator gate may only block an UPSTREAM call, never a disk read. Single home:
+# server/credit_policy.py. Late-bound import so this module still loads standalone.
+try:
+    from server.credit_policy import (
+        cache_ttl_seconds,
+        freeze_max_age_seconds,
+        offline_mode as _offline_mode,
+    )
+except Exception:  # pragma: no cover - only when imported outside the repo root
+    def freeze_max_age_seconds() -> float:  # type: ignore[misc]
+        return float("inf")
+
+    def cache_ttl_seconds(endpoint: str | None = None) -> float:  # type: ignore[misc]
+        return 4102444800.0 - time.time()
+
+    def _offline_mode() -> bool:  # type: ignore[misc]
+        return False
+
 # Paths - relative to repo root (where plan.md lives)
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DATA_IDX_DIR = REPO_ROOT / "data" / "idx"
@@ -89,13 +108,19 @@ def _freeze_path_for(ticker: str) -> Path | None:
 
 
 def _ticker_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
-    """Return the per-ticker freeze payload if a freeze exists and is <7d old.
+    """Return the per-ticker freeze payload, subject to the FREEZE_TTL_DAYS gate.
 
     The freeze carries the four endpoints the rate log was burning (corporate-actions,
     quarterly, company/report, daily), so reusing it lets the collector serve a full
     payload with zero Sectors API calls. The directory is owned by the freeze lane;
     another lane wanting the same behaviour just drops a matching `*_{TICKER}.json`
     set into output/cache/ticker_fill/ (or output/cache/ammn_fill/ as legacy alias).
+
+    AGE POLICY (19 Sep 2026, Fadil: "make cache forever living"): the freeze is
+    served FOREVER by default - its mtime no longer refuses anything, because the
+    same bytes are still a cache hit in SQLite and refusing them only forced a
+    live pull. Set `FREEZE_TTL_DAYS=N` to restore an N-day recency gate. Age is
+    ALWAYS reported back as `freeze_age_s` so the caller can disclose freshness.
     """
     fill_dir = _freeze_path_for(ticker)
     if fill_dir is None:
@@ -108,12 +133,13 @@ def _ticker_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
         else:
             return None
     age = time.time() - fill_path.stat().st_mtime
-    # Freeze TTL = 7 days. The freeze lane is the canonical source for any ticker's
-    # data; if the freeze is older than 7 days the analyst should either refresh it
-    # or accept that the collector says sectors_missing_key instead of burning
-    # upstream on a render. The shorter the TTL, the more often this fires when only
-    # ~1 person is editing the freeze by hand.
-    if age > 7 * 24 * 3600:
+    max_age_s = freeze_max_age_seconds()
+    if age > max_age_s:
+        logger.warning(
+            "ticker-fill freeze %s is %.2f days old (> FREEZE_TTL_DAYS=%s) - refusing it. "
+            "Stale-refusal is a degradation only: the SQLite sectors_cache may still serve.",
+            fill_path.name, age / 86400.0, round(max_age_s / 86400.0, 2),
+        )
         return None
     try:
         raw = json.loads(fill_path.read_text(encoding="utf-8"))
@@ -132,10 +158,59 @@ def _ticker_fill_payload(ticker: str) -> Optional[Dict[str, Any]]:
             "dividends": {},
             "freeze_path": str(fill_path),
             "freeze_age_s": int(age),
+            "freeze_age_days": round(age / 86400.0, 2),
         }
     except Exception as e:
         logger.warning("ticker-fill freeze corrupt %s: %s", ticker, e)
         return None
+
+
+def _cache_only_fill(ticker: str) -> Dict[str, Any]:
+    """Disk-only fill for gaps a freeze does not carry (prices, quarterly rows).
+
+    Reads the freshest cached row per endpoint straight out of SectorsCache with
+    `latest_for_endpoint`, which never touches the network - so this cannot bill
+    under any gate and cannot be the reason a credit is spent.
+
+    Why it exists: the freeze branch is served FIRST (curated payload wins), and
+    with the forever-living TTL an old freeze is now served indefinitely. Without
+    this fill, a freeze that carries only `overview` would keep the payload poorer
+    than the sectors path forever, even though the richer rows are sitting in the
+    cache. Fields the freeze already carries always win.
+    """
+    out: Dict[str, Any] = {}
+    try:
+        from server.storage import SectorsCache
+
+        cache = SectorsCache()
+    except Exception:
+        return out
+    try:
+        for key, endpoint in (("prices", f"/daily/{ticker}/"),
+                              ("financials", f"/financials/quarterly/{ticker}/")):
+            row = cache.latest_for_endpoint(endpoint)
+            if not row:
+                continue
+            payload, _meta = row
+            data = payload.get("data") if isinstance(payload, dict) else payload
+            if key == "prices" and isinstance(data, list):
+                prices = [
+                    {"date": str(b.get("date") or b.get("time") or "")[:10],
+                     "close": b.get("close"), "volume": b.get("volume")}
+                    for b in data if isinstance(b, dict)
+                ]
+                if prices:
+                    out["prices"] = prices[-260:]
+            elif key == "financials" and isinstance(data, list) and data:
+                out["financials"] = {"quarterly": data}
+    except Exception as e:  # disk read only - never fatal, never billed
+        logger.info("cache-only fill skipped for %s: %s", ticker, e)
+    finally:
+        try:
+            cache.close()
+        except Exception:
+            pass
+    return out
 
 
 def _cache_path(ticker: str) -> Path:
@@ -205,7 +280,9 @@ def _mirror_to_sectors_cache(ticker: str, payload: Dict[str, Any]) -> None:
     except Exception:
         return
 
-    ttl_s = 93 * 24 * 3600  # storage default; matches upstream _get()
+    # Forever by default (19 Sep 2026): the mirrored rows are the same bytes the
+    # freeze holds, so they must not die on a clock. Honor SECTORS_CACHE_TTL_DAYS.
+    ttl_s = cache_ttl_seconds()
 
     # (b) Mirror from freeze files first - richest source, no upstream cost.
     # Any ticker freeze lane writes:
@@ -392,17 +469,28 @@ def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
         logger.info("sectors client unavailable: %s", e)
         return None
 
-    try:
-        rep = _rep(t, "overview,financials,dividend") or {}
-        fin = _quart(t, 8) or {}
-        start, end = _pinned_window()
-        bars = _daily(t, start, end) or {}
-        acts = _acts(t) or {}
-    except Exception as e:
-        logger.info("sectors miss for %s: %s", t, e)
-        return None
+    # Per-endpoint resilience (19 Sep 2026): a partial cache must still render.
+    # Previously ONE missing endpoint raised and the whole call returned None, so a
+    # 3-of-4 warm cache was indistinguishable from a cold one. Each endpoint is now
+    # attempted independently; the gaps are named instead of collapsing the run.
+    start, end = _pinned_window()
+    gaps: list[str] = []
+
+    def _pull(label: str, fn):  # noqa: ANN001 - tiny local helper, typing adds nothing
+        try:
+            return fn() or {}
+        except Exception as e:  # includes SectorsError(599) from an offline/cache-only gate
+            logger.info("sectors miss %s for %s: %s", label, t, str(e)[:200])
+            gaps.append(f"{label}:{str(e)[:80]}")
+            return {}
+
+    rep = _pull("company_report", lambda: _rep(t, "overview,financials,dividend"))
+    fin = _pull("quarterly", lambda: _quart(t, 8))
+    bars = _pull("daily", lambda: _daily(t, start, end))
+    acts = _pull("corporate_actions", lambda: _acts(t))
 
     if not rep and not fin and not bars:
+        logger.info("sectors all-empty for %s (gaps: %s)", t, gaps)
         return None
 
     fin_items = (fin or {}).get("data") or (fin or {}).get("results") or []
@@ -438,6 +526,7 @@ def _try_sectors(ticker: str) -> Optional[Dict[str, Any]]:
         "quarterly_financials": fin_items,
         "dividends": dividends,
         "history_rows": len(bar_items),
+        "gaps": gaps,
     }
 
 
@@ -510,13 +599,19 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         # itself is the same shape on disk; only the label changed.
         legacy = fill_hit.get("legacy_source") == "ammn_fill_freeze"
         passthrough = "ammn_fill_freeze_passthrough" if legacy else "ticker_fill_freeze_passthrough"
+        # Freeze first, then top up from the cache on disk (never upstream): a freeze
+        # that carries only `overview` must not keep the payload poorer than rows the
+        # cache already holds. Freeze fields always win when both are present.
+        disk_fill = _cache_only_fill(t)
+        financials = fill_hit.get("financials") or disk_fill.get("financials")
+        prices = fill_hit.get("prices") or disk_fill.get("prices")
         payload: Dict[str, Any] = {
             "ticker": t,
             "as_of": _now_iso(),
             "source": fill_hit.get("source"),
             "source_path": fill_hit.get("freeze_path"),
             "company": fill_hit.get("info") or {"symbol": t},
-            "financials": fill_hit.get("financials"),
+            "financials": financials,
             "segments": None,
             "segments_source": passthrough,
             "peers": _peers_for(t),
@@ -525,7 +620,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "holders": None,
             "holders_source": passthrough,
             "dividends": fill_hit.get("dividends") or {},
-            "prices": fill_hit.get("prices"),
+            "prices": prices,
             "ratios": None,
             "ratios_source": passthrough,
             "kpi": None,
@@ -533,19 +628,22 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "esg": {"found": False, "note": "freeze carries no ESG - render bare"},
             "_cache_hit": False,
             "_freeze_age_s": fill_hit.get("freeze_age_s"),
+            "_freeze_age_days": fill_hit.get("freeze_age_days"),
         }
+        if disk_fill.get("financials") and not fill_hit.get("financials"):
+            payload["financials_source"] = "sectors_cache"
+        if disk_fill.get("prices") and not fill_hit.get("prices"):
+            payload["prices_source"] = "sectors_cache"
         _save_cache(t, payload)
         return payload
 
-    # 0b) SECTORS_OFFLINE=1 hard short-circuit - refuse to call upstream on purpose.
-    #    Lets a run operator pause burns without uninstalling the key. Same
-    #    loud-empty contract as keyless: gaps stay missing, never invented.
-    if os.getenv("SECTORS_OFFLINE", "").strip().lower() in ("1", "true", "yes"):
-        raise RuntimeError(
-            f"sectors_offline_mode: SECTORS_OFFLINE=1 set, refusing to call upstream for {t}. "
-            f"Either unset SECTORS_OFFLINE or supply a freeze at output/cache/ticker_fill/"
-            f"company_report_{t}_multisection.json so the collector can serve from disk."
-        )
+    # 0b) NOTE (19 Sep 2026): SECTORS_OFFLINE=1 is NO LONGER a short-circuit here.
+    #     It used to raise before the Sectors path was attempted, which refused a
+    #     perfectly good cache hit and made a warm cache look empty (Fadil caught
+    #     this: "loh kita ngga pake cache data AMMN?"). The gate now lives at the
+    #     transport layer (server/sectors._get, step 3) where it blocks ONLY the
+    #     billable call and lets cache hits + window substitution through. Keep
+    #     walking the free tiers below; the raise at the bottom names the gate.
 
     # 1) IDX local
     idx_hit = _try_idx(t)
@@ -604,6 +702,7 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
             "kpi_source": "sectors_missing_key",
             "esg": {"found": False, "note": "Sectors tidak provide ESG - hide if not found"},
             "sectors_history_rows": sec_hit.get("history_rows"),
+            "sectors_gaps": sec_hit.get("gaps"),
             "_cache_hit": False,
         }
         # Mark Sectors-absent fields explicitly (no synthetic backfill).
@@ -613,6 +712,16 @@ def collect(ticker: str, use_cache: bool = True, force_refresh: bool = False) ->
         return payload
 
     # 3) No source available - LOUD (synthetic fallback retired).
+    #    Under an operator gate the message names the gate, so an operator can tell
+    #    "cache is cold" apart from "upstream is closed on purpose".
+    if _offline_mode():
+        raise RuntimeError(
+            f"sectors_offline_mode: SECTORS_OFFLINE=1 set and no cache entry for {t}. "
+            f"The gate blocked the billable call (nothing was spent). To serve this "
+            f"ticker for free, warm the cache or drop a freeze at "
+            f"output/cache/ticker_fill/company_report_{t}_multisection.json; to allow "
+            f"upstream, run scripts/toggle_sectors_offline.sh unlock."
+        )
     raise RuntimeError(
         "sectors_missing_key: no IDX dump and no Sectors key for "
         f"{t} - set SECTORS_API_KEY or provide data/idx/{t}.json (synthetic fallback retired)"

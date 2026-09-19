@@ -57,13 +57,15 @@ def _missing_key_dict(ticker: str, fetched_at: str) -> dict[str, Any] | None:
     other params: no key -> {data: [], source: 'sectors_missing_key'},
     never fabricated, never raised.
 
-    Also honors SECTORS_CACHE_ONLY=1 (Fadil, Sep 16 2026): even with a key
-    set, refuse upstream and force the agent to use the SQLite cache
-    (`server/storage.SectorsCache` - 93-day TTL) or fail loud. Returns the
-    same {data: [], source: 'sectors_cache_only'} shape so callers treat
-    it like a missing-key result.
+    GATES (revised 19 Sep 2026): this used to also short-circuit on
+    SECTORS_CACHE_ONLY=1 / SECTORS_OFFLINE=1 and hand back empty data. That made
+    a warm cache indistinguishable from a cold one - an agent got `data: []`
+    while `sectors_cache` held the payload, which is exactly the "we don't use
+    the cache" failure Fadil caught. Gates now live at the transport layer
+    (server/sectors._get): a cache hit serves normally, a cold endpoint raises
+    SectorsError(599) which `_error_dict()` labels honestly. So: return None and
+    let the call run.
     """
-    import os as _os
     from server.config import get_settings
 
     if not get_settings().sectors_api_key.strip():
@@ -73,17 +75,27 @@ def _missing_key_dict(ticker: str, fetched_at: str) -> dict[str, Any] | None:
             "fetched_at": fetched_at,
             "data": [],
         }
-    if _os.getenv("SECTORS_CACHE_ONLY", "").strip().lower() in ("1", "true", "yes"):
-        return {
-            "ticker": ticker,
-            "source": "sectors_cache_only",
-            "fetched_at": fetched_at,
-            "data": [],
-            "note": "SECTORS_CACHE_ONLY=1 set - cache miss means upstream "
-                    "would burn a credit. Warm the cache first or set "
-                    "SECTORS_CACHE_ONLY=0.",
-        }
     return None
+
+
+def _error_dict(ticker: str, fetched_at: str, exc: BaseException) -> dict[str, Any]:
+    """Honest error shape for a tool call that failed.
+
+    A 599 from the transport gate is NOT a generic error - it means "the operator
+    closed upstream and this endpoint was cold", with nothing spent. Label it
+    accordingly so the pipeline (and the Critic) can tell the two apart.
+    """
+    msg = str(exc)[:300]
+    if "sectors_offline_mode" in msg:
+        return {"ticker": ticker, "source": "sectors_offline", "fetched_at": fetched_at,
+                "data": [], "error": msg,
+                "note": "SECTORS_OFFLINE=1 - cache miss, no upstream call made (0 credits)."}
+    if "sectors_cache_only" in msg:
+        return {"ticker": ticker, "source": "sectors_cache_only", "fetched_at": fetched_at,
+                "data": [], "error": msg,
+                "note": "SECTORS_CACHE_ONLY=1 - cache miss, no upstream call made (0 credits)."}
+    return {"ticker": ticker, "source": "sectors_error", "fetched_at": fetched_at,
+            "data": [], "error": msg}
 
 
 def _payload(raw: Any) -> Any:
@@ -120,7 +132,7 @@ async def sectors_quarterly(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_quarterly(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_company_report(
@@ -150,7 +162,7 @@ async def sectors_company_report(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_company_report(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_peers(
@@ -178,7 +190,7 @@ async def sectors_peers(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_peers(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_filings(
@@ -206,7 +218,7 @@ async def sectors_filings(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_filings(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_foreign_flow(
@@ -247,7 +259,7 @@ async def sectors_foreign_flow(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_foreign_flow(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_segments(
@@ -277,7 +289,7 @@ async def sectors_segments(
         return {"ticker": t, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_segments(%s) failed: %s", t, e)
-        return {"ticker": t, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(t, fetched_at, e)
 
 
 async def sectors_index_daily(
@@ -307,7 +319,7 @@ async def sectors_index_daily(
         return {"ticker": code, "source": "sectors_missing_key", "fetched_at": fetched_at, "data": []}
     except Exception as e:
         logger.warning("sectors_index_daily(%s) failed: %s", code, e)
-        return {"ticker": code, "source": "sectors_error", "fetched_at": fetched_at, "data": [], "error": str(e)[:300]}
+        return _error_dict(code, fetched_at, e)
 
 
 # Export list for ADK registration (collector only - see agents/adk/app.py)
