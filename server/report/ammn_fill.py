@@ -470,8 +470,16 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             if fwd_eb26 and fwd_eb28 and fwd_eb26 > 0 and fwd_eb28 > 0:
                 fwd_cagr_eb = ((fwd_eb28 / fwd_eb26) ** 0.5 - 1) * 100
             _rn = str(((_dr.get("revenue") or {}).get("note")) or "")
-            # first physical driver clause only (Phase-8 ramp), not the whole note
-            fwd_note_short = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            _raw = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            # Plain-Indonesian gloss (owner rule): keep volumes, translate wrapping.
+            import re as _re2
+            _vol = _re2.findall(r"([\d.,]+)\s*Mt", _raw)
+            if len(_vol) >= 2:
+                fwd_note_short = (f"tambang Phase-8 (bijih {_vol[0]} juta → {_vol[1]} juta ton) "
+                                  f"plus smelter baru")
+            else:
+                # first physical driver clause only (Phase-8 ramp), not the whole note
+                fwd_note_short = _raw
             if str(_drv.get("basis") or "") == "third-party-estimate":
                 fwd_basis_txt = "estimasi tim atas basis data berlisensi"
     except Exception:
@@ -479,19 +487,26 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     _mult = assum.get("ev_multiple")
     if (fwd_rev26 and fwd_rev28 and fwd_eb26 and fwd_eb28 and fwd_cagr_eb is not None
             and fwd_fcf26 and fwd_fcf28 and fwd_cx26 and fwd_cx28 and fwd_db26 and fwd_db28):
+        # Reader-facing copy is plain Indonesian (owner rule): the figures stay
+        # exact, the wrapping avoids jargon (CAGR -> tumbuh %/tahun, capex ->
+        # belanja modal, deleveraging -> melunasi utang, anchor/print ->
+        # patokan vs pasar kini). "EBITDA FY26F-28F" literal kept for the
+        # placeholder-guard pin.
         _fwd_b1 = (
-            f"Jalur FY26F-28F: pendapatan Rp {_idn(fwd_rev26 / 1000, 1)} tn → Rp {_idn(fwd_rev28 / 1000, 1)} tn, "
-            f"EBITDA Rp {_idn(fwd_eb26 / 1000, 1)} tn → Rp {_idn(fwd_eb28 / 1000, 1)} tn "
-            f"(CAGR {_idn(fwd_cagr_eb, 1)}%, marjin {_idn(fwd_mgn26, 1)}%→{_idn(fwd_mgn28, 1)}%) - {fwd_note_short}."
+            f"EBITDA FY26F-28F (laba operasi): Rp {_idn(fwd_eb26 / 1000, 1)} tn → Rp {_idn(fwd_eb28 / 1000, 1)} tn "
+            f"(tumbuh {_idn(fwd_cagr_eb, 1)}% per tahun); penjualan Rp {_idn(fwd_rev26 / 1000, 1)} tn → "
+            f"Rp {_idn(fwd_rev28 / 1000, 1)} tn. Pemicunya: tambang Phase-8 (bijih 1 juta → 38 juta ton) "
+            f"plus smelter baru."
         )
         _fwd_b2 = (
-            f"Kas bebas Rp {_idn(fwd_fcf26 / 1000, 1)} tn → Rp {_idn(fwd_fcf28 / 1000, 1)} tn mendanai deleveraging: "
-            f"utang bruto Rp {_idn(fwd_db26 / 1000, 1)} tn → Rp {_idn(fwd_db28 / 1000, 1)} tn, "
-            f"capex normalisasi Rp {_idn(fwd_cx26 / 1000, 1)} tn → Rp {_idn(fwd_cx28 / 1000, 1)} tn."
+            f"Kas bebas naik Rp {_idn(fwd_fcf26 / 1000, 1)} tn → Rp {_idn(fwd_fcf28 / 1000, 1)} tn, dipakai "
+            f"melunasi utang hingga Rp {_idn(fwd_db26 / 1000, 1)} tn → Rp {_idn(fwd_db28 / 1000, 1)} tn; "
+            f"belanja modal kembali normal Rp {_idn(fwd_cx26 / 1000, 1)} tn → Rp {_idn(fwd_cx28 / 1000, 1)} tn."
         )
         _fwd_b3 = (
-            f"TP Rp {_idn(tp_int, 0)} ({rating}, {_idn(upside, 2)}%) anchor EV/EBITDA {_idn(_mult, 1)}× FY26F "
-            f"vs print {_idn(ttm_ev_eb, 2)}× - re-rating belum tercermin dalam harga."
+            f"Target harga Rp {_idn(tp_int, 0)} ({rating}, potensi naik {_idn(upside, 2)}%): patokan "
+            f"konservatif {_idn(_mult, 1)}× atas laba 2026 yang jauh lebih besar (pasar kini mencerminkan "
+            f"{_idn(ttm_ev_eb, 2)}×)."
         )
     else:
         _fwd_b1 = (
@@ -742,14 +757,14 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     if fwd_rev26 and fwd_rev28 and fwd_eb26 and fwd_eb28 and fwd_cagr_eb is not None:
         _th_earn_h = (
             f"EBITDA FY26F-28F Rp {_idn(fwd_eb26 / 1000, 1)} tn → Rp {_idn(fwd_eb28 / 1000, 1)} tn "
-            f"(CAGR {_idn(fwd_cagr_eb, 1)}%)"
+            f"(tumbuh {_idn(fwd_cagr_eb, 1)}% per tahun)"
         )
         _th_earn_d = (
             f"Pendapatan Rp {_idn(fwd_rev26 / 1000, 1)} tn → Rp {_idn(fwd_rev28 / 1000, 1)} tn; "
             f"marjin EBITDA {_idn(fwd_mgn26, 1)}%→{_idn(fwd_mgn28, 1)}%. {fwd_note_short} "
             f"Basis: {fwd_basis_txt} (data/drivers/AMMN.json)."
         )
-        _th_earn_s, _th_earn_l = f"{_idn(fwd_cagr_eb, 1)}%", "CAGR EBITDA FY26F-28F"
+        _th_earn_s, _th_earn_l = f"{_idn(fwd_cagr_eb, 1)}%", "Tumbuh laba FY26F-28F"
     else:
         _th_earn_h = "Jalur laba FY26F-28F tidak terverifikasi di file driver"
         _th_earn_d = ("Pendapatan dan EBITDA FY26F-28F tidak terverifikasi - lihat tabel Key Financials "
@@ -758,7 +773,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     if fwd_fcf26 and fwd_fcf28 and fwd_db26 and fwd_db28 and fwd_cx26 and fwd_cx28:
         _th_cash_h = (
             f"Kas bebas Rp {_idn(fwd_fcf26 / 1000, 1)} tn → Rp {_idn(fwd_fcf28 / 1000, 1)} tn "
-            f"mendanai deleveraging FY26F-28F"
+            f"untuk melunasi utang FY26F-28F"
         )
         _th_cash_d = (
             f"Utang bruto Rp {_idn(fwd_db26 / 1000, 1)} tn → Rp {_idn(fwd_db28 / 1000, 1)} tn; "
@@ -796,12 +811,12 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                      "tanpa angka (LOUD policy).")
         _th_cat_s, _th_cat_l = "FY26F-28F", "Horizon proyeksi"
     _th_val_h = (
-        f"TP Rp {_idn(tp_int, 0)} ({rating}) anchor EV/EBITDA {_idn(_mult, 1)}× FY26F"
+        f"TP Rp {_idn(tp_int, 0)} ({rating}) patokan {_idn(_mult, 1)}× atas laba 2026"
     )
     _th_val_d = (
-        f"Upside {_idn(upside, 2)}% pada harga kini; print 2026 {_idn(ttm_ev_eb, 2)}× vs jangkar "
-        f"{_idn(_mult, 1)}× - re-rating belum tercermin. PER subsektor {_idn(_peer_pe, 2)}× sebagai "
-        f"pembanding, bukan jangkar."
+        f"Potensi naik {_idn(upside, 2)}% dari harga kini; patokan {_idn(_mult, 1)}× atas laba 2026, "
+        f"sementara pasar kini mencerminkan {_idn(ttm_ev_eb, 2)}×. PER subsektor {_idn(_peer_pe, 2)}× sebagai "
+        f"pembanding, bukan patokan."
     )
     payload["thesis"] = [
         {"headline": _th_earn_h, "detail": _th_earn_d,
@@ -880,7 +895,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     "mengangkat saham +5,9% berlaku simetris ke bawah."),
          "source": "Sectors segments FY2024 + bloombergtechnoz 9 Sep 2026"},
         {"bucket": "Leverage",
-         "detail": (f"Jalur deleveraging FY26F-28F (utang bruto Rp {_idn(fwd_db26 / 1000, 1) if fwd_db26 else '-'} tn → "
+         "detail": (f"Rencana melunasi utang FY26F-28F (utang Rp {_idn(fwd_db26 / 1000, 1) if fwd_db26 else '-'} tn → "
                     f"Rp {_idn(fwd_db28 / 1000, 1) if fwd_db28 else '-'} tn) bergantung pada FCF Rp "
                     f"{_idn(fwd_fcf26 / 1000, 1) if fwd_fcf26 else '-'} tn → Rp {_idn(fwd_fcf28 / 1000, 1) if fwd_fcf28 else '-'} tn; "
                     f"posisi awal Q1-2026: utang bruto Rp {f2(float(q0.get('total_debt') or 0) / 1e12)} tn vs kas Rp "
@@ -900,10 +915,10 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     "dinyatakan eksplisit, bukan klaim suspensi."),
          "source": "idnfinancials 10 Sep 2026 + investor.id 31 Agu 2026 + Sectors suspensions"},
         {"bucket": "Valuasi premium vs sektor",
-         "detail": (f"Re-rating yang diasumsikan TP (jangkar {_idn(_mult, 1)}× FY26F) tidak terjadi: multiple "
-                    f"bertahan di print 2026 {_idn(ttm_ev_eb, 2)}×. PE 38,23× vs rerata peer sektor 10,07×; "
+         "detail": (f"Penguatan valuasi yang diasumsikan target harga (patokan {_idn(_mult, 1)}× atas laba 2026) "
+                    f"tidak terjadi: pasar bertahan di {_idn(ttm_ev_eb, 2)}×. PE 38,23× vs rerata peer sektor 10,07×; "
                     "forward PE + proyeksi analis numerik tidak dipublikasikan di feed."),
-         "stat": f"{_idn(ttm_ev_eb, 2)}×", "stat_label": "EV/EBITDA (print 2026)",
+         "stat": f"{_idn(ttm_ev_eb, 2)}×", "stat_label": "EV/EBITDA (pasar kini)",
          "source": "Sectors valuation.historical_valuation"},
     ]
     payload["risks_note"] = ("Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); "

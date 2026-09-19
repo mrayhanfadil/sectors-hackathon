@@ -425,7 +425,15 @@ def _financial_para(payload: dict, ticker: str) -> dict:
             if _eb26 and _eb28 and _eb26 > 0 and _eb28 > 0:
                 _cagr = ((_eb28 / _eb26) ** 0.5 - 1) * 100
             _rn = str(((_dr.get("revenue") or {}).get("note")) or "")
-            _drv_note = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            _raw = _rn.split(" plus ")[0].split(", new processing")[0].strip()
+            # Plain-Indonesian gloss of the physical driver (owner rule): keep the
+            # volumes, translate the wrapping. Falls back to the raw note.
+            import re as _re
+            _vol = _re.findall(r"([\d.,]+)\s*Mt", _raw)
+            _drv_note = _raw
+            if len(_vol) >= 2:
+                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta → {_vol[1]} juta ton) "
+                             f"plus smelter baru")
             if str(_doc.get("basis") or "") == "third-party-estimate":
                 _drv_basis = "estimasi tim atas basis data berlisensi"
     except Exception:
@@ -433,7 +441,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     if _eb26 and _eb28 and _cagr is not None:
         parts.append(
             f"Jalur FY26F-28F ({_drv_basis}): EBITDA Rp {_n(_eb26 / 1000, 1)} tn → "
-            f"Rp {_n(_eb28 / 1000, 1)} tn (CAGR {_n(_cagr, 1)}%, marjin {_n(_m26, 1)}%→{_n(_m28, 1)}%)"
+            f"Rp {_n(_eb28 / 1000, 1)} tn (tumbuh {_n(_cagr, 1)}% per tahun, marjin {_n(_m26, 1)}%→{_n(_m28, 1)}%)"
             + (f" - {_drv_note}." if _drv_note else ".")
         )
     else:
@@ -443,7 +451,8 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     _rbox = (payload.get("cover") or {}).get("rating_box") or {}
     _tp, _up, _act = _rbox.get("tp"), _rbox.get("upside_pct"), _rbox.get("action")
     if isinstance(_tp, (int, float)):
-        parts.append(f"TP Rp {_n(_tp, 0)} ({_act or 'n/a'}, {_pct(_up)}) berjangkar EV/EBITDA FY26F pada level itu.")
+        parts.append(f"Target harga Rp {_n(_tp, 0)} ({_act or 'n/a'}, potensi naik {_pct(_up)}): patokan "
+                     f"konservatif atas laba 2026 yang jauh lebih besar.")
     else:
         parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
                      "bisa dinyatakan (LOUD policy).")
