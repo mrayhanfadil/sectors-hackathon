@@ -104,6 +104,54 @@ Must stand alone: a reader who reads only these 3 lines knows result, driver, ca
    with direction (e.g. downside: copper -10% ≈ -RpY earnings; upside: smelter
    early commissioning).
 
+### 3.6 Bahasa awam - aturan bahasa untuk seluruh halaman ini (owner, 19 Sep 2026)
+
+Owner feedback: *"menurut gua ini susah dibaca untuk awam"*. The cover spread is the first thing a
+lay reader meets, so every reader-facing string on page 1 is written in plain Indonesian. Figures
+never change; only the wrapping does - every number keeps its source and its exact value.
+
+Surfaces (all of them live on the cover spread) and their status:
+
+| Surface | Source | Rule |
+|---|---|---|
+| Theme title | `data/assumptions/<T>.json` -> `theme_title` | awam; scanned by the audit since 19 Sep 2026 |
+| 3 highlight bullets | `cover.rating_box.key_takeaways` | awam; each bullet still carries a number |
+| P1 heading + body | `server/report/cover_slide1.py::_financial_para` | awam; max 1 bridging quarter sentence |
+| P2 body | `cover.slide2.katalis.body` | awam wrapper; market facts keep their market terms |
+| P3 body | `cover.slide2.valuasi.body` | KEEPS its gate-pinned method markers; never scanned |
+| Thesis rail + risk details | `payload.thesis`, `payload.risks` | awam |
+
+Glossary (what the deck printed -> what it prints now):
+
+| Jangan | Pakai |
+|---|---|
+| `Basis Q1-2026: pendapatan ...` | `Penjualan kuartal itu ...` |
+| `Q1-2026` / `FY26F` / `FY26F-28F` | `Kuartal I 2026` / `2026` / `2026-2028` |
+| `Jalur FY26F-28F` | `Proyeksi 2026-2028` |
+| `Cluster-buy direksi` | `Direksi membeli saham serentak` |
+| `sinyal keyakinan insider` | `tanda orang dalam yakin pada prospek perusahaan` |
+| `vs mid-cycle 28,42x` | `rata-rata jangka panjangnya 28,42 kali` |
+| `re-rating belum tercermin` | `kenaikan penilaian ini belum tercermin` |
+| `multiple 18,38x` | `18,38 kali laba 2026` |
+| `estimasi tim atas basis data berlisensi` | `estimasi tim kami, angka proyeksi` |
+| `marjin kotor 42,4%` | `laba kotor 42,4% dari penjualan` |
+| `EBITDA` tanpa penjelasan | `Laba operasi (EBITDA)` sekali, lalu `laba operasi` |
+| `Rebalancing GDX/GDXJ` | `Masuknya dana indeks GDX/GDXJ` |
+| `kualitatif` | `belum bisa dihitung angkanya` |
+| `exit multiple`, `run-rate`, `capex`, `FCF`, `CAGR`, `qoq/yoy` | dilarang di permukaan awam |
+
+Tetap Inggris karena pasar memang memakainya (owner rule): `BUY` / `SELL` / `HOLD`, `DCF`,
+`WACC`, `EV/EBITDA` (P3), `EBITDA` (diberi glosa sekali), `Priced-in` (diberi glosa di tempat,
+dan gate paragraf 2 mensyaratkan token itu ada).
+
+Enforcement: `server/report/house_rules.py::audit_plain_language` (denylist `PLAIN_JARGON` +
+`PLAIN_JARGON_PATTERNS` untuk tag tahun/kuartal) dipanggil `audit_house_rules` di jalur render dan
+oleh `agents/critic.py`; mutasi di `tests/test_slide_rules_adoption.py` membuktikan gate-nya
+menangkap persis string yang dulu tercetak di halaman ini. Panjang copy tetap dibatasi
+`tests/test_slide2_forecast.py::test_cover_copy_stays_within_the_one_pager_budget` (2600 karakter
+untuk P1+P2+P3): bahasa awam lebih panjang, jadi penerjemahan berikutnya harus muat di anggaran
+itu atau tata letak satu halaman (dan posisi exhibit Key Financials) ikut bergeser.
+
 ## 4. Exhibit specs (titles + data only - NO literal numbers, NO id field)
 
 House rule: renderer owns the global `Exhibit N` counter (Typst figure counter

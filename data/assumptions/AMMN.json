@@ -269,12 +269,12 @@
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
     },
     "theme_title": {
-      "value": "Multiple 2026 di 18,38× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
+      "value": "Pasar baru memakai 18,38 kali laba 2026, padahal rata-rata jangka panjangnya 28,42 kali - kenaikan penilaian ini belum tercermin di harga saham",
       "kind": "derived_editorial",
       "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
       "url": "internal://data/assumptions/AMMN.json",
       "as_of": "2026-09-12",
-      "note": "Membandingkan ev_multiple_latest_print (17,99×, Sectors historical_valuation 2026) dengan ev_multiple (28,42×, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section."
+      "note": "Membandingkan ev_multiple_latest_print (17,99×, Sectors historical_valuation 2026) dengan ev_multiple (28,42×, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section. Bahasa ditulis awam (owner rule 19 Sep 2026): 'multiple' -> 'kali', 'mid-cycle' -> 'rata-rata jangka panjang', 're-rating' -> 'kenaikan penilaian'; angkanya tidak berubah (18,38 vs 28,42)."
     }
   },
   "pending": {
@@ -390,7 +390,7 @@
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
   },
-  "theme_title": "Multiple 2026 di 18,38× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga",
+  "theme_title": "Pasar baru memakai 18,38 kali laba 2026, padahal rata-rata jangka panjangnya 28,42 kali - kenaikan penilaian ini belum tercermin di harga saham",
   "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,

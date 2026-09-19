@@ -233,27 +233,51 @@ def audit_copy_budget(bodies: Iterable[Any]) -> list[str]:
 #: lay-reader surface (highlights, P1, thesis rail, risk details). The P3
 #: valuation paragraph keeps its gate-pinned markers and valuation/audit pages
 #: keep precise terms - those surfaces are never scanned, by design.
+#:
+#: AWAM RULE (owner, 19 Sep 2026, page-1 readability pass): the first block on the cover is
+#: the first thing a lay reader meets, and tokens that are really CODE were still getting
+#: through - "Basis Q1-2026: pendapatan ...", "Jalur FY26F-28F", "Cluster-buy direksi",
+#: "sinyal keyakinan insider", "vs mid-cycle", "re-rating". Those read as plumbing, so they
+#: join the denylist alongside the method jargon. Two shapes need a pattern rather than a
+#: literal: fiscal-year tags (FY26F) and compact quarter tags (Q1-2026) - the plain forms are
+#: "2026" / "2026-2028" and "Kuartal I 2026". Terms the owner keeps in English because the
+#: market uses them (EBITDA, Priced-in, BUY/SELL/HOLD, DCF, WACC) stay, but they must be
+#: glossed in plain words the first time they appear.
 PLAIN_JARGON = (
     "CAGR", "deleveraging", "Deleveraging", "re-rating", "Re-rating",
     "fresh ore", "Fresh ore", "anchor EV", "anchor ", "Anchor ",
     "TTM print", "print 20", "capex", "Capex", "Upside", "upside",
     "FCF", "qoq", "QoQ", "yoy ", "YoY ",
+    # AWAM RULE additions (19 Sep 2026)
+    "Basis ", "mid-cycle", "Mid-cycle", "Cluster-buy", "cluster-buy",
+    "insider", "Insider", "Rebalancing", "rebalancing", "run-rate", "Run-rate",
+    "kualitatif", "Kualitatif", "multiple", "Multiple", "exit multiple",
+)
+
+#: Code-shaped tokens caught by pattern (the literal list cannot enumerate year/quarter tags).
+PLAIN_JARGON_PATTERNS = (
+    r"FY\d{2}F",
+    r"\bQ[1-4][- ]20\d\d\b",
 )
 
 
 def audit_plain_language(payload: Optional[dict]) -> list[str]:
     """Reader-facing copy stays plain Indonesian (PLAIN-LANGUAGE RULE).
 
-    Scans only lay surfaces: cover highlights, P1+P2 bodies, the P1 heading,
-    thesis headlines/details/labels, and risk details. A hit names the surface
-    and the token so the fix is mechanical (translate the wrapping, keep the
-    figure). The P3 valuation paragraph keeps its gate-pinned markers and is
-    never scanned; valuation/audit pages likewise.
+    Scans only lay surfaces: the cover theme title, cover highlights, P1+P2 bodies, the P1
+    heading, thesis headlines/details/labels, and risk details. A hit names the surface and the
+    token so the fix is mechanical (translate the wrapping, keep the figure). The P3 valuation
+    paragraph keeps its gate-pinned markers and is never scanned; valuation/audit pages likewise.
+
+    AWAM RULE (19 Sep 2026): the theme title joined the scanned set - it is the headline a lay
+    reader meets first, and it carried exactly the tokens this rule exists to stop
+    ("Multiple 2026 di 18,38× vs mid-cycle 28,42× - re-rating belum tercermin dalam harga").
     """
     fields: list[tuple[str, str]] = []
     p = payload or {}
     cover = p.get("cover") or {}
     s1 = cover.get("slide1") or {}
+    fields.append(("cover theme title", _text(s1.get("theme_title"))))
     for i, h in enumerate(s1.get("highlights") or [], 1):
         fields.append((f"highlight {i}", _text(h)))
     fp = s1.get("financial_para") or {}
@@ -277,6 +301,15 @@ def audit_plain_language(payload: Optional[dict]) -> list[str]:
                     f"(PLAIN-LANGUAGE RULE), keep the figure"
                 )
                 break
+        else:
+            for pat in PLAIN_JARGON_PATTERNS:
+                m = re.search(pat, text)
+                if m:
+                    violations.append(
+                        f"{surface} uses the code-shaped tag {m.group(0)!r} - write the plain "
+                        f"form instead (PLAIN-LANGUAGE RULE): 2026-2028, Kuartal I 2026"
+                    )
+                    break
     return violations
 
 

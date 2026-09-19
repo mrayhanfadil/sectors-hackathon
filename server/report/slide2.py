@@ -312,11 +312,11 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
         parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
 
     parts.append(
-        "Dampak: belanja modal Q1-2026 turun 69,6% dari kuartal sebelumnya (Rp 5,26 tn ke Rp 1,60 tn) "
+        "Dampak: belanja modal kuartal I 2026 turun 69,6% dari kuartal sebelumnya (Rp 5,26 tn ke Rp 1,60 tn) "
         "dan arus kas bebas berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal rutin Rp 6,39 tn/tahun - "
         "bukan potensi naik baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
-        "rekor tidak dapat dikuantifikasi ke laba (pipeline tanpa tonase/grade/C1, GAP G10) - "
-        "yang tersedia hanya sensitivitas EBITDA di paragraf Valuasi."
+        "rekor tidak bisa dihitung ke laba (pipeline tanpa tonase/grade/C1, GAP G10) - "
+        "yang tersedia hanya sensitivitas laba operasi di paragraf Valuasi."
     )
 
     rel24 = chart.get("rel_pct")

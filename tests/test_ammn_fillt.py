@@ -135,7 +135,10 @@ def test_server_html_has_no_placeholders():
     assert "lengkapi fixture" not in html
     # Owner rule (Sep 2026): the thesis rail faces FY26F-28F, not FY2024 actuals -
     # the old "Bauran emas menyalip tembaga" pillar was retired for the forward
-    # earnings pillar. This pins the replacement, not the removed copy.
-    assert "EBITDA FY26F-28F" in html
+    # earnings pillar. This pins the replacement, not the removed copy. The literal
+    # moved to its plain form on 19 Sep 2026 (AWAM RULE): a lay reader cannot parse
+    # "EBITDA FY26F-28F", so the bullet now reads "Laba operasi (EBITDA)" and the
+    # denylist in house_rules.PLAIN_JARGON_PATTERNS fails the build if FY-tags return.
+    assert "Laba operasi (EBITDA)" in html
     tp = data["cover"]["rating_box"]["tp"]
     assert (f"{tp:,.0f}".replace(",", ".") in html) or (str(tp) in html), tp

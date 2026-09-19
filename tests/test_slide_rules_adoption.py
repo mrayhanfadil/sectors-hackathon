@@ -81,10 +81,10 @@ def _compliant_payload() -> dict:
                 },
                 "jci_chart": {"price": [1, 2, 3]},
                 "analyst": {"name": "RESEARCH", "title": "Equity Analyst"},
-                "theme_title": "Multiple 2026 di 17,99× vs mid-cycle 28,42×",
+                "theme_title": "Pasar baru memakai 17,99 kali laba 2026, rata-rata jangka panjangnya 28,42 kali",
                 "highlights": ["Laba Rp 2,72 tn (turun 61,95% dari kuartal sebelumnya)", "Tembaga US$ 14.708/ton",
                                "TP Rp 5.873 (+20,84%)"],
-                "financial_para": {"body": "Pendapatan Q1-2026 Rp 13,73 tn, turun 36,94% dari kuartal sebelumnya."},
+                "financial_para": {"body": "Penjualan kuartal I 2026 Rp 13,73 tn, turun 36,94% dari kuartal sebelumnya."},
             },
             "slide2": {
                 "katalis": {"body": (
@@ -163,6 +163,22 @@ def test_validator_ignores_documents_without_a_cover() -> None:
      "no decimals"),
     (lambda p: p["cover"]["slide1"]["financial_para"].__setitem__("body", "x" * 3000),
      "one-page budget"),
+    # AWAM RULE (19 Sep 2026): the plain-language denylist has to bite on the tokens that
+    # reached the shipped cover before this pass - a method-jargon literal, a code-shaped
+    # fiscal-year tag, and the compact quarter tag. Each mutation is the exact string the
+    # deck used to print, so the guard is proven on the real regression, not a synthetic one.
+    (lambda p: p["cover"]["slide1"].__setitem__(
+        "theme_title", "Pasar pakai 18,38 kali laba 2026 vs mid-cycle 28,42 kali"),
+     "mid-cycle"),
+    (lambda p: p["cover"]["slide1"].__setitem__(
+        "highlights", ["EBITDA FY26F-28F Rp 33,9 tn", "Tembaga US$ 14.708/ton", "TP Rp 5.873 (+20,84%)"]),
+     "code-shaped tag"),
+    (lambda p: p["cover"]["slide1"]["financial_para"].__setitem__(
+        "body", "Penjualan Q1-2026 Rp 13,73 tn."),
+     "code-shaped tag"),
+    (lambda p: p["cover"]["slide1"]["financial_para"].__setitem__(
+        "body", "Basis kuartal I 2026: penjualan Rp 13,73 tn."),
+     "'Basis '"),
 ])
 def test_validator_catches_each_violation_class(mutate, expected: str) -> None:
     from server.report.house_rules import audit_house_rules

@@ -26,6 +26,7 @@ per-field provenance below rides in ``stats["sources"]`` for the audit comment i
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any, Optional
 
@@ -370,7 +371,6 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     rev_bn = rev / 1e9 if isinstance(rev, (int, float)) else None
     eb_bn = eb / 1e9 if isinstance(eb, (int, float)) else None
     ni_bn = ni / 1e9 if isinstance(ni, (int, float)) else None
-    qtag = _qtag(cur.get("date"))
 
     # FUTURE-STORY RULE (peer #5): P1 is the FORWARD handoff, not a second backward
     # record. Max 1 bridging sentence of backward context (latest quarter + 1
@@ -380,21 +380,25 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     # that already exists (quarterly rows, catalyst ledger, driver file, rating
     # box) - never invented.
     parts: list[str] = []
-    # 1. bridge: latest quarter + 1 figure, nothing more.
+    # 1. bridge: latest quarter + 1 figure, nothing more. AWAM RULE (owner, 19 Sep 2026):
+    # this paragraph is the first thing a lay reader meets, so the wrapping is plain
+    # Indonesian - "Basis Q1-2026: pendapatan ..." became "Penjualan kuartal itu ...".
+    # The figures, the LOUD fallbacks and the clauses are unchanged; only the words are.
     if rev_bn is not None:
-        parts.append(f"Basis {qtag}: pendapatan {_rp_bn(rev_bn)}.")
+        parts.append(f"Penjualan kuartal itu {_rp_bn(rev_bn)}.")
     else:
-        parts.append("Data kuartalan tidak tersedia - tidak ada basis backward yang bisa "
+        parts.append("Data kuartalan tidak tersedia - tidak ada angka kuartal yang bisa "
                      "dinyatakan (LOUD policy).")
     # 2. catalyst: which quantified catalyst must deliver.
     cats = payload.get("catalysts") or []
     if cats and isinstance(cats[0], dict) and cats[0].get("name"):
         first = cats[0]
-        parts.append(f"Ke depan: {first.get('name')} - efek: {first.get('effect') or 'lihat halaman katalis'} "
-                     f"(sumber: {first.get('source') or 'payload'}).")
+        parts.append(f"Yang perlu dicatat: {first.get('name')} - "
+                     f"{first.get('effect') or 'lihat halaman katalis'} "
+                     f"(sumber: {_plain_source(first.get('source'))}).")
     else:
-        parts.append("Katalis ke depan belum terverifikasi di payload - tidak ada jembatan forward yang "
-                     "bisa dinyatakan tanpa angka (LOUD policy).")
+        parts.append("Katalis ke depan belum terverifikasi di payload - tidak ada jembatan "
+                     "yang bisa dinyatakan tanpa angka (LOUD policy).")
     # 3. earnings path: what level the forecast unlocks, from the same driver file
     # the Key Financials exhibit resolves. Ticker-agnostic; loud when absent.
     _tk = (str(ticker or "").upper()
@@ -432,27 +436,32 @@ def _financial_para(payload: dict, ticker: str) -> dict:
             _vol = _re.findall(r"([\d.,]+)\s*Mt", _raw)
             _drv_note = _raw
             if len(_vol) >= 2:
-                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta → {_vol[1]} juta ton) "
-                             f"plus smelter baru")
+                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta ke {_vol[1]} juta ton) "
+                             f"dan smelter baru")
             if str(_doc.get("basis") or "") == "third-party-estimate":
-                _drv_basis = "estimasi tim atas basis data berlisensi"
+                # Keeps the disclosure (these are projections, not realised figures) in plain
+                # words: "estimasi tim atas basis data berlisensi" reads as plumbing to a
+                # lay reader and names a source that is not the reader's business.
+                _drv_basis = "estimasi tim kami, angka proyeksi"
     except Exception:
         pass
     if _eb26 and _eb28 and _cagr is not None:
         parts.append(
-            f"Jalur FY26F-28F ({_drv_basis}): EBITDA Rp {_n(_eb26 / 1000, 1)} tn → "
-            f"Rp {_n(_eb28 / 1000, 1)} tn (tumbuh {_n(_cagr, 1)}% per tahun, marjin {_n(_m26, 1)}%→{_n(_m28, 1)}%)"
+            f"Proyeksi 2026-2028 ({_drv_basis}): laba operasi naik dari "
+            f"Rp {_n(_eb26 / 1000, 1)} tn ke Rp {_n(_eb28 / 1000, 1)} tn (naik {_n(_cagr, 1)}% per tahun, "
+            f"marjin laba operasi {_n(_m26, 1)}% ke {_n(_m28, 1)}%)"
             + (f" - {_drv_note}." if _drv_note else ".")
         )
     else:
-        parts.append("Jalur FY26F-28F tidak terverifikasi di file driver - lihat tabel Key Financials "
+        parts.append("Proyeksi 2026-2028 tidak terverifikasi di file driver - lihat tabel Key Financials "
                      "(LOUD policy, tanpa estimasi karangan).")
     # 4. valuation: what multiple the anchor TP implies on that level.
     _rbox = (payload.get("cover") or {}).get("rating_box") or {}
     _tp, _up, _act = _rbox.get("tp"), _rbox.get("upside_pct"), _rbox.get("action")
     if isinstance(_tp, (int, float)):
-        parts.append(f"Target harga Rp {_n(_tp, 0)} ({_act or 'n/a'}, potensi naik {_pct(_up)}): patokan "
-                     f"konservatif atas laba 2026 yang jauh lebih besar.")
+        parts.append(f"Target harga kami Rp {_n(_tp, 0)} per saham ({_act or 'n/a'}, masih ada ruang naik "
+                     f"{_pct(_up)} dari harga terakhir): angka ini kami hitung hati-hati, sementara laba "
+                     f"2026 diproyeksikan naik jauh lebih besar.")
     else:
         parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
                      "bisa dinyatakan (LOUD policy).")
@@ -464,11 +473,38 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         _chg_txt = f" ({_arah} {_n(abs(_chg_ni), 2)}% dari kuartal sebelumnya)"
     else:
         _chg_txt = ""
-    heading = (f"{_qtag(cur.get('date'))}: laba {_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}"
+    heading = (f"{_qtag_plain(cur.get('date'))}: laba bersih {_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}"
                + _chg_txt
-               + (f", marjin kotor {_n(gp / rev * 100, 1)}%" if isinstance(gp, (int, float))
+               + (f", laba kotor {_n(gp / rev * 100, 1)}% dari penjualan" if isinstance(gp, (int, float))
                   and isinstance(rev, (int, float)) and rev else ""))
     return {"heading": heading, "body": " ".join(parts), "source": src}
+
+
+def _plain_source(src: Any) -> str:
+    """Reader-facing attribution in plain words (AWAM RULE).
+
+    Catalyst sources in the payload carry internal plumbing ("IDX keterbukaan via Sectors
+    filings"); a lay reader needs the publisher, not the pipe. Only the wrapper is trimmed -
+    whoever published the fact still gets named, because that is the disclosure.
+    """
+    s = re.sub(r"\s+via\s+.*$", "", str(src or "").strip(), flags=re.IGNORECASE)
+    s = re.sub(r"\bSectors\b", "", s, flags=re.IGNORECASE)
+    s = re.sub(r"\s{2,}", " ", s).strip(" ,-;")
+    return s or "payload"
+
+
+def _qtag_plain(date: Any) -> str:
+    """Quarter tag a lay reader can read: "Kuartal I 2026" (AWAM RULE).
+
+    `_qtag` keeps the compact Q1-2026 form for exhibit cells and notes; the cover heading
+    takes this one.
+    """
+    roman = {1: "I", 2: "II", 3: "III", 4: "IV"}
+    try:
+        y, m, _ = str(date).split("-")
+        return f"Kuartal {roman.get((int(m) - 1) // 3 + 1, '?')} {y}"
+    except Exception:
+        return str(date)
 
 
 def _qtag(date: Any) -> str:
