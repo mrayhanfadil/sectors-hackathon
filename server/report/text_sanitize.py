@@ -153,13 +153,19 @@ def clean_text(text: str) -> str:
 
 
 def clean(value, _depth: int = 0):
-    """Walk a payload and clean its printable strings. Keys and numbers are left exactly as they are."""
+    """Walk a payload and clean its printable strings. Keys and numbers are left exactly as they are.
+
+    The `facts` sheet is exempt: it is the narrative writer's brief, not reader-facing copy,
+    and its bytes are the freeze key for a written paragraph (`narrative_facts.facts_hash`).
+    Sanitising it would change the hash after it was computed, which silently invalidates
+    every frozen narrative - the failure this exemption exists to prevent.
+    """
     if _depth > 12:
         return value
     if isinstance(value, str):
         return clean_text(value)
     if isinstance(value, dict):
-        return {k: clean(v, _depth + 1) for k, v in value.items()}
+        return {k: (v if k == "facts" else clean(v, _depth + 1)) for k, v in value.items()}
     if isinstance(value, (list, tuple)):
         return [clean(v, _depth + 1) for v in value]
     return value

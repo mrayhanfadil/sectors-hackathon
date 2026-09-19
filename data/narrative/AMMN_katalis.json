@@ -1,0 +1,16 @@
+{
+  "section": "katalis",
+  "ticker": "AMMN",
+  "paragraphs": [
+    "Delapan direksi membeli saham AMMN sebanyak 12.961.700 lembar dengan harga rata-rata Rp 3.548, sehingga posisi mereka kini untung 37,0% di harga Rp 4.860 - tanda orang dalam yakin pada prospek perusahaan. Sentimen makin kuat ketika harga tembaga dunia menyentuh rekor US$ 14.708 per ton, memicu arus beli broker UBS Rp 92,9 miliar ditambah Mandiri Rp 46,6 miliar.",
+    "Smelter tembaga kedua tuntas dengan PAC, sehingga belanja modal turun dari Rp 5,26 tn menjadi Rp 1,60 tn (turun 69,6% dari kuartal sebelumnya), dan kas bebas kuartal itu berbalik positif ke +Rp 1,69 tn. Belanja modal rutin Rp 6,39 tn per tahun - ini puncak belanja modal yang sudah lewat, bukan potensi naik baru.",
+    "Priced-in? Dalam 90 hari terakhir saham AMMN sudah naik 28,57% sementara IHSG 4,58%, atau +23,99 poin persentase secara relatif, sehingga pasar kini memberi EV/EBITDA 18,38 kali - sudah diskon sekitar 37% dari rata-rata 4 tahun di 28,42 kali, karena kenaikan tembaga ke rekor ini belum bisa dihitung ke laba - tonase, kadar, dan biaya produksi per unit belum tersedia."
+  ],
+  "facts_hash": "a06243f26dff5980",
+  "generated_by": "katalis_narrative_writer (google-adk LlmAgent, writer role)",
+  "instruction_rule": "KATALIS_NARRATIVE_RULE",
+  "model": "minimax",
+  "run_id": "katalis_narrative_writer-20260919T104012Z",
+  "generated_at": "2026-09-19T10:40:12+00:00",
+  "chars": 1046
+}

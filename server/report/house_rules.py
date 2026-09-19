@@ -19,6 +19,7 @@ from __future__ import annotations
 import re
 from typing import Any, Iterable, Optional
 from server.report import numfmt as _nf
+from server.report.narrative_facts import printed_numbers
 
 # --- §7 cover (one-pager) ------------------------------------------------------------------
 #: Paragraph 1 + 2 + 3 must share one page with the Key Financials exhibit. Measured at the
@@ -131,13 +132,19 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
 
 
 # ------------------------------------------------------------------ §8 paragraph mandates
-def audit_katalis(text: str) -> list[str]:
-    """Paragraph 2: quantified catalysts + an explicit priced-in verdict."""
+def audit_katalis(text: str, written: bool = False) -> list[str]:
+    """Paragraph 2: quantified catalysts + an explicit priced-in verdict.
+
+    `written=True` for a paragraph a language model wrote: the literal-word arm ("the
+    paragraph must contain 'Katalis'") is template-shaped - written prose says the same
+    thing in its own words, and `audit_katalis_narrative` already checks the real
+    question (does the copy mention a catalyst the fact sheet carried).
+    """
     out: list[str] = []
     body = _text(text)
     if not body:
         return ["paragraph 2 (news/sentiment/catalysts) is missing"]
-    if "Katalis" not in body:
+    if not written and "Katalis" not in body:
         out.append("paragraph 2 does not identify the period's catalysts")
     if "Priced-in" not in body and "price-in" not in body:
         out.append("paragraph 2 has no verdict on whether the market has priced the "
@@ -147,6 +154,86 @@ def audit_katalis(text: str) -> list[str]:
     if not any(mark in body for mark in NO_BASIS_MARKERS) and body.count("Rp") < 2:
         out.append("paragraph 2 neither quantifies each catalyst's impact nor states that it "
                    "cannot be quantified (silence reads as an implied zero)")
+    return out
+
+
+#: A written paragraph 2 is prose about the issuer, not a dump of the deck's own plumbing.
+DECK_SELF_REFERENCE = ("slide ", "halaman ini", "paragraf ini", "bagian ini", "seksi ini",
+                       "exhibit ini", "narasi ini", "layout", "template")
+NARRATIVE_PLUMBING = ("via sectors", "freeze", "payload", "harvest", "artifact", "cache",
+                      "gap g", "pipeline", "sectors_", "api ", "assumptions")
+#: The written paragraph still shares one page with the Key Financials exhibit. Measured:
+#: the deterministic template is 1,094 chars and P1+P2+P3 must stay under the 2,600-char
+#: cover budget, so written prose gets 1,100 (a longer, prettier paragraph moves the
+#: exhibit to the next page).
+NARRATIVE_MAX_CHARS = 1100
+
+
+def audit_katalis_narrative(katalis: Optional[dict]) -> list[str]:
+    """A WRITTEN paragraph 2 stays inside its fact sheet (NARRATIVE RULE).
+
+    Only the `writer_frozen` path is checked: the deterministic template is covered
+    by `audit_katalis` + `audit_plain_language`, and both run on whichever body the
+    payload carries. What is new for written prose is that a language model produced
+    it, so four things are enforced:
+
+      1. no number outside the fact sheet (a writer that invents a figure cannot ship);
+      2. plain Indonesian, same denylist as every other reader-facing surface;
+      3. it talks about the company, not about the deck, and never leaks pipeline
+         plumbing ("freeze", "payload", "via Sectors");
+      4. it still fits the page.
+    """
+    k = katalis or {}
+    if str(k.get("narrative_source") or "") != "writer_frozen":
+        return []
+    body = str(k.get("body") or "")
+    prov = k.get("narrative_provenance") or {}
+    out: list[str] = []
+
+    allowed = {str(x) for x in (prov.get("allowed_numbers") or [])}
+    if not allowed:
+        out.append("paragraph 2: written narrative carries no fact-sheet numbers - the "
+                   "anti-fabrication check cannot run (NARRATIVE RULE)")
+    else:
+        for tok in sorted(printed_numbers(body) - allowed):
+            out.append(f"paragraph 2: written narrative prints '{tok}', which is not in the fact "
+                       f"sheet - the writer may only restate verified figures (NARRATIVE RULE)")
+
+    low = body.lower()
+    for tok in PLAIN_JARGON:
+        if tok.lower() in low:
+            out.append(f"paragraph 2: written narrative uses method jargon '{tok}' - plain "
+                       f"Indonesian only (PLAIN-LANGUAGE RULE)")
+    for pat in PLAIN_JARGON_PATTERNS:
+        m = re.search(pat, body)
+        if m:
+            out.append(f"paragraph 2: written narrative prints '{m.group(0)}' - use the plain form "
+                       f"(PLAIN-LANGUAGE RULE)")
+    # Word-boundary matching, not substring: "api " would otherwise fire on "tapi".
+    for tok in DECK_SELF_REFERENCE:
+        if re.search(rf"\b{re.escape(tok.strip())}\b", low):
+            out.append(f"paragraph 2: written narrative talks about the deck ('{tok.strip()}') - "
+                       f"the copy talks about the company (NARRATIVE RULE)")
+    for tok in NARRATIVE_PLUMBING:
+        if re.search(rf"\b{re.escape(tok.strip())}\b", low):
+            out.append(f"paragraph 2: written narrative leaks pipeline plumbing ('{tok.strip()}') "
+                       f"- reader-facing copy carries no internal vocabulary (NARRATIVE RULE)")
+    if len(body) > NARRATIVE_MAX_CHARS:
+        out.append(f"paragraph 2: written narrative is {len(body)} chars, over the "
+                   f"{NARRATIVE_MAX_CHARS}-char page budget (NARRATIVE RULE)")
+    # The section still has to be about this period's catalysts. Checking the literal word
+    # "Katalis" would fail good prose (the heading already says it), so the check asks the
+    # real question: does the copy mention at least one catalyst the sheet carried?
+    names = [str(n) for n in (prov.get("catalyst_names") or [])]
+    if names:
+        mentioned = 0
+        for name in names:
+            words = [w.lower() for w in re.findall(r"[A-Za-z]{5,}", name)]
+            if any(w in low for w in words):
+                mentioned += 1
+        if not mentioned:
+            out.append("paragraph 2: written narrative mentions none of the period's catalysts "
+                       "- the section mandate still binds (NARRATIVE RULE)")
     return out
 
 
@@ -697,7 +784,11 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations: list[str] = []
     if applicable:
         violations += audit_cover(slide1, slide2)
-        violations += audit_katalis((slide2.get("katalis") or {}).get("body", ""))
+        violations += audit_katalis((slide2.get("katalis") or {}).get("body", ""),
+                                    written=str((slide2.get("katalis") or {}).get(
+                                        "narrative_source") or "") == "writer_frozen")
+        # A paragraph 2 that a language model wrote is checked against its own fact sheet.
+        violations += audit_katalis_narrative(slide2.get("katalis") or {})
         violations += audit_valuasi((slide2.get("valuasi") or {}).get("body", ""))
         violations += audit_copy_budget([
             (slide1.get("financial_para") or {}).get("body", ""),

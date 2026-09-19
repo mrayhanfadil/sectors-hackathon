@@ -146,10 +146,17 @@ def test_multiples_are_computed_at_todays_price(payload):
 
 
 def test_katalis_paragraph_carries_a_priced_in_verdict(payload):
-    body = (payload["cover"]["slide2"]["katalis"])["body"]
-    assert "Katalis terverifikasi" in body
-    assert "Priced-in" in body
-    assert "relatif vs IHSG" in body or "relatif" in body
+    """The mandate, not the phrasing: paragraph 2 has to read off relative performance and
+    state whether the market has priced the catalysts in. The template path opens with
+    "Katalis terverifikasi:"; a paragraph written by the ADK writer says the same thing in
+    its own words, so the literal opener is only required on the template path."""
+    katalis = payload["cover"]["slide2"]["katalis"]
+    body = katalis["body"]
+    if katalis.get("narrative_source") != "writer_frozen":
+        assert "Katalis terverifikasi" in body
+    assert "Priced-in" in body or "priced-in" in body
+    assert "IHSG" in body
+    assert "%" in body
     # the raw pipeline housekeeping note must not leak into reader copy
     assert "cap API 90 hari" not in body
 

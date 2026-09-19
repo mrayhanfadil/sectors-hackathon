@@ -28,6 +28,9 @@ from typing import Any, Optional
 from server.report.forecast_path import resolve_forecast_path
 
 from .cover_slide1 import _n, _pct, _rp_bn
+from .narrative_facts import (IMPACT_GAP_SENTENCE, PRICED_IN_TAIL, _quant_phrase,
+                              build_katalis_facts, fact_numbers, facts_hash,
+                              load_frozen_narrative)
 
 
 def _num(x: Any, digits: int) -> str:
@@ -266,99 +269,92 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
 
 # --------------------------------------------------------------------------- paragraphs
 
-#: Reader-facing labels for the quantified dict the harvest writes per catalyst.
-QKEY_LABEL = {
-    "shares": "{} saham",
-    "avg_price": "harga rata-rata {}",
-    "copper": "tembaga {}",
-    "broker": "arus beli broker {}",
-    "note": "{}",
-}
-#: keys deliberately NOT printed in the catalyst list - capex/FCF are stated in the impact
-#: sentence instead, and the "by" date already appears in the catalyst name.
-QKEY_SKIP = {"capex_q1", "fcf_q1", "by"}
-
-
-def _quant_phrase(q: dict) -> str:
-    bits = []
-    for k, v in (q or {}).items():
-        if k in QKEY_SKIP:
-            continue
-        label = QKEY_LABEL.get(k)
-        if label is None:
-            continue
-        val = str(v).strip()
-        if k == "note":
-            # the note chains several statements; keep the one about this ticker
-            val = val.split(";")[0].strip()
-        bits.append(label.format(val))
-    return ", ".join(bits)
+#: The reader-facing phrase for a catalyst's quantified dict lives in
+#: `narrative_facts._quant_phrase` (imported above) so the template, the fact sheet and the
+#: ADK narrative writer read one phrasing. The label/skip tables moved with it.
 
 
 def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
-    """Paragraph 2 - News, Sentimen & Katalis, with a priced-in verdict."""
-    cats = payload.get("catalysts") or []
-    news = payload.get("news") or []
-    jci = payload.get("cover", {}).get("vs_jci") or {}
-    chart = chart or {}
-    parts: list[str] = []
+    """Paragraph 2 - News, Sentimen & Katalis, with a priced-in verdict.
 
+    Two paths, one fact sheet (`server/report/narrative_facts.py`):
+
+      * `writer_frozen` - the ADK narrative writer's plain-Indonesian prose, used
+        only when its frozen artifact hashes to the CURRENT fact sheet;
+      * `template_fallback` - the deterministic assembly below, same numbers.
+
+    Whichever ran is disclosed in `narrative_source`, so the audit page and the
+    Critic can tell written prose from a template without guessing. The template
+    body is always computed and kept alongside, so a frozen narrative can be
+    diffed against the deterministic read of the same facts.
+    """
+    cats = payload.get("catalysts") or []
+    chart = chart or {}
+    facts = build_katalis_facts(payload, chart)
+    ticker = str((payload.get("meta") or {}).get("ticker") or "")
+
+    parts: list[str] = []
     listed = []
-    for i, c in enumerate(cats[:4], 1):
-        name = str(c.get("name") or "").strip().rstrip(".")
+    for i, c in enumerate(facts["raw"]["catalysts"], 1):
         q = _quant_phrase(c.get("quantified") or {})
-        listed.append(f"({i}) {name}" + (f" - {q}" if q else ""))
+        listed.append(f"({i}) {c['name']}" + (f" - {q}" if q else ""))
     if listed:
         parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
 
+    imp = facts["raw"]["impact"]
     parts.append(
-        "Dampak: belanja modal kuartal I 2026 turun 69,6% dari kuartal sebelumnya (Rp 5,26 tn ke Rp 1,60 tn) "
-        "dan arus kas bebas berbalik +Rp 1,69 tn, mengonfirmasi asumsi belanja modal rutin Rp 6,39 tn/tahun - "
-        "bukan potensi naik baru; posisi direksi kini +37,0% di harga Rp 4.860. Dampak harga tembaga "
-        "rekor tidak bisa dihitung ke laba (pipeline tanpa tonase/grade/C1, GAP G10) - "
-        "yang tersedia hanya sensitivitas laba operasi di paragraf Valuasi."
+        f"Dampak: belanja modal kuartal I 2026 turun {imp['capex_q1_pct']} dari kuartal sebelumnya "
+        f"({imp['capex_from']} ke {imp['capex_to']}) dan arus kas bebas berbalik {imp['fcf_turn']}, "
+        f"mengonfirmasi asumsi belanja modal rutin {imp['routine_capex']} - bukan potensi naik baru; "
+        f"posisi direksi kini {imp['director_position']} di harga {imp['director_price']}. "
+        + IMPACT_GAP_SENTENCE
     )
 
-    rel24 = chart.get("rel_pct")
+    pi = facts["raw"]["priced_in"]
     priced: list[str] = []
-    if isinstance(rel24, list) and rel24:
-        priced.append(f"24 bulan {_pct(rel24[-1])} relatif vs IHSG (harga {_pct(chart.get('abs_chg_pct'))} "
-                      f"vs {_pct(chart.get('idx_chg_pct'))})")
-    # Pull the 90-day relative print out of the fill note rather than pasting the note: the
-    # note also carries pipeline housekeeping ("YTD tak terjangkau, cap API 90 hari") which is
-    # provenance for us, not copy for a reader.
-    m = re.search(r"90d\s+\S+\s+([+\-0-9.,]+%)\s+vs\s+IHSG\s+([+\-0-9.,]+%)\s*\(rel\s+([+\-0-9.,]+\s*pp)\)",
-                  str(jci.get("note") or ""))
-    if m:
-        dec = lambda t: re.sub(r"(\d)\.(\d)", r"\1,\2", t)
-        priced.append(f"90 hari {dec(m.group(1))} vs IHSG {dec(m.group(2))} (rel {dec(m.group(3))})")
-    # === dynamic EV/EBITDA (Sep 17 2026) ===
-    # Same fix as ammn_fill.py: read from canonical block + assumptions embedded
-    # in payload (slide2 doesn't receive assum directly, but the canonical block
-    # carries mcap and the cover block carries the canonical EV inputs).
-    canon = payload.get("canonical_metrics") or {}
-    canon_mcap_bn = canon.get("market_cap_rpbn", {}).get("value") if isinstance(canon.get("market_cap_rpbn"), dict) else canon.get("market_cap_rpbn")
-    # slide2 doesn't see assum; use cover-derived values when assum is absent
-    cover = payload.get("cover") or {}
-    # net_debt_after_cash lives in the cover meta (server/routers/pdf.py wires it);
-    # fallback to a hard proxy if missing.
-    canon_nd = (cover.get("meta") or {}).get("net_debt_after_cash") or 0.0
-    ttm_ebitda = (cover.get("meta") or {}).get("ebitda_ttm") or 0.0
-    if canon_mcap_bn is not None and canon_nd and ttm_ebitda:
-        # canon_mcap_bn is rp_bn (trillion rupiah), canon_nd is full rupiah.
-        # EV in full rupiah = canon_mcap_bn * 1e9 + canon_nd. Ratio = EV / EBITDA.
-        canon_ev_rupiah = canon_mcap_bn * 1e9 + canon_nd
-        ttm_ev_eb = canon_ev_rupiah / ttm_ebitda
-    else:
-        ttm_ev_eb = None
+    if pi.get("rel_24m"):
+        priced.append(f"24 bulan {pi['rel_24m']} relatif vs IHSG (harga {pi['abs_24m']} "
+                      f"vs {pi['idx_24m']})")
+    if pi.get("rel_90d"):
+        priced.append(f"90 hari {pi['rel_90d']} vs IHSG {pi['idx_90d']} (rel {pi['rel_90d_pp']})")
     if priced:
-        ev_eb_str = f"{ttm_ev_eb:.2f}".replace(".", ",") if ttm_ev_eb else "n/a"
-        parts.append(
-            "Priced-in: " + "; ".join(priced) +
-            f" - katalis kuartal ini sebagian tercermin, tetapi EV/EBITDA pasar kini {ev_eb_str}× masih ~37% "
-            "di bawah rata-rata 4 tahun 28,42×."
-        )
-    return {"heading": "News, Sentimen & Katalis", "body": " ".join(parts)}
+        parts.append("Priced-in: " + "; ".join(priced) + " - "
+                     + PRICED_IN_TAIL.format(ev_ebitda=facts["raw"]["ev_ebitda_market"]))
+    template_body = " ".join(parts)
+
+    frozen = load_frozen_narrative(ticker, facts)
+    if frozen:
+        return {
+            "heading": "News, Sentimen & Katalis",
+            "body": frozen["body"],
+            "narrative_source": "writer_frozen",
+            # The hash the render path actually computed: the narrative runner reads it back
+            # so a freeze is verified against the renderer's own view of the facts, not
+            # against a second derivation that could silently disagree.
+            "facts_hash": facts_hash(facts),
+            "facts": facts,
+            "narrative_provenance": {
+                **{k: frozen.get(k) for k in
+                   ("generated_by", "model", "generated_at", "run_id", "facts_hash",
+                    "instruction_rule")},
+                # The fact-sheet numbers travel WITH the payload so the Critic can run the
+                # anti-fabrication check without re-deriving the sheet (and so the check is
+                # reproducible from the frozen artifact alone).
+                "allowed_numbers": sorted(fact_numbers(facts)),
+                "catalyst_names": [c["name"] for c in facts["raw"]["catalysts"]],
+            },
+            "template_fallback_body": template_body,
+        }
+    return {
+        "heading": "News, Sentimen & Katalis",
+        "body": template_body,
+        "narrative_source": "template_fallback",
+        "facts_hash": facts_hash(facts),
+        # The exact sheet this render saw. The narrative runner freezes against THIS, so a
+        # narrative can never be frozen against a second derivation of the facts that
+        # silently disagrees with the renderer (observed: two derivations, two hashes).
+        "facts": facts,
+    }
 
 
 def _shares_to_juta(match: "re.Match") -> str:

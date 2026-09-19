@@ -689,8 +689,52 @@ Output key: kpi_output
 """ + HOUSE_FORMAT_RULE
 
 # ---------------------------------------------------------------------------
-# Thesis Writer - segment growth + one-off adj + catalyst quantified
+# Narrative rule - paragraph 2 as prose, not a data dump
 # ---------------------------------------------------------------------------
+KATALIS_NARRATIVE_RULE = """
+NARRATIVE RULE (paragraph 2 - News, Sentimen & Katalis; every ticker, every run)
+
+Owner feedback on the shipped page: "ini cuma copy paste data, ngga ada narasi yang
+mengalir" and "susah dibaca untuk awam". Paragraph 2 is the second thing a lay reader
+meets, so it is written as flowing plain Indonesian prose - not as a list of every
+quantified field the harvest produced.
+
+Shape (hard):
+- 2-3 short paragraphs, 1-3 sentences each. No "(1) ... (2) ..." enumeration, no
+  ";"-chained dump of the fact sheet, no label colon stacking.
+- Open with what happened and why it matters, not with the first field in the sheet.
+- Connect the sentences ("karena", "sehingga", "sementara", "yang membuat"). The reader
+  should be able to read it out loud and follow it once.
+
+What you may state (hard):
+- ONLY the figures in the fact sheet handed to you, restated as-is with Indonesian
+  decimals ("Rp 5,26 tn", "US$ 14.708/ton", "18,38×"). Never compute, round, sum,
+  annualise or convert a figure - not even a trivial one.
+- A figure that is not in the sheet is a fabrication: server.report.house_rules
+  .audit_katalis_narrative compares every number you print against the sheet and the
+  render REJECTs the document. If something cannot be quantified, say so in words.
+- The mandate survives: the paragraph still says "Priced-in" and still compares
+  EV/EBITDA pasar with the 4-year average. That verdict is required, not decorative.
+
+Language (hard):
+- Plain Indonesian for a lay reader: belanja modal (not capex), kas bebas (not FCF),
+  naik X% per tahun (not CAGR), penjualan (not revenue), orang dalam (not insider),
+  pasar kini (not print). Enforced by audit_plain_language - it will REJECT.
+- Market-standard English stays: BUY / SELL / HOLD, DCF, WACC, EV/EBITDA, IHSG.
+- No code-shaped tags: "Kuartal I 2026", "2026-2028" - never "Q1-2026", "FY26F",
+  "FY26F-28F".
+- Talk about the company. Never about the deck ("slide", "halaman ini", "paragraf ini")
+  and never about our plumbing ("freeze", "payload", "cache", "pipeline", "via Sectors").
+- No em dash; use " - ". Never name another research house.
+
+Length: at most 1200 characters. This paragraph shares one page with the Key Financials
+exhibit; over budget and the exhibit silently moves to the next page.
+
+Output (exact JSON, nothing around it):
+{"paragraphs": ["<paragraph 1>", "<paragraph 2>", ...]}
+"""
+
+
 writer_instruction = """You are a senior institutional research editor and equity strategist. You synthesize quantitative models, operational catalysts and macro context into an accessible institutional-grade equity story - under a hard copy budget and a hard rating gate.
 
 You are the Thesis Writer - you turn numbers into narrative.
@@ -775,7 +819,7 @@ Emit thesis.json: {title, target_price, target_anchor: primary|dcf|secondary|ter
   Critic audits both shapes.
 
 Output key: writer_output
-""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE
+""" + HOUSE_FORMAT_RULE + SLIDE_PAGES_RULE + SLIDE5_RULE + SLIDE6_RULE + SLIDE7_RULE + VALUATION_BASIS_RULE + KATALIS_NARRATIVE_RULE
 
 # ---------------------------------------------------------------------------
 # Visualizer - charts

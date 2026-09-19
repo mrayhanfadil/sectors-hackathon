@@ -152,6 +152,32 @@ menangkap persis string yang dulu tercetak di halaman ini. Panjang copy tetap di
 untuk P1+P2+P3): bahasa awam lebih panjang, jadi penerjemahan berikutnya harus muat di anggaran
 itu atau tata letak satu halaman (dan posisi exhibit Key Financials) ikut bergeser.
 
+### 3.7 Paragraf 2 ditulis agent, bukan template (19 Sep 2026)
+
+Owner: *"ini juga cuma copy paste data, ngga ada narasi yang mengalir. minta agent ADK bikin ini
+lebih easy to read oleh awam"*. Paragraf 2 sekarang punya dua jalur, satu fact sheet:
+
+| Jalur | Kapan | Sumber |
+|---|---|---|
+| `writer_frozen` | `data/narrative/<TICKER>_katalis.json` ada DAN hash-nya cocok dengan fact sheet sekarang | prose dari agent `katalis_narrative_writer` (writer role) |
+| `template_fallback` | artifact tidak ada / hash beda (fakta berubah) | rangkaian deterministik di `slide2.build_katalis` |
+
+Jalur yang dipakai selalu tertulis di payload (`cover.slide2.katalis.narrative_source`), jadi
+Critic dan halaman audit bisa membedakan tulisan agent dari template tanpa menebak.
+
+Fact sheet = `server/report/narrative_facts.py`. Isinya **kalimat lengkap**, bukan pasangan
+key/value mentah: sheet berisi pasangan telanjang mengundang agent menggabungkan dua field jadi
+klaim yang datanya tidak pernah bilang (kejadian nyata: "+37,0%" dan "Rp 4.860" jadi "posisi
+direksi naik 37,0% menjadi Rp 4.860"). Template dan gate membaca nilai mentahnya lewat
+`facts["raw"]`, jadi tidak ada angka yang ditulis dua kali.
+
+Gate `house_rules.audit_katalis_narrative` (jalan dari `audit_house_rules` → Critic + render):
+angka yang tidak ada di fact sheet, jargon metode, kata plumbing internal ("payload", "freeze",
+"via Sectors"), cerita tentang deck sendiri, dan panjang > 1100 karakter. Runner
+(`agents/adk/narrative_runner.py`) menjalankan gate SEBELUM membekukan, jadi prose yang gagal
+tidak pernah masuk deck. Aturan binding untuk agent-nya: `KATALIS_NARRATIVE_RULE` di
+`agents/adk/agents/instructions.py`, dilampirkan ke `writer_instruction`.
+
 ## 4. Exhibit specs (titles + data only - NO literal numbers, NO id field)
 
 House rule: renderer owns the global `Exhibit N` counter (Typst figure counter
