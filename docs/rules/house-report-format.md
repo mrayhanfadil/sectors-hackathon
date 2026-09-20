@@ -141,6 +141,17 @@ Consequence for the footer rule (§4): the last numbered page is the risk/discla
 `pagefoot` literals must run 1..11 with no gap. A test reads the rendered HTML and fails on any
 gap or duplicate, which is what caught this change.
 
+**Method notes print at the back (owner call, Sep 2026).** The eight valuation disclosures
+(currency conversion, multiple basis, target-price basis, unresolved terminal gap, finite
+reserve, discount convention, forecast path, capex basis) used to print inside the sensitivity
+page. The revamp of that page added the levers, the discount-rate chain and the market-price
+banner, and the disclosures then either pushed the page onto a second sheet or forced the note
+type down to 5.6pt. They now print on the back page as their own section, `Catatan Metode
+Valuasi`, in two columns at the deck's normal note size, above the disclaimer. The footer line
+("See important disclosure at the back of this report") already promised exactly that. The gate
+is unchanged: `audit_valuation_page` still reads `valuation_page.notes` from the payload, so the
+disclosure contract is about content, not about which page carries it.
+
 Page 2 is the only page whose content is built outside the templates: `server/report/industry_page.py`
 assembles the three paragraphs from the payload and the assumptions file, and
 `server/report/house_rules.py::audit_industry_page` gates them. The page is narrative, so §1-§2

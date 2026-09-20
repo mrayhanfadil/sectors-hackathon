@@ -223,5 +223,5 @@ def test_html_path_kills_mocks_and_shows_live_engine():
     assert "Blok 3 - Bridge ke equity value" in html
     assert "WACC Components" in html
     assert "Sensitivity Analysis" in html
-    assert "Parameter paling sensitif" in html
+    assert "Keterkaitan asumsi" in html
     assert "sens-base" in html                       # the base case is highlighted        # live BULL FV

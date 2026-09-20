@@ -533,8 +533,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         notes.append(
             f"KONVERSI VALUTA: jalur proyeksi berdenominasi {spine_fx.get('currency') or 'USD'} - "
             f"angka valuasi akhir dalam IDR memakai kurs {_nf.dec(spine_fx.get('rate'), digits=2)} "
-            f"(Rp bn per US$ 1 jt, as of {spine_fx.get('as_of') or 'n/a'}). "
-            f"Rincian perhitungan kurs tercatat di berkas asumsi tim."
+            f"(Rp bn per US$ 1 jt, per {spine_fx.get('as_of') or 'n/a'})."
         )
     # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
     # basis named - a target price whose basis is only in the payload is not disclosed to the reader.
@@ -565,7 +564,7 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
-            f"Unresolved assumption - terminal Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
+            f"Belum tuntas (UNRESOLVED) - cara Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
             f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}× memberi Rp {_rp(primary['fv_exit'])}: selisih "
             f"{_nf.dec(ratio, digits=1)}× pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
         )
@@ -577,21 +576,19 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
             "dinyatakan, bukan disembunyikan."
         )
     notes.append(
-        "Reserve finite: DCF perpetual secara teori tidak defensible untuk tambang dengan umur cadangan "
+        "Cadangan terbatas: nilai akhir tanpa batas waktu (perpetual) secara teori tidak bisa dipertahankan "
+        "untuk tambang dengan umur cadangan "
         "terbatas; terminal pertumbuhan di sini dipakai sebagai proxy jangka panjang, bukan klaim cadangan abadi."
     )
     notes.append(
-        "Konvensi diskonto: akhir tahun (faktor diskonto = 1/(1+WACC)^t). Perhitungan kami menyediakan "
-        "pilihan pertengahan tahun; selisihnya "
-        "±6% lebih tinggi pada nilai wajar, dan cara yang dipakai di sini adalah yang sama dengan perhitungan DCF "
-        "di halaman 1 supaya kedua halaman tidak berbeda."
+        "Konvensi diskonto: akhir tahun (faktor diskonto = 1/(1+WACC)^t). Pilihan pertengahan tahun memberi "
+        "nilai wajar ±6% lebih tinggi; cara yang dipakai di sini sama dengan perhitungan DCF di halaman 1."
     )
     notes.append(
-        "Build-up baris memakai pola linear-fade (g1 -> g_terminal) untuk Revenue selama N tahun, "
-        "lalu D&A / Capex / Delta NWC diturunkan dari rasio FY25A dikalikan Revenue per tahun (port "
-        "16 Sep 2026). Capex di-floor di D&A ratio ketika pertumbuhan positif supaya D&A add-back + "
-        "capex kecil tidak menjadi FCFF printer palsu. Konsistensi internal (Reinvestment Rate x ROIC = "
-        "implied growth) dilaporkan per tahun; gap ke growth yang diasumsikan tidak disembunyikan."
+        "Jalur proyeksi: pendapatan menurun bertahap ke pertumbuhan akhir; D&A, belanja modal, dan "
+        "perubahan modal kerja mengikuti rasio level 2025 dikali pendapatan tiap tahun. Belanja modal "
+        "diberi batas bawah di rasio D&A supaya arus kas bebas tidak terlihat lebih besar dari "
+        "kenyataan. Selisih pertumbuhan tersirat terhadap asumsi kami tidak disembunyikan."
     )
     return notes
 
@@ -703,6 +700,32 @@ def _view(page: dict) -> dict:
     ]
     page["sensitivity"]["base_wacc"] = str(grid.index[base[0]]) if base else "-"
     page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "-"
+    # One-at-a-time levers, measured at the base case: WACC moves with g held at base, g moves with WACC
+    # held at base. The narrative quotes these same numbers so the page cannot show two different swings.
+    _bw = base[0] if base else 0
+    _bg = base[1] if base else 0
+    _wacc_col = [v for v in grid.iloc[:, _bg].tolist() if v is not None]
+    _g_row = [v for v in grid.iloc[_bw].tolist() if v is not None]
+    _lev_wacc = (max(_wacc_col) - min(_wacc_col)) if _wacc_col else 0.0
+    _lev_g = (max(_g_row) - min(_g_row)) if _g_row else 0.0
+    page["sensitivity"]["levers"] = {
+        "dominant": "WACC" if _lev_wacc >= _lev_g else "pertumbuhan akhir",
+        "held_g": str(grid.columns[_bg]) if base else "-",
+        "held_wacc": str(grid.index[_bw]) if base else "-",
+        "wacc": {
+            "from": str(grid.index[0]),
+            "to": str(grid.index[-1]),
+            "delta_rp": _lev_wacc,
+            "delta_rp_label": _fmt0(_lev_wacc),
+        },
+        "g": {
+            "from": str(grid.columns[0]),
+            "to": str(grid.columns[-1]),
+            "delta_rp": _lev_g,
+            "delta_rp_label": _fmt0(_lev_g),
+        },
+    }
+    page["wacc_chain"] = _wacc_chain(page.get("wacc_rows") or [])
     legs = page.get("legs") or {}
     page["crosscheck_rows"] = [
         ("DCF (leg kedua, halaman ini)", _fmt0(b["fv_gordon"]), "Cross-check intrinsik"),
@@ -712,7 +735,7 @@ def _view(page: dict) -> dict:
         ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
     ]
     page["notes"] = list(page.get("notes") or []) + [
-        "Catatan Capex: Capital Expenditure di Exhibit 8 (Rp 13.850,2 bn pada FY2026F) mencerminkan total reinvestment capex (rasio historis capex/revenue yang difloor pada rasio D&A) untuk keperluan build-up FCFF DCF, berbeda dengan sustaining capex / belanja modal di Cash Flow Statement (Exhibit 17: Rp 8.332 bn pada 2026F)."
+        "Catatan Capex: Rp 13.850,2 bn pada 2026F (Exhibit 8) adalah belanja modal untuk arus kas bebas, batas bawah di rasio D&A - berbeda dari laporan arus kas (Exhibit 17: Rp 8.332 bn)."
     ]
     page["narrative"] = _narrative(page)
     return page
@@ -729,38 +752,58 @@ def _narrative(page: dict) -> list[str]:
     dominant = "WACC" if wacc_span >= g_span else "terminal growth"
     d = page["drivers"]
     swing = page["sensitivity"]["swing"] or {"min": 0, "max": 0}
+    lev = page["sensitivity"]["levers"]
+    gap = max(b["fv_gordon"], b["fv_exit"]) / min(b["fv_gordon"], b["fv_exit"])
+    # Owner revamp (Sep 2026): the levers, the shares and the method gap are now printed as components
+    # above this block, so the prose keeps only what no component shows - how the assumptions are wired
+    # into the cash-flow lines, and the one-line flag on the unresolved terminal gap.
     return [
         (
-            f"Parameter paling sensitif: {dominant}. Menggeser WACC dari {str(grid.index[0])} ke "
-            f"{str(grid.index[-1])} mengubah nilai wajar {_fmt0(wacc_span)} per saham; menggeser terminal growth "
-            f"dari {cols[0]} ke {cols[-1]} mengubah {_fmt0(g_span)}. Dua hal membuat hasil ini rapuh: "
-            f"PV of terminal value menyumbang {_fmt(b['tv_share'] * 100, 1)}% dari enterprise value, dan net debt "
-            f"Rp {_fmt0(b['net_debt'] / 1e9)} bn memakan hampir seluruh Rp {_fmt0(b['ev_gordon'] / 1e9)} bn "
-            "enterprise value (equity tersisa "
-            f"Rp {_fmt0(b['equity_gordon'] / 1e9)} bn, {_fmt(b['equity_gordon'] / b['ev_gordon'] * 100, 1)}% dari EV). "
-            "Di dalam grid ini saja nilai wajar bergerak dari "
-            f"Rp {_fmt0(swing['min'])} sampai Rp {_fmt0(swing['max'])}."
-        ),
-        (
-            "Penghubung ke pendorong bisnis (halaman 2-3): jalur pendapatan menurun bertahap "
-            f"({d['revenue_basis']}) sehingga baris Pendapatan, EBIT, Pajak, NOPAT, D&A, Belanja Modal, dan "
-            "perubahan modal kerja "
-            "ikut bervariasi dari tahun ke tahun (bukan ditahan datar dari tahun ke-3); "
+            "Keterkaitan asumsi: jalur pendapatan menurun bertahap "
+            f"({d['revenue_basis']}) sehingga baris Pendapatan sampai perubahan modal kerja ikut "
+            "bervariasi tiap tahun, bukan ditahan datar dari tahun ke-3; "
             f"marjin EBIT {_fmt(d['ebit_margin_fy25'], 1)}% (level 2025); "
-            f"pajak tarif efektif {_fmt(d['effective_tax'], 1)}%, bukan tarif statutori; "
-            f"rasio D&A {_fmt(d['da_ratio'] * 100, 1)}% dari pendapatan, rasio belanja modal {_fmt(d['capex_ratio_applied'] * 100, 1)}% "
-            f"dari pendapatan (batas bawah di rasio D&A saat pertumbuhan positif), "
-            f"perubahan modal kerja dihitung dari perubahan rasio modal kerja {_fmt(d['nwc_ratio'] * 100, 1)}% dari pendapatan. "
-            f"Pemeriksaan konsistensi internal (RR x ROIC = pertumbuhan tersirat) per tahun tersedia di catatan metode."
+            f"pajak tarif efektif {_fmt(d['effective_tax'], 1)}%, bukan tarif pajak resmi; "
+            f"penyusutan (D&A) {_fmt(d['da_ratio'] * 100, 1)}% dan belanja modal {_fmt(d['capex_ratio_applied'] * 100, 1)}% "
+            f"dari pendapatan (batas bawah di rasio D&A); perubahan modal kerja dari rasio "
+            f"{_fmt(d['nwc_ratio'] * 100, 1)}% dari pendapatan."
         ),
         (
-            "Gap antar metode dibaca sebagai unresolved assumption (UNRESOLVED), bukan dirata-rata: terminal Gordon dan terminal "
-            f"exit multiple berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=1)}× "
-            f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) di basis FCFF yang sama, dan basis FCFF normalised "
-            f"(alternatif, FLAT {_fmt((page.get('blocks') or {}).get('documented_fcff', [None])[0], 1)} bn/thn) menghasilkan equity value Rp {_fmt0(page['alternatives']['fcf_doc_steady']['equity_gordon'] / 1e9)} bn. "
-            "Target price laporan berdiri di leg relative (EV/EBITDA FY26F); halaman ini memperlihatkan seberapa "
-            "jauh model arus kas melihat ke bawah."
+            f"Angka di halaman ini kami nyatakan apa adanya: nilai di luar periode proyeksi menyumbang "
+            f"{_fmt(b['tv_share'] * 100, 1)}% dari nilai perusahaan, dan selisih dua cara nilai akhir "
+            f"({_nf.dec(gap, digits=1)}×) kami tandai belum tuntas (UNRESOLVED) di catatan - bukan dirata-rata."
         ),
+    ]
+
+
+def _wacc_chain(rows: list) -> list[dict]:
+    """The discount-rate build-up in plain language, for the sensitivity page.
+
+    Values are pulled out of `wacc_rows` by keyword so this chain can never disagree with the full
+    assumption table on the valuation page: the page shows the path, the table keeps the sources.
+    """
+
+    def val(*needles: str) -> str:
+        for row in rows:
+            label = str(row[0]).lower() if row else ""
+            if all(n in label for n in needles):
+                return str(row[1]) if len(row) > 1 else "-"
+        return "-"
+
+    return [
+        {"name": "Biaya ekuitas (CAPM):",
+         "formula": f"suku bunga bebas risiko {val('risk-free')} + beta saham {val('beta')} × premi risiko pasar {val('erp')}",
+         "value": val("cost of equity")},
+        {"name": "Biaya utang setelah pajak:",
+         "formula": f"biaya utang {val('cost of debt pre-tax')} × (1 - pajak {val('effective tax')})",
+         "value": val("after-tax")},
+        {"name": "Bobot pendanaan:",
+         "formula": f"ekuitas {val('weight of equity')}, utang {val('weight of debt')}",
+         "value": ""},
+        {"name": "WACC:",
+         "formula": (f"{val('weight of equity')} × {val('cost of equity')} + "
+                     f"{val('weight of debt')} × {val('after-tax')}"),
+         "value": val("wacc ="), "total": True},
     ]
 
 

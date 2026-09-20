@@ -322,82 +322,102 @@
   {{ m.section("Valuasi - Analisa Sensitivitas & Skenario", ns) }}
   {% if valuation_page and valuation_page.available %}
   {# ---- Exhibit 10: the sensitivity grid, base case called out ---- #}
-  {{ m.exhibit_auto(ns, "Sensitivity Analysis - WACC x Terminal Growth", "Engine: " ~ valuation_page.sources[2]) }}
-  <table class="fin-table sens">
-    <thead>
-      <tr><th>WACC \ g</th>{% for g in valuation_page.sensitivity.columns %}<th>{{ g }}</th>{% endfor %}</tr>
-    </thead>
-    <tbody>
-      {% for r in valuation_page.sensitivity.rows %}
-      <tr>
-        <td>{{ r.label }}</td>
-        {% for c in r.cells %}
-        <td class="num sens-cell {{ c.band }} {{ 'sens-base' if c.base else '' }}">{{ c.value}}</td>
-        {% endfor %}
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
-  <div class="heat-key">
-    <span class="k" style="background: rgba(192,57,43,.86);"></span> &lt; −50%
-    <span class="k" style="background: rgba(192,57,43,.34); margin-left:3pt;"></span> −50%…−10%
-    <span class="k" style="background: #F2E9DC; margin-left:3pt;"></span> ±10%
-    <span class="k" style="background: #DCEBF7; margin-left:3pt;"></span> +10%…+50%
-    <span class="k" style="background: #0928B1; margin-left:3pt;"></span> &gt; +50%
-    <span style="margin-left:4pt;">warna sel = posisi vs base case (Rp {{ valuation_page.sensitivity.base_fv | idn(0) }}); grid ini sendiri duduk jauh di bawah harga pasar {{ cover.rating_box.price | idn(0) }}</span>
-  </div>
-  <p class="muted" style="font-size:6pt; margin-top:2pt;">
-    Base case (WACC {{ valuation_page.sensitivity.base_wacc }} · g {{ valuation_page.sensitivity.base_g }})
-    dibingkai; isi sel = Fair Value per saham (Rp). Rentang grid:
-    Rp {{ valuation_page.sensitivity.swing.min | idn(0) }} – Rp {{ valuation_page.sensitivity.swing.max | idn(0) }}.
-  </p>
-  {{ m.exhibit_source(ns) }}
-
-  {# ---- the integrated narrative the rules ask for, read as components ---- #}
   {% set br = valuation_page.bridge %}
   {% set sens = valuation_page.sensitivity %}
-  <div class="card-tint" style="margin-top:5pt;">
+  {% set lev = sens.levers %}
+  <div class="card-tint" style="margin-top:6pt;">
     <p class="sens-title">Analisa sensitivitas dan keterkaitan asumsi</p>
+
+    <p class="sens-h">Dua asumsi yang paling menggerakkan nilai</p>
+    <div class="lever-grid">
+      <div class="lever {{ 'lever-top' if lev.dominant == 'WACC' }}">
+        <div class="lever-k">Diskonto (WACC){{ ' - pengaruh terbesar' if lev.dominant == 'WACC' }}</div>
+        <div class="lever-v">Rp {{ lev.wacc.delta_rp_label }}</div>
+        <div class="lever-n">per saham, saat WACC digeser {{ lev.wacc.from }} ke {{ lev.wacc.to }} dengan
+          pertumbuhan akhir tetap {{ lev.held_g }}</div>
+      </div>
+      <div class="lever {{ 'lever-top' if lev.dominant != 'WACC' }}">
+        <div class="lever-k">Pertumbuhan akhir (g){{ ' - pengaruh terbesar' if lev.dominant != 'WACC' }}</div>
+        <div class="lever-v">Rp {{ lev.g.delta_rp_label }}</div>
+        <div class="lever-n">per saham, saat g digeser {{ lev.g.from }} ke {{ lev.g.to }} dengan WACC tetap
+          {{ lev.held_wacc }}</div>
+      </div>
+    </div>
+
+    <p class="sens-h" style="margin-top:7pt;">Dari mana angka diskonto {{ sens.base_wacc }} berasal</p>
+    <div class="wacc-chain">
+      {% for st in valuation_page.wacc_chain %}
+      <div class="wacc-step {{ 'wacc-total' if st.total }}">
+        <span class="wacc-lbl"><b>{{ st.name }}</b> <span class="wacc-formula">{{ st.formula }}</span></span>
+        <span class="wacc-val">{{ st.value }}</span>
+      </div>
+      {% endfor %}
+      <p class="wacc-note">Rincian tiap baris beserta sumbernya ada di tabel asumsi diskonto halaman
+        sebelumnya; di sini hanya jalur hitungnya.</p>
+    </div>
+
+    {{ m.exhibit_auto(ns, "Sensitivity Analysis - WACC x Terminal Growth", "Engine: " ~ valuation_page.sources[2]) }}
+    <div class="sens-ref">
+      <span class="sens-ref-k">Bukan penentu target harga</span>
+      <span class="sens-ref-v">Target harga Rp {{ valuation_page.legs.ev_ebitda | idn(0) }}</span>
+      <span class="sens-ref-n">Tabel ini hanya skenario model arus kas (DCF): seluruh 25 kombinasinya di bawah
+        harga pasar Rp {{ cover.rating_box.price | idn(0) }} (tertinggi Rp {{ valuation_page.sensitivity.swing.max | idn(0) }},
+        {{ ((valuation_page.sensitivity.swing.max / (cover.rating_box.price | float) - 1) * 100) | dec(0) }}%). Target
+        harga ditopang cara pembanding di halaman sebelumnya, bukan tabel ini.</span>
+    </div>
+    <table class="fin-table sens">
+      <thead>
+        <tr><th>WACC &#8595;<br>g &#8594;</th>{% for g in valuation_page.sensitivity.columns %}<th>{{ g }}</th>{% endfor %}</tr>
+      </thead>
+      <tbody>
+        {% for r in valuation_page.sensitivity.rows %}
+        <tr>
+          <td>{{ r.label }}</td>
+          {% for c in r.cells %}
+          <td class="num sens-cell {{ c.band }} {{ 'sens-base' if c.base else '' }}">{{ c.value}}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="heat-key">
+      <span class="k" style="background: rgba(192,57,43,.55);"></span> di bawah nilai dasar
+      <span class="k" style="background: #F2E9DC; margin-left:6pt;"></span> di sekitar nilai dasar
+      <span class="k" style="background: #DCEBF7; margin-left:6pt;"></span> di atas nilai dasar
+      <span style="margin-left:7pt;">Angka dalam sel = nilai wajar per saham (Rp); ke bawah WACC makin tinggi, ke
+        kanan pertumbuhan akhir makin tinggi; sel bergaris tebal = asumsi dasar kami.</span>
+    </div>  {{ m.exhibit_source(ns) }}
 
     <div class="sens-strip">
       <div class="sens-chip">
-        <div class="k eyebrow">PV terminal / EV</div>
+        <div class="k eyebrow">Nilai di luar periode proyeksi</div>
         <div class="v">{{ (br.tv_share * 100) | pct(1) }}</div>
-        <div class="n">nilai wajar bertumpu di luar periode proyeksi</div>
-      </div>
-      <div class="sens-chip">
-        <div class="k eyebrow">Net debt / EV</div>
-        {% if br.net_debt_share is not none %}<div class="v">{{ (br.net_debt_share * 100) | pct(1) }}</div>
-        {% else %}<div class="v">-</div>{% endif %}
-        <div class="n">sisa untuk pemegang saham Rp {{ (br.equity_gordon / 1e12) | idn(2) }} tn</div>
-      </div>
-      <div class="sens-chip">
-        <div class="k eyebrow">Rentang grid WACC × g</div>
-        <div class="v">Rp {{ sens.swing.min | idn(0) }} – {{ sens.swing.max | idn(0) }}</div>
-        <div class="n">dasar Rp {{ sens.base_fv | idn(0) }} (WACC {{ sens.base_wacc }} · g {{ sens.base_g }})</div>
+        <div class="n">dari nilai perusahaan bertumpu di luar periode proyeksi (nilai akhir); sisa
+          Rp {{ (br.equity_gordon / 1e12) | idn(2) }} tn untuk pemegang saham, setelah utang bersih
+          Rp {{ (br.net_debt / 1e12) | idn(2) }} tn</div>
       </div>
     </div>
 
     <div class="sens-two">
       <div>
-        <p class="sens-h">Enterprise value → ekuitas (basis Gordon)</p>
+        <p class="sens-h">Nilai perusahaan ke nilai ekuitas</p>
         <div class="bridge-bar">
           <div class="seg-eq" style="width: {{ (br.equity_gordon / br.ev_gordon * 100) | round(2) }}%;"></div>
           <div class="seg-nd" style="width: {{ (br.net_debt / br.ev_gordon * 100) | round(2) }}%;"></div>
         </div>
         <table class="bridge-tbl">
-          <tr><td>Enterprise value</td><td class="num">{{ (br.ev_gordon / 1e12) | idn(2) }} tn</td></tr>
-          <tr><td>(−) Net debt</td><td class="num">{{ (br.net_debt / 1e12) | idn(2) }} tn</td></tr>
-          <tr class="tot"><td>Equity value</td><td class="num">{{ (br.equity_gordon / 1e12) | idn(2) }} tn</td></tr>
+          <tr><td>Nilai perusahaan</td><td class="num">{{ (br.ev_gordon / 1e12) | idn(2) }} tn</td></tr>
+          <tr><td>(-) Utang bersih</td><td class="num">{{ (br.net_debt / 1e12) | idn(2) }} tn</td></tr>
+          <tr class="tot"><td>Nilai ekuitas</td><td class="num">{{ (br.equity_gordon / 1e12) | idn(2) }} tn</td></tr>
         </table>
       </div>
       <div>
-        <p class="sens-h">Sebaran metode (Rp/saham)</p>
+        <p class="sens-h">Sebaran nilai wajar antar cara hitung (Rp/saham)</p>
         {% set price_now = cover.rating_box.price | float %}
         {% set meth_max = (valuation_page.legs.ev_ebitda if valuation_page.legs.ev_ebitda > price_now else price_now) * 1.18 %}
         <div class="meth-chart-wrap">
           <div class="meth-bars">
-            {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("Target harga (patokan EV/EBITDA)", valuation_page.legs.ev_ebitda, "b3")] %}
+            {% for mlabel, mval, mcls in [("DCF, nilai akhir Gordon (g " ~ sens.base_g ~ ")", br.fv_gordon, "b1"), ("DCF, nilai akhir dari kelipatan (exit multiple)", br.fv_exit, "b2"), ("Target harga (patokan EV/EBITDA)", valuation_page.legs.ev_ebitda, "b3")] %}
             <div class="meth-col">
               <div class="meth-val">{{ mval | idn(0) }}</div>
               <div class="meth-track">
@@ -411,30 +431,19 @@
             </div>
           </div>
         </div>
-        <p class="sens-cap">Gap Gordon vs exit multiple {{ (br.fv_exit / br.fv_gordon) | idn(1) }}× pada basis FCFF yang sama -
-          dibaca sebagai asumsi belum tuntas, bukan dirata-rata.</p>
+        <p class="sens-cap">Selisih dua cara nilai akhir {{ (br.fv_exit / br.fv_gordon) | idn(1) }}× pada arus kas
+          yang sama - dibaca sebagai asumsi yang belum tuntas, bukan dirata-rata.</p>
       </div>
     </div>
 
+    <p class="sens-h" style="margin-top:7pt;">Cara membaca angka di halaman ini</p>
     <div class="sens-narr">
       {% for para in valuation_page.narrative %}
       <p class="small">{{ para }}</p>
       {% endfor %}
     </div>
+  </div>
 
-    <div class="note-list">
-      {% for note in valuation_page.notes %}
-      {% set head, _sep, body = note.partition(" - ") %}
-      <div class="note">
-        {% if body and head and head == head|upper and head|length < 64 %}
-        {# the label keeps its capitals: the disclosure rule checks the paper for the term itself #}
-        <span class="note-k">{{ head }}</span><span class="note-b">{{ body }}</span>
-        {% else %}
-        <span class="note-b note-b-wide">{{ note }}</span>
-        {% endif %}
-      </div>
-      {% endfor %}
-    </div>
   </div>
 
   {# Fadil: the Exhibit 12 "Metode pembanding" table was a 2-row page that repeated the
@@ -465,6 +474,23 @@
   {# rule 1: flush the pending exhibit before the closing blocks, so the source line
      lands directly under its object instead of after the disclaimer. #}
   {{ m.exhibit_source(ns) }}
+  {% if valuation_page and valuation_page.notes %}
+  {{ m.section("Catatan Metode Valuasi", ns) }}
+  <div class="note-list note-cols">
+    {% for note in valuation_page.notes %}
+    {% set head, _sep, body = note.partition(" - ") %}
+    <div class="note">
+      {% if body and head and head == head|upper and head|length < 64 %}
+      {# the label keeps its capitals: the disclosure rule checks the paper for the term itself #}
+      <span class="note-k">{{ head }}</span><span class="note-b">{{ body }}</span>
+      {% else %}
+      <span class="note-b note-b-wide">{{ note }}</span>
+      {% endif %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   {{ m.section("Disklaimer", ns) }}
   {{ m.disclaim() }}
   {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}

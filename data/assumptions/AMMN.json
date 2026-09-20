@@ -92,7 +92,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0× atas EBITDA proyeksi 2026, kelipatan pilihan tim (bukan titik tengah aritmetik: (13,3+15,7)/2 = 14,5). Dasar hanya dari data Sectors: kelipatan pasar sendiri 13,3× untuk 2026 (harga 11 Sep 2026) ditambah premi masa pembangunan smelter/Phase-8 yang belum tercermin di kelipatan itu; pembanding pita -1 simpangan baku 22,13× dan uji kepekaan ±2× (13×-17×). Bukan rata-rata sejarah sendiri.",
+  "ev_multiple_basis": "Target 15,0× atas EBITDA proyeksi 2026, kelipatan pilihan tim (bukan titik tengah aritmetik: (13,3+15,7)/2 = 14,5). Dasar hanya dari data Sectors: kelipatan pasar sendiri 13,3× untuk 2026 (harga 11 Sep 2026) ditambah premi masa pembangunan smelter/Phase-8 yang belum tercermin di kelipatan itu; pembanding batas bawah sebaran (rata-rata kurang 1 simpangan baku) 22,13× dan uji kepekaan ±2× (13×-17×). Bukan rata-rata sejarah sendiri.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,

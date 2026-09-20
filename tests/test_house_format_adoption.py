@@ -566,7 +566,7 @@ def test_shipped_pdf_passes_the_artifact_check(tmp_path: Path) -> None:
         assert marker in val, f"slide 4 lost {marker!r} on paper"
     val2 = doc[5].get_text()
     assert "Sensitivity Analysis" in val2, "the sensitivity grid moved off the valuation spread"
-    assert "Parameter paling sensitif" in val2, "the slide-4 narrative is missing"
+    assert "Keterkaitan asumsi" in val2, "the slide-4 narrative is missing"
     assert "UNRESOLVED" in val2, "the terminal-method gap is not disclosed on paper"
 
 

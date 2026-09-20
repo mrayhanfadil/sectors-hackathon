@@ -181,18 +181,53 @@
   /* Sensitivity components: the reviewer called the old block a wall of text - every value it narrated was
      already in the payload, so the page now shows them as a strip, a bridge and a method spread, and keeps the
      prose for the reasoning. */
-  .sens-title { font-size: 8pt; font-weight: 700; color: var(--ab-navy); margin: 0 0 2pt; }
-  .sens-strip { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 4.5pt; margin-bottom: 3.5pt; }
-  .sens-chip { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 2.4pt 4.5pt 2.8pt;
+  .sens-title { font-size: 8.5pt; font-weight: 700; color: var(--ab-navy); margin: 0 0 2.5pt; }
+  /* Owner revamp (Sep 2026): the page had to say what it answers before it showed numbers, name the two
+     assumptions that actually move the value, and show where the discount rate comes from. */
+  .sens-lead { font-size: 7pt; color: var(--ink); margin: 0 0 4pt; line-height: 1.3; }
+  .sens-ref { display: flex; align-items: baseline; gap: 6pt; margin: 1pt 0 2pt; padding: 2pt 6pt;
+              border-left: 2.5pt solid var(--ab-navy); background: var(--ab-ice-faint); }
+  .sens-ref-k { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: .05em;
+                color: var(--ab-ink-muted); white-space: nowrap; }
+  .sens-ref-v { font-size: 9pt; font-weight: 700; color: var(--ab-navy); font-variant-numeric: tabular-nums;
+                white-space: nowrap; }
+  .sens-ref-n { font-size: 6.4pt; color: var(--ink); line-height: 1.3; }
+  .lever-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5pt; }
+  .lever { border: .8pt solid var(--ab-navy-soft); border-radius: 3pt; padding: 2.4pt 5pt 2.6pt; background: #fff; }
+  .lever-top { background: var(--ab-ice-faint); box-shadow: inset 2.5pt 0 0 var(--ab-navy); }
+  .lever-k { font-size: 6pt; font-weight: 700; text-transform: uppercase; letter-spacing: .04em;
+             color: var(--ab-ink-muted); }
+  .lever-v { font-size: 9.6pt; font-weight: 700; color: var(--ab-navy); font-variant-numeric: tabular-nums;
+             line-height: 1.05; margin-top: .5pt; }
+  .lever-n { font-size: 6pt; color: var(--muted); line-height: 1.3; margin-top: 1pt; }
+  .wacc-chain { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 2pt 6pt 2.4pt; background: #fff; }
+  .wacc-step { display: grid; grid-template-columns: 1fr 46pt; align-items: baseline;
+               padding: .8pt 0; border-top: .5pt dotted var(--ab-rule); }
+  .wacc-step:first-child { border-top: 0; }
+  .wacc-lbl { font-size: 6.6pt; color: var(--ink); line-height: 1.3; }
+  .wacc-lbl b { color: var(--ab-navy); }
+  .wacc-formula { color: var(--ab-ink-muted); font-size: 6.1pt; }
+  .wacc-val { font-size: 6.9pt; font-weight: 700; color: var(--ab-navy); text-align: right;
+              font-variant-numeric: tabular-nums; }
+  .wacc-total { border-top: .8pt solid var(--ab-navy); margin-top: 1pt; padding-top: 1.6pt; }
+  .wacc-total .wacc-lbl, .wacc-total .wacc-val { font-size: 7.4pt; }
+  .wacc-note { font-size: 5.8pt; color: var(--muted); margin: 2pt 0 0; line-height: 1.25; }
+  /* The disclosure block is long on this page; two columns keep every word and still fit one page. */
+  .note-list.note-cols { columns: 2; column-gap: 12pt; margin-top: 2pt; }
+  .note-cols .note-k, .note-cols .note-b { font-size: 6.2pt; line-height: 1.18; text-align: left;
+                                          hyphens: none; }
+  .note-cols .note { display: block; }
+  .sens-strip { display: grid; grid-template-columns: 1fr; gap: 4.5pt; margin-bottom: 3pt; }
+  .sens-chip { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 2pt 4.5pt 2.2pt;
                background: var(--ab-ice-faint); }
   .sens-chip .k { font-size: 6pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
                   color: var(--ab-ink-muted); }
   .sens-chip .v { font-size: 10pt; font-weight: 700; color: var(--ab-navy);
                   font-variant-numeric: tabular-nums; margin-top: .5pt; }
   .sens-chip .n { font-size: 6pt; color: var(--muted); line-height: 1.25; margin-top: .5pt; }
-  .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 8pt; }
+  .sens-two { display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; }
   .sens-h { font-size: 7pt; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
-            color: var(--ink); margin: 0 0 3pt; }
+            color: var(--ink); margin: 0 0 2.5pt; }
   .bridge-bar { display: flex; height: 6pt; border-radius: 1.5pt; overflow: hidden; margin-bottom: 2.5pt; }
   .bridge-bar .seg-eq { background: var(--brand); }
   .bridge-bar .seg-nd { background: #E4E7EC; }
@@ -212,7 +247,8 @@
   .field .axis-end { position: absolute; top: 25pt; font-size: 6pt; color: var(--muted); }
   .field .axis-end.right { right: 0; }
   .sens-cap { font-size: 6pt; color: var(--muted); line-height: 1.25; margin: 0; }
-  .sens-narr { display: grid; grid-template-columns: 1fr 1fr; gap: 2.5pt 12pt; margin-top: 4pt; }
+  .sens-narr { columns: 2; column-gap: 12pt; margin-top: 1.2pt; font-size: 6.2pt; }
+  .sens-narr p { margin: 0 0 2.5pt; break-inside: avoid; }
   .sens-narr p { font-size: 7.5pt; line-height: 1.15; margin: 0 0 1.5pt; }
   .note-list { margin-top: 3pt; }
   .note { display: grid; grid-template-columns: 58pt 1fr; gap: 6pt; border-top: .5pt solid var(--ab-rule);
@@ -257,6 +293,7 @@
   /* Sensitivity heatmap: colour encodes upside, the same reading as the tools' heatmap - red where the grid
      prices below the market, cream at parity, navy where it prices well above. */
   .fin-table.sens td.sens-cell { text-align: right; font-variant-numeric: tabular-nums; }
+  .fin-table.sens td, .fin-table.sens th { padding-top: .7pt; padding-bottom: .7pt; }
   .fin-table.sens td.h-neg2 { background: rgba(192,57,43,.86); color: #fff; }
   .fin-table.sens td.h-neg1 { background: rgba(192,57,43,.34); color: var(--ab-ink); }
   .fin-table.sens td.h-mid  { background: #F2E9DC; color: var(--ab-ink); }
@@ -265,7 +302,7 @@
   .fin-table.sens td.sens-base { outline: 1.2pt solid var(--ab-navy); outline-offset: -1.2pt; font-weight: 700; }
   .fin-table.sens thead th:first-child { background: var(--ab-navy-mid); }
   .heat-key { display: flex; align-items: center; gap: 3.5pt; font-size: 6pt; color: var(--ab-ink-muted);
-              margin-top: 1.2pt; }
+              margin-top: .6pt; }
   .heat-key .k { width: 11pt; height: 6pt; border-radius: 1pt; display: inline-block; }
 
   /* Method comparison: bars in navy / ice / ice-pale with beginAtZero scale and market-price reference line */
@@ -275,12 +312,12 @@
   .meth-col { display: flex; flex-direction: column; align-items: center; }
   .meth-val { font-size: 6.9pt; font-weight: 700; color: var(--ab-navy); text-align: center;
               margin-bottom: 2pt; font-variant-numeric: tabular-nums; }
-  .meth-track { width: 100%; height: 48pt; display: flex; align-items: flex-end; justify-content: center;
+  .meth-track { width: 100%; height: 38pt; display: flex; align-items: flex-end; justify-content: center;
                 border-bottom: 0.8pt solid var(--ab-rule); }
-  .meth-bar { width: 70%; min-width: 14pt; border: .6pt solid var(--ab-navy-soft); border-radius: 1.5pt 1.5pt 0 0; }
-  .meth-bar.b1 { background: var(--ab-navy); }
-  .meth-bar.b2 { background: var(--ab-ice); }
-  .meth-bar.b3 { background: var(--ab-ice-pale); }
+  .meth-bar { width: 70%; min-width: 14pt; border: 0; border-radius: 1.5pt 1.5pt 0 0; }
+  .meth-bar.b1 { background: #9FB6E8; }
+  .meth-bar.b2 { background: #5C7FDB; }
+  .meth-bar.b3 { background: var(--ab-navy); }
   .meth-lbl { font-size: 6pt; color: var(--ab-ink-muted); text-align: center; margin-top: 2.5pt;
               letter-spacing: .02em; min-height: 14pt; }
   .meth-ref { position: absolute; left: 0; right: 0; border-top: 1pt dashed var(--ab-sell); pointer-events: none; }
@@ -297,7 +334,7 @@
   .eyebrow { font-size: 6pt; font-weight: 600; letter-spacing: normal; text-transform: uppercase;
              color: var(--ab-ink-muted); }
 
-  .exhibit-head { margin: 10pt 0 3pt; }
+  .exhibit-head { margin: 4pt 0 1.5pt; }
   .exhibit-id { font-size: 8pt; font-weight: 700; color: #0928B1; }
   .exhibit-name { font-size: 8pt; font-weight: 700; color: #333333; }
   /* Constant source line, below the object (house-report-format.md §1). */
@@ -315,7 +352,7 @@
   .card { border: .75pt solid var(--line); border-radius: 4pt; padding: 8pt; background: #fff; }
   /* Cards follow the tools: ice-faint ground, hairline frame, no coloured spine. The royal-blue left bar the
      card used to carry was the last colour outside the navy/ice token set. */
-  .card-tint { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 7pt;
+  .card-tint { border: .6pt solid var(--ab-rule); border-radius: 3pt; padding: 4.5pt;
                background: var(--ab-ice-faint); }
   /* Investment thesis as a numbered rail: the numeral is the anchor, hairlines do the separating, and the
      extracted figure sits on the right so each pillar is scannable. No boxes - a stack of tinted cards
