@@ -92,7 +92,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0× pada EBITDA FY26F, owner-selected headline multiple (bukan midpoint aritmetik: (13,3+15,7)/2 = 14,5). Justifikasi Sectors-only: multiple forward market sendiri 13,3× FY26F (harga 11 Sep 2026) plus premi ramp smelter/Phase-8 yang belum tercetak di multiple; cross-check ke own -1sigma band 22,13× dan sensitivity leg +/-2× (13×-17×). Bukan mean own-history.",
+  "ev_multiple_basis": "Target 15,0× atas EBITDA proyeksi 2026, kelipatan pilihan tim (bukan titik tengah aritmetik: (13,3+15,7)/2 = 14,5). Dasar hanya dari data Sectors: kelipatan pasar sendiri 13,3× untuk 2026 (harga 11 Sep 2026) ditambah premi masa pembangunan smelter/Phase-8 yang belum tercermin di kelipatan itu; pembanding pita -1 simpangan baku 22,13× dan uji kepekaan ±2× (13×-17×). Bukan rata-rata sejarah sendiri.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -391,7 +391,7 @@
     }
   },
   "theme_title": "Pasar baru memakai 18,38 kali laba 2026, padahal rata-rata jangka panjangnya 28,42 kali - kenaikan penilaian ini belum tercermin di harga saham",
-  "ebitda_leg_level_note": "Level yang dikalikan multiple adalah EBITDA FY26F dari jalur proyeksi yang dikutip (Rp 33.862 bn), bukan rata-rata historis: multiple forward hanya sah dikalikan level forward. Rata-rata historis 3Y (Rp 18,40 tn) tetap dipakai sebagai cross-check historis, bukan basis TP.",
+  "ebitda_leg_level_note": "Angka yang dikalikan kelipatan adalah EBITDA proyeksi 2026 dari jalur yang dikutip (Rp 33.862 bn), bukan rata-rata historis: kelipatan proyeksi hanya sah dikalikan angka proyeksi. Rata-rata historis 3 tahun (Rp 18,40 tn) tetap dipakai sebagai pembanding, bukan dasar target harga.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,
     "ev_ebitda_fy27f": 10.0,

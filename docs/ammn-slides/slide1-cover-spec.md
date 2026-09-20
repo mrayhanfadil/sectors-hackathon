@@ -27,7 +27,7 @@ Every quantitative claim carries an explicit number. No generic titles, no unqua
 |---|---|
 | Last Price (Rp) | Close before publish date. Source: Sectors `daily()` (fetch-daily-transaction), NOT web magic numbers. |
 | Target Price (Rp) | New TP from Slide 4 valuation (RNAV/shortened-DCF output). This box CONSUMES Slide 4; never invents. |
-| Upside/Downside (%) | `(TP / Last - 1) * 100`, always with explicit `+`/`-` sign, 1 decimal. |
+| Potensi naik/turun (%) | `(TP / Last - 1) * 100`, always with explicit `+`/`-` sign, 1 decimal. Amended 19 Sep 2026 from `Upside/Downside (%)`: the label is the most-read text on the cover, and the token is one the plain-language rule bans in prose. |
 
 Consistency rule: Last Price date == publish-date-minus-1-trading-day; TP == Slide 4
 final TP to the rupiah. Critic check: recompute upside from the two printed numbers.

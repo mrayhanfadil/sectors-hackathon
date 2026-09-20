@@ -32,18 +32,18 @@ BAND_LABELS = {"pe": "P/E", "pbv": "P/BV", "ev_ebitda": "EV/EBITDA", "ev_sales":
 DEFAULT_BANDS = ("pe", "pbv")
 
 METHODOLOGY = (
-    "Own-history relative valuation: empat trailing multiple (P/E, P/BV, EV/EBITDA, EV/Sales) sepanjang "
-    "window satu tahun, dibandingkan dengan distribusi historisnya sendiri (average, median, persentil). "
-    "Driver fundamental = rolling TTM (empat kuartal terakhir) dengan fallback berlapis; mata uang "
-    "laporan dikonversi ke mata uang harga sebelum multiple dihitung."
+    "Perbandingan dengan sejarah harga saham sendiri: empat kelipatan (P/E, P/BV, EV/EBITDA, EV/Sales) selama "
+    "satu tahun terakhir, dibandingkan dengan sebaran sejarahnya sendiri (rata-rata, median, persentil). "
+    "Dasar perhitungannya angka 12 bulan terakhir (empat kuartal terakhir), dengan urutan sumber berlapis; mata uang "
+    "laporan dikonversi ke mata uang harga sebelum kelipatan dihitung."
 )
 
 DISCLAIMER = (
-    "Implied price di bagian ini adalah cross-check mean-reversion berbasis multiple historis - "
-    "bukan Target Price resmi di Halaman 4 - dan dihitung dengan asumsi driver fundamental (EPS, BVPS, "
-    "EBITDA, Revenue) tetap konstan di level TTM saat ini, hanya multiple yang direversi ke rata-rata / "
-    "median historisnya. Sifatnya snapshot posisi relatif terhadap sejarah harga sendiri, bukan proyeksi "
-    "earnings atau target harga."
+    "Harga tersirat di bagian ini adalah pembanding (kecenderungan kembali ke rata-rata) berbasis kelipatan "
+    "sejarah - bukan target harga resmi di halaman 1 - dan dihitung dengan asumsi angka dasar (EPS, BVPS, "
+    "EBITDA, pendapatan) tetap konstan di level 12 bulan terakhir, hanya kelipatannya yang dikembalikan ke rata-rata / "
+    "median sejarahnya. Sifatnya potret posisi relatif terhadap sejarah harga sendiri, bukan proyeksi "
+    "laba atau target harga."
 )
 
 
@@ -118,16 +118,16 @@ def build_peers_page(ticker: str = "AMMN", payload: Optional[dict] = None) -> di
         f"vs median peer {_fmt(stats['pe_ttm']['median'])}× / {_fmt(stats['pb_mrq']['median'])}× "
         f"({_nf.dec(gaps['pe_ttm'], digits=0, signed=True)}% / {_nf.dec(gaps['pb_mrq'], digits=0, signed=True)}%) dan average "
         f"{_fmt(stats['pe_ttm']['average'])}× / {_fmt(stats['pb_mrq']['average'])}×."
-        if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. - earnings TTM negatif.")
+        if gaps["pe_ttm"] is not None else f"{tk} P/E n.m. - laba 12 bulan terakhir negatif.")
     if covered.get("ev_ebitda_ttm") and stats["ev_ebitda_ttm"]["median"]:
         parts_a_narr.append(
-            f"Pada multiple berbasis kas, EV/EBITDA LTM {_fmt(covered['ev_ebitda_ttm'])}× vs median "
-            f"{_fmt(stats['ev_ebitda_ttm']['median'])}× ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE TTM "
+            f"Pada kelipatan berbasis kas, EV/EBITDA 12 bulan terakhir {_fmt(covered['ev_ebitda_ttm'])}× vs median "
+            f"{_fmt(stats['ev_ebitda_ttm']['median'])}× ({_nf.dec(gaps['ev_ebitda_ttm'], digits=0, signed=True)}%), sementara ROE 12 bulan terakhir "
             f"{_nf.dec(covered['roe_ttm']*100, digits=1)}% vs median {_nf.dec(stats['roe_ttm']['median']*100, digits=1)}% "
-            f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) - jadi premium P/E bukan semata efek basis earnings.")
+            f"({_nf.dec(gaps['roe_ttm'], digits=0, signed=True)}%) - jadi premi P/E bukan semata efek dasar perhitungan laba.")
     if peers.get("pe_excluded"):
         parts_a_narr.append(
-            f"P/E {', '.join(peers['pe_excluded'])} dinyatakan n.m. (earnings negatif/near-zero) dan "
+            f"P/E {', '.join(peers['pe_excluded'])} dinyatakan n.m. (laba negatif atau hampir nol) dan "
             f"tidak diikutkan dalam median/average; n pada baris statistik menunjukkan jumlah peer yang valid.")
     part_a = {
         "exhibit": 11,

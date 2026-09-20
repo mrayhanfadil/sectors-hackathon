@@ -814,6 +814,17 @@ async def render_pdf_bytes_for_ticker(
 
     title = f"{ticker.upper().strip()} - institutional report"
     tpl_name, html, data = render_html_for_ticker(ticker, template_override, native_furniture=True)
+    # §15 machine-trace stop (owner call 19 Sep 2026): the printed document may not describe the
+    # machinery. This runs on the rendered HTML - the ground truth the browser paginates - because
+    # the payload scan cannot see template copy and cannot tell a rendered field from a dead one.
+    from server.report.house_rules import audit_printed_html
+
+    traces = audit_printed_html(html)
+    if traces:
+        raise RuntimeError(
+            f"printed document failed the §15 machine-trace check for {ticker.upper().strip()} "
+            f"({len(traces)} hit(s)); first: {traces[0]}"
+        )
     date_str = house_format.format_house_date((data.get("meta") or {}).get("date"), short=True)
     pdf, engine = await _html_to_pdf_bytes(
         html,
@@ -869,7 +880,12 @@ async def report_pdf(
             },
         )
 
-    pdf_bytes, engine, tpl_name, data = await render_pdf_bytes_for_ticker(t, template)
+    try:
+        pdf_bytes, engine, tpl_name, data = await render_pdf_bytes_for_ticker(t, template)
+    except RuntimeError as exc:
+        # Loud, not silent: a document that leaks the machinery does not ship.
+        raise HTTPException(status_code=422, detail={"error": "printed_machine_trace", "ticker": t,
+                                                     "message": str(exc)}) from exc
     title = f"{t} - {data.get('meta', {}).get('report_type', 'Report')} ({tpl_name})"
 
     # Write to temp file for FileResponse (ensures proper streaming + Content-Disposition)

@@ -175,8 +175,8 @@ carry, in this order:
 | Sidebar | Main column |
 |---|---|
 | rating (large) + change status in italics - `Buy` / `(Initiation)`, `(Maintained)`, `(Upgrade from X)`, `(Downgrade from X)` | company name + `(TICKER IJ)` |
-| price box: Last Price (Rp), Target Price (Rp), **Previous TP (Rp)** (italic `NA` on an initiation), Upside/Downside (%) with an explicit sign | theme title - the thesis with a figure, never a generic product name |
-| secondary stats: No. of Shares (mn), Mkt Cap (Rpbn/US$mn), Avg. Daily T/O (Rpbn/US$mn) **with its window stated** (e.g. `T/O 3M`), Free Float (%) | three highlights, each a quantitative claim, in a tinted callout box |
+| price box: Last Price (Rp), Target Price (Rp), **Previous TP (Rp)** (reads `Initiation` when there is no prior target), Potensi naik/turun (%) with an explicit sign | theme title - the thesis with a figure, never a generic product name |
+| secondary stats: No. of Shares (mn), Mkt Cap (Rpbn/US$mn), Rata-rata transaksi harian 3 bulan (Rpbn/US$mn) **with its window stated**, Free Float (%) | three highlights, each a quantitative claim, in a tinted callout box |
 | Major Shareholder (%) - every holder ≥5% | paragraph 1, 2, 3 (§8) |
 | relative-performance chart vs the index, source line directly beneath it | Key Financials exhibit (§9) |
 | analyst block (name + title) | |
@@ -384,3 +384,37 @@ pinned by tests, so a new agent either gets the rule or fails the build.
 Enforcement: `server/report/house_rules.py::audit_plain_language` runs inside
 `audit_house_rules` on the shipped payload (render path + Critic). A hit names the surface
 and the token and flips the verdict to REJECT - a blocked publication, not a style note.
+
+## 15. No machine traces
+
+Rule (owner critique, 19 Sep 2026): the printed document describes the COMPANY, never the
+machinery that produced it. The shipped PDF carried "yang dikembalikan endpoint", "via
+AMMN.json", "Asumsi kolom F", "feed yang dipakai" and "kriteria evaluasi gate terpenuhi" - debug
+output wearing a research note's clothes, on a page a retail reader is meant to read.
+
+Banned on any printed surface: `endpoint`, `kolom`/`kolom F`, `feed`, `payload`, `artifact`,
+`harvester`, `renderer`, `pipeline`, `gate`, `deterministik`, `tenant`, `JSON`/`.json`, `freeze`,
+`screener`, `filings`, `engine`, `raw`, `file asumsi`, `file jalur proyeksi`, `LEVEL NORMALISED`.
+Plain forms: "tersedia di data", "keterbukaan IDX", "perhitungan otomatis", "berkas asumsi tim",
+"kolom proyeksi (2026-2028)", "dasar normal".
+
+Two exemptions, both deliberate:
+
+- **Citations.** A source line may name the dataset it came from ("Sectors filings", "Sectors
+  screener"): attribution is owed to the reader. Prose may not.
+- **Bookkeeping that never prints.** The Critic's reasons, the house-rule report and the fill
+  manifest are machine fields; scanning them would flag our own audit text.
+
+Enforcement is two-layered, and the second layer is the important one:
+
+- `server/report/house_rules.py::audit_plumbing` walks the WHOLE payload (every string, with its
+  dotted path in the message) and runs inside `audit_house_rules`, so the Critic rejects on it.
+  It walks everything because the bug it exists to stop is "a page nobody remembered to scan":
+  the plain-language scan enumerated surfaces by hand and the industry page was not on the list.
+- `server/report/house_rules.py::audit_printed_html` strips the rendered HTML to visible text and
+  runs in `server/routers/pdf.py::render_pdf_bytes_for_ticker` BEFORE Chromium starts. A hit is a
+  422 (`printed_machine_trace`), not a style note: the document does not ship. This is the layer
+  that catches template copy, which the payload scan cannot see.
+
+Guarded by `tests/test_no_machine_traces.py` (walk-everything, both exemptions, word-boundary
+matching, the HTML layer, the live payload, and the doc/instruction wiring).

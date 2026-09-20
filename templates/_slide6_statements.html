@@ -30,7 +30,7 @@
   {% if block_key == "balance" %}
   <p class="small stmt-tie"><b>Balance check:</b> Total Liabilities &amp; Equity − Total Assets =
   {% for y in statements_page.years %}{{ statements_page.tie_out[y]|idn(0) }}{% if not loop.last %} · {% endif %}{% endfor %}
-  (Rp bn) - {{ "neraca seimbang persis di semua kolom" if statements_page.tied else "TIDAK seimbang" }}.</p>
+  (Rp bn) - {{ "neraca seimbang persis di semua tahun" if statements_page.tied else "TIDAK seimbang" }}.</p>
   {% endif %}
   {% endfor %}
 

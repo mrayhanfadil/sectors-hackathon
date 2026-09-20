@@ -82,6 +82,15 @@ def _sources(ticker: str) -> dict:
     return {"report": {}, "dir": LEGACY_CACHE}
 
 
+#: The printed label for each internal forecast-basis key. The key is a machine value
+#: ("third-party-estimate"); the reader gets words.
+_BASIS_LABEL = {
+    "third-party-estimate": "estimasi tim yang diselaraskan ke basis data berlisensi",
+    "midcycle-normalised": "dasar normal siklus menengah",
+    "invalid-driver-file": "jalur proyeksi tidak dipakai",
+}
+
+
 def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
                           driver_path: Optional[dict] = None,
                           cashflow: Optional[dict] = None) -> dict:
@@ -334,30 +343,30 @@ def build_statements_page(ticker: str = "AMMN", spine: Optional[dict] = None,
 
     gaps = {y: (rows[y]["gap"] or 0.0) for y in YEARS}
     notes = [
-        f"Basis aktual: Sectors annual (FY2024A, FY2025A). Baris kuartalan tidak dipakai - revenue kuartalan "
-        f"tidak rekonsiliasi ke angka tahunan (jumlah 4 kuartal ±Rp 44 tn vs FY2025A Rp 30,9 tn).",
-        f"Kolom proyeksi mengikuti spine deck (Key Financials): revenue Rp {_nf.idn(rev_f[0], digits=0)} bn, EBITDA "
+        f"Basis aktual: laporan tahunan Sectors (2024, 2025). Baris kuartalan tidak dipakai - pendapatan kuartalan "
+        f"tidak rekonsiliasi ke angka tahunan (jumlah 4 kuartal ±Rp 44 tn vs 2025 Rp 30,9 tn).",
+        f"Angka proyeksi mengikuti tabel Key Financials di halaman 1: pendapatan Rp {_nf.idn(rev_f[0], digits=0)} bn, EBITDA "
         f"Rp {_nf.idn(ebitda_f[0], digits=0)} bn, laba bersih Rp {_nf.idn(net_f[0], digits=0)} bn - "
-        f"basis kolom F: {(spine or {}).get('forecast_basis') or 'lihat catatan Key Financials'}"
+        f"dasar proyeksi: {_BASIS_LABEL.get(str((spine or {}).get('forecast_basis') or ''), 'lihat catatan Key Financials')}"
         f"{' (' + str((spine or {}).get('forecast_attribution')).split('(')[0].strip() + ')' if (spine or {}).get('forecast_attribution') else ''}"
-        f"{' - LEVEL NORMALISED: kolom FY26F-FY28F BUKAN kurva pertumbuhan, FY27F-FY28F ditahan flat' if (spine or {}).get('forecast_basis') == 'midcycle-normalised' else ''}, "
+        f"{' - dasar normal: proyeksi 2026-2028 BUKAN kurva pertumbuhan, 2027-2028 ditahan flat' if (spine or {}).get('forecast_basis') == 'midcycle-normalised' else ''}, "
         f"dan angka ini identik dengan "
         f"yang dipakai halaman valuasi.",
         f"Driver proyeksi: D&A Rp {_nf.idn(dna_25, digits=0)} bn (FY2025A: EBITDA - EBIT), beban bunga Rp {_nf.idn(gross_debt, digits=0)} bn "
         f"x {_nf.pcfrac(cod, 2)} (cost of debt asumsi), pajak {_nf.pcfrac(tax_rate, 0)}, capex Rp {_nf.idn(capex, digits=0)} bn/tahun, payout {_nf.pcfrac(payout, 0)}.",
-        "Other Income/(Expense) adalah baris REKONSILIASI, bukan angka hasil temuan: pada kolom aktual nilainya "
-        "dibuat agar pre-tax foot, pada kolom proyeksi agar pre-tax konsisten dengan jalur laba bersih mid-cycle. "
-        "Dinyatakan eksplisit supaya pembaca tidak membacanya sebagai temuan analis.",
-        ("Driver kolom proyeksi: " + ("; ".join(f"{k} {v}" for k, v in sorted(driver_rows.items())))
+        "Pos lain-lain (Other Income/Expense) adalah baris REKONSILIASI, bukan angka hasil temuan: pada tahun aktual "
+        "nilainya dibuat agar pre-tax foot, pada tahun proyeksi agar pre-tax konsisten dengan jalur laba bersih siklus menengah. "
+        "Dinyatakan terbuka supaya pembaca tidak membacanya sebagai temuan analis.",
+        ("Dasar angka proyeksi: " + ("; ".join(f"{k} {v}" for k, v in sorted(driver_rows.items())))
          if driver_rows else
-         "Tidak ada jadwal capex/utang/D&A dari sumber - D&A, utang, dan beban bunga ditahan di level "
-         "FY2025A dan itu dinyatakan sebagai keterbatasan, bukan sebagai proyeksi."),
+         "Tidak ada jadwal belanja modal/utang/D&A dari sumber - D&A, utang, dan beban bunga ditahan di level "
+         "2025 dan itu dinyatakan sebagai keterbatasan, bukan sebagai proyeksi."),
         ("Utang dibagi short-term/long-term memakai proporsi FY2025A "
          f"({_nf.idn(st_debt_25, digits=0)} / {_nf.idn(st_debt_25 + lt_debt_25, digits=0)}) karena sumber hanya mempublikasikan total; "
          "jadwal per tenor tidak dikarang.")
         if driver_rows.get("interest_expense") else "",
-        "Neraca: kas adalah item penyeimbang pada kolom proyeksi (dinyatakan). Tanpa itu aset dan liabilitas+ekuitas "
-        "tidak akan pernah bertemu persis, karena Sectors tidak menyediakan jadwal capex/pelunasan utang.",
+        "Neraca: kas adalah item penyeimbang pada angka proyeksi (dinyatakan terbuka). Tanpa itu aset dan liabilitas+ekuitas "
+        "tidak akan pernah bertemu persis, karena Sectors tidak menyediakan jadwal belanja modal/pelunasan utang.",
         (f"Rekonsiliasi beban usaha: baris Sectors tidak foot di blok operasi - Operating Expenses di tabel ini "
          f"= Gross Profit - EBIT supaya barisnya menyambung. Selisih terhadap operating_expense yang dilaporkan "
          f"Sectors ({gap_txt}) berarti item itu di luar definisi EBIT mereka; dinyatakan supaya nilainya tidak "

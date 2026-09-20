@@ -201,25 +201,26 @@ def _narrative_revenue(headers: list[str], rev: list, growth: list, payload: dic
             "Bauran pendapatan yang menopang angka ini: "
             + ", ".join(
                 f"{seg.get('name')} {_num(seg.get('share_pct'), 1)}%"
-                + (f" (yoy {_pct(seg.get('yoy_pct'))})" if seg.get("yoy_pct") is not None else "")
+                + (f" (dibanding tahun sebelumnya {_pct(seg.get('yoy_pct'))})" if seg.get("yoy_pct") is not None else "")
                 for seg in segments
                 if seg.get("share_pct") is not None
             )
-            + ". Periode segmen terakhir yang tersedia adalah FY2024, jadi bauran ini menjelaskan "
-            "pendapatan FY2024A dan bukan FY2025A."
+            + ". Periode segmen terakhir yang tersedia adalah 2024, jadi bauran ini menjelaskan "
+            "pendapatan 2024 dan bukan 2025."
         )
     if actual_cagr is not None and forecast_cagr is not None:
         parts.append(
-            f"CAGR periode aktual {_pct(actual_cagr)} vs CAGR periode proyeksi {_pct(forecast_cagr)}: "
+            f"Rata-rata pertumbuhan per tahun pada periode aktual {_pct(actual_cagr)} vs periode "
+            f"proyeksi {_pct(forecast_cagr)}: "
             f"lajunya berbeda karena periode proyeksi menyusut lebih lambat "
             f"({_pct(growth[idx_fy26]) if idx_fy26 is not None else '-'} di tahun proyeksi pertama)."
         )
     first_flat = headers[index_of_flat_growth(growth)]
     if first_flat:
         parts.append(
-            f"Inflection point: pertumbuhan berhenti turun dan mendatar di {first_flat}, dan angka "
-            f"datar FY2027F–FY2028F itu berasal dari jalur FCFF flat pada file asumsi, bukan dari tren "
-            f"tiga tahun terakhir yang masih negatif."
+            f"Titik balik: pertumbuhan berhenti turun dan mendatar di {first_flat}, dan angka "
+            f"datar 2027-2028 itu berasal dari jalur arus kas bebas yang datar di berkas asumsi "
+            f"tim, bukan dari tren tiga tahun terakhir yang masih negatif."
         )
     return " ".join(parts)
 
@@ -307,7 +308,7 @@ def _narrative_leverage(headers: list[str], de: list, roe: list) -> str:
         first, last = pts[0], pts[-1]
         prev = pts[-2]
         parts.append(
-            f"Leverage vs return: D/E {_num(last[1])}× dan ROE {_num(last[2])}% pada {last[0]}, "
+            f"Utang vs imbal hasil: D/E {_num(last[1])}× dan ROE {_num(last[2])}% pada {last[0]}, "
             f"dari {_num(prev[1])}× dan {_num(prev[2])}% setahun sebelumnya "
             f"(awal jendela {first[0]}: {_num(first[1])}× / {_num(first[2])}%)."
         )
@@ -320,8 +321,8 @@ def _narrative_leverage(headers: list[str], de: list, roe: list) -> str:
         elif last[1] < first[1] and last[2] > first[2]:
             parts.append("Arahnya sehat: utang turun sementara ROE naik.")
     parts.append(
-        "Proyeksi DER dan ROE belum dimodelkan per tahun di payload, jadi kuadran ini menyajikan "
-        "periode aktual saja dan tidak mengisi kolom proyeksi dengan asumsi."
+        "Proyeksi DER dan ROE belum dihitung per tahun di data kami, jadi kuadran ini menyajikan "
+        "periode aktual saja dan tidak mengisi tahun proyeksi dengan asumsi."
     )
     return " ".join(parts)
 
@@ -364,7 +365,7 @@ def build_performance_page(payload: dict, assumptions: Optional[dict] = None) ->
             "labels": headers,
             "actual_n": actual_n,
             "bar_unit": "Rp bn",
-            "line_unit": "% yoy",
+            "line_unit": "% pertumbuhan tahunan",
             "bar_fmt": [_num(v, 0) for v in rev],
             "line_fmt": [_pct(v, 1) if v is not None else "" for v in rev_growth],
             "narrative": _narrative_revenue(headers, rev, rev_growth, payload),
@@ -443,7 +444,7 @@ def build_performance_page(payload: dict, assumptions: Optional[dict] = None) ->
             f"terakhir dicetak lebih muda dengan pola garis, jadi aktual vs proyeksi terbaca tanpa "
             f"membaca label.",
             "Kuadran keempat memakai default non-bank (DER vs ROE); cabang bank (NIM/CoC) dan "
-            "E&P/upstream (volume & lifting cost) belum tersedia datanya di payload.",
+            "E&P/upstream (volume & biaya angkat) belum tersedia datanya di data kami.",
             "Proyeksi DER/ROE per tahun belum dimodelkan, jadi kuadran leverage menyajikan periode "
             "aktual saja.",
         ],

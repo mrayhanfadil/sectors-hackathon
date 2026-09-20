@@ -45,7 +45,7 @@ IMPACT_FACTS: dict[str, str] = {
 
 #: The one honest gap this section must keep disclosing.
 IMPACT_GAP = ("harga tembaga rekor tidak bisa dihitung ke laba "
-              "(pipeline tanpa tonase/grade/C1, GAP G10)")
+              "(tidak ada tonase, kadar, dan biaya per unit di data)")
 
 #: Sentence the template prints for the gap, and the pointer it keeps.
 IMPACT_GAP_SENTENCE = (f"Dampak {IMPACT_GAP} - yang tersedia hanya sensitivitas "

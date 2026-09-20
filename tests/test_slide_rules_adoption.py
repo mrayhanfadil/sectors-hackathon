@@ -70,8 +70,8 @@ def _compliant_payload() -> dict:
                 "price_box": {"rows": [
                     ["Last Price (Rp)", "4.860"],
                     ["Target Price (Rp)", "5.873"],
-                    ["Previous TP (Rp)", "NA"],
-                    ["Upside/Downside (%)", "+20,84%"],
+                    ["Previous TP (Rp)", "Initiation"],
+                    ["Potensi naik/turun (%)", "+20,84%"],
                 ]},
                 "stats": {
                     "rows": [["No. of Shares (mn)", "72.518,2"],
@@ -112,7 +112,8 @@ def _compliant_payload() -> dict:
                         ["EV/EBITDA (x)", "19,5", "27,4", "24,4", "24,4", "24,4"],
                     ],
                     "forecast_basis": "midcycle-normalised",
-                    "notes": ["Asumsi kolom F: LEVEL NORMALISED, bukan kurva pertumbuhan ..."],
+                    # §15: the fixture mirrors the shipped wording, so it carries no machine trace.
+                    "notes": ["Catatan proyeksi: dasar normal, bukan kurva pertumbuhan ..."],
                 },
             },
         },
@@ -461,7 +462,7 @@ def test_slide2_uses_the_wider_sectors_evidence() -> None:
     assert "keterbukaan IDX" in body, "the filings digest is not used"
     assert "RUPS" in body, "corporate actions are not used"
     assert "kepemilikan asing" in body, "the ownership composition is not used"
-    assert "free float" in body, "the free-float screener is not used"
+    assert "saham beredar publik" in body, "the free-float screener is not used"
     assert len(payload["industry_page"]["sources"]) >= 5, payload["industry_page"]["sources"]
 
 
@@ -1099,7 +1100,7 @@ def test_the_target_price_basis_is_reconciled_when_the_dcf_and_the_anchor_differ
                               {"ev_multiple_basis": "stub"}, anchor_fv=anchor))
 
     far = notes_for(100.0, 3000.0)
-    assert "BASIS TARGET PRICE" in far, "a 30x gap between the DCF and the anchor is left unexplained"
+    assert "Dasar target harga" in far, "a 30x gap between the DCF and the anchor is left unexplained"
     assert "3.000" in far and "100" in far, "the reconciliation does not name both prices"
 
     near = notes_for(3000.0, 3100.0)

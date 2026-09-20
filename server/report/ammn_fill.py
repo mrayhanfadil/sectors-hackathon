@@ -162,7 +162,7 @@ def _slide2_sector_blocks(payload: dict, filled: list) -> None:
             "n": len(rows),
             "buy": _agg(by_type.get("buy") or []),
             "sell": _agg(by_type.get("sell") or []),
-            "source": "Sectors filings (keterbukaan IDX, dokumen terakhir yang dikembalikan endpoint)",
+            "source": "keterbukaan IDX (dokumen terakhir yang tersedia di data)",
         }
         filled.append(f"filings_digest[{len(rows)} filings: buy/sell split]")
 
@@ -211,7 +211,7 @@ def _slide2_sector_blocks(payload: dict, filled: list) -> None:
         payload["free_float"] = {
             "n": len(ff_rows),
             "in_list": any("AMMN" in str((r.get("symbol") or "")) for r in ff_rows),
-            "source": "Sectors screener (25 emiten, daftar tanpa persentase)",
+            "source": "daftar Sectors (25 emiten, tanpa persentase)",
         }
         filled.append(f"free_float[in top-{len(ff_rows)} list]")
 
@@ -475,7 +475,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             import re as _re2
             _vol = _re2.findall(r"([\d.,]+)\s*Mt", _raw)
             if len(_vol) >= 2:
-                fwd_note_short = (f"tambang Phase-8 (bijih {_vol[0]} juta ke {_vol[1]} juta ton) "
+                fwd_note_short = (f"tambang Phase-8 (bijih {_vol[0]} juta ton ke {_vol[1]} juta ton) "
                                   f"dan smelter baru")
             else:
                 # first physical driver clause only (Phase-8 ramp), not the whole note
@@ -499,7 +499,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             f"Laba operasi (EBITDA) naik dari Rp {_idn(fwd_eb26 / 1000, 1)} tn (2026) ke "
             f"Rp {_idn(fwd_eb28 / 1000, 1)} tn (2028), naik {_idn(fwd_cagr_eb, 1)}% per tahun; "
             f"penjualan Rp {_idn(fwd_rev26 / 1000, 1)} tn ke Rp {_idn(fwd_rev28 / 1000, 1)} tn. "
-            f"Pendorongnya: tambang Phase-8 (bijih 1 juta ke 38 juta ton) dan smelter baru."
+            f"Pendorongnya: {fwd_note_short or 'tambang Phase-8 dan smelter baru'}."
         )
         _fwd_b2 = (
             f"Kas bebas (sisa uang tunai setelah belanja modal) naik dari "
@@ -540,9 +540,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         f"Harga 90d +28,57% vs IHSG +4,58% (rel +23,99 pp, 62 sesi 15 Jun–11 Sep 2026); "
         f"EV/EBITDA 2026 (TTM print) {_idn(ttm_ev_eb, 2)}× vs {_idn(hist_mults.get('FY2025'), 2)}× (2025) - de-rating adalah argumen, kontra: PE 38,23× "
         f"vs rerata peer sektor 10,07× (agregat konsensus rating broker tidak dipublikasikan). "
-        f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berjangkar pada SATU FV engine "
+        f"Target harga Rp {_idn(tp_int, 0)} ({rating}, {up_txt}) berpatokan pada satu nilai wajar "
         f"(EV/EBITDA FY26F, bukan intrinsic_value API Rp -11.850 yang tak terpakai). "
-        f"Profil gate: domain mining, filing 6 thn (gate_inputs AMMN.json)."
+        f"Profil asumsi: sektor tambang, laporan keuangan 6 tahun."
     )
     filled.append("cover.summary+key_takeaways")
 
@@ -602,8 +602,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                 "outstanding": round(float(srows[0].get("shares_number") or 0) / 1e9, 1),
                 "unit": "bn",
                 "free_float_pct": None,
-                "note": ("72.518.217.656 sh (shareholders-composition 31 Agu 2026); free float tak ada "
-                         "print Sectors - bucket Publik 25,26% bukan definisi free float IDX (GAP G2)"),
+                "note": ("72.518.217.656 lembar (komposisi pemegang saham 31 Agu 2026); angka saham beredar publik "
+                         "tidak tersedia di Sectors - bucket Publik 25,26% bukan definisi saham beredar "
+                         "publik IDX"),
             }
             filled.append("cover.shares.outstanding")
         except Exception:
@@ -700,10 +701,9 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
              "share_pct": round(s24["Gold"] / tot24 * 100, 1), "pie": True,
              "source": "Sectors /company/get-segments FY2024 (9 flows)"},
         ]
-        payload["segments_src"] = "Sectors /company/get-segments/AMMN (FY2024 latest; FY2025 -> 404)"
-        payload["segments_note"] = ("FY2024 pilar terakhir tersedia (FY2025 404 'data does not exist', "
-                                    "1 kredit; GAP G3). FY2023 tersedia untuk tren. Jangan infer FY2025 "
-                                    "dari FY2024.")
+        payload["segments_src"] = "laporan segmen Sectors (terakhir 2024; 2025 belum tersedia)"
+        payload["segments_note"] = ("2024 adalah periode segmen terakhir yang tersedia (2025 belum ada di data). "
+                                    "2023 tersedia untuk melihat tren; angka 2025 tidak diambil dari 2024.")
         filled.append("segments[Cu/Au FY2024+FY2023]")
 
     # ================= kpis (FY2025A vs FY2024A, same-basis) =================
@@ -712,20 +712,20 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         payload["kpis"] = [
             {"name": "Pendapatan FY2025", "value": rev[i5], "prev": rev[i4], "unit": "Rp bn",
              "formula": f"yoy {_idn(_yoy(rev[i5], rev[i4]), 1)}% FY2025A vs FY2024A",
-             "source": "Sectors annual"},
+             "source": "laporan tahunan Sectors"},
             {"name": "EBITDA FY2025", "value": ebitda[i5], "prev": ebitda[i4], "unit": "Rp bn",
              "formula": f"yoy {_idn(_yoy(ebitda[i5], ebitda[i4]), 1)}% FY2025A vs FY2024A",
-             "source": "Sectors annual"},
+             "source": "laporan tahunan Sectors"},
             {"name": "D/E FY2025", "value": der[i5], "prev": der[i4], "unit": "×",
              "formula": "utang 108,37 tn vs ekuitas 90,90 tn (FY2025A)",
-             "source": "Sectors annual"},
+             "source": "laporan tahunan Sectors"},
             {"name": "Interest Coverage FY2025", "value": icr[i5], "prev": icr[i4], "unit": "×",
              "formula": "tahunan; TTM Q1-2026 3,48×",
-             "source": "Sectors annual + quarterly TTM"},
+             "source": "laporan tahunan + kuartalan Sectors"},
         ]
-        payload["kpis_src"] = "Sectors API v2 - company/report + quarterly-financials (AMMN)"
-        payload["kpis_note"] = ("Volume produksi/tonase, grade, C1/AISC: tak ada baris volumetrik di payload "
-                                "Sectors mana pun (GAP G7/G10); AMMN absen dari mining extension (GAP G4).")
+        payload["kpis_src"] = "laporan perusahaan + laporan kuartalan Sectors"
+        payload["kpis_note"] = ("Volume produksi/tonase, kadar, C1/AISC: tidak ada baris volumetrik di data "
+                                "Sectors; emiten ini juga tidak ada di data tambang tambahan.")
         filled.append("kpis[4 same-basis]")
 
     # Catalyst ledger (defined once, used by the thesis rail below AND shipped as
@@ -734,7 +734,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         {"name": "Direksi membeli saham serentak Jul-2026",
          "effect": "tanda orang dalam yakin pada prospek perusahaan",
          "quantified": {"shares": "+12.961.700", "avg_price": "Rp 3.548", "by": "Jul-2026 (8 transaksi)"},
-         "source": "IDX keterbukaan via Sectors filings"},
+         "source": "keterbukaan IDX"},
         {"name": "Harga tembaga dunia naik ke rekor",
          "effect": "pendorong harga saham dan arus beli broker",
          "quantified": {"copper": "US$ 14.708/ton (rekor, 8 Sep 2026)",
@@ -747,7 +747,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         {"name": "Smelter tembaga selesai (PAC 18 Jul 2026)",
          "effect": "belanja modal turun, kas bebas kuartal itu positif",
          "quantified": {"capex_q1": "Rp 1,60 tn (vs 5,26 tn Q4-2025)", "fcf_q1": "+Rp 1,69 tn"},
-         "source": "AMMAN press release 24 Jul 2026 (via AMMN.json fcf_basis)"},
+         "source": "siaran pers AMMAN 24 Jul 2026"},
     ]
     # ================= thesis (4 pillars, forward: owner rule) =================
     # The rail is the investment case, so every pillar faces FY26F-28F: earnings,
@@ -808,11 +808,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             _th_cat_bits.append(f"tembaga {_c1q.get('copper')}")
         if _c1q.get("broker"):
             _th_cat_bits.append(f"arus beli broker {_c1q.get('broker')}")
-        _th_cat_d = "; ".join(_th_cat_bits) + f" (sumber: {_c0.get('source') or 'payload'})."
+        _th_cat_d = "; ".join(_th_cat_bits) + f" (sumber: {_c0.get('source') or 'data'})."
         _th_cat_s = str(_c0q.get("shares") or _c1q.get("copper") or "2026-2028")
         _th_cat_l = "Beli saham oleh direksi" if _c0q.get("shares") else "Katalis terverifikasi"
     else:
-        _th_cat_h = "Katalis ke depan belum terverifikasi di payload"
+        _th_cat_h = "Katalis ke depan belum terverifikasi di data"
         _th_cat_d = ("Tidak ada katalis terverifikasi - tidak ada jembatan forward yang bisa dinyatakan "
                      "tanpa angka (LOUD policy).")
         _th_cat_s, _th_cat_l = "2026-2028", "Horizon proyeksi"
@@ -827,13 +827,13 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     payload["thesis"] = [
         {"headline": _th_earn_h, "detail": _th_earn_d,
          "stat": _th_earn_s, "stat_label": _th_earn_l,
-         "source": "data/drivers/AMMN.json (jalur FY26F-28F, dikutip per driver)"},
+         "source": "berkas asumsi tim (jalur proyeksi 2026-2028, dikutip per pendorong)"},
         {"headline": _th_cash_h, "detail": _th_cash_d,
          "stat": _th_cash_s, "stat_label": _th_cash_l,
-         "source": "data/drivers/AMMN.json (FCF, capex, utang FY26F-28F)"},
+         "source": "berkas asumsi tim (arus kas bebas, belanja modal, utang 2026-2028)"},
         {"headline": _th_cat_h, "detail": _th_cat_d,
          "stat": _th_cat_s, "stat_label": _th_cat_l,
-         "source": str(_c0.get("source") or "payload catalysts")},
+         "source": str(_c0.get("source") or "catatan katalis")},
         {"headline": _th_val_h, "detail": _th_val_d,
          "stat": f"Rp {_idn(tp_int, 0)}", "stat_label": "Target harga",
          "source": "Sectors valuation.historical_valuation + rating box"},
@@ -894,7 +894,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
          "detail": ("Pesona Sukses Cemerlang jual 646.464.646 sh @Rp 4.950 (12 Mei 2026, 6,162%→5,27%) dan "
                     "283.535.354 sh @Rp 3.150 (26 Mei 2026, 5,27%→4,88%); Alexander Ramlie jual 67,6 jt sh "
                     "@Rp 6.200 (31 Des 2025) setelah 45 jt @Rp 6.900 (3 Okt 2025)."),
-         "source": "Sectors filings (IDX PDF keterbukaan)"},
+         "source": "keterbukaan IDX (dokumen PDF resmi)"},
         {"bucket": "Konsentrasi komoditas",
          "detail": ("Ancaman ke proyeksi 2026-2028: 100% pendapatan dari tembaga+emas, sehingga tembaga/emas "
                     "turun 10% memangkas laba operasi ke depan ~10%; reli tembaga US$ 14.708/ton (8 Sep 2026) yang "
@@ -907,14 +907,14 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                     f"posisi awal kuartal I 2026: utang bruto Rp {f2(float(q0.get('total_debt') or 0) / 1e12)} tn vs kas Rp "
                     f"{f2(float(q0.get('cash_only') or 0) / 1e12)} tn, net-debt/EBITDA 4 kuartal terakhir "
                     f"{f1(ttm_netd_ebitda)}×."),
-         "source": "data/drivers/AMMN.json + Sectors quarterly 8Q + annual FY2025"},
+         "source": "berkas asumsi tim + laporan kuartalan Sectors (8 kuartal) + laporan tahunan 2025"},
         {"bucket": "Arus kas bebas negatif (masa bangun smelter)",
          "detail": (f"Proyeksi kas bebas 2026-2028 (Rp {_idn(fwd_fcf26 / 1000, 1) if fwd_fcf26 else '-'} tn → Rp "
                     f"{_idn(fwd_fcf28 / 1000, 1) if fwd_fcf28 else '-'} tn) bergantung pada akhir belanja smelter; "
                     f"basis 4 kuartal terakhir −Rp {f2(abs(ttm.get('free_cash_flow', 0)) / 1e12)} tn (belanja modal Rp "
                     f"{f2(ttm.get('capital_expenditure', 0) / 1e12)} tn), kuartal I 2026 sudah belanja modal Rp 1,60 tn dan "
                     f"kas bebas +Rp 1,69 tn."),
-         "source": "data/drivers/AMMN.json + Sectors quarterly 8Q (TTM ke 2026-03-31)"},
+         "source": "berkas asumsi tim + laporan kuartalan Sectors (12 bulan terakhir ke 31 Mar 2026)"},
         {"bucket": "Risiko aliran dana event indeks",
          "detail": ("Masuknya dana indeks VanEck GDX/GDXJ 12 Sep 2026 menekan saham emas (−1,02% AMMN 10 Sep 2026); "
                     "AMMN bertahan di GDX. Suspensi IDX: nihil (Sectors /suspensions total_count 0) - "
@@ -923,16 +923,17 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
         {"bucket": "Valuasi premium vs sektor",
          "detail": (f"Penguatan valuasi yang diasumsikan target harga (patokan {_idn(_mult, 1)}× atas laba 2026) "
                     f"tidak terjadi: pasar bertahan di {_idn(ttm_ev_eb, 2)}×. PE 38,23× vs rerata peer sektor 10,07×; "
-                    "forward PE + proyeksi analis numerik tidak dipublikasikan di feed."),
+                    "forward PE + proyeksi analis numerik tidak tersedia di data kami."),
          "stat": f"{_idn(ttm_ev_eb, 2)}×", "stat_label": "EV/EBITDA (pasar kini)",
          "source": "Sectors valuation.historical_valuation"},
     ]
-    payload["risks_note"] = ("Bucket 1/5 dari filings+news (source=asumsi ditandai di mana bukan); "
+    payload["risks_note"] = ("Risiko disusun dari keterbukaan IDX dan berita (ditandai mana yang asumsi "
+                             "dan mana yang bukan); "
                              "suspensi nihil ber-evidence.")
     filled.append("risks[6 buckets]")
 
     # ================= peers (9 komparabel + Median/Average) =================
-    peer_src = "Sectors peers FY2025 (9 komparabel; EV/EBITDA peer tak tersedia - GAP G8)"
+    peer_src = "Sectors peers 2025 (9 komparabel; EV/EBITDA pembanding tidak tersedia)"
     try:
         comps = (rep.get("peers") or [])[0].get("peers_data", {}).get("companies", [])
     except Exception:
@@ -1017,8 +1018,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
     # ================= catalysts (quantified, basis stated) =================
     # List object defined once above (thesis rail reads it); shipped here.
     payload["catalysts"] = _fill_cats
-    payload["catalysts_note"] = ("Basis kuantifikasi dinyatakan per katalis; yang kualitatif "
-                                 "dilabeli eksplisit (tanpa tenant-karangan).")
+    payload["catalysts_note"] = ("Setiap katalis menyebutkan dasar angkanya; yang belum bisa dihitung "
+                                 "angkanya dinyatakan terbuka.")
     filled.append("catalysts[4 quantified]")
 
     # ================= slide 2 source blocks (full Sectors cache) ============
@@ -1035,7 +1036,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                    "data": {"labels": ylabels,
                             "datasets": [{"label": "Pendapatan (Rp tn)", "data": rev_tn},
                                          {"label": "Laba bersih (Rp tn)", "data": earn_tn}]}},
-         "source": "Sectors annual"},
+         "source": "laporan tahunan Sectors"},
         {"title": "Harga AMMN vs IHSG (90 hari, 62 sesi)",
          "chart": ({"type": "line",
                     "data": {"labels": labels,
@@ -1099,8 +1100,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                        / float(assum.get("shares_out"))) if own_trailing else 0.0
         payload.setdefault("valuation", {})["midcycle"] = {
             "title": "EV/EBITDA - Forward Multiple pada Level Jalur (dengan cross-check historis)",
-            "source": ("EBITDA FY26F dari jalur proyeksi yang dikutip (data/drivers/AMMN.json) + "
-                       "AMMN.json ev_multiple (asumsi eksplisit); cross-check historis dari Sectors"),
+            "source": ("EBITDA proyeksi 2026 dari berkas asumsi tim + kelipatan EV/EBITDA (asumsi "
+                       "eksplisit); pembanding historis dari Sectors"),
             "headers": ["Komponen", "Nilai", "Keterangan"],
             "rows": [
                 ["EBITDA FY26F (basis TP)", f"Rp {_nf.idn(fwd_ebitda_bn / 1e3, digits=2)} tn",
@@ -1113,16 +1114,16 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                 ["(+) Kas", f"Rp {_nf.idn(float(assum['cash']) / 1e12, digits=2)} tn", "Q1-2026"],
                 ["Implied equity", f"Rp {_nf.idn(fwd_eq_bn / 1e3, digits=2)} tn", "EV − utang + kas"],
                 ["Implied per saham (TP headline)", f"Rp {_nf.idn(fwd_ps, digits=0)}",
-                 "Leg gate-primary, dipakai sebagai TP"],
+                 "Patokan utama, dipakai sebagai target harga"],
                 ["- cross-check historis (tidak dipakai) -", "", ""],
-                *[(f"EBITDA {k} (constituent)", f"Rp {_nf.idn(v / 1e12, digits=2)} tn", "Sectors annual")
+                *[(f"EBITDA {k} (constituent)", f"Rp {_nf.idn(v / 1e12, digits=2)} tn", "laporan tahunan Sectors")
                   for k, v in sorted(consts.items())],
                 ["Rata-rata EBITDA 3Y historis", f"Rp {_nf.idn(mid_avg / 1e12, digits=2)} tn",
                  "Mean 3 constituents - hanya pembanding"],
-                ["Own-history multiple (trailing / normalised)", f"{_nf.dec(own_trailing, digits=2)}× / {_nf.dec(own_norm, digits=2)}×",
+                ["Kelipatan sejarah sendiri (12 bulan terakhir / setelah disesuaikan)", f"{_nf.dec(own_trailing, digits=2)}× / {_nf.dec(own_norm, digits=2)}×",
                  "Tidak dipakai: EV stabil Rp 506-672 tn saat EBITDA naik-turun 2×, jadi multiple ini "
                  "menghukum level yang sudah pulih"],
-                ["Own-history multiple pada level FY26F (double-count)",
+                ["Kelipatan sejarah sendiri pada level proyeksi 2026 (dihitung dua kali)",
                  f"Rp {_nf.idn(own_mult_ps, digits=0)}",
                  "2,7-4,2× harga pasar - di luar batas, karena itu ditolak sebagai basis"],
             ],
@@ -1161,8 +1162,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             "section_sub": ("Menjawab: Bagaimana kalkulasi biaya modal (WACC), sensitivitas "
                             "WACC × g, skenario EBITDA, dan jembatan EV → ekuitas AMMN?"),
             "intro": ("Cost of Capital Build, Sensitivitas 5×5, Skenario dan Jembatan EV→Ekuitas "
-                      "dihitung ulang oleh mesin deterministik (scripts/dcf_engine) dari "
-                      "data/assumptions/AMMN.json + hasil harvest Sectors - tanpa angka fallback."),
+                      "dihitung ulang secara otomatis dari berkas asumsi tim + data Sectors - tanpa angka "
+                      "cadangan."),
             "wacc_build": {
                 "headers": ["Komponen WACC", "Nilai", "Metodologi / Sumber"],
                 "rows": wacc_rows,
@@ -1306,11 +1307,11 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             specs.append(("BEAR", cons_bn[weak],
                           f"EBITDA {weak} Rp {_n(cons_bn[weak])} tn (terlemah)",
                           f"EBITDA {weak} Rp {_n(cons_bn[weak], 2)} tn - konstituen siklus "
-                          "terlemah (Sectors annual, AMMN.json ebitda_midcycle_constituents)"))
+                          "terlemah (laporan tahunan Sectors, rincian EBITDA siklus menengah)"))
         if mid_bn is not None:
             specs.append(("BASE", mid_bn,
-                          f"EBITDA mid-cycle 3Y Rp {_n(mid_bn)} tn",
-                          f"EBITDA mid-cycle (rata-rata 3 tahun) Rp {_n(mid_bn, 2)} tn - "
+                          f"EBITDA siklus menengah 3 tahun Rp {_n(mid_bn)} tn",
+                          f"EBITDA siklus menengah (rata-rata 3 tahun) Rp {_n(mid_bn, 2)} tn - "
                           "konstituen FY2023/FY2024/FY2025 disitir (MID-EBITDA-PROVENANCE)"))
         if q_eb_bn and q_eb_bn > 0:
             specs.append(("BULL", q_eb_bn * 4.0,
@@ -1349,7 +1350,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             ["(−) Total Utang Berbunga", "−" + _n(debt_idr / 1e9),
              "Utang bruto Q1-2026, bukan nol (net_debt_semantics)"],
             ["Implied Equity Value", _n(eq_idr / 1e9),
-             f"Rp {_n(fv_dcf)}/saham = FV engine DCF (WACC {_p2(wacc_applied)}, g {_p2(g_base)})"],
+             f"Rp {_n(fv_dcf)}/saham = nilai wajar DCF (WACC {_p2(wacc_applied)}, g {_p2(g_base)})"],
         ]
 
         ddd = payload.setdefault("dcf_deep_dive", {})
@@ -1359,17 +1360,17 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             "headers": sens_headers,
             "rows": sens_rows,
             "note": ("Sel dihitung ulang per kombinasi oleh dcf() (25 FV live); tidak ada FV "
-                     "fallback. Basis = mid-cycle FCFF flat Rp "
-                     f"{_n(float(fcf_bn[0]), 1)} bn/thn (AMMN.json fcf_basis)."),
+                     "fallback. Dasar = arus kas bebas siklus menengah yang datar Rp "
+                     f"{_n(float(fcf_bn[0]), 1)} bn/thn (berkas asumsi tim)."),
         }
         ddd["scenarios"] = {
             "headers": ["Scenario - basis EBITDA", f"Nilai Wajar (EV/EBITDA {mult_id}×)",
                         "Investment Recommendation"],
             "rows": scen_rows,
             "note": ("Band EBITDA dari hasil harvest (annual Sectors + run-rate kuartalan) × "
-                     f"multiple mid-cycle {mult_id}× (AMMN.json ev_multiple, asumsi eksplisit ±2×). "
+                     f"kelipatan siklus menengah {mult_id}× (asumsi eksplisit ±2×). "
                      f"Kaki DCF (Rp {_n(fv_dcf)}) bersifat pembanding saja "
-                     "(gate_primary = EV/EBITDA)."),
+                     "(patokan utama = EV/EBITDA)."),
         }
         ddd["bridge"] = {
             "headers": ["Komponen Jembatan", "Nilai (Rp bn)", "Keterangan"],
@@ -1385,7 +1386,7 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
             "net_cash": ("−" if (cash_idr - debt_idr) < 0 else "")
                         + _n(abs(cash_idr - debt_idr) / 1e9),
             "unit": "Rp bn",
-            "source": "scripts/dcf_engine.dcf - PV FCFF + PV TV ± kas − utang bruto (Rp bn, IDR)",
+            "source": "model DCF tim - nilai kini arus kas bebas + nilai kini nilai akhir ± kas − utang bruto (Rp bn)",
         }
         for m in (payload.get("valuation", {}).get("methods") or []):
             if m.get("method") == "DCF":
@@ -1444,8 +1445,8 @@ def apply_ammn_fill(payload: dict, assum: dict, fv: float,
                 "note": (f"FV DCF Rp {_n(fv_dcf)} vs harga Rp {_n(price)} "
                          f"(WACC {_p2(wacc_applied)}, g {_p2(g_base)}); rating {rating}."),
             },
-            "provenance": ("scripts/dcf_engine.dcf/ev_ebitda on data/assumptions/AMMN.json "
-                           "+ Sectors harvest - 0 kredit, deterministik."),
+            "provenance": ("model DCF/EV-EBITDA tim atas berkas asumsi + data Sectors - dihitung "
+                           "otomatis, tanpa biaya."),
         }
         filled.append("cDcf(wacc_table/sensitivity/scenarios/valuation)")
     except Exception:

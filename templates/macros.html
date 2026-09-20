@@ -592,6 +592,28 @@
       in-plot legend sat on the early peaks. Both scales get 7% of breathing room. -#}
   {% set p_head = (pmax - pmin) * 0.07 %}{% set pmin = pmin - p_head %}{% set pmax = pmax + p_head %}
   {% set r_head = (rmax - rmin) * 0.07 %}{% set rmin = rmin - r_head %}{% set rmax = rmax + r_head %}
+  {#- Round scales (owner critique 19 Sep 2026): splitting the headroom-expanded range into three
+      equal parts printed tick labels like 9.600 / 7.292 / 4.983 / 2.675 - numbers no reader can
+      hold in their head, on the cover's only chart. Snap each scale to a round step so the four
+      gridlines land on round figures and the labels read at a glance. -#}
+  {% set p_range = pmax - pmin %}
+  {% set ns_p = namespace(step=0) %}
+  {% for cand in [5, 10, 20, 25, 50, 100, 200, 250, 500, 1000, 2000, 2500, 5000, 10000, 20000, 25000, 50000] %}
+    {% if ns_p.step == 0 and p_range / cand <= 3.0 %}{% set ns_p.step = cand %}{% endif %}
+  {% endfor %}
+  {% set p_step = ns_p.step if ns_p.step else (p_range / 3) %}
+  {% set p_lo = ((pmin / p_step) | round(0, 'floor')) * p_step %}
+  {% if p_lo + 3 * p_step < pmax %}{% set p_lo = (((pmax / p_step) | round(0, 'ceil')) * p_step) - 3 * p_step %}{% endif %}
+  {% set pmin = p_lo %}{% set pmax = p_lo + 3 * p_step %}
+  {% set r_range = rmax - rmin %}
+  {% set ns_r = namespace(step=0) %}
+  {% for cand in [1, 2, 5, 10, 20, 25, 50, 100, 200, 500] %}
+    {% if ns_r.step == 0 and r_range / cand <= 3.0 %}{% set ns_r.step = cand %}{% endif %}
+  {% endfor %}
+  {% set r_step = ns_r.step if ns_r.step else (r_range / 3) %}
+  {% set r_lo = ((rmin / r_step) | round(0, 'floor')) * r_step %}
+  {% if r_lo + 3 * r_step < rmax %}{% set r_lo = (((rmax / r_step) | round(0, 'ceil')) * r_step) - 3 * r_step %}{% endif %}
+  {% set rmin = r_lo %}{% set rmax = r_lo + 3 * r_step %}
   {% set ns = namespace(pts_p="", pts_r="") %}
   {% for v in price or [] %}
     {% set x = pad_l + loop.index0 * step %}
@@ -630,7 +652,7 @@
       {% set y = pad_t + (i * chart_h / 3) %}
       {% set pv = pmax - (i * (pmax - pmin) / 3) %}
       {% set rv = rmax - (i * (rmax - rmin) / 3) %}
-      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#0928B1" text-anchor="end">{{ "%0.0f"|format(pv) }}</text>
+      <text x="{{ pad_l - 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#0928B1" text-anchor="end">{{ pv | idn(0) }}</text>
       <text x="{{ W - pad_r + 3 }}" y="{{ y + (fs / 3) }}" font-size="{{ fs }}" font-family="Roboto, Arial, sans-serif" fill="#666666">{{ "%+0.0f"|format(rv) }}%</text>
     {% endfor %}
     {% for lbl in labels or [] %}
@@ -641,16 +663,16 @@
     {% if narrow %}
     <g font-size="{{ lfs }}" font-family="Roboto, Arial, sans-serif">
       <line x1="{{ pad_l }}" y1="{{ pad_t - 15 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 15 }}" stroke="#0928B1" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#333333">Harga (Rp, kiri)</text>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t - 11 }}" fill="#333333">Harga saham (Rp) - sumbu kiri</text>
       <line x1="{{ pad_l }}" y1="{{ pad_t - 4 }}" x2="{{ pad_l + 16 }}" y2="{{ pad_t - 4 }}" stroke="#B4C7FF" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#333333">Relatif vs IHSG (%, kanan)</text>
+      <text x="{{ pad_l + 21 }}" y="{{ pad_t }}" fill="#333333">Relatif vs IHSG (%) - sumbu kanan</text>
     </g>
     {% else %}
     <g font-size="{{ lfs }}" font-family="Roboto, Arial, sans-serif">
       <line x1="{{ pad_l }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 12 }}" y2="{{ pad_t - 8 }}" stroke="#0928B1" stroke-width="{{ sw_p }}"/>
-      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Harga (Rp, kiri)</text>
+      <text x="{{ pad_l + 16 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Harga saham (Rp) - sumbu kiri</text>
       <line x1="{{ pad_l + 128 }}" y1="{{ pad_t - 8 }}" x2="{{ pad_l + 140 }}" y2="{{ pad_t - 8 }}" stroke="#B4C7FF" stroke-width="{{ sw_r }}"/>
-      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Relatif vs IHSG (%, kanan)</text>
+      <text x="{{ pad_l + 144 }}" y="{{ pad_t - 5.5 }}" fill="#333333">Relatif vs IHSG (%) - sumbu kanan</text>
     </g>
     {% endif %}
   </svg>

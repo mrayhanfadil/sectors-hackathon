@@ -169,7 +169,7 @@ def build_cashflow_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             row("(+) Depreciation & Amortization", "dna"),
             row("(-)/(+) Increase/Decrease in Working Capital", "dwc"),
             row("Other Operating Items", "other_op",
-                note="residual operasi; pada kolom aktual menyerap item yang tidak dirinci Sectors"),
+                note="residual operasi; pada tahun aktual menyerap pos yang tidak dirinci Sectors"),
             row("Net Cash from Operations", "ocf", "subtotal"),
         ]},
         {"title": "Cash Flow from Investing", "rows": [
@@ -363,7 +363,7 @@ def build_key_ratio_page(ticker: str = "AMMN", spine: Optional[dict] = None,
         ],
         "notes": [
             "Satu desimal konsisten di semua baris; angka negatif ditulis dalam tanda kurung, bukan minus.",
-            "ROAA/ROAE memakai saldo rata-rata (awal+akhir)/2; rata-rata kolom 2024A memerlukan saldo "
+            "ROAA/ROAE memakai saldo rata-rata (awal+akhir)/2; rata-rata tahun 2024 memerlukan saldo "
             "FY2023A dari Sectors, bukan angka yang diinterpolasi.",
             "Net Gearing = (Total Debt - Cash) / Total Equity; Interest Coverage = EBIT / Interest Expense.",
         ],

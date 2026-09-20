@@ -214,13 +214,17 @@ def _price_box(payload: dict) -> dict:
     # Previous TP sits between Target Price and Upside/Downside on the benchmark cover, and
     # prints an italic "NA" on initiation rather than being dropped (the reader still wants to
     # see that there is no prior target to compare against).
-    prev_row = ["Previous TP (Rp)", _n(prev_tp, 0) if prev_tp else "NA", not prev_tp]
+    # An initiation has no prior target, and a bare "NA" reads as an unhandled null on the most
+    # prominent table of the report (owner critique 19 Sep 2026): name the state instead.
+    prev_row = ["Previous TP (Rp)", _n(prev_tp, 0) if prev_tp else "Initiation", not prev_tp]
     return {
         "rows": [
             ["Last Price (Rp)", _n(price, 0)],
             ["Target Price (Rp)", _n(tp, 0)],
             prev_row,
-            ["Upside/Downside (%)", _pct(up)],
+            # "Upside/Downside" is the benchmark cover's label, but it is exactly the token the
+            # PLAIN-LANGUAGE RULE bans in prose - and a label is the most-read text on the page.
+            ["Potensi naik/turun (%)", _pct(up)],
         ],
         "anchor": val.get("anchor") or "n/a",
         "anchor_basis": val.get("anchor_basis") or "n/a",
@@ -270,10 +274,11 @@ def _stats_block(payload: dict, assum: dict, fx: Optional[dict]) -> dict:
         avg = sum(vals) / len(vals)
         first, last = str(drows[0]["date"]), str(drows[-1]["date"])
         if fx and fx.get("rate"):
-            rows.append(["Avg. Daily T/O 3M (Rpbn/US$mn)",
+            rows.append(["Rata-rata transaksi harian 3 bulan (Rpbn/US$mn)",
                          f"{_n(avg / 1e9, 1)} / {_n(avg / fx['rate'] / 1e6, 1)}"])
         else:
-            rows.append(["Avg. Daily T/O 3M (Rpbn/US$mn)", f"{_n(avg / 1e9, 1)} / n/a"])
+            rows.append(["Rata-rata transaksi harian 3 bulan (Rpbn/US$mn)",
+                         f"{_n(avg / 1e9, 1)} / n/a"])
         # The averaging window is defined once here and used by every report, per the house
         # rule that the turnover period must be consistent across the fleet.
         sources["avg_daily_to"] = (
@@ -393,11 +398,25 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     cats = payload.get("catalysts") or []
     if cats and isinstance(cats[0], dict) and cats[0].get("name"):
         first = cats[0]
-        parts.append(f"Yang perlu dicatat: {first.get('name')} - "
+        # BOTH DIRECTIONS (owner rule, enforced on page 2 and now here): the press leads with the
+        # directors' buying, and the same IDX disclosures carry related-party selling. A cover that
+        # reports only the buying contradicts page 2, which states the one-sided read is not
+        # supported by the data. The counter-direction is read from the same digest page 2 uses.
+        _digest = payload.get("filings_digest") or {}
+        _sell = _digest.get("sell") or {}
+        _sell_txt = ""
+        try:
+            if _sell.get("n") and float(_sell.get("value") or 0) > 0:
+                _sell_txt = (f" Namun pemegang saham terkait juga menjual Rp "
+                             f"{_n(float(_sell['value']) / 1e12, 1)} tn ({_sell['n']} transaksi) - arahnya "
+                             f"belum satu suara.")
+        except (TypeError, ValueError):
+            _sell_txt = ""
+        parts.append(f"Catatan: {first.get('name')} - "
                      f"{first.get('effect') or 'lihat halaman katalis'} "
-                     f"(sumber: {_plain_source(first.get('source'))}).")
+                     f"(sumber: {_plain_source(first.get('source'))})." + _sell_txt)
     else:
-        parts.append("Katalis ke depan belum terverifikasi di payload - tidak ada jembatan "
+        parts.append("Katalis ke depan belum terverifikasi di data - tidak ada jembatan "
                      "yang bisa dinyatakan tanpa angka (LOUD policy).")
     # 3. earnings path: what level the forecast unlocks, from the same driver file
     # the Key Financials exhibit resolves. Ticker-agnostic; loud when absent.
@@ -436,7 +455,7 @@ def _financial_para(payload: dict, ticker: str) -> dict:
             _vol = _re.findall(r"([\d.,]+)\s*Mt", _raw)
             _drv_note = _raw
             if len(_vol) >= 2:
-                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta ke {_vol[1]} juta ton) "
+                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta ton ke {_vol[1]} juta ton) "
                              f"dan smelter baru")
             if str(_doc.get("basis") or "") == "third-party-estimate":
                 # Keeps the disclosure (these are projections, not realised figures) in plain
@@ -446,11 +465,13 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     except Exception:
         pass
     if _eb26 and _eb28 and _cagr is not None:
+        # DE-DUPLICATION (owner critique 19 Sep 2026): the highlight above already carries the
+        # path (Rp 33,9 tn -> Rp 55,2 tn, +27,7%/tahun) and the physical drivers, so repeating
+        # them here printed the same claim twice on the one page a reader scans. P1 keeps what
+        # the highlight does NOT carry - the margin, in plain words, with the same figures.
         parts.append(
-            f"Proyeksi 2026-2028 ({_drv_basis}): laba operasi naik dari "
-            f"Rp {_n(_eb26 / 1000, 1)} tn ke Rp {_n(_eb28 / 1000, 1)} tn (naik {_n(_cagr, 1)}% per tahun, "
-            f"marjin laba operasi {_n(_m26, 1)}% ke {_n(_m28, 1)}%)"
-            + (f" - {_drv_note}." if _drv_note else ".")
+            f"Proyeksi 2026-2028 ({_drv_basis}): marjin laba operasi "
+            f"{_n(_m26, 1)}% ke {_n(_m28, 1)}%."
         )
     else:
         parts.append("Proyeksi 2026-2028 tidak terverifikasi di file driver - lihat tabel Key Financials "
@@ -459,9 +480,23 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     _rbox = (payload.get("cover") or {}).get("rating_box") or {}
     _tp, _up, _act = _rbox.get("tp"), _rbox.get("upside_pct"), _rbox.get("action")
     if isinstance(_tp, (int, float)):
-        parts.append(f"Target harga kami Rp {_n(_tp, 0)} per saham ({_act or 'n/a'}, masih ada ruang naik "
-                     f"{_pct(_up)} dari harga terakhir): angka ini kami hitung hati-hati, sementara laba "
-                     f"2026 diproyeksikan naik jauh lebih besar.")
+        # The cover used to leave the reader to discover on the valuation page that the DCF leg is
+        # a fifth of the target. Owner critique 19 Sep 2026: state the gap where the target is
+        # stated. The number is read from the same legs the valuation page prints.
+        _legs = (payload.get("valuation") or {}).get("legs") or {}
+        _dcf = _legs.get("dcf")
+        _mult = None
+        for _m in (payload.get("valuation") or {}).get("methods") or []:
+            if str(_m.get("method") or "").upper().startswith("EV/EBITDA"):
+                _mult = (_m.get("assumptions") or {}).get("multiple")
+        _basis = (f"patokan {_n(_mult, 2).replace('.', ',')} kali laba operasi 2026"
+                  if isinstance(_mult, (int, float)) else "patokan laba operasi 2026")
+        _gap = ""
+        if isinstance(_dcf, (int, float)) and _dcf > 0:
+            _gap = (f", sementara DCF kami hanya Rp {_n(_dcf, 0)} - selisih ini kami "
+                    f"nyatakan terbuka")
+        parts.append(f"Target harga kami Rp {_n(_tp, 0)} per saham ({_act or 'n/a'}, ruang naik "
+                     f"{_pct(_up)}): {_basis}{_gap}.")
     else:
         parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
                      "bisa dinyatakan (LOUD policy).")

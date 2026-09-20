@@ -98,7 +98,7 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
         out.append("cover: rating change status missing (`rating.action_status`) - the reader "
                    "scans this before reading anything else")
     labels = [_text(r[0]) for r in ((s1.get("price_box") or {}).get("rows") or []) if r]
-    for needed in ("Last Price", "Target Price", "Previous TP", "Upside/Downside"):
+    for needed in ("Last Price", "Target Price", "Previous TP", "Potensi naik/turun"):
         if not any(lbl.startswith(needed) for lbl in labels):
             out.append(f"cover: price box is missing the {needed!r} row")
     stats = [(_text(r[0]), _text(r[1])) for r in ((s1.get("stats") or {}).get("rows") or []) if r]
@@ -420,6 +420,108 @@ def audit_plain_language(payload: Optional[dict]) -> list[str]:
     return violations
 
 
+# --------------------------------------------------------------- §15 plumbing (machine traces)
+#: Words that describe OUR machinery rather than the company. A reader must never meet them: the
+#: report is a research note, not a log of how it was built. Owner call 19 Sep 2026 - the shipped
+#: PDF printed "yang dikembalikan endpoint", "via AMMN.json", "kolom F", "feed yang dipakai" and
+#: "kriteria evaluasi gate terpenuhi", which read as debug output.
+PLUMBING_PATTERNS = (
+    r"\bendpoint\b", r"\bkolom\b", r"\bfeed\b", r"\bpayload\b", r"\bartifact\b",
+    r"\bharvester\b", r"\brenderer\b", r"\bpipeline\b", r"\bgate\b", r"\bdeterministik\b",
+    r"\bdeterministic\b", r"\btenant\b", r"\bJSON\b", r"\.json\b", r"\bfreeze\b",
+    r"\bscreener\b", r"\bfilings\b", r"\bengine\b", r"\braw\b", r"file asumsi",
+    r"file jalur proyeksi", r"LEVEL NORMALISED", r"kolom F\b",
+    # Internal DECISION language: how the team argued its way to a number is not the reader's
+    # business, and it reads as a leaked working paper when it prints (owner critique 19 Sep 2026:
+    # "BASIS MULTIPLE (leg gate-primary)", "owner-selected headline multiple", "spine deck").
+    r"gate-primary", r"owner-selected", r"midpoint aritmetik", r"own-history", r"Own-history",
+    r"third-party-estimate", r"spine deck", r"audit trail", r"\bGAP G\d+",
+)
+#: Path fragments whose strings are CITATIONS, not prose: a source line may name the dataset it
+#: came from ("Sectors filings", "Sectors screener"), because that is attribution a reader is owed.
+PLUMBING_CITATION_PATHS = (
+    "source", "sources", "citation", "provenance", "as_of", "dataset", "endpoint_name",
+    "internal", "note_internal", "provenance_internal", "_raw",
+)
+#: Path fragments that never reach a printed page: machine bookkeeping (the Critic's own reason
+#: strings, the house-rule report, the collector's fill manifest). Scanning them would flag our
+#: own audit text and drown the real hits.
+PLUMBING_NON_PRINTED_PATHS = (
+    "critic", "house_rules", "fill_meta", "audit_metadata", "machine", "debug",
+    # Machine KEYS whose value is a label the renderer maps before printing (the statements page
+    # maps "third-party-estimate" through _BASIS_LABEL), plus the internal fact sheet and the
+    # calibration trail. Layer 2 (audit_printed_html) is what proves nothing printed them.
+    "path_notes", "fx_trail_ref", "gate_flags", "forecast_basis", ".raw.",
+)
+
+
+def _walk_strings(node: Any, path: str = "") -> Iterable[tuple[str, str]]:
+    """Every string in a payload with its dotted path, so a hit can name where it came from."""
+    if isinstance(node, dict):
+        for key, value in node.items():
+            yield from _walk_strings(value, f"{path}.{key}" if path else str(key))
+    elif isinstance(node, (list, tuple)):
+        for i, value in enumerate(node):
+            yield from _walk_strings(value, f"{path}[{i}]")
+    elif isinstance(node, str):
+        yield path, node
+
+
+def audit_plumbing(payload: Optional[dict]) -> list[str]:
+    """No machine trace reaches a reader (§15).
+
+    This walks the WHOLE payload instead of an enumerated list of surfaces, because the class of
+    bug it exists to stop is "a page nobody remembered to scan": the plain-language scan covered
+    the cover, so the industry page shipped "dikembalikan endpoint" unchallenged. Citation paths
+    are exempt - a source line naming its dataset is attribution, not plumbing.
+    """
+    violations: list[str] = []
+    for path, text in _walk_strings(payload or {}):
+        if len(text) < 8:
+            continue
+        low = path.lower()
+        if any(frag in low for frag in PLUMBING_CITATION_PATHS):
+            continue
+        if any(frag in low for frag in PLUMBING_NON_PRINTED_PATHS):
+            continue
+        for pat in PLUMBING_PATTERNS:
+            m = re.search(pat, text, re.IGNORECASE)
+            if m:
+                violations.append(
+                    f"printed text at {path or '<root>'} contains the machine trace "
+                    f"{m.group(0)!r} - describe the company, not the machinery (§15): "
+                    f"'tersedia di data', 'keterbukaan IDX', 'perhitungan otomatis'"
+                )
+                break
+    return violations
+
+
+def audit_printed_html(html: str) -> list[str]:
+    """The same §15 rule, applied to what the browser actually prints.
+
+    The payload scan cannot see template copy, and it cannot tell a field that renders from one
+    that never does. This strips the markup to visible text (script/style/attributes dropped) and
+    scans THAT, so the check is on the document a reader receives rather than on the data behind
+    it. Used by the render path as a hard stop before Chromium runs.
+    """
+    if not html:
+        return []
+    text = re.sub(r"(?is)<(script|style)\b.*?</\1>", " ", html)
+    text = re.sub(r"(?s)<[^>]+>", " ", text)
+    text = (text.replace("&nbsp;", " ").replace("&amp;", "&").replace("&lt;", "<")
+                .replace("&gt;", ">").replace("&#39;", "'").replace("&quot;", '"'))
+    text = re.sub(r"\s+", " ", text)
+    violations: list[str] = []
+    for pat in PLUMBING_PATTERNS:
+        for m in re.finditer(pat, text, re.IGNORECASE):
+            start = max(0, m.start() - 70)
+            violations.append(
+                f"the printed document contains the machine trace {m.group(0)!r}: "
+                f"...{text[start:m.end() + 70].strip()}..."
+            )
+    return violations
+
+
 # ------------------------------------------------------------------ §9 Key Financials
 def audit_key_financials(kf: Optional[dict]) -> list[str]:
     out: list[str] = []
@@ -447,9 +549,14 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
         if not any(k in notes_blob for k in ("estimasi tim", "proyeksi", "bukan realisasi")):
             out.append("Key Financials' forecast columns come from estimates but the note never says the "
                        "columns are a projection - they would read as realised figures")
-    elif basis == "midcycle-normalised" and "normalised" not in notes_blob:
+    elif basis == "midcycle-normalised" and not any(
+        k in notes_blob.lower() for k in ("normalised", "dasar normal", "normal")
+    ):
+        # §15 renamed the printed label ("LEVEL NORMALISED" -> "dasar normal"), so the disclosure
+        # check accepts the plain form too - the rule is about the READER knowing the columns are
+        # a normalised level rather than a growth curve, not about which word carries it.
         out.append("Key Financials columns are a normalised mid-cycle level but the note does not say "
-                   "'normalised' - a flat level would read as a growth forecast")
+                   "so ('dasar normal') - a flat level would read as a growth forecast")
     elif basis == "invalid-driver-file":
         names = "; ".join(str(p) for p in (kf.get("forecast_problems") or []))
         out.append(f"Key Financials fell back because its forecast path file is unusable: {names}")
@@ -833,6 +940,9 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_source_independence(payload)
     # One number format across the deck.
     violations += audit_number_format(payload)
+    # §15: no machine trace reaches a reader (the class of bug that put "endpoint" and
+    # "kolom F" on the printed page while every enumerated surface check stayed green).
+    violations += audit_plumbing(payload)
     # Slide 4: a priced leg must state which level and which multiple produced it, and what was rejected.
     # The instruction rule says so; this makes it enforced rather than optional.
     vnotes = " ".join(str(n) for n in ((payload.get("valuation_page") or {}).get("notes") or []))

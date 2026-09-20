@@ -184,7 +184,7 @@
 <div class="page">
   {{ m.running() }}
   {{ m.section("Ringkasan Investasi", ns) }}
-  <p class="muted small">Snapshot {{ meta.company_name }} - seluruh angka hasil engine deterministik, asumsi eksplisit pada halaman valuasi.</p>
+  <p class="muted small">Snapshot {{ meta.company_name }} - seluruh angka dihitung otomatis dari data, dengan asumsi yang dinyatakan terbuka di halaman valuasi.</p>
 
   {% if financial_highlights %}
   {{ m.exhibit_auto(ns, "Financial Highlights (6 tahun)", financial_highlights.source or "Laporan keuangan IDX") }}
@@ -397,7 +397,7 @@
         {% set meth_max = (valuation_page.legs.ev_ebitda if valuation_page.legs.ev_ebitda > price_now else price_now) * 1.18 %}
         <div class="meth-chart-wrap">
           <div class="meth-bars">
-            {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("TP gate-primary", valuation_page.legs.ev_ebitda, "b3")] %}
+            {% for mlabel, mval, mcls in [("DCF · Gordon g " ~ sens.base_g, br.fv_gordon, "b1"), ("DCF · exit multiple", br.fv_exit, "b2"), ("Target harga (patokan EV/EBITDA)", valuation_page.legs.ev_ebitda, "b3")] %}
             <div class="meth-col">
               <div class="meth-val">{{ mval | idn(0) }}</div>
               <div class="meth-track">
@@ -438,7 +438,7 @@
   </div>
 
   {% if valuation.methods %}
-  {{ m.exhibit_auto(ns, "Metode pembanding (anchor target price)", "scripts/ev_ebitda.py, Sectors annual EBITDA") }}
+  {{ m.exhibit_auto(ns, "Metode pembanding (patokan target harga)", "Sectors (EBITDA tahunan), dihitung tim") }}
   {{ m.table(["Metode", "Fair value (Rp)", "Peran"], valuation_page.crosscheck_rows) }}
   {{ m.exhibit_source(ns) }}
   {% endif %}
@@ -456,8 +456,8 @@
 
   <div class="audit-banner">
     <p class="audit-verdict">
-      Verdict: <b>{{ cover.audit_disclosure.verdict }}</b>
-      · Anchor contested: <b>{{ cover.audit_disclosure.anchor_contested }}</b>
+      Hasil audit: <b>{{ cover.audit_disclosure.verdict }}</b>
+      · Patokan harga dipersengketakan: <b>{{ 'Ya' if cover.audit_disclosure.anchor_contested else 'Tidak' }}</b>
     </p>
   </div>
 
@@ -508,21 +508,21 @@
   {% else %}
   {% if cover.audit_disclosure.verdict == 'PASS' %}
   <p class="small muted" style="margin:4pt 0;">
-    <i>Anchor tidak disengketakan.</i>
-    Semua kriteria evaluasi gate terpenuhi (PASS) - tangga bear/mid/bull tidak dipublikasikan.
+    <i>Patokan harga tidak dipersengketakan.</i>
+    Seluruh pemeriksaan otomatis terpenuhi (PASS); skenario pesimistis/dasar/optimistis tidak dipublikasikan.
   </p>
   {% else %}
   <p class="small muted" style="margin:4pt 0;">
-    <b>Anchor disengketakan.</b>
+    <b>Patokan harga dipersengketakan.</b>
     Bendera DISSENT (jika ada) di atas
     mencerminkan perdebatan internal yang berakhir dengan mempertahankan
-    anchor - tangga bear/mid/bull tidak dipublikasikan.
+    patokan harga - skenario pesimistis/dasar/optimistis tidak dipublikasikan.
   </p>
   {% endif %}
   {% endif %}
 
   {% if audit and audit.inconsistency_report %}
-  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Laporan Konsistensi Metrik (Pre-render Consistency Gate)</h3>
+  <h3 style="margin-top:8pt; margin-bottom:3pt; font-size:9.5pt; color:#0928B1;">Pemeriksaan Konsistensi Angka</h3>
   <table class="fin-table" style="width:100%;">
     <thead>
       <tr>
@@ -548,8 +548,8 @@
   {% endif %}
 
   <p class="small muted" style="margin-top:8pt;">
-    Catatan audit deterministik: verifikasi independen atas konsistensi metrik dan integritas data
-    sebelum publikasi laporan. Audit tetap menjadi otoritas final.
+    Catatan audit: sebelum terbit, seluruh angka dan sumbernya diperiksa otomatis - konsistensi antar
+    halaman dan kelengkapan data. Hasil pemeriksaan ini yang menentukan boleh tidaknya laporan diterbitkan.
   </p>
   {% else %}
   <p class="small muted">

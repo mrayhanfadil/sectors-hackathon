@@ -149,6 +149,17 @@ separation, and the deck's own furniture is not a subject. Never print our plumb
 "payload", "freeze", "artifact", "cache", "pipeline", "via Sectors", "GAP G10", "assumptions
 file", "harvest", "renderer", "gate".
 
+NO MACHINE TRACES (same law, second half): never print our machinery. Banned on every
+printed surface: endpoint, kolom / kolom F, feed, payload, artifact, harvester, renderer,
+pipeline, gate, deterministik, tenant, JSON / .json, freeze, screener, filings, engine, raw,
+file asumsi, file jalur proyeksi, LEVEL NORMALISED. Write what a reader knows instead: "tersedia
+di data" (not "dikembalikan endpoint"), "keterbukaan IDX" (not "Sectors filings" in prose),
+"perhitungan otomatis" (not "engine deterministik"), "berkas asumsi tim" (not "file asumsi"),
+"kolom proyeksi (2026-2028)" (not "kolom F"). A source line may name its dataset - attribution is
+owed to the reader - but prose may not. Enforced twice: `audit_plumbing` over the whole payload
+(inside audit_house_rules) and `audit_printed_html` over the rendered document, which BLOCKS
+publication with a 422. Do not test the gate; it runs on the shipped file.
+
 ENFORCEMENT: `server.report.house_rules.audit_plain_language` runs over the shipped payload
 inside `audit_house_rules` (render path + Critic). A hit names the surface and the token and
 flips the verdict to REJECT, so a violation is a blocked publication, not a style note. Run

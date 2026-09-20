@@ -205,27 +205,27 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         # (docs/ammn-slides/forecast-inputs-provenance.md). The substance stays disclosed - column F is a
         # projection, not a realised figure, and every driver carries its own provenance.
         note = (
-            f"Asumsi kolom F: jalur 3 tahun, estimasi tim yang diselaraskan ke basis data berlisensi "
-            f"(per driver di data/drivers/{ticker}.json, as of {path.get('as_of') or 'n/a'}). "
-            f"Kolom F adalah proyeksi, bukan realisasi."
+            f"Asumsi proyeksi 2026-2028: jalur 3 tahun, estimasi tim yang diselaraskan ke basis data "
+            f"berlisensi (per pendorong di berkas asumsi tim, per {path.get('as_of') or 'n/a'}). "
+            f"Angka ini proyeksi, bukan realisasi."
         )
     elif not path.get("available"):
         note = (
-            "Asumsi kolom F: file jalur proyeksi TIDAK dipakai karena bermasalah ("
-            + "; ".join(path.get("problems") or []) + "). Kolom F jatuh ke level normalised: revenue & EPS "
-            f"FY26F = FY25A x (1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari "
-            "forecast subsector Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; "
-            "FY27F-FY28F ditahan flat."
+            "Asumsi proyeksi: jalur proyeksi tidak dipakai karena bermasalah ("
+            + "; ".join(path.get("problems") or []) + "). Angka proyeksi jatuh ke dasar normal: pendapatan & EPS "
+            f"2026 = 2025 x (1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari "
+            "proyeksi subsektor Sectors 2026; EBITDA 2026 = rata-rata 3 tahun aktual Sectors; "
+            "2027-2028 ditahan flat."
         )
     else:
         # LOUD flat-level label (peer #6): the exhibit title is pinned by
         # test_slide2_forecast.py, so the "not a growth curve" disclosure rides
         # the note lead where the reader lands first, not the title.
         note = (
-            f"LEVEL NORMALISED - kolom F BUKAN kurva pertumbuhan: revenue & EPS FY26F = FY25A x "
-            f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari forecast subsector "
-            f"Sectors 2026; EBITDA FY26F = rata-rata 3 tahun aktual Sectors; FY27F-FY28F ditahan flat "
-            f"mengikuti jalur FCFF FLAT FY2026F-FY2030F di file asumsi."
+            f"Angka proyeksi 2026-2028 BUKAN kurva pertumbuhan: pendapatan & EPS 2026 = 2025 x "
+            f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari proyeksi subsektor "
+            f"Sectors 2026; EBITDA 2026 = rata-rata 3 tahun aktual Sectors; 2027-2028 ditahan flat "
+            f"mengikuti jalur arus kas bebas yang datar 2026-2030 di berkas asumsi tim."
         )
     bvps_used = bool(path_used and (path.get("drivers") or {}).get("bvps_path"))
     note2 = (

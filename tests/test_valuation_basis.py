@@ -27,7 +27,7 @@ def test_gate_primary_is_a_forward_multiple_on_a_stated_level():
     fx = json.loads(DRIVER.read_text())["fx_rp_bn_per_usd_mn"]
     assert float(a["ebitda"]) == pytest.approx(ebitda_f[0] * fx * 1e9, rel=1e-6), \
         "the multiple must multiply the FORWARD level, not the historic average"
-    assert "level forward" in str(a["ebitda_leg_level_note"]).lower()
+    assert "angka proyeksi" in str(a["ebitda_leg_level_note"]).lower()
 
 
 def test_the_own_history_multiple_is_recorded_as_unusable_with_a_reason():
@@ -60,7 +60,7 @@ def test_a_rejected_basis_row_computes_the_rejected_multiple(payload):
     """A row labelled 'if that multiple were used' must not quietly use the accepted one."""
     a = json.loads(ASSUM.read_text())
     rows = ((payload.get("valuation") or {}).get("midcycle") or {}).get("rows") or []
-    row = next((r for r in rows if "Own-history multiple pada level FY26F" in str(r[0])), None)
+    row = next((r for r in rows if "Kelipatan sejarah sendiri pada level proyeksi 2026" in str(r[0])), None)
     assert row, "the rejected-basis row disappeared"
     from tests.idn_number import to_float
 
@@ -87,7 +87,7 @@ def test_gate_requires_the_basis_disclosure(payload):
 
     broken = copy.deepcopy(payload)
     broken["valuation_page"]["notes"] = [n for n in broken["valuation_page"]["notes"]
-                                         if "BASIS MULTIPLE" not in n]
+                                         if "Dasar kelipatan" not in n]
     # strip the basis AND the rejection: the page prices a leg without saying what produced it
     broken["valuation"]["midcycle"]["rows"] = []
     out = audit_house_rules(broken)["violations"]

@@ -86,7 +86,7 @@ def test_ammn_mid_cycle_ebitda_cites_three_constituents(ammn: dict):
     # equals the 3Y average - assert the relationship the deck actually runs on.
     assert avg > 0
     assert ammn["ebitda"] != avg, "ebitda must be the forward level, not the historic average"
-    assert "level forward" in str(ammn.get("ebitda_leg_level_note", "")).lower()
+    assert "angka proyeksi" in str(ammn.get("ebitda_leg_level_note", "")).lower()
 
 
 def test_ammn_dps_field_is_actual_d0_when_present(ammn: dict):

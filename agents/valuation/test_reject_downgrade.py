@@ -9,8 +9,8 @@ audit returns PASS. This test pins the behaviour by:
 2. Applying apply_audit_to_state (the injector used by the ADK pipeline)
 3. Building a render payload from that state
 4. Rendering the PDF and asserting the page reads:
-   - "Verdict: REJECT" (not PASS)
-   - "Anchor contested: True"
+   - "Hasil audit: REJECT" (not PASS)
+   - "Patokan harga dipersengketakan: Ya"
    - The downgrade disclosure text appears (NOT "Anchor tidak disengketakan")
 5. Asserting the test_dissent_audit fixture-level invariants still hold
 
@@ -64,11 +64,11 @@ def test_reject_template_branch_is_wired():
     tpl = Path("templates/report_single.html").read_text()
     # Find the audit-page block (Catatan Audit section)
     assert "Catatan Audit" in tpl, "Catatan Audit section must exist in report_single.html"
-    assert "Verdict: <b>{{ cover.audit_disclosure.verdict }}</b>" in tpl, (
+    assert "Hasil audit: <b>{{ cover.audit_disclosure.verdict }}</b>" in tpl, (
         "Verdict line must render cover.audit_disclosure.verdict (so REJECT reaches the page)"
     )
     # PASS-only footer must exist (to prove PASS path is wired)
-    assert "Semua kriteria evaluasi gate terpenuhi (PASS)" in tpl, (
+    assert "Seluruh pemeriksaan otomatis terpenuhi (PASS)" in tpl, (
         "PASS-only footer must exist (otherwise there's no PASS branch)"
     )
     # PASS-only footer must be guarded by an if verdict == 'PASS'
@@ -76,7 +76,7 @@ def test_reject_template_branch_is_wired():
         "PASS-only footer must be guarded by verdict == 'PASS' (so REJECT bypasses it)"
     )
     # REJECT-specific branch (DISSENT explanation) must exist as the else branch
-    assert "DISSENT (jika ada)" in tpl or "override slot applies" in tpl or "anchor tidak dipublikasikan" in tpl.lower(), (
+    assert "DISSENT (jika ada)" in tpl or "override slot applies" in tpl or "patokan harga tidak dipublikasikan" in tpl.lower(), (
         "REJECT-specific footer text must exist (to prove REJECT path is wired)"
     )
     # Gate flags must filter DISSENT on PASS but show all on non-PASS
@@ -101,7 +101,7 @@ def test_reject_render_shows_reject_verdict_on_page():
 
     # 1. Render live (PASS baseline) - keeps the env alive for filters
     tpl_name, html_pass, data_pass = pdf_mod.render_html_for_ticker("AMMN", None)
-    pass_verdict = bool(_re.search(r"Verdict:\s*<b>\s*PASS\s*</b>", html_pass))
+    pass_verdict = bool(_re.search(r"Hasil audit:\s*<b>\s*PASS\s*</b>", html_pass))
     assert pass_verdict, "live render should still be PASS"
 
     # 2. Mutate the audit_disclosure dict in place (safe - we own data_pass)
@@ -147,10 +147,10 @@ def test_reject_render_shows_reject_verdict_on_page():
     )
 
     # 4. Assertions: REJECT path renders correctly
-    assert _re.search(r"Verdict:\s*<b>\s*REJECT\s*</b>", rendered), (
-        "Catatan Audit must read Verdict: REJECT (regex on tagged form)"
+    assert _re.search(r"Hasil audit:\s*<b>\s*REJECT\s*</b>", rendered), (
+        "Catatan Audit must read Hasil audit: REJECT (regex on tagged form)"
     )
-    assert _re.search(r"Anchor contested:\s*<b>\s*True\s*</b>", rendered)
+    assert _re.search(r"Patokan harga dipersengketakan:\s*<b>\s*Ya\s*</b>", rendered)
     assert "DISSENT (Round 2): TP anchor conceded" in rendered, (
         "REJECT path must surface DISSENT flags (filtered out in PASS path)"
     )

@@ -61,7 +61,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     if not ke:
         reasons.append("cost of equity belum ada di assumptions")
     if not net_profit_bn or any(v is None for v in net_profit_bn):
-        reasons.append("proyeksi Net Profit per tahun tidak tersedia di payload")
+        reasons.append("proyeksi Net Profit per tahun tidak tersedia di data")
     if reasons:
         return {
             "available": False,
@@ -343,7 +343,7 @@ def _narrative_ddm(page: dict) -> list[str]:
             + (f"{_fmt(pbv.get('forward_roe') * 100, 2)}% dipakai untuk menguji apakah payout itu konsisten "
                "dengan pertumbuhan yang diasumsikan (payout* = 1 - g/ROE)."
                if pbv.get("forward_roe") else
-               "belum tersedia di payload, jadi jalur Inverse CoE tidak dapat dihitung dan itu dinyatakan.")
+               "belum tersedia di data, jadi jalur Inverse CoE tidak dapat dihitung dan itu dinyatakan.")
         ),
         (
             "Dua metode di halaman ini "
