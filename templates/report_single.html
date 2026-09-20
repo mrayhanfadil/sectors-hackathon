@@ -437,18 +437,48 @@
     </div>
   </div>
 
-  {% if valuation.methods %}
-  {{ m.exhibit_auto(ns, "Metode pembanding (patokan target harga)", "Sectors (EBITDA tahunan), dihitung tim") }}
-  {{ m.table(["Metode", "Fair value (Rp)", "Peran"], valuation_page.crosscheck_rows) }}
-  {{ m.exhibit_source(ns) }}
-  {% endif %}
+  {# Fadil: the Exhibit 12 "Metode pembanding" table was a 2-row page that repeated the
+     valuation ladder on the page before it - removed, the valuation page now ends at the
+     sensitivity matrix + cross-check notes. #}
   {% else %}
   <p class="small muted">Halaman valuasi tidak dapat disusun: {{ valuation_page.missing|join(", ") if valuation_page and valuation_page.missing else "assumptions emiten belum memuat parameter valuasi" }}.</p>
   {% endif %}
   {{ m.pagefoot(6, ns) }}
 </div>
 
-{# ================= PAGE 7 - AUDIT DISCLOSURE ================= #}
+
+{# ================= SLIDE 5 - PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
+{% include "_slide5_peers.html" %}
+
+{# ================= SLIDE 6 - STATEMENTS ================= #}
+{% include "_slide6_statements.html" %}
+
+{# ============ SLIDE 7 - CASH FLOW + KEY RATIO ============ #}
+{% include "_slide7_cashflow.html" %}
+
+{# ================= PAGE 5 - PEERS + RISKS + DISCLAIMER ================= #}
+<div class="page">
+  {{ m.running() }}
+  {{ m.section("Faktor Risiko", ns) }}
+  {{ m.risks(risks, ns) }}
+
+  {# rule 1: flush the pending exhibit before the closing blocks, so the source line
+     lands directly under its object instead of after the disclaimer. #}
+  {{ m.exhibit_source(ns) }}
+  {{ m.section("Disklaimer", ns) }}
+  {{ m.disclaim() }}
+  {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
+  {{ m.pagefoot(11, ns) }}
+</div>
+
+{# ============ AUDIT DISCLOSURE (conditional appendix, printed LAST) ============ =================
+   Fadil: the audit page printed even when it had nothing to disclose, so the deck carried a
+   near-empty page in the middle. It is now an appendix that renders ONLY when there is
+   something to disclose: a non-PASS verdict, a contested price anchor, a valuation ladder,
+   or a metric-consistency mismatch. A clean PASS prints no page at all. #}
+{% set _ad = cover.audit_disclosure or {} %}
+{% set _audit_prints = _ad.get('present') and (_ad.get('verdict') != 'PASS' or _ad.get('anchor_contested') or _ad.get('ladder') or (audit and audit.inconsistency_report)) %}
+{% if _audit_prints %}
 <div class="page audit-page">
   {{ m.running() }}
   {{ m.section("Catatan Audit", ns) }}
@@ -558,32 +588,9 @@
   </p>
   {% endif %}
 
-  {{ m.pagefoot(7, ns) }}
+  {{ m.pagefoot(12, ns) }}
 </div>
-
-{# ================= SLIDE 5 - PEERS (cross-sectional) + RELATIVE VALUATION (time-series) ================= #}
-{% include "_slide5_peers.html" %}
-
-{# ================= SLIDE 6 - STATEMENTS ================= #}
-{% include "_slide6_statements.html" %}
-
-{# ============ SLIDE 7 - CASH FLOW + KEY RATIO ============ #}
-{% include "_slide7_cashflow.html" %}
-
-{# ================= PAGE 5 - PEERS + RISKS + DISCLAIMER ================= #}
-<div class="page">
-  {{ m.running() }}
-  {{ m.section("Faktor Risiko", ns) }}
-  {{ m.risks(risks, ns) }}
-
-  {# rule 1: flush the pending exhibit before the closing blocks, so the source line
-     lands directly under its object instead of after the disclaimer. #}
-  {{ m.exhibit_source(ns) }}
-  {{ m.section("Disklaimer", ns) }}
-  {{ m.disclaim() }}
-  {% if meta.prepared_by %}<p class="small muted" style="margin-top:6pt;">Disiapkan oleh {{ meta.prepared_by }} · {{ meta.date }} · Bahasa: {{ meta.language|upper }}</p>{% endif %}
-  {{ m.pagefoot(11, ns) }}
-</div>
+{% endif %}
 
 
 <style>

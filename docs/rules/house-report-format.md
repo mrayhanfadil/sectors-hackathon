@@ -124,6 +124,23 @@ page index is the slide number, so a page cannot be inserted without renumbering
 
 Pages 3 and later still render in the order the single archetype had before the deck was numbered (Ringkasan Investasi, Tesis, Valuasi, Financials 6Y, Peers, Risiko, Disklaimer); each is realigned when its slide rules are wired.
 
+**Shipped length (owner call, Sep 2026): 11 numbered pages.** Two pages were removed because the
+owner read the deck and found them empty for a reader:
+
+- the Exhibit 12 "Metode pembanding" table - a two-row page repeating the valuation ladder from
+  the page before it. Exhibits renumber themselves (`ns.ex`), so nothing after it needed editing;
+- the audit page as a fixed page. It is now a **conditional appendix printed last**: it renders
+  only when there is something to disclose (a non-PASS verdict, a contested price anchor, a
+  valuation ladder, or a metric-consistency mismatch) and carries page number 12 when it does.
+  A clean PASS prints no audit page at all, which keeps the numbered pages contiguous. The
+  disclosure data is still computed into `cover.audit_disclosure` and still gated by the Critic,
+  so removing the page removed a print surface, not a check. `tests/test_audit_appendix.py`
+  pins both halves: no page on a clean PASS, and the condition that brings it back.
+
+Consequence for the footer rule (§4): the last numbered page is the risk/disclaimer page, so
+`pagefoot` literals must run 1..11 with no gap. A test reads the rendered HTML and fails on any
+gap or duplicate, which is what caught this change.
+
 Page 2 is the only page whose content is built outside the templates: `server/report/industry_page.py`
 assembles the three paragraphs from the payload and the assumptions file, and
 `server/report/house_rules.py::audit_industry_page` gates them. The page is narrative, so §1-§2
