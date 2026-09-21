@@ -245,12 +245,6 @@ function CompanyCard({ ticker, pipeline }: { ticker: string; pipeline?: RunsSumm
           >
             Mesin
           </Link>
-          <Link
-            to={`/report/${ticker}/challenge` as any}
-            className="rounded-lg border border-[#D9D9D9] bg-white px-2.5 py-1.5 text-xs text-[#666666] hover:text-[#333333] hover:bg-[#f1f5f9] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#23211B] transition-colors"
-          >
-            Uji silang
-          </Link>
         </div>
       </div>
     </div>

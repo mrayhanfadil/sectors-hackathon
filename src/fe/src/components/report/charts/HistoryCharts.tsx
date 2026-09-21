@@ -14,14 +14,15 @@ import {
   LabelList,
 } from "recharts"
 import type { ReportPayload } from "@/lib/reportPayload"
-import { PendingBlock, formatIdn, formatPct, parseIdnNumber } from "./tokens"
+import { PendingBlock, formatIdn, formatPct, parseIdnNumber, shortPanelTitle, barLegendName } from "./tokens"
 import {
   seriesColor,
   SECTORAL_GRID,
   SECTORAL_ZERO_BASELINE,
-  SECTORAL_TICK,
+  SECTORAL_TICK_SM,
   SECTORAL_TOOLTIP_STYLE,
   SECTORAL_LEGEND_STYLE,
+  SECTORAL_LINE,
 } from "./sectoralSeries"
 
 export interface HistoryPanelData {
@@ -38,11 +39,6 @@ export interface HistoryPanelData {
   sourceOrigin: "revenue_combo" | "ebitda_combo" | "netprofit_combo" | "financial_highlights" | "financials" | "financial_statements.income"
 }
 
-/**
- * Sectoral recharts combo chart for 6-year history panels.
- * Bar series uses SECTORAL_SERIES[0]; line series uses SECTORAL_SERIES[1].
- * Data/logic unchanged from the previous SVG implementation.
- */
 function HistoryComboChart({
   labels,
   bars,
@@ -88,12 +84,12 @@ function HistoryComboChart({
         <span className="font-semibold">{barUnit}</span>
         <span className="font-semibold">{lineUnit}</span>
       </div>
-      <ResponsiveContainer width="100%" height={200}>
-        <ComposedChart data={data} margin={{ top: 20, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik historis ${labels.join(", ")}`}>
+      <ResponsiveContainer width="100%" height={240}>
+        <ComposedChart data={data} margin={{ top: 30, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik historis ${labels.join(", ")}`}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
-          <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} />
-          <YAxis yAxisId="bar" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, Math.abs(v) >= 100 ? 0 : 1)} width={44} />
-          <YAxis yAxisId="line" orientation="right" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={40} />
+          <XAxis dataKey="name" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} interval={0} />
+          <YAxis yAxisId="bar" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v === 0 ? "0" : formatIdn(v, Math.abs(v) >= 100 ? 0 : 1))} width={52} />
+          <YAxis yAxisId="line" orientation="right" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v === 0 ? "0" : formatIdn(v, 0))} width={44} />
           <Tooltip
             contentStyle={SECTORAL_TOOLTIP_STYLE}
             formatter={(value: unknown, name: unknown) => {
@@ -108,14 +104,14 @@ function HistoryComboChart({
           <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
           <ReferenceLine yAxisId="bar" y={0} stroke={SECTORAL_ZERO_BASELINE} />
           {hasNegativeLine && <ReferenceLine yAxisId="line" y={0} stroke={SECTORAL_ZERO_BASELINE} />}
-          <Bar yAxisId="bar" dataKey="bar" name={`${title} (${barUnit})`} fill={seriesColor(0)} maxBarSize={28} radius={[2, 2, 0, 0]}>
+          <Bar yAxisId="bar" dataKey="bar" name={barLegendName(title, barUnit)} fill={seriesColor(0)} maxBarSize={28} radius={[2, 2, 0, 0]}>
             {data.map((entry, i) => (
               <Cell key={`cell-${i}`} fill={entry.bar !== null && entry.bar < 0 ? seriesColor(4) : seriesColor(0)} />
             ))}
-            <LabelList dataKey="barLabel" position="top" fill={seriesColor(0)} fontSize={11} />
+            <LabelList dataKey="barLabel" position="top" offset={4} fill={seriesColor(0)} fontSize={10} />
           </Bar>
-          <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={seriesColor(1)} strokeWidth={2} dot={{ r: 4, fill: seriesColor(1) }} activeDot={{ r: 6 }} connectNulls>
-            <LabelList dataKey="lineLabel" position="top" fill={seriesColor(1)} fontSize={11} />
+          <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={SECTORAL_LINE} strokeWidth={2.5} dot={{ r: 4, fill: SECTORAL_LINE }} activeDot={{ r: 6 }} connectNulls>
+            <LabelList dataKey="lineLabel" position="top" offset={14} fill={SECTORAL_LINE} fontSize={10} />
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
@@ -394,7 +390,7 @@ export function HistoryCharts({ payload }: { payload?: ReportPayload | null }) {
             className="flex flex-col rounded-xl border border-[#D9D9D9] bg-white p-4 dark:border-[#262930] dark:bg-[#090a0c]"
           >
             <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
-              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{panel.title}</span>
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{shortPanelTitle(panel.title)}</span>
               {panel.window && <span className="text-[11px] text-[#666666] dark:text-[#666666]">{panel.window}</span>}
             </div>
 

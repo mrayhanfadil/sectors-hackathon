@@ -25,6 +25,26 @@ export const TOKENS = {
 } as const
 
 /**
+ * Shorten payload chart titles for card headers + legend: strip the
+ * parenthesised window (shown separately) and translate known English titles.
+ * Without this "Revenue & Revenue Growth (FY20A-FY25A aktual)" wraps to
+ * 3 lines and the legend swatch explains nothing.
+ */
+export function shortPanelTitle(title: string): string {
+  const base = title.split("(")[0].trim()
+  const lower = base.toLowerCase()
+  if (lower.includes("revenue") || lower.includes("pendapatan")) return "Pendapatan dan pertumbuhan"
+  if (lower.includes("ebitda")) return "EBITDA dan marjin"
+  if (lower.includes("net profit") || lower.includes("laba bersih")) return "Laba bersih dan marjin"
+  return base
+}
+
+/** Legend-length bar name: "Pendapatan (Rp bn)" instead of the full title. */
+export function barLegendName(title: string, barUnit: string): string {
+  return `${shortPanelTitle(title).split(" dan ")[0]} (${barUnit})`
+}
+
+/**
  * Honest Pending State component rendered when payload section is missing or incomplete.
  * Never invents mock or placeholder figures.
  */

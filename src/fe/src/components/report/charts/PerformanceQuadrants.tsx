@@ -14,14 +14,15 @@ import {
   LabelList,
 } from "recharts"
 import type { ReportPayload } from "@/lib/reportPayload"
-import { PendingBlock, formatIdn, formatPct, parseIdnNumber } from "./tokens"
+import { PendingBlock, formatIdn, formatPct, parseIdnNumber, shortPanelTitle, barLegendName } from "./tokens"
 import {
   seriesColor,
   SECTORAL_GRID,
   SECTORAL_ZERO_BASELINE,
-  SECTORAL_TICK,
+  SECTORAL_TICK_SM,
   SECTORAL_TOOLTIP_STYLE,
   SECTORAL_LEGEND_STYLE,
+  SECTORAL_LINE,
 } from "./sectoralSeries"
 
 interface QuadrantData {
@@ -95,12 +96,12 @@ function QuadrantComboChart({
         <span className="font-semibold">{barUnit}</span>
         <span className="font-semibold">{lineUnit}</span>
       </div>
-      <ResponsiveContainer width="100%" height={190}>
-        <ComposedChart data={data} margin={{ top: 20, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik kinerja ${labels.join(", ")}`}>
+      <ResponsiveContainer width="100%" height={230}>
+        <ComposedChart data={data} margin={{ top: 30, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik kinerja ${labels.join(", ")}`}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
-          <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} />
-          <YAxis yAxisId="bar" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, Math.abs(v) >= 100 ? 0 : 1)} width={44} />
-          <YAxis yAxisId="line" orientation="right" tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={40} />
+          <XAxis dataKey="name" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} interval={0} />
+          <YAxis yAxisId="bar" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v === 0 ? "0" : formatIdn(v, Math.abs(v) >= 100 ? 0 : 1))} width={52} />
+          <YAxis yAxisId="line" orientation="right" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v === 0 ? "0" : formatIdn(v, 0))} width={44} />
           <Tooltip
             contentStyle={SECTORAL_TOOLTIP_STYLE}
             formatter={(value: unknown, name: unknown) => {
@@ -115,19 +116,19 @@ function QuadrantComboChart({
           <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
           <ReferenceLine yAxisId="bar" y={0} stroke={SECTORAL_ZERO_BASELINE} />
           {hasNegativeLine && <ReferenceLine yAxisId="line" y={0} stroke={SECTORAL_ZERO_BASELINE} />}
-          <Bar yAxisId="bar" dataKey="bar" name={`${title} (${barUnit})`} fill={seriesColor(0)} maxBarSize={32} radius={[2, 2, 0, 0]}>
+          <Bar yAxisId="bar" dataKey="bar" name={barLegendName(title, barUnit)} fill={seriesColor(0)} maxBarSize={32} radius={[2, 2, 0, 0]}>
             {data.map((entry, i) => (
               <Cell key={`cell-${i}`} fill={seriesColor(0)} fillOpacity={entry.barOpacity} />
             ))}
-            <LabelList dataKey="barLabel" position="top" fill={seriesColor(0)} fontSize={11} />
+            <LabelList dataKey="barLabel" position="top" offset={4} fill={seriesColor(0)} fontSize={10} />
           </Bar>
-          <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={seriesColor(1)} strokeWidth={2} dot={{ r: 4, fill: seriesColor(1) }} activeDot={{ r: 6 }} connectNulls>
-            <LabelList dataKey="lineLabel" position="top" fill={seriesColor(1)} fontSize={11} />
+          <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={SECTORAL_LINE} strokeWidth={2.5} dot={{ r: 4, fill: SECTORAL_LINE }} activeDot={{ r: 6 }} connectNulls>
+            <LabelList dataKey="lineLabel" position="top" offset={14} fill={SECTORAL_LINE} fontSize={10} />
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
-      <p className="mt-1 text-[11px] text-[#666666] dark:text-[#666666]">
-        Solid = Aktual · Transparan = Proyeksi
+      <p className="mt-2 text-xs text-[#666666] dark:text-[#666666]">
+        Biru solid = aktual · biru pudar = proyeksi
       </p>
     </div>
   )
@@ -275,7 +276,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
             className="flex flex-col rounded-xl border border-[#D9D9D9] bg-white p-4 shadow-none dark:border-[#262930] dark:bg-[#090a0c]"
           >
             <div className="mb-3 flex items-center justify-between border-b border-[#D9D9D9]/60 pb-2 dark:border-[#262930]">
-              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{q.title}</span>
+              <span className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">{shortPanelTitle(q.title)}</span>
               {q.window && <span className="text-[11px] text-[#666666] dark:text-[#666666]">{q.window}</span>}
             </div>
 
@@ -294,7 +295,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
             </div>
 
             {q.narrative && (
-              <p className="mt-3 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#333333] dark:text-[#666666]">
+              <p className="mt-4 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-[13px] leading-relaxed text-[#333333] dark:border-[#262930] dark:bg-[#333333] dark:text-[#f1f5f9]">
                 {q.narrative}
               </p>
             )}

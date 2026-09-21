@@ -27,6 +27,20 @@ export const SECTORAL_TICK = {
   fontFamily: SECTORAL_FONT,
 }
 
+/** Smaller tick for dense combo charts (6 x-labels in ~300px cards). */
+export const SECTORAL_TICK_SM = {
+  ...SECTORAL_TICK,
+  fontSize: 11,
+}
+
+/**
+ * Line-series color for bar+line combos. Bars use navy SECTORAL_SERIES[0];
+ * the old line color (pale #B4C7FF) was invisible on white, so combos get
+ * this dark-green house token instead. Do NOT change SECTORAL_SERIES[1] -
+ * PeersCharts uses it for a bar series.
+ */
+export const SECTORAL_LINE = "#157F3D"
+
 export const SECTORAL_TOOLTIP_STYLE = {
   borderRadius: "4px",
   border: "none",

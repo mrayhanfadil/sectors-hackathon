@@ -2,17 +2,13 @@ import { useState } from "react"
 import { Link } from "@tanstack/react-router"
 import {
   ArrowLeft,
-  FileText,
-  Swords,
   Download,
   Bot,
   Loader2,
-  ChevronRight,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { fetchPdf } from "@/lib/api"
 import { RecommendationBadge } from "./RecommendationBadge"
-import { ENGINE_TICKERS } from "@/components/agent/tickers"
 
 export type ReportHeaderProps = {
   ticker: string
@@ -137,9 +133,6 @@ export function ReportHeader({
   const isPdfBusy = externalPdfLoading ?? (externalPdfState === "loading" || internalPdfLoading)
   const errorMsg = pdfMsg || internalPdfError
 
-  const isValuationActive = activeTab === "valuation" || activeTab === "overview"
-  const isChallengeActive = activeTab === "challenge"
-
   const upsideNum = parseUpside(upside)
   const upsidePositive = upsideNum != null && upsideNum > 0
   const upsideNegative = upsideNum != null && upsideNum < 0
@@ -167,64 +160,8 @@ export function ReportHeader({
     }
   }
 
-  const tabBase =
-    "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-[1.5px] -mb-px transition-colors cursor-pointer"
-  const tabActive =
-    "border-[#1B365D] text-[#1B365D] font-semibold dark:border-[#7596FF] dark:text-[#7596FF]"
-  const tabIdle =
-    "border-transparent text-[#666666] hover:text-[#333333] hover:border-[#E7E2D9] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:border-[#262930]"
-
-  const getTickerRoute = (targetTk: string) => {
-    if (isChallengeActive) return `/report/${targetTk}/challenge`
-    return `/report/${targetTk}`
-  }
-
   return (
     <div className="sticky top-0 z-20 -mx-4 -mt-6 mb-8 border-b border-[#E7E2D9] bg-[#FAF8F5]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#090a0c]/95">
-      {/* 1. Sub-nav strip & Ticker Switcher */}
-      <div className="border-b border-[#E7E2D9] bg-[#FAF8F5]/80 px-4 py-2 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c]/60 dark:text-[#666666]">
-        <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <Link to="/" className="inline-flex items-center mr-1 hover:opacity-85 transition-opacity" title="Sectoral">
-              <img src="/sectoral-logo.svg" alt="Sectoral" className="h-4 w-auto" />
-            </Link>
-            <Link
-              to="/"
-              className="inline-flex items-center gap-1 font-medium text-[#1B365D] hover:underline dark:text-[#7596FF]"
-            >
-              Beranda
-            </Link>
-            <ChevronRight className="h-3 w-3 text-[#666666] dark:text-[#666666]" />
-            <span className="font-semibold text-[#333333] dark:text-[#f1f5f9]">
-              Laporan {tk}
-            </span>
-          </div>
-
-          {/* Emiten Switcher */}
-          <div className="flex items-center gap-1.5">
-            <span className="mr-1 hidden text-xs text-[#666666] sm:inline dark:text-[#666666]">
-              Pilih emiten:
-            </span>
-            {ENGINE_TICKERS.map((symbol) => {
-              const isActive = symbol === tk
-              return (
-                <Link
-                  key={symbol}
-                  to={getTickerRoute(symbol)}
-                  className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
-                    isActive
-                      ? "bg-[#1B365D] text-white dark:bg-[#7596FF] dark:text-[#090a0c] font-semibold"
-                      : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#333333] hover:bg-[#E7E2D9] dark:bg-[#262930] dark:border-[#262930] dark:text-[#f1f5f9] dark:hover:bg-[#262930]"
-                  }`}
-                >
-                  {symbol}
-                </Link>
-              )
-            })}
-          </div>
-        </div>
-      </div>
-
       {/* 2. Main Header Key-Stats Strip */}
       <div className="mx-auto max-w-[1100px] px-4 pt-4 pb-3">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -337,27 +274,6 @@ export function ReportHeader({
             {errorMsg}
           </div>
         )}
-
-        {/* 3. Editorial Tabs (Laporan & Uji silang) */}
-        <div className="mt-4 flex items-center gap-1 overflow-x-auto border-t border-[#E7E2D9] pt-1 dark:border-[#262930]">
-          <Link
-            to="/report/$ticker"
-            params={{ ticker: tk }}
-            className={`${tabBase} ${isValuationActive ? tabActive : tabIdle}`}
-          >
-            <FileText className="h-4 w-4" />
-            <span>Laporan lengkap</span>
-          </Link>
-
-          <Link
-            to="/report/$ticker/challenge"
-            params={{ ticker: tk }}
-            className={`${tabBase} ${isChallengeActive ? tabActive : tabIdle}`}
-          >
-            <Swords className="h-4 w-4" />
-            <span>Uji silang tesis</span>
-          </Link>
-        </div>
       </div>
     </div>
   )

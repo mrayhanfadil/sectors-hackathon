@@ -50,8 +50,7 @@ function RootComponent() {
 
   const isHomeActive = pathname === "/"
   const isAgentActive = pathname.startsWith("/agent")
-  const isDebateActive = pathname.includes("/challenge")
-  const isEquityReportActive = pathname.startsWith("/report") && !isDebateActive
+  const isEquityReportActive = pathname.startsWith("/report")
   const isLaporanActive = isHomeActive || isEquityReportActive
 
   const closeMenu = () => setMenuOpen(false)
@@ -95,17 +94,6 @@ function RootComponent() {
                 }`}
               >
                 Mesin
-              </Link>
-
-              <Link
-                to={`/report/${activeTicker}/challenge` as any}
-                className={`transition-colors ${
-                  isDebateActive
-                    ? "text-[#0928B1] dark:text-[#7596FF] font-semibold"
-                    : "text-[#666666] hover:text-[#333333] dark:text-[#666666] dark:hover:text-[#f1f5f9]"
-                }`}
-              >
-                Uji silang
               </Link>
             </nav>
           </div>
@@ -159,17 +147,6 @@ function RootComponent() {
               }`}
             >
               Mesin
-            </Link>
-            <Link
-              to={`/report/${activeTicker}/challenge` as any}
-              onClick={closeMenu}
-              className={`block px-3 py-2 rounded-lg text-sm transition-colors ${
-                isDebateActive
-                  ? "bg-[#D9D9D9]/40 text-[#0928B1] font-semibold dark:bg-[#262930]/60 dark:text-[#7596FF]"
-                  : "text-[#666666] hover:text-[#333333] hover:bg-[#D9D9D9]/20 dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:bg-[#262930]/30"
-              }`}
-            >
-              Uji silang
             </Link>
           </div>
         )}

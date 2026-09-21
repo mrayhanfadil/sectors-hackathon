@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router"
-import { Loader2, ChevronRight, Info, Compass, Swords } from "lucide-react"
+import { Loader2, ChevronRight, Info, Compass } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdkRunCard, type Log, type HistoryItem } from "./AdkRunCard"
 import { RecommendationBadge } from "./RecommendationBadge"
@@ -125,17 +125,6 @@ export function ADKRunSidebar({
             </div>
           )}
 
-          {/* Challenge Entry Point */}
-          <div className="border-t border-[#D9D9D9] pt-3 dark:border-[#262930]">
-            <Link
-              to="/report/$ticker/challenge"
-              params={{ ticker: tk }}
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#0928B1] py-2 text-center text-xs font-medium text-white hover:bg-[#0047AB] transition-colors dark:bg-[#7596FF] dark:text-[#333333] dark:hover:bg-[#3EBAA0]"
-            >
-              <Swords className="h-3.5 w-3.5" />
-              <span>Uji silang tesis {tk}</span>
-            </Link>
-          </div>
         </CardContent>
       </Card>
 
