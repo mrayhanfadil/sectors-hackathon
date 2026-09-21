@@ -85,7 +85,7 @@ function HistoryComboChart({
         <span className="font-semibold">{lineUnit}</span>
       </div>
       <ResponsiveContainer width="100%" height={240}>
-        <ComposedChart data={data} margin={{ top: 30, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik historis ${labels.join(", ")}`}>
+        <ComposedChart data={data} margin={{ top: 44, right: 8, left: 0, bottom: 0 }} aria-label={`Grafik historis ${labels.join(", ")}`}>
           <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
           <XAxis dataKey="name" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} interval={0} />
           <YAxis yAxisId="bar" tick={SECTORAL_TICK_SM} axisLine={false} tickLine={false} tickFormatter={(v: number) => (v === 0 ? "0" : formatIdn(v, Math.abs(v) >= 100 ? 0 : 1))} width={52} />
@@ -108,10 +108,10 @@ function HistoryComboChart({
             {data.map((entry, i) => (
               <Cell key={`cell-${i}`} fill={entry.bar !== null && entry.bar < 0 ? seriesColor(4) : seriesColor(0)} />
             ))}
-            <LabelList dataKey="barLabel" position="top" offset={4} fill={seriesColor(0)} fontSize={10} />
+            <LabelList dataKey="barLabel" position="top" offset={6} fill={seriesColor(0)} fontSize={10} style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 2.5 }} />
           </Bar>
           <Line yAxisId="line" type="monotone" dataKey="line" name={lineUnit} stroke={SECTORAL_LINE} strokeWidth={2.5} dot={{ r: 4, fill: SECTORAL_LINE }} activeDot={{ r: 6 }} connectNulls>
-            <LabelList dataKey="lineLabel" position="top" offset={14} fill={SECTORAL_LINE} fontSize={10} />
+            <LabelList dataKey="lineLabel" position="top" offset={20} fill={SECTORAL_LINE} fontSize={10} style={{ paintOrder: "stroke", stroke: "#fff", strokeWidth: 2.5 }} />
           </Line>
         </ComposedChart>
       </ResponsiveContainer>
@@ -383,7 +383,7 @@ export function HistoryCharts({ payload }: { payload?: ReportPayload | null }) {
         </span>
       </div>
 
-      <div className={`grid grid-cols-1 gap-4 ${panels.length === 3 ? "lg:grid-cols-3" : "lg:grid-cols-2"}`}>
+      <div className="grid grid-cols-1 gap-4">
         {panels.map((panel, idx) => (
           <div
             key={idx}
