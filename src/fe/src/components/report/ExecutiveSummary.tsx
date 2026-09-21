@@ -72,7 +72,7 @@ function translateStatLabel(rawLabel: string): string {
     lower.startsWith("jumlah saham") ||
     lower.startsWith("saham beredar")
   ) {
-    return "Jumlah saham beredar"
+    return "Saham beredar"
   }
   if (
     lower.includes("mkt cap") ||
@@ -83,17 +83,19 @@ function translateStatLabel(rawLabel: string): string {
   }
   if (
     lower.startsWith("rata-rata transaksi") ||
+    lower.startsWith("transaksi harian") ||
     lower.includes("avg daily") ||
     lower.includes("turnover") ||
     lower.includes("transaksi harian")
   ) {
-    return "Rata-rata transaksi harian (3 bln)"
+    return "Transaksi harian (3 bln)"
   }
   if (
     (lower.includes("free") && lower.includes("float")) ||
-    lower.startsWith("porsi saham publik")
+    lower.startsWith("porsi saham publik") ||
+    lower.startsWith("saham publik")
   ) {
-    return "Porsi saham publik"
+    return "Saham publik"
   }
   return lbl
 }
@@ -412,7 +414,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
         </div>
 
         {cover ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[36%_64%] items-start">
+          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[40%_60%] items-start">
             {/* Left Column: Key Stats, Valuation Summary, Chart & Analyst */}
             <div className="flex flex-col gap-4">
               {/* Rating & Stats Card */}
@@ -436,10 +438,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       {priceBoxRows.length > 0 ? (
                         priceBoxRows.map((row, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">
                               {translateStatLabel(String(row[0]))}
                             </td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
                               {cleanStatValue(row[1])}
                             </td>
                           </tr>
@@ -447,26 +449,26 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       ) : (
                         <>
                           <tr>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Harga terakhir</td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">Harga terakhir</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
                               {price != null ? `Rp ${fmtIDR(price)}` : "-"}
                             </td>
                           </tr>
                           <tr>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Target harga wajar</td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">Target harga wajar</td>
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
                               {tp != null ? `Rp ${fmtIDR(tp)}` : "-"}
                             </td>
                           </tr>
                           <tr>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Target sebelumnya</td>
-                            <td className="py-1.5 text-right text-[#666666] font-mono tabular-nums dark:text-[#666666]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">Target sebelumnya</td>
+                            <td className="py-1.5 text-right text-[#666666] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#666666]">
                               {prevTp != null ? `Rp ${fmtIDR(prevTp)}` : "Inisiasi awal"}
                             </td>
                           </tr>
                           <tr>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">Potensi return</td>
-                            <td className="py-1.5 text-right font-semibold text-[#157F3D] font-mono tabular-nums dark:text-[#34D399]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">Potensi return</td>
+                            <td className="py-1.5 text-right font-semibold text-[#157F3D] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#34D399]">
                               {upsidePct != null ? `${upsidePct > 0 ? "+" : ""}${formatIdn(upsidePct, 1)}%` : "-"}
                             </td>
                           </tr>
@@ -483,10 +485,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       <tbody className="divide-y divide-[#E7E2D9]/60 dark:divide-[#262930]/60">
                         {statsRows.map((row, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#666666] dark:text-[#666666]">
+                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">
                               {translateStatLabel(String(row[0]))}
                             </td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
                               {cleanStatValue(row[1])}
                             </td>
                           </tr>
@@ -506,10 +508,10 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                       <tbody className="divide-y divide-[#E7E2D9]/60 dark:divide-[#262930]/60">
                         {shareholders.map((h, i) => (
                           <tr key={i}>
-                            <td className="py-1.5 text-[#333333] truncate max-w-[140px] dark:text-[#f1f5f9]">
+                            <td className="py-1.5 pr-3 align-top text-[#333333] truncate max-w-[210px] dark:text-[#f1f5f9]">
                               {h.name}
                             </td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
+                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
                               {h.pct_str || `${formatIdn(h.pct, 1)}%`}
                             </td>
                           </tr>
