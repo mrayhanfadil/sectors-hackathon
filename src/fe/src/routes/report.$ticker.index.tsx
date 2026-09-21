@@ -298,7 +298,7 @@ function ReportPage() {
         </div>
 
         {/* 2-Column Responsive Layout */}
-        <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[1fr_320px]">
           {/* Main Content Area: Sections */}
           <div className="min-w-0 space-y-8">
             {/* 1. Cover & Rating, 2. Key Financials */}

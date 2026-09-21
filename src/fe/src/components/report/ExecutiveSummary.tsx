@@ -451,7 +451,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
         </div>
 
         {cover ? (
-          <div className="grid grid-cols-1 gap-6 lg:grid-cols-[40%_60%] items-start">
+          <div className="grid grid-cols-1 gap-8 lg:grid-cols-[40%_60%] items-start">
             {/* Left Column: Key Stats, Valuation Summary, Chart & Analyst */}
             <div className="flex flex-col gap-4">
               {/* Rating & Stats Card */}
