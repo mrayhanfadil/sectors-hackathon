@@ -269,7 +269,7 @@ export function PerformanceQuadrants({ payload }: { payload: ReportPayload }) {
 
   return (
     <div className="space-y-4 font-sans">
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4">
         {quadrants.map((q, idx) => (
           <div
             key={idx}
