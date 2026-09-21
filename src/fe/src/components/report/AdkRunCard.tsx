@@ -225,12 +225,15 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
             </div>
           </div>
           <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 dark:border-[#262930] dark:bg-[#1e2229]">
-            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Durasi / Kejadian</div>
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">Durasi</div>
             <div className="font-medium text-[#333333] mt-0.5 dark:text-[#f1f5f9]">
-              <span className="font-mono tabular-nums">{formatDuration(log.duration_s)}</span> · <span className="font-mono tabular-nums">{log.n_events}</span> ev
+              <span className="font-mono tabular-nums">{formatDuration(log.duration_s)}</span>
             </div>
           </div>
         </div>
+        <p className="text-[11px] leading-relaxed text-[#666666] dark:text-[#666666]">
+          Metode: kalkulasi deterministik + penalaran mesin. Rincian eksekusi ada di Mesin.
+        </p>
 
         {/* Row 3: Last activity */}
         {hasLastActivity && (
@@ -277,7 +280,7 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
                       </span>
                     </div>
                     <div className="text-[#666666] dark:text-[#666666]">
-                      <span className="font-mono tabular-nums">{h.n_events}</span> ev · <span className="font-mono tabular-nums">{formatDuration(h.duration_s)}</span>
+                      <span className="font-mono tabular-nums">{formatDuration(h.duration_s)}</span>
                     </div>
                   </div>
                 ))}

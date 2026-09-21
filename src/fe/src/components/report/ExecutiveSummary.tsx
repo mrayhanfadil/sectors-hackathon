@@ -114,6 +114,40 @@ function cleanStatValue(val: unknown): string {
   return str
 }
 
+/**
+ * Rows whose BE label carries "(Rpbn/US$mn)": market cap + avg daily turnover.
+ * The raw value is "Rp miliar / US$ juta" (e.g. "362.235,7 / 20.574,6").
+ * Split into two labelled lines so the units are explicit (P2 review item).
+ */
+function isDualValueRow(lbl: string): boolean {
+  const lower = lbl.toLowerCase()
+  return (
+    lower.includes("mkt cap") ||
+    lower.includes("market cap") ||
+    lower.includes("kapitalisasi") ||
+    lower.includes("transaksi harian") ||
+    lower.includes("avg daily") ||
+    lower.includes("turnover")
+  )
+}
+
+function splitDualValue(val: string): [string, string] | null {
+  if (!val.includes("/")) return null
+  const [a, b] = val.split("/").map((s) => s.trim())
+  if (!a) return null
+  return [a, b || "n/a"]
+}
+
+/** Free-float rows arrive from BE as a bare number ("26,37") — restore the %. */
+function isFloatRow(lbl: string): boolean {
+  const lower = lbl.toLowerCase()
+  return (
+    (lower.includes("free") && lower.includes("float")) ||
+    lower.startsWith("porsi saham publik") ||
+    lower.startsWith("saham publik")
+  )
+}
+
 function formatHighlightCell(c: unknown): string {
   if (c == null) return "-"
   if (typeof c === "number") {
@@ -486,16 +520,39 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                   <div className="border-t border-[#E7E2D9] pt-3 dark:border-[#262930]">
                     <table className="w-full text-xs">
                       <tbody className="divide-y divide-[#E7E2D9]/60 dark:divide-[#262930]/60">
-                        {statsRows.map((row, i) => (
-                          <tr key={i}>
-                            <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">
-                              {translateStatLabel(String(row[0]))}
-                            </td>
-                            <td className="py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums whitespace-nowrap align-top dark:text-[#f1f5f9]">
-                              {cleanStatValue(row[1])}
-                            </td>
-                          </tr>
-                        ))}
+                        {statsRows.map((row, i) => {
+                          const rawLabel = String(row[0])
+                          const val = cleanStatValue(row[1])
+                          const dual = isDualValueRow(rawLabel) ? splitDualValue(val) : null
+                          const shown =
+                            !dual && isFloatRow(rawLabel) && val !== "-" && !val.endsWith("%")
+                              ? `${val}%`
+                              : val
+                          return (
+                            <tr key={i}>
+                              <td className="py-1.5 pr-3 align-top text-[#666666] dark:text-[#666666]">
+                                {translateStatLabel(rawLabel)}
+                              </td>
+                              <td
+                                className={`py-1.5 text-right font-medium text-[#333333] font-mono tabular-nums align-top dark:text-[#f1f5f9] ${
+                                  dual ? "" : "whitespace-nowrap"
+                                }`}
+                              >
+                                {dual ? (
+                                  <>
+                                    <span className="block">Rp {dual[0]} M</span>
+                                    <span className="block text-[11px] font-normal text-[#666666] dark:text-[#a3a3a3]">
+                                      US$ {dual[1]}
+                                      {dual[1].toLowerCase() === "n/a" ? "" : " jt"}
+                                    </span>
+                                  </>
+                                ) : (
+                                  shown
+                                )}
+                              </td>
+                            </tr>
+                          )
+                        })}
                       </tbody>
                     </table>
                   </div>
@@ -560,7 +617,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
               {/* Title & Theme Header */}
               <div className="rounded-xl border border-[#E7E2D9] bg-[#FDFCF7] p-5 dark:border-[#262930] dark:bg-[#090a0c]">
                 <h1 className="font-serif text-2xl font-medium tracking-tight text-[#333333] dark:text-[#f1f5f9]">
-                  {companyName} <span className="text-[#666666] font-normal dark:text-[#666666]">({tk})</span>
+                  {companyName} <span className="text-[#666666] font-normal dark:text-[#a3a3a3]">({tk})</span>
                 </h1>
                 {s1?.theme_title && (
                   <p className="text-sm italic text-[#666666] mt-1 dark:text-[#666666]">

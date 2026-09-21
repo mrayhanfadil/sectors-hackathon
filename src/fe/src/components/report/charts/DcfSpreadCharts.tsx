@@ -325,7 +325,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                 <span className="inline-block h-3 w-3.5 rounded-xs bg-[#F7E1D7] border border-[#E8C5B8] dark:bg-[#4A261D] dark:border-[#5C3025]" /> Rendah
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FAF7F0] border border-[#E5DFD3] dark:bg-[#26282B] dark:border-[#383B40]" /> Netral
+                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FAF7F0] border border-[#E5DFD3] dark:bg-[#33363B] dark:border-[#4C5157]" /> Netral
               </span>
               <span className="flex items-center gap-1.5">
                 <span className="inline-block h-3 w-3.5 rounded-xs bg-[#DCE8E0] border border-[#BFD5C6] dark:bg-[#2D4536] dark:border-[#3D5C49]" /> Tinggi

@@ -214,14 +214,9 @@ function ReportPage() {
             </div>
 
             {/* Right Sidebar */}
-            <div className="space-y-4 lg:sticky lg:top-24">
+            <div className="space-y-4 self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
               <ADKRunSidebar
                 ticker={tk}
-                price={null}
-                target={null}
-                upside={null}
-                rating={null}
-                template="unknown"
                 logLoading={logQuery.isLoading}
                 logData={logQuery.data}
               />
@@ -344,24 +339,9 @@ function ReportPage() {
           </div>
 
           {/* Right Sticky Sidebar */}
-          <div className="space-y-4 lg:sticky lg:top-24">
+          <div className="space-y-4 self-start lg:sticky lg:top-24 lg:max-h-[calc(100vh-6rem)] lg:overflow-y-auto">
             <ADKRunSidebar
               ticker={tk}
-              name={meta?.company_name}
-              price={price}
-              target={target}
-              upside={upside}
-              rating={rating}
-              template={tpl}
-              shares={
-                payload.cover?.shares?.outstanding != null && payload.cover.shares.unit != null
-                  ? {
-                      outstanding: payload.cover.shares.outstanding,
-                      unit: payload.cover.shares.unit,
-                      free_float_pct: payload.cover.shares.free_float_pct ?? undefined,
-                    }
-                  : undefined
-              }
               provenance={payload.valuation_page?.sources?.[0]}
               logLoading={logQuery.isLoading}
               logData={logQuery.data}

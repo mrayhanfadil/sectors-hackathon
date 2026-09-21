@@ -1,22 +1,11 @@
+import { useEffect, useState } from "react"
 import { Link } from "@tanstack/react-router"
 import { Loader2, ChevronRight, Info, Compass } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { AdkRunCard, type Log, type HistoryItem } from "./AdkRunCard"
-import { RecommendationBadge } from "./RecommendationBadge"
 
 export interface ADKRunSidebarProps {
   ticker: string
-  name?: string
-  price?: number | null
-  target?: number | null
-  upside?: string | null
-  rating?: string | null
-  template?: string
-  shares?: {
-    outstanding: number
-    unit: string
-    free_float_pct?: number
-  }
   provenance?: string
   logLoading?: boolean
   logData?: {
@@ -26,25 +15,57 @@ export interface ADKRunSidebarProps {
   } | null
 }
 
-function fmtIDR(n: number | null | undefined): string {
-  if (n == null || Number.isNaN(Number(n))) return "-"
-  return Number(n).toLocaleString("id-ID")
-}
+const CHAPTERS = [
+  { href: "#cover-rating", label: "Ringkasan dan peringkat" },
+  { href: "#key-financials", label: "Ringkasan keuangan & proyeksi" },
+  { href: "#performance-quadrants", label: "Visualisasi kinerja keuangan" },
+  { href: "#valuation-spread", label: "Nilai wajar dan sensitivitas DCF" },
+  { href: "#peers-5a", label: "Valuasi komparasi peer" },
+  { href: "#peers-5b", label: "Valuasi relatif historis" },
+  { href: "#financial-statements", label: "Laporan keuangan (Laba rugi & neraca)" },
+  { href: "#cashflow-ratios", label: "Arus kas dan rasio" },
+  { href: "#risk-factors", label: "Faktor risiko" },
+  { href: "#sources-disclaimer", label: "Cara membaca dan disklaimer" },
+]
 
 export function ADKRunSidebar({
   ticker,
-  name: _name,
-  price,
-  target,
-  upside,
-  rating,
-  template = "single",
-  shares,
   provenance,
   logLoading = false,
   logData,
 }: ADKRunSidebarProps) {
   const tk = ticker.toUpperCase()
+  const [activeChapter, setActiveChapter] = useState<string>(CHAPTERS[0].href)
+
+  // Scrollspy: highlight the chapter currently in view. Sections mount
+  // asynchronously after the payload loads, so re-scan the DOM on mutations.
+  useEffect(() => {
+    const seen = new Set<Element>()
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) setActiveChapter(`#${e.target.id}`)
+        }
+      },
+      { rootMargin: "-25% 0px -60% 0px" },
+    )
+    const scan = () => {
+      for (const c of CHAPTERS) {
+        const el = document.querySelector(c.href)
+        if (el && !seen.has(el)) {
+          seen.add(el)
+          io.observe(el)
+        }
+      }
+    }
+    scan()
+    const mo = new MutationObserver(scan)
+    mo.observe(document.body, { childList: true, subtree: true })
+    return () => {
+      io.disconnect()
+      mo.disconnect()
+    }
+  }, [ticker])
 
   return (
     <aside className="w-full shrink-0 space-y-4 lg:w-[320px]">
@@ -72,63 +93,7 @@ export function ADKRunSidebar({
         />
       )}
 
-      {/* 2. Compact Valuation & Target Summary Card */}
-      <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
-        <CardHeader className="border-b border-[#D9D9D9] p-4 pb-3 dark:border-[#262930]">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-xs font-semibold text-[#333333] dark:text-[#f1f5f9]">
-              Ringkasan valuasi
-            </CardTitle>
-            <span className="rounded bg-[#B4C7FF] px-2 py-0.5 text-[11px] font-medium text-[#333333] dark:bg-[#262930] dark:text-[#f1f5f9]">
-              {template}
-            </span>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-3 p-4">
-          {/* Main Price & Target Box */}
-          <div className="space-y-2 rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3.5 dark:border-[#262930] dark:bg-[#1e2229]">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#666666] dark:text-[#666666]">Harga pasar</span>
-              <span className="font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
-                {price != null ? `Rp ${fmtIDR(price)}` : "-"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-[#666666] dark:text-[#666666]">Nilai wajar (TP)</span>
-              <span className="font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
-                {target != null ? `Rp ${fmtIDR(target)}` : "-"}
-              </span>
-            </div>
-            <div className="flex items-center justify-between border-t border-[#D9D9D9] pt-2 text-xs dark:border-[#262930]">
-              <span className="text-[#666666] dark:text-[#666666]">Rekomendasi</span>
-              <RecommendationBadge rating={rating} upside={upside} size="sm" />
-            </div>
-          </div>
-
-          {/* Shares Information */}
-          {shares && (
-            <div className="space-y-1.5 border-t border-[#D9D9D9] pt-3 text-xs text-[#666666] dark:border-[#262930] dark:text-[#666666]">
-              <div className="flex justify-between">
-                <span>Saham beredar</span>
-                <span className="font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
-                  {shares.outstanding} {shares.unit}
-                </span>
-              </div>
-              {shares.free_float_pct != null && (
-                <div className="flex justify-between">
-                  <span>Porsi publik</span>
-                  <span className="font-medium text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
-                    {shares.free_float_pct}%
-                  </span>
-                </div>
-              )}
-            </div>
-          )}
-
-        </CardContent>
-      </Card>
-
-      {/* 3. Fast Section Jump Navigation */}
+      {/* 2. Fast Section Jump Navigation (with scrollspy) */}
       <Card className="rounded-xl border border-[#D9D9D9] bg-white dark:border-[#262930] dark:bg-[#090a0c]">
         <CardHeader className="border-b border-[#D9D9D9] p-4 pb-3 dark:border-[#262930]">
           <div className="flex items-center gap-2">
@@ -140,30 +105,27 @@ export function ADKRunSidebar({
         </CardHeader>
         <CardContent className="p-3">
           <nav className="space-y-0.5 text-xs">
-            {[
-              { href: "#cover-rating", label: "Ringkasan dan peringkat" },
-              { href: "#key-financials", label: "Ringkasan keuangan & proyeksi" },
-              { href: "#performance-quadrants", label: "Visualisasi kinerja keuangan" },
-              { href: "#valuation-spread", label: "Nilai wajar dan sensitivitas DCF" },
-              { href: "#peers-5a", label: "Valuasi komparasi peer" },
-              { href: "#peers-5b", label: "Valuasi relatif historis" },
-              { href: "#financial-statements", label: "Laporan keuangan (Laba rugi & neraca)" },
-              { href: "#cashflow-ratios", label: "Arus kas dan rasio" },
-              { href: "#risk-factors", label: "Faktor risiko" },
-              { href: "#sources-disclaimer", label: "Cara membaca dan disklaimer" },
-            ].map((item, idx) => (
-              <a
-                key={item.href}
-                href={item.href}
-                className="flex items-center justify-between rounded-md px-2.5 py-1.5 text-[#333333] hover:bg-[#B4C7FF] transition-colors dark:text-[#f1f5f9] dark:hover:bg-[#1e2229]"
-              >
-                <span className="truncate">
-                  <span className="text-[#666666] mr-1.5 dark:text-[#666666]">{idx + 1}.</span>
-                  {item.label}
-                </span>
-                <ChevronRight className="h-3 w-3 text-[#666666] shrink-0 dark:text-[#666666]" />
-              </a>
-            ))}
+            {CHAPTERS.map((item, idx) => {
+              const isActive = activeChapter === item.href
+              return (
+                <a
+                  key={item.href}
+                  href={item.href}
+                  aria-current={isActive ? "true" : undefined}
+                  className={`flex items-center justify-between rounded-md px-2.5 py-1.5 transition-colors ${
+                    isActive
+                      ? "bg-[#B4C7FF] font-semibold text-[#333333] dark:bg-[#1e2229] dark:text-[#f1f5f9]"
+                      : "text-[#333333] hover:bg-[#B4C7FF] dark:text-[#f1f5f9] dark:hover:bg-[#1e2229]"
+                  }`}
+                >
+                  <span className="truncate">
+                    <span className="text-[#666666] mr-1.5 dark:text-[#666666]">{idx + 1}.</span>
+                    {item.label}
+                  </span>
+                  <ChevronRight className="h-3 w-3 text-[#666666] shrink-0 dark:text-[#666666]" />
+                </a>
+              )
+            })}
           </nav>
 
           {provenance && (
