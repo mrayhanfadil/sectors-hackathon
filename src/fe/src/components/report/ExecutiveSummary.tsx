@@ -187,12 +187,12 @@ function SvgPriceVsJci({
     )
   }
 
-  const W = 340
-  const H = 180
-  const padL = 40
-  const padR = 40
-  const padT = 24
-  const padB = 26
+  const W = 720
+  const H = 360
+  const padL = 64
+  const padR = 64
+  const padT = 34
+  const padB = 34
   const chartW = W - padL - padR
   const chartH = H - padT - padB
   const n = labels.length
@@ -256,13 +256,13 @@ function SvgPriceVsJci({
                 x2={W - padR}
                 y2={y}
                 stroke="#E7E2D9"
-                strokeWidth={0.7}
-                strokeDasharray="3 3"
+                strokeWidth={1}
+                strokeDasharray="4 4"
               />
               <text
-                x={padL - 4}
-                y={y + 3}
-                fontSize={8}
+                x={padL - 6}
+                y={y + 4}
+                fontSize={11}
                 fontFamily="monospace"
                 fill="#666666"
                 textAnchor="end"
@@ -270,9 +270,9 @@ function SvgPriceVsJci({
                 {Math.round(pVal)}
               </text>
               <text
-                x={W - padR + 4}
-                y={y + 3}
-                fontSize={8}
+                x={W - padR + 6}
+                y={y + 4}
+                fontSize={11}
                 fontFamily="monospace"
                 fill="#666666"
                 textAnchor="start"
@@ -307,7 +307,7 @@ function SvgPriceVsJci({
               points={ptsP}
               fill="none"
               stroke="#1B365D"
-              strokeWidth={2}
+              strokeWidth={2.5}
               strokeLinejoin="round"
               strokeLinecap="round"
             />
@@ -319,7 +319,7 @@ function SvgPriceVsJci({
             points={ptsR}
             fill="none"
             stroke="#666666"
-            strokeWidth={1.5}
+            strokeWidth={2}
             strokeLinejoin="round"
             strokeLinecap="round"
           />
@@ -334,22 +334,22 @@ function SvgPriceVsJci({
               x2={W - padR}
               y2={yLastP}
               stroke="#B4232A"
-              strokeWidth={1}
-              strokeDasharray="3 2"
+              strokeWidth={1.2}
+              strokeDasharray="4 3"
             />
             <rect
               x={padL + 2}
-              y={yLastP - 10}
-              width={76}
-              height={10}
-              rx={2}
+              y={yLastP - 14}
+              width={112}
+              height={15}
+              rx={3}
               fill="#FDFCF7"
               opacity={0.92}
             />
             <text
-              x={padL + 4}
-              y={yLastP - 2}
-              fontSize={8}
+              x={padL + 6}
+              y={yLastP - 3}
+              fontSize={11}
               fontFamily="monospace"
               fontWeight="bold"
               fill="#B4232A"
@@ -370,8 +370,8 @@ function SvgPriceVsJci({
               <text
                 key={i}
                 x={x}
-                y={H - 6}
-                fontSize={8}
+                y={H - 8}
+                fontSize={11}
                 fontFamily="monospace"
                 fill="#666666"
                 textAnchor="middle"
@@ -384,13 +384,13 @@ function SvgPriceVsJci({
         })}
 
         {/* Legend */}
-        <g fontSize={8} fontFamily="sans-serif">
-          <line x1={padL} y1={padT - 12} x2={padL + 12} y2={padT - 12} stroke="#1B365D" strokeWidth={2} />
-          <text x={padL + 16} y={padT - 9} fill="#333333" fontWeight="bold">
+        <g fontSize={11} fontFamily="sans-serif">
+          <line x1={padL} y1={padT - 18} x2={padL + 18} y2={padT - 18} stroke="#1B365D" strokeWidth={2.5} />
+          <text x={padL + 24} y={padT - 14} fill="#333333" fontWeight="bold">
             Harga (Rp, kiri)
           </text>
-          <line x1={padL + 110} y1={padT - 12} x2={padL + 122} y2={padT - 12} stroke="#666666" strokeWidth={1.5} />
-          <text x={padL + 126} y={padT - 9} fill="#666666">
+          <line x1={padL + 180} y1={padT - 18} x2={padL + 198} y2={padT - 18} stroke="#666666" strokeWidth={2} />
+          <text x={padL + 204} y={padT - 14} fill="#666666">
             Relatif vs IHSG (%, kanan)
           </text>
         </g>
