@@ -151,7 +151,7 @@ function ChallengePage() {
     return (
       <div className="space-y-6 pb-16">
         <ReportHeader ticker={tk} activeTab="challenge" />
-        <div className="mx-auto max-w-[1100px] px-4">
+        <div className="mx-auto max-w-[1360px] px-4">
           <div className="rounded-xl border border-[#D9D9D9] bg-white p-12 text-center text-xs dark:border-[#262930] dark:bg-[#090a0c]">
             <div className="flex flex-col items-center justify-center space-y-3">
               <Loader2 className="h-6 w-6 animate-spin text-[#0928B1] dark:text-[#7596FF]" />
@@ -178,7 +178,7 @@ function ChallengePage() {
           companyName={reportData.name}
           updatedAt={reportData.updatedAt}
         />
-        <div className="mx-auto max-w-[1100px] px-4">
+        <div className="mx-auto max-w-[1360px] px-4">
           <div className="rounded-xl border border-[#F6E3B8] bg-[#FEF9EE] p-6 text-xs text-[#A16207] dark:border-[#A16207]/40 dark:bg-[#A16207]/20 dark:text-[#FBBF24]">
             <div className="flex items-start gap-3.5">
               <AlertTriangle className="h-5 w-5 text-[#A16207] shrink-0 dark:text-[#FBBF24]" />
@@ -218,7 +218,7 @@ function ChallengePage() {
         source={reportData?.source}
       />
 
-      <div className="mx-auto max-w-[1100px] px-4 space-y-6">
+      <div className="mx-auto max-w-[1360px] px-4 space-y-6">
         {/* Analyst Notice Banner */}
         <div className="flex items-start gap-3 rounded-xl border border-[#D9D9D9] bg-white p-4 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />

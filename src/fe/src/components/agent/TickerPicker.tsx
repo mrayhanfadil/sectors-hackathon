@@ -106,7 +106,7 @@ export function TickerPicker({ onSelectTicker }: TickerPickerProps) {
   }, [validItems, filterQuery])
 
   return (
-    <div className="max-w-[1100px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 font-sans text-[#333333] dark:text-[#f1f5f9]">
+    <div className="max-w-[1360px] mx-auto px-4 sm:px-6 py-6 sm:py-8 space-y-8 font-sans text-[#333333] dark:text-[#f1f5f9]">
       {/* Header section */}
       <div className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4">

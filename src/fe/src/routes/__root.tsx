@@ -59,7 +59,7 @@ function RootComponent() {
     <div className="min-h-screen bg-[#f1f5f9] text-[#333333] dark:bg-[#1e2229] dark:text-[#f1f5f9] font-sans antialiased">
       {/* Header */}
       <header className="sticky top-0 z-40 border-b border-[#D9D9D9] bg-[#f1f5f9]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#1e2229]/95">
-        <div className="mx-auto flex max-w-[1100px] h-14 items-center justify-between px-4 sm:px-6">
+        <div className="mx-auto flex max-w-[1360px] h-14 items-center justify-between px-4 sm:px-6">
           {/* Left: Brand & Desktop Nav */}
           <div className="flex items-center gap-8">
             <Link
@@ -153,13 +153,13 @@ function RootComponent() {
       </header>
 
       {/* Main Content */}
-      <main className="mx-auto max-w-[1100px] px-4 py-8 sm:px-6">
+      <main className="mx-auto max-w-[1360px] px-4 py-8 sm:px-6">
         <Outlet />
       </main>
 
       {/* Footer */}
       <footer className="border-t border-[#D9D9D9] bg-[#f1f5f9] py-4 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
-        <div className="mx-auto max-w-[1100px] px-4 sm:px-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <div className="mx-auto max-w-[1360px] px-4 sm:px-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center">
             <img src="/sectoral-logo.svg" alt="Sectoral" className="h-5 w-auto dark:hidden" />
             <img src="/sectoral-logo-dark.svg" alt="Sectoral" className="hidden h-5 w-auto dark:block" />

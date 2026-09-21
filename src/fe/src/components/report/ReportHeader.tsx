@@ -163,7 +163,7 @@ export function ReportHeader({
   return (
     <div className="sticky top-0 z-20 -mx-4 -mt-6 mb-8 border-b border-[#E7E2D9] bg-[#FAF8F5]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#090a0c]/95">
       {/* 2. Main Header Key-Stats Strip */}
-      <div className="mx-auto max-w-[1100px] px-4 pt-4 pb-3">
+      <div className="mx-auto max-w-[1360px] px-4 pt-4 pb-3">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           {/* Company Identity */}
           <div className="flex min-w-0 items-start gap-3.5">

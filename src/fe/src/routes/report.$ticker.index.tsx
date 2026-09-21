@@ -88,7 +88,7 @@ function ReportPage() {
   // Loading State
   if (isLoading) {
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-8 space-y-6">
+      <div className="mx-auto max-w-[1360px] px-4 py-8 space-y-6">
         <div className="rounded-xl border border-[#D9D9D9] bg-white p-6 text-center text-sm text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           Menyiapkan laporan analisis lengkap {tk}…
         </div>
@@ -107,7 +107,7 @@ function ReportPage() {
   // Error State (Network failure / unhandled)
   if (error || !data) {
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-8">
+      <div className="mx-auto max-w-[1360px] px-4 py-8">
         <Card className="rounded-xl border border-[#F8C8CB] bg-[#FDF2F2] p-6 dark:border-[#B4232A]/40 dark:bg-[#B4232A]/20">
           <div className="flex items-start gap-3.5">
             <AlertTriangle className="mt-0.5 h-5 w-5 shrink-0 text-[#B4232A] dark:text-[#F87171]" />
@@ -153,7 +153,7 @@ function ReportPage() {
           pdfMsg={pdfMsg}
         />
 
-        <div className="mx-auto max-w-[1100px] px-4">
+        <div className="mx-auto max-w-[1360px] px-4">
           <div className="grid grid-cols-1 items-start gap-6 lg:grid-cols-[1fr_320px]">
             {/* Honest Uncovered State */}
             <div className="space-y-6">
@@ -235,7 +235,7 @@ function ReportPage() {
   // Offline State
   if (data.offline) {
     return (
-      <div className="mx-auto max-w-[1100px] px-4 py-8">
+      <div className="mx-auto max-w-[1360px] px-4 py-8">
         <Card className="rounded-xl border border-[#F6E3B8] bg-[#FEF9EE] p-6 text-xs text-[#A16207] dark:border-[#A16207]/40 dark:bg-[#A16207]/20 dark:text-[#FBBF24]">
           <div className="flex items-start gap-3.5">
             <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-[#A16207] dark:text-[#FBBF24]" />
@@ -289,7 +289,7 @@ function ReportPage() {
         pdfMsg={pdfMsg}
       />
 
-      <div className="mx-auto max-w-[1100px] px-4 space-y-6">
+      <div className="mx-auto max-w-[1360px] px-4 space-y-6">
         {/* Analyst Notice Box */}
         <div className="flex items-start gap-3 rounded-xl border border-[#D9D9D9] bg-white p-4 text-xs leading-relaxed text-[#666666] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666]">
           <Info className="mt-0.5 h-4 w-4 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
