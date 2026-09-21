@@ -188,7 +188,7 @@ function SvgPriceVsJci({
   }
 
   const W = 340
-  const H = 280
+  const H = 180
   const padL = 40
   const padR = 40
   const padT = 24
