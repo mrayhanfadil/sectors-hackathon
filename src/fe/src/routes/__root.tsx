@@ -181,25 +181,14 @@ function RootComponent() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#D9D9D9] bg-[#f1f5f9] py-8 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
-        <div className="mx-auto max-w-[1100px] space-y-4 px-4 sm:px-6">
-          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between border-b border-[#D9D9D9] pb-4 dark:border-[#262930]">
-            <div className="flex items-center">
-              <img src="/sectoral-logo.svg" alt="Sectoral" className="h-5 w-auto dark:hidden" />
-              <img src="/sectoral-logo-dark.svg" alt="Sectoral" className="hidden h-5 w-auto dark:block" />
-            </div>
-            <div className="text-xs text-[#666666] dark:text-[#666666]">
-              Riset fundamental &amp; analisis multi-agen saham Indonesia
-            </div>
+      <footer className="border-t border-[#D9D9D9] bg-[#f1f5f9] py-4 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+        <div className="mx-auto max-w-[1100px] px-4 sm:px-6 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center">
+            <img src="/sectoral-logo.svg" alt="Sectoral" className="h-5 w-auto dark:hidden" />
+            <img src="/sectoral-logo-dark.svg" alt="Sectoral" className="hidden h-5 w-auto dark:block" />
           </div>
-
-          <div className="space-y-2 text-xs leading-relaxed text-[#666666] dark:text-[#666666]">
-            <p>
-              Platform ini menyajikan riset kuantitatif deterministik dan penalaran multi-agen untuk analisis emiten. Kalkulasi nilai wajar dan WACC menggunakan data laporan keuangan terverifikasi dari data historis IDX.
-            </p>
-            <p>
-              Bukan rekomendasi transaksi efek maupun nasihat investasi finansial berlisensi. Keputusan alokasi modal dan risiko investasi sepenuhnya berada di tangan investor.
-            </p>
+          <div className="text-xs text-[#666666] dark:text-[#666666]">
+            © {new Date().getFullYear()} Sektoral · Riset fundamental &amp; analisis multi-agen saham Indonesia
           </div>
         </div>
       </footer>

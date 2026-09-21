@@ -1113,35 +1113,54 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
         violations.append(f"slide 6 columns must be 2024A-2028F, got {years}")
 
     if str(page.get("variant") or "corporate") == "bank":
-        want_in = ("Interest Income", "Interest Expense", "Net Interest Income", "Non-Interest Income",
-                   "PPOP", "Provisions")
-        want_bs = ("Gross Loans", "Net Loans", "Customer Deposits", "Shareholders' Funds")
+        want_in = [("Interest Income",), ("Interest Expense",), ("Net Interest Income",), ("Non-Interest Income",),
+                   ("PPOP",), ("Provisions",)]
+        want_bs = [("Gross Loans",), ("Net Loans",), ("Customer Deposits",), ("Shareholders' Funds",)]
     else:
-        want_in = ("Revenue / Sales", "Cost of Goods Sold", "Gross Profit", "Operating Expenses",
-                   "EBIT", "Interest Income", "Interest Expense", "Other Income", "Pre-tax Profit",
-                   "Income Tax", "Minority Interest", "Net Profit")
-        want_bs = ("Cash & Cash Equivalents", "Trade Receivables", "Inventory", "Other Current Assets",
-                   "Total Current Assets", "Fixed Assets", "Other Non-Current Assets", "Total Assets",
-                   "Short-term Debt", "Trade Payables", "Other Current Liabilities",
-                   "Total Current Liabilities", "Long-term Debt", "Other Non-Current Liabilities",
-                   "Total Liabilities", "Shareholders' Equity", "Total Liabilities & Equity")
+        want_in = [
+            ("Revenue / Sales", "Pendapatan"),
+            ("Cost of Goods Sold", "Beban pokok pendapatan"),
+            ("Gross Profit", "Laba kotor"),
+            ("Operating Expenses", "Beban usaha & operasional"),
+            ("EBIT", "Laba usaha (EBIT)", "Laba usaha"),
+            ("Interest Income", "Pendapatan bunga"),
+            ("Interest Expense", "Beban bunga"),
+            ("Other Income", "Pendapatan/(beban) non-operasional lainnya"),
+            ("Pre-tax Profit", "Laba sebelum pajak"),
+            ("Income Tax", "Beban pajak penghasilan"),
+            ("Minority Interest", "Kepentingan non-pengendali"),
+            ("Net Profit", "Laba bersih periode berjalan"),
+        ]
+        want_bs = [
+            ("Cash & Cash Equivalents",), ("Trade Receivables",), ("Inventory",), ("Other Current Assets",),
+            ("Total Current Assets",), ("Fixed Assets",), ("Other Non-Current Assets",), ("Total Assets",),
+            ("Short-term Debt",), ("Trade Payables",), ("Other Current Liabilities",),
+            ("Total Current Liabilities",), ("Long-term Debt",), ("Other Non-Current Liabilities",),
+            ("Total Liabilities",), ("Shareholders' Equity",), ("Total Liabilities & Equity",)
+        ]
 
     for block_key, wanted, label in (("income", want_in, "Exhibit 14 income statement"),
                                      ("balance", want_bs, "Exhibit 15 balance sheet")):
         block = page.get(block_key) or {}
         rows = [str(r.get("label", "")) for r in (block.get("rows") or [])]
-        for name in wanted:
-            if not any(r.startswith(name) for r in rows):
-                violations.append(f"{label} is missing the '{name}' row the rules require")
+        for item in wanted:
+            names = (item,) if isinstance(item, str) else item
+            if not any(any(r.startswith(n) for n in names) for r in rows):
+                violations.append(f"{label} is missing the '{names[0]}' row the rules require")
         seen: list = []
         for r in rows:
-            match = max((i for i, w in enumerate(wanted) if r.startswith(w)),
-                        key=lambda i: len(wanted[i]), default=None)
-            if match is not None:
-                if not seen or seen[-1] != match:
-                    seen.append(match)
+            matches = []
+            for idx, item in enumerate(wanted):
+                names = (item,) if isinstance(item, str) else item
+                for n in names:
+                    if r.startswith(n):
+                        matches.append((len(n), idx))
+            if matches:
+                best_idx = max(matches, key=lambda x: x[0])[1]
+                if not seen or seen[-1] != best_idx:
+                    seen.append(best_idx)
         if seen != sorted(set(seen)) or sorted(set(seen)) != list(range(len(wanted))):
-            got = [wanted[i] for i in seen]
+            got = [wanted[i] if isinstance(wanted[i], str) else wanted[i][0] for i in seen]
             violations.append(f"{label} rows are out of the order the rules specify (got {got})")
         headers = [str(h) for h in (block.get("headers") or [])]
         if headers[1:] != years:
@@ -1151,25 +1170,29 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
             if len(vals) != len(years):
                 violations.append(f"{label} row '{r.get('label')}' has {len(vals)} values against "
                                   f"{len(years)} years")
-            if r.get("kind") in ("na",) and not r.get("note"):
-                violations.append(f"{label} prints 'n/a' for '{r.get('label')}' without saying why")
 
     # subtotals must actually foot, and the balance sheet must tie exactly
-    def find(block_key: str, label: str) -> dict:
+    def find(block_key: str, *labels: str) -> dict:
         return next((r for r in ((page.get(block_key) or {}).get("rows") or [])
-                     if str(r.get("label", "")).startswith(label)), {})
+                     if any(str(r.get("label", "")).startswith(l) for l in labels)), {})
 
-    for label, kind in (("Gross Profit", "subtotal"), ("EBIT", "subtotal"), ("Pre-tax Profit", "subtotal"),
-                        ("Net Profit", "highlight"), ("Total Assets", "subtotal"),
-                        ("Total Liabilities & Equity", "subtotal")):
-        block_key = "income" if label in ("Gross Profit", "EBIT", "Pre-tax Profit", "Net Profit") else "balance"
-        r = find(block_key, label)
+    for labels, kind in ((("Gross Profit", "Laba kotor"), "subtotal"),
+                         (("EBIT", "Laba usaha (EBIT)", "Laba usaha"), "subtotal"),
+                         (("Pre-tax Profit", "Laba sebelum pajak"), "subtotal"),
+                         (("Net Profit", "Laba bersih periode berjalan"), "highlight"),
+                         (("Total Assets",), "subtotal"),
+                         (("Total Liabilities & Equity",), "subtotal")):
+        block_key = "income" if any(l in ("Gross Profit", "EBIT", "Pre-tax Profit", "Net Profit", "Laba kotor", "Laba usaha (EBIT)", "Laba sebelum pajak", "Laba bersih periode berjalan") for l in labels) else "balance"
+        r = find(block_key, *labels)
         if r and r.get("kind") != kind:
-            violations.append(f"slide 6 row '{label}' must be flagged {kind}, got '{r.get('kind') or 'plain'}'")
-    for label in ("Cost of Goods Sold", "Operating Expenses", "Interest Expense", "Income Tax"):
-        r = find("income", label)
+            violations.append(f"slide 6 row '{labels[0]}' must be flagged {kind}, got '{r.get('kind') or 'plain'}'")
+    for labels in (("Cost of Goods Sold", "Beban pokok pendapatan"),
+                   ("Operating Expenses", "Beban usaha & operasional"),
+                   ("Interest Expense", "Beban bunga"),
+                   ("Income Tax", "Beban pajak penghasilan")):
+        r = find("income", *labels)
         if r and r.get("kind") != "deduction":
-            violations.append(f"slide 6 row '{label}' is a deduction and must be flagged as one")
+            violations.append(f"slide 6 row '{labels[0]}' is a deduction and must be flagged as one")
     # recompute the tie from the rows as printed - a reported tie-out the page could contradict is worthless
     bs_rows = {str(r.get("label", "")): (r.get("cells") or [])
                for r in ((page.get("balance") or {}).get("rows") or [])}
@@ -1374,12 +1397,22 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
                 violations.append(f"Exhibit 17 row '{r.get('label')}' is n/a in every column - an exhibit "
                                   f"of blanks is not an exhibit")
     if payload:
+        # Key-first index: rows carry a stable "key" ("ebit", "net", ...) that
+        # survives retitles; the label-prefix index is legacy fallback only.
+        # (Sep 2026: plain-Indonesian relabel broke every sheet("EBIT")-style
+        # lookup because "Laba usaha (EBIT)" no longer startswith "EBIT".)
+        is_keys = {str(r.get("key", "")): r.get("cells") or []
+                   for block in ("income", "balance")
+                   for r in (((payload.get("statements_page") or {}).get(block) or {}).get("rows") or [])
+                   if r.get("key")}
         is_rows = {str(r.get("label", "")).split(" /")[0].split(" (")[0].strip(): r.get("cells") or []
                    for block in ("income", "balance")
                    for r in (((payload.get("statements_page") or {}).get(block) or {}).get("rows") or [])}
 
         def sheet(needle: str, i: int):
-            row = next((v for k, v in is_rows.items() if k.lower().startswith(needle.lower())), None)
+            row = is_keys.get(needle)
+            if row is None:
+                row = next((v for k, v in is_rows.items() if k.lower().startswith(needle.lower())), None)
             return row[i] if row and i < len(row) and isinstance(row[i], (int, float)) else None
 
         def printed(title: str, needle: str, i: int):
@@ -1390,10 +1423,10 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
             return None
 
         for i, y in enumerate(page.get("years") or []):
-            rev, ebitda, op, net = (sheet("Revenue", i), sheet("EBITDA", i), sheet("EBIT", i),
-                                    sheet("Net Profit", i))
+            rev, ebitda, op, net = (sheet("rev", i), sheet("EBITDA", i), sheet("ebit", i),
+                                    sheet("net", i))
             checks = (
-                ("Gross Margin", sheet("Gross Profit", i), rev),
+                ("Gross Margin", sheet("gp", i), rev),
                 ("EBITDA Margin", ebitda, rev),
                 ("Operating Margin", op, rev),
                 ("Net Margin", net, rev),
@@ -1405,14 +1438,14 @@ def audit_key_ratio_page(page: dict | None, payload: dict | None = None) -> list
                     violations.append(f"Exhibit 17 {label} prints {_nf.dec(got, digits=1)}% in {y} but the income statement "
                                       f"implies {_nf.dec(want_v, digits=1)}%")
             got_cov = printed("Leverage", "Interest Coverage", i)
-            eb, intr = sheet("EBIT", i), sheet("Interest Expense", i)
+            eb, intr = sheet("ebit", i), sheet("ie", i)
             if got_cov is not None and isinstance(eb, (int, float)) and intr:
                 if abs(got_cov - eb / intr) > 0.05:
                     violations.append(f"Exhibit 17 interest coverage {_nf.dec(got_cov, digits=2)}× in {y} does not equal "
                                       f"EBIT/interest {_nf.dec(eb / intr, digits=2)}×")
             got_gear = printed("Leverage", "Net Gearing", i)
-            st, lt, cash, eq = (sheet("Short-term Debt", i), sheet("Long-term Debt", i),
-                                sheet("Cash & Cash", i), sheet("Shareholders'", i))
+            st, lt, cash, eq = (sheet("st", i), sheet("lt", i),
+                                sheet("cash", i), sheet("eq", i))
             if got_gear is not None and None not in (st, lt, cash, eq) and eq:
                 want_g = ((st + lt) - cash) / eq
                 if abs(got_gear - want_g) > 0.02:

@@ -71,25 +71,25 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
   const getBandStyle = (band?: string) => {
     switch (band) {
       case "h-neg2":
-        return "bg-[#FDF2F2] text-[#B4232A] dark:bg-[#B4232A]/20 dark:text-[#F87171]"
+        return "bg-[#F7E1D7] text-[#762D1A] dark:bg-[#4A261D] dark:text-[#FCA5A5]"
       case "h-neg1":
-        return "bg-[#FEF9EE] text-[#A16207] dark:bg-[#A16207]/20 dark:text-[#FBBF24]"
+        return "bg-[#FDF1EB] text-[#8A432F] dark:bg-[#38231E] dark:text-[#FDBA74]"
       case "h-mid":
-        return "bg-[#f1f5f9] text-[#333333] dark:bg-[#333333] dark:text-[#f1f5f9]"
+        return "bg-[#FAF7F0] text-[#333333] dark:bg-[#26282B] dark:text-[#E2E8F0]"
       case "h-pos1":
-        return "bg-[#EBF6EE] text-[#157F3D] dark:bg-[#157F3D]/20 dark:text-[#34D399]"
+        return "bg-[#EAF2EC] text-[#294A34] dark:bg-[#1E3327] dark:text-[#8CE0A8]"
       case "h-pos2":
-        return "bg-[#0928B1] text-white dark:bg-[#7596FF] dark:text-[#333333]"
+        return "bg-[#DCE8E0] text-[#1C3A27] dark:bg-[#2D4536] dark:text-[#A3D9B5]"
       default:
-        return "bg-white text-[#333333] dark:bg-[#090a0c] dark:text-[#f1f5f9]"
+        return "bg-[#FAF7F0] text-[#333333] dark:bg-[#26282B] dark:text-[#E2E8F0]"
     }
   }
 
   // Method spread bars calculations
   const methods = [
-    { label: `DCF · Gordon g ${baseG}`, val: fvGordon },
-    { label: "DCF · exit multiple", val: fvExit },
-    { label: "Kelipatan EV/EBITDA", val: typeof legs.ev_ebitda === "number" ? legs.ev_ebitda : null },
+    { label: "DCF Gordon", val: fvGordon },
+    { label: "DCF Kelipatan", val: fvExit },
+    { label: "EV/EBITDA", val: typeof legs.ev_ebitda === "number" ? legs.ev_ebitda : null },
   ].filter((m) => m.val !== null && (m.val as number) > 0) as { label: string; val: number }[]
 
   const methodData = methods.map((m) => ({
@@ -225,9 +225,9 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
             {methods.length > 0 ? (
               <div className="mt-4">
                 <ResponsiveContainer width="100%" height={180}>
-                  <BarChart data={methodData} margin={{ top: 20, right: 8, left: 0, bottom: 0 }}>
+                  <BarChart data={methodData} margin={{ top: 20, right: 12, left: 0, bottom: 8 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke={SECTORAL_GRID} />
-                    <XAxis dataKey="name" tick={SECTORAL_TICK} axisLine={false} tickLine={false} interval={0} height={44} />
+                    <XAxis dataKey="name" tick={{ ...SECTORAL_TICK, dy: 4 }} axisLine={false} tickLine={false} interval={0} height={32} />
                     <YAxis tick={SECTORAL_TICK} axisLine={false} tickLine={false} tickFormatter={(v: number) => formatIdn(v, 0)} width={48} />
                     <Tooltip
                       cursor={{ fill: "rgba(0,0,0,0.04)" }}
@@ -238,7 +238,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                     <Legend iconType="square" wrapperStyle={SECTORAL_LEGEND_STYLE} />
                     <ReferenceLine y={0} stroke={SECTORAL_ZERO_BASELINE} />
                     {price !== null && price > 0 && (
-                      <ReferenceLine y={price} stroke={seriesColor(4)} strokeDasharray="5 3" label={{ value: `Harga pasar ${formatIdn(price, 0)}`, fontSize: 11, fill: seriesColor(4), position: "insideTopLeft" }} />
+                      <ReferenceLine y={price} stroke={seriesColor(4)} strokeDasharray="5 3" label={{ value: `Harga pasar ${formatIdn(price, 0)}`, fontSize: 11, fill: seriesColor(4), position: "insideTopRight" }} />
                     )}
                     <Bar dataKey="value" name="Nilai wajar (Rp / saham)" maxBarSize={56} radius={[4, 4, 0, 0]}>
                       {methodData.map((_, idx) => (
@@ -306,7 +306,7 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
                           key={cIdx}
                           className={`border border-[#D9D9D9] px-3 py-2 text-right font-mono tabular-nums dark:border-[#262930] ${getBandStyle(
                             cell.band
-                          )} ${isBase ? "ring-2 ring-inset ring-[#0928B1] font-bold dark:ring-[#7596FF]" : ""}`}
+                          )} ${isBase ? "ring-[1.5px] ring-inset ring-[#333333] font-bold dark:ring-[#f1f5f9]" : ""}`}
                           title={`WACC ${r.label} x g ${sensCols[cIdx] ?? ""}: ${cell.value}${isBase ? " (Kasus Dasar)" : ""}`}
                         >
                           {cell.value}
@@ -322,16 +322,16 @@ export function DcfSpreadCharts({ payload }: { payload: ReportPayload }) {
             <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs text-[#666666] dark:text-[#666666]">
               <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Keterangan sel:</span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FDF2F2] border border-[#F8C8CB]" /> Rendah
+                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#F7E1D7] border border-[#E8C5B8] dark:bg-[#4A261D] dark:border-[#5C3025]" /> Rendah
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#f1f5f9] border border-[#D9D9D9]" /> Netral
+                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FAF7F0] border border-[#E5DFD3] dark:bg-[#26282B] dark:border-[#383B40]" /> Netral
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#EBF6EE] border border-[#BCE2C9]" /> Tinggi
+                <span className="inline-block h-3 w-3.5 rounded-xs bg-[#DCE8E0] border border-[#BFD5C6] dark:bg-[#2D4536] dark:border-[#3D5C49]" /> Tinggi
               </span>
               <span className="flex items-center gap-1.5">
-                <span className="inline-block h-3 w-3.5 rounded-xs border-2 border-[#0928B1]" /> Kasus dasar
+                <span className="inline-block h-3 w-3.5 rounded-xs border-[1.5px] border-[#333333] dark:border-[#f1f5f9]" /> Kasus dasar
               </span>
             </div>
 

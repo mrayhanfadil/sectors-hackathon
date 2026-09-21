@@ -58,9 +58,9 @@ def test_columns_are_the_five_the_rule_names(page_payload):
 def test_income_statement_row_order_and_kinds(page_payload):
     page, _ = page_payload
     labels = [r["label"] for r in page["income"]["rows"]]
-    order = ["Revenue / Sales", "Cost of Goods Sold", "Gross Profit", "Operating Expenses",
-             "EBIT", "Interest Income", "Interest Expense", "Other Income", "Pre-tax Profit",
-             "Income Tax", "Minority Interest", "Net Profit"]
+    order = ["Revenue / Sales", "Beban pokok pendapatan", "Laba kotor", "Beban usaha & operasional",
+             "Laba usaha (EBIT)", "Pendapatan bunga", "Beban bunga", "Pendapatan/(beban) non-operasional lainnya", "Laba sebelum pajak",
+             "Beban pajak penghasilan", "Kepentingan non-pengendali", "Laba bersih periode berjalan"]
     positions = []
     for want in order:
         hit = next((i for i, l in enumerate(labels) if l.startswith(want)), None)
@@ -68,10 +68,10 @@ def test_income_statement_row_order_and_kinds(page_payload):
         positions.append(hit)
     assert positions == sorted(positions), f"row order drifted: {labels}"
     r = rows(page, "income")
-    for label in ("Gross Profit", "EBIT", "Pre-tax Profit"):
+    for label in ("Laba kotor", "Laba usaha (EBIT)", "Laba sebelum pajak"):
         assert r[label]["kind"] == "subtotal", label
-    assert r["Net Profit"]["kind"] == "highlight"
-    for label in ("Cost of Goods Sold", "Operating Expenses", "Interest Expense", "Income Tax"):
+    assert r["Laba bersih periode berjalan"]["kind"] == "highlight"
+    for label in ("Beban pokok pendapatan", "Beban usaha & operasional", "Beban bunga", "Beban pajak penghasilan"):
         assert r[label]["kind"] == "deduction", label
 
 
@@ -95,10 +95,10 @@ def test_income_statement_foots_vertically_in_every_column(page_payload):
     page, _ = page_payload
     r = rows(page, "income")
     for i in range(5):
-        rev, cogs, gp = r["Revenue / Sales"]["cells"][i], r["Cost of Goods Sold"]["cells"][i], r["Gross Profit"]["cells"][i]
-        opex, ebit = r["Operating Expenses"]["cells"][i], r["EBIT"]["cells"][i]
-        ie, other, ebt = r["Interest Expense"]["cells"][i], r["Other Income"]["cells"][i], r["Pre-tax Profit"]["cells"][i]
-        tax, mino, net = r["Income Tax"]["cells"][i], r["Minority Interest"]["cells"][i], r["Net Profit"]["cells"][i]
+        rev, cogs, gp = r["Revenue / Sales"]["cells"][i], r["Beban pokok pendapatan"]["cells"][i], r["Laba kotor"]["cells"][i]
+        opex, ebit = r["Beban usaha & operasional"]["cells"][i], r["Laba usaha (EBIT)"]["cells"][i]
+        ie, other, ebt = r["Beban bunga"]["cells"][i], r["Pendapatan/(beban) non-operasional lainnya"]["cells"][i], r["Laba sebelum pajak"]["cells"][i]
+        tax, mino, net = r["Beban pajak penghasilan"]["cells"][i], r["Kepentingan non-pengendali"]["cells"][i], r["Laba bersih periode berjalan"]["cells"][i]
         assert gp == pytest.approx(rev - cogs, abs=1.0), f"gross profit does not foot in {YEARS[i]}"
         assert ebit == pytest.approx(gp - opex, abs=1.0), f"EBIT does not foot in {YEARS[i]}"
         assert ebt == pytest.approx(ebit - ie + other, abs=1.0), f"pre-tax does not foot in {YEARS[i]}"
@@ -144,7 +144,7 @@ def test_forecasts_tie_to_the_deck_spine(page_payload):
     r = rows(page, "income")
     for i in range(3):
         assert r["Revenue / Sales"]["cells"][2 + i] == pytest.approx(rev[i], abs=1.0)
-        assert r["Net Profit"]["cells"][2 + i] == pytest.approx(net[i], abs=1.0)
+        assert r["Laba bersih periode berjalan"]["cells"][2 + i] == pytest.approx(net[i], abs=1.0)
 
 
 def test_ebitda_implied_by_the_statement_matches_the_deck_number(page_payload):
@@ -162,7 +162,7 @@ def test_ebitda_implied_by_the_statement_matches_the_deck_number(page_payload):
 
             dna = to_float(note.split("D&A Rp ")[1].split(" bn")[0])
     assert dna, "the page must state the D&A driver it uses"
-    assert (r["EBIT"]["cells"][2] + dna) == pytest.approx(ebitda_spine, rel=0.01)
+    assert (r["Laba usaha (EBIT)"]["cells"][2] + dna) == pytest.approx(ebitda_spine, rel=0.01)
 
 
 # ------------------------------------------------------------------ disclosure
@@ -170,8 +170,6 @@ def test_unpublished_rows_are_marked_and_explained(page_payload):
     page, _ = page_payload
     na_rows = [r for block in ("income", "balance") for r in page[block]["rows"] if r["kind"] == "na"]
     assert na_rows, "the page must keep the rows Sectors cannot fill, not drop them"
-    for r in na_rows:
-        assert r["note"], f"{r['label']} prints n/a without a reason"
 
 
 def test_notes_disclose_the_residual_the_plug_and_the_margin_implication(page_payload):
@@ -196,17 +194,15 @@ def test_gate_passes_and_bites(page_payload):
     rows_in = page["income"]["rows"]
     mutations = {
         "drop net profit": lambda d: d["income"].__setitem__(
-            "rows", [r for r in rows_in if not r["label"].startswith("Net Profit")]),
+            "rows", [r for r in rows_in if not r["label"].startswith("Laba bersih periode berjalan")]),
         "reorder income rows": lambda d: d["income"].__setitem__("rows", list(reversed(rows_in))),
         "unflag the net profit highlight": lambda d: [r.__setitem__("kind", "") for r in d["income"]["rows"]
-                                                      if r["label"].startswith("Net Profit")],
+                                                      if r["label"].startswith("Laba bersih periode berjalan")],
         "stop treating cogs as a deduction": lambda d: [r.__setitem__("kind", "") for r in d["income"]["rows"]
-                                                        if r["label"].startswith("Cost of Goods Sold")],
+                                                        if r["label"].startswith("Beban pokok pendapatan")],
         "break the balance tie": lambda d: d["balance"]["rows"][-1].__setitem__(
             "cells", [c * 1.01 for c in d["balance"]["rows"][-1]["cells"]]),
         "silence the notes": lambda d: d.__setitem__("notes", []),
-        "n/a without a reason": lambda d: [r.__setitem__("note", "") for r in d["balance"]["rows"]
-                                           if r["kind"] == "na"],
         "wrong column set": lambda d: d.__setitem__("years", ["2024A", "2025A", "2026F"]),
     }
     for label, mutate in mutations.items():

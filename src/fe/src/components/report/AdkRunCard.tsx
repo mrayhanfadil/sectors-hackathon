@@ -102,6 +102,41 @@ function renderStatusBadge(status: string) {
   }
 }
 
+export function formatModelDisplayName(provider?: string, model?: string): string {
+  if (!model && !provider) return "-"
+  const raw = model || provider || "-"
+  const lower = raw.toLowerCase()
+  if (lower.includes("gemini-2.5-flash") || lower.includes("gemini-2.0-flash") || lower.includes("gemini-1.5-flash")) {
+    return "Gemini Flash"
+  }
+  if (lower.includes("gemini-2.5-pro") || lower.includes("gemini-2.0-pro") || lower.includes("gemini-1.5-pro")) {
+    return "Gemini Pro"
+  }
+  if (lower.includes("gemini-3.7-flash")) {
+    return "Gemini 3.7 Flash"
+  }
+  if (lower.includes("gemini-3-flash") || lower.includes("gemini-3.0-flash")) {
+    return "Gemini 3 Flash"
+  }
+  if (lower.includes("gemini")) {
+    return "Gemini"
+  }
+  if (lower.includes("gpt-4o-mini")) {
+    return "GPT-4o mini"
+  }
+  if (lower.includes("gpt-4o")) {
+    return "GPT-4o"
+  }
+  if (lower.includes("claude-3-5-sonnet") || lower.includes("claude-3.5-sonnet")) {
+    return "Claude 3.5 Sonnet"
+  }
+  if (lower.includes("claude-3-5-haiku") || lower.includes("claude-3.5-haiku")) {
+    return "Claude 3.5 Haiku"
+  }
+  const clean = raw.split("/").pop()?.split(":")[0] || raw
+  return clean
+}
+
 export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
   const tk = ticker.toUpperCase()
   const [historyOpen, setHistoryOpen] = useState(false)
@@ -142,11 +177,14 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
   }
 
   const rawPreview = log.last_text_preview || log.error || null
+  const hasLastActivity = Boolean(rawPreview && rawPreview.trim() !== "" && rawPreview.trim() !== "-")
   const lastTextPreview = rawPreview
     ? rawPreview.length > 90
       ? `${rawPreview.slice(0, 90)}...`
       : rawPreview
     : "-"
+  const fullModelName = `${log.provider ? `${log.provider}/` : ""}${log.model}`
+  const shortModelName = formatModelDisplayName(log.provider, log.model)
 
   return (
     <Card className="rounded-xl border border-[#D9D9D9] bg-white shadow-none dark:border-[#262930] dark:bg-[#090a0c]">
@@ -179,8 +217,11 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
         <div className="grid grid-cols-2 gap-2 text-xs">
           <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 dark:border-[#262930] dark:bg-[#1e2229]">
             <div className="text-[11px] text-[#666666] dark:text-[#666666]">Model</div>
-            <div className="truncate font-medium text-[#333333] mt-0.5 dark:text-[#f1f5f9]">
-              {log.provider}/{log.model}
+            <div
+              title={fullModelName}
+              className="truncate font-medium text-[#333333] mt-0.5 dark:text-[#f1f5f9] cursor-help"
+            >
+              {shortModelName}
             </div>
           </div>
           <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-2.5 dark:border-[#262930] dark:bg-[#1e2229]">
@@ -192,14 +233,16 @@ export function AdkRunCard({ ticker, log, history, hasRun }: Props) {
         </div>
 
         {/* Row 3: Last activity */}
-        <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-xs leading-relaxed dark:border-[#262930] dark:bg-[#1e2229]">
-          <div className="font-semibold text-[#333333] text-[11px] dark:text-[#f1f5f9]">
-            Aktivitas mesin terakhir:
+        {hasLastActivity && (
+          <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-xs leading-relaxed dark:border-[#262930] dark:bg-[#1e2229]">
+            <div className="font-semibold text-[#333333] text-[11px] dark:text-[#f1f5f9]">
+              Aktivitas mesin terakhir:
+            </div>
+            <p className="mt-1 text-[#666666] dark:text-[#666666]">
+              {lastTextPreview}
+            </p>
           </div>
-          <p className="mt-1 text-[#666666] dark:text-[#666666]">
-            {lastTextPreview}
-          </p>
-        </div>
+        )}
 
         {/* Expandable Riwayat Eksekusi */}
         {history && history.length > 0 && (

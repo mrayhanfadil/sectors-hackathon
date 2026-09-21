@@ -265,13 +265,23 @@ def build_key_ratio_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             is_page = build_statements_page(tk, spine, driver_path=driver_path, cashflow=cashflow)
         except Exception:
             pass
-    is_row = {}
+    is_row: dict[str, list] = {}
+    is_key: dict[str, list] = {}
     for block in ("income", "balance"):
         for r in ((is_page.get(block) or {}).get("rows") or []):
+            # Label-prefix index is the legacy lookup; it breaks whenever a label is
+            # retitled (e.g. plain-Indonesian relabel Sep 2026 turned "EBIT" into
+            # "Laba usaha (EBIT)"). The stable "key" index below survives retitles.
             is_row[str(r["label"]).split(" /")[0].split(" (")[0].strip()] = r["cells"]
+            if r.get("key"):
+                is_key[str(r["key"])] = r["cells"]
 
     def isv(label: str, i: int):
         row = is_row.get(label)
+        return row[i] if row and i < len(row) else None
+
+    def isk(key: str, i: int):
+        row = is_key.get(key) or is_row.get(key)
         return row[i] if row and i < len(row) else None
 
     # year 0 (2024A) growth needs FY2023A, which is outside the exhibit's columns but is published
@@ -287,14 +297,14 @@ def build_key_ratio_page(ticker: str = "AMMN", spine: Optional[dict] = None,
             out.append(((v / base - 1) * 100) if (v is not None and base) else None)
         return out
 
-    rev = [isv("Revenue", i) for i in range(5)]
+    rev = [isk("rev", i) or isv("Revenue", i) for i in range(5)]
     ebitda = [kf_num("EBITDA", i) for i in range(5)]
-    op = [isv("EBIT", i) for i in range(5)]
-    net = [isv("Net Profit", i) for i in range(5)]
-    gp = [isv("Gross Profit", i) for i in range(5)]
-    opex = [isv("Operating Expenses", i) for i in range(5)]
-    intr = [isv("Interest Expense", i) for i in range(5)]
-    ebt = [isv("Pre-tax Profit", i) for i in range(5)]
+    op = [isk("ebit", i) or isv("EBIT", i) for i in range(5)]
+    net = [isk("net", i) or isv("Net Profit", i) for i in range(5)]
+    gp = [isk("gp", i) or isv("Gross Profit", i) for i in range(5)]
+    opex = [isk("opex", i) or isv("Operating Expenses", i) for i in range(5)]
+    intr = [isk("ie", i) or isv("Interest Expense", i) for i in range(5)]
+    ebt = [isk("ebt", i) or isv("Pre-tax Profit", i) for i in range(5)]
 
     def pct(a: list, b: list) -> list:
         return [(x / y * 100) if (x is not None and y) else None for x, y in zip(a, b)]

@@ -59,7 +59,12 @@ def test_net_profit_chains_from_the_income_statement_into_the_cash_flow(payload)
     cf, sp = payload["cashflow_page"], payload["statements_page"]
     kf = {str(r[0]): r[1:] for r in payload["cover"]["slide2"]["key_financials"]["rows"]}
     cf_net = find(block(cf, "Cash Flow from Operations"), "Net Profit")["cells"]
-    is_net = find(sp["income"]["rows"], "Net Profit")["cells"]
+    # Rows carry a stable "key" since the Sep 2026 plain-Indonesian relabel -
+    # look up by key ("net"), never by the printed label.
+    is_net_row = next((r for r in sp["income"]["rows"] if r.get("key") == "net"), None)
+    is_net_row = is_net_row or find(sp["income"]["rows"], "Net Profit")
+    assert is_net_row, "income statement has no net-profit row (by key or label)"
+    is_net = is_net_row["cells"]
     kf_net = next(v for k, v in kf.items() if k.startswith("Net Profit"))
     for i, y in enumerate(YEARS):
         assert cf_net[i] == pytest.approx(is_net[i], abs=1.0), y
@@ -113,8 +118,11 @@ def test_ratio_exhibit_has_the_three_sections_and_no_blank_rows(payload):
 
 def test_ratios_recompute_from_the_printed_statements(payload):
     kr, sp = payload["key_ratio_page"], payload["statements_page"]
-    inc = {r["label"].split(" /")[0].split(" (")[0].strip(): r["cells"] for r in sp["income"]["rows"]}
-    bal = {r["label"].split(" (")[0].strip(): r["cells"] for r in sp["balance"]["rows"]}
+    # Index by stable row "key" (survives retitles); label-prefix kept as fallback.
+    inc = {(r.get("key") or r["label"].split(" /")[0].split(" (")[0].strip()): r["cells"]
+           for r in sp["income"]["rows"]}
+    bal = {(r.get("key") or r["label"].split(" (")[0].strip()): r["cells"]
+           for r in sp["balance"]["rows"]}
 
     def row(section, needle):
         return find(next(s["rows"] for s in kr["sections"] if s["title"].startswith(section)), needle)["cells"]
@@ -123,13 +131,13 @@ def test_ratios_recompute_from_the_printed_statements(payload):
         row("Profitability", "Net Margin")
     cov, gear = row("Leverage", "Interest Coverage"), row("Leverage", "Gearing")
     for i in range(5):
-        rev = inc["Revenue"][i]
-        assert gm[i] == pytest.approx(inc["Gross Profit"][i] / rev * 100, abs=0.15), YEARS[i]
-        assert om[i] == pytest.approx(inc["EBIT"][i] / rev * 100, abs=0.15), YEARS[i]
-        assert nm[i] == pytest.approx(inc["Net Profit"][i] / rev * 100, abs=0.15), YEARS[i]
-        assert cov[i] == pytest.approx(inc["EBIT"][i] / inc["Interest Expense"][i], abs=0.05), YEARS[i]
-        debt = bal["Short-term Debt"][i] + bal["Long-term Debt"][i]
-        want = (debt - bal["Cash & Cash Equivalents"][i]) / bal["Shareholders' Equity"][i]
+        rev = inc["rev"][i]
+        assert gm[i] == pytest.approx(inc["gp"][i] / rev * 100, abs=0.15), YEARS[i]
+        assert om[i] == pytest.approx(inc["ebit"][i] / rev * 100, abs=0.15), YEARS[i]
+        assert nm[i] == pytest.approx(inc["net"][i] / rev * 100, abs=0.15), YEARS[i]
+        assert cov[i] == pytest.approx(inc["ebit"][i] / inc["ie"][i], abs=0.05), YEARS[i]
+        debt = bal["st"][i] + bal["lt"][i]
+        want = (debt - bal["cash"][i]) / bal["eq"][i]
         assert gear[i] == pytest.approx(want, abs=0.02), YEARS[i]
 
 

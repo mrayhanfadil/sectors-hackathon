@@ -153,7 +153,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                 <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
-                      {stmts?.income?.title || finStmts?.income?.title || "Laporan laba rugi (Income statement)"}
+                      {stmts?.income?.title || finStmts?.income?.title || "Laporan laba rugi"}
                     </CardTitle>
                     <span className="text-xs text-[#666666] dark:text-[#666666]">
                       {incomeSource}
@@ -187,7 +187,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                             )
                           }
                           const isSubtotal = r.kind === "subtotal"
-                          const isHighlight = r.kind === "highlight" || r.label.toLowerCase().includes("net profit")
+                          const isHighlight = r.kind === "highlight" || r.label.toLowerCase().includes("net profit") || r.label.toLowerCase().includes("laba bersih")
                           return (
                             <tr
                               key={rIdx}
@@ -206,7 +206,6 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                                   {r.label}
                                 </span>
                                 {r.kind === "deduction" && <span className="ml-1 text-[11px] text-[#666666] dark:text-[#666666]">(-)</span>}
-                                {r.note && <span className="ml-1.5 text-[11px] italic text-[#666666] dark:text-[#666666]">{r.note}</span>}
                               </td>
                               {r.cells.map((c, cIdx) => (
                                 <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
@@ -229,7 +228,7 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                 <CardHeader className="border-b border-[#D9D9D9] p-5 pb-3 dark:border-[#262930]">
                   <div className="flex items-center justify-between">
                     <CardTitle className="text-sm font-semibold text-[#333333] dark:text-[#f1f5f9]">
-                      {stmts?.balance?.title || finStmts?.balance?.title || "Neraca keuangan (Balance sheet)"}
+                      {stmts?.balance?.title || finStmts?.balance?.title || "Neraca keuangan"}
                     </CardTitle>
                     <span className="text-xs text-[#666666] dark:text-[#666666]">
                       {balanceSource}
@@ -279,7 +278,6 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
                                   {r.label}
                                 </span>
                                 {r.kind === "deduction" && <span className="ml-1 text-[11px] text-[#666666] dark:text-[#666666]">(-)</span>}
-                                {r.note && <span className="ml-1.5 text-[11px] italic text-[#666666] dark:text-[#666666]">{r.note}</span>}
                               </td>
                               {r.cells.map((c, cIdx) => (
                                 <td key={cIdx} className="py-2 px-3 text-right font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
@@ -747,47 +745,50 @@ export function RiskFactors({ ticker, payload }: RiskFactorsProps) {
               </div>
             </CardHeader>
             <CardContent className="p-5 text-xs">
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                {sectorData.growth_forecast_2026 && (
-                  <>
-                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-center dark:border-[#262930] dark:bg-[#1e2229]">
-                      <div className="text-[11px] text-[#666666] dark:text-[#666666]">Proyeksi pendapatan 2026</div>
-                      <div className="font-semibold text-[#333333] font-mono tabular-nums mt-1 text-sm dark:text-[#f1f5f9]">
-                        {sectorData.growth_forecast_2026.revenue_pct != null
-                          ? `${sectorData.growth_forecast_2026.revenue_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.revenue_pct}%`
-                          : "-"}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-center dark:border-[#262930] dark:bg-[#1e2229]">
-                      <div className="text-[11px] text-[#666666] dark:text-[#666666]">Proyeksi EPS 2026</div>
-                      <div className="font-semibold text-[#333333] font-mono tabular-nums mt-1 text-sm dark:text-[#f1f5f9]">
-                        {sectorData.growth_forecast_2026.eps_pct != null
-                          ? `${sectorData.growth_forecast_2026.eps_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.eps_pct}%`
-                          : "-"}
-                      </div>
-                    </div>
-                  </>
-                )}
-                {sectorData.growth_actual_2025 && (
-                  <>
-                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-center dark:border-[#262930] dark:bg-[#1e2229]">
-                      <div className="text-[11px] text-[#666666] dark:text-[#666666]">Realisasi pendapatan 2025</div>
-                      <div className="font-semibold text-[#333333] font-mono tabular-nums mt-1 text-sm dark:text-[#f1f5f9]">
-                        {sectorData.growth_actual_2025.revenue_pct != null
+              <div className="overflow-x-auto rounded-lg border border-[#D9D9D9] dark:border-[#262930]">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-[#D9D9D9] bg-[#f1f5f9] text-[#666666] dark:border-[#262930] dark:bg-[#1e2229] dark:text-[#666666]">
+                      <th className="py-2.5 px-3 text-left font-semibold text-[#333333] dark:text-[#f1f5f9]">
+                        Metrik sektoral
+                      </th>
+                      <th className="py-2.5 px-3 text-right font-semibold">Realisasi 2025</th>
+                      <th className="py-2.5 px-3 text-right font-semibold">Proyeksi 2026</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#D9D9D9]/60 dark:divide-[#262930]/60">
+                    <tr className="bg-white dark:bg-[#090a0c]">
+                      <td className="py-2.5 px-3 font-medium text-[#333333] dark:text-[#f1f5f9]">
+                        Pendapatan (YoY)
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
+                        {sectorData.growth_actual_2025?.revenue_pct != null
                           ? `${sectorData.growth_actual_2025.revenue_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.revenue_pct}%`
                           : "-"}
-                      </div>
-                    </div>
-                    <div className="rounded-lg border border-[#D9D9D9] bg-[#f1f5f9] p-3 text-center dark:border-[#262930] dark:bg-[#1e2229]">
-                      <div className="text-[11px] text-[#666666] dark:text-[#666666]">Realisasi EPS 2025</div>
-                      <div className="font-semibold text-[#333333] font-mono tabular-nums mt-1 text-sm dark:text-[#f1f5f9]">
-                        {sectorData.growth_actual_2025.eps_pct != null
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-[#0928B1] dark:text-[#7596FF]">
+                        {sectorData.growth_forecast_2026?.revenue_pct != null
+                          ? `${sectorData.growth_forecast_2026.revenue_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.revenue_pct}%`
+                          : "-"}
+                      </td>
+                    </tr>
+                    <tr className="bg-[#f1f5f9]/50 dark:bg-[#1e2229]/30">
+                      <td className="py-2.5 px-3 font-medium text-[#333333] dark:text-[#f1f5f9]">
+                        EPS (YoY)
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums text-[#333333] dark:text-[#f1f5f9]">
+                        {sectorData.growth_actual_2025?.eps_pct != null
                           ? `${sectorData.growth_actual_2025.eps_pct > 0 ? "+" : ""}${sectorData.growth_actual_2025.eps_pct}%`
                           : "-"}
-                      </div>
-                    </div>
-                  </>
-                )}
+                      </td>
+                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-[#0928B1] dark:text-[#7596FF]">
+                        {sectorData.growth_forecast_2026?.eps_pct != null
+                          ? `${sectorData.growth_forecast_2026.eps_pct > 0 ? "+" : ""}${sectorData.growth_forecast_2026.eps_pct}%`
+                          : "-"}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
               </div>
             </CardContent>
           </Card>

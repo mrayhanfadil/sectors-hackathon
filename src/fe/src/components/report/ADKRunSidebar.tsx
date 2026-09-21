@@ -178,9 +178,11 @@ export function ADKRunSidebar({
           </nav>
 
           {provenance && (
-            <div className="mt-3 flex items-center gap-1.5 border-t border-[#D9D9D9] pt-2.5 text-[11px] text-[#666666] dark:border-[#262930] dark:text-[#666666]">
-              <Info className="h-3.5 w-3.5 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
-              <span className="truncate">{provenance}</span>
+            <div className="mt-3 flex flex-wrap items-start gap-1.5 border-t border-[#D9D9D9] pt-2.5 text-[11px] text-[#666666] dark:border-[#262930] dark:text-[#666666]">
+              <Info className="mt-0.5 h-3.5 w-3.5 shrink-0 text-[#0928B1] dark:text-[#7596FF]" />
+              <span className="min-w-0 flex-1 break-words text-ellipsis" title={provenance}>
+                {provenance}
+              </span>
             </div>
           )}
         </CardContent>

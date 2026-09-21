@@ -22,6 +22,23 @@ function fmtDec(n: number | null | undefined, digits: number = 2): string {
   })
 }
 
+function getSensitivityBandStyle(band?: string): string {
+  switch (band) {
+    case "h-neg2":
+      return "bg-[#F7E1D7] text-[#762D1A] dark:bg-[#4A261D] dark:text-[#FCA5A5]"
+    case "h-neg1":
+      return "bg-[#FDF1EB] text-[#8A432F] dark:bg-[#38231E] dark:text-[#FDBA74]"
+    case "h-mid":
+      return "bg-[#FAF7F0] text-[#333333] dark:bg-[#26282B] dark:text-[#E2E8F0]"
+    case "h-pos1":
+      return "bg-[#EAF2EC] text-[#294A34] dark:bg-[#1E3327] dark:text-[#8CE0A8]"
+    case "h-pos2":
+      return "bg-[#DCE8E0] text-[#1C3A27] dark:bg-[#2D4536] dark:text-[#A3D9B5]"
+    default:
+      return "bg-[#FAF7F0] text-[#333333] dark:bg-[#26282B] dark:text-[#E2E8F0]"
+  }
+}
+
 function getPeerColumnType(
   col: string,
   idx: number
@@ -303,8 +320,12 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                                 }`}
                               >
                                 <td className="py-2 px-3 text-left font-sans">{label}</td>
-                                <td className="py-2 px-3 text-right font-mono tabular-nums">{a != null ? String(a) : "-"}</td>
-                                <td className="py-2 px-3 text-right font-mono tabular-nums">{b != null ? String(b) : "-"}</td>
+                                <td className="py-2 px-3 text-right font-mono tabular-nums">
+                                  {typeof a === "number" ? fmtDec(a, 2) : a != null ? String(a) : "-"}
+                                </td>
+                                <td className="py-2 px-3 text-right font-mono tabular-nums">
+                                  {typeof b === "number" ? fmtIDR(b) : b != null ? String(b) : "-"}
+                                </td>
                               </tr>
                             )
                           })}
@@ -396,19 +417,38 @@ export function ValuationMethodology({ ticker, payload }: ValuationMethodologyPr
                             {r.cells.map((c, cIdx) => (
                               <td
                                 key={cIdx}
-                                className={`py-2 px-3 text-right font-mono tabular-nums ${
+                                className={`py-2 px-3 text-right font-mono tabular-nums ${getSensitivityBandStyle(
+                                  c.band
+                                )} ${
                                   c.base
-                                    ? "font-bold text-[#0928B1] bg-[#0928B1]/10 ring-1 ring-inset ring-[#0928B1] dark:bg-[#7596FF]/20 dark:text-[#7596FF]"
-                                    : "text-[#333333] dark:text-[#f1f5f9]/90"
+                                    ? "font-bold ring-[1.5px] ring-inset ring-[#333333] dark:ring-[#f1f5f9]"
+                                    : ""
                                 }`}
                               >
-                                {c.value != null ? String(c.value) : "-"}
+                                {c.value != null ? (typeof c.value === "number" ? fmtIDR(c.value) : String(c.value)) : "-"}
                               </td>
                             ))}
                           </tr>
                         ))}
                       </tbody>
                     </table>
+                  </div>
+
+                  {/* Heatmap Legend */}
+                  <div className="mt-3.5 flex flex-wrap items-center gap-3 text-xs text-[#666666] dark:text-[#666666]">
+                    <span className="font-medium text-[#333333] dark:text-[#f1f5f9]">Keterangan sel:</span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3.5 rounded-xs bg-[#F7E1D7] border border-[#E8C5B8] dark:bg-[#4A261D] dark:border-[#5C3025]" /> Rendah
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3.5 rounded-xs bg-[#FAF7F0] border border-[#E5DFD3] dark:bg-[#26282B] dark:border-[#383B40]" /> Netral
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3.5 rounded-xs bg-[#DCE8E0] border border-[#BFD5C6] dark:bg-[#2D4536] dark:border-[#3D5C49]" /> Tinggi
+                    </span>
+                    <span className="flex items-center gap-1.5">
+                      <span className="inline-block h-3 w-3.5 rounded-xs border-[1.5px] border-[#333333] dark:border-[#f1f5f9]" /> Kasus dasar
+                    </span>
                   </div>
 
                   {sens.swing && (

@@ -35,7 +35,10 @@ export type ReportHeaderProps = {
 
 function fmtIDR(n: number | null | undefined): string {
   if (n == null || Number.isNaN(Number(n))) return "-"
-  return Number(n).toLocaleString("id-ID")
+  const parts = Math.abs(Number(n)).toFixed(0).split(".")
+  const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  const sign = Number(n) < 0 ? "-" : ""
+  return `${sign}${intPart}`
 }
 
 function parseUpside(upside?: string | number | null): number | null {
@@ -43,6 +46,68 @@ function parseUpside(upside?: string | number | null): number | null {
   if (typeof upside === "number") return upside
   const m = String(upside).replace(",", ".").match(/-?\d+(\.\d+)?/)
   return m ? Number(m[0]) : null
+}
+
+function formatUpside(val?: string | number | null): string {
+  if (val == null) return "-"
+  const num = parseUpside(val)
+  if (num == null) return String(val).trim().replace(/,\s+(\d)/g, ",$1")
+  const sign = num > 0 ? "+" : num < 0 ? "-" : ""
+  const abs = Math.abs(num)
+  const parts = abs.toFixed(1).split(".")
+  const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ".")
+  const decPart = parts[1]
+  return `${sign}${intPart},${decPart}%`
+}
+
+function formatArchetype(tpl?: string | null): string {
+  if (!tpl) return "Tunggal"
+  const map: Record<string, string> = {
+    single: "Tunggal",
+    sotp: "SOTP",
+    bank: "Bank",
+    banking: "Perbankan",
+    mining: "Pertambangan",
+    coal: "Batubara",
+    infra: "Infrastruktur",
+    infrastructure: "Infrastruktur",
+    conglomerate: "Konglomerasi",
+    unknown: "Tunggal",
+  }
+  return map[tpl.toLowerCase()] || tpl.charAt(0).toUpperCase() + tpl.slice(1)
+}
+
+function formatIndonesianDate(dateStr?: string | null): string | null {
+  if (!dateStr) return null
+  const trimmed = dateStr.trim()
+  const isoMatch = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (isoMatch) {
+    const [, y, m, d] = isoMatch
+    const months = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"]
+    const mIdx = parseInt(m, 10) - 1
+    if (mIdx >= 0 && mIdx < 12) {
+      return `${parseInt(d, 10)} ${months[mIdx]} ${y}`
+    }
+  }
+  const enToId: Record<string, string> = {
+    May: "Mei",
+    August: "Agustus",
+    Aug: "Agu",
+    October: "Oktober",
+    Oct: "Okt",
+    December: "Desember",
+    Dec: "Des",
+    January: "Januari",
+    February: "Februari",
+    March: "Maret",
+    June: "Juni",
+    July: "Juli",
+  }
+  let result = trimmed
+  for (const [en, id] of Object.entries(enToId)) {
+    result = result.replace(new RegExp(`\\b${en}\\b`, "gi"), id)
+  }
+  return result
 }
 
 export function ReportHeader({
@@ -78,14 +143,7 @@ export function ReportHeader({
   const upsideNum = parseUpside(upside)
   const upsidePositive = upsideNum != null && upsideNum > 0
   const upsideNegative = upsideNum != null && upsideNum < 0
-
-  const upsideDisplay = (() => {
-    if (upside == null) return "-"
-    if (typeof upside === "number") {
-      return `${upside > 0 ? "+" : ""}${upside.toFixed(1)}%`
-    }
-    return String(upside)
-  })()
+  const upsideDisplay = formatUpside(upside)
 
   async function handlePdfDownload() {
     if (onDownloadPdf) {
@@ -110,11 +168,11 @@ export function ReportHeader({
   }
 
   const tabBase =
-    "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors cursor-pointer"
+    "inline-flex items-center gap-2 px-4 py-2.5 text-sm font-medium border-b-[1.5px] -mb-px transition-colors cursor-pointer"
   const tabActive =
-    "border-[#0928B1] text-[#0928B1] font-semibold bg-[#0928B1]/5 dark:border-[#7596FF] dark:text-[#7596FF] dark:bg-[#7596FF]/10"
+    "border-[#1B365D] text-[#1B365D] font-semibold dark:border-[#7596FF] dark:text-[#7596FF]"
   const tabIdle =
-    "border-transparent text-[#666666] hover:text-[#333333] hover:border-[#D9D9D9] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:border-[#262930]"
+    "border-transparent text-[#666666] hover:text-[#333333] hover:border-[#E7E2D9] dark:text-[#666666] dark:hover:text-[#f1f5f9] dark:hover:border-[#262930]"
 
   const getTickerRoute = (targetTk: string) => {
     if (isChallengeActive) return `/report/${targetTk}/challenge`
@@ -122,9 +180,9 @@ export function ReportHeader({
   }
 
   return (
-    <div className="sticky top-0 z-20 -mx-4 -mt-6 mb-8 border-b border-[#D9D9D9] bg-[#f1f5f9]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#333333]/95">
+    <div className="sticky top-0 z-20 -mx-4 -mt-6 mb-8 border-b border-[#E7E2D9] bg-[#FAF8F5]/95 backdrop-blur-sm dark:border-[#262930] dark:bg-[#090a0c]/95">
       {/* 1. Sub-nav strip & Ticker Switcher */}
-      <div className="border-b border-[#D9D9D9] bg-white/60 px-4 py-2 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c]/60 dark:text-[#666666]">
+      <div className="border-b border-[#E7E2D9] bg-[#FAF8F5]/80 px-4 py-2 text-xs text-[#666666] dark:border-[#262930] dark:bg-[#090a0c]/60 dark:text-[#666666]">
         <div className="mx-auto flex max-w-[1100px] flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <Link to="/" className="inline-flex items-center mr-1 hover:opacity-85 transition-opacity" title="Sectoral">
@@ -132,7 +190,7 @@ export function ReportHeader({
             </Link>
             <Link
               to="/"
-              className="inline-flex items-center gap-1 font-medium text-[#0928B1] hover:underline dark:text-[#7596FF]"
+              className="inline-flex items-center gap-1 font-medium text-[#1B365D] hover:underline dark:text-[#7596FF]"
             >
               Beranda
             </Link>
@@ -155,8 +213,8 @@ export function ReportHeader({
                   to={getTickerRoute(symbol)}
                   className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
                     isActive
-                      ? "bg-[#0928B1] text-white dark:bg-[#7596FF] dark:text-[#333333] font-semibold"
-                      : "bg-[#f1f5f9] text-[#333333] hover:bg-[#D9D9D9] dark:bg-[#262930] dark:text-[#f1f5f9] dark:hover:bg-[#262930]"
+                      ? "bg-[#1B365D] text-white dark:bg-[#7596FF] dark:text-[#090a0c] font-semibold"
+                      : "bg-[#FAF8F5] border border-[#E7E2D9] text-[#333333] hover:bg-[#E7E2D9] dark:bg-[#262930] dark:border-[#262930] dark:text-[#f1f5f9] dark:hover:bg-[#262930]"
                   }`}
                 >
                   {symbol}
@@ -174,7 +232,7 @@ export function ReportHeader({
           <div className="flex min-w-0 items-start gap-3.5">
             <Link
               to="/"
-              className="mt-1 inline-flex items-center justify-center rounded-lg border border-[#D9D9D9] bg-white p-2 text-[#666666] hover:bg-[#f1f5f9] hover:text-[#333333] transition-colors dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:bg-[#1e2229] dark:hover:text-[#f1f5f9]"
+              className="mt-1 inline-flex items-center justify-center rounded-lg border border-[#E7E2D9] bg-[#FDFCF7] p-2 text-[#666666] hover:bg-[#FAF8F5] hover:text-[#333333] transition-colors dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#666666] dark:hover:bg-[#1e2229] dark:hover:text-[#f1f5f9]"
               title="Kembali ke beranda"
             >
               <ArrowLeft className="h-4 w-4" />
@@ -182,7 +240,7 @@ export function ReportHeader({
 
             <div className="min-w-0">
               <div className="flex flex-wrap items-center gap-2.5">
-                <span className="rounded-md bg-[#0928B1]/10 px-2 py-0.5 text-xs font-bold text-[#0928B1] dark:bg-[#7596FF]/20 dark:text-[#7596FF]">
+                <span className="rounded-md bg-[#1B365D]/10 px-2 py-0.5 text-xs font-bold text-[#1B365D] dark:bg-[#7596FF]/20 dark:text-[#7596FF]">
                   {tk}
                 </span>
                 <h1 className="truncate font-serif text-xl sm:text-2xl font-normal tracking-tight text-[#333333] dark:text-[#f1f5f9]">
@@ -191,15 +249,16 @@ export function ReportHeader({
                 <RecommendationBadge rating={rating} size="md" />
               </div>
 
-              <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-[#666666] dark:text-[#666666]">
+              <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-[#666666] dark:text-[#666666]">
                 {template && (
-                  <span className="rounded bg-[#f1f5f9] px-2 py-0.5 text-[11px] font-medium text-[#333333] dark:bg-[#262930] dark:text-[#f1f5f9]">
-                    Arketipe: {template}
+                  <span className="rounded bg-[#FAF8F5] px-2 py-0.5 text-[11px] font-medium text-[#333333] border border-[#E7E2D9] dark:bg-[#262930] dark:border-[#262930] dark:text-[#f1f5f9]">
+                    Arketipe: {formatArchetype(template)}
                   </span>
                 )}
+                {template && updatedAt && <span className="text-[#666666]">·</span>}
                 {updatedAt && (
                   <span>
-                    Diperbarui {updatedAt} {source ? `(${source})` : ""}
+                    Diperbarui {formatIndonesianDate(updatedAt)} {source ? `(${source})` : ""}
                   </span>
                 )}
               </div>
@@ -208,7 +267,7 @@ export function ReportHeader({
 
           {/* Key Numbers & Actions */}
           <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-4 rounded-xl border border-[#D9D9D9] bg-white px-4 py-2.5 dark:border-[#262930] dark:bg-[#090a0c]">
+            <div className="flex items-center gap-4 rounded-xl border border-[#E7E2D9] bg-[#FDFCF7] px-4 py-2.5 dark:border-[#262930] dark:bg-[#090a0c]">
               <div>
                 <div className="text-[11px] text-[#666666] dark:text-[#666666]">Harga pasar</div>
                 <div className="text-sm font-semibold text-[#333333] font-mono tabular-nums dark:text-[#f1f5f9]">
@@ -216,7 +275,7 @@ export function ReportHeader({
                 </div>
               </div>
 
-              <div className="h-7 w-px bg-[#D9D9D9] dark:bg-[#262930]" />
+              <div className="h-7 w-px bg-[#E7E2D9] dark:bg-[#262930]" />
 
               <div>
                 <div className="text-[11px] text-[#666666] dark:text-[#666666]">Nilai wajar</div>
@@ -225,7 +284,7 @@ export function ReportHeader({
                 </div>
               </div>
 
-              <div className="h-7 w-px bg-[#D9D9D9] dark:bg-[#262930]" />
+              <div className="h-7 w-px bg-[#E7E2D9] dark:bg-[#262930]" />
 
               <div>
                 <div className="text-[11px] text-[#666666] dark:text-[#666666]">Potensi return</div>
@@ -251,12 +310,12 @@ export function ReportHeader({
                 size="sm"
                 onClick={handlePdfDownload}
                 disabled={isPdfBusy}
-                className="h-9 gap-1.5 rounded-lg border-[#D9D9D9] bg-white px-3.5 text-xs font-medium text-[#333333] hover:bg-[#f1f5f9] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9] dark:hover:bg-[#1e2229] cursor-pointer"
+                className="h-9 gap-1.5 rounded-lg border-[#E7E2D9] bg-[#FDFCF7] px-3.5 text-xs font-medium text-[#333333] hover:bg-[#FAF8F5] dark:border-[#262930] dark:bg-[#090a0c] dark:text-[#f1f5f9] dark:hover:bg-[#1e2229] cursor-pointer"
               >
                 {isPdfBusy ? (
-                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#0928B1] dark:text-[#7596FF]" />
+                  <Loader2 className="h-3.5 w-3.5 animate-spin text-[#1B365D] dark:text-[#7596FF]" />
                 ) : (
-                  <Download className="h-3.5 w-3.5 text-[#0928B1] dark:text-[#7596FF]" />
+                  <Download className="h-3.5 w-3.5 text-[#1B365D] dark:text-[#7596FF]" />
                 )}
                 <span>Unduh PDF</span>
               </Button>
@@ -264,7 +323,7 @@ export function ReportHeader({
               <Link
                 to="/agent"
                 search={{ ticker: tk } as any}
-                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#0928B1] px-3.5 text-xs font-medium text-white hover:bg-[#0047AB] transition-colors dark:bg-[#7596FF] dark:text-[#333333] dark:hover:bg-[#3EBAA0]"
+                className="inline-flex h-9 items-center gap-1.5 rounded-lg bg-[#1B365D] px-3.5 text-xs font-medium text-white hover:bg-[#1B365D]/90 transition-colors dark:bg-[#7596FF] dark:text-[#090a0c] dark:hover:bg-[#3EBAA0]"
               >
                 <Bot className="h-3.5 w-3.5" />
                 <span>Proses analisis</span>
@@ -280,7 +339,7 @@ export function ReportHeader({
         )}
 
         {/* 3. Editorial Tabs (Laporan & Uji silang) */}
-        <div className="mt-4 flex items-center gap-1 overflow-x-auto border-t border-[#D9D9D9] pt-1 dark:border-[#262930]">
+        <div className="mt-4 flex items-center gap-1 overflow-x-auto border-t border-[#E7E2D9] pt-1 dark:border-[#262930]">
           <Link
             to="/report/$ticker"
             params={{ ticker: tk }}
