@@ -188,7 +188,7 @@ function SvgPriceVsJci({
   }
 
   const W = 340
-  const H = 220
+  const H = 280
   const padL = 40
   const padR = 40
   const padT = 24
@@ -451,6 +451,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
         </div>
 
         {cover ? (
+          <>
           <div className="grid grid-cols-1 gap-8 lg:grid-cols-[40%_60%] items-start">
             {/* Left Column: Key Stats, Valuation Summary, Chart & Analyst */}
             <div className="flex flex-col gap-4">
@@ -582,23 +583,7 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
                 )}
               </div>
 
-              {/* Relative to JCI Chart Card */}
-              <div className="rounded-xl border border-[#E7E2D9] bg-[#FDFCF7] p-4 space-y-2.5 dark:border-[#262930] dark:bg-[#090a0c]">
-                <div className="flex items-center justify-between text-xs font-medium text-[#333333] dark:text-[#f1f5f9]">
-                  <span>Harga {tk} relatif terhadap IHSG</span>
-                </div>
-                <SvgPriceVsJci
-                  labels={jciLabels}
-                  price={jciPrice}
-                  relPct={jciRel}
-                  tickerLabel={tk}
-                />
-                <div className="text-[11px] text-[#666666] dark:text-[#666666]">
-                  Sumber: {jciSource}
-                </div>
-              </div>
-
-              {/* Analyst Attribution */}
+            {/* Right Column: Title, Highlights & Structured Narrative */}
               {s1?.analyst && (
                 <div className="rounded-xl border border-[#E7E2D9] bg-[#FDFCF7] p-4 text-xs dark:border-[#262930] dark:bg-[#090a0c]">
                   <div className="text-[11px] text-[#666666] dark:text-[#666666]">
@@ -681,6 +666,23 @@ export function ExecutiveSummary({ ticker, payload }: ExecutiveSummaryProps) {
               )}
             </div>
           </div>
+
+          {/* Relative to JCI Chart — full-width row below the cover grid */}
+          <div className="rounded-xl border border-[#E7E2D9] bg-[#FDFCF7] p-4 space-y-2.5 dark:border-[#262930] dark:bg-[#090a0c]">
+            <div className="flex items-center justify-between text-xs font-medium text-[#333333] dark:text-[#f1f5f9]">
+              <span>Harga {tk} relatif terhadap IHSG</span>
+            </div>
+            <SvgPriceVsJci
+              labels={jciLabels}
+              price={jciPrice}
+              relPct={jciRel}
+              tickerLabel={tk}
+            />
+            <div className="text-[11px] text-[#666666] dark:text-[#666666]">
+              Sumber: {jciSource}
+            </div>
+          </div>
+          </>
         ) : (
           <PendingCard label="Cover dan peringkat" />
         )}
