@@ -325,9 +325,12 @@ function SvgPriceVsJci({
           </g>
         )}
 
-        {/* X-axis Labels */}
+        {/* X-axis Labels - max ~6 evenly spaced ticks so monthly labels never collide */}
         {labels.map((lbl, i) => {
-          if (i % 2 === 0 || i === labels.length - 1) {
+          const stride = Math.max(1, Math.ceil(labels.length / 6))
+          // Keep the last tick clear of its neighbour: drop stride ticks that
+          // sit within one stride of the end, then always show the last label.
+          if ((i % stride === 0 && i <= labels.length - 1 - stride) || i === labels.length - 1) {
             const x = padL + i * step
             return (
               <text
