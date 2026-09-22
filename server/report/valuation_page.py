@@ -25,6 +25,7 @@ import pandas as pd
 
 from server.report.engines import dcf_engine as engine
 from server.report import numfmt as _nf
+from server.report.house_format import ERP_SOURCE_NOTE
 
 REPO = pathlib.Path(__file__).resolve().parents[2]
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
@@ -98,8 +99,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         page = build_rnav_page(payload, assum, {"num": _num})
         if page.get("available") and not assum.get("valuation_method"):
             page["notes"] = list(page.get("notes") or []) + [
-                "Metode dipilih otomatis ke RNAV karena aset dominan; rules meminta pilihan manual, jadi "
-                "tambahkan `valuation_method` di file assumptions untuk mengunci pilihan."
+                "Method auto-selected to RNAV (asset-heavy issuer); the rules require a manual choice, so "
+                "set `valuation_method` in the assumptions file to lock it."
             ]
         return page
     if method in ("ddm", "dividend"):
@@ -108,8 +109,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         page = build_ddm_page(payload, assum, {"row": _row, "num": _num})
         if page.get("available") and not assum.get("valuation_method"):
             page["notes"] = list(page.get("notes") or []) + [
-                "Metode dipilih otomatis ke DDM karena sektor emiten keuangan; rules meminta pilihan "
-                "manual, jadi tambahkan `valuation_method` di file assumptions untuk mengunci pilihan."
+                "Method auto-selected to DDM (financial-sector issuer); the rules require a manual "
+                "choice, so set `valuation_method` in the assumptions file to lock it."
             ]
         return page
     statements = payload.get("financial_statements") or {}
@@ -127,8 +128,8 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     total_debt = assum.get("total_debt", 0) / 1e9 or _fy25(statements, "balance", "Total Debt")
     cash = assum.get("cash", 0) / 1e9 or _fy25(statements, "balance", "Cash & Equivalents")
     bridge_basis = (
-        "neraca Sectors per " + str((assum.get("bridge") or {}).get("as_of") or "tanggal valuasi")
-        if assum.get("total_debt") else "neraca FY25A (laporan keuangan tahunan)"
+        "Sectors balance sheet as of " + str((assum.get("bridge") or {}).get("as_of") or "valuation date")
+        if assum.get("total_debt") else "FY25A balance sheet (annual financial statements)"
     )
 
     fcff_doc_bn = ((assum.get("fcf_components_idr_bn") or {}).get("fcf_normalised"))
@@ -154,9 +155,9 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     if missing:
         return {
             "available": False,
-            "title": "Valuasi Intrinsik",
+            "title": "Intrinsic Valuation",
             "missing": missing,
-            "convention": "akhir tahun (faktor diskonto = 1/(1+WACC)^t); pilihan pertengahan tahun dijelaskan di catatan",
+            "convention": "year-end (discount factor = 1/(1+WACC)^t); the mid-year choice is explained in the notes",
         "sources": [f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json", "payload financial_statements"],
         }
 
@@ -218,15 +219,15 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
 
     g1 = growth_path[0] if growth_path else 0.0
     if forecast_revenue_pairs:
-        g1_basis = (f"{forecast_revenue_pairs[0][0]} dihitung dari tabel Key Financials di halaman 1 / "
-                    f"pendapatan 2025 ({_nf.dec(g1 * 100, digits=1)}% dibanding tahun sebelumnya); tahun-tahun "
-                    f"setelah proyeksi di halaman 1 menurun bertahap menuju pertumbuhan jangka panjang "
+        g1_basis = (f"{forecast_revenue_pairs[0][0]} computed from the Key Financials table on page 1 / "
+                    f"2025 revenue ({_nf.dec(g1 * 100, digits=1)}% vs the prior year); the years "
+                    f"after the page-1 projection fade gradually toward long-run growth of "
                     f"{_nf.dec(g_term * 100, digits=2)}%")
     else:
-        g1_basis = (f"pertumbuhan pendapatan 2025/2024 = {_nf.dec(g1 * 100, digits=1)}%; "
-                    f"semua tahun menurun bertahap menuju pertumbuhan jangka panjang {_nf.dec(g_term * 100, digits=2)}%")
-    revenue_basis = (f"dua tahap: {cover_used_n} tahun pertama memakai angka proyeksi apa adanya, sisanya "
-                     f"menurun bertahap menuju pertumbuhan jangka panjang; {g1_basis}")
+        g1_basis = (f"2025/2024 revenue growth = {_nf.dec(g1 * 100, digits=1)}%; "
+                    f"all years fade gradually toward long-run growth of {_nf.dec(g_term * 100, digits=2)}%")
+    revenue_basis = (f"two-stage: the first {cover_used_n} years take the projection figures as-is, the rest "
+                     f"fade gradually toward long-run growth; {g1_basis}")
 
     # Ratio-driven reinvestment. The historical ratios are taken at FY25A; abidamassi
     # uses a moving average but the deck publishes a single FY25A anchor.
@@ -353,21 +354,21 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         # Renamed from "build_up" -> "fcf_doc_steady" to reflect new content
         # (now the FLAT path, since the build-up path moved to primary).
         "fcf_doc_steady": run_bridge([fcff_doc_bn for _ in PERIODS],
-                                     "FCFF normalised (steady-state, dokumentasi asumsi)"),
+                                     "FCFF normalised (steady-state, assumption documentation)"),
     }
 
     # ---------- Exhibit 9: WACC components, each with its source ----------
     wacc_rows = [
         ("Risk-free rate (Rf)", f"{_nf.dec(assum.get('rf', 0) * 100, digits=2)}%", "INDOGB 10Y (assumptions.rf)"),
-        ("Beta (relevered, sektor)", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Regresi harian vs IHSG, disesuaikan sektor"),
-        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", "Damodaran (country risk adj.)"),
-        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec((assum.get('rf', 0) + assum.get('beta', 0) * assum.get('erp', 0)) * 100, digits=2)}%", "Hitung: rf + beta x erp"),
-        ("Cost of Debt pre-tax", f"{_nf.dec(assum.get('cod', 0) * 100, digits=2)}%", "Beban bunga / rata-rata pinjaman (laporan keuangan)"),
-        ("Effective tax rate", f"{_nf.dec(assum.get('tax', 0) * 100, digits=2)}%", "Pajak efektif FY25A = beban pajak / laba sebelum pajak"),
-        ("Cost of Debt after-tax", f"{_nf.dec(assum.get('cod', 0) * (1 - assum.get('tax', 0)) * 100, digits=2)}%", "Hitung: Kd x (1 - t)"),
-        ("Weight of Equity (market value)", f"{_nf.dec(assum.get('we', 0) * 100, digits=2)}%", "Kap. pasar / (kap. pasar + total debt)"),
-        ("Weight of Debt (book value of debt)", f"{_nf.dec(assum.get('wd', 0) * 100, digits=2)}%", "Total debt / (kap. pasar + total debt)"),
-        ("WACC = We x CoE + Wd x Kd x (1-t)", f"{_nf.dec(wacc * 100, digits=2)}%", "Hitung"),
+        ("Beta (relevered, sector)", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Daily regression vs JCI, sector-adjusted"),
+        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", ERP_SOURCE_NOTE),
+        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec((assum.get('rf', 0) + assum.get('beta', 0) * assum.get('erp', 0)) * 100, digits=2)}%", "Calc: rf + beta x erp"),
+        ("Cost of Debt pre-tax", f"{_nf.dec(assum.get('cod', 0) * 100, digits=2)}%", "Interest expense / average borrowings (financial statements)"),
+        ("Effective tax rate", f"{_nf.dec(assum.get('tax', 0) * 100, digits=2)}%", "FY25A effective tax = tax expense / pre-tax profit"),
+        ("Cost of Debt after-tax", f"{_nf.dec(assum.get('cod', 0) * (1 - assum.get('tax', 0)) * 100, digits=2)}%", "Calc: Kd x (1 - t)"),
+        ("Weight of Equity (market value)", f"{_nf.dec(assum.get('we', 0) * 100, digits=2)}%", "Market cap / (market cap + total debt)"),
+        ("Weight of Debt (book value of debt)", f"{_nf.dec(assum.get('wd', 0) * 100, digits=2)}%", "Total debt / (market cap + total debt)"),
+        ("WACC = We x CoE + Wd x Kd x (1-t)", f"{_nf.dec(wacc * 100, digits=2)}%", "Calc"),
     ]
 
     # ---------- Exhibit 10: the sensitivity grid, straight from the engine ----------
@@ -439,10 +440,10 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
     page = {
         "available": True,
         "method": "dcf",
-        "title": "Valuasi Intrinsik - DCF (FCFF)",
+        "title": "Intrinsic Valuation - DCF (FCFF)",
         "subtitle": (
-            "Metode dipilih manual: Opsi A - DCF FCFF. DDM tidak berlaku (emiten tidak membagi dividen) dan "
-            "RNAV tidak dapat disusun (tidak ada data NAV per aset di Sectors) - lihat catatan metode."
+            "Manual method selection: Option A - FCFF DCF. DDM does not apply (the issuer pays no dividend) and "
+            "RNAV cannot be built (no per-asset NAV data in Sectors) - see the method notes."
         ),
         "periods": list(PERIODS),
         "blocks": {
@@ -476,7 +477,7 @@ def build_valuation_page(payload: dict, assumptions: dict | None = None) -> dict
         "notes": _notes(primary, sensitivity_alts["fcf_doc_steady"], multiple, total_debt - cash, g, wacc, assum,
                          anchor_fv=((payload.get("valuation") or {}).get("legs") or {}).get("ev_ebitda"),
                          cover=cover),
-        "convention": "akhir tahun (faktor diskonto = 1/(1+WACC)^t); pilihan pertengahan tahun dijelaskan di catatan",
+        "convention": "year-end (discount factor = 1/(1+WACC)^t); the mid-year choice is explained in the notes",
         "block2_headers": None,
         "block3_headers": None,
         "block1_headers": None,
@@ -531,9 +532,9 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         # The full fx_basis is a repo-internal calibration trail (it may name the
         # estimate source); the deck prints only the rate + as-of, never the trail.
         notes.append(
-            f"KONVERSI VALUTA: jalur proyeksi berdenominasi {spine_fx.get('currency') or 'USD'} - "
-            f"angka valuasi akhir dalam IDR memakai kurs {_nf.dec(spine_fx.get('rate'), digits=2)} "
-            f"(Rp bn per US$ 1 jt, per {spine_fx.get('as_of') or 'n/a'})."
+            f"FX CONVERSION: the projection path is denominated in {spine_fx.get('currency') or 'USD'} - "
+            f"the final IDR valuation uses {_nf.dec(spine_fx.get('rate'), digits=2)} "
+            f"(Rp bn per US$ 1 mn, as of {spine_fx.get('as_of') or 'n/a'})."
         )
     # The gate-primary leg's multiple and the level it multiplies must be stated here, with the rejected
     # basis named - a target price whose basis is only in the payload is not disclosed to the reader.
@@ -542,12 +543,12 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         own = assum.get("ev_multiple_own_history") or {}
         extra = ""
         if own and own.get("usable_as_anchor") is False:
-            extra = (f" Kelipatan rata-rata sejarah sendiri ({_nf.dec(own.get('trailing_mean', 0), digits=2)}× 12 bulan "
-                     f"terakhir / {_nf.dec(own.get('normalised_mean', 0), digits=2)}× setelah disesuaikan) TIDAK dipakai "
-                     f"sebagai patokan: nilai perusahaan bertahan "
-                     f"Rp 506-672 tn saat EBITDA naik-turun 2×, jadi kelipatan itu menghukum level yang sudah "
-                     f"pulih (memberi Rp 13.559 per saham, 2,8× harga).")
-        notes.append("Dasar kelipatan: " + str(_basis) + extra + " " +
+            extra = (f" The own historical average multiple ({_nf.dec(own.get('trailing_mean', 0), digits=2)}× trailing "
+                     f"12 months / {_nf.dec(own.get('normalised_mean', 0), digits=2)}× adjusted) is NOT used "
+                     f"as the anchor: enterprise value held at "
+                     f"Rp 506-672 tn while EBITDA swung 2×, so that multiple punishes an already "
+                     f"recovered level (implies Rp 13,559 per share, 2,8× price).")
+        notes.append("Multiple basis: " + str(_basis) + extra + " " +
                      str(assum.get("ebitda_leg_level_note") or ""))
     # A reader who meets Rp 148 and Rp 5.667 on the same page has to be told why they differ and which one the
     # target price uses. Fires on the gap, not on a ticker: it stays silent when the two bases agree.
@@ -555,40 +556,40 @@ def _notes(primary: dict, build_up: dict, multiple, net_debt_bn: float, g: float
         _gap = max(float(anchor_fv), primary["fv_gordon"]) / min(float(anchor_fv), primary["fv_gordon"])
         if _gap > 1.5:
             notes.append(
-                f"Dasar target harga: perhitungan DCF (arus kas bebas, nilai akhir Gordon) di halaman ini memberi Rp "
-                f"{_rp(primary['fv_gordon'])} sementara patokan EV/EBITDA {_fmt(multiple, 2)}× "
-                f"memberi Rp "
-                f"{_rp(float(anchor_fv))}: selisih {_nf.dec(_gap, digits=1)}×. Keduanya tidak dirata-ratakan: "
-                "patokan EV/EBITDA dipakai sebagai target harga dan DCF tetap menjadi pembanding intrinsik."
+                f"Target-price basis: the DCF build (free cash flow, Gordon terminal value) on this page gives Rp "
+                f"{_rp(primary['fv_gordon'])} while the {_fmt(multiple, 2)}× EV/EBITDA anchor "
+                f"gives Rp "
+                f"{_rp(float(anchor_fv))}: a {_nf.dec(_gap, digits=1)}× gap. The two are not averaged: "
+                "the EV/EBITDA anchor is used as the target price and the DCF stands as the intrinsic cross-check."
             )
     if primary["fv_gordon"] is not None and primary["fv_exit"] is not None and primary["fv_gordon"] > 0:
         ratio = max(primary["fv_exit"], primary["fv_gordon"]) / min(primary["fv_exit"], primary["fv_gordon"])
         notes.append(
-            f"Belum tuntas (UNRESOLVED) - cara Gordon (g {_nf.dec(g*100, digits=1)}%) memberi Rp {_rp(primary['fv_gordon'])} "
-            f"sementara terminal exit multiple {_nf.dec(multiple, digits=2)}× memberi Rp {_rp(primary['fv_exit'])}: selisih "
-            f"{_nf.dec(ratio, digits=1)}× pada basis FCFF yang sama. Tidak dirata-rata; angka mana yang dipakai harus diputuskan analis."
+            f"Unresolved - the Gordon leg (g {_nf.dec(g*100, digits=1)}%) gives Rp {_rp(primary['fv_gordon'])} "
+            f"while the {_nf.dec(multiple, digits=2)}× exit-multiple terminal gives Rp {_rp(primary['fv_exit'])}: a "
+            f"{_nf.dec(ratio, digits=1)}× gap on the same FCFF basis. Not averaged; the analyst must decide which figure to use."
         )
     if build_up["equity_gordon"] is not None and build_up["equity_gordon"] <= 0:
         notes.append(
-            "Basis build-up EBIT-based menghasilkan equity value negatif: net debt (Rp "
-            f"{_bn(net_debt_bn)}) melebihi value operasi pada FCFF build-up, jadi lapisan "
-            "steady-state asumsi (FCFF normalised) yang menjaga hasil tetap positif - perbedaan basis ini "
-            "dinyatakan, bukan disembunyikan."
+            "The EBIT-based build-up produces negative equity value: net debt (Rp "
+            f"{_bn(net_debt_bn)}) exceeds operating value on build-up FCFF, so the "
+            "steady-state assumption layer (normalised FCFF) that keeps the result positive is stated "
+            "as a basis difference, not hidden."
         )
     notes.append(
-        "Cadangan terbatas: nilai akhir tanpa batas waktu (perpetual) secara teori tidak bisa dipertahankan "
-        "untuk tambang dengan umur cadangan "
-        "terbatas; terminal pertumbuhan di sini dipakai sebagai proxy jangka panjang, bukan klaim cadangan abadi."
+        "Finite reserves: a perpetual terminal value cannot theoretically hold "
+        "for a mine with a limited reserve life"
+        "; terminal growth here is a long-run proxy, not a claim of permanent reserves."
     )
     notes.append(
-        "Konvensi diskonto: akhir tahun (faktor diskonto = 1/(1+WACC)^t). Pilihan pertengahan tahun memberi "
-        "nilai wajar ±6% lebih tinggi; cara yang dipakai di sini sama dengan perhitungan DCF di halaman 1."
+        "Discounting convention: year-end (discount factor = 1/(1+WACC)^t). The mid-year choice reads "
+        "±6% higher in fair value; the method used here matches the DCF on page 1."
     )
     notes.append(
-        "Jalur proyeksi: pendapatan menurun bertahap ke pertumbuhan akhir; D&A, belanja modal, dan "
-        "perubahan modal kerja mengikuti rasio level 2025 dikali pendapatan tiap tahun. Belanja modal "
-        "diberi batas bawah di rasio D&A supaya arus kas bebas tidak terlihat lebih besar dari "
-        "kenyataan. Selisih pertumbuhan tersirat terhadap asumsi kami tidak disembunyikan."
+        "Projection path: revenue fades gradually to terminal growth; D&A, capex and "
+        "working-capital moves follow 2025-level ratios times each year's revenue. Capex "
+        "is floored at the D&A ratio so free cash flow never reads larger than "
+        "reality. Any implied-growth gap versus our assumptions is disclosed."
     )
     return notes
 
@@ -637,12 +638,12 @@ def _view(page: dict) -> dict:
     av = page["assumptions_view"]
     tv_df_exit = 1.0 / ((1 + av["wacc"]) ** len(periods))
     page["block2_rows"] = [
-        ("Terminal FCFF (FCFF terakhir x (1+g))", _fmt(b["fcff"][-1]), _fmt(b["fcff"][-1])),
-        ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", "-"),
+        ("Terminal FCFF (last FCFF x (1+g))", _fmt(b["fcff"][-1]), _fmt(b["fcff"][-1])),
+        ("Terminal growth (g) - explicit assumption", _fmt(av["g"] * 100, 2) + "%", "-"),
         ("Terminal Value (undiscounted)", _fmt(b["tv_gordon"] / 1e9), _fmt((b["tv_exit"] or 0) / 1e9)),
-        ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), _fmt(tv_df_exit, 3)),
+        ("Terminal discount factor", _fmt(b["tv_gordon_df"], 3), _fmt(tv_df_exit, 3)),
         ("PV of Terminal Value", _fmt(b["pv_tv_gordon"] / 1e9), _fmt((b["pv_tv_exit"] or 0) / 1e9)),
-        ("Implied exit multiple dari TV Gordon", _fmt(b["implied_exit_multiple"], 2) + "×",
+        ("Implied exit multiple from Gordon TV", _fmt(b["implied_exit_multiple"], 2) + "×",
          _fmt(page["drivers"]["multiple"], 2) + "×"),
     ]
     pv_fcff_series = [v for v in build.get("PV of FCFF", []) if isinstance(v, (int, float))]
@@ -655,7 +656,7 @@ def _view(page: dict) -> dict:
         ("(-) Net Debt (Total Debt - Cash)", _fmt(b["net_debt"] / 1e9), "-"),
         ("(+/-) Minority Interest / Non-Operating Assets", _fmt(0.0), "-"),
         ("Equity Value", _fmt(b["equity_gordon"] / 1e9), "-"),
-        ("Jumlah saham beredar (bn saham)", _fmt(av["shares_bn"], 2), "-"),
+        ("Shares outstanding (bn shares)", _fmt(av["shares_bn"], 2), "-"),
         ("Fair Value per Share - terminal Gordon", _fmt0(b["fv_gordon"]), _fmt0(b["fv_gordon"])),
         ("Fair Value per Share - terminal exit multiple", _fmt0(b["fv_exit"]), _fmt0(b["fv_exit"])),
     ]
@@ -728,14 +729,15 @@ def _view(page: dict) -> dict:
     page["wacc_chain"] = _wacc_chain(page.get("wacc_rows") or [])
     legs = page.get("legs") or {}
     page["crosscheck_rows"] = [
-        ("DCF (leg kedua, halaman ini)", _fmt0(b["fv_gordon"]), "Cross-check intrinsik"),
-        ("DCF + terminal exit multiple", _fmt0(b["fv_exit"]), "Batas atas skenario multiple"),
+        ("DCF (second leg, this page)", _fmt0(b["fv_gordon"]), "Intrinsic cross-check"),
+        ("DCF + terminal exit multiple", _fmt0(b["fv_exit"]), "Multiple-scenario upper bound"),
         ("EV/EBITDA FY26F " + _fmt(page["drivers"]["multiple"], 2) + "×",
-         _fmt0(legs.get("ev_ebitda")), "ANCHOR target price (halaman 1 & 5)"),
-        ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
+         _fmt0(legs.get("ev_ebitda")), "ANCHOR target price (pages 1 & 5)"),
+        ("Market price", _fmt0(page["drivers"]["price"]), "Sectors, last close"),
     ]
     page["notes"] = list(page.get("notes") or []) + [
-        "Catatan Capex: Rp 13.850,2 bn pada 2026F (Exhibit 8) adalah belanja modal untuk arus kas bebas, batas bawah di rasio D&A - berbeda dari laporan arus kas (Exhibit 17: Rp 8.332 bn)."
+        "Capex note: Rp 13.850,2 bn in 2026F (Exhibit 8) is free-cash-flow capex, floored at the D&A ratio - "
+        "different from the cash-flow statement (Exhibit 17: Rp 8.332 bn)."
     ]
     page["narrative"] = _narrative(page)
     return page
@@ -759,19 +761,19 @@ def _narrative(page: dict) -> list[str]:
     # into the cash-flow lines, and the one-line flag on the unresolved terminal gap.
     return [
         (
-            "Keterkaitan asumsi: jalur pendapatan menurun bertahap "
-            f"({d['revenue_basis']}) sehingga baris Pendapatan sampai perubahan modal kerja ikut "
-            "bervariasi tiap tahun, bukan ditahan datar dari tahun ke-3; "
-            f"marjin EBIT {_fmt(d['ebit_margin_fy25'], 1)}% (level 2025); "
-            f"pajak tarif efektif {_fmt(d['effective_tax'], 1)}%, bukan tarif pajak resmi; "
-            f"penyusutan (D&A) {_fmt(d['da_ratio'] * 100, 1)}% dan belanja modal {_fmt(d['capex_ratio_applied'] * 100, 1)}% "
-            f"dari pendapatan (batas bawah di rasio D&A); perubahan modal kerja dari rasio "
-            f"{_fmt(d['nwc_ratio'] * 100, 1)}% dari pendapatan."
+            "Assumption linkage: the revenue path fades gradually "
+            f"({d['revenue_basis']}) so the Revenue-to-working-capital-change lines move "
+            "every year instead of being held flat from year 3; "
+            f"EBIT margin {_fmt(d['ebit_margin_fy25'], 1)}% (2025 level); "
+            f"tax at the effective rate {_fmt(d['effective_tax'], 1)}%, not the statutory rate; "
+            f"depreciation (D&A) {_fmt(d['da_ratio'] * 100, 1)}% and capex {_fmt(d['capex_ratio_applied'] * 100, 1)}% "
+            f"of revenue (floored at the D&A ratio); working-capital change at "
+            f"{_fmt(d['nwc_ratio'] * 100, 1)}% of revenue."
         ),
         (
-            f"Angka di halaman ini kami nyatakan apa adanya: nilai di luar periode proyeksi menyumbang "
-            f"{_fmt(b['tv_share'] * 100, 1)}% dari nilai perusahaan, dan selisih dua cara nilai akhir "
-            f"({_nf.dec(gap, digits=1)}×) kami tandai belum tuntas (UNRESOLVED) di catatan - bukan dirata-rata."
+            f"Figures on this page are stated as they are: value beyond the forecast period contributes "
+            f"{_fmt(b['tv_share'] * 100, 1)}% of enterprise value, and the gap between the two terminal-value "
+            f"methods ({_nf.dec(gap, digits=1)}×) is flagged as unresolved (UNRESOLVED) in the notes - not averaged."
         ),
     ]
 
@@ -791,14 +793,14 @@ def _wacc_chain(rows: list) -> list[dict]:
         return "-"
 
     return [
-        {"name": "Biaya ekuitas (CAPM):",
-         "formula": f"suku bunga bebas risiko {val('risk-free')} + beta saham {val('beta')} × premi risiko pasar {val('erp')}",
+        {"name": "Cost of equity (CAPM):",
+         "formula": f"risk-free rate {val('risk-free')} + equity beta {val('beta')} × market risk premium {val('erp')}",
          "value": val("cost of equity")},
-        {"name": "Biaya utang setelah pajak:",
-         "formula": f"biaya utang {val('cost of debt pre-tax')} × (1 - pajak {val('effective tax')})",
+        {"name": "After-tax cost of debt:",
+         "formula": f"pre-tax cost of debt {val('cost of debt pre-tax')} × (1 - tax {val('effective tax')})",
          "value": val("after-tax")},
-        {"name": "Bobot pendanaan:",
-         "formula": f"ekuitas {val('weight of equity')}, utang {val('weight of debt')}",
+        {"name": "Funding weights:",
+         "formula": f"equity {val('weight of equity')}, debt {val('weight of debt')}",
          "value": ""},
         {"name": "WACC:",
          "formula": (f"{val('weight of equity')} × {val('cost of equity')} + "

@@ -92,7 +92,7 @@
     "2026": 17.99
   },
   "ev_ebitda_own_history_asof": "Sectors valuation.historical_valuation (2023-2026 prints)",
-  "ev_multiple_basis": "Target 15,0× atas EBITDA proyeksi 2026, kelipatan pilihan tim (bukan titik tengah aritmetik: (13,3+15,7)/2 = 14,5). Dasar hanya dari data Sectors: kelipatan pasar sendiri 13,3× untuk 2026 (harga 11 Sep 2026) ditambah premi masa pembangunan smelter/Phase-8 yang belum tercermin di kelipatan itu; pembanding batas bawah sebaran (rata-rata kurang 1 simpangan baku) 22,13× dan uji kepekaan ±2× (13×-17×). Bukan rata-rata sejarah sendiri.",
+  "ev_multiple_basis": "Target 15,0× on 2026 projected EBITDA, the team's chosen multiple (not the arithmetic midpoint: (13,3+15,7)/2 = 14,5). Basis from Sectors data only: own market multiple 13,3× for 2026 (11 Sep 2026 price) plus a premium for the smelter/Phase-8 build-out not yet reflected in that multiple; lower-bound distribution comparison (mean less 1 standard deviation) 22,13× and ±2× sensitivity test (13×-17×). Not the own past average.",
   "ev_multiple_sensitivity": {
     "low": 26.42,
     "base": 28.42,
@@ -269,9 +269,9 @@
       "note": "Matches the engine default in server/engines wacc(); declared explicitly rather than defaulted."
     },
     "theme_title": {
-      "value": "Pasar baru memakai 18,38 kali laba 2026, padahal rata-rata jangka panjangnya 28,42 kali - kenaikan penilaian ini belum tercermin di harga saham",
+      "value": "The market only uses 18,38 times 2026 earnings versus a 28,42 times long-run average - the valuation uplift is not yet in the share price",
       "kind": "derived_editorial",
-      "outlet": "Copy editorial cover, diturunkan dari angka file ini sendiri",
+      "outlet": "Cover editorial copy, derived from this file's own figures",
       "url": "internal://data/assumptions/AMMN.json",
       "as_of": "2026-09-12",
       "note": "Membandingkan ev_multiple_latest_print (17,99×, Sectors historical_valuation 2026) dengan ev_multiple (28,42×, mean 4 tahun yang dipakai sebagai anchor gate-primary). Kalimat ini menyatakan arah thesis, bukan klaim baru: argumen lengkapnya ada di ev_multiple_basis dan thesis section. Bahasa ditulis awam (owner rule 19 Sep 2026): 'multiple' -> 'kali', 'mid-cycle' -> 'rata-rata jangka panjang', 're-rating' -> 'kenaikan penilaian'; angkanya tidak berubah (18,38 vs 28,42)."
@@ -390,8 +390,8 @@
       "note": "Producing, profitable, dividend-paying-or-not miner with 24y of operating history at Batu Hijau. Operating profit positive in every cited year (FY2023 767M, FY2024 1,185M, FY2025 674M USD). No 'pre_revenue' / 'high_growth_pre_profit' / 'decline' classification fits. 'mature' is the honest life-cycle call."
     }
   },
-  "theme_title": "Pasar baru memakai 18,38 kali laba 2026, padahal rata-rata jangka panjangnya 28,42 kali - kenaikan penilaian ini belum tercermin di harga saham",
-  "ebitda_leg_level_note": "Angka yang dikalikan kelipatan adalah EBITDA proyeksi 2026 dari jalur yang dikutip (Rp 33.862 bn), bukan rata-rata historis: kelipatan proyeksi hanya sah dikalikan angka proyeksi. Rata-rata historis 3 tahun (Rp 18,40 tn) tetap dipakai sebagai pembanding, bukan dasar target harga.",
+  "theme_title": "Capital spending peak passed, free cash flow funds debt paydown",
+  "ebitda_leg_level_note": "The figure the multiple multiplies is 2026 projected EBITDA from the cited path (Rp 33.862 bn), not a historic average: a projected multiple may only multiply projected figures. The 3-year historic average (Rp 18,40 tn) stays as comparison, not the target-price basis.",
   "ev_multiple_market_cross_check": {
     "ev_ebitda_fy26f": 13.3,
     "ev_ebitda_fy27f": 10.0,

@@ -60,6 +60,7 @@ EXEMPT = {
     "tests/test_no_em_dash.py": "this guard: fixtures and expectations",
     "tests/test_regex_literals_compile.py": "docstring shows the character class a sweep broke",
     "docs/rules/house-report-format.md": "prints the wrong form as the rule's counter-example",
+    "docs/rules/friend-system-prompt-v3.source.md": "verbatim frozen handover; the em dash is the author's own clause text, quoted not written",
 }
 
 

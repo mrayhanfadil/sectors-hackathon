@@ -15,6 +15,7 @@ import pandas as pd
 
 from server.report.engines import ddm_engine as engine
 from server.report import numfmt as _nf
+from server.report.house_format import ERP_SOURCE_NOTE
 
 PERIODS = ("FY2026F", "FY2027F", "FY2028F", "FY2029F", "FY2030F")
 
@@ -57,18 +58,18 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
 
     reasons: list[str] = []
     if not payout:
-        reasons.append("payout ratio 0 / kosong di assumptions: tidak ada dividen untuk didiskon")
+        reasons.append("payout ratio 0 / empty in assumptions: no dividend to discount")
     if not ke:
-        reasons.append("cost of equity belum ada di assumptions")
+        reasons.append("cost of equity not yet in assumptions")
     if not net_profit_bn or any(v is None for v in net_profit_bn):
-        reasons.append("proyeksi Net Profit per tahun tidak tersedia di data")
+        reasons.append("per-year Net Profit projection not in the data")
     if reasons:
         return {
             "available": False,
             "method": "ddm",
-            "title": "Valuasi Intrinsik - DDM",
+            "title": "Intrinsic Valuation - DDM",
             "missing": reasons,
-            "subtitle": "Opsi B dipilih tetapi datanya tidak cukup; halaman sengaja tidak diisi angka pengganti.",
+            "subtitle": "Option B selected but the data is not enough; the page is deliberately left without substitute figures.",
             "sources": ["Sectors API", f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json"],
         }
 
@@ -130,10 +131,10 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
     page = {
         "available": True,
         "method": "ddm",
-        "title": "Valuasi Intrinsik - DDM",
+        "title": "Intrinsic Valuation - DDM",
         "subtitle": (
-            "Opsi B (DDM) aktif: emiten membagi dividen, jadi ekuitas dinilai langsung dari arus dividen "
-            "dengan Cost of Equity - bukan WACC (DDM menilai ekuitas, bukan enterprise)."
+            "Option B (DDM) active: the issuer pays dividends, so equity is valued directly off the dividend stream "
+            "with Cost of Equity - not WACC (DDM values equity, not enterprise)."
         ),
         "periods": list(PERIODS),
         "blocks": {"build_up": {
@@ -183,7 +184,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         "drivers": {
             "revenue_fy25": None, "ebit_margin_fy25": None, "effective_tax": assum.get("tax", 0) * 100,
             "da_fy25": None, "capex_sustaining": None, "multiple": None, "price": price,
-            "revenue_basis": f"proyeksi Net Profit dari kolom {forecast_pairs[0][0]}-{forecast_pairs[-1][0]} tabel Key Financials, tahun setelahnya di-hold flat",
+            "revenue_basis": f"Net Profit projection from the {forecast_pairs[0][0]}-{forecast_pairs[-1][0]} Key Financials columns, later years held flat",
             "payout": payout, "forward_roe": forward_roe, "bvps": bvps,
         },
         "notes": _ddm_notes(val, tv, assum, pbv_rows),
@@ -192,7 +193,7 @@ def build_ddm_page(payload: dict, assumptions: dict, helpers: dict) -> dict:
         "sources": [
             "Sectors API: company_report, financials, ownership",
             f"data/assumptions/{(payload.get('meta') or {}).get('ticker') or payload.get('ticker', '?')}.json (payout, cost of equity, g, shares)",
-            "Engine valuasi internal: server/report/engines/ddm_engine",
+            "Internal valuation engine: ddm_engine (dividend discount)",
         ],
     }
     return _view_ddm(page)
@@ -203,17 +204,17 @@ def _coe_rows(assum: dict, ke: float) -> list[tuple[str, str, str]]:
     band = assum.get("coe_band") or {}
     if band:
         return [
-            ("Cost of Equity rata-rata 5 tahun", f"{_nf.dec(band.get('mean', 0) * 100, digits=2)}%", "band method: rata-rata historis"),
-            ("Standar deviasi 5 tahun", f"{_nf.dec(band.get('sd', 0) * 100, digits=2)}%", "band method: volatilitas CoE"),
-            ("Jumlah SD yang dipakai dari mean", str(band.get("sd_used", "mean")), "pilihan analis atas risiko"),
-            ("Cost of Equity yang dipakai", f"{_nf.dec(ke * 100, digits=2)}%", "band method (lihat baris di atas)"),
+            ("5-year average Cost of Equity", f"{_nf.dec(band.get('mean', 0) * 100, digits=2)}%", "band method: historic average"),
+            ("5-year standard deviation", f"{_nf.dec(band.get('sd', 0) * 100, digits=2)}%", "band method: CoE volatility"),
+            ("SDs used from the mean", str(band.get("sd_used", "mean")), "analyst's risk choice"),
+            ("Cost of Equity used", f"{_nf.dec(ke * 100, digits=2)}%", "band method (see rows above)"),
         ]
     return [
         ("Risk-free rate (Rf)", f"{_nf.dec(assum.get('rf', 0) * 100, digits=2)}%", "INDOGB 10Y (assumptions.rf)"),
-        ("Beta", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Regresi harian vs IHSG, disesuaikan sektor"),
-        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", "Damodaran (country risk adj.)"),
-        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec(ke * 100, digits=2)}%", "Hitung: rf + beta x erp"),
-        ("Cost of Equity yang dipakai", f"{_nf.dec(ke * 100, digits=2)}%", "Dipakai untuk mendiskon DPS (bukan WACC)"),
+        ("Beta", f"{_nf.dec(assum.get('beta', 0), digits=4)}", "Daily regression vs JCI, sector-adjusted"),
+        ("Equity Risk Premium (ERP)", f"{_nf.dec(assum.get('erp', 0) * 100, digits=2)}%", ERP_SOURCE_NOTE),
+        ("Cost of Equity (CAPM) = Rf + beta x ERP", f"{_nf.dec(ke * 100, digits=2)}%", "Calc: rf + beta x erp"),
+        ("Cost of Equity used", f"{_nf.dec(ke * 100, digits=2)}%", "Used to discount DPS (not WACC)"),
     ]
 
 
@@ -222,23 +223,23 @@ def _ddm_notes(val: dict, tv: dict, assum: dict, pbv_rows: dict | None) -> list[
     gap = tv.get("payout_gap")
     if gap is not None and abs(gap) > 0.05:
         notes.append(
-            f"Uji konsistensi payout fase stabil: payout proyeksi {_nf.dec(tv.get('payout_projected', 0)*100, digits=1)}% "
-            f"vs payout yang konsisten dengan g/ROE ({_nf.dec(tv.get('payout_consistent', 0)*100, digits=1)}%), selisih "
-            f"{_nf.dec(abs(gap)*100, digits=1)}pp - kalau payout lebih tinggi, nilai cenderung overstated."
+            f"Steady-phase payout consistency check: projected payout {_nf.dec(tv.get('payout_projected', 0)*100, digits=1)}% "
+            f"vs the g/ROE-consistent payout ({_nf.dec(tv.get('payout_consistent', 0)*100, digits=1)}%), a gap of "
+            f"{_nf.dec(abs(gap)*100, digits=1)}pp - if payout runs higher, value tends to read overstated."
         )
     notes.append(
-        "DDM menilai ekuitas langsung, jadi discount factor memakai Cost of Equity dan tidak ada bridge "
-        "net debt: dividen sudah milik pemegang saham."
+        "DDM values equity directly, so the discount factor uses Cost of Equity with no net-debt "
+        "bridge: dividends already belong to shareholders."
     )
     if pbv_rows:
         notes.append(
-            f"Jalur alternatif Inverse Cost of Equity dipakai sebagai kolom kedua: forward ROE "
+            f"The alternative Inverse Cost of Equity path is used as the second column: forward ROE "
             f"{_nf.dec(pbv_rows['forward_roe']*100, digits=1)}%, fair P/BV {_nf.dec(pbv_rows['fair_pbv'], digits=2)}×, BVPS "
-            f"Rp {_nf.idn(pbv_rows['bvps'], digits=0)} -> nilai wajar Rp {_nf.idn(pbv_rows['fair'], digits=0)}."
+            f"Rp {_nf.idn(pbv_rows['bvps'], digits=0)} -> fair value Rp {_nf.idn(pbv_rows['fair'], digits=0)}."
         )
     notes.append(
-        "Basis payout diambil dari assumptions (kebijakan dividen yang diumumkan / payout historis), bukan "
-        "diasumsikan ulang di halaman ini."
+        "The payout basis comes from assumptions (announced dividend policy / historic payout), not "
+        "re-assumed on this page."
     )
     return notes
 
@@ -271,25 +272,25 @@ def _view_ddm(page: dict) -> dict:
     ]
     pbv = page.get("pbv") or {}
     tv = b["tv_gordon"]
-    page["block2_headers"] = ["Blok 2 - Terminal value", "Gordon DDM", "Inverse CoE (fair P/BV x BVPS)"]
+    page["block2_headers"] = ["Block 2 - Terminal value", "Gordon DDM", "Inverse CoE (fair P/BV x BVPS)"]
     page["block2_rows"] = [
-        ("Terminal DPS (DPS terakhir x (1+g))", _fmt(b["fcff"][-1] * 1.0), "-"),
-        ("Terminal growth (g) - asumsi eksplisit", _fmt(av["g"] * 100, 2) + "%", _fmt(av["g"] * 100, 2) + "%"),
+        ("Terminal DPS (last DPS x (1+g))", _fmt(b["fcff"][-1] * 1.0), "-"),
+        ("Terminal growth (g) - explicit assumption", _fmt(av["g"] * 100, 2) + "%", _fmt(av["g"] * 100, 2) + "%"),
         ("Terminal Value (undiscounted)",
-         _fmt(tv) + " / saham" if tv else "-",
-         _fmt(pbv.get("fair")) + " / saham" if pbv else "-"),
-        ("Discount factor terminal", _fmt(b["tv_gordon_df"], 3), "-"),
+         _fmt(tv) + " / share" if tv else "-",
+         _fmt(pbv.get("fair")) + " / share" if pbv else "-"),
+        ("Terminal discount factor", _fmt(b["tv_gordon_df"], 3), "-"),
         ("PV of Terminal Value", _fmt(b["pv_tv_gordon"]) if b["pv_tv_gordon"] else "-", "-"),
-        ("Forward ROE (basis Inverse CoE)", _fmt(av.get("forward_roe") and av["forward_roe"] * 100, 2) + "%" if av.get("forward_roe") else "-",
+        ("Forward ROE (Inverse CoE basis)", _fmt(av.get("forward_roe") and av["forward_roe"] * 100, 2) + "%" if av.get("forward_roe") else "-",
          _fmt(pbv.get("forward_roe") and pbv["forward_roe"] * 100, 2) + "%" if pbv else "-"),
     ]
-    page["block3_headers"] = ["Blok 3 - Nilai ekuitas per saham", "Rp per saham", "Pembanding"]
+    page["block3_headers"] = ["Block 3 - Equity value per share", "Rp per share", "Comparison"]
     page["block3_rows"] = [
-        ("Sum PV of DPS (periode eksplisit)", _fmt0(b["pv_explicit"]), "-"),
+        ("Sum PV of DPS (explicit period)", _fmt0(b["pv_explicit"]), "-"),
         ("(+) PV of Terminal Value", _fmt0(b["pv_tv_gordon"]), "-"),
         ("Fair Value per Share - Gordon DDM", _fmt0(b["fv_gordon"]), "-"),
         ("Fair Value per Share - Inverse CoE (fair P/BV x BVPS)", _fmt0(b["fv_exit"]),
-         (_fmt(pbv.get("fair_pbv"), 2) + "x x BVPS " + _fmt0(pbv.get("bvps"))) if pbv else "tidak tersedia"),
+         (_fmt(pbv.get("fair_pbv"), 2) + "x x BVPS " + _fmt0(pbv.get("bvps"))) if pbv else "not available"),
     ]
     grid = page["sensitivity"]["fair_value"]
     base = page["sensitivity"]["base"]
@@ -308,10 +309,10 @@ def _view_ddm(page: dict) -> dict:
     page["sensitivity"]["base_g"] = str(grid.columns[base[1]]) if base else "-"
     legs = page.get("legs") or {}
     page["crosscheck_rows"] = [
-        ("DDM Gordon (halaman ini)", _fmt0(b["fv_gordon"]), "Nilai intrinsik ekuitas"),
-        ("Inverse CoE (fair P/BV x BVPS)", _fmt0(b["fv_exit"]), "Cross-check metode kedua"),
-        ("EV/EBITDA mid-cycle", _fmt0(legs.get("ev_ebitda")), "ANCHOR target price bila leg relative dipakai"),
-        ("Harga pasar", _fmt0(page["drivers"]["price"]), "Sectors, penutupan terakhir"),
+        ("DDM Gordon (this page)", _fmt0(b["fv_gordon"]), "Intrinsic equity value"),
+        ("Inverse CoE (fair P/BV x BVPS)", _fmt0(b["fv_exit"]), "Second-method cross-check"),
+        ("EV/EBITDA mid-cycle", _fmt0(legs.get("ev_ebitda")), "Target-price ANCHOR if the relative leg is used"),
+        ("Market price", _fmt0(page["drivers"]["price"]), "Sectors, latest close"),
     ]
     page["narrative"] = _narrative_ddm(page)
     return page
@@ -331,27 +332,27 @@ def _narrative_ddm(page: dict) -> list[str]:
     pbv = page.get("pbv") or {}
     out = [
         (
-            f"Parameter paling sensitif: {dominant}. Menggeser Cost of Equity dari {str(grid.index[0])} ke "
-            f"{str(grid.index[-1])} mengubah nilai wajar {_fmt0(ke_span)} per saham; menggeser long-term growth "
-            f"dari {cols[0]} ke {cols[-1]} mengubah {_fmt0(g_span)}."
+            f"Most sensitive parameter: {dominant}. Moving Cost of Equity from {str(grid.index[0])} to "
+            f"{str(grid.index[-1])} changes fair value by {_fmt0(ke_span)} per share; moving long-term growth "
+            f"from {cols[0]} to {cols[-1]} changes {_fmt0(g_span)}."
         ),
         (
-            f"Driver utama halaman ini adalah trajektori ROE dan kemampuan membayar dividen, bukan arus kas "
-            f"bebas seperti DCF. Payout yang dipakai {_fmt((d.get('payout') or 0) * 100, 1)}% diambil dari "
-            f"assumptions (kebijakan dividen/payout historis), dan proyeksi laba mengikuti "
+            f"This page's main driver is the ROE trajectory and the ability to pay dividends, not free cash "
+            f"flow as in DCF. The payout used, {_fmt((d.get('payout') or 0) * 100, 1)}%, comes from "
+            f"assumptions (dividend policy/historic payout), and the earnings projection follows "
             f"{d['revenue_basis']}. Forward ROE "
-            + (f"{_fmt(pbv.get('forward_roe') * 100, 2)}% dipakai untuk menguji apakah payout itu konsisten "
-               "dengan pertumbuhan yang diasumsikan (payout* = 1 - g/ROE)."
+            + (f"{_fmt(pbv.get('forward_roe') * 100, 2)}% is used to test whether that payout is consistent "
+               "with the assumed growth (payout* = 1 - g/ROE)."
                if pbv.get("forward_roe") else
-               "belum tersedia di data, jadi jalur Inverse CoE tidak dapat dihitung dan itu dinyatakan.")
+               "is not yet in the data, so the Inverse CoE path cannot be computed and that is stated.")
         ),
         (
-            "Dua metode di halaman ini "
-            + (f"berbeda {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=2)}× "
-               f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) dan selisih itu dibiarkan terbuka "
-               "sebagai unresolved assumption, bukan dirata-rata."
+            "The two methods on this page "
+            + (f"differ {_nf.dec(max(b['fv_gordon'], b['fv_exit']) / min(b['fv_gordon'], b['fv_exit']), digits=2)}× "
+               f"(Rp {_fmt0(b['fv_gordon'])} vs Rp {_fmt0(b['fv_exit'])}) and that gap is left open "
+               "as an unresolved assumption, not averaged."
                if b.get("fv_exit") else
-               "hanya satu yang dapat dihitung; kekosongan jalur kedua dinyatakan di catatan, bukan diisi angka.")
+               "have only one computable leg; the second leg's absence is stated in the notes, not filled with a figure.")
         ),
     ]
     return out

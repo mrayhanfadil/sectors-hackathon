@@ -20,6 +20,7 @@ import re
 from typing import Any, Iterable, Optional
 from server.report import numfmt as _nf
 from server.report.narrative_facts import printed_numbers
+from server.report.forecast_gate import audit_friend_v3
 
 # --- §7 cover (one-pager) ------------------------------------------------------------------
 #: Paragraph 1 + 2 + 3 must share one page with the Key Financials exhibit. Measured at the
@@ -40,15 +41,15 @@ KF_ROWS = (
 KF_NO_DECIMAL_ROWS = ("Revenue", "EBITDA", "Net Profit")
 
 # --- §8 narrative mandates ------------------------------------------------------------------
-KATALIS_HEADING = "News, Sentimen & Katalis"
+KATALIS_HEADING = "News, Sentiment & Catalysts"
 
 # Slide 2 (docs/ammn-slides/slide2-industry-spec.md): three narrative paragraphs, no mandatory
 # object. Paragraph 3 reads market positioning only - valuation language there is a domain
 # violation, not a style nit, because the numbers live on the valuation page.
 INDUSTRY_PAGE_HEADINGS = (
-    "1. Kondisi Industri",
-    "2. Katalis Spesifik Emiten",
-    "3. Sentimen Pasar",
+    "1. Industry Conditions",
+    "2. Issuer-Specific Catalysts",
+    "3. Market Sentiment",
 )
 # Matched as whole words: a substring test would fire on ordinary copy (and on English
 # headlines, where "Copper " contains "per ").
@@ -57,16 +58,16 @@ SENTIMENT_FORBIDDEN_TERMS = (
     "ev/ebitda", "wacc", "pbv", "p/bv", "p/e", "dcf", "tp",
 )
 SENTIMENT_FORBIDDEN_CS = (r"\bPER\b",)  # the multiple is written in caps
-VALUASI_HEADING = "Valuasi"
+VALUASI_HEADING = "Valuation"
 #: the four sentence blocks the valuation paragraph must carry, in order
 VALUASI_BLOCKS = (
-    ("methodology", ("menggunakan", "TP Rp")),
+    ("methodology", ("using", "TP Rp")),
     ("forecast linkage", ("CAGR",)),
-    ("trading multiple", ("dibandingkan", "rata-rata historis")),
-    ("risk to view", ("Risiko terhadap pandangan ini",)),
+    ("trading multiple", ("versus", "historic average")),
+    ("risk to view", ("Risk to this view",)),
 )
 #: a catalyst paragraph either quantifies the impact or says why it cannot be quantified
-NO_BASIS_MARKERS = ("tidak dapat dikuantifikasi", "tanpa basis", "tidak ada basis")
+NO_BASIS_MARKERS = ("tidak dapat dikuantifikasi", "cannot be quantified", "tanpa basis", "tidak ada basis")
 
 _NUM = re.compile(r"\d")
 
@@ -98,7 +99,7 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
         out.append("cover: rating change status missing (`rating.action_status`) - the reader "
                    "scans this before reading anything else")
     labels = [_text(r[0]) for r in ((s1.get("price_box") or {}).get("rows") or []) if r]
-    for needed in ("Last Price", "Target Price", "Previous TP", "Potensi naik/turun"):
+    for needed in ("Last Price", "Target Price", "Previous TP", "Potential gain/loss"):
         if not any(lbl.startswith(needed) for lbl in labels):
             out.append(f"cover: price box is missing the {needed!r} row")
     stats = [(_text(r[0]), _text(r[1])) for r in ((s1.get("stats") or {}).get("rows") or []) if r]
@@ -131,12 +132,12 @@ def audit_cover(slide1: dict, slide2: dict) -> list[str]:
     return out
 
 
-# ------------------------------------------------------------------ §8 paragraph mandates
+# ------------------------------------------------------------------ §8 narrative mandates
 def audit_katalis(text: str, written: bool = False) -> list[str]:
     """Paragraph 2: quantified catalysts + an explicit priced-in verdict.
 
     `written=True` for a paragraph a language model wrote: the literal-word arm ("the
-    paragraph must contain 'Katalis'") is template-shaped - written prose says the same
+    paragraph must contain 'Catalyst'") is template-shaped - written prose says the same
     thing in its own words, and `audit_katalis_narrative` already checks the real
     question (does the copy mention a catalyst the fact sheet carried).
     """
@@ -144,7 +145,7 @@ def audit_katalis(text: str, written: bool = False) -> list[str]:
     body = _text(text)
     if not body:
         return ["paragraph 2 (news/sentiment/catalysts) is missing"]
-    if not written and "Katalis" not in body:
+    if not written and "Catalyst" not in body:
         out.append("paragraph 2 does not identify the period's catalysts")
     if "Priced-in" not in body and "price-in" not in body:
         out.append("paragraph 2 has no verdict on whether the market has priced the "
@@ -178,7 +179,7 @@ def audit_katalis_narrative(katalis: Optional[dict]) -> list[str]:
     it, so four things are enforced:
 
       1. no number outside the fact sheet (a writer that invents a figure cannot ship);
-      2. plain Indonesian, same denylist as every other reader-facing surface;
+      2. plain English, same denylist as every other reader-facing surface;
       3. it talks about the company, not about the deck, and never leaks pipeline
          plumbing ("freeze", "payload", "via Sectors");
       4. it still fits the page.
@@ -203,7 +204,7 @@ def audit_katalis_narrative(katalis: Optional[dict]) -> list[str]:
     for tok in PLAIN_JARGON:
         if tok.lower() in low:
             out.append(f"paragraph 2: written narrative uses method jargon '{tok}' - plain "
-                       f"Indonesian only (PLAIN-LANGUAGE RULE)")
+                       f"English only (PLAIN-LANGUAGE RULE)")
     for pat in PLAIN_JARGON_PATTERNS:
         m = re.search(pat, body)
         if m:
@@ -222,7 +223,7 @@ def audit_katalis_narrative(katalis: Optional[dict]) -> list[str]:
         out.append(f"paragraph 2: written narrative is {len(body)} chars, over the "
                    f"{NARRATIVE_MAX_CHARS}-char page budget (NARRATIVE RULE)")
     # The section still has to be about this period's catalysts. Checking the literal word
-    # "Katalis" would fail good prose (the heading already says it), so the check asks the
+    # "Catalyst" would fail good prose (the heading already says it), so the check asks the
     # real question: does the copy mention at least one catalyst the sheet carried?
     names = [str(n) for n in (prov.get("catalyst_names") or [])]
     if names:
@@ -297,11 +298,11 @@ def audit_industry_page(page: Optional[dict], payload: Optional[dict] = None) ->
                 (p.get("body") for p in paras if str(p.get("heading") or "").startswith("2.")), ""
             )
         ).lower()
-        for direction in ("beli", "jual"):
+        for direction in ("buy", "sell"):
             if direction not in catalysts:
                 violations.append(
                     f"slide 2 paragraph 2 omits related-party '{direction}' transactions although "
-                    f"the filings carry both ({buy_n} beli / {sell_n} jual)"
+                    f"the filings carry both ({buy_n} buy / {sell_n} sell)"
                 )
     return violations
 
@@ -327,7 +328,7 @@ def audit_copy_budget(bodies: Iterable[Any]) -> list[str]:
 #: "sinyal keyakinan insider", "vs mid-cycle", "re-rating". Those read as plumbing, so they
 #: join the denylist alongside the method jargon. Two shapes need a pattern rather than a
 #: literal: fiscal-year tags (FY26F) and compact quarter tags (Q1-2026) - the plain forms are
-#: "2026" / "2026-2028" and "Kuartal I 2026". Terms the owner keeps in English because the
+#: "2026" / "2026-2028" and "the first quarter of 2026". Terms the owner keeps in English because the
 #: market uses them (EBITDA, Priced-in, BUY/SELL/HOLD, DCF, WACC) stay, but they must be
 #: glossed in plain words the first time they appear.
 PLAIN_JARGON = (
@@ -364,7 +365,7 @@ def _plain_scan_text(text: str, carve_outs: tuple[str, ...] = ()) -> str:
 
 
 def audit_plain_language(payload: Optional[dict]) -> list[str]:
-    """Reader-facing copy stays plain Indonesian (PLAIN-LANGUAGE RULE).
+    """Reader-facing copy stays plain English (PLAIN-LANGUAGE RULE).
 
     Scans only lay surfaces: the cover theme title, cover highlights, P1+P2 bodies, the P1
     heading, thesis headlines/details/labels, and risk details. A hit names the surface and the
@@ -414,7 +415,7 @@ def audit_plain_language(payload: Optional[dict]) -> list[str]:
                 if m:
                     violations.append(
                         f"{surface} uses the code-shaped tag {m.group(0)!r} - write the plain "
-                        f"form instead (PLAIN-LANGUAGE RULE): 2026-2028, Kuartal I 2026"
+                        f"form instead (PLAIN-LANGUAGE RULE): 2026-2028, the first quarter of 2026"
                     )
                     break
     return violations
@@ -546,7 +547,8 @@ def audit_key_financials(kf: Optional[dict]) -> list[str]:
                        "cannot tell whose estimate is on the page")
         # The page presents the path as the team's own estimate over the licensed dataset, so it must not
         # read as realised figures; the origin is traced in docs/ammn-slides/forecast-inputs-provenance.md.
-        if not any(k in notes_blob for k in ("estimasi tim", "proyeksi", "bukan realisasi")):
+        if not any(k in notes_blob for k in ("estimasi tim", "team estimate", "proyeksi", "projection",
+                                             "bukan realisasi", "not realised")):
             out.append("Key Financials' forecast columns come from estimates but the note never says the "
                        "columns are a projection - they would read as realised figures")
     elif basis == "midcycle-normalised" and not any(
@@ -780,7 +782,7 @@ def _audit_rnav_page(page: dict) -> list[str]:
         if asset.get("nav_attributable") is None:
             violations.append(f"slide 4 (RNAV) asset '{name}' has no attributable NAV")
         source = str(asset.get("nav_source") or "").strip()
-        if not source or source == "sumber tidak dicantumkan":
+        if not source or source == "source not stated":
             violations.append(f"slide 4 (RNAV) asset '{name}' does not name where its NAV comes from")
         elif "sectors" not in source.lower():
             violations.append(
@@ -940,6 +942,10 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     violations += audit_source_independence(payload)
     # One number format across the deck.
     violations += audit_number_format(payload)
+    # The handed-over generator rules (docs/rules/friend-system-prompt-v3.md): only the arms that
+    # can be decided from the payload, each violation naming its clause id. The arms that
+    # contradict an owner decision are recorded in the reconciliation, not enforced here.
+    violations += audit_friend_v3(payload)
     # §15: no machine trace reaches a reader (the class of bug that put "endpoint" and
     # "kolom F" on the printed page while every enumerated surface check stayed green).
     violations += audit_plumbing(payload)
@@ -949,10 +955,10 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
     vrows = " ".join(str(c) for r in (((payload.get("valuation") or {}).get("midcycle") or {}).get("rows") or [])
                      for c in r)
     if (payload.get("valuation_page") or {}).get("available"):
-        if "BASIS MULTIPLE" not in vnotes and "basis TP" not in vrows:
+        if "BASIS MULTIPLE" not in vnotes and "TP basis" not in vrows:
             violations.append("slide 4 valuation does not state the basis of the level and the multiple "
                               "behind the target price (level, multiple, source, as-of)")
-        if "DITOLAK" not in vnotes and "tidak dipakai" not in vrows:
+        if "DITOLAK" not in vnotes and "REJECTED" not in vnotes and "tidak dipakai" not in vrows and "not used" not in vrows.lower():
             violations.append("slide 4 valuation names no rejected basis - a silent rejection reads as "
                               "never considered")
     return {
@@ -964,8 +970,8 @@ def audit_house_rules(payload: Optional[dict]) -> dict:
             "8-paragraphs",
             "9-key-financials",
             "slide2-industry",
-            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio", "source-independence", "number-format",
-        ],
+            "slide3-performance", "slide4-valuation", "slide5-peers", "slide6-statements", "slide7-cashflow-ratio", "source-independence", "number-format", "friend-v3",
+            ],
         "copy_chars": sum(len(_text(b)) for b in (
             (slide1.get("financial_para") or {}).get("body", ""),
             (slide2.get("katalis") or {}).get("body", ""),
@@ -1054,7 +1060,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
         narr = str(blk.get("narrative") or "")
         if not narr:
             violations.append(f"slide 5 {label} has no narrative (rules: narasi per chart, bukan satu paragraf)")
-        elif "persentil" not in narr.lower():
+        elif "percentile" not in narr.lower():
             violations.append(f"slide 5 {label} narrative does not state the current percentile")
     implied = b.get("implied") or []
     covered_keys = {i["key"]: i for i in implied}
@@ -1070,7 +1076,7 @@ def audit_peer_page(page: dict | None, payload: dict | None = None) -> list[str]
                               f"not presented as a range")
     if not bands:
         pass
-    elif not any("persentil" in str(blk.get("narrative", "")).lower() for blk in bands):
+    elif not any("percentile" in str(blk.get("narrative", "")).lower() for blk in bands):
         violations.append("slide 5 band narratives never state a percentile")
     disclaimer = str(b.get("disclaimer") or "")
     low = disclaimer.lower()
@@ -1125,7 +1131,7 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
             ("EBIT", "Laba usaha (EBIT)", "Laba usaha"),
             ("Interest Income", "Pendapatan bunga"),
             ("Interest Expense", "Beban bunga"),
-            ("Other Income", "Pendapatan/(beban) non-operasional lainnya"),
+            ("Other Income", "Other Non-Operating", "Pendapatan/(beban) non-operasional lainnya"),
             ("Pre-tax Profit", "Laba sebelum pajak"),
             ("Income Tax", "Beban pajak penghasilan"),
             ("Minority Interest", "Kepentingan non-pengendali"),
@@ -1224,10 +1230,10 @@ def audit_statements_page(page: dict | None, payload: dict | None = None) -> lis
     if not (page.get("notes") or []):
         violations.append("slide 6 prints no notes - the reconciling lines and the cash plug must be disclosed")
     notes = " ".join(str(n) for n in (page.get("notes") or [])).lower()
-    for needed, why in (("rekonsiliasi", "the residual 'Other income' line must be named as a reconciling item"),
-                        ("penyeimbang", "cash as the balance-sheet plug must be stated"),
-                        ("dipublikasikan", "unpublished rows must be disclosed as such")):
-        if needed not in notes:
+    for needed, why in ((("rekonsiliasi", "reconcil"), "the residual 'Other income' line must be named as a reconciling item"),
+                        (("penyeimbang", "plug"), "cash as the balance-sheet plug must be stated"),
+                        (("dipublikasikan", "publish"), "unpublished rows must be disclosed as such")):
+        if not any(t in notes for t in needed):
             violations.append(f"slide 6 notes are missing the disclosure that: {why}")
     return violations
 
@@ -1317,7 +1323,9 @@ def audit_cashflow_page(page: dict | None, payload: dict | None = None) -> list[
             except (TypeError, ValueError, IndexError):
                 continue
             gap = right - left
-            disclosed = any("selisih" in str(r.get("label", "")).lower() for r in (page.get("closing") or []))
+            disclosed = any("selisih" in str(r.get("label", "")).lower()
+                            or "unexplained gap" in str(r.get("label", "")).lower()
+                            for r in (page.get("closing") or []))
             if abs(gap) > 1.0 and not disclosed:
                 violations.append(f"slide 7 closing cash does not reconcile in {years[i]} (gap {_nf.idn(gap, digits=0)}) "
                                   f"and no reconciliation row says why")

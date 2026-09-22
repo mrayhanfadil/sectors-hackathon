@@ -25,6 +25,13 @@ HEADER_TITLE = "Equity Research \u2013 Company Update"  # en dash, per the rule
 FOOTER_LEFT = "sectors.app"
 FOOTER_RIGHT = "See important disclosure at the back of this report"
 SOURCE_LINE = "Company, Team Estimates"
+#: The cost-of-capital build discounts at INDOGB, which already carries Indonesia's country risk,
+#: so the equity risk premium is the MATURE-MARKET one and the label must not claim otherwise:
+#: naming a country-adjusted premium next to an INDOGB risk-free rate is the double count the
+#: handed-over ruleset (G4.2) bans. Every surface that prints the ERP source imports this string,
+#: so the three tables cannot drift into three different claims.
+ERP_SOURCE_NOTE = ("Damodaran mature-market ERP - no country premium added (the risk-free rate "
+                   "is the 10Y government bond)")
 # Sectoral Design System (friend-supplied, Sep 2026): the house divider is the
 # Sectoral primary, not the old green.
 DIVIDER_COLOR = "#0928B1"

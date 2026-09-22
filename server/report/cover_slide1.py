@@ -30,6 +30,8 @@ import re
 from pathlib import Path
 from typing import Any, Optional
 
+from server.report import forecast_gate as _fg
+
 REPO_ROOT = Path(__file__).resolve().parents[2]
 AMMN_ART_DIR = REPO_ROOT / "output" / "cache" / "ammn_fill"
 MARKET_DIR = REPO_ROOT / "output" / "cache" / "cover_market"
@@ -125,18 +127,18 @@ def _sane_base(base_q: Optional[dict], rows: list[dict]) -> tuple[bool, str]:
     is to say why the comparator is unusable instead of printing the artifact.
     """
     if base_q is None:
-        return False, "kuartal pembanding tidak ada di deret 8 kuartal"
+        return False, "comparator quarter not in the 8-quarter series"
     rev = base_q.get("revenue")
     if not isinstance(rev, (int, float)) or rev <= 0:
-        return False, "pendapatan kuartal pembanding nol/negatif"
+        return False, "comparator-quarter revenue zero/negative"
     others = [float(r["revenue"]) for r in rows
               if isinstance(r.get("revenue"), (int, float)) and r["revenue"] > 0
               and str(r.get("date")) != str(base_q.get("date"))]
     if others:
         med = sorted(others)[len(others) // 2]
         if rev < 0.10 * med:
-            return False, (f"pendapatan Rp {_n(rev / 1e9, 2)} bn pada kuartal pembanding "
-                           f"(Q1-2025 kuartal ramp smelter)")
+            return False, (f"revenue Rp {_n(rev / 1e9, 2)} bn in the comparator quarter "
+                           f"(early-2025 smelter ramp quarter)")
     return True, ""
 
 
@@ -224,7 +226,7 @@ def _price_box(payload: dict) -> dict:
             prev_row,
             # "Upside/Downside" is the benchmark cover's label, but it is exactly the token the
             # PLAIN-LANGUAGE RULE bans in prose - and a label is the most-read text on the page.
-            ["Potensi naik/turun (%)", _pct(up)],
+            ["Potential gain/loss (%)", _pct(up)],
         ],
         "anchor": val.get("anchor") or "n/a",
         "anchor_basis": val.get("anchor_basis") or "n/a",
@@ -274,18 +276,18 @@ def _stats_block(payload: dict, assum: dict, fx: Optional[dict]) -> dict:
         avg = sum(vals) / len(vals)
         first, last = str(drows[0]["date"]), str(drows[-1]["date"])
         if fx and fx.get("rate"):
-            rows.append(["Rata-rata transaksi harian 3 bulan (Rpbn/US$mn)",
+            rows.append(["3-month average daily turnover (Rpbn/US$mn)",
                          f"{_n(avg / 1e9, 1)} / {_n(avg / fx['rate'] / 1e6, 1)}"])
         else:
-            rows.append(["Rata-rata transaksi harian 3 bulan (Rpbn/US$mn)",
+            rows.append(["3-month average daily turnover (Rpbn/US$mn)",
                          f"{_n(avg / 1e9, 1)} / n/a"])
         # The averaging window is defined once here and used by every report, per the house
         # rule that the turnover period must be consistent across the fleet.
         sources["avg_daily_to"] = (
-            f"Sectors /transaction/daily {len(drows)} sesi {first}..{last} "
-            f"(close x volume, rata-rata = 3 bulan terakhir)"
+            f"Sectors /transaction/daily {len(drows)} sessions {first}..{last} "
+            f"(close x volume, average = last 3 months)"
         )
-        sources["avg_daily_to_window"] = f"{_window_label(first, last)} ({len(drows)} sesi)"
+        sources["avg_daily_to_window"] = f"{_window_label(first, last)} ({len(drows)} sessions)"
 
     holders = [h for h in (cover.get("shareholders") or []) if isinstance(h, dict)]
     big = [h for h in holders
@@ -297,11 +299,11 @@ def _stats_block(payload: dict, assum: dict, fx: Optional[dict]) -> dict:
             ff = None
         rows.append(["Free Float (%)", _n(ff, 2) if ff is not None else "n/a"])
         if ff is not None:
-            sources["free_float"] = ("dihitung: 100% − pemegang ≥5% (metodologi free float IDX) "
-                                     "dari Sectors ownership 31 Agu 2026")
+            sources["free_float"] = ("computed: 100% − holders ≥5% (IDX free-float methodology) "
+                                     "from Sectors ownership 31 Aug 2026")
     else:
         rows.append(["Free Float (%)", "n/a"])
-        sources["free_float"] = "tidak ada print ownership ≥5% untuk dihitung"
+        sources["free_float"] = "no ≥5% ownership record to compute from"
 
     return {
         "rows": rows,
@@ -356,9 +358,9 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     rows = _sort_q(rows)
     if not rows:
         return {
-            "heading": "Kinerja Keuangan",
-            "body": ("Data kuartalan tidak tersedia untuk emiten ini - tidak ada paragraf "
-                     "kinerja yang bisa disusun tanpa angka (LOUD policy)."),
+            "heading": "Financial Performance",
+            "body": ("No quarterly data for this issuer - no performance paragraph "
+                     "can be built without figures (LOUD policy)."),
         }
 
     cur = rows[-1]
@@ -385,15 +387,26 @@ def _financial_para(payload: dict, ticker: str) -> dict:
     # that already exists (quarterly rows, catalyst ledger, driver file, rating
     # box) - never invented.
     parts: list[str] = []
-    # 1. bridge: latest quarter + 1 figure, nothing more. AWAM RULE (owner, 19 Sep 2026):
+    # G1.1 (handed-over ruleset): a cover whose newest period is older than the period the
+    # calendar already requires SAYS so, in the paragraph a reader meets first, instead of
+    # presenting the older period as the latest. Driven by the data cutoff, not by the copy,
+    # so the sentence is a fact about the data. `forecast_gate.check_period_freshness` reads
+    # the wording back off the cover, so the disclosure cannot be dropped silently.
+    _stale = _stale_period_note(cur.get("date"), payload)
+    if _stale:
+        parts.append(_stale)
+    # 1. bridge: latest quarter + 1 figure, nothing more. PLAIN-LANGUAGE RULE (owner, 19 Sep 2026):
     # this paragraph is the first thing a lay reader meets, so the wrapping is plain
-    # Indonesian - "Basis Q1-2026: pendapatan ..." became "Penjualan kuartal itu ...".
+    # English - "Basis Q1-2026: pendapatan ..." became "Sales that quarter ...".
     # The figures, the LOUD fallbacks and the clauses are unchanged; only the words are.
+    # The level of net profit moved here from the heading when that heading was cut to the
+    # ruleset's 9-word budget: the figure stays on the page, the scannable line gets shorter.
     if rev_bn is not None:
-        parts.append(f"Penjualan kuartal itu {_rp_bn(rev_bn)}.")
+        parts.append(f"Sales that quarter {_rp_bn(rev_bn)}"
+                     + (f", net profit {_rp_bn(ni_bn)}." if ni_bn is not None else "."))
     else:
-        parts.append("Data kuartalan tidak tersedia - tidak ada angka kuartal yang bisa "
-                     "dinyatakan (LOUD policy).")
+        parts.append("No quarterly data - no quarterly figure can be "
+                     "stated (LOUD policy).")
     # 2. catalyst: which quantified catalyst must deliver.
     cats = payload.get("catalysts") or []
     if cats and isinstance(cats[0], dict) and cats[0].get("name"):
@@ -407,17 +420,17 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         _sell_txt = ""
         try:
             if _sell.get("n") and float(_sell.get("value") or 0) > 0:
-                _sell_txt = (f" Namun pemegang saham terkait juga menjual Rp "
-                             f"{_n(float(_sell['value']) / 1e12, 1)} tn ({_sell['n']} transaksi) - arahnya "
-                             f"belum satu suara.")
+                _sell_txt = (f" But related shareholders also sold Rp "
+                             f"{_n(float(_sell['value']) / 1e12, 1)} tn ({_sell['n']} transactions) - the direction "
+                             f"is not yet unanimous.")
         except (TypeError, ValueError):
             _sell_txt = ""
-        parts.append(f"Catatan: {first.get('name')} - "
-                     f"{first.get('effect') or 'lihat halaman katalis'} "
-                     f"(sumber: {_plain_source(first.get('source'))})." + _sell_txt)
+        parts.append(f"Note: {first.get('name')} - "
+                     f"{first.get('effect') or 'see the catalysts page'} "
+                     f"(source: {_plain_source(first.get('source'))})." + _sell_txt)
     else:
-        parts.append("Katalis ke depan belum terverifikasi di data - tidak ada jembatan "
-                     "yang bisa dinyatakan tanpa angka (LOUD policy).")
+        parts.append("No forward catalyst verified in the data - no bridge "
+                     "can be stated without figures (LOUD policy).")
     # 3. earnings path: what level the forecast unlocks, from the same driver file
     # the Key Financials exhibit resolves. Ticker-agnostic; loud when absent.
     _tk = (str(ticker or "").upper()
@@ -449,19 +462,18 @@ def _financial_para(payload: dict, ticker: str) -> dict:
                 _cagr = ((_eb28 / _eb26) ** 0.5 - 1) * 100
             _rn = str(((_dr.get("revenue") or {}).get("note")) or "")
             _raw = _rn.split(" plus ")[0].split(", new processing")[0].strip()
-            # Plain-Indonesian gloss of the physical driver (owner rule): keep the
+            # Plain-English gloss of the physical driver (owner rule): keep the
             # volumes, translate the wrapping. Falls back to the raw note.
             import re as _re
             _vol = _re.findall(r"([\d.,]+)\s*Mt", _raw)
             _drv_note = _raw
             if len(_vol) >= 2:
-                _drv_note = (f"tambang Phase-8 (bijih {_vol[0]} juta ton ke {_vol[1]} juta ton) "
-                             f"dan smelter baru")
+                _drv_note = (f"Phase-8 mine (ore {_vol[0]} million tons to {_vol[1]} million tons) "
+                             f"and the new smelter")
             if str(_doc.get("basis") or "") == "third-party-estimate":
                 # Keeps the disclosure (these are projections, not realised figures) in plain
-                # words: "estimasi tim atas basis data berlisensi" reads as plumbing to a
-                # lay reader and names a source that is not the reader's business.
-                _drv_basis = "estimasi tim kami, angka proyeksi"
+                # words: a licensed-data basis named as plumbing is not the reader's business.
+                _drv_basis = "our team estimate, projection figures"
     except Exception:
         pass
     if _eb26 and _eb28 and _cagr is not None:
@@ -470,12 +482,12 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         # them here printed the same claim twice on the one page a reader scans. P1 keeps what
         # the highlight does NOT carry - the margin, in plain words, with the same figures.
         parts.append(
-            f"Proyeksi 2026-2028 ({_drv_basis}): marjin laba operasi "
-            f"{_n(_m26, 1)}% ke {_n(_m28, 1)}%."
+            f"2026-2028 projection ({_drv_basis}): operating-profit margin "
+            f"{_n(_m26, 1)}% to {_n(_m28, 1)}%."
         )
     else:
-        parts.append("Proyeksi 2026-2028 tidak terverifikasi di file driver - lihat tabel Key Financials "
-                     "(LOUD policy, tanpa estimasi karangan).")
+        parts.append("2026-2028 projection not verified in the driver file - see the Key Financials table "
+                     "(LOUD policy, no invented estimates).")
     # 4. valuation: what multiple the anchor TP implies on that level.
     _rbox = (payload.get("cover") or {}).get("rating_box") or {}
     _tp, _up, _act = _rbox.get("tp"), _rbox.get("upside_pct"), _rbox.get("action")
@@ -489,29 +501,29 @@ def _financial_para(payload: dict, ticker: str) -> dict:
         for _m in (payload.get("valuation") or {}).get("methods") or []:
             if str(_m.get("method") or "").upper().startswith("EV/EBITDA"):
                 _mult = (_m.get("assumptions") or {}).get("multiple")
-        _basis = (f"patokan {_n(_mult, 2).replace('.', ',')} kali laba operasi 2026"
-                  if isinstance(_mult, (int, float)) else "patokan laba operasi 2026")
+        _basis = (f"at {_n(_mult, 2).replace('.', ',')} times 2026 operating profit"
+                  if isinstance(_mult, (int, float)) else "at 2026 operating profit")
         _gap = ""
         if isinstance(_dcf, (int, float)) and _dcf > 0:
-            _gap = (f", sementara DCF kami hanya Rp {_n(_dcf, 0)} - selisih ini kami "
-                    f"nyatakan terbuka")
-        parts.append(f"Target harga kami Rp {_n(_tp, 0)} per saham ({_act or 'n/a'}, ruang naik "
+            _gap = (f", while our DCF is only Rp {_n(_dcf, 0)} - we state this gap "
+                    f"openly")
+        parts.append(f"Our target price is Rp {_n(_tp, 0)} per share ({_act or 'n/a'}, room to rise "
                      f"{_pct(_up)}): {_basis}{_gap}.")
     else:
-        parts.append("Target harga belum terverifikasi di rating box - tidak ada jangkar valuasi yang "
-                     "bisa dinyatakan (LOUD policy).")
+        parts.append("Target price not yet verified in the rating box - no valuation anchor can be "
+                     "stated (LOUD policy).")
 
-    # Heading stays a plain label (PLAIN-LANGUAGE RULE): no qoq/yoy tokens.
+    # Heading: a plain, scannable line inside the ruleset's 9-word budget (G5.2). The gross
+    # margin moved to the body - the heading says what happened to profit, the paragraph
+    # carries the figures (including the net-profit level), so the shorter line loses nothing.
     _chg_ni = _chg(ni, prev["earnings"]) if (prev and prev.get("earnings")) else None
     if isinstance(_chg_ni, (int, float)):
-        _arah = "naik" if _chg_ni > 0 else "turun"
-        _chg_txt = f" ({_arah} {_n(abs(_chg_ni), 2)}% dari kuartal sebelumnya)"
+        _arah = "down" if _chg_ni < 0 else "up"
+        heading = (f"{_qtag_plain(cur.get('date'))}: net profit {_arah} "
+                   f"{_n(abs(_chg_ni), 2)}%")
     else:
-        _chg_txt = ""
-    heading = (f"{_qtag_plain(cur.get('date'))}: laba bersih {_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}"
-               + _chg_txt
-               + (f", laba kotor {_n(gp / rev * 100, 1)}% dari penjualan" if isinstance(gp, (int, float))
-                  and isinstance(rev, (int, float)) and rev else ""))
+        heading = (f"{_qtag_plain(cur.get('date'))}: net profit "
+                   f"{_rp_bn(ni_bn) if ni_bn is not None else 'n/a'}")
     return {"heading": heading, "body": " ".join(parts), "source": src}
 
 
@@ -528,16 +540,44 @@ def _plain_source(src: Any) -> str:
     return s or "payload"
 
 
+#: quarter of the year -> the fraction of the year's information that quarter carries
+_QUARTER_RANK = {1: 0.25, 2: 0.5, 3: 0.75, 4: 1.0}
+
+
+def _stale_period_note(cur_date: Any, payload: dict) -> str:
+    """G1.1 - say on the cover when the newest period in hand is older than the calendar's.
+
+    The comparison is between the snapshot's own period (the newest quarter the data carries)
+    and the period a report at `meta.date` must already use: 45 days after a period closes, that
+    period is expected. Returns "" when the snapshot is current or the date is unreadable, so a
+    ticker with fresh data never prints the note.
+    """
+    try:
+        year, month, _day = str(cur_date).split("-")
+        quarter = (int(month) - 1) // 3 + 1
+        have_rank = int(year) + _QUARTER_RANK.get(quarter, 0.25)
+    except Exception:
+        return ""
+    when = _fg.parse_report_date((payload.get("meta") or {}).get("date"))
+    if when is None:
+        return ""
+    need_rank, need_label = _fg.expected_period_rank(when)
+    if have_rank >= need_rank:
+        return ""
+    return (f"The newest period available is {_qtag_plain(cur_date).lower()}; the "
+            f"{_fg.plain_period_label(need_label)} report is not yet available.")
+
+
 def _qtag_plain(date: Any) -> str:
-    """Quarter tag a lay reader can read: "Kuartal I 2026" (AWAM RULE).
+    """Quarter tag a lay reader can read: "First quarter 2026" (PLAIN-LANGUAGE RULE).
 
     `_qtag` keeps the compact Q1-2026 form for exhibit cells and notes; the cover heading
     takes this one.
     """
-    roman = {1: "I", 2: "II", 3: "III", 4: "IV"}
+    name = {1: "First", 2: "Second", 3: "Third", 4: "Fourth"}
     try:
         y, m, _ = str(date).split("-")
-        return f"Kuartal {roman.get((int(m) - 1) // 3 + 1, '?')} {y}"
+        return f"{name.get((int(m) - 1) // 3 + 1, '?')} quarter {y}"
     except Exception:
         return str(date)
 

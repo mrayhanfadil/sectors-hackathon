@@ -26,6 +26,7 @@ import re
 from typing import Any, Optional
 
 from server.report.forecast_path import resolve_forecast_path
+from server.report.forecast_gate import CATALYST_COVER_MAX
 
 from .cover_slide1 import _n, _pct, _rp_bn
 from .narrative_facts import (IMPACT_GAP_SENTENCE, PRICED_IN_TAIL, _quant_phrase,
@@ -205,39 +206,39 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
         # (docs/ammn-slides/forecast-inputs-provenance.md). The substance stays disclosed - column F is a
         # projection, not a realised figure, and every driver carries its own provenance.
         note = (
-            f"Asumsi proyeksi 2026-2028: jalur 3 tahun, estimasi tim yang diselaraskan ke basis data "
-            f"berlisensi (per pendorong di berkas asumsi tim, per {path.get('as_of') or 'n/a'}). "
-            f"Angka ini proyeksi, bukan realisasi."
+            f"2026-2028 projection assumption: 3-year path, team estimate aligned to the licensed dataset "
+            f"(per driver in the team assumptions file, as of {path.get('as_of') or 'n/a'}). "
+            f"These figures are a projection, not realised results."
         )
     elif not path.get("available"):
         note = (
-            "Asumsi proyeksi: jalur proyeksi tidak dipakai karena bermasalah ("
-            + "; ".join(path.get("problems") or []) + "). Angka proyeksi jatuh ke dasar normal: pendapatan & EPS "
-            f"2026 = 2025 x (1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari "
-            "proyeksi subsektor Sectors 2026; EBITDA 2026 = rata-rata 3 tahun aktual Sectors; "
-            "2027-2028 ditahan flat."
+            "Projection assumption: projection path not used as it has problems ("
+            + "; ".join(path.get("problems") or []) + "). Projection figures fall to the normal basis: 2026 revenue & EPS "
+            f"2026 = 2025 x (1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) from "
+            "the Sectors 2026 subsector projection; 2026 EBITDA = 3-year Sectors actual average; "
+            "2027-2028 held flat."
         )
     else:
         # LOUD flat-level label (peer #6): the exhibit title is pinned by
         # test_slide2_forecast.py, so the "not a growth curve" disclosure rides
         # the note lead where the reader lands first, not the title.
         note = (
-            f"Angka proyeksi 2026-2028 BUKAN kurva pertumbuhan: pendapatan & EPS 2026 = 2025 x "
-            f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) dari proyeksi subsektor "
-            f"Sectors 2026; EBITDA 2026 = rata-rata 3 tahun aktual Sectors; 2027-2028 ditahan flat "
-            f"mengikuti jalur arus kas bebas yang datar 2026-2030 di berkas asumsi tim."
+            f"2026-2028 projection figures are NOT a growth curve: 2026 revenue & EPS = 2025 x "
+            f"(1 {_pct((g_rev or 0) * 100)}) / (1 +{_num((g_eps or 0) * 100, 2)}%) from the Sectors 2026 subsector "
+            f"projection; 2026 EBITDA = 3-year Sectors actual average; 2027-2028 held flat "
+            f"following the flat 2026-2030 free-cash-flow path in the team assumptions file."
         )
     bvps_used = bool(path_used and (path.get("drivers") or {}).get("bvps_path"))
     note2 = (
-        f"Multiple pada harga Rp {_num(price, 0)}: PER = harga/EPS; PBV = harga/BVPS"
-        + (f" (BVPS per tahun dari drivers.bvps_path: "
+        f"Multiples at Rp {_num(price, 0)} price: PER = price/EPS; PBV = price/BVPS"
+        + (f" (yearly BVPS from drivers.bvps_path: "
            + ", ".join(f"Rp {_num(v or 0, 0)}" for v in (path['drivers']['bvps_path']['rp_per_share'] or [])[:5])
            + ")"
            if bvps_used else
-           f" (ekuitas Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, konstan)")
+           f" (equity Rp {_num(_div(equity, 1000), 2)} tn Q1-2026, constant)")
         + "; EV/EBITDA = "
         f"(mcap Rp {_num(_div(mcap, 1000), 1)} tn + net debt Rp {_num(_div(net_debt, 1000), 1)} tn)/EBITDA "
-        f"tahun itu (2024A-2025A historis, 2026F-2028F forward-implied pada harga kini: 13,3× FY26F)."
+        f"that year (2024A-2025A historic, 2026F-2028F forward-implied at current price: 13,3× FY26F)."
     )
     return {
         "exhibit_title": f"Key Financials ({_yr(y0)}–2028F)" if y0 else "Key Financials",
@@ -275,11 +276,11 @@ def build_key_financials(payload: dict, assum: dict) -> dict:
 
 
 def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
-    """Paragraph 2 - News, Sentimen & Katalis, with a priced-in verdict.
+    """Paragraph 2 - News, Sentiment & Catalysts, with a priced-in verdict.
 
     Two paths, one fact sheet (`server/report/narrative_facts.py`):
 
-      * `writer_frozen` - the ADK narrative writer's plain-Indonesian prose, used
+      * `writer_frozen` - the ADK narrative writer's plain-English prose, used
         only when its frozen artifact hashes to the CURRENT fact sheet;
       * `template_fallback` - the deterministic assembly below, same numbers.
 
@@ -295,28 +296,36 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
 
     parts: list[str] = []
     listed = []
-    for i, c in enumerate(facts["raw"]["catalysts"], 1):
+    _all_cats = list(facts["raw"]["catalysts"] or [])
+    # G5.3 (handed-over ruleset): the cover paragraph names at most three catalysts; the rest are
+    # referred to by COUNT, never by name, because naming them here is what the cap exists to
+    # stop. Nothing is dropped - every item still ships in payload["catalysts"] and prints on the
+    # catalyst page.
+    for i, c in enumerate(_all_cats[:CATALYST_COVER_MAX], 1):
         q = _quant_phrase(c.get("quantified") or {})
         listed.append(f"({i}) {c['name']}" + (f" - {q}" if q else ""))
     if listed:
-        parts.append("Katalis terverifikasi: " + "; ".join(listed) + ".")
+        _rest = len(_all_cats) - len(listed)
+        _tail = (f" and {_rest} further verified catalyst" + ("" if _rest == 1 else "s")
+                 + " on the catalyst page") if _rest > 0 else ""
+        parts.append("Verified Catalysts: " + "; ".join(listed) + _tail + ".")
 
     imp = facts["raw"]["impact"]
     parts.append(
-        f"Dampak: belanja modal kuartal I 2026 turun {imp['capex_q1_pct']} dari kuartal sebelumnya "
-        f"({imp['capex_from']} ke {imp['capex_to']}) dan arus kas bebas berbalik {imp['fcf_turn']}, "
-        f"mengonfirmasi asumsi belanja modal rutin {imp['routine_capex']} - bukan potensi naik baru; "
-        f"posisi direksi kini {imp['director_position']} di harga {imp['director_price']}. "
+        f"Impact: first-quarter 2026 capital spending down {imp['capex_q1_pct']} from the prior quarter "
+        f"({imp['capex_from']} to {imp['capex_to']}) and free cash flow turning {imp['fcf_turn']}, "
+        f"confirming routine capital spending of {imp['routine_capex']} - no new gain; "
+        f"board now {imp['director_position']} at {imp['director_price']}. "
         + IMPACT_GAP_SENTENCE
     )
 
     pi = facts["raw"]["priced_in"]
     priced: list[str] = []
     if pi.get("rel_24m"):
-        priced.append(f"24 bulan {pi['rel_24m']} relatif vs IHSG (harga {pi['abs_24m']} "
+        priced.append(f"24 months {pi['rel_24m']} relative vs JCI (price {pi['abs_24m']} "
                       f"vs {pi['idx_24m']})")
     if pi.get("rel_90d"):
-        priced.append(f"90 hari {pi['rel_90d']} vs IHSG {pi['idx_90d']} (rel {pi['rel_90d_pp']})")
+        priced.append(f"90 days {pi['rel_90d']} vs JCI {pi['idx_90d']} (rel {pi['rel_90d_pp']})")
     if priced:
         parts.append("Priced-in: " + "; ".join(priced) + " - "
                      + PRICED_IN_TAIL.format(ev_ebitda=facts["raw"]["ev_ebitda_market"]))
@@ -325,7 +334,7 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
     frozen = load_frozen_narrative(ticker, facts)
     if frozen:
         return {
-            "heading": "News, Sentimen & Katalis",
+            "heading": "News, Sentiment & Catalysts",
             "body": frozen["body"],
             "narrative_source": "writer_frozen",
             # The hash the render path actually computed: the narrative runner reads it back
@@ -358,16 +367,16 @@ def build_katalis(payload: dict, chart: Optional[dict] = None) -> dict:
 
 
 def _shares_to_juta(match: "re.Match") -> str:
-    """Share counts read as `646,46 juta sh`; a price (`Rp 4.950`) is left alone.
+    """Share counts read as `646,46 million sh`; a price (`Rp 4.950`) is left alone.
 
     The ledger arrives grouped Indonesian, so the dots are thousands separators: strip them, scale to millions,
     then print once through the deck's formatter. Rewriting the string by pattern (as this did) produced
-    `646.464.6 juta`, which is neither a share count nor a valid number.
+    `646.464.6 million`, which is neither a share count nor a valid number.
     """
     digits = match.group(1).replace(".", "")
     if not digits.isdigit():
         return match.group(0)
-    return f"{_num(float(digits) / 1e6, 2)} juta"
+    return f"{_num(float(digits) / 1e6, 2)} million"
 
 
 def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
@@ -417,11 +426,11 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     eb_fy26 = (raw.get("ebitda") or [None, None, None])[2] if raw.get("ebitda") else None
     eb_val_tn = _div(eb_fy26, 1000) if (eb_fy26 is not None) else _div(mid_eb, 1000)
     eb_label = (f"Rp {_num(eb_val_tn, 2)} tn" if eb_fy26
-                else f"Rp {_num(eb_val_tn, 2)} tn (rata-rata siklus)")
+                else f"Rp {_num(eb_val_tn, 2)} tn (cycle average)")
     parts.append(
-        f"TP Rp {_num(fv, 0)} kami tetapkan menggunakan patokan EV/EBITDA 2026: laba operasi "
-        f"2026 {eb_label} dikali {_num(multiple, 2)} kali. DCF (WACC {_num(wacc_pct, 2)}%, "
-        f"tumbuh {_num((g or 0) * 100, 1)}%/tahun) sebagai pembanding."
+        f"We set TP Rp {_num(fv, 0)} using the 2026 EV/EBITDA benchmark: 2026 operating profit "
+        f"{eb_label} times {_num(multiple, 2)}. DCF (WACC {_num(wacc_pct, 2)}%, "
+        f"growing {_num((g or 0) * 100, 1)}%/year) as comparison."
     )
     # 2. forecast linkage
     eb = [v for v in (raw.get("ebitda") or []) if isinstance(v, (int, float))]
@@ -432,8 +441,8 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         rev_cagr = ((rev[4] / rev[1]) ** (1 / 3) - 1) * 100 if len(rev) == 5 and rev[1] else None
         cagr_str = f"CAGR EBITDA FY26F-FY28F {_pct(cagr_26_28)}" if cagr_26_28 is not None else "CAGR EBITDA FY26F-FY28F 0,0%"
         parts.append(
-            f"Setara dengan {cagr_str}, yaitu {_pct(cagr_25_28)}/tahun dari laba operasi 2025 "
-            f"Rp {_num(_div(eb[1], 1000), 2)} tn; penjualan {_pct(rev_cagr)}/tahun."
+            f"Equivalent to {cagr_str}, or {_pct(cagr_25_28)}/year from 2025 operating profit "
+            f"Rp {_num(_div(eb[1], 1000), 2)} tn; sales {_pct(rev_cagr)}/year."
         )
     # 3. trading multiple at TP
     per_f = None
@@ -444,12 +453,12 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
     ev_at_tp = (fv * shares / 1e9 + net_debt) if (fv and shares) else None
     ev_eb_28 = _div(ev_at_tp, eb[4]) if (len(eb) == 5 and eb[4]) else _div(ev_at_tp, mid_eb)
     parts.append(
-        f"Pada TP, saham dihargai EV/EBITDA 2028 {_num(ev_eb_28, 1)} kali dibandingkan "
-        f"rata-rata historis 4 tahun {_num(multiple, 2)} kali (skenario "
-        f"{_num(sens.get('low'), 2)}-{_num(sens.get('high'), 2)} kali) atau PER 2026 "
-        f"{_num(per_f, 1)} kali (harga dibagi laba), sementara industri sejenis "
-        f"(peer) {_num(peer_pe, 2)} kali - EV/EBITDA pembanding industri tidak tersedia, jadi "
-        f"TP bergantung pada kenaikan penilaian EV/EBITDA, bukan PER."
+        f"At TP, the stock is priced at 2028 EV/EBITDA {_num(ev_eb_28, 1)} versus "
+        f"the 4-year historic average {_num(multiple, 2)} (scenario "
+        f"{_num(sens.get('low'), 2)}-{_num(sens.get('high'), 2)}) or 2026 PER "
+        f"{_num(per_f, 1)} (price divided by earnings), while peers "
+        f"(peer) {_num(peer_pe, 2)} - industry-comparable EV/EBITDA is unavailable, so "
+        f"the TP reflects a higher market valuation on EV/EBITDA, not on PER."
     )
     # 4. risks to the view
     down_eb = mid_eb * 0.9 if isinstance(mid_eb, (int, float)) else None
@@ -462,21 +471,21 @@ def build_valuasi(payload: dict, assum: dict, kf: dict) -> dict:
         detail = re.split(r"(?<=[.;])\s", str(r1[0].get("detail") or "").strip())
         first = (detail[0] if detail else "").strip().rstrip(".;")
         # one concrete instance, not the whole insider-selling ledger
-        first = re.split(r"\s+dan\s+", first)[0].strip()
+        first = re.split(r"\s+and\s+", first)[0].strip()
         first = re.sub(r"([\d.]{7,})(?=\s*sh)", _shares_to_juta, first)
-        first = re.sub(r"\bsh\b", "lembar", first)
+        first = re.sub(r"\bsh\b", "shares", first)
         if bucket:
-            bucket = {"Distribusi insider": "penjualan oleh orang dalam",
-                      "Insider distribution": "penjualan oleh orang dalam"}.get(bucket, bucket)
+            bucket = {"Distribusi insider": "Shareholder selling",
+                      "Insider distribution": "Shareholder selling"}.get(bucket, bucket)
             risk_tail = f"; (c) {bucket}: {first}" if first else f"; (c) {bucket}"
     parts.append(
-        f"Risiko terhadap pandangan ini: (a) harga turun - tembaga atau emas -10% menekan "
-        f"laba operasi siklus menengah 10%, TP turun ke Rp {_num(fv_down, 0)} "
-        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) harga saham "
-        f"bertahan di {_num(assum.get('ev_multiple_latest_print'), 2)} kali sekarang, TP jatuh "
-        f"ke Rp {_num(fv_print, 0)}{risk_tail}."
+        f"Risk to this view: (a) price drop - copper or gold -10% presses "
+        f"medium-term operating profit 10%, TP falls to Rp {_num(fv_down, 0)} "
+        f"({_pct(((fv_down / fv) - 1) * 100 if (fv_down and fv) else None)}); (b) stock price "
+        f"holds at {_num(assum.get('ev_multiple_latest_print'), 2)} now, TP drops "
+        f"to Rp {_num(fv_print, 0)}{risk_tail}."
     )
-    return {"heading": "Valuasi", "body": " ".join(parts)}
+    return {"heading": "Valuation", "body": " ".join(parts)}
 
 
 # --------------------------------------------------------------------------- entry point

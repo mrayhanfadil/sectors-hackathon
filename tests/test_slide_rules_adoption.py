@@ -71,7 +71,7 @@ def _compliant_payload() -> dict:
                     ["Last Price (Rp)", "4.860"],
                     ["Target Price (Rp)", "5.873"],
                     ["Previous TP (Rp)", "Initiation"],
-                    ["Potensi naik/turun (%)", "+20,84%"],
+                    ["Potential gain/loss (%)", "+20,84%"],
                 ]},
                 "stats": {
                     "rows": [["No. of Shares (mn)", "72.518,2"],
@@ -81,35 +81,39 @@ def _compliant_payload() -> dict:
                 },
                 "jci_chart": {"price": [1, 2, 3]},
                 "analyst": {"name": "RESEARCH", "title": "Equity Analyst"},
-                "theme_title": "Pasar baru memakai 17,99 kali laba 2026, rata-rata jangka panjangnya 28,42 kali",
+                "theme_title": "Smelter ramp lifts free cash flow into 2028",
                 "highlights": ["Laba Rp 2,72 tn (turun 61,95% dari kuartal sebelumnya)", "Tembaga US$ 14.708/ton",
                                "TP Rp 5.873 (+20,84%)"],
                 "financial_para": {"body": "Penjualan kuartal I 2026 Rp 13,73 tn, turun 36,94% dari kuartal sebelumnya."},
             },
             "slide2": {
                 "katalis": {"body": (
-                    "Katalis terverifikasi: (1) smelter selesai; Dampak: belanja modal turun 69,6% "
-                    "dari kuartal sebelumnya. "
-                    "Dampak harga tembaga tidak dapat dikuantifikasi ke laba. "
-                    "Priced-in: 24 bulan -33,40% relatif vs IHSG."
+                    "Verified Catalysts: (1) smelter done; Impact: capital spending down 69,6% "
+                    "from the prior quarter. "
+                    "The copper-price impact cannot be quantified into earnings. "
+                    "Priced-in: 24 months -33,40% relative vs JCI."
                 )},
                 "valuasi": {"body": (
-                    "Kami menetapkan TP Rp 5.873 menggunakan EV/EBITDA. CAGR 0,0%. Pada TP, "
-                    "saham dihargai 28,4× dibandingkan rata-rata historis 4 tahun 28,42× vs "
-                    "subsector. Risiko terhadap pandangan ini: tembaga -10%."
+                    "We set TP Rp 5.873 using EV/EBITDA. CAGR 0,0%. At TP, "
+                    "the stock is priced at 28,4× versus the 4-year historic average 28,42× vs "
+                    "subsector. Risk to this view: copper -10%."
                 )},
                 "key_financials": {
                     "headers": ["Year to 31 Dec", "2024A", "2025A", "2026F", "2027F", "2028F"],
+                    # G2.6 (handed-over ruleset): every forecast year differs from the one before
+                    # it. The fixture used to hold 27.236 across all three forecast columns, which
+                    # the ruleset bans without a declared flat reason - the pin moved to the new
+                    # behaviour rather than the arm being softened.
                     "rows": [
-                        ["Revenue (Rpbn)", "43.036", "30.904", "27.236", "27.236", "27.236"],
-                        ["EBITDA (Rpbn)", "23.040", "16.410", "18.396", "18.396", "18.396"],
-                        ["EBITDA Growth (%)", "n/a", "(28,8)", "12,1", "0,0", "0,0"],
-                        ["Net Profit (Rpbn)", "10.290", "4.167", "7.004", "7.004", "7.004"],
-                        ["EPS (Rp)", "141,9", "57,5", "96,6", "96,6", "96,6"],
-                        ["EPS Growth (%)", "n/a", "(59,5)", "68,1", "0,0", "0,0"],
-                        ["PER (x)", "34,2", "84,6", "50,3", "50,3", "50,3"],
-                        ["PBV (x)", "3,8", "3,8", "3,8", "3,8", "3,8"],
-                        ["EV/EBITDA (x)", "19,5", "27,4", "24,4", "24,4", "24,4"],
+                        ["Revenue (Rpbn)", "43.036", "30.904", "27.236", "29.100", "31.400"],
+                        ["EBITDA (Rpbn)", "23.040", "16.410", "18.396", "19.900", "21.500"],
+                        ["EBITDA Growth (%)", "n/a", "(28,8)", "12,1", "8,2", "8,0"],
+                        ["Net Profit (Rpbn)", "10.290", "4.167", "7.004", "7.500", "8.100"],
+                        ["EPS (Rp)", "141,9", "57,5", "96,6", "103,4", "111,7"],
+                        ["EPS Growth (%)", "n/a", "(59,5)", "68,1", "7,0", "8,0"],
+                        ["PER (x)", "34,2", "84,6", "50,3", "47,0", "43,5"],
+                        ["PBV (x)", "3,8", "3,8", "3,8", "3,5", "3,2"],
+                        ["EV/EBITDA (x)", "19,5", "27,4", "24,4", "22,5", "20,8"],
                     ],
                     "forecast_basis": "midcycle-normalised",
                     # §15: the fixture mirrors the shipped wording, so it carries no machine trace.
@@ -283,9 +287,9 @@ def test_live_payload_carries_both_verdicts() -> None:
 # ------------------------------------------------- deck page 2 (docs/ammn-slides/slide2-industry-spec.md)
 SLIDE2_SPEC = REPO_ROOT / "docs" / "ammn-slides" / "slide2-industry-spec.md"
 SLIDE2_PARAGRAPHS = (
-    "1. Kondisi Industri",
-    "2. Katalis Spesifik Emiten",
-    "3. Sentimen Pasar",
+    "1. Industry Conditions",
+    "2. Issuer-Specific Catalysts",
+    "3. Market Sentiment",
 )
 SLIDE2_AGENTS = (
     "industry_instruction",
@@ -359,8 +363,8 @@ def test_industry_page_builder_emits_three_traceable_paragraphs() -> None:
         assert len(paragraph["body"]) > 200, f"{paragraph['heading']} is too thin to be a paragraph"
         assert paragraph["basis"], f"{paragraph['heading']} carries no traceable basis"
     assert page["sources"], "the page must list the outlets its numbers came from"
-    assert "Posisi relatif" in page["paragraphs"][0]["body"]
-    assert "90 hari" in page["paragraphs"][2]["body"]
+    assert "Relative position" in page["paragraphs"][0]["body"]
+    assert "90 days" in page["paragraphs"][2]["body"]
 
 
 @pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
@@ -371,9 +375,9 @@ def test_industry_page_is_honest_about_what_the_data_does_not_carry() -> None:
 
     page = _build_live_payload("AMMN", None)["industry_page"]
     p1, p3 = page["paragraphs"][0]["body"], page["paragraphs"][2]["body"]
-    assert "tidak dapat" in p1 and "C1" in p1
-    assert "tidak tersedia" in p3 and "tidak diada-adakan" in p3
-    assert "tidak diekstrapolasi" in p3
+    assert "cannot" in p1 and "C1" in p1
+    assert "neither stated nor invented" in p3
+    assert "not extrapolated" in p3
 
 
 def test_house_gate_catches_each_slide2_violation_class() -> None:
@@ -391,7 +395,7 @@ def test_house_gate_catches_each_slide2_violation_class() -> None:
 
     missing = copy.deepcopy(clean)
     missing["paragraphs"] = missing["paragraphs"][:2]
-    assert any("3. Sentimen Pasar" in v for v in audit_industry_page(missing))
+    assert any("3. Market Sentiment" in v for v in audit_industry_page(missing))
 
     empty = copy.deepcopy(clean)
     empty["paragraphs"][0]["body"] = "   "
@@ -423,10 +427,10 @@ def test_served_html_renders_page2_before_the_summary_page() -> None:
     from server.routers.pdf import render_html_for_ticker
 
     _tpl, html, payload = render_html_for_ticker("AMMN", None)
-    assert "Kondisi Industri, Katalis" in html  # autoescape turns the "&" into "&amp;"
+    assert "Industry, Catalysts" in html  # autoescape turns the "&" into "&amp;"
     for heading in SLIDE2_PARAGRAPHS:
         assert heading in html, f"{heading} is not rendered"
-    assert html.index("Kondisi Industri, Katalis") < html.index("Ringkasan Investasi")
+    assert html.index("Industry, Catalysts") < html.index("Investment Summary")
     # every later page shifted by one: the summary page is now page 3
     numbers = sorted({int(n) for n in re.findall(r"back of this report · (\d+)", html)})
     assert numbers == list(range(1, len(numbers) + 1)), f"footer page numbers not sequential: {numbers}"
@@ -443,9 +447,9 @@ def test_slide2_reports_both_directions_of_insider_activity() -> None:
     digest = payload["filings_digest"]
     assert digest["buy"]["n"] and digest["sell"]["n"], "the filings digest lost one side"
     body = payload["industry_page"]["paragraphs"][1]["body"]
-    assert "transaksi beli" in body and "transaksi jual" in body
-    assert "tidak didukung datanya" in body, "the page must say the one-sided read is unsupported"
-    assert "Neto" in body and "bukan angka yang" in body, "the summed net must be labelled a sum"
+    assert "buy transactions" in body and "sell transactions" in body
+    assert "not supported by the data" in body, "the page must say the one-sided read is unsupported"
+    assert "The net" in body and "not a figure" in body, "the summed net must be labelled a sum"
 
 
 @pytest.mark.skipif(not ASSUM_PATH.exists(), reason="AMMN assumptions file absent")
@@ -458,11 +462,11 @@ def test_slide2_uses_the_wider_sectors_evidence() -> None:
     for block in ("sector_data", "filings_digest", "corporate_actions", "ownership_mix", "free_float"):
         assert payload.get(block), f"{block} missing from the filled payload"
     body = " ".join(p["body"] for p in payload["industry_page"]["paragraphs"])
-    assert "Proyeksi Sectors" in body, "the subsector report is not used"
-    assert "keterbukaan IDX" in body, "the filings digest is not used"
-    assert "RUPS" in body, "corporate actions are not used"
-    assert "kepemilikan asing" in body, "the ownership composition is not used"
-    assert "saham beredar publik" in body, "the free-float screener is not used"
+    assert "Sectors projects" in body, "the subsector report is not used"
+    assert "IDX disclosures" in body, "the filings digest is not used"
+    assert "AGM" in body, "corporate actions are not used"
+    assert "foreign ownership" in body, "the ownership composition is not used"
+    assert "public float" in body, "the free-float screener is not used"
     assert len(payload["industry_page"]["sources"]) >= 5, payload["industry_page"]["sources"]
 
 
@@ -473,9 +477,9 @@ def test_slide2_single_year_comparison_is_not_a_cumulative_move() -> None:
     from server.routers.pdf import _build_live_payload
 
     body = _build_live_payload("AMMN", None)["industry_page"]["paragraphs"][0]["body"]
-    assert "pertumbuhan pendapatan tahun terakhir" in body
-    assert "(aktual, tahun terakhir vs sebelumnya)" in body
-    assert "periodenya berbeda" in body
+    assert "latest-year revenue growth" in body
+    assert "(actual, latest year vs the prior one)" in body
+    assert "the periods differ" in body
 
 
 # ------------------------------------------------- rules in the ADK prompt, the gate and the CLI
@@ -506,18 +510,18 @@ def test_gate_rejects_a_one_sided_related_party_read() -> None:
     def page(catalysts_body: str) -> dict:
         return {
             "paragraphs": [
-                {"heading": "1. Kondisi Industri", "body": "x" * 250},
-                {"heading": "2. Katalis Spesifik Emiten", "body": catalysts_body},
-                {"heading": "3. Sentimen Pasar", "body": "y" * 250},
+                {"heading": "1. Industry Conditions", "body": "x" * 250},
+                {"heading": "2. Issuer-Specific Catalysts", "body": catalysts_body},
+                {"heading": "3. Market Sentiment", "body": "y" * 250},
             ]
         }
 
     payload = {"filings_digest": {"buy": {"n": 11}, "sell": {"n": 9}}}
-    one_sided = audit_industry_page(page("hanya transaksi beli insider yang disebut"), payload)
-    assert any("omits related-party 'jual'" in v for v in one_sided), one_sided
-    assert audit_industry_page(page("transaksi beli dan jual dua-duanya disebut"), payload) == []
+    one_sided = audit_industry_page(page("only insider buy transactions mentioned"), payload)
+    assert any("omits related-party 'sell'" in v for v in one_sided), one_sided
+    assert audit_industry_page(page("buy and sell transactions both mentioned"), payload) == []
     # an absent digest cannot trigger the check: the copy's missing-data line covers that case
-    assert audit_industry_page(page("hanya transaksi beli insider yang disebut"), {}) == []
+    assert audit_industry_page(page("only insider buy transactions mentioned"), {}) == []
 
 
 def test_cli_pipeline_builds_and_audits_the_page() -> None:
@@ -856,7 +860,7 @@ def test_valuation_page_shape_and_disclosures() -> None:
     # Amended: the engine provenance must still be stated, but it now names the model ("model DCF internal (FCFF)")
     # rather than the module path, so a reader is not handed an address inside the repository. Revert by restoring the
     # path form here and removing the engines/* rule from server/report/text_sanitize.py.
-    assert any(re.search(r"model DCF internal|engines/dcf_engine", s) for s in page["sources"]), (
+    assert any(re.search(r"internal DCF model|model DCF internal|engines/dcf_engine", s) for s in page["sources"]), (
         "the engine provenance is not stated"
     )
 
@@ -1053,7 +1057,7 @@ def test_rnav_branch_refuses_without_asset_data() -> None:
     page = build_valuation_page(_build_live_payload("AMMN", None), assum)
     assert page["available"] is False
     missing = " ".join(page["missing"]).lower()
-    assert "aset" in missing and "nav" in missing
+    assert "asset" in missing and "nav" in missing
     assert "block1_rows" not in page
 
 
@@ -1102,7 +1106,7 @@ def test_the_target_price_basis_is_reconciled_when_the_dcf_and_the_anchor_differ
                               {"ev_multiple_basis": "stub"}, anchor_fv=anchor))
 
     far = notes_for(100.0, 3000.0)
-    assert "Dasar target harga" in far, "a 30x gap between the DCF and the anchor is left unexplained"
+    assert "Target-price basis" in far, "a 30x gap between the DCF and the anchor is left unexplained"
     assert "3.000" in far and "100" in far, "the reconciliation does not name both prices"
 
     near = notes_for(3000.0, 3100.0)
